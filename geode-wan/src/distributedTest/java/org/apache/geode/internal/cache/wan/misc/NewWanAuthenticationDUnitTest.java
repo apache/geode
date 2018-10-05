@@ -386,11 +386,11 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       Properties p = super.getCredentials(props, server, isPeer);
       if (val) {
         isDifferentServerInGetCredentialCall = true;
-        CacheFactory.getAnyInstance().getLoggerI18n().convertToLogWriter()
+        CacheFactory.getAnyInstance().getLogger()
             .config("setting  isDifferentServerInGetCredentialCall "
                 + isDifferentServerInGetCredentialCall);
       } else {
-        CacheFactory.getAnyInstance().getLoggerI18n().convertToLogWriter()
+        CacheFactory.getAnyInstance().getLogger()
             .config("setting22  isDifferentServerInGetCredentialCall "
                 + isDifferentServerInGetCredentialCall);
       }

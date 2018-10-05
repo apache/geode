@@ -56,7 +56,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.PRQueryResultCollector;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 
@@ -170,8 +169,8 @@ public class PRQueryProcessor {
 
           } catch (TimeoutException e) {
             throw new InternalGemFireException(
-                LocalizedStrings.PRQueryProcessor_TIMED_OUT_WHILE_EXECUTING_QUERY_TIME_EXCEEDED_0
-                    .toLocalizedString(BUCKET_QUERY_TIMEOUT),
+                String.format("Timed out while executing query, time exceeded  %s",
+                    BUCKET_QUERY_TIMEOUT),
                 e);
           } catch (ExecutionException ee) {
             Throwable cause = ee.getCause();
@@ -179,8 +178,7 @@ public class PRQueryProcessor {
               throw (QueryException) cause;
             } else {
               throw new InternalGemFireException(
-                  LocalizedStrings.PRQueryProcessor_GOT_UNEXPECTED_EXCEPTION_WHILE_EXECUTING_QUERY_ON_PARTITIONED_REGION_BUCKET
-                      .toLocalizedString(),
+                  "Got unexpected exception while executing query on partitioned region bucket",
                   cause);
             }
           }

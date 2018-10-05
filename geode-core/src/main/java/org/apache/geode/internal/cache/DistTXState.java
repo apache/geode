@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
@@ -174,7 +173,7 @@ public class DistTXState extends TXState {
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_CANNOT_COMMIT_REMOTED_TRANSACTION.toLocalizedString());
+          "Cannot commit a transaction being run on behalf of a remote thread");
     }
 
     cleanupNonDirtyRegions();
@@ -187,8 +186,7 @@ public class DistTXState extends TXState {
     } catch (PrimaryBucketException pbe) {
       // not sure what to do here yet
       RuntimeException re = new TransactionDataRebalancedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-              .toLocalizedString());
+          "Transactional data moved, due to rebalancing.");
       re.initCause(pbe);
       throw re;
     }

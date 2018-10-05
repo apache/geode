@@ -34,9 +34,7 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractRemoteGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -55,8 +53,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.GatewaySender_SENDER_0_IS_ALREADY_RUNNING, this.getId()));
+        logger.warn("Gateway Sender {} is already running", this.getId());
         return;
       }
 
@@ -64,8 +61,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
         String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new IllegalStateException(
-              LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER
-                  .toLocalizedString());
+              "Locators must be configured before starting gateway-sender.");
         }
       }
       /*
@@ -88,8 +84,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.ParallelGatewaySenderImpl_STARTED__0, this));
+      logger.info("Started {}", this);
 
       enqueueTempEvents();
     } finally {
@@ -118,7 +113,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       // stop the running threads, open sockets if any
       ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.GatewayImpl_STOPPED__0, this));
+      logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
           (InternalDistributedSystem) this.cache.getDistributedSystem();

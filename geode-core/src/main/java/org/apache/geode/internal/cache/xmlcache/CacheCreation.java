@@ -143,7 +143,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -403,8 +402,7 @@ public class CacheCreation implements InternalCache {
   public void setMessageSyncInterval(int seconds) {
     if (seconds < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.CacheCreation_THE_MESSAGESYNCINTERVAL_PROPERTY_FOR_CACHE_CANNOT_BE_NEGATIVE
-              .toLocalizedString());
+          "The 'message-sync-interval' property for cache cannot be negative");
     }
     HARegionQueue.setMessageSyncInterval(seconds);
     this.hasMessageSyncInterval = true;
@@ -535,9 +533,9 @@ public class CacheCreation implements InternalCache {
           factory.create(senderCreation.getId(), senderCreation.getRemoteDSId());
       // Start the sender if it is not set to manually start
       if (gatewaySender.isManualStart()) {
-        cache.getLoggerI18n().info(
-            LocalizedStrings.CacheCreation_0_IS_NOT_BEING_STARTED_SINCE_IT_IS_CONFIGURED_FOR_MANUAL_START,
-            gatewaySender);
+        cache.getLogger().info(
+            String.format("%s is not being started since it is configured for manual start",
+                gatewaySender));
       }
     }
 
@@ -590,9 +588,9 @@ public class CacheCreation implements InternalCache {
       factory.setHostnameForSenders(receiverCreation.getHostnameForSenders());
       GatewayReceiver receiver = factory.create();
       if (receiver.isManualStart()) {
-        cache.getLoggerI18n().info(
-            LocalizedStrings.CacheCreation_0_IS_NOT_BEING_STARTED_SINCE_IT_IS_CONFIGURED_FOR_MANUAL_START,
-            receiver);
+        cache.getLogger().info(
+            String.format("%s is not being started since it is configured for manual start",
+                receiver));
       }
     }
 
@@ -682,8 +680,7 @@ public class CacheCreation implements InternalCache {
 
     if (declarativeCacheServers.size() > 1 && (serverPort != null || serverBindAdd != null)) {
       throw new RuntimeException(
-          LocalizedStrings.CacheServerLauncher_SERVER_PORT_MORE_THAN_ONE_CACHE_SERVER
-              .toLocalizedString());
+          "When using -server-port or -server-bind-address arguments, the cache-xml-file can not have more than one cache-server defined.");
     }
 
     CacheServerCreation defaultServer = null;
@@ -742,7 +739,7 @@ public class CacheCreation implements InternalCache {
 
       } catch (IOException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0.toLocalizedString(impl),
+            String.format("While starting cache server  %s", impl),
             ex);
       }
     }
@@ -751,7 +748,7 @@ public class CacheCreation implements InternalCache {
   void removeCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
       Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
 
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -798,7 +795,7 @@ public class CacheCreation implements InternalCache {
         && other.getCopyOnRead() == this.getCopyOnRead() && other.isServer() == this.isServer();
 
     if (!sameConfig) {
-      throw new RuntimeException(LocalizedStrings.CacheCreation_SAMECONFIG.toLocalizedString());
+      throw new RuntimeException("!sameConfig");
 
     } else {
       DynamicRegionFactory.Config drc1 = this.getDynamicRegionFactoryConfig();
@@ -834,7 +831,7 @@ public class CacheCreation implements InternalCache {
       Collection<CacheServer> otherBridges = other.getCacheServers();
       if (myBridges.size() != otherBridges.size()) {
         throw new RuntimeException(
-            LocalizedStrings.CacheCreation_CACHESERVERS_SIZE.toLocalizedString());
+            "cacheServers size");
       }
 
       for (CacheServer myBridge1 : myBridges) {
@@ -849,7 +846,7 @@ public class CacheCreation implements InternalCache {
 
         if (!found) {
           throw new RuntimeException(
-              LocalizedStrings.CacheCreation_CACHE_SERVER_0_NOT_FOUND.toLocalizedString(myBridge));
+              String.format("cache server %s not found", myBridge));
         }
       }
 
@@ -906,13 +903,13 @@ public class CacheCreation implements InternalCache {
         if (ds == null) {
           getLogger().fine("Disk store " + name + " not found.");
           throw new RuntimeException(
-              LocalizedStrings.CacheCreation_DISKSTORE_NOTFOUND_0.toLocalizedString(name));
+              String.format("Disk store %s not found", name));
         } else {
           if (!dsac.sameAs(ds)) {
             getLogger().fine("Attributes for disk store " + name + " do not match");
             throw new RuntimeException(
-                LocalizedStrings.CacheCreation_ATTRIBUTES_FOR_DISKSTORE_0_DO_NOT_MATCH
-                    .toLocalizedString(name));
+                String.format("Attributes for disk store %s do not match",
+                    name));
           }
         }
       }
@@ -922,7 +919,7 @@ public class CacheCreation implements InternalCache {
           other.listRegionAttributes();
       if (myNamedAttributes.size() != otherNamedAttributes.size()) {
         throw new RuntimeException(
-            LocalizedStrings.CacheCreation_NAMEDATTRIBUTES_SIZE.toLocalizedString());
+            "namedAttributes size");
       }
 
       for (Object object : myNamedAttributes.entrySet()) {
@@ -935,13 +932,13 @@ public class CacheCreation implements InternalCache {
         if (otherAttrs == null) {
           getLogger().fine("No attributes for " + myId);
           throw new RuntimeException(
-              LocalizedStrings.CacheCreation_NO_ATTRIBUTES_FOR_0.toLocalizedString(myId));
+              String.format("No attributes for  %s", myId));
 
         } else {
           if (!myAttrs.sameAs(otherAttrs)) {
             getLogger().fine("Attributes for " + myId + " do not match");
-            throw new RuntimeException(LocalizedStrings.CacheCreation_ATTRIBUTES_FOR_0_DO_NOT_MATCH
-                .toLocalizedString(myId));
+            throw new RuntimeException(String.format("Attributes for  %s  do not match",
+                myId));
           }
         }
       }
@@ -949,7 +946,7 @@ public class CacheCreation implements InternalCache {
       Collection<Region<?, ?>> myRoots = this.roots.values();
       Collection<Region<?, ?>> otherRoots = other.rootRegions();
       if (myRoots.size() != otherRoots.size()) {
-        throw new RuntimeException(LocalizedStrings.CacheCreation_ROOTS_SIZE.toLocalizedString());
+        throw new RuntimeException("roots size");
       }
 
       for (final Region<?, ?> myRoot : myRoots) {
@@ -957,10 +954,10 @@ public class CacheCreation implements InternalCache {
         Region<Object, Object> otherRegion = other.getRegion(rootRegion.getName());
         if (otherRegion == null) {
           throw new RuntimeException(
-              LocalizedStrings.CacheCreation_NO_ROOT_0.toLocalizedString(rootRegion.getName()));
+              String.format("no root  %s", rootRegion.getName()));
         } else if (!rootRegion.sameAs(otherRegion)) {
           throw new RuntimeException(
-              LocalizedStrings.CacheCreation_REGIONS_DIFFER.toLocalizedString());
+              "regions differ");
         }
       }
 
@@ -975,7 +972,7 @@ public class CacheCreation implements InternalCache {
             Arrays.asList(getCacheTransactionManager().getListeners());
 
         if (!thisTxListeners.equals(otherTxListeners)) {
-          throw new RuntimeException(LocalizedStrings.CacheCreation_TXLISTENER.toLocalizedString());
+          throw new RuntimeException("txListener");
         }
       }
     }
@@ -989,32 +986,32 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void close(boolean keepAlive) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isReconnecting() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean waitUntilReconnected(long time, TimeUnit units) throws InterruptedException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void stopReconnecting() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Cache getReconnectedCache() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1039,22 +1036,22 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public DistributedSystem getDistributedSystem() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isClosed() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public String getName() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public CancelCriterion getCancelCriterion() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1067,7 +1064,7 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -1075,7 +1072,7 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -1083,7 +1080,7 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -1091,7 +1088,7 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1142,33 +1139,33 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public boolean removeCacheServer(final CacheServer cacheServer) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setReadSerializedForCurrentThread(final boolean value) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setReadSerializedForTest(final boolean value) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public PdxInstanceFactory createPdxInstanceFactory(final String className,
       final boolean expectDomainClass) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void waitForRegisterInterestsInProgress() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void reLoadClusterConfiguration() throws IOException, ClassNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1192,148 +1189,148 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void addAsyncEventQueue(final AsyncEventQueueImpl asyncQueue) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void removeAsyncEventQueue(final AsyncEventQueue asyncQueue) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public QueryMonitor getQueryMonitor() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void close(final String reason, final Throwable systemFailureCause,
       final boolean keepAlive, final boolean keepDS) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public JmxManagerAdvisor getJmxManagerAdvisor() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public List<Properties> getDeclarableProperties(final String className) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public int getUpTime() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Set<Region<?, ?>> rootRegions(final boolean includePRAdminRegions) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Set<InternalRegion> getAllRegions() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DistributedRegion getRegionInDestroy(final String path) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void addRegionOwnedDiskStore(final DiskStoreImpl dsi) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DiskStoreMonitor getDiskStoreMonitor() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void close(final String reason, final Throwable optionalCause) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public LocalRegion getRegionByPathForProcessing(final String path) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public List getCacheServersAndGatewayReceiver() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isGlobalRegionInitializing(final String fullPath) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DistributionAdvisor getDistributionAdvisor() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setQueryMonitorRequiredForResourceManager(final boolean required) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isQueryMonitorDisabledForLowMemory() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isRESTServiceRunning() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public InternalLogWriter getInternalLogWriter() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public InternalLogWriter getSecurityInternalLogWriter() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Set<InternalRegion> getApplicationRegions() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void removeGatewaySender(final GatewaySender sender) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DistributedLockService getGatewaySenderLockService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public RestAgent getRestAgent() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Properties getDeclarableProperties(final Declarable declarable) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setRESTServiceRunning(final boolean isRESTServiceRunning) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void close(final String reason, final boolean keepAlive, final boolean keepDS) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void addGatewayReceiver(GatewayReceiver receiver) {
@@ -1341,7 +1338,7 @@ public class CacheCreation implements InternalCache {
   }
 
   public void removeGatewayReceiver(GatewayReceiver receiver) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void addAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
@@ -1386,7 +1383,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void closeDiskStores() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1525,12 +1522,12 @@ public class CacheCreation implements InternalCache {
   @Override
   public void loadCacheXml(InputStream is)
       throws TimeoutException, CacheWriterException, RegionExistsException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void readyForEvents() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   private final PoolManagerImpl poolManager = new PoolManagerImpl(false);
@@ -1609,27 +1606,27 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalDistributedSystem getInternalDistributedSystem() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Set<PartitionedRegion> getPartitionedRegions() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void addRegionListener(final RegionListener regionListener) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void removeRegionListener(final RegionListener regionListener) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Set<RegionListener> getRegionListeners() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1705,32 +1702,32 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public boolean getPdxReadSerializedByAnyGemFireServices() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setDeclarativeCacheConfig(final CacheConfig cacheConfig) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void initializePdxRegistry() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void readyDynamicRegionFactory() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setBackupFiles(final List<File> backups) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void addDeclarableProperties(final Map<Declarable, Properties> mapOfNewDeclarableProps) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
@@ -1780,53 +1777,53 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void determineDefaultPool() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public <K, V> Region<K, V> basicCreateRegion(final String name,
       final RegionAttributes<K, V> attrs) throws RegionExistsException, TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public BackupService getBackupService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Throwable getDisconnectCause() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void addPartitionedRegion(final PartitionedRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void removePartitionedRegion(final PartitionedRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void addDiskStore(final DiskStoreImpl dsi) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public TXEntryStateFactory getTXEntryStateFactory() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public EventTrackerExpiryTask getEventTrackerTask() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void removeDiskStore(final DiskStoreImpl diskStore) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   void runInitializer(InternalCache cache) {
@@ -1849,17 +1846,17 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public CacheSnapshotService getSnapshotService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -1892,7 +1889,7 @@ public class CacheCreation implements InternalCache {
 
     @Override
     public Query newQuery(String queryString) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
@@ -1961,12 +1958,12 @@ public class CacheCreation implements InternalCache {
 
     @Override
     public Index getIndex(Region<?, ?> region, String indexName) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public Collection<Index> getIndexes() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
@@ -1977,440 +1974,440 @@ public class CacheCreation implements InternalCache {
 
     @Override
     public Collection<Index> getIndexes(Region<?, ?> region, IndexType indexType) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void removeIndex(Index index) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void removeIndexes() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void removeIndexes(Region<?, ?> region) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery newCq(String queryString, CqAttributes cqAttr)
         throws QueryInvalidException, CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable)
         throws QueryInvalidException, CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery newCq(String name, String queryString, CqAttributes cqAttr)
         throws QueryInvalidException, CqExistsException, CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable)
         throws QueryInvalidException, CqExistsException, CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void closeCqs() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery[] getCqs() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery[] getCqs(String regionName) throws CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqQuery getCq(String cqName) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void executeCqs() throws CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void stopCqs() throws CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void executeCqs(String regionName) throws CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void stopCqs(String regionName) throws CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public List<String> getAllDurableCqsFromServer() throws CqException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public CqServiceStatistics getCqStatistics() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
 
     @Override
     public void defineKeyIndex(String indexName, String indexedExpression, String regionPath)
         throws RegionNotFoundException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void defineHashIndex(String indexName, String indexedExpression, String regionPath)
         throws RegionNotFoundException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void defineHashIndex(String indexName, String indexedExpression, String regionPath,
         String imports) throws RegionNotFoundException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void defineIndex(String indexName, String indexedExpression, String regionPath)
         throws RegionNotFoundException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public void defineIndex(String indexName, String indexedExpression, String regionPath,
         String imports) throws RegionNotFoundException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public List<Index> createDefinedIndexes() throws MultiIndexCreationException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public boolean clearDefinedIndexes() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
     @Override
     public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
   };
 
   @Override
   public <T extends CacheService> T getService(Class<T> clazz) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Collection<CacheService> getServices() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public SystemTimer getCCPTimer() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void cleanupForClient(final CacheClientNotifier ccn,
       final ClientProxyMembershipID client) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void purgeCCPTimer() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public FilterProfile getFilterProfile(final String regionName) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Region getRegion(final String path, final boolean returnDestroyedRegion) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public MemoryAllocator getOffHeapStore() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public <K, V> Region<K, V> createVMRegion(final String name, final RegionAttributes<K, V> p_attrs,
       final InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DistributedLockService getPartitionedRegionLockService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public PersistentMemberManager getPersistentMemberManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Set<GatewaySender> getAllGatewaySenders() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public CachePerfStats getCachePerfStats() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DistributionManager getDistributionManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void regionReinitialized(final Region region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setRegionByPath(final String path, final InternalRegion r) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public InternalResourceManager getInternalResourceManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public ResourceAdvisor getResourceAdvisor() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isCacheAtShutdownAll() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean requiresNotificationFromPR(final PartitionedRegion r) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public <K, V> RegionAttributes<K, V> invokeRegionBefore(final InternalRegion parent,
       final String name, final RegionAttributes<K, V> attrs,
       final InternalRegionArguments internalRegionArgs) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void invokeRegionAfter(final InternalRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void invokeBeforeDestroyed(final InternalRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void invokeCleanupFailedInitialization(final InternalRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public TXManagerImpl getTXMgr() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean forcedDisconnect() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public InternalResourceManager getInternalResourceManager(
       final boolean checkCancellationInProgress) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean isCopyOnRead() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public TombstoneService getTombstoneService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public QueryService getLocalQueryService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void registerInterestStarted() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void registerInterestCompleted() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void regionReinitializing(final String fullPath) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void unregisterReinitializingRegion(final String fullPath) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean removeRoot(final InternalRegion rootRgn) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Executor getEventThreadPool() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public LocalRegion getReinitializingRegion(final String fullPath) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean keepDurableSubscriptionsAlive() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public CacheClosedException getCacheClosedException(final String reason) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public CacheClosedException getCacheClosedException(final String reason, final Throwable cause) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public TypeRegistry getPdxRegistry() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public DiskStoreImpl getOrCreateDefaultDiskStore() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public ExpirationScheduler getExpirationScheduler() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public TransactionManager getJTATransactionManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public TXManagerImpl getTxManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void beginDestroy(final String path, final DistributedRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void endDestroy(final String path, final DistributedRegion region) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public ClientMetadataService getClientMetadataService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public long cacheTimeMillis() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public URL getCacheXmlURL() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public boolean hasPersistentRegion() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void shutDownAll() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
       InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Object convertPdxInstanceIfNeeded(Object obj, boolean preferCD) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Boolean getPdxReadSerializedOverride() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setPdxReadSerializedOverride(boolean pdxReadSerialized) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void registerPdxMetaData(Object instance) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public InternalCache getCacheForProcessingClientRequests() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 }

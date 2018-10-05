@@ -23,7 +23,6 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockService.ThreadRequestState;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Distributed lock which is owned by a member rather than a single thread. Any thread within the
@@ -272,7 +271,7 @@ public class DistributedMemberLock implements Lock {
 
   public Condition newCondition() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedMemberLock_NOT_IMPLEMENTED.toLocalizedString());
+        "not implemented");
   }
 
 }

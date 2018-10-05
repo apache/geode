@@ -61,9 +61,7 @@ import org.apache.geode.internal.cache.partitioned.BucketProfileUpdateMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage.DeposePrimaryBucketResponse;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
 
@@ -1434,8 +1432,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             long timeUntilWarning = warnTime - elapsed;
             if (timeUntilWarning <= 0) {
               logger
-                  .warn(LocalizedMessage.create(LocalizedStrings.BucketAdvisor_WAITING_FOR_PRIMARY,
-                      new Object[] {warnTime / 1000L, this, this.adviseInitialized()}));
+                  .warn(
+                      "{} secs have elapsed waiting for a primary for bucket {}. Current bucket owners {}",
+                      new Object[] {warnTime / 1000L, this, this.adviseInitialized()});
               // log a warning;
               loggedWarning = true;
             } else {
@@ -1450,7 +1449,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       } finally {
         if (loggedWarning) {
           logger.info(
-              LocalizedMessage.create(LocalizedStrings.BucketAdvisor_WAITING_FOR_PRIMARY_DONE));
+              "Wait for primary completed");
         }
       }
       return null;
@@ -1948,8 +1947,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -1983,8 +1982,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2009,8 +2008,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2048,8 +2047,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2099,8 +2098,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2146,8 +2145,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2187,11 +2186,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         switch (requestedState) {
           case CLOSED:
             Exception e = new Exception(
-                LocalizedStrings.BucketAdvisor_ATTEMPTED_TO_CLOSE_BUCKETADVISOR_THAT_IS_ALREADY_CLOSED
-                    .toLocalizedString());
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.BucketAdvisor_ATTEMPTED_TO_CLOSE_BUCKETADVISOR_THAT_IS_ALREADY_CLOSED),
+                "Attempted to close BucketAdvisor that is already CLOSED");
+            logger.warn("Attempted to close BucketAdvisor that is already CLOSED",
                 e);
             break;
           case VOLUNTEERING_HOSTING:
@@ -2208,8 +2204,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             return false;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1_FOR_BUCKET_2
-                    .toLocalizedString(new Object[] {this.primaryStateToString(),
+                String.format("Cannot change from  %s  to  %s  for bucket  %s",
+                    new Object[] {this.primaryStateToString(),
                         this.primaryStateToString(requestedState), getAdvisee().getName()}));
         }
     }
@@ -2647,11 +2643,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       if (!safe) {
         if (ENFORCE_SAFE_CLOSE) {
           Assert.assertTrue(safe,
-              LocalizedStrings.BucketAdvisor_BUCKETADVISOR_WAS_NOT_CLOSED_PROPERLY
-                  .toLocalizedString());
+              "BucketAdvisor was not closed properly.");
         } else if (loggit) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.BucketAdvisor_BUCKETADVISOR_WAS_NOT_CLOSED_PROPERLY), e);
+          logger.warn("BucketAdvisor was not closed properly.", e);
         }
       }
     }

@@ -23,7 +23,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Contains the logic for evaluating the health of an entire GemFire distributed system according to
@@ -116,9 +115,10 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
       long threshold = this.config.getMaxDepartedApplications();
       if (this.crashedApplications > threshold) {
         String s =
-            LocalizedStrings.DistributedSystemHealth_THE_NUMBER_OF_APPLICATIONS_THAT_HAVE_LEFT_THE_DISTRIBUTED_SYSTEM_0_EXCEEDS_THE_THRESHOLD_1
-                .toLocalizedString(
-                    new Object[] {Long.valueOf(this.crashedApplications), Long.valueOf(threshold)});
+            String.format(
+                "The number of applications that have left the distributed system (%s) exceeds the threshold (%s)",
+
+                new Object[] {Long.valueOf(this.crashedApplications), Long.valueOf(threshold)});
         status.add(poorHealth(s));
       }
       this.crashedApplications = 0;

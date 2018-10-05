@@ -31,11 +31,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This program sorts the entries in a GemFire log file (one written using a
- * {@link org.apache.geode.i18n.LogWriterI18n}) by their timestamps. Note that in order to do so, we
+ * {@link org.apache.geode.LogWriter}) by their timestamps. Note that in order to do so, we
  * have to read the entire file into memory.
  *
  * @see MergeLogFiles
@@ -93,13 +92,12 @@ public class SortLogFile {
   private static void usage(String s) {
     err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
     err.println(
-        LocalizedStrings.SortLogFile_USAGE.toLocalizedString() + ": java SortLogFile logFile");
+        "Usage: java SortLogFile logFile");
     err.println("-sortedFile file "
-        + LocalizedStrings.SortLogFile_FILE_IN_WHICH_TO_PUT_SORTED_LOG.toLocalizedString());
+        + "File in which to put sorted log");
     err.println("");
     err.println(
-        LocalizedStrings.SortLogFile_SORTS_A_GEMFIRE_LOG_FILE_BY_TIMESTAMP_THE_MERGED_LOG_FILE_IS_WRITTEN_TO_SYSTEM_OUT_OR_A_FILE
-            .toLocalizedString());
+        "Sorts a GemFire log file by timestamp. The merged log file is written to System.out (or a file).");
     err.println("");
     ExitCode.FATAL.doSystemExit();
   }
@@ -120,18 +118,18 @@ public class SortLogFile {
       } else if (logFile == null) {
         File file = new File(args[i]);
         if (!file.exists()) {
-          usage(LocalizedStrings.SortLogFile_FILE_0_DOES_NOT_EXIST.toLocalizedString(file));
+          usage(String.format("File %s does not exist", file));
         }
 
         logFile = file;
 
       } else {
-        usage(LocalizedStrings.SortLogFile_EXTRANEOUS_COMMAND_LINE_0.toLocalizedString(args[i]));
+        usage(String.format("Extraneous command line: %s", args[i]));
       }
     }
 
     if (logFile == null) {
-      usage(LocalizedStrings.SortLogFile_MISSING_FILENAME.toLocalizedString());
+      usage("Missing filename");
     }
 
     InputStream logFileStream = new FileInputStream(logFile);

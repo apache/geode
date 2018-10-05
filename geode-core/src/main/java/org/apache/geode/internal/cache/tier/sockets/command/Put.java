@@ -22,7 +22,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.ResourceException;
 import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -34,8 +33,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
@@ -103,18 +100,15 @@ public class Put extends BaseCommand {
     // Process the put request
     if (key == null || regionName == null) {
       if (key == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.Put_0_THE_INPUT_KEY_FOR_THE_PUT_REQUEST_IS_NULL,
-            serverConnection.getName()));
+        logger.warn("{} The input key for the put request is null",
+            serverConnection.getName());
         errMessage =
-            LocalizedStrings.Put_THE_INPUT_KEY_FOR_THE_PUT_REQUEST_IS_NULL.toLocalizedString();
+            "The input key for the put request is null";
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.Put_0_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL,
-            serverConnection.getName()));
-        errMessage = LocalizedStrings.Put_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL
-            .toLocalizedString();
+        logger.warn("{} The input region name for the put request is null",
+            serverConnection.getName());
+        errMessage = "The input region name for the put request is null";
       }
       writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -124,7 +118,7 @@ public class Put extends BaseCommand {
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason =
-          LocalizedStrings.Put_REGION_WAS_NOT_FOUND_DURING_PUT_REQUEST.toLocalizedString();
+          ": Region was not found during put request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -132,11 +126,10 @@ public class Put extends BaseCommand {
 
     if (valuePart.isNull() && region.containsKey(key)) {
       // Invalid to 'put' a null value in an existing key
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.Put_0_ATTEMPTED_TO_PUT_A_NULL_VALUE_FOR_EXISTING_KEY_1,
-          new Object[] {serverConnection.getName(), key}));
+      logger.info("{}: Attempted to put a null value for existing key {}",
+          serverConnection.getName(), key);
       errMessage =
-          LocalizedStrings.Put_ATTEMPTED_TO_PUT_A_NULL_VALUE_FOR_EXISTING_KEY_0.toLocalizedString();
+          "Attempted to put a null value for existing key %s";
       writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -187,10 +180,8 @@ public class Put extends BaseCommand {
       if (result) {
         serverConnection.setModificationInfo(true, regionName, key);
       } else {
-        StringId message = LocalizedStrings.PUT_0_FAILED_TO_PUT_ENTRY_FOR_REGION_1_KEY_2_VALUE_3;
-        Object[] messageArgs =
-            new Object[] {serverConnection.getName(), regionName, key, valuePart};
-        String s = message.toLocalizedString(messageArgs);
+        String message = "%s: Failed to put entry for region %s key %s value %s";
+        String s = String.format(message, serverConnection.getName(), regionName, key, valuePart);
         logger.info(s);
         throw new Exception(s);
       }
@@ -216,7 +207,7 @@ public class Put extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", serverConnection.getName(), ce);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.PUT_0_UNEXPECTED_EXCEPTION,
+        logger.warn(String.format("%s: Unexpected Exception",
             serverConnection.getName()), ce);
       }
       return;

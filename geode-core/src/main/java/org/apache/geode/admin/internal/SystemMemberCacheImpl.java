@@ -38,7 +38,6 @@ import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * View of a GemFire system member's cache.
@@ -59,8 +58,8 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     this.info = vm.getCacheInfo();
     if (this.info == null) {
       throw new CacheDoesNotExistException(
-          LocalizedStrings.SystemMemberCacheImpl_THE_VM_0_DOES_NOT_CURRENTLY_HAVE_A_CACHE
-              .toLocalizedString(vm.getId()));
+          String.format("The VM  %s  does not currently have a cache.",
+              vm.getId()));
     }
     initStats();
   }

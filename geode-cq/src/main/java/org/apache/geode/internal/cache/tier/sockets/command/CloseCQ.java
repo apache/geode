@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -69,7 +68,7 @@ public class CloseCQ extends BaseCQCommand {
     // Process the query request
     if (cqName == null) {
       String err =
-          LocalizedStrings.CloseCQ_THE_CQNAME_FOR_THE_CQ_CLOSE_REQUEST_IS_NULL.toLocalizedString();
+          "The cqName for the cq close request is null";
       sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
           serverConnection);
       return;
@@ -112,7 +111,7 @@ public class CloseCQ extends BaseCQCommand {
       return;
     } catch (Exception e) {
       String err =
-          LocalizedStrings.CloseCQ_EXCEPTION_WHILE_CLOSING_CQ_CQNAME_0.toLocalizedString(cqName);
+          String.format("Exception while closing CQ CqName :%s", cqName);
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
           serverConnection);
       return;
@@ -120,7 +119,7 @@ public class CloseCQ extends BaseCQCommand {
 
     // Send OK to client
     sendCqResponse(MessageType.REPLY,
-        LocalizedStrings.CloseCQ_CQ_CLOSED_SUCCESSFULLY.toLocalizedString(),
+        "cq closed successfully.",
         clientMessage.getTransactionId(), null, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
 

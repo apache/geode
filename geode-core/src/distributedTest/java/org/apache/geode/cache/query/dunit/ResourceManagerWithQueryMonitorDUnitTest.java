@@ -72,7 +72,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -1213,10 +1212,11 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private boolean isExceptionDueToLowMemory(QueryException e, int HEAP_USED) {
     String message = e.getMessage();
     return (message.contains(
-        LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY.toLocalizedString(HEAP_USED))
+        String.format(
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+            HEAP_USED))
         || message.contains(
-            LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
-                .toLocalizedString()));
+            "Query execution canceled due to low memory while gathering results from partitioned regions"));
   }
 
   private boolean isExceptionDueToTimeout(QueryException e) {
@@ -1226,7 +1226,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     return (message.contains("The QueryMonitor thread may be sleeping longer than")
         || message.contains("Query execution cancelled after exceeding max execution time")
         || message.contains(
-            LocalizedStrings.QueryMonitor_LONG_RUNNING_QUERY_CANCELED.toLocalizedString(-1)));
+            String.format("Query execution cancelled after exceeding max execution time %sms.",
+                -1)));
   }
 
   private DefaultQuery.TestHook getPauseHook() {

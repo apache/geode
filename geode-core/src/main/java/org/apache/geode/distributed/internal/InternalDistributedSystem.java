@@ -74,7 +74,6 @@ import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -90,13 +89,11 @@ import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -445,10 +442,10 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * @return a log writer, or null if there is no distributed system available
    */
-  public static LogWriterI18n getLoggerI18n() {
+  public static LogWriter getLogger() {
     InternalDistributedSystem sys = getAnyInstance();
     if (sys != null && sys.logWriter != null) {
-      return sys.logWriter.convertToLogWriterI18n();
+      return sys.logWriter;
     }
     return null;
   }
@@ -708,8 +705,7 @@ public class InternalDistributedSystem extends DistributedSystem
         EncryptorImpl.initDHKeys(this.config);
       } catch (Exception ex) {
         throw new GemFireSecurityException(
-            LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
-                .toLocalizedString(),
+            "Problem in initializing keys for client authentication",
             ex);
       }
 
@@ -727,12 +723,14 @@ public class InternalDistributedSystem extends DistributedSystem
         long size = offHeapMemorySize + Runtime.getRuntime().totalMemory();
         if (avail < size) {
           if (ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN, size - avail));
+            logger.warn(
+                "System memory appears to be over committed by {} bytes.  You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.",
+                size - avail);
           } else {
             throw new IllegalStateException(
-                LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT
-                    .toLocalizedString(avail, size));
+                String.format(
+                    "Insufficient free memory (%s) when attempting to lock %s bytes.  Either reduce the amount of heap or off-heap memory requested or free up additional system memory.  You may also specify -Dgemfire.Cache.ALLOW_MEMORY_OVERCOMMIT=true on the command-line to override the constraint check.",
+                    avail, size));
           }
         }
 
@@ -782,8 +780,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // bug #48144 - The dm's channel threw an NPE. It now throws this exception
         // but during startup we should instead throw a SystemConnectException
         throw new SystemConnectException(
-            LocalizedStrings.InternalDistributedSystem_DISTRIBUTED_SYSTEM_HAS_DISCONNECTED
-                .toLocalizedString(),
+            "Distributed system has disconnected during startup.",
             e);
       }
 
@@ -869,8 +866,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
     } catch (IOException e) {
       throw new GemFireIOException(
-          LocalizedStrings.InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE
-              .toLocalizedString(),
+          "Problem starting a locator service",
           e);
     }
   }
@@ -917,8 +913,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private void checkConnected() {
     if (!isConnected()) {
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
-              .toLocalizedString(),
+          "This connection to a distributed system has been disconnected.",
           dm.getRootCause());
     }
   }
@@ -1016,7 +1011,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public void disconnect() {
     disconnect(false,
-        LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(), false);
+        "normal disconnect", false);
   }
 
   /**
@@ -1077,16 +1072,13 @@ public class InternalDistributedSystem extends DistributedSystem
       t.join(MAX_DISCONNECT_WAIT);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_INTERRUPTED_WHILE_PROCESSING_DISCONNECT_LISTENER),
+      logger.warn("Interrupted while processing disconnect listener",
           e);
     }
 
     // Make sure the listener gets the cue to die
     if (t.isAlive()) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_STILL_RUNNING__0, dc));
+      logger.warn("Disconnect listener still running: {}", dc);
       t.interrupt();
 
       try {
@@ -1096,9 +1088,8 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       if (t.isAlive()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_IGNORED_ITS_INTERRUPT__0,
-            dc));
+        logger.warn("Disconnect listener ignored its interrupt: {}",
+            dc);
       }
     }
 
@@ -1193,8 +1184,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // is still usable:
         SystemFailure.checkFailure();
         // things could break since we continue, but we want to disconnect!
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW, s), t);
+        logger.fatal(String.format("ShutdownListener < %s > threw...", s), t);
       }
     }
 
@@ -1237,8 +1227,7 @@ public class InternalDistributedSystem extends DistributedSystem
           // is still usable:
           SystemFailure.checkFailure();
           // things could break since we continue, but we want to disconnect!
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_DISCONNECTLISTENERSHUTDOWN_THREW), t);
+          logger.fatal("DisconnectListener/Shutdown threw...", t);
         }
       }
     } // for
@@ -1310,8 +1299,8 @@ public class InternalDistributedSystem extends DistributedSystem
           this.isConnectedMutex.wait();
         } catch (InterruptedException e) {
           interrupted = true;
-          getLogWriter().convertToLogWriterI18n()
-              .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
+          getLogWriter()
+              .warning("Disconnect wait interrupted", e);
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -1366,8 +1355,7 @@ public class InternalDistributedSystem extends DistributedSystem
               // Whenever you catch Error or Throwable, you must also
               // check for fatal JVM error (see above). However, there is
               logger.warn(
-                  LocalizedMessage.create(
-                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_TRYING_TO_CLOSE_CACHE),
+                  "Exception trying to close cache",
                   e);
             } finally {
               disconnectListenerThread.set(Boolean.FALSE);
@@ -1795,7 +1783,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
     }
     throw new RuntimeException(
-        LocalizedStrings.PureStatSampler_COULD_NOT_FIND_STATISTICS_INSTANCE.toLocalizedString());
+        "Could not find statistics instance");
   }
 
   @Override
@@ -2117,8 +2105,8 @@ public class InternalDistributedSystem extends DistributedSystem
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          sys.getLogWriter().convertToLogWriterI18n()
-              .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
+          sys.getLogWriter()
+              .severe("ConnectListener threw...", t);
         }
       }
     }
@@ -2166,8 +2154,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW), t);
+        logger.fatal("ConnectListener threw...", t);
       }
     }
   }
@@ -2223,8 +2210,8 @@ public class InternalDistributedSystem extends DistributedSystem
         if (reason != null) {
           this.listeners.remove(listener); // don't leave in the list!
           throw new DistributedSystemDisconnectedException(
-              LocalizedStrings.InternalDistributedSystem_NO_LISTENERS_PERMITTED_AFTER_SHUTDOWN_0
-                  .toLocalizedString(reason),
+              String.format("No listeners permitted after shutdown:  %s",
+                  reason),
               dm.getRootCause());
         }
       }
@@ -2287,7 +2274,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public void fireInfoEvent(Object callback) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.InternalDistributedSystem_NOT_IMPLEMENTED_YET.toLocalizedString());
+        "Not implemented yet");
   }
 
   /**
@@ -2307,7 +2294,7 @@ public class InternalDistributedSystem extends DistributedSystem
           DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
           setThreadsSocketPolicy(true /* conserve sockets */);
           if (ds != null && ds.isConnected()) {
-            logger.info(LocalizedStrings.InternalDistributedSystem_shutdownHook_shuttingdown);
+            logger.info("VM is exiting - shutting down distributed system");
             DurableClientAttributes dca = ((InternalDistributedSystem) ds).getDistributedMember()
                 .getDurableClientAttributes();
             boolean isDurableClient = false;
@@ -2317,7 +2304,7 @@ public class InternalDistributedSystem extends DistributedSystem
             }
 
             ((InternalDistributedSystem) ds).disconnect(false,
-                LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(),
+                "normal disconnect",
                 isDurableClient/* keep alive drive from this */);
             // this was how we wanted to do it for 5.7, but there were shutdown
             // issues in PR/dlock (see bug 39287)
@@ -2486,7 +2473,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public void cancelReconnect() {
     // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("cancelReconnect invoked",
-    // new Exception("stack trace"));
+    // new Exception("stack trace");
     this.reconnectCancelled = true;
     if (isReconnecting()) {
       synchronized (this.reconnectLock) { // should the synchronized be first on this and
@@ -2646,12 +2633,10 @@ public class InternalDistributedSystem extends DistributedSystem
             InternalCache internalCache = dm.getCache();
             if (internalCache == null) {
               throw new CacheClosedException(
-                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                      .toLocalizedString());
+                  "Some required roles missing");
             } else {
               throw internalCache.getCacheClosedException(
-                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                      .toLocalizedString());
+                  "Some required roles missing");
             }
           }
         }
@@ -2676,8 +2661,7 @@ public class InternalDistributedSystem extends DistributedSystem
         try {
           reconnectLock.wait(timeOut);
         } catch (InterruptedException e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_WAITING_THREAD_FOR_RECONNECT_GOT_INTERRUPTED));
+          logger.warn("Waiting thread for reconnect got interrupted.");
           Thread.currentThread().interrupt();
           return;
         }
@@ -2687,8 +2671,9 @@ public class InternalDistributedSystem extends DistributedSystem
         }
 
 
-        logger.info(LocalizedMessage.create(LocalizedStrings.DISTRIBUTED_SYSTEM_RECONNECTING,
-            new Object[] {reconnectAttemptCounter}));
+        logger.info(
+            "Attempting to reconnect to the distributed system.  This is attempt #{}.",
+            new Object[] {reconnectAttemptCounter});
 
         int savNumOfTries = reconnectAttemptCounter;
         try {
@@ -2736,9 +2721,7 @@ public class InternalDistributedSystem extends DistributedSystem
           logger.debug("Attempt to reconnect failed with SystemConnectException");
 
           if (e.getMessage().contains("Rejecting the attempt of a member using an older version")) {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+            logger.warn("Exception occurred while trying to connect the system during reconnect",
                 e);
             attemptingToReconnect = false;
             return;
@@ -2752,9 +2735,7 @@ public class InternalDistributedSystem extends DistributedSystem
           logger.warn("Caught GemFireConfigException in reconnect", e);
           continue;
         } catch (Exception ee) {
-          logger.warn(
-              LocalizedMessage.create(
-                  LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+          logger.warn("Exception occurred while trying to connect the system during reconnect",
               ee);
           attemptingToReconnect = false;
           return;
@@ -2798,9 +2779,7 @@ public class InternalDistributedSystem extends DistributedSystem
               reconnectDS.disconnect();
               reconnectDS = null;
             } catch (Exception e) {
-              logger.warn(
-                  LocalizedMessage.create(
-                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT),
+              logger.warn("Exception occurred while trying to create the cache during reconnect",
                   e);
             }
           }
@@ -2886,7 +2865,7 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       } catch (IOException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0.toLocalizedString(server),
+            String.format("While starting cache server  %s", server),
             ex);
       }
     }
@@ -2935,12 +2914,14 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (this.creationStack == null) {
         throw new IllegalStateException(
-            LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-                .toLocalizedString(sb.toString()));
+            String.format(
+                "A connection to a distributed system already exists in this VM.  It has the following configuration:%s",
+                sb.toString()));
       } else {
         throw new IllegalStateException(
-            LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-                .toLocalizedString(sb.toString()),
+            String.format(
+                "A connection to a distributed system already exists in this VM.  It has the following configuration:%s",
+                sb.toString()),
             this.creationStack);
       }
     }
@@ -2985,7 +2966,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public String forceStop() {
     if (this.dm == null) {
-      return LocalizedStrings.InternalDistributedSystem_NO_DISTRIBUTION_MANAGER.toLocalizedString();
+      return "no distribution manager";
     }
     String reason = dm.getCancelCriterion().cancelInProgress();
     return reason;
@@ -3066,7 +3047,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public void stopReconnecting() {
     // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("stopReconnecting invoked",
-    // new Exception("stack trace"));
+    // new Exception("stack trace");
     this.reconnectCancelled = true;
     synchronized (this.reconnectLock) {
       this.reconnectLock.notify();

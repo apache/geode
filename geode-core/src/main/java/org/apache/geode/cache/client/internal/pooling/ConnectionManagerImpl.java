@@ -55,11 +55,9 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -579,8 +577,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         }
         pooledConn.internalClose(durable || this.keepAlive);
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ConnectionManagerImpl_ERROR_CLOSING_CONNECTION_0, pooledConn), e);
+        logger.warn(String.format("Error closing connection %s", pooledConn), e);
       }
     }
   }
@@ -631,17 +628,14 @@ public class ConnectionManagerImpl implements ConnectionManager {
         this.loadConditioningProcessor.shutdown();
         if (!this.loadConditioningProcessor.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT,
             TimeUnit.MILLISECONDS)) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ConnectionManagerImpl_TIMEOUT_WAITING_FOR_LOAD_CONDITIONING_TASKS_TO_COMPLETE));
+          logger.warn("Timeout waiting for load conditioning tasks to complete");
         }
       }
     } catch (RuntimeException e) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.ConnectionManagerImpl_ERROR_STOPPING_LOADCONDITIONINGPROCESSOR), e);
+      logger.error("Error stopping loadConditioningProcessor", e);
     } catch (InterruptedException e) {
       logger.error(
-          LocalizedMessage.create(
-              LocalizedStrings.ConnectionManagerImpl_INTERRUPTED_STOPPING_LOADCONDITIONINGPROCESSOR),
+          "Interrupted stopping loadConditioningProcessor",
           e);
     }
     allConnectionsMap.close(keepAlive);
@@ -701,7 +695,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (t.getCause() != null) {
         t = t.getCause();
       }
-      logInfo(LocalizedStrings.ConnectionManagerImpl_ERROR_PREFILLING_CONNECTIONS, t);
+      logInfo("Error prefilling connections", t);
       return false;
     }
 
@@ -754,8 +748,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
         getPoolStats().incPrefillConnect();
       } catch (ServerConnectivityException ex) {
         logger
-            .info(LocalizedStrings.ConnectionManagerImpl_UNABLE_TO_PREFILL_POOL_TO_MINIMUM_BECAUSE_0
-                .toLocalizedString(ex.getMessage()));
+            .info(String.format("Unable to prefill pool to minimum because: %s",
+                ex.getMessage()));
         return false;
       } finally {
         lock.lock();
@@ -797,9 +791,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
         throw e;
       } catch (Throwable t) {
         SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ConnectionManagerImpl_LOADCONDITIONINGTASK_0_ENCOUNTERED_EXCEPTION,
-            this), t);
+        logger.warn(String.format("LoadConditioningTask <%s> encountered exception",
+            this),
+            t);
         // Don't rethrow, it will just get eaten and kill the timer
       }
     }
@@ -817,9 +811,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
         throw e; // for safety
       } catch (Throwable t) {
         SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ConnectionManagerImpl_IDLEEXPIRECONNECTIONSTASK_0_ENCOUNTERED_EXCEPTION,
-            this), t);
+        logger.warn(String.format("IdleExpireConnectionsTask <%s> encountered exception",
+            this),
+            t);
         // Don't rethrow, it will just get eaten and kill the timer
       }
     }
@@ -919,12 +913,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
           con = this.connectionFactory.createClientToServerConnection(sl, false);
         } catch (GemFireSecurityException e) {
           securityLogWriter.warning(
-              LocalizedStrings.ConnectionManagerImpl_SECURITY_EXCEPTION_CONNECTING_TO_SERVER_0_1,
-              new Object[] {sl, e});
+              String.format("Security exception connecting to server '%s': %s",
+                  new Object[] {sl, e}));
         } catch (ServerRefusedConnectionException srce) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ConnectionManagerImpl_SERVER_0_REFUSED_NEW_CONNECTION_1,
-              new Object[] {sl, srce}));
+          logger.warn("Server '{}' refused new connection: {}",
+              new Object[] {sl, srce});
         }
         if (con == null) {
           excludedServers.add(sl);
@@ -1104,13 +1097,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
           try {
             pc.internalClose(keepAlive);
           } catch (SocketException se) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.ConnectionManagerImpl_ERROR_CLOSING_CONNECTION_TO_SERVER_0,
-                pc.getServer()), se);
+            logger.info("Error closing connection to server " +
+                pc.getServer(),
+                se);
           } catch (Exception e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ConnectionManagerImpl_ERROR_CLOSING_CONNECTION_TO_SERVER_0,
-                pc.getServer()), e);
+            logger.warn("Error closing connection to server " +
+                pc.getServer(),
+                e);
           }
         }
       }
@@ -1332,8 +1325,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
           try {
             connection.internalClose(false);
           } catch (Exception e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ConnectionManagerImpl_ERROR_EXPIRING_CONNECTION_0, connection));
+            logger.warn("Error expiring connection {}", connection);
           }
         }
       }
@@ -1398,13 +1390,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   }
 
-  private void logInfo(StringId message, Throwable t) {
+  private void logInfo(String message, Throwable t) {
     if (t instanceof GemFireSecurityException) {
-      securityLogWriter.info(LocalizedStrings.TWO_ARG_COLON,
-          new Object[] {message.toLocalizedString(), t}, t);
+      securityLogWriter.info(String.format("%s : %s",
+          new Object[] {message, t}, t));
     } else {
-      logger.info(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-          new Object[] {message.toLocalizedString(), t}), t);
+      logger.info(String.format("%s : %s",
+          new Object[] {message, t}), t);
     }
   }
 

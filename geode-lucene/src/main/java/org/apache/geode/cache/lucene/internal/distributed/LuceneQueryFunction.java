@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -102,8 +101,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     // Cannot send IndexingInProgressException as the function may have been executed a new server
     // on behalf of an old version client.
     throw new FunctionException(new LuceneQueryException(
-        LocalizedStrings.LuceneQueryException_INDEX_NOT_AVAILABLE_CURRENTLY_INDEXING
-            .toLocalizedString()));
+        "Lucene Index is not available, currently indexing"));
   }
 
   public void execute(FunctionContext<LuceneFunctionContext> context, boolean waitForRepository) {
@@ -175,8 +173,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
       } else {
         logger.warn("The lucene query should have waited for the index to be created");
         throw new FunctionException(new LuceneQueryException(
-            LocalizedStrings.LuceneQueryException_INDEX_NOT_AVAILABLE_CURRENTLY_INDEXING
-                .toLocalizedString()));
+            "Lucene Index is not available, currently indexing"));
       }
     }
   }

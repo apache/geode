@@ -69,7 +69,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.Version;
@@ -95,11 +94,9 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.command.Get70;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -679,8 +676,9 @@ public class CacheClientProxy implements ClientSession {
       if (drainLocked) {
         // someone is trying to restart a paused proxy
         String msg =
-            LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT
-                .toLocalizedString(clientCQName, proxyID.getDurableId());
+            String.format(
+                "CacheClientProxy: Could not drain cq %s due to client proxy id %s reconnecting.",
+                clientCQName, proxyID.getDurableId());
         logger.info(msg);
         throw new CqException(msg);
       }
@@ -697,16 +695,17 @@ public class CacheClientProxy implements ClientSession {
             cqService.closeCq(clientCQName, this.proxyID);
             this._messageDispatcher.drainClientCqEvents(this.proxyID, cqToClose);
           } else {
-            String msg = LocalizedStrings.CqService_CQ_NOT_FOUND_FAILED_TO_CLOSE_THE_SPECIFIED_CQ_0
-                .toLocalizedString(clientCQName);
+            String msg = String.format("CQ Not found, Failed to close the specified CQ %s",
+                clientCQName);
             logger.info(msg);
             throw new CqException(msg);
           }
         }
       } else {
         String msg =
-            LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_ACTIVE_DURABLE_CLIENT
-                .toLocalizedString(clientCQName, proxyID.getDurableId());
+            String.format(
+                "CacheClientProxy: Could not drain cq %s because client proxy id %s is connected.",
+                clientCQName, proxyID.getDurableId());
         logger.info(msg);
         throw new CqException(msg);
       }
@@ -809,9 +808,9 @@ public class CacheClientProxy implements ClientSession {
         }
       }
     } catch (Exception ex) {
-      if (this._cache.getSecurityLoggerI18n().warningEnabled()) {
-        this._cache.getSecurityLoggerI18n().warning(LocalizedStrings.TWO_ARG_COLON,
-            new Object[] {this, ex});
+      if (this._cache.getSecurityLogger().warningEnabled()) {
+        this._cache.getSecurityLogger().warning(String.format("%s : %s",
+            new Object[] {this, ex}));
       }
     }
     // Notify the caller whether to keep this proxy. If the proxy is durable
@@ -926,9 +925,8 @@ public class CacheClientProxy implements ClientSession {
             // if it is still alive then warn and move on
             if (this._messageDispatcher.isAlive()) {
               // org.apache.geode.internal.OSProcess.printStacks(org.apache.geode.internal.OSProcess.getId());
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.CacheClientProxy_0_COULD_NOT_STOP_MESSAGE_DISPATCHER_THREAD,
-                  this));
+              logger.warn("{}: Could not stop message dispatcher thread.",
+                  this);
             }
           }
         }
@@ -993,9 +991,8 @@ public class CacheClientProxy implements ClientSession {
       try {
         cqService.closeNonDurableClientCqs(getProxyID());
       } catch (CqException ex) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientProxy_CQEXCEPTION_WHILE_CLOSING_NON_DURABLE_CQS_0,
-            ex.getLocalizedMessage()));
+        logger.warn("CqException while closing non durable Cqs. {}",
+            ex.getLocalizedMessage());
       }
     }
   }
@@ -1019,9 +1016,10 @@ public class CacheClientProxy implements ClientSession {
     } catch (CancelException e) {
       // throw e;
     } catch (Exception warning) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.CacheClientProxy_0_EXCEPTION_IN_CLOSING_THE_UNDERLYING_HAREGION_OF_THE_HAREGIONQUEUE,
-          this), warning);
+      logger.warn(
+          String.format("%s: Exception in closing the underlying HARegion of the HARegionQueue",
+              this),
+          warning);
     }
   }
 
@@ -1037,7 +1035,7 @@ public class CacheClientProxy implements ClientSession {
           receiveValues, InterestType.REGULAR_EXPRESSION);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+          "This process is not the primary server for the given client");
     }
   }
 
@@ -1056,7 +1054,7 @@ public class CacheClientProxy implements ClientSession {
             InterestType.KEY);
       } else {
         throw new IllegalStateException(
-            LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+            "This process is not the primary server for the given client");
       }
     } else {
       if (this.isPrimary) {
@@ -1072,7 +1070,7 @@ public class CacheClientProxy implements ClientSession {
         // addFilterRegisteredClients(regionName, keyOfInterest);
       } else {
         throw new IllegalStateException(
-            LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+            "This process is not the primary server for the given client");
       }
     }
   }
@@ -1116,8 +1114,9 @@ public class CacheClientProxy implements ClientSession {
         try {
           value = CacheServerHelper.serialize(entry.value);
         } catch (IOException e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.CacheClientProxy_THE_FOLLOWING_EXCEPTION_OCCURRED_0, entry.value),
+          logger.warn(
+              String.format("The following exception occurred while attempting to serialize %s",
+                  entry.value),
               e);
         }
       }
@@ -1170,7 +1169,7 @@ public class CacheClientProxy implements ClientSession {
           InterestType.REGULAR_EXPRESSION);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+          "This process is not the primary server for the given client");
     }
   }
 
@@ -1188,7 +1187,7 @@ public class CacheClientProxy implements ClientSession {
             InterestType.KEY);
       } else {
         throw new IllegalStateException(
-            LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+            "This process is not the primary server for the given client");
       }
     }
   }
@@ -1437,9 +1436,9 @@ public class CacheClientProxy implements ClientSession {
         String[] regionNameHolder = new String[1];
         OperationContext opctxt = getOperationContext(clientMessage, regionNameHolder);
         if (opctxt == null) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_THE_OPERATION_CONTEXT_OBJECT_COULD_NOT_BE_OBTAINED_FOR_THIS_CLIENT_MESSAGE,
-              new Object[] {this, clientMessage}));
+          logger.warn(
+              "{}: Not Adding message to queue: {} because the operation context object could not be obtained for this client message.",
+              new Object[] {this, clientMessage});
           return false;
         }
 
@@ -1482,9 +1481,8 @@ public class CacheClientProxy implements ClientSession {
             }
 
             if (!isAuthorized) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.CacheClientProxy__0_NOT_ADDING_CQ_MESSAGE_TO_QUEUE_1_BECAUSE_AUTHORIZATION_FAILED,
-                  new Object[] {this, clientMessage}));
+              logger.warn("{}: Not Adding CQ message to queue %s because authorization failed.",
+                  new Object[] {this, clientMessage});
               clientCq.delete(cqNames[i]);
             }
           } catch (Exception ex) {
@@ -1510,9 +1508,9 @@ public class CacheClientProxy implements ClientSession {
       boolean isAuthorize = false;
       OperationContext opctxt = getOperationContext(clientMessage, regionNameHolder);
       if (opctxt == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_THE_OPERATION_CONTEXT_OBJECT_COULD_NOT_BE_OBTAINED_FOR_THIS_CLIENT_MESSAGE,
-            new Object[] {this, clientMessage}));
+        logger.warn(
+            "{}: Not Adding message to queue: %s because the operation context object could not be obtained for this client message.",
+            new Object[] {this, clientMessage});
         return false;
       }
       if (logger.isTraceEnabled()) {
@@ -1527,9 +1525,8 @@ public class CacheClientProxy implements ClientSession {
         isAuthorize = this.postAuthzCallback.authorizeOperation(regionNameHolder[0], opctxt);
       }
       if (!isAuthorize) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_AUTHORIZATION_FAILED,
-            new Object[] {this, clientMessage}));
+        logger.warn("{}: Not Adding message to queue {} because authorization failed.",
+            new Object[] {this, clientMessage});
         return false;
       }
     }
@@ -1946,9 +1943,8 @@ public class CacheClientProxy implements ClientSession {
       @Override
       public void run2() {
         _durableExpirationTask.compareAndSet(this, null);
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientProxy_0__THE_EXPIRATION_TASK_HAS_FIRED_SO_THIS_PROXY_IS_BEING_TERMINATED,
-            CacheClientProxy.this));
+        logger.warn("{} : The expiration task has fired, so this proxy is being terminated.",
+            CacheClientProxy.this);
         // Remove the proxy from the CacheClientNofier's registry
         getCacheClientNotifier().removeClientProxy(CacheClientProxy.this);
         getCacheClientNotifier().durableClientTimedOut(CacheClientProxy.this.proxyID);
@@ -1989,9 +1985,8 @@ public class CacheClientProxy implements ClientSession {
     SystemTimer.SystemTimerTask task = (SystemTimerTask) _durableExpirationTask.getAndSet(null);
     if (task != null) {
       if (logMessage) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.CacheClientProxy_0_CANCELLING_EXPIRATION_TASK_SINCE_THE_CLIENT_HAS_RECONNECTED,
-            this));
+        logger.info("{}: Cancelling expiration task since the client has reconnected.",
+            this);
       }
       if (task.cancel()) {
         _cache.purgeCCPTimer();
@@ -2202,7 +2197,7 @@ public class CacheClientProxy implements ClientSession {
         try {
           notifyRegionOfInterest(event);
         } catch (Exception e) {
-          logger.warn(LocalizedStrings.CacheClientProxy_REGION_NOTIFICATION_OF_INTEREST_FAILED, e);
+          logger.warn("Region notification of interest failed", e);
         }
       }
       // Invoke interest registration listeners
@@ -2331,8 +2326,7 @@ public class CacheClientProxy implements ClientSession {
       } catch (Exception e) {
         getCache().getCancelCriterion().checkCancelInProgress(e);
         throw new CacheException(
-            LocalizedStrings.CacheClientProxy_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_A_MESSAGE_QUEUE
-                .toLocalizedString(),
+            "Exception occurred while trying to create a message queue.",
             e) {
           private static final long serialVersionUID = 0L;
         };
@@ -2522,8 +2516,7 @@ public class CacheClientProxy implements ClientSession {
                   this._messageQueue.remove();
                 }
               } catch (InterruptedException ex) {
-                logger.warn(LocalizedMessage
-                    .create(LocalizedStrings.CacheClientProxy_0_SLEEP_INTERRUPTED, this));
+                logger.warn("{}: sleep interrupted.", this);
               }
             }
             waitForResumption();
@@ -2564,26 +2557,24 @@ public class CacheClientProxy implements ClientSession {
             // the client is dead and stop processing.
             if (!isStopped() && !getProxy().isPaused()) {
               if ("Broken pipe".equals(e.getMessage())) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_BROKEN_PIPE_ON_SOCKET_CONNECTION,
-                    this));
+                logger.warn("{}: Proxy closing due to unexpected broken pipe on socket connection.",
+                    this);
               } else if ("Connection reset".equals(e.getMessage())) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_RESET_ON_SOCKET_CONNECTION,
-                    this));
+                logger.warn("{}: Proxy closing due to unexpected reset on socket connection.",
+                    this);
               } else if ("Connection reset by peer".equals(e.getMessage())) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_RESET_BY_PEER_ON_SOCKET_CONNECTION,
-                    this));
+                logger.warn(
+                    "{}: Proxy closing due to unexpected reset by peer on socket connection.",
+                    this);
               } else if ("Socket is closed".equals(e.getMessage())
                   || "Socket Closed".equals(e.getMessage())) {
-                logger.info(LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_SOCKET_BEING_CLOSED_LOCALLY,
-                    this));
+                logger.info("{}: Proxy closing due to socket being closed locally.",
+                    this);
               } else {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0_AN_UNEXPECTED_IOEXCEPTION_OCCURRED_SO_THE_PROXY_WILL_BE_CLOSED,
-                    this), e);
+                logger.warn(String.format(
+                    "%s: An unexpected IOException occurred so the proxy will be closed.",
+                    this),
+                    e);
               }
               // Let the CacheClientNotifier discover the proxy is not alive.
               // See isAlive().
@@ -2629,9 +2620,7 @@ public class CacheClientProxy implements ClientSession {
           // is not an IOException, the client may still be alive, so
           // continue processing.
           if (!isStopped()) {
-            logger.fatal(
-                LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this),
+            logger.fatal(String.format("%s : An unexpected Exception occurred", this),
                 e);
           }
         }
@@ -2668,27 +2657,29 @@ public class CacheClientProxy implements ClientSession {
           }
         } catch (Exception ignore) {
           // if (logger.isInfoEnabled()) {
-          StringId extraMsg = null;
+          String extraMsg = null;
 
           if ("Broken pipe".equals(ignore.getMessage())) {
-            extraMsg = LocalizedStrings.CacheClientProxy_PROBLEM_CAUSED_BY_BROKEN_PIPE_ON_SOCKET;
+            extraMsg = "Problem caused by broken pipe on socket.";
           } else if (ignore instanceof RegionDestroyedException) {
             extraMsg =
-                LocalizedStrings.CacheClientProxy_PROBLEM_CAUSED_BY_MESSAGE_QUEUE_BEING_CLOSED;
+                "Problem caused by message queue being closed.";
           }
           final Object[] msgArgs = new Object[] {((!isStopped()) ? this.toString() + ": " : ""),
               ((list == null) ? 0 : list.size())};
           if (extraMsg != null) {
             // Dont print exception details, but add on extraMsg
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.CacheClientProxy_0_POSSIBILITY_OF_NOT_BEING_ABLE_TO_SEND_SOME_OR_ALL_THE_MESSAGES_TO_CLIENTS_TOTAL_MESSAGES_CURRENTLY_PRESENT_IN_THE_LIST_1,
-                msgArgs));
+            logger.info(
+                String.format(
+                    "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
+                    msgArgs));
             logger.info(extraMsg);
           } else {
             // Print full stacktrace
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.CacheClientProxy_0_POSSIBILITY_OF_NOT_BEING_ABLE_TO_SEND_SOME_OR_ALL_THE_MESSAGES_TO_CLIENTS_TOTAL_MESSAGES_CURRENTLY_PRESENT_IN_THE_LIST_1,
-                msgArgs), ignore);
+            logger.info(String.format(
+                "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
+                msgArgs),
+                ignore);
           }
         }
 
@@ -2832,9 +2823,10 @@ public class CacheClientProxy implements ClientSession {
       } catch (Exception e) {
         if (!isStopped()) {
           this._proxy._statistics.incMessagesFailedQueued();
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.CacheClientProxy_0_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_ADD_MESSAGE_TO_QUEUE,
-              this), e);
+          logger.fatal(
+              String.format("%s: Exception occurred while attempting to add message to queue",
+                  this),
+              e);
         }
       }
     }
@@ -2855,9 +2847,10 @@ public class CacheClientProxy implements ClientSession {
         throw e;
       } catch (Exception e) {
         if (!isStopped()) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.CacheClientProxy_0__EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_ADD_MESSAGE_TO_QUEUE,
-              this), e);
+          logger.fatal(
+              String.format("%s : Exception occurred while attempting to add message to queue",
+                  this),
+              e);
         }
       }
     }
@@ -2882,25 +2875,21 @@ public class CacheClientProxy implements ClientSession {
         synchronized (this._stopDispatchingLock) {
           // Pause or unregister proxy
           if (!isStopped() && !getProxy().isPaused()) {
-            logger.fatal(
-                LocalizedMessage.create(
-                    LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this),
+            logger.fatal(String.format("%s : An unexpected Exception occurred", this),
                 e);
             pauseOrUnregisterProxy(e);
           }
         }
       } catch (Exception e) {
         if (!isStopped()) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this), e);
+          logger.fatal(String.format("%s : An unexpected Exception occurred", this), e);
         }
       }
     }
 
     protected void waitForResumption() throws InterruptedException {
       synchronized (this._pausedLock) {
-        logger.info(
-            LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__PAUSING_PROCESSING, this));
+        logger.info("{} : Pausing processing", this);
         if (!getProxy().isPaused()) {
           return;
         }
@@ -2913,8 +2902,7 @@ public class CacheClientProxy implements ClientSession {
     }
 
     protected void resumeDispatching() {
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__RESUMING_PROCESSING, this));
+      logger.info("{} : Resuming processing", this);
 
       // Notify thread to resume
       this._pausedLock.notifyAll();

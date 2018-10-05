@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This id stores seven pieces of information:
@@ -365,15 +364,13 @@ public abstract class DiskId {
     @Override
     public long getKeyId() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_QUERIED
-              .toLocalizedString());
+          "For overflow only mode the keyID should not be queried");
     }
 
     @Override
     public void setKeyId(long keyId) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET
-              .toLocalizedString());
+          "For overflow only mode the keyID should not be set");
     }
 
     @Override
@@ -434,15 +431,13 @@ public abstract class DiskId {
     @Override
     public long getKeyId() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_QUERIED
-              .toLocalizedString());
+          "For overflow only mode the keyID should not be queried");
     }
 
     @Override
     public void setKeyId(long keyId) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET
-              .toLocalizedString());
+          "For overflow only mode the keyID should not be set");
     }
 
     @Override

@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is a reply processor which tracks departed members in order for reliable messaging to
@@ -109,8 +108,8 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
     synchronized (this) {
       if (this.departedMembers != null) {
         throw new ReliableReplyException(
-            LocalizedStrings.ReliableReplyProcessor_FAILED_TO_DELIVER_MESSAGE_TO_MEMBERS_0
-                .toLocalizedString(departedMembers));
+            String.format("Failed to deliver message to members: %s",
+                departedMembers));
       }
     }
   }

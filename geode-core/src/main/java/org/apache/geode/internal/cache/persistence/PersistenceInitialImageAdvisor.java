@@ -23,9 +23,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 public class PersistenceInitialImageAdvisor {
@@ -77,7 +75,7 @@ public class PersistenceInitialImageAdvisor {
           // from, retry those members rather than wait for new persistent members to recover.
           if (hasReplicates(previousAdvice)) {
             logger.info(
-                LocalizedMessage.create(LocalizedStrings.PersistenceAdvisorImpl_RETRYING_GII));
+                "GII failed from all sources, but members are still online. Retrying the GII.");
             previousAdvice = null;
             continue;
           }

@@ -62,7 +62,6 @@ import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -379,8 +378,8 @@ public class TXState implements TXStateInterface {
   public void precommit()
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("precommit"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "precommit"));
   }
 
   /*
@@ -403,7 +402,7 @@ public class TXState implements TXStateInterface {
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_CANNOT_COMMIT_REMOTED_TRANSACTION.toLocalizedString());
+          "Cannot commit a transaction being run on behalf of a remote thread");
     }
     cleanupNonDirtyRegions();
     try {
@@ -415,8 +414,7 @@ public class TXState implements TXStateInterface {
       } catch (PrimaryBucketException pbe) {
         // not sure what to do here yet
         RuntimeException re = new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
         re.initCause(pbe);
         throw re;
       }
@@ -1094,8 +1092,8 @@ public class TXState implements TXStateInterface {
       cleanup();
       proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
-          LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
-              .toLocalizedString(getTransactionId()),
+          String.format("Conflict detected in GemFire transaction  %s",
+              getTransactionId()),
           commitConflict);
     }
   }
@@ -1553,8 +1551,7 @@ public class TXState implements TXStateInterface {
         if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, val, internalRegion)) {
           txr.cleanupNonDirtyEntries(internalRegion);
           throw new EntryNotFoundException(
-              LocalizedStrings.AbstractRegionMap_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE
-                  .toLocalizedString());
+              "The current value was not equal to expected value.");
         }
       }
     } else {
@@ -1577,8 +1574,7 @@ public class TXState implements TXStateInterface {
          */
         if (!Token.isInvalid(expectedOldValue)) {
           throw new EntryNotFoundException(
-              LocalizedStrings.AbstractRegionMap_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE
-                  .toLocalizedString());
+              "The current value was not equal to expected value.");
         }
       }
     }
@@ -1716,7 +1712,7 @@ public class TXState implements TXStateInterface {
   private void validateDelta(EntryEventImpl event) {
     if (event.getDeltaBytes() != null && !event.getRegion().getAttributes().getCloningEnabled()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_DELTA_WITHOUT_CLONING_CANNOT_BE_USED_IN_TX.toLocalizedString());
+          "Delta without cloning cannot be used in transaction");
     }
   }
 
@@ -1901,20 +1897,19 @@ public class TXState implements TXStateInterface {
   @Override
   public void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_DESTROY_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "destroyRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_INVALIDATE_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString());
+        "invalidateRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "clear() is not supported while in a transaction");
   }
 
   /*
@@ -1943,7 +1938,7 @@ public class TXState implements TXStateInterface {
     Region.Entry txval = getEntry(key, pr, allowTombstones);
     if (txval == null) {
       throw new EntryNotFoundException(
-          LocalizedStrings.PartitionedRegionDataStore_ENTRY_NOT_FOUND.toLocalizedString());
+          "entry not found");
     } else {
       NonLocalRegionEntry nlre = new NonLocalRegionEntry(txval, localRegion);
       LocalRegion dataReg = localRegion.getDataRegionForRead(key);

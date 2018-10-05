@@ -21,7 +21,6 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of the standard JDK formatter that formats a message in GemFire's log format.
@@ -83,7 +82,7 @@ public class GemFireFormatter extends Formatter {
       } catch (RuntimeException e) {
         pw.println(msg);
         pw.println(
-            LocalizedStrings.GemFireFormatter_IGNORING_THE_FOLLOWING_EXCEPTION.toLocalizedString());
+            "Ignoring the following exception:");
         e.printStackTrace(pw);
       }
     } else {

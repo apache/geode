@@ -32,16 +32,15 @@ import javax.naming.NoInitialContextException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.datasource.AbstractDataSource;
 import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.datasource.DataSourceFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
@@ -126,7 +125,7 @@ public class JNDIInvoker {
    */
   public static void mapTransactions(DistributedSystem distSystem) {
     try {
-      TransactionUtils.setLogWriter(distSystem.getLogWriter().convertToLogWriterI18n());
+      TransactionUtils.setLogWriter(distSystem.getLogWriter());
       cleanup();
       if (IGNORE_JTA) {
         return;
@@ -134,7 +133,7 @@ public class JNDIInvoker {
       ctx = new InitialContext();
       doTransactionLookup();
     } catch (NamingException ne) {
-      LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+      LogWriter writer = TransactionUtils.getLogWriter();
       if (ne instanceof NoInitialContextException) {
         String exception =
             "JNDIInvoker::mapTransactions:: No application server context found, Starting GemFire JNDI Context Context ";
@@ -155,11 +154,11 @@ public class JNDIInvoker {
         } catch (NamingException ne1) {
           if (writer.infoEnabled())
             writer.info(
-                LocalizedStrings.JNDIInvoker_JNDIINVOKERMAPTRANSACTIONSNAMINGEXCEPTION_WHILE_BINDING_TRANSACTIONMANAGERUSERTRANSACTION_TO_GEMFIRE_JNDI_TREE);
+                "JNDIInvoker::mapTransactions::NamingException while binding TransactionManager/UserTransaction to GemFire JNDI Tree");
         } catch (SystemException se1) {
           if (writer.infoEnabled())
             writer.info(
-                LocalizedStrings.JNDIInvoker_JNDIINVOKERMAPTRANSACTIONSSYSTEMEXCEPTION_WHILE_BINDING_USERTRANSACTION_TO_GEMFIRE_JNDI_TREE);
+                "JNDIInvoker::mapTransactions::SystemException while binding UserTransaction to GemFire JNDI Tree");
         }
       } else if (ne instanceof NameNotFoundException) {
         String exception =
@@ -180,11 +179,11 @@ public class JNDIInvoker {
         } catch (NamingException ne1) {
           if (writer.infoEnabled())
             writer.info(
-                LocalizedStrings.JNDIInvoker_JNDIINVOKERMAPTRANSACTIONSNAMINGEXCEPTION_WHILE_BINDING_TRANSACTIONMANAGERUSERTRANSACTION_TO_APPLICATION_SERVER_JNDI_TREE);
+                "JNDIInvoker::mapTransactions::NamingException while binding TransactionManager/UserTransaction to Application Server JNDI Tree");
         } catch (SystemException se1) {
           if (writer.infoEnabled())
             writer.info(
-                LocalizedStrings.JNDIInvoker_JNDIINVOKERMAPTRANSACTIONSSYSTEMEXCEPTION_WHILE_BINDING_TRANSACTIONMANAGERUSERTRANSACTION_TO_APPLICATION_SERVER_JNDI_TREE);
+                "JNDIInvoker::mapTransactions::SystemException while binding TransactionManager/UserTransaction to Application Server JNDI Tree");
         }
       }
     }
@@ -227,7 +226,7 @@ public class JNDIInvoker {
    */
   private static void doTransactionLookup() throws NamingException {
     Object jndiObject = null;
-    LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+    LogWriter writer = TransactionUtils.getLogWriter();
     for (int i = 0; i < knownJNDIManagers.length; i++) {
       try {
         jndiObject = ctx.lookup(knownJNDIManagers[i][0]);
@@ -290,11 +289,13 @@ public class JNDIInvoker {
       transactionManager = (TransactionManager) method.invoke(null, (Object[]) null);
     } catch (Exception ex) {
       writer.warning(
-          LocalizedStrings.JNDIInvoker_JNDIINVOKER_DOTRANSACTIONLOOKUP_FOUND_WEBSPHERE_TRANSACTIONMANAGER_FACTORY_CLASS_0_BUT_COULDNT_INVOKE_ITS_STATIC_GETTRANSACTIONMANAGER_METHOD,
-          clazz.getName(), ex);
+          String.format(
+              "JNDIInvoker::doTransactionLookup::Found WebSphere TransactionManager factory class [%s], but could not invoke its static 'getTransactionManager' method",
+              clazz.getName(), ex));
       throw new NameNotFoundException(
-          LocalizedStrings.JNDIInvoker_JNDIINVOKER_DOTRANSACTIONLOOKUP_FOUND_WEBSPHERE_TRANSACTIONMANAGER_FACTORY_CLASS_0_BUT_COULDNT_INVOKE_ITS_STATIC_GETTRANSACTIONMANAGER_METHOD
-              .toLocalizedString(new Object[] {clazz.getName()}));
+          String.format(
+              "JNDIInvoker::doTransactionLookup::Found WebSphere TransactionManager factory class [%s], but could not invoke its static 'getTransactionManager' method",
+              new Object[] {clazz.getName()}));
     }
   }
 
@@ -319,7 +320,7 @@ public class JNDIInvoker {
   public static void mapDatasource(Map map, List<ConfigProperty> props) {
     String value = (String) map.get("type");
     String jndiName = "";
-    LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+    LogWriter writer = TransactionUtils.getLogWriter();
     Object ds = null;
     try {
       jndiName = (String) map.get("jndi-name");
@@ -357,13 +358,13 @@ public class JNDIInvoker {
     } catch (NamingException ne) {
       if (writer.infoEnabled())
         writer.info(
-            LocalizedStrings.JNDIInvoker_JNDIINVOKER_MAPDATASOURCE_0_WHILE_BINDING_1_TO_JNDI_CONTEXT,
-            new Object[] {"NamingException", jndiName});
+            String.format("JNDIInvoker::mapDataSource::%s while binding %s to JNDI Context",
+                new Object[] {"NamingException", jndiName}));
     } catch (DataSourceCreateException dsce) {
       if (writer.infoEnabled())
         writer.info(
-            LocalizedStrings.JNDIInvoker_JNDIINVOKER_MAPDATASOURCE_0_WHILE_BINDING_1_TO_JNDI_CONTEXT,
-            new Object[] {"DataSourceCreateException", jndiName});
+            String.format("JNDIInvoker::mapDataSource::%s while binding %s to JNDI Context",
+                new Object[] {"DataSourceCreateException", jndiName}));
     }
   }
 

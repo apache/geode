@@ -71,7 +71,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 
@@ -260,7 +259,7 @@ public class IndexManager {
 
     if (QueryMonitor.isLowMemory()) {
       throw new IndexInvalidException(
-          LocalizedStrings.IndexCreationMsg_CANCELED_DUE_TO_LOW_MEMORY.toLocalizedString());
+          "Index creation canceled due to low memory");
     }
 
     boolean oldReadSerialized = this.cache.getPdxReadSerializedOverride();
@@ -276,8 +275,8 @@ public class IndexManager {
 
       if (getIndex(indexName) != null) {
         throw new IndexNameConflictException(
-            LocalizedStrings.IndexManager_INDEX_NAMED_0_ALREADY_EXISTS
-                .toLocalizedString(indexName));
+            String.format("Index named ' %s ' already exists.",
+                indexName));
       }
 
       IndexCreationHelper helper = null;
@@ -308,29 +307,30 @@ public class IndexManager {
         if (indexType == IndexType.HASH) {
           if (!isIndexMaintenanceTypeSynchronous()) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE
-                    .toLocalizedString());
+                "Hash index is currently not supported for regions with Asynchronous index maintenance.");
           }
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS
-                  .toLocalizedString());
+              "Hash Index is not supported with from clause having multiple iterators(collections).");
         }
         // Overflow is not supported with range index.
         if (isOverFlowRegion()) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0
-                  .toLocalizedString(region.getFullPath()));
+              String.format(
+                  "The specified index conditions are not supported for regions which overflow to disk. The region involved is  %s",
+                  region.getFullPath()));
         }
         // OffHeap is not supported with range index.
         if (isOffHeap()) {
           if (!isIndexMaintenanceTypeSynchronous()) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE_THE_REGION_IS_0
-                    .toLocalizedString(region.getFullPath()));
+                String.format(
+                    "Asynchronous index maintenance is currently not supported for off-heap regions. The off-heap region is %s",
+                    region.getFullPath()));
           }
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS_THE_REGION_IS_0
-                  .toLocalizedString(region.getFullPath()));
+              String.format(
+                  "From clauses having multiple iterators(collections) are not supported for off-heap regions. The off-heap region is %s",
+                  region.getFullPath()));
         }
       }
 
@@ -378,11 +378,11 @@ public class IndexManager {
           // from this thread.
           if (getIndex(indexName) != null) {
             throw new IndexNameConflictException(
-                LocalizedStrings.IndexManager_INDEX_NAMED_0_ALREADY_EXISTS
-                    .toLocalizedString(indexName));
+                String.format("Index named ' %s ' already exists.",
+                    indexName));
           } else {
             throw new IndexExistsException(
-                LocalizedStrings.IndexManager_SIMILAR_INDEX_EXISTS.toLocalizedString());
+                "Similar Index Exists");
           }
         }
       } catch (InterruptedException ignored) {
@@ -816,8 +816,7 @@ public class IndexManager {
   public void removeIndex(Index index) {
     if (index.getRegion() != this.region) {
       throw new IllegalArgumentException(
-          LocalizedStrings.IndexManager_INDEX_DOES_NOT_BELONG_TO_THIS_INDEXMANAGER
-              .toLocalizedString());
+          "Index does not belong to this IndexManager");
     }
     // Asif: We will just remove the Index from the map. Since the
     // TreeMap is synchronized & the operation of adding a newly created
@@ -1133,7 +1132,7 @@ public class IndexManager {
         }
         default: {
           throw new IndexMaintenanceException(
-              LocalizedStrings.IndexManager_INVALID_ACTION.toLocalizedString());
+              "Invalid action");
         }
       }
     } finally {

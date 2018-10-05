@@ -25,9 +25,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A listener which will try to resend the instantiators to all servers if the entire server
@@ -133,13 +131,10 @@ public class InstantiatorRecoveryListener extends EndpointManager.EndpointListen
           // If an exception occurred on the server, don't retry
           Throwable cause = e.getCause();
           if (cause instanceof ClassNotFoundException) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_CLASSNOTFOUNDEXCEPTION,
-                cause.getMessage()));
+            logger.warn("InstantiatorRecoveryTask - Error ClassNotFoundException: {}",
+                cause.getMessage());
           } else {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.InstantiatorRecoveryListener_INSTANTIATORRECOVERYTASK_ERROR_RECOVERING_INSTANTIATORS),
+            logger.warn("InstantiatorRecoveryTask - Error recovering instantiators:",
                 e);
           }
         } finally {

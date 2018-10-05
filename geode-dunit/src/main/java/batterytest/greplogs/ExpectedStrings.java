@@ -147,6 +147,8 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
       expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
       expected.add(Pattern.compile("Redundancy has dropped below"));
+      expected.add(Pattern.compile("Could not find any server to host redundant client"));
+      expected.add(Pattern.compile("Could not find any server to host primary client"));
       expected.add(Pattern.compile("Could not find any server to create redundant client"));
       expected.add(Pattern.compile("Could not find any server to create primary client"));
       expected.add(Pattern.compile("Pool unexpected closed socket on server"));

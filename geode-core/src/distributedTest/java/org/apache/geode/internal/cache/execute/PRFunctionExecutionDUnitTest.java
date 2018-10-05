@@ -77,7 +77,6 @@ import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.functions.TestFunction;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -824,8 +823,9 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       ResultCollector<Void, Void> resultCollector =
           dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
       assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
-          .hasMessageStartingWith(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("return any"));
+          .hasMessageStartingWith(
+              String.format("Cannot %s result as the Function#hasResult() is false",
+                  "return any"));
     });
   }
 
@@ -939,8 +939,9 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
           dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
 
       assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
-          .hasMessageStartingWith(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("return any"));
+          .hasMessageStartingWith(
+              String.format("Cannot %s result as the Function#hasResult() is false",
+                  "return any"));
     });
   }
 

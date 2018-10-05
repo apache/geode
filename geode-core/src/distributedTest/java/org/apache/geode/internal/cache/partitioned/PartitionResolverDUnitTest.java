@@ -122,7 +122,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
     @Override
     public Serializable getRoutingObject(EntryOperation opDetails) {
       count.incrementAndGet();
-      opDetails.getRegion().getCache().getLoggerI18n().fine(
+      opDetails.getRegion().getCache().getLogger().fine(
           "Resolver called key:" + opDetails.getKey() + " Region " + opDetails.getRegion().getName()
               + " id:" + ((GemFireCacheImpl) opDetails.getRegion().getCache()).getMyId(),
           new Throwable());
@@ -157,7 +157,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
     verifyResolverCountInVM(accessor, 0);
     verifyResolverCountInVM(datastore1, getNumberOfKeysOwnedByVM(datastore1));
     verifyResolverCountInVM(datastore2, 10);
-    getCache().getLoggerI18n().fine("Reset resolver count");
+    getCache().getLogger().fine("Reset resolver count");
   }
 
   private int getNumberOfKeysOwnedByVM(VM datastore12) {

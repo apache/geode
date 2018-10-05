@@ -16,7 +16,6 @@
 package org.apache.geode.cache.query.internal;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 
@@ -74,7 +73,7 @@ public class Support {
         throw new IllegalStateException(message);
       default:
         throw new InternalGemFireError(
-            LocalizedStrings.Support_ERROR_ASSERTION_FAILED_0.toLocalizedString(message));
+            String.format("ERROR: Assertion failed: ' %s '", message));
     }
 
     // org.apache.persistence.jdo.GsRuntime.notifyCDebugger(null);

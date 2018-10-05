@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
@@ -493,7 +492,9 @@ public class TypeRegistry {
     PdxType existing = getType(typeId);
     if (existing != null && !existing.equals(importedType)) {
       throw new PdxSerializationException(
-          LocalizedStrings.Snapshot_PDX_CONFLICT_0_1.toLocalizedString(importedType, existing));
+          String.format(
+              "Detected conflicting PDX types during import:%s%sSnapshot data containing PDX types must be imported into an empty cache with no pre-existing type definitions. Allow the import to complete prior to inserting additional data into the cache.",
+              importedType, existing));
     }
 
     this.distributedTypeRegistry.addImportedType(typeId, importedType);
@@ -508,7 +509,9 @@ public class TypeRegistry {
     EnumInfo existing = getEnumInfoById(enumId);
     if (existing != null && !existing.equals(importedEnum)) {
       throw new PdxSerializationException(
-          LocalizedStrings.Snapshot_PDX_CONFLICT_0_1.toLocalizedString(importedEnum, existing));
+          String.format(
+              "Detected conflicting PDX types during import:%s%sSnapshot data containing PDX types must be imported into an empty cache with no pre-existing type definitions. Allow the import to complete prior to inserting additional data into the cache.",
+              importedEnum, existing));
     }
 
     this.distributedTypeRegistry.addImportedEnum(enumId, importedEnum);

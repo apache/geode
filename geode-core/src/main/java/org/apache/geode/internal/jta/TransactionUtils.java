@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.jta;
 
-import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.LogWriter;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.PureLogWriter;
 
@@ -24,15 +24,15 @@ import org.apache.geode.internal.logging.PureLogWriter;
  */
 public class TransactionUtils {
 
-  private static LogWriterI18n dslogWriter = null;
-  private static LogWriterI18n purelogWriter = null;
+  private static LogWriter dslogWriter = null;
+  private static LogWriter purelogWriter = null;
 
   /**
    * Returns the logWriter associated with the existing DistributedSystem. If DS is null then the
    * PureLogWriter is returned
    *
    */
-  public static LogWriterI18n getLogWriterI18n() {
+  public static LogWriter getLogWriter() {
     if (dslogWriter != null) {
       return dslogWriter;
     } else if (purelogWriter != null) {
@@ -48,7 +48,7 @@ public class TransactionUtils {
    * the datasources
    *
    */
-  public static void setLogWriter(LogWriterI18n logWriter) {
+  public static void setLogWriter(LogWriter logWriter) {
     dslogWriter = logWriter;
   }
 }

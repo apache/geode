@@ -45,7 +45,6 @@ import org.apache.geode.admin.internal.ConfigurationParameterImpl;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -213,12 +212,12 @@ public class CacheServerJmxImpl extends CacheServerImpl
   }
 
   public void validate() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public String getCacheXMLFile() {
@@ -278,8 +277,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
   @Deprecated
   public void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException {
     throw new OperationNotSupportedException(
-        LocalizedStrings.MANAGED_RESOURCE_REFRESH_INTERVAL_CANT_BE_SET_DIRECTLY
-            .toLocalizedString());
+        "RefreshInterval can not be set directly. Use DistributedSystemConfig.refreshInterval.");
   }
 
   // -------------------------------------------------------------------------

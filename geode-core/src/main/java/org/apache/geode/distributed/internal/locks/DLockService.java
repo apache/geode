@@ -55,9 +55,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -211,7 +209,7 @@ public class DLockService extends DistributedLockService {
    * @return the detail message that explains LockServiceDestroyedException
    */
   protected String generateLockServiceDestroyedMessage() {
-    return LocalizedStrings.DLockService_0_HAS_BEEN_DESTROYED.toLocalizedString(this);
+    return String.format("%s  has been destroyed", this);
   }
 
   /**
@@ -523,11 +521,11 @@ public class DLockService extends DistributedLockService {
 
         if (myGrantor.isInitializing() && !dm.getCancelCriterion().isCancelInProgress()) {
           logger.error(LogMarker.DLS_MARKER,
-              LocalizedMessage.create(LocalizedStrings.DLockService_GRANTOR_IS_STILL_INITIALIZING));
+              "Grantor is still initializing");
         }
         if (!success && !myGrantor.isDestroyed() && !dm.getCancelCriterion().isCancelInProgress()) {
-          logger.error(LogMarker.DLS_MARKER, LocalizedMessage.create(
-              LocalizedStrings.DLockService_GRANTOR_CREATION_WAS_ABORTED_BUT_GRANTOR_WAS_NOT_DESTROYED));
+          logger.error(LogMarker.DLS_MARKER,
+              "Grantor creation was aborted but grantor was not destroyed");
         }
       }
     }
@@ -1243,8 +1241,7 @@ public class DLockService extends DistributedLockService {
     } catch (InterruptedException ex) { // LOST INTERRUPT
       Thread.currentThread().interrupt();
       // fail assertion
-      logger.error(LogMarker.DLS_MARKER,
-          LocalizedMessage.create(LocalizedStrings.DLockService_LOCK_WAS_INTERRUPTED), ex);
+      logger.error(LogMarker.DLS_MARKER, "lock() was interrupted", ex);
       Assert.assertTrue(false, "lock() was interrupted: " + ex.getMessage());
     }
     return false;
@@ -1431,8 +1428,8 @@ public class DLockService extends DistributedLockService {
               reentrant = true;
               if (reentrant && disallowReentrant) {
                 throw new IllegalStateException(
-                    LocalizedStrings.DLockService_0_ATTEMPTED_TO_REENTER_NONREENTRANT_LOCK_1
-                        .toLocalizedString(new Object[] {Thread.currentThread(), token}));
+                    String.format("%s  attempted to reenter non-reentrant lock %s",
+                        new Object[] {Thread.currentThread(), token}));
               }
               recursionBefore = token.getRecursion();
               lockId = token.getLeaseId(); // keep lockId
@@ -1513,10 +1510,8 @@ public class DLockService extends DistributedLockService {
               if (token.isLeaseHeldByCurrentThread()) {
                 // THIS SHOULDN'T HAPPEN -- some sort of weird consistency
                 // problem. Do what the grantor says and release the lock...
-                logger.warn(LogMarker.DLS_MARKER,
-                    LocalizedMessage.create(
-                        LocalizedStrings.DLockService_GRANTOR_REPORTS_REENTRANT_LOCK_NOT_HELD_0,
-                        token));
+                logger.warn(LogMarker.DLS_MARKER, "Grantor reports reentrant lock not held: {}",
+                    token);
 
                 // Attempt at fault tolerance: We thought we owned it, but we
                 // don't; let's release it. Removes hot loop in bug 37276,
@@ -1693,8 +1688,7 @@ public class DLockService extends DistributedLockService {
 
       if (isLockingSuspendedByCurrentThread()) {
         throw new IllegalStateException(
-            LocalizedStrings.DLockService_CURRENT_THREAD_HAS_ALREADY_LOCKED_ENTIRE_SERVICE
-                .toLocalizedString());
+            "Current thread has already locked entire service");
       }
 
       // have to use tryLock to avoid deadlock with other members that are
@@ -1763,8 +1757,9 @@ public class DLockService extends DistributedLockService {
             logger.trace(LogMarker.DLS_VERBOSE, "{}, [unlock] no token found for: {}", this, name);
           }
           throw new LockNotHeldException(
-              LocalizedStrings.DLockService_ATTEMPTING_TO_UNLOCK_0_1_BUT_THIS_THREAD_DOESNT_OWN_THE_LOCK
-                  .toLocalizedString(new Object[] {this, name}));
+              String.format(
+                  "Attempting to unlock  %s  :  %s , but this thread does not own the lock.",
+                  new Object[] {this, name}));
         }
 
         synchronized (token) {
@@ -1777,8 +1772,9 @@ public class DLockService extends DistributedLockService {
                   this, token);
             }
             throw new LockNotHeldException(
-                LocalizedStrings.DLockService_ATTEMPTING_TO_UNLOCK_0_1_BUT_THIS_THREAD_DOESNT_OWN_THE_LOCK_2
-                    .toLocalizedString(new Object[] {this, name, token}));
+                String.format(
+                    "Attempting to unlock  %s  :  %s , but this thread does not own the lock.  %s",
+                    new Object[] {this, name, token}));
           }
           // if recursion > 0 then token will still be locked after calling release
           hadRecursion = token.getRecursion() > 0;
@@ -2024,8 +2020,7 @@ public class DLockService extends DistributedLockService {
       throw new InterruptedException();
     if (keyIfFailed.length < 1) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DLockService_KEYIFFAILED_MUST_HAVE_A_LENGTH_OF_ONE_OR_GREATER
-              .toLocalizedString());
+          "keyIfFailed must have a length of one or greater");
     }
 
     long startTime = getLockTimeStamp(dm);
@@ -2201,7 +2196,7 @@ public class DLockService extends DistributedLockService {
     }
     if (svc == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DLockService_SERVICE_NAMED_0_NOT_CREATED.toLocalizedString(serviceName));
+          String.format("Service named %s not created", serviceName));
     } else {
       svc.destroyAndRemove();
     }
@@ -2317,13 +2312,12 @@ public class DLockService extends DistributedLockService {
           nonGrantorDestroyLoopCount++;
           if (nonGrantorDestroyLoopCount >= DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT) {
             logger.fatal(LogMarker.DLS_MARKER,
-                LocalizedMessage.create(
-                    LocalizedStrings.DLockService_FAILED_TO_NOTIFY_GRANTOR_OF_DESTRUCTION_WITHIN_0_ATTEMPTS,
-                    Integer.valueOf(DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT)));
+                "Failed to notify grantor of destruction within {} attempts.",
+                Integer.valueOf(DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT));
             Assert.assertTrue(false,
-                LocalizedStrings.DLockService_FAILED_TO_NOTIFY_GRANTOR_OF_DESTRUCTION_WITHIN_0_ATTEMPTS
-                    .toLocalizedString(
-                        new Object[] {Integer.valueOf(DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT)}));
+                String.format("Failed to notify grantor of destruction within %s attempts.",
+
+                    new Object[] {Integer.valueOf(DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT)}));
           }
         }
 
@@ -2521,7 +2515,7 @@ public class DLockService extends DistributedLockService {
         DLockToken token = entry.getValue();
         buffer.append(token.toString()).append("\n");
       }
-      logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(LocalizedStrings.ONE_ARG, buffer));
+      logger.info(LogMarker.DLS_MARKER, buffer);
     }
   }
 
@@ -2571,8 +2565,7 @@ public class DLockService extends DistributedLockService {
       new InternalDistributedSystem.DisconnectListener() {
         @Override
         public String toString() {
-          return LocalizedStrings.DLockService_DISCONNECT_LISTENER_FOR_DISTRIBUTEDLOCKSERVICE
-              .toLocalizedString();
+          return "Disconnect listener for DistributedLockService";
         }
 
         public void onDisconnect(final InternalDistributedSystem sys) {
@@ -2711,8 +2704,8 @@ public class DLockService extends DistributedLockService {
         ds.getCancelCriterion().checkCancelInProgress(null);
         if (services.get(serviceName) != null) {
           throw new IllegalArgumentException(
-              LocalizedStrings.DLockService_SERVICE_NAMED_0_ALREADY_CREATED
-                  .toLocalizedString(serviceName));
+              String.format("Service named %s already created",
+                  serviceName));
         }
         return DLockService.basicCreate(serviceName, ds, distributed, destroyOnDisconnect,
             automateFreeResources);
@@ -2727,13 +2720,13 @@ public class DLockService extends DistributedLockService {
   public static void becomeLockGrantor(String serviceName, InternalDistributedMember oldTurk)
       throws IllegalArgumentException {
     if (serviceName == null || serviceName.length() == 0) {
-      throw new IllegalArgumentException(LocalizedStrings.DLockService_SERVICE_NAMED_0_IS_NOT_VALID
-          .toLocalizedString(serviceName));
+      throw new IllegalArgumentException(String.format("Service named '%s' is not valid",
+          serviceName));
     }
     DLockService svc = getInternalServiceNamed(serviceName);
     if (svc == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DLockService_SERVICE_NAMED_0_NOT_CREATED.toLocalizedString(serviceName));
+          String.format("Service named %s not created", serviceName));
     } else {
       svc.becomeLockGrantor(oldTurk);
     }
@@ -2741,8 +2734,8 @@ public class DLockService extends DistributedLockService {
 
   public static boolean isLockGrantor(String serviceName) throws IllegalArgumentException {
     if (serviceName == null || serviceName.length() == 0) {
-      throw new IllegalArgumentException(LocalizedStrings.DLockService_SERVICE_NAMED_0_IS_NOT_VALID
-          .toLocalizedString(serviceName));
+      throw new IllegalArgumentException(String.format("Service named '%s' is not valid",
+          serviceName));
     }
     DLockService svc = null;
     synchronized (services) {
@@ -2750,7 +2743,7 @@ public class DLockService extends DistributedLockService {
     }
     if (svc == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DLockService_SERVICE_NAMED_0_NOT_CREATED.toLocalizedString(serviceName));
+          String.format("Service named %s not created", serviceName));
     } else {
       return svc.isLockGrantor();
     }
@@ -2837,14 +2830,13 @@ public class DLockService extends DistributedLockService {
   public static void validateServiceName(String serviceName) {
     if (serviceName == null || serviceName.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DLockService_LOCK_SERVICE_NAME_MUST_NOT_BE_NULL_OR_EMPTY
-              .toLocalizedString());
+          "Lock service name must not be null or empty");
     }
     for (String reservedName : reservedNames) {
       if (serviceName.startsWith(reservedName)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DLockService_SERVICE_NAMED_0_IS_RESERVED_FOR_INTERNAL_USE_ONLY
-                .toLocalizedString(serviceName));
+            String.format("Service named %s is reserved for internal use only",
+                serviceName));
       }
     }
   }
@@ -2863,8 +2855,8 @@ public class DLockService extends DistributedLockService {
   public static void dumpAllServices() { // used by: distributed/DistributedLockServiceTest
     StringBuffer buffer = new StringBuffer();
     synchronized (services) {
-      logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(LocalizedStrings.TESTING,
-          "DLockService.dumpAllServices() - " + services.size() + " services:\n"));
+      logger.info(LogMarker.DLS_MARKER,
+          "DLockService.dumpAllServices() - " + services.size() + " services:\n");
       for (Map.Entry entry : services.entrySet()) {
         buffer.append("  " + entry.getKey() + ":\n");
         DLockService svc = (DLockService) entry.getValue();
@@ -2963,6 +2955,7 @@ public class DLockService extends DistributedLockService {
     return gi;
   }
 
+  // -------------------------------------------------------------------------
   // SuspendLockingToken inner class
   // -------------------------------------------------------------------------
 

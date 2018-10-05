@@ -29,7 +29,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
@@ -135,12 +134,10 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
         }
         return true; // concurrent modification problems are not reported to senders
       } catch (CacheWriterException e) {
-        throw new Error(LocalizedStrings.UpdateVersionOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED
-            .toLocalizedString(), e);
+        throw new Error("CacheWriter should not be called", e);
       } catch (TimeoutException e) {
         throw new Error(
-            LocalizedStrings.UpdateVersionOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-                .toLocalizedString(),
+            "DistributedLock should not be acquired",
             e);
       }
     }

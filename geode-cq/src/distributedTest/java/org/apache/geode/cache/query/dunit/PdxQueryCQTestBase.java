@@ -48,7 +48,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
@@ -187,7 +186,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
   public void printResults(SelectResults results, String message) {
     Object r;
     Struct s;
-    LogWriterI18n logger = GemFireCacheImpl.getInstance().getLoggerI18n();
+    LogWriter logger = GemFireCacheImpl.getInstance().getLogger();
     logger.fine(message);
     int row = 0;
     for (Iterator iter = results.iterator(); iter.hasNext();) {
@@ -339,7 +338,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     public boolean equals(Object o) {
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
           .info("In TestObject2.equals() this: " + this + " other :" + o);
-      GemFireCacheImpl.getInstance().getLoggerI18n()
+      GemFireCacheImpl.getInstance().getLogger()
           .fine("In TestObject2.equals() this: " + this + " other :" + o);
       TestObject2 other = (TestObject2) o;
       if (_id == other._id) {
@@ -352,7 +351,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLoggerI18n()
+      GemFireCacheImpl.getInstance().getLogger()
           .fine("In TestObject2.hashCode() : " + this._id);
       return this._id;
     }
@@ -376,7 +375,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
         log.info("TestObject ctor stack trace", new Exception());
       }
       numInstance++;
-      // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
+      // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
     }
 
     public TestObject(int id, String ticker) {
@@ -389,7 +388,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
       this.important = id;
       this.selection = id;
       this.select = id;
-      // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
+      // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
       numInstance++;
       idTickers.put(id + "", ticker);
       this.test = new TestObject2(id);
@@ -452,7 +451,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     @Override
     public boolean equals(Object o) {
       // getLogWriter().info("In TestObject.equals() this: " + this + " other :" + o);
-      // GemFireCacheImpl.getInstance().getLoggerI18n().fine("In TestObject.equals() this: " + this
+      // GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.equals() this: " + this
       // + " other :" + o);
       TestObject other = (TestObject) o;
       if ((id == other.id) && (_ticker.equals(other._ticker))) {
@@ -465,7 +464,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLoggerI18n().fine("In TestObject.hashCode() : " + this.id);
+      GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.hashCode() : " + this.id);
       return this.id;
     }
 

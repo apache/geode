@@ -37,7 +37,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class MemoryMonitorOffHeapJUnitTest {
@@ -69,14 +68,13 @@ public class MemoryMonitorOffHeapJUnitTest {
     }
   }
 
-  static final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD
-      .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
+  static final String expectedEx = "Member: .*? above .*? critical threshold";
   public static final String addExpectedAbove =
       "<ExpectedException action=add>" + expectedEx + "</ExpectedException>";
   public static final String removeExpectedAbove =
       "<ExpectedException action=remove>" + expectedEx + "</ExpectedException>";
-  static final String expectedBelow = LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD
-      .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
+
+  static final String expectedBelow = "Member: .*? below .*? critical threshold";
   public static final String addExpectedBelow =
       "<ExpectedException action=add>" + expectedBelow + "</ExpectedException>";
   public static final String removeExpectedBelow =

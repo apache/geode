@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to get its current version info.
@@ -39,7 +38,7 @@ public class VersionInfoRequest extends AdminRequest {
 
   public VersionInfoRequest() {
     friendlyName =
-        LocalizedStrings.VersionInfoRequest_FETCH_CURRENT_VERSION_INFORMATION.toLocalizedString();
+        "Fetch current version information";
   }
 
   /**

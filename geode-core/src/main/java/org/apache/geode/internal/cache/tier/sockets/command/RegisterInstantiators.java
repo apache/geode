@@ -30,8 +30,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 
@@ -104,8 +102,8 @@ public class RegisterInstantiators extends BaseCommand {
         }
       }
     } catch (Exception e) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.RegisterInstantiators_BAD_CLIENT,
-          new Object[] {serverConnection.getMembershipID(), e.getLocalizedMessage()}));
+      logger.warn("Client {} failed to register instantiators: {}",
+          new Object[] {serverConnection.getMembershipID(), e.getLocalizedMessage()});
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     }

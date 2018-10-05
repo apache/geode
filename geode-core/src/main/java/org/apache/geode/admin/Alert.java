@@ -16,7 +16,7 @@ package org.apache.geode.admin;
 
 /**
  * An administration alert that is issued by a member of a GemFire distributed system. It is similar
- * to a {@linkplain org.apache.geode.i18n.LogWriterI18n log message}.
+ * to a {@linkplain org.apache.geode.LogWriter log message}.
  *
  * @see AlertListener
  * @since GemFire 3.5

@@ -84,7 +84,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -111,11 +110,9 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxField;
@@ -693,8 +690,7 @@ public class DiskStoreImpl implements DiskStore {
         if (dr.isRegionClosed()) {
           region.getCancelCriterion().checkCancelInProgress(null);
           throw new RegionDestroyedException(
-              LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                  .toLocalizedString(),
+              "The DiskRegion has been closed or destroyed",
               dr.getName());
         }
 
@@ -726,9 +722,10 @@ public class DiskStoreImpl implements DiskStore {
           }
         } else {
           throw new RegionClearedException(
-              LocalizedStrings.DiskRegion_CLEAR_OPERATION_ABORTING_THE_ONGOING_ENTRY_0_OPERATION_FOR_ENTRY_WITH_DISKID_1
-                  .toLocalizedString(
-                      new Object[] {((doingCreate) ? "creation" : "modification"), id}));
+              String.format(
+                  "Clear operation aborting the ongoing Entry %s operation for Entry with DiskId, %s",
+
+                  new Object[] {((doingCreate) ? "creation" : "modification"), id}));
         }
       } finally {
         if (!async) {
@@ -757,8 +754,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dr.isRegionClosed()) {
         region.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -794,8 +790,7 @@ public class DiskStoreImpl implements DiskStore {
         try {
           if (dr.isRegionClosed()) {
             throw new RegionDestroyedException(
-                LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                    .toLocalizedString(),
+                "The DiskRegion has been closed or destroyed",
                 dr.getName());
           }
           if (dr.didClearCountChange()) {
@@ -845,8 +840,7 @@ public class DiskStoreImpl implements DiskStore {
   Object getRaw(DiskRegionView dr, DiskId id) {
     if (dr.isRegionClosed()) {
       throw new RegionDestroyedException(
-          LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-              .toLocalizedString(),
+          "The DiskRegion has been closed or destroyed",
           dr.getName());
     }
     if (dr.didClearCountChange()) {
@@ -927,8 +921,9 @@ public class DiskStoreImpl implements DiskStore {
         return CLEAR_BB;
       }
       throw new DiskAccessException(
-          LocalizedStrings.DiskRegion_DATA_FOR_DISKENTRY_HAVING_DISKID_AS_0_COULD_NOT_BE_OBTAINED_FROM_DISK_A_CLEAR_OPERATION_MAY_HAVE_DELETED_THE_OPLOGS
-              .toLocalizedString(id),
+          String.format(
+              "Data  for DiskEntry having DiskId as  %s  could not be obtained from Disk. A clear operation may have deleted the oplogs",
+              id),
           dr.getName());
     }
     return oplog.getBytesAndBits(dr, id, faultIn, bitOnly);
@@ -939,14 +934,12 @@ public class DiskStoreImpl implements DiskStore {
     try {
       if (dr.isRegionClosed()) {
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
       if (dr.didClearCountChange()) {
         throw new DiskAccessException(
-            LocalizedStrings.DiskRegion_ENTRY_HAS_BEEN_CLEARED_AND_IS_NOT_PRESENT_ON_DISK
-                .toLocalizedString(),
+            "Entry has been cleared and is not present on disk",
             dr.getName());
       }
       BytesAndBits bb = getBytesAndBitsWithoutLock(dr, id, faultingIn, false /*
@@ -954,8 +947,7 @@ public class DiskStoreImpl implements DiskStore {
                                                                               */);
       if (bb == CLEAR_BB) {
         throw new DiskAccessException(
-            LocalizedStrings.DiskRegion_ENTRY_HAS_BEEN_CLEARED_AND_IS_NOT_PRESENT_ON_DISK
-                .toLocalizedString(),
+            "Entry has been cleared and is not present on disk",
             dr.getName());
       }
       return bb;
@@ -973,8 +965,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       if (dr.isRegionClosed()) {
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
       if (dr.didClearCountChange()) {
@@ -1055,8 +1046,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       if (dr.isRegionClosed()) {
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -1071,8 +1061,9 @@ public class DiskStoreImpl implements DiskStore {
         dr.getStats().endRemove(start, getStats().endRemove(start));
       } else {
         throw new RegionClearedException(
-            LocalizedStrings.DiskRegion_CLEAR_OPERATION_ABORTING_THE_ONGOING_ENTRY_DESTRUCTION_OPERATION_FOR_ENTRY_WITH_DISKID_0
-                .toLocalizedString(entry.getDiskId()));
+            String.format(
+                "Clear operation aborting the ongoing Entry destruction operation for Entry with DiskId, %s",
+                entry.getDiskId()));
       }
     } finally {
       if (!async) {
@@ -1444,7 +1435,7 @@ public class DiskStoreImpl implements DiskStore {
 
   private void startAsyncFlusher() {
     final String thName =
-        LocalizedStrings.DiskRegion_ASYNCHRONOUS_DISK_WRITER_0.toLocalizedString(getName());
+        String.format("Asynchronous disk writer for region %s", getName());
     this.flusherThread = new LoggingThread(thName, new FlusherThread(this));
     this.flusherThread.start();
   }
@@ -1776,10 +1767,10 @@ public class DiskStoreImpl implements DiskStore {
         }
       } catch (CancelException ignore) {
       } catch (Throwable t) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH),
+        logger.fatal("Fatal error from asynchronous flusher thread",
             t);
         fatalDae = new DiskAccessException(
-            LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH.toLocalizedString(), t, diskStore);
+            "Fatal error from asynchronous flusher thread", t, diskStore);
       } finally {
         if (logger.isDebugEnabled()) {
           logger.debug("Async writer thread stopped. Pending opcount={}",
@@ -1823,8 +1814,8 @@ public class DiskStoreImpl implements DiskStore {
             fs.close();
           } catch (IOException ignore) {
           }
-          throw new IOException(LocalizedStrings.Oplog_THE_FILE_0_IS_BEING_USED_BY_ANOTHER_PROCESS
-              .toLocalizedString(f));
+          throw new IOException(String.format("The file %s is being used by another process.",
+              f));
         }
         f.deleteOnExit();
         dae = null;
@@ -1837,7 +1828,10 @@ public class DiskStoreImpl implements DiskStore {
           }
         }
         dae = new DiskAccessException(
-            LocalizedStrings.Oplog_COULD_NOT_LOCK_0.toLocalizedString(f.getPath()), ex, this);
+            String.format(
+                "Could not lock %s. Other JVMs might have created diskstore with same name using the same directory.",
+                f.getPath()),
+            ex, this);
       }
       cnt++;
       try {
@@ -1942,8 +1936,8 @@ public class DiskStoreImpl implements DiskStore {
               getCache().close();
             }
             throw new IllegalStateException("Recovered version = " + getRecoveredGFVersion() + ": "
-                + LocalizedStrings.DiskStoreAlreadyInVersion_0
-                    .toLocalizedString(getRecoveredGFVersionName()));
+                + String.format("This disk store is already at version %s.",
+                    getRecoveredGFVersionName()));
           }
         } else {
           if (Version.GFE_70.compareTo(getRecoveredGFVersion()) > 0) {
@@ -1953,8 +1947,8 @@ public class DiskStoreImpl implements DiskStore {
               getCache().close();
             }
             throw new IllegalStateException("Recovered version = " + getRecoveredGFVersion() + ": "
-                + LocalizedStrings.DiskStoreStillAtVersion_0
-                    .toLocalizedString(getRecoveredGFVersionName()));
+                + String.format("This disk store is still at version %s.",
+                    getRecoveredGFVersionName()));
           }
         }
       }
@@ -1974,12 +1968,12 @@ public class DiskStoreImpl implements DiskStore {
       // or created thi disk store.
       if (foundIfFile) {
         logger.info(
-            LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_RecoveredDiskStore_0_With_Id_1,
-                new Object[] {getName(), getDiskStoreID()}));
+            "Recovered disk store {} with unique id {}",
+            getName(), getDiskStoreID());
       } else {
         logger.info(
-            LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_CreatedDiskStore_0_With_Id_1,
-                new Object[] {getName(), getDiskStoreID()}));
+            "Created disk store {} with unique id {}",
+            getName(), getDiskStoreID());
       }
 
     } finally {
@@ -2204,8 +2198,7 @@ public class DiskStoreImpl implements DiskStore {
           try {
             if (dr.isRegionClosed()) {
               throw new RegionDestroyedException(
-                  LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                      .toLocalizedString(),
+                  "The DiskRegion has been closed or destroyed",
                   dr.getName());
             }
             basicClear(region, dr, rvv);
@@ -2385,10 +2378,7 @@ public class DiskStoreImpl implements DiskStore {
           // the stopCompactor. Still not taking chance and ignoring it
 
         } catch (RuntimeException e) {
-          logger.warn(
-              LocalizedMessage.create(
-                  LocalizedStrings.DiskRegion_COMPLEXDISKREGION_CLOSE_EXCEPTION_IN_STOPPING_COMPACTOR),
-              e);
+          logger.warn("DiskRegion::close: Exception in stopping compactor", e);
           throw e;
           // } finally {
           // this.oplogCompactor.compactionCompletionRequired = orig;
@@ -2854,8 +2844,8 @@ public class DiskStoreImpl implements DiskStore {
         getStats().endCompaction(compactionStart);
       }
       long endTime = System.nanoTime();
-      logger.info(LocalizedMessage.create(LocalizedStrings.DiskRegion_COMPACTION_SUMMARY,
-          new Object[] {totalCount, ((endTime - start) / 1000000)}));
+      logger.info("compaction did {} creates and updates in {} ms",
+          totalCount, ((endTime - start) / 1000000));
       return true /* @todo !owner.isDestroyed */;
     }
 
@@ -2899,8 +2889,8 @@ public class DiskStoreImpl implements DiskStore {
             }
           }
           String ids = buffer.toString();
-          logger.info(LocalizedMessage.create(LocalizedStrings.DiskRegion_COMPACTION_OPLOGIDS,
-              new Object[] {getName(), ids}));
+          logger.info("OplogCompactor for {} compaction oplog id(s): {}",
+              getName(), ids);
           if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
             CacheObserverHolder.getInstance().beforeGoingToCompact();
           }
@@ -2910,8 +2900,8 @@ public class DiskStoreImpl implements DiskStore {
               CacheObserverHolder.getInstance().afterHavingCompacted();
             }
           } else {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.DiskRegion_COMPACTION_FAILURE,
-                new Object[] {getName(), ids}));
+            logger.warn("OplogCompactor for {} did NOT complete compaction of oplog id(s): {}",
+                getName(), ids);
           }
         } catch (DiskAccessException dae) {
           handleDiskAccessException(dae);
@@ -3086,9 +3076,8 @@ public class DiskStoreImpl implements DiskStore {
                 }
               } // for
               if (this.entryOpsCount.get() > 0) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.DisKRegion_OUTSTANDING_OPS_REMAIN_AFTER_0_SECONDS_FOR_DISK_REGION_1,
-                    new Object[] {loopCount, dr.getName()}));
+                logger.warn("Outstanding ops remain after {} seconds for disk region {}",
+                    loopCount, dr.getName());
 
                 for (;;) {
                   if (this.entryOpsCount.get() == 0) {
@@ -3106,9 +3095,8 @@ public class DiskStoreImpl implements DiskStore {
                     }
                   }
                 } // for
-                logger.info(LocalizedMessage.create(
-                    LocalizedStrings.DisKRegion_OUTSTANDING_OPS_CLEARED_FOR_DISK_REGION_0,
-                    dr.getName()));
+                logger.info("Outstanding ops cleared for disk region {}",
+                    dr.getName());
               }
             } // synchronized
           }
@@ -3322,19 +3310,17 @@ public class DiskStoreImpl implements DiskStore {
     }
 
     // log the error
-    final StringId sid =
-        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED;
-    logger.error(LocalizedMessage.create(sid, DiskStoreImpl.this.getName()), dae);
+    final String message =
+        "A DiskAccessException has occurred while writing to the disk for disk store {}. The cache will be closed.";
+    logger.error(message, DiskStoreImpl.this.getName(), dae);
 
     Thread thread = new LoggingThread("Disk store exception handler", false, () -> {
       try {
         // now close the cache
-        getCache().close(sid.toLocalizedString(DiskStoreImpl.this.getName(), dae), dae);
+        getCache().close(String.format(message, DiskStoreImpl.this.getName(), dae), dae);
         _testHandleDiskAccessException.countDown();
-
       } catch (Exception e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.LocalRegion_AN_EXCEPTION_OCCURRED_WHILE_CLOSING_THE_CACHE), e);
+        logger.error("An Exception occurred while closing the cache.", e);
       }
     });
     thread.start();
@@ -4456,8 +4442,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dr.isRegionClosed()) {
         region.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -4495,8 +4480,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dr.isRegionClosed()) {
         dr.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 

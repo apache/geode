@@ -93,9 +93,7 @@ import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
@@ -697,8 +695,8 @@ public class SocketCreator {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
         BindException throwMe =
-            new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                .toLocalizedString(bindAddr, Integer.valueOf(nport)));
+            new BindException(String.format("Failed to create server socket on  %s[%s]",
+                bindAddr, Integer.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -754,9 +752,9 @@ public class SocketCreator {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
         BindException throwMe =
-            new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                .toLocalizedString(bindAddr == null ? InetAddress.getLocalHost() : bindAddr,
-                    String.valueOf(nport)));
+            new BindException(String.format("Failed to create server socket on  %s[%s]",
+                bindAddr == null ? InetAddress.getLocalHost() : bindAddr,
+                String.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -811,7 +809,7 @@ public class SocketCreator {
           startingPort = 0;
         } else {
           throw new SystemConnectException(
-              LocalizedStrings.TCPConduit_UNABLE_TO_FIND_FREE_PORT.toLocalizedString());
+              "Unable to find a free port in the membership-port-range");
         }
       }
       try {
@@ -979,15 +977,13 @@ public class SocketCreator {
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
         if (logger.isDebugEnabled()) {
-          logger.debug(
-              LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0,
-                  ((X509Certificate) peer[0]).getSubjectDN()));
+          logger.debug("SSL Connection from peer {}",
+              ((X509Certificate) peer[0]).getSubjectDN());
         }
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
           logger.fatal(
-              LocalizedMessage.create(
-                  LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER_0_1,
+              String.format("SSL Error in authenticating peer %s[%s].",
                   new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
               ex);
           throw ex;
@@ -1065,22 +1061,18 @@ public class SocketCreator {
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
         if (logger.isDebugEnabled()) {
-          logger.debug(
-              LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0,
-                  ((X509Certificate) peer[0]).getSubjectDN()));
+          logger.debug("SSL Connection from peer []",
+              ((X509Certificate) peer[0]).getSubjectDN());
         }
       } catch (SSLHandshakeException ex) {
         logger
-            .fatal(
-                LocalizedMessage.create(
-                    LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1,
-                    new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
+            .fatal(String.format("SSL Error in connecting to peer %s[%s].",
+                new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
                 ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
-          logger.fatal(LocalizedMessage
-              .create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER), ex);
+          logger.fatal("SSL Error in authenticating peer.", ex);
           throw ex;
         }
       }
@@ -1148,7 +1140,7 @@ public class SocketCreator {
       interfaces = NetworkInterface.getNetworkInterfaces();
     } catch (SocketException e) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StartupMessage_UNABLE_TO_EXAMINE_NETWORK_INTERFACES.toLocalizedString(),
+          "Unable to examine network interfaces",
           e);
     }
     while (interfaces.hasMoreElements()) {
@@ -1246,8 +1238,7 @@ public class SocketCreator {
           return false;
         } catch (SocketException e) {
           throw new IllegalArgumentException(
-              LocalizedStrings.InetAddressUtil_UNABLE_TO_QUERY_NETWORK_INTERFACE
-                  .toLocalizedString(),
+              "Unable to query network interface",
               e);
         }
       }

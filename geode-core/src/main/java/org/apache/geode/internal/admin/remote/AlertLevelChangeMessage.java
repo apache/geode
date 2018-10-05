@@ -24,7 +24,6 @@ import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -87,7 +86,7 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
 
   @Override
   public String toString() {
-    return LocalizedStrings.AlertLevelChangeMessage_CHANGING_ALERT_LEVEL_TO_0
-        .toLocalizedString(AlertLevel.forSeverity(this.newLevel));
+    return String.format("Changing alert level to %s",
+        AlertLevel.forSeverity(this.newLevel));
   }
 }

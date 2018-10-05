@@ -24,10 +24,8 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * DSClock tracks the system time. The most useful method is cacheTimeMillis(). The rest are for
@@ -129,15 +127,16 @@ public class DSClock implements CacheTime {
       this.cacheTimeDelta = offset;
 
       String cacheTime = DateFormatter.formatDate(new Date(theTime + offset));
-      logger.info(LocalizedMessage.create(LocalizedStrings.LonerDistributionManager_Cache_Time,
-          new Object[] {cacheTime, this.cacheTimeDelta}));
+      logger.info("The current cache time is {}.  Delta from the system clock is {} milliseconds.",
+          new Object[] {cacheTime, this.cacheTimeDelta});
 
     } else if (offset < (this.cacheTimeDelta - MINIMUM_TIME_DIFF)) {
       // We don't issue a warning for client caches
       // if ((this.cacheTimeDelta - offset) >= MAX_TIME_OFFSET_DIFF /* Max offset difference allowed
       // */) {
-      // this.logger.warning(LocalizedStrings.DistributionManager_Cache_Time_Offset_Skew_Warning,
-      // (this.cacheTimeDelta - offset));
+      // this.logger.warning(String.format("New cache time offset calculated is off more than %s ms
+      // from earlier offset.",
+      // (this.cacheTimeDelta - offset)));
       // }
       this.cacheTimeDelta = offset;
       // We need to suspend the cacheTimeMillis for (cacheTimeDelta - offset) ms.
@@ -152,7 +151,8 @@ public class DSClock implements CacheTime {
       this.cacheTimeDelta = offset;
       if (this.cacheTimeDelta <= -300000 || 300000 <= this.cacheTimeDelta) {
         logger.warn(
-            LocalizedMessage.create(LocalizedStrings.DistributionManager_Time_Skew_Warning, coord));
+            "The clock for this machine may be more than 5 minutes different than the negotiated cache time received from {}",
+            coord);
       }
       String cacheTime = DateFormatter.formatDate(new Date(theTime + offset));
       if (Math.abs(this.cacheTimeDelta) > 1000) {
@@ -160,16 +160,16 @@ public class DSClock implements CacheTime {
         if (src == null) {
           src = "local clock adjustment";
         }
-        logger.info(LocalizedMessage.create(LocalizedStrings.DistributionManager_Cache_Time,
-            new Object[] {src, cacheTime, this.cacheTimeDelta}));
+        logger.info(
+            "The negotiated cache time from {} is {}.  Delta from the system clock is {} milliseconds.",
+            new Object[] {src, cacheTime, this.cacheTimeDelta});
       }
     } else if (!isJoin && offset < this.cacheTimeDelta) {
       // We need to suspend the cacheTimeMillis for (cacheTimeDelta - offset) ms.
       if ((this.cacheTimeDelta
           - offset) >= MAX_TIME_OFFSET_DIFF /* Max offset difference allowed */) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DistributionManager_Cache_Time_Offset_Skew_Warning,
-            (this.cacheTimeDelta - offset)));
+        logger.warn("New cache time offset calculated is off more than {} ms from earlier offset.",
+            (this.cacheTimeDelta - offset));
       }
 
       cancelAndScheduleNewCacheTimerTask(offset);

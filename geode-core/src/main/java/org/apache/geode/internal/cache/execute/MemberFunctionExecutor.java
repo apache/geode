@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class MemberFunctionExecutor extends AbstractExecution {
 
@@ -102,8 +101,8 @@ public class MemberFunctionExecutor extends AbstractExecution {
     final Set dest = new HashSet(this.members);
     if (dest.isEmpty()) {
       throw new FunctionException(
-          LocalizedStrings.MemberFunctionExecutor_NO_MEMBER_FOUND_FOR_EXECUTING_FUNCTION_0
-              .toLocalizedString(function.getId()));
+          String.format("No member found for executing function : %s.",
+              function.getId()));
     }
     validateExecution(function, dest);
     setExecutionNodes(dest);
@@ -164,8 +163,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
     if (cache.getTxManager().getTXState() != null) {
       if (dest.size() > 1) {
         throw new TransactionException(
-            LocalizedStrings.PartitionedRegion_TX_FUNCTION_ON_MORE_THAN_ONE_NODE
-                .toLocalizedString());
+            "Function inside a transaction cannot execute on more than one node");
       } else {
         assert dest.size() == 1;
         DistributedMember funcTarget = (DistributedMember) dest.iterator().next();
@@ -174,8 +172,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
           cache.getTxManager().getTXState().setTarget(funcTarget);
         } else if (!target.equals(funcTarget)) {
           throw new TransactionDataNotColocatedException(
-              LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED
-                  .toLocalizedString());
+              "Function execution is not colocated with transaction");
         }
       }
     }
@@ -200,8 +197,8 @@ public class MemberFunctionExecutor extends AbstractExecution {
   public Execution setArguments(Object args) {
     if (args == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("args"));
+          String.format("The input %s for the execute function request is null",
+              "args"));
     }
     return new MemberFunctionExecutor(this, args);
   }
@@ -215,30 +212,30 @@ public class MemberFunctionExecutor extends AbstractExecution {
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("Result Collector"));
+          String.format("The input %s for the execute function request is null",
+              "Result Collector"));
     }
     return new MemberFunctionExecutor(this, rs);
   }
 
   public Execution withFilter(Set filter) {
     throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
-            .toLocalizedString("filter"));
+        String.format("Cannot specify %s for data independent functions",
+            "filter"));
   }
 
   @Override
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
-            .toLocalizedString("bucket as filter"));
+        String.format("Cannot specify %s for data independent functions",
+            "bucket as filter"));
   }
 
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("MemberMappedArgs"));
+          String.format("The input %s for the execute function request is null",
+              "MemberMappedArgs"));
     }
     return new MemberFunctionExecutor(this, argument);
   }

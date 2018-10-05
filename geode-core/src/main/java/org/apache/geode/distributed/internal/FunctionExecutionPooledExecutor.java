@@ -25,7 +25,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -85,8 +84,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
         public void rejectedExecution(final Runnable r, ThreadPoolExecutor executor) {
           if (executor.isShutdown()) {
             throw new RejectedExecutionException(
-                LocalizedStrings.PooledExecutorWithDMStats_EXECUTOR_HAS_BEEN_SHUTDOWN
-                    .toLocalizedString());
+                "executor has been shutdown");
           } else {
             // System.out.println("Asif: Rejection called");
             if (Thread
@@ -265,15 +263,14 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException(
-            LocalizedStrings.PooledExecutorWithDMStats_EXECUTOR_HAS_BEEN_SHUTDOWN
-                .toLocalizedString());
+            "executor has been shutdown");
       } else {
         try {
           executor.getQueue().put(r);
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           RejectedExecutionException e = new RejectedExecutionException(
-              LocalizedStrings.PooledExecutorWithDMStats_INTERRUPTED.toLocalizedString());
+              "interrupted");
           e.initCause(ie);
           throw e;
         }
@@ -290,8 +287,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException(
-            LocalizedStrings.PooledExecutorWithDMStats_EXECUTOR_HAS_BEEN_SHUTDOWN
-                .toLocalizedString());
+            "executor has been shutdown");
       } else {
         try {
           FunctionExecutionPooledExecutor pool = (FunctionExecutionPooledExecutor) executor;
@@ -299,7 +295,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           RejectedExecutionException e = new RejectedExecutionException(
-              LocalizedStrings.PooledExecutorWithDMStats_INTERRUPTED.toLocalizedString());
+              "interrupted");
           e.initCause(ie);
           throw e;
         }

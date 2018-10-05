@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -28,7 +29,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -45,7 +45,7 @@ public class ManagementListener implements ResourceEventsListener {
    */
   private ManagementAdapter adapter;
 
-  private LogWriterI18n logger;
+  private LogWriter logger;
 
   // having a readwrite lock to synchronize between handling cache creation/removal vs handling
   // other notifications
@@ -56,7 +56,7 @@ public class ManagementListener implements ResourceEventsListener {
    */
   public ManagementListener() {
     this.adapter = new ManagementAdapter();
-    this.logger = InternalDistributedSystem.getLoggerI18n();
+    this.logger = InternalDistributedSystem.getLogger();
   }
 
   /**

@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -80,8 +79,9 @@ public class QueryMonitor implements Runnable {
     }
 
     if (LOW_MEMORY) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(LOW_MEMORY_USED_BYTES);
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          LOW_MEMORY_USED_BYTES);
       query.setCanceled(new QueryExecutionLowMemoryException(reason));
       throw new QueryExecutionLowMemoryException(reason);
     }
@@ -253,8 +253,9 @@ public class QueryMonitor implements Runnable {
     synchronized (queryCompleted) {
       if (!queryCompleted[0]) {
         // cancel if query is not completed
-        String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-            .toLocalizedString(memoryThreshold);
+        String reason = String.format(
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+            memoryThreshold);
         queryTask.query.setCanceled(
             new QueryExecutionLowMemoryException(reason));
         queryTask.queryCancelled.set(Boolean.TRUE);

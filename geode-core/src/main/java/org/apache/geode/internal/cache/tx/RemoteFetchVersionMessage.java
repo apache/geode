@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -73,7 +72,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
     Set<?> failures = r.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(msg));
+          String.format("Failed sending < %s >", msg));
     }
     return response;
   }

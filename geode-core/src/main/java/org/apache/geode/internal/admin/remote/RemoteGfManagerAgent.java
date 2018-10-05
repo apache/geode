@@ -59,12 +59,10 @@ import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.admin.GfManagerAgentConfig;
 import org.apache.geode.internal.admin.JoinLeaveListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.security.AuthenticationFailedException;
 
@@ -247,8 +245,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   public RemoteGfManagerAgent(GfManagerAgentConfig cfg) {
     if (!(cfg.getTransport() instanceof RemoteTransportConfig)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.RemoteGfManagerAgent_EXPECTED_0_TO_BE_A_REMOTETRANSPORTCONFIG
-              .toLocalizedString(cfg.getTransport()));
+          String.format("Expected  %s  to be a RemoteTransportConfig",
+              cfg.getTransport()));
     }
     this.transport = (RemoteTransportConfig) cfg.getTransport();
     this.displayName = cfg.getDisplayName();
@@ -332,8 +330,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     // different thread. In addition to the cause, we also want to
     // know which code was waiting for the Future.
     throw new RuntimeAdminException(
-        LocalizedStrings.RemoteGfManagerAgent_AN_EXCEPUTIONEXCEPTION_WAS_THROWN_WHILE_WAITING_FOR_FUTURE
-            .toLocalizedString(),
+        "An ExceputionException was thrown while waiting for Future.",
         ex);
   }
 
@@ -548,8 +545,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     try {
       if (((Boolean) sending.get()).booleanValue()) {
         throw new OperationCancelledException(
-            LocalizedStrings.RemoteGfManagerAgent_RECURSION_DETECTED_WHILE_SENDING_0
-                .toLocalizedString(msg));
+            String.format("Recursion detected while sending  %s",
+                msg));
 
       } else {
         sending.set(Boolean.TRUE);
@@ -563,8 +560,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
         // bug 39824: generate CancelException if we're shutting down
         dm.getCancelCriterion().checkCancelInProgress(null);
         throw new RuntimeAdminException(
-            LocalizedStrings.RemoteGfManagerAgent_0_IS_NOT_CURRENTLY_CONNECTED
-                .toLocalizedString(this));
+            String.format("%s  is not currently connected.",
+                this));
       }
 
     } finally {
@@ -822,8 +819,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     this.system.addDisconnectListener(new InternalDistributedSystem.DisconnectListener() {
       @Override
       public String toString() {
-        return LocalizedStrings.RemoteGfManagerAgent_DISCONNECT_LISTENER_FOR_0
-            .toLocalizedString(RemoteGfManagerAgent.this);
+        return String.format("Disconnect listener for %s",
+            RemoteGfManagerAgent.this);
       }
 
       public void onDisconnect(InternalDistributedSystem sys) {
@@ -956,7 +953,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
               // Incorrect credentials. Log & Shutdown
               shutDown = true;
               securityLogWriter.warning(
-                  LocalizedStrings.RemoteGFManagerAgent_AN_AUTHENTICATIONFAILEDEXCEPTION_WAS_CAUGHT_WHILE_CONNECTING_TO_DS,
+                  "[RemoteGfManagerAgent]: An AuthenticationFailedException was caught while connecting to DS",
                   e);
               break TOP;
             }
@@ -1005,8 +1002,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           if (shutDown) {
             break;
           }
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.RemoteGfManagerAgent_IGNORING_STRANGE_INTERRUPT), ignore);
+          logger.warn("Ignoring strange interrupt", ignore);
         } catch (Exception ex) {
           logger.fatal(ex.getMessage(), ex);
         }
@@ -1075,8 +1071,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
         case ClusterDistributionManager.LONER_DM_TYPE:
           break; // should this ever happen? :-)
         default:
-          throw new IllegalArgumentException(LocalizedStrings.RemoteGfManagerAgent_UNKNOWN_VM_KIND_0
-              .toLocalizedString(Integer.valueOf(id.getVmKind())));
+          throw new IllegalArgumentException(String.format("Unknown VM Kind:  %s",
+              Integer.valueOf(id.getVmKind())));
       }
 
       // if we have a valid member process it...
@@ -1099,8 +1095,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
             throw e;
           } catch (Throwable e) {
             SystemFailure.checkFailure();
-            logger.warn(LocalizedMessage
-                .create(LocalizedStrings.RemoteGfManagerAgent_LISTENER_THREW_AN_EXCEPTION), e);
+            logger.warn("Listener threw an exception.", e);
           }
         }
       }
@@ -1111,7 +1106,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
       // clean up current join and abort flag...
       if (this.abortCurrentJoin) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.RemoteGfManagerAgent_ABORTED__0, id));
+        logger.info("aborted  {}", id);
       }
       this.currentJoin = null;
       this.abortCurrentJoin = false;
@@ -1338,8 +1333,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
               continue OUTER;
             }
           }
-          logger.error(LocalizedMessage
-              .create(LocalizedStrings.RemoteGfManagerAgent_JOINPROCESSOR_CAUGHT_EXCEPTION), e);
+          logger.error("JoinProcessor caught exception...", e);
         } // catch Throwable
       } // while !shutDown
     }
@@ -1415,7 +1409,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           break; // should this ever happen?
         default:
           throw new IllegalArgumentException(
-              LocalizedStrings.RemoteGfManagerAgent_UNKNOWN_VM_KIND.toLocalizedString());
+              "Unknown VM Kind");
       }
 
       // clean up and notify JoinLeaveListeners...

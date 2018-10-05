@@ -38,9 +38,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 
 /**
@@ -350,8 +348,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       return copy;
     } catch (CloneNotSupportedException ignore) {
       throw new InternalGemFireError(
-          LocalizedStrings.PartitionAttributesImpl_CLONENOTSUPPORTEDEXCEPTION_THROWN_IN_CLASS_THAT_IMPLEMENTS_CLONEABLE
-              .toLocalizedString());
+          "CloneNotSupportedException thrown in class that implements cloneable");
     }
   }
 
@@ -559,20 +556,22 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   public void validateAttributes() {
     if ((this.totalNumBuckets <= 0)) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionAttributesImpl_TOTALNUMBICKETS_0_IS_AN_ILLEGAL_VALUE_PLEASE_CHOOSE_A_VALUE_GREATER_THAN_0
-              .toLocalizedString(this.totalNumBuckets));
+          String.format(
+              "TotalNumBuckets %s is an illegal value, please choose a value greater than 0",
+              this.totalNumBuckets));
     }
     if ((this.redundancy < 0) || (this.redundancy >= 4)) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionAttributesImpl_REDUNDANTCOPIES_0_IS_AN_ILLEGAL_VALUE_PLEASE_CHOOSE_A_VALUE_BETWEEN_0_AND_3
-              .toLocalizedString(this.redundancy));
+          String.format(
+              "RedundantCopies %s is an illegal value, please choose a value between 0 and 3",
+              this.redundancy));
     }
     for (Iterator it = this.getLocalProperties().keySet().iterator(); it.hasNext();) {
       String propName = (String) it.next();
       if (!PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY.equals(propName)) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_UNKNOWN_LOCAL_PROPERTY_0
-                .toLocalizedString(propName));
+            String.format("Unknown local property: '%s'",
+                propName));
       }
     }
     for (Iterator it = this.getGlobalProperties().keySet().iterator(); it.hasNext();) {
@@ -580,8 +579,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       if (!PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY.equals(propName)
           && !PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY.equals(propName)) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_UNKNOWN_GLOBAL_PROPERTY_0
-                .toLocalizedString(propName));
+            String.format("Unknown global property: '%s'",
+                propName));
       }
     }
     if (this.recoveryDelay < -1) {
@@ -599,7 +598,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       for (FixedPartitionAttributesImpl fpa : this.fixedPAttrs) {
         if (fpa == null || fpa.getPartitionName() == null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionAttributesImpl_FIXED_PARTITION_NAME_CANNOT_BE_NULL
+              "Fixed partition name cannot be null"
                   .toString());
         }
         if (fpAttrsSet.contains(fpa)) {
@@ -610,8 +609,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       }
       if (duplicateFPAattrsList.size() != 0) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_PARTITION_NAME_0_CAN_BE_ADDED_ONLY_ONCE_IN_FIXED_PARTITION_ATTRIBUTES
-                .toString(duplicateFPAattrsList.toString()));
+            String.format("Partition name %s can be added only once in FixedPartitionAttributes",
+                duplicateFPAattrsList.toString()));
       }
     }
   }
@@ -624,15 +623,16 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     if (this.colocatedRegionName != null) {
       if (this.fixedPAttrs != null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_IF_COLOCATED_WITH_IS_SPECFIED_THEN_FIXED_PARTITION_ATTRIBUTES_CAN_NOT_BE_SPECIFIED
-                .toLocalizedString(this.fixedPAttrs));
+            String.format(
+                "FixedPartitionAttributes %s can not be specified in PartitionAttributesFactory if colocated-with is specified. ",
+                this.fixedPAttrs));
       }
     }
     if (this.fixedPAttrs != null) {
       if (this.localMaxMemory == 0) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_FIXED_PARTITION_ATTRBUTES_0_CANNOT_BE_DEFINED_FOR_ACCESSOR
-                .toString(this.fixedPAttrs));
+            String.format("FixedPartitionAttributes %s can not be defined for accessor",
+                this.fixedPAttrs));
       }
     }
   }
@@ -659,25 +659,21 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       Region<?, ?> region = cache.getRegion(this.colocatedRegionName);
       if (region == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_REGION_SPECIFIED_IN_COLOCATEDWITH_IS_NOT_PRESENT_IT_SHOULD_BE_CREATED_BEFORE_SETTING_COLOCATED_WITH_THIS_REGION
-                .toLocalizedString());
+            "Region specified in 'colocated-with' is not present. It should be created before setting 'colocated-with' to this region.");
       }
       if (!(region instanceof PartitionedRegion)) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_SETTING_THE_ATTRIBUTE_COLOCATEDWITH_IS_SUPPORTED_ONLY_FOR_PARTITIONEDREGIONS
-                .toLocalizedString());
+            "Setting the attribute 'colocated-with' is supported only for PartitionedRegions");
       }
       PartitionedRegion colocatedRegion = (PartitionedRegion) region;
       if (this.getTotalNumBuckets() != colocatedRegion.getPartitionAttributes()
           .getTotalNumBuckets()) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_CURRENT_PARTITIONEDREGIONS_TOTALNUMBUCKETS_SHOULD_BE_SAME_AS_TOTALNUMBUCKETS_OF_COLOCATED_PARTITIONEDREGION
-                .toLocalizedString());
+            "Current PartitionedRegion's TotalNumBuckets should be same as TotalNumBuckets of colocated PartitionedRegion");
       }
       if (this.getRedundancy() != colocatedRegion.getPartitionAttributes().getRedundantCopies()) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionAttributesImpl_CURRENT_PARTITIONEDREGIONS_REDUNDANCY_SHOULD_BE_SAME_AS_THE_REDUNDANCY_OF_COLOCATED_PARTITIONEDREGION
-                .toLocalizedString());
+            "Current PartitionedRegion's redundancy should be same as the redundancy of colocated PartitionedRegion");
       }
     }
   }
@@ -775,8 +771,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     }
 
     if (availableOffHeapMemoryInMB > Integer.MAX_VALUE) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.PartitionAttributesImpl_REDUCED_LOCAL_MAX_MEMORY_FOR_PARTITION_ATTRIBUTES_WHEN_SETTING_FROM_AVAILABLE_OFF_HEAP_MEMORY_SIZE));
+      logger.warn(
+          "Reduced local max memory for partition attribute when setting from available off-heap memory size");
       return Integer.MAX_VALUE;
     }
 

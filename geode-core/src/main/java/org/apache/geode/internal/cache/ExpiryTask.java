@@ -30,10 +30,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
 /**
@@ -294,7 +292,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     if (action.isLocalDestroy())
       return localDestroy();
     throw new InternalGemFireError(
-        LocalizedStrings.ExpiryTask_UNRECOGNIZED_EXPIRATION_ACTION_0.toLocalizedString(action));
+        String.format("unrecognized expiration action:  %s", action));
   }
 
   /**
@@ -364,8 +362,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+      logger.fatal("Exception in expiration task", ex);
     }
   }
 
@@ -399,8 +396,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+      logger.fatal("Exception in expiration task", ex);
     } finally {
       if (expiryTaskListener != null) {
         expiryTaskListener.afterTaskRan(this);

@@ -15,7 +15,6 @@
 package org.apache.geode.internal.util.concurrent;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is a type of {@link StoppableReentrantLock} that does not allow recursion
@@ -47,8 +46,7 @@ public class StoppableNonReentrantLock extends StoppableReentrantLock {
   private void checkForRentry() {
     if (isHeldByCurrentThread()) {
       throw new IllegalStateException(
-          LocalizedStrings.StoppableNonReentrantLock_LOCK_REENTRY_IS_NOT_ALLOWED
-              .toLocalizedString());
+          "Lock reentry is not allowed");
     }
   }
 

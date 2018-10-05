@@ -44,7 +44,6 @@ import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.ExplicitMoveDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.PercentageMoveDirector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Utility methods for handling partitioned Regions, for example during execution of {@link Function
@@ -110,8 +109,8 @@ public final class PartitionRegionHelper {
       }
     } else {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionManager_REGION_0_IS_NOT_A_PARTITIONED_REGION
-              .toLocalizedString(r.getFullPath()));
+          String.format("Region %s is not a Partitioned Region",
+              r.getFullPath()));
     }
     return Collections.unmodifiableMap(ret);
   }
@@ -125,7 +124,7 @@ public final class PartitionRegionHelper {
   public static boolean isPartitionedRegion(final Region<?, ?> r) {
     if (r == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionRegionHelper_ARGUMENT_REGION_IS_NULL.toString());
+          "Argument 'Region' is null".toString());
     }
     return r instanceof PartitionedRegion ? true : false;
   }
@@ -139,8 +138,8 @@ public final class PartitionRegionHelper {
   private static PartitionedRegion isPartitionedCheck(final Region<?, ?> r) {
     if (!isPartitionedRegion(r)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionManager_REGION_0_IS_NOT_A_PARTITIONED_REGION
-              .toLocalizedString(r.getFullPath()));
+          String.format("Region %s is not a Partitioned Region",
+              r.getFullPath()));
     }
     return (PartitionedRegion) r;
   }
@@ -389,8 +388,8 @@ public final class PartitionRegionHelper {
       return r;
     } else {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionManager_REGION_0_IS_NOT_A_PARTITIONED_REGION
-              .toLocalizedString(r.getFullPath()));
+          String.format("Region %s is not a Partitioned Region",
+              r.getFullPath()));
     }
   }
 
@@ -419,8 +418,8 @@ public final class PartitionRegionHelper {
       return r;
     } else {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionManager_REGION_0_IS_NOT_A_PARTITIONED_REGION
-              .toLocalizedString(r.getFullPath()));
+          String.format("Region %s is not a Partitioned Region",
+              r.getFullPath()));
     }
   }
 

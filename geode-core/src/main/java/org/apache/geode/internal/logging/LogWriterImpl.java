@@ -32,7 +32,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.StartupStatusListener;
 
 /**
@@ -320,7 +319,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void severe(Throwable throwable) {
-    severe(LocalizedStrings.EMPTY, throwable);
+    this.severe("", throwable);
   }
 
   /**
@@ -418,7 +417,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void error(Throwable throwable) {
-    error(LocalizedStrings.EMPTY, throwable);
+    this.error("", throwable);
   }
 
   /**
@@ -516,7 +515,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void warning(Throwable throwable) {
-    warning(LocalizedStrings.EMPTY, throwable);
+    this.warning("", throwable);
   }
 
   /**
@@ -614,7 +613,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void info(Throwable throwable) {
-    info(LocalizedStrings.EMPTY, throwable);
+    this.info("", throwable);
   }
 
   /**
@@ -712,7 +711,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void config(Throwable throwable) {
-    config(LocalizedStrings.EMPTY, throwable);
+    this.config("", throwable);
   }
 
   /**
@@ -1118,7 +1117,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
               if (toStdout) {
                 System.out.println(sb);
               } else {
-                info(LocalizedStrings.DEBUG, sb.toString());
+                info(sb.toString());
               }
             }
           }

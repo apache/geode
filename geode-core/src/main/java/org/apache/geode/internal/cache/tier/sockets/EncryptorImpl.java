@@ -68,7 +68,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.Encryptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -375,8 +374,8 @@ public class EncryptorImpl implements Encryptor {
           byte[] signatureBytes = DataSerializer.readByteArray(dis);
           if (!certificateMap.containsKey(subject)) {
             throw new AuthenticationFailedException(
-                LocalizedStrings.HandShake_HANDSHAKE_FAILED_TO_FIND_PUBLIC_KEY_FOR_SERVER_WITH_SUBJECT_0
-                    .toLocalizedString(subject));
+                String.format("HandShake failed to find public key for server with subject %s",
+                    subject));
           }
 
           // Check the signature with the public key
@@ -459,8 +458,8 @@ public class EncryptorImpl implements Encryptor {
           byte[] signatureBytes = DataSerializer.readByteArray(dis);
           if (!certificateMap.containsKey(subject)) {
             throw new AuthenticationFailedException(
-                LocalizedStrings.HandShake_HANDSHAKE_FAILED_TO_FIND_PUBLIC_KEY_FOR_SERVER_WITH_SUBJECT_0
-                    .toLocalizedString(subject));
+                String.format("HandShake failed to find public key for server with subject %s",
+                    subject));
           }
 
           // Check the signature with the public key
@@ -538,8 +537,7 @@ public class EncryptorImpl implements Encryptor {
         byte[] clientChallenge = DataSerializer.readByteArray(dis);
         if (privateKeyEncrypt == null) {
           throw new AuthenticationFailedException(
-              LocalizedStrings.HandShake_SERVER_PRIVATE_KEY_NOT_AVAILABLE_FOR_CREATING_SIGNATURE
-                  .toLocalizedString());
+              "Server private key not available for creating signature.");
         }
         // Sign the challenge from client and send it to the client
         Signature sig = Signature.getInstance(privateKeySignAlgo);
@@ -577,8 +575,7 @@ public class EncryptorImpl implements Encryptor {
       // Check the challenge string
       if (!Arrays.equals(challenge, challengeRes)) {
         throw new AuthenticationFailedException(
-            LocalizedStrings.HandShake_MISMATCH_IN_CHALLENGE_BYTES_MALICIOUS_CLIENT
-                .toLocalizedString());
+            "Mismatch in challenge bytes. Malicious client?");
       }
       dinp.close();
     } else {
@@ -622,8 +619,7 @@ public class EncryptorImpl implements Encryptor {
         byte[] clientChallenge = DataSerializer.readByteArray(dis);
         if (privateKeyEncrypt == null) {
           throw new AuthenticationFailedException(
-              LocalizedStrings.HandShake_SERVER_PRIVATE_KEY_NOT_AVAILABLE_FOR_CREATING_SIGNATURE
-                  .toLocalizedString());
+              "Server private key not available for creating signature.");
         }
         // Sign the challenge from client and send it to the client
         Signature sig = Signature.getInstance(privateKeySignAlgo);
@@ -683,8 +679,7 @@ public class EncryptorImpl implements Encryptor {
       // Check the challenge string
       if (!Arrays.equals(challenge, challengeRes)) {
         throw new AuthenticationFailedException(
-            LocalizedStrings.HandShake_MISMATCH_IN_CHALLENGE_BYTES_MALICIOUS_CLIENT
-                .toLocalizedString());
+            "Mismatch in challenge bytes. Malicious client?");
       }
       dinp.close();
     } else {

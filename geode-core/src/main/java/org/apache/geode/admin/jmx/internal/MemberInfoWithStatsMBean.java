@@ -67,9 +67,7 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) GemFire types. This is the
@@ -381,15 +379,12 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         members = membersList.toArray(members);
       }
     } catch (AdminException e) {
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0, "getMembers"),
+      logger.warn("Exception occurred for operation: getMembers",
           e);
       throw new OperationsException(e.getMessage());
     } catch (Exception e) {
       logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0, "getMembers"),
+          "Exception occurred for operation: getMembers",
           e);
       throw new OperationsException(e.getMessage());
     }
@@ -422,14 +417,14 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           }
         }
       } catch (AdminException e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getRegions", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getRegions", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getRegions", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getRegions", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       }
     }
@@ -454,9 +449,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           try {
             initializeCacheRegionsAndStats((SystemMemberJmx) cacheVms[i]);
           } catch (AdminException e) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING,
-                cacheVms[i].getId()), e);
+            logger.info(String.format(
+                "Exception occurred while intializing : %s. Contiuning with next  ...",
+                cacheVms[i].getId()),
+                e);
           }
         }
         SystemMember[] appVms = adminDSJmx.getSystemMemberApplications();
@@ -464,19 +460,18 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           try {
             initializeCacheRegionsAndStats((SystemMemberJmx) appVms[i]);
           } catch (AdminException e) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING,
-                appVms[i].getId()), e);
+            logger.info(String.format(
+                "Exception occurred while intializing : %s. Contiuning with next  ...",
+                appVms[i].getId()),
+                e);
           }
         }
       }
     } catch (AdminException e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING), e);
+      logger.warn("Exception occurred while intializing.", e);
       throw new OperationsException(e.getMessage());
     } catch (Exception e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING), e);
+      logger.warn("Exception occurred while intializing.", e);
       throw new OperationsException(e.getMessage());
     }
 
@@ -541,9 +536,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       try {
         initializeRegionSubRegions(cache, subRegion);
       } catch (AdminException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING,
-            subRegion.getFullPath()), e);
+        logger.info(
+            String.format("Exception occurred while intializing : %s. Contiuning with next  ...",
+                subRegion.getFullPath()),
+            e);
       }
     }
   }
@@ -724,14 +720,14 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         }
 
       } catch (AdminException e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getMemberDetails", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getMemberDetails", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getMemberDetails", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getMemberDetails", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       }
     }
@@ -804,12 +800,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         RegionSubRegionSnapshot regionSnapshot = cache.getRegionSnapshot();
         collectAllRegionsDetails(cache, regionSnapshot, regionsInfo, existingRegionMbeans);
       } catch (AdminException e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ONE_ARG,
-            "Exception occurred while getting region details."), e);
+        logger.warn("Exception occurred while getting region details.", e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ONE_ARG,
-            "Exception occurred while getting region details."), e);
+        logger.warn("Exception occurred while getting region details.", e);
         throw new OperationsException(e.getMessage());
       }
     }
@@ -1021,9 +1015,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         }
 
         if (needToReinit) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.MemberInfoWithStatsMBean_REINITIALIZING_STATS_FOR_0,
-              member.getId()));
+          logger.info("Re-initializing statistics for: {}",
+              member.getId());
           initStats(member);
 
           vmMemoryUsageStats = getExistingStats(member.getId(), "vmHeapMemoryStats");
@@ -1280,46 +1273,27 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
         }
         logger.debug("getStatistics call completed with no exceptions.");
       } catch (ReflectionException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while initializing statistics for: %s",
+            source.toString()),
+            e);
       } catch (MBeanException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while initializing statistics for: %s",
+            source.toString()),
+            e);
       } catch (InstanceNotFoundException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while initializing statistics for: %s",
+            source.toString()),
+            e);
       }
       // register this listener for joined member's cache/region notifications
       try {
         registerNotificationListener(source);
       } catch (OperationsException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_REGISTERING_NOTIFICATION_LISTENER_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while registering notification listener for: %s",
+            source.toString()),
+            e);
       }
-    } /*
-       * else if (AdminDistributedSystemJmxImpl.NOTIF_MEMBER_LEFT.equals(notification.getType()) ||
-       * AdminDistributedSystemJmxImpl.NOTIF_MEMBER_CRASHED.equals(notification.getType())) {
-       * ObjectName source = (ObjectName) notifSource; //unregister this listener from left member's
-       * cache/region notifications try { unregisterNotificationListener(source); } catch
-       * (OperationsException e) { logwriter.info(LocalizedMessage.create(LocalizedStrings.
-       * MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0,
-       * source.toString(), e); } } else if
-       * (AdminDistributedSystemJmxImpl.NOTIF_ADMIN_SYSTEM_DISCONNECT.equals(notification.getType())
-       * ) { String source = (String) notifSource; //This notification does not have ObjectName as a
-       * source. try { ObjectName instance = ObjectName.getInstance(source);
-       * unregisterNotificationListener(instance); } catch (OperationsException e) {
-       * logwriter.info(LocalizedMessage.create(LocalizedStrings.
-       * MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0,
-       * source.toString(), e); } catch (NullPointerException e) {
-       * logwriter.info(LocalizedMessage.create(LocalizedStrings.
-       * MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0,
-       * source.toString(), e); } }
-       */
-    // NOTIF_ALERT is sent as is
+    }
 
     // TODO: Check if same notification instance can be reused by simply changing the sequence
     // number

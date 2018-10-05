@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.GatewayReceiverCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * @since GemFire 7.0
@@ -142,8 +141,7 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
           recv.start();
         } catch (IOException ioe) {
           throw new GatewayReceiverException(
-              LocalizedStrings.GatewayReceiver_EXCEPTION_WHILE_STARTING_GATEWAY_RECEIVER
-                  .toLocalizedString(),
+              "Exception occurred while starting gateway receiver",
               ioe);
         }
       }

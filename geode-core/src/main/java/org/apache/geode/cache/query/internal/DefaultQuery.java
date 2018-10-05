@@ -56,7 +56,6 @@ import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Thread-safe implementation of org.apache.persistence.query.Query
@@ -213,7 +212,7 @@ public class DefaultQuery implements Query {
     // Local Query.
     if (params == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQuery_PARAMETERS_CANNOT_BE_NULL.toLocalizedString());
+          "'parameters' cannot be null");
     }
 
     // If pool is associated with the Query; execute the query on pool. ServerSide query.
@@ -481,7 +480,7 @@ public class DefaultQuery implements Query {
       if (rgn == null) {
         this.cache.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionNotFoundException(
-            LocalizedStrings.DefaultQuery_REGION_NOT_FOUND_0.toLocalizedString(regionPath));
+            String.format("Region not found:  %s", regionPath));
       }
       if (rgn instanceof QueryExecutor) {
         ((PartitionedRegion) rgn).checkPROffline();
@@ -496,8 +495,9 @@ public class DefaultQuery implements Query {
       // First query has to be executed in a Function.
       if (!this.isQueryWithFunctionContext()) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_REGION_1
-                .toLocalizedString(prs.get(0).getName(), prs.get(1).getName()));
+            String.format(
+                "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
+                prs.get(0).getName(), prs.get(1).getName()));
       }
 
       // If there are more than one PRs they have to be co-located.
@@ -519,8 +519,9 @@ public class DefaultQuery implements Query {
 
         if (!colocated) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_NON_COLOCATED_PARTITIONED_REGION_1
-                  .toLocalizedString(eachPR.getName(), other.getName()));
+              String.format(
+                  "A query on a Partitioned Region ( %s ) may not reference any other region except Co-located Partitioned Region. PR region (1) is not collocated with other PR region in the query.",
+                  eachPR.getName(), other.getName()));
         }
 
       } // eachPR
@@ -529,8 +530,7 @@ public class DefaultQuery implements Query {
       CompiledSelect select = getSimpleSelect();
       if (select == null) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.DefaultQuery_QUERY_MUST_BE_A_SIMPLE_SELECT_WHEN_REFERENCING_A_PARTITIONED_REGION
-                .toLocalizedString());
+            "query must be a simple select when referencing a Partitioned Region");
       }
 
       // make sure the where clause references no regions
@@ -540,8 +540,7 @@ public class DefaultQuery implements Query {
         whereClause.getRegionsInQuery(regions, parameters);
         if (!regions.isEmpty()) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQuery_THE_WHERE_CLAUSE_CANNOT_REFER_TO_A_REGION_WHEN_QUERYING_ON_A_PARTITIONED_REGION
-                  .toLocalizedString());
+              "The WHERE clause cannot refer to a region when querying on a Partitioned Region");
         }
       }
       List fromClause = select.getIterators();
@@ -557,8 +556,7 @@ public class DefaultQuery implements Query {
         public boolean visit(CompiledValue node) {
           if (node instanceof CompiledSelect) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONEDREGION_THE_FIRST_FROM_CLAUSE_ITERATOR_MUST_NOT_CONTAIN_A_SUBQUERY
-                    .toLocalizedString());
+                "When querying a PartitionedRegion, the first FROM clause iterator must not contain a subquery");
           }
           return true;
         }
@@ -571,8 +569,7 @@ public class DefaultQuery implements Query {
           itrDef.getRegionsInQuery(regions, parameters);
           if (!regions.isEmpty()) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONED_REGION_THE_FROM_CLAUSE_ITERATORS_OTHER_THAN_THE_FIRST_ONE_MUST_NOT_REFERENCE_ANY_REGIONS
-                    .toLocalizedString());
+                "When querying a Partitioned Region, the FROM clause iterators other than the first one must not reference any regions");
           }
         }
 
@@ -585,8 +582,7 @@ public class DefaultQuery implements Query {
             proj.getRegionsInQuery(regions, parameters);
             if (!regions.isEmpty()) {
               throw new UnsupportedOperationException(
-                  LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONED_REGION_THE_PROJECTIONS_MUST_NOT_REFERENCE_ANY_REGIONS
-                      .toLocalizedString());
+                  "When querying a Partitioned Region, the projections must not reference any regions");
             }
           }
         }
@@ -597,8 +593,7 @@ public class DefaultQuery implements Query {
             orderBy.getRegionsInQuery(regions, parameters);
             if (!regions.isEmpty()) {
               throw new UnsupportedOperationException(
-                  LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONED_REGION_THE_ORDERBY_ATTRIBUTES_MUST_NOT_REFERENCE_ANY_REGIONS
-                      .toLocalizedString());
+                  "When querying a Partitioned Region, the order-by attributes must not reference any regions");
             }
           }
         }
@@ -618,7 +613,7 @@ public class DefaultQuery implements Query {
   @Override
   public void compile() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DefaultQuery_NOT_YET_IMPLEMENTED.toLocalizedString());
+        "not yet implemented");
   }
 
   @Override
@@ -859,13 +854,13 @@ public class DefaultQuery implements Query {
     // Supported only with RegionFunctionContext
     if (context == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQuery_FUNCTIONCONTEXT_CANNOT_BE_NULL.toLocalizedString());
+          "'Function Context' cannot be null");
     }
     this.isQueryWithFunctionContext = true;
 
     if (params == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQuery_PARAMETERS_CANNOT_BE_NULL.toLocalizedString());
+          "'parameters' cannot be null");
     }
 
     long startTime = 0L;
@@ -888,7 +883,7 @@ public class DefaultQuery implements Query {
       } else {
         // Not supported on regions other than PartitionRegion.
         throw new IllegalArgumentException(
-            LocalizedStrings.DefaultQuery_API_ONLY_FOR_PR.toLocalizedString());
+            "This query API can only be used for Partition Region Queries.");
       }
 
     } finally {

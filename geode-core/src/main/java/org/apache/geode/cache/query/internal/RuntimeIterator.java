@@ -28,7 +28,6 @@ import org.apache.geode.cache.query.internal.index.IndexCreationHelper;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Value representing a current iteration element. This is the representation used during
@@ -69,8 +68,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
   RuntimeIterator(CompiledIteratorDef cmpIteratorDefn, ObjectType elementType) {
     if (elementType == null || cmpIteratorDefn == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.RuntimeIterator_ELEMENTTYPE_ANDOR_CMPITERATORDEFN_SHOULD_NOT_BE_NULL
-              .toLocalizedString());
+          "elementType and/or cmpIteratorDefn should not be null");
     }
     this.name = cmpIteratorDefn.getName();
     this.elementType = elementType;
