@@ -48,16 +48,16 @@ public class LogServiceIntegrationTest {
   private static final String CLI_CONFIG_FILE_NAME = "log4j2-cli.xml";
 
   @Rule
-  public final SystemErrRule systemErrRule = new SystemErrRule().enableLog();
+  public SystemErrRule systemErrRule = new SystemErrRule().enableLog();
 
   @Rule
-  public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+  public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public final ExternalResource externalResource = new ExternalResource() {
+  public ExternalResource externalResource = new ExternalResource() {
     @Override
     protected void before() {
       beforeConfigFileProp = System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
@@ -106,8 +106,8 @@ public class LogServiceIntegrationTest {
 
   @Test
   public void shouldPreferConfigurationFilePropertyIfSet() throws Exception {
-    final File configFile = temporaryFolder.newFile(DEFAULT_CONFIG_FILE_NAME);
-    final String configFileName = configFile.toURI().toString();
+    File configFile = temporaryFolder.newFile(DEFAULT_CONFIG_FILE_NAME);
+    String configFileName = configFile.toURI().toString();
     System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFileName);
     writeConfigFile(configFile, Level.DEBUG);
 
@@ -133,7 +133,7 @@ public class LogServiceIntegrationTest {
   @Test
   public void defaultConfigShouldIncludeStdout() {
     LogService.reconfigure();
-    final Logger rootLogger = (Logger) LogService.getRootLogger();
+    Logger rootLogger = (Logger) LogService.getRootLogger();
 
     assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
@@ -143,7 +143,7 @@ public class LogServiceIntegrationTest {
   @Test
   public void removeConsoleAppenderShouldRemoveStdout() {
     LogService.reconfigure();
-    final Logger rootLogger = (Logger) LogService.getRootLogger();
+    Logger rootLogger = (Logger) LogService.getRootLogger();
 
     LogService.removeConsoleAppender();
 
@@ -153,7 +153,7 @@ public class LogServiceIntegrationTest {
   @Test
   public void restoreConsoleAppenderShouldRestoreStdout() {
     LogService.reconfigure();
-    final Logger rootLogger = (Logger) LogService.getRootLogger();
+    Logger rootLogger = (Logger) LogService.getRootLogger();
 
     LogService.removeConsoleAppender();
 
@@ -171,7 +171,7 @@ public class LogServiceIntegrationTest {
     assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
 
-    final Logger rootLogger = (Logger) LogService.getRootLogger();
+    Logger rootLogger = (Logger) LogService.getRootLogger();
 
     // assert "Console" is present for ROOT
     Appender appender = rootLogger.getAppenders().get(LogService.STDOUT);
