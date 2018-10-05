@@ -138,11 +138,11 @@ subprojects {
 
     doLast {
       if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
-        def expectedPomFile = sourceSets.test.resources.find() { it.name == "expected-pom.xml" }
+        def expectedPomFile = sourceSets.test.resources.getSourceDirectories().first().toURI().resolve("expected-pom.xml")
         if (null == expectedPomFile) {
           throw new RuntimeException("expected-pom.xml not found.")
         }
-        def expectedPom = new XmlParser().parse(expectedPomFile)
+        def expectedPom = new XmlParser().parse(expectedPomFile.toString())
         def expectedDependencies = new TreeSet()
         expectedPom.dependencies.dependency.each() {
           expectedDependencies.add(it as String)
@@ -184,12 +184,13 @@ subprojects {
   task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy) {
     description 'After having verified changes with checkPom, this task will perform the copy.'
 
-    def expectedPomFile = sourceSets.test.resources.find() { it.name == "expected-pom.xml" }
+    def expectedPomDir = sourceSets.test.resources.getSourceDirectories().first().toURI()
     def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
-    if (tasks.getByName("generatePomFileForMavenPublication").enabled && expectedPomFile && actualPomFile) {
+    if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
       from actualPomFile
-      into expectedPomFile.parent
-      rename '.*xml', "expected-pom.xml"
+      into expectedPomDir
+      rename '.*.xml', "expected-pom.xml"
+
     }
   }
 } // subprojects
