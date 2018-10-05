@@ -83,6 +83,7 @@ public class ClientServerHostNameVerificationDistributedTest {
     CertificateBuilder serverCertificate = new CertificateBuilder()
         .commonName("server")
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost());
 
     CertificateBuilder clientCertificate = new CertificateBuilder()
