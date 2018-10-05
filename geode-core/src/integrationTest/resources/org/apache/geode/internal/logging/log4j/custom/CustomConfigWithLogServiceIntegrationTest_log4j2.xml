@@ -15,7 +15,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<Configuration status="FATAL" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j.custom">
+<Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j.custom">
     <Properties>
         <Property name="custom-pattern">CUSTOM: level=%level time=%date{yyyy/MM/dd HH:mm:ss.SSS z} message=%message%nthrowable=%throwable%n
         </Property>

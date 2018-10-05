@@ -151,11 +151,6 @@ dependencies {
   }
 }
 
-tasks.withType(Test){
-  dependsOn installDist
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
-}
-
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/gemfire.properties")
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
@@ -437,21 +432,10 @@ distributions {
   }
 }
 
-// Create a configuration closure to configure test targets with the install directory
-def dependOnInstalledProduct = {
+tasks.withType(Test){
   dependsOn installDist
-  def install = file("$buildDir/install/${distributions.main.baseName}")
-  environment ('GEODE_HOME', install)
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
-
-// Add the configuration closure to the test targets so they depend on the install directory
-test dependOnInstalledProduct
-acceptanceTest dependOnInstalledProduct
-distributedTest dependOnInstalledProduct
-upgradeTest dependOnInstalledProduct
-integrationTest dependOnInstalledProduct
-uiTest dependOnInstalledProduct
-repeatTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist

@@ -33,6 +33,7 @@ dependencies {
   integrationTestCompile project(":extensions:geode-modules-test")
 
   integrationTestRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
+  integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 }
 
 disableMavenPublishing()

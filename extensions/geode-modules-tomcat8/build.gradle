@@ -34,6 +34,9 @@ dependencies {
 
   distributedTestCompile project(":extensions:geode-modules-test")
 
+  distributedTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
+  distributedTestRuntime 'javax.annotation:javax.annotation-api:' + project.'javax-annotation.version'
+
   eclipse.classpath.file {
     whenMerged { classpath ->
       classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}

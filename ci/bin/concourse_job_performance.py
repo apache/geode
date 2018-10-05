@@ -20,6 +20,7 @@ import itertools
 import json
 import logging
 import multiprocessing
+import os
 import re
 import threading
 from multiprocessing.dummy import Pool
@@ -165,7 +166,7 @@ def print_failures(completed, expected_failed_builds, long_list_of_failures, url
                                                failure_url_base)
     print_failures_in_classes_that_share_method_names(completed, long_list_of_failures)
     print_class_and_test_failures_with_links(completed, long_list_of_failures, url)
-
+    print_list_of_failures(long_list_of_failures, url)
     # Then highlight any build runs that failed hard / timed out.
 
 
@@ -207,23 +208,27 @@ def print_class_and_test_failures_with_links(completed, long_list_of_failures, u
         failed_tests = set(failure.method for failure in this_class_failures)
         class_build_failures_count = sum(1 for _ in {failure.build_json['name'] for failure in this_class_failures})
 
-        print(success_rate_string(this_class_name, class_build_failures_count, completed))
+        print(os.linesep + success_rate_string(this_class_name, class_build_failures_count, completed) + os.linesep)
 
         for this_test_method_name in failed_tests:
             this_test_method_failures = [failure for failure in this_class_failures
                                          if failure.method == this_test_method_name]
-            test_build_failures_count = sum(
-                1 for _ in {failure.build_json['name'] for failure in this_test_method_failures})
-            print(" | ", success_rate_string("." + this_test_method_name, test_build_failures_count, completed))
 
             for this_failure in this_test_method_failures:
                 build = this_failure.build_json
                 failed_build_url = (f"{url}/teams/{build['team_name']}/pipelines/"
                                     f"{build['pipeline_name']}/jobs/{build['job_name']}/builds/{build['name']}")
 
-                print(" | ", " | ",
-                      color(f"Failed build {build['name']:3s} ", fg='red'),
-                      color(f"at {failed_build_url}", fg='magenta', style='bold'))
+                print("         " + this_test_method_name + "       " + failed_build_url)
+
+
+def print_list_of_failures(long_list_of_failures, url):
+    print(os.linesep * 3)
+    for this_failure in long_list_of_failures:
+        build = this_failure.build_json
+        failed_build_url = (f"{url}/teams/{build['team_name']}/pipelines/"
+                                 f"{build['pipeline_name']}/jobs/{build['job_name']}/builds/{build['name']}")
+        print(this_failure.class_name+"."+this_failure.method+", "+failed_build_url)
 
 
 def success_rate_string(identifier, failure_count, total_count):
@@ -259,15 +264,15 @@ def print_success_rate_and_expectation_warning(completed, expected_failed_builds
         print(color(f'>>>>> {build_failure_count} jobs "went red," '
                     f'but only {test_failure_count} were detected test failures. <<<<<',
                     fg='red', style='bold'))
-        print(f"Please manually inspect the following builds:")
+        print(f"Maybe you have some timeouts or other issues please manually inspect the following builds:")
         for build_failure in build_failure_not_test_failure:
-            print(f"  {failure_url_base}/{build_failure}")
+            print(f"  {failure_url_base}{build_failure}")
     if test_failure_not_build_failure:
         print(color(f'>>>>> OH NO!  A test failure was detected, but the job "went green" anyway!! <<<<',
                     fg='red', style='bold'))
         print(f"Please manually inspect the following builds:")
         for test_failure in test_failure_not_build_failure:
-            print(f"  {failure_url_base}/{test_failure}")
+            print(f"  {failure_url_base}{test_failure}")
     print(YELLOW_STARS_SEPARATOR)
     print()
 
@@ -282,17 +287,17 @@ def get_builds_to_examine(builds, build_count):
     succeeded, failed, aborted, errored, pending, started = sieve(builds, lambda b: b['status'], *statuses)
     completed_builds = succeeded + failed
     completed_builds.sort(key=itemgetter('id'), reverse=True)
-    builds_to_analyze = completed_builds[:build_count] if build_count else completed_builds
+    if build_count == 0:
+        count_of_builds_to_return = len(completed_builds)
+    else:
+        count_of_builds_to_return = build_count
+
+    builds_to_analyze = completed_builds[:count_of_builds_to_return] if count_of_builds_to_return else completed_builds
+
     logging.debug(f"{len(aborted)} aborted builds in examination range: {list_and_sort_by_name(aborted)}")
     logging.debug(f"{len(errored)} errored builds in examination range: {list_and_sort_by_name(errored)}")
     logging.debug(f"{len(pending)} pending builds in examination range: {list_and_sort_by_name(pending)}")
     logging.debug(f"{len(started)} started builds in examination range: {list_and_sort_by_name(started)}")
-
-    if build_count and len(completed_builds) < build_count:
-        raise RuntimeError(
-            "The build report returned the {} most recent builds, with only {} of these completed.  "
-            "This cannot satisfy the desired target of {} jobs to analyze.".format(
-                len(builds), len(completed_builds), build_count))
 
     first_build = builds_to_analyze[-1]['name']
     last_build = builds_to_analyze[0]['name']

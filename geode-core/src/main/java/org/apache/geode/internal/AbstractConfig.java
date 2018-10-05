@@ -37,7 +37,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.UnmodifiableException;
 import org.apache.geode.distributed.internal.FlowControlParams;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
@@ -224,7 +223,6 @@ public abstract class AbstractConfig implements Config {
       if (valueType.equals(String.class)) {
         attObjectValue = value;
       } else if (valueType.equals(String[].class)) {
-        // TODO:GEODE-5784: DUPLICATE CONDITION with different behavior
         attObjectValue = value.split(",");
       } else if (valueType.equals(Integer.class)) {
         attObjectValue = Integer.valueOf(value);
@@ -251,16 +249,6 @@ public abstract class AbstractConfig implements Config {
           throw new IllegalArgumentException(
               LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_VALID_HOST_NAME_2
                   .toLocalizedString(name, value, ex.toString()));
-        }
-      } else if (valueType.equals(String[].class)) {
-        // TODO:GEODE-5784: DUPLICATE CONDITION with different behavior
-        if (value == null || value.length() == 0) {
-          attObjectValue = null;
-        } else {
-          String trimAttName = name.substring(0, name.length() - 1);
-          throw new UnmodifiableException(
-              LocalizedStrings.AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_SET_FROM_THE_COMMAND_LINE_SET_1_FOR_EACH_INDIVIDUAL_PARAMETER_INSTEAD
-                  .toLocalizedString(name, trimAttName));
         }
       } else if (valueType.equals(FlowControlParams.class)) {
         String[] values = value.split(",");
