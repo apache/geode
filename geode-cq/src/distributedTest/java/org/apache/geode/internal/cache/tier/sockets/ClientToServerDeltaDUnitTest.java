@@ -56,10 +56,10 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TestObjectWithIdentifier;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -976,7 +976,7 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    Wait.waitForCriterion(wc, 10 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   static class CSDeltaTestImpl extends DeltaTestImpl {

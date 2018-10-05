@@ -67,6 +67,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -2086,7 +2087,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       vm0.invoke(new SerializableCallable() {
 
         public Object call() throws Exception {
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
             public boolean done() {
               InternalDistributedSystem ds = basicGetSystem();
               return ds == null || !ds.isConnected();
@@ -2095,7 +2096,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             public String description() {
               return "DS did not disconnect";
             }
-          }, MAX_WAIT, 100, true);
+          });
 
           return null;
         }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -38,7 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
@@ -111,6 +111,7 @@ import org.apache.geode.internal.jta.SyncImpl;
 import org.apache.geode.internal.jta.TransactionImpl;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.UserTransactionImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -118,7 +119,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -482,10 +482,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         final TXManagerImpl txmgr = getGemfireCache().getTxManager();
         try {
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
             public boolean done() {
               Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              getLogWriter()
                   .info("found " + states.size() + " tx states for " + myId);
               return states.isEmpty();
             }
@@ -493,7 +493,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             public String description() {
               return "Waiting for transaction state to expire";
             }
-          }, 15000, 500, true);
+          });
           return null;
         } finally {
           getGemfireCache().getDistributedSystem().disconnect();
@@ -914,7 +914,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             return "waiting for hosted tx in progress to terminate";
           }
         };
-        Wait.waitForCriterion(w, 10000, 200, true);
+        GeodeAwaitility.await().untilAsserted(w);
         return null;
       }
     });
@@ -1423,7 +1423,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         final ClientListener cl =
             (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           @Override
           public boolean done() {
@@ -1434,7 +1434,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           public String description() {
             return "Listener was not invoked in 30 seconds";
           }
-        }, 30000, 100, true);
+        });
 
         assertEquals(1, cl.invokeCount);
         return null;
@@ -3526,7 +3526,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         final TXStateProxy txState = mgr.getTXState();
         assertTrue(txState.isInProgress());
         r.put(new CustId(101), new Customer("name101", "address101"));
-        TransactionId txId = mgr.suspend(TimeUnit.MILLISECONDS);
+        TransactionId txId = mgr.suspend(MILLISECONDS);
         WaitCriterion waitForTxTimeout = new WaitCriterion() {
           public boolean done() {
             return !txState.isInProgress();
@@ -3538,7 +3538,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         };
         // tx should timeout after 1 ms but to deal with loaded machines and thread
         // scheduling latency wait for 10 seconds before reporting an error.
-        Wait.waitForCriterion(waitForTxTimeout, 10 * 1000, 10, true);
+        GeodeAwaitility.await().untilAsserted(waitForTxTimeout);
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
@@ -3958,7 +3958,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
                 return "expected:" + keys + " found:" + clientListener.keys;
               }
             };
-            Wait.waitForCriterion(wc, 30 * 1000, 500, true);
+            GeodeAwaitility.await().untilAsserted(wc);
           }
         }
         assertTrue(foundListener);
@@ -4083,10 +4083,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   Object verifyTXStateExpired(final DistributedMember myId, final TXManagerImpl txmgr) {
     try {
-      Wait.waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         public boolean done() {
           Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+          getLogWriter()
               .info("found " + states.size() + " tx states for " + myId);
           return states.isEmpty();
         }
@@ -4094,7 +4094,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         public String description() {
           return "Waiting for transaction state to expire";
         }
-      }, 15000, 500, true);
+      });
       return null;
     } finally {
       getGemfireCache().getDistributedSystem().disconnect();

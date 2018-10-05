@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.SystemFailure.initiateFailure;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -34,7 +35,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -51,6 +51,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -321,7 +322,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
           verifyRegionToProxyMapForFullRegistration();
           return true;
         } catch (VirtualMachineError e) {
-          SystemFailure.initiateFailure(e);
+          initiateFailure(e);
           throw e;
         } catch (Error e) {
           return false;
@@ -334,7 +335,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static void verifyRegionToProxyMapForFullRegistration() {
@@ -358,7 +359,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
           verifyRegisterK4toK5();
           return true;
         } catch (VirtualMachineError e) {
-          SystemFailure.initiateFailure(e);
+          initiateFailure(e);
           throw e;
         } catch (Error e) {
           return false;
@@ -371,7 +372,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         return "verifyRegisterK4toK5Retry";
       }
     };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static void verifyRegisterK4toK5() {
@@ -395,7 +396,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
           verifyRegionToProxyMapForNoRegistration();
           return true;
         } catch (VirtualMachineError e) {
-          SystemFailure.initiateFailure(e);
+          initiateFailure(e);
           throw e;
         } catch (Error e) {
           return false;
@@ -408,7 +409,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static void verifyRegionToProxyMapForNoRegistration() {
@@ -472,6 +473,6 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 }

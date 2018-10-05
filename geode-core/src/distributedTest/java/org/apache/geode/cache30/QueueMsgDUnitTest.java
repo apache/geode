@@ -14,7 +14,19 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.DataPolicy.NORMAL;
+import static org.apache.geode.cache.InterestPolicy.ALL;
+import static org.apache.geode.cache.Operation.CREATE;
+import static org.apache.geode.cache.Operation.DESTROY;
+import static org.apache.geode.cache.Operation.INVALIDATE;
+import static org.apache.geode.cache.Operation.PUTALL_CREATE;
+import static org.apache.geode.cache.Operation.REGION_CLEAR;
+import static org.apache.geode.cache.Operation.REGION_CREATE;
+import static org.apache.geode.cache.Operation.REGION_INVALIDATE;
+import static org.apache.geode.cache.Operation.UPDATE;
+import static org.apache.geode.cache.Scope.DISTRIBUTED_ACK;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -32,17 +44,16 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestPolicy;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -60,7 +71,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
   @Test
   public void testQueueWhenRoleMissing() throws Exception {
     AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setScope(DISTRIBUTED_ACK);
     DistributedRegion r = (DistributedRegion) createRootRegion(factory.create());
     final CachePerfStats stats = r.getCachePerfStats();
     int queuedOps = stats.getReliableQueuedOps();
@@ -86,7 +97,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     queuedOps = stats.getReliableQueuedOps();
     // @todo darrel: try some other ops
 
-    VM vm = Host.getHost(0).getVM(0);
+    VM vm = getHost(0).getVM(0);
     // now create a system that fills this role since it does not create the
     // region our queue should not be flushed
     vm.invoke(new SerializableRunnable() {
@@ -104,9 +115,9 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     vm.invoke(new CacheSerializableRunnable("create root") {
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setDataPolicy(DataPolicy.NORMAL);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+        factory.setScope(DISTRIBUTED_ACK);
+        factory.setDataPolicy(NORMAL);
+        factory.setSubscriptionAttributes(new SubscriptionAttributes(ALL));
         TestCacheListener cl = new TestCacheListener() {
           public void afterCreate2(EntryEvent event) {}
 
@@ -131,7 +142,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
         return "waiting for reliableQueuedOps to become 0";
       }
     };
-    Wait.waitForCriterion(ev, 5 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     // now check that the queued op was delivered
     vm.invoke(new CacheSerializableRunnable("check") {
@@ -145,11 +156,11 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           List events = cl.getEventHistory();
           {
             CacheEvent ce = (CacheEvent) events.get(evIdx++);
-            assertEquals(Operation.REGION_CREATE, ce.getOperation());
+            assertEquals(REGION_CREATE, ce.getOperation());
           }
           {
             EntryEvent ee = (EntryEvent) events.get(evIdx++);
-            assertEquals(Operation.CREATE, ee.getOperation());
+            assertEquals(CREATE, ee.getOperation());
             assertEquals("createKey", ee.getKey());
             assertEquals("createValue", ee.getNewValue());
             assertEquals(null, ee.getOldValue());
@@ -158,7 +169,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           }
           {
             EntryEvent ee = (EntryEvent) events.get(evIdx++);
-            assertEquals(Operation.INVALIDATE, ee.getOperation());
+            assertEquals(INVALIDATE, ee.getOperation());
             assertEquals("createKey", ee.getKey());
             assertEquals(null, ee.getNewValue());
             assertEquals("createValue", ee.getOldValue());
@@ -167,7 +178,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           }
           {
             EntryEvent ee = (EntryEvent) events.get(evIdx++);
-            assertEquals(Operation.UPDATE, ee.getOperation());
+            assertEquals(UPDATE, ee.getOperation());
             assertEquals("createKey", ee.getKey());
             assertEquals("putValue", ee.getNewValue());
             assertEquals(null, ee.getOldValue());
@@ -176,7 +187,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           }
           {
             EntryEvent ee = (EntryEvent) events.get(evIdx++);
-            assertEquals(Operation.DESTROY, ee.getOperation());
+            assertEquals(DESTROY, ee.getOperation());
             assertEquals("createKey", ee.getKey());
             assertEquals(null, ee.getNewValue());
             assertEquals("putValue", ee.getOldValue());
@@ -185,7 +196,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           }
           {
             EntryEvent ee = (EntryEvent) events.get(evIdx++);
-            assertEquals(Operation.PUTALL_CREATE, ee.getOperation());
+            assertEquals(PUTALL_CREATE, ee.getOperation());
             assertEquals("aKey", ee.getKey());
             assertEquals("aValue", ee.getNewValue());
             assertEquals(null, ee.getOldValue());
@@ -194,7 +205,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           }
           {
             EntryEvent ee = (EntryEvent) events.get(evIdx++);
-            assertEquals(Operation.PUTALL_CREATE, ee.getOperation());
+            assertEquals(PUTALL_CREATE, ee.getOperation());
             assertEquals("bKey", ee.getKey());
             assertEquals("bValue", ee.getNewValue());
             assertEquals(null, ee.getOldValue());
@@ -203,13 +214,13 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
           }
           {
             RegionEvent re = (RegionEvent) events.get(evIdx++);
-            assertEquals(Operation.REGION_INVALIDATE, re.getOperation());
+            assertEquals(REGION_INVALIDATE, re.getOperation());
             assertEquals("invalidateRegionCBArg", re.getCallbackArgument());
             assertEquals(true, re.isOriginRemote());
           }
           {
             RegionEvent re = (RegionEvent) events.get(evIdx++);
-            assertEquals(Operation.REGION_CLEAR, re.getOperation());
+            assertEquals(REGION_CLEAR, re.getOperation());
             assertEquals(null, re.getCallbackArgument());
             assertEquals(true, re.isOriginRemote());
           }

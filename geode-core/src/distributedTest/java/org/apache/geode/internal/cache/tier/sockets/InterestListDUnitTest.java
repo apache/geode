@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -56,6 +57,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -658,7 +660,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
           return "waiting for queues to drain for " + fproxy.getProxyID();
         }
       };
-      Wait.waitForCriterion(ev, 5 * 10 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     }
   }
 
@@ -708,7 +710,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
         return "waiting for " + fCacheListener.getExpectedCreates() + " create events";
       }
     };
-    Wait.waitForCriterion(ev, 5 * 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   private static void confirmNoCacheListenerUpdates() throws Exception {
@@ -1001,7 +1003,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
       @Override
       public boolean done() {
         try {
-          Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+          Region r = cache.getRegion(SEPARATOR + REGION_NAME);
           assertNotNull(r);
           if (vm.equals("vm1")) {
             // Verify that 'key-1' was updated, but 'key-2' was not and contains the
@@ -1025,7 +1027,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
         return "waiting for client to apply events from server";
       }
     };
-    Wait.waitForCriterion(ev, 5 * 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   private static void validateSingleEntry(Object key, String value) {

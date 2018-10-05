@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
@@ -45,7 +46,7 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -53,7 +54,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
@@ -174,15 +174,13 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // numPortfoliosPerVM instances of Portfolio created for put operation
           // Due to index, we have deserialized all of the entries this vm currently host
           Index index = getCache().getQueryService().getIndex(region, "idIndex");
-          Wait.waitForCriterion(
-              verifyPortfolioCount(
-                  (int) index.getStatistics().getNumberOfValues() + numPortfoliosPerVM),
-              5000, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
+              (int) index.getStatistics().getNumberOfValues() + numPortfoliosPerVM));
         } else {
           // operations we have done on this vm consist of:
           // numPortfoliosPerVM instances of Portfolio created for put operation
           // We do not have an index, so we have not deserialized any values
-          Wait.waitForCriterion(verifyPortfolioCount(numPortfoliosPerVM), 5000, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(numPortfoliosPerVM));
         }
         return null;
       }
@@ -208,15 +206,13 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
             QueryTestUtils utils = new QueryTestUtils();
             index = utils.createIndex("idIndex", "p.ID", "/portfolios p");
           }
-          Wait.waitForCriterion(
-              verifyPortfolioCount(
-                  (int) index.getStatistics().getNumberOfValues() + numPortfoliosPerVM),
-              5000, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
+              (int) index.getStatistics().getNumberOfValues() + numPortfoliosPerVM));
         } else {
           // operations we have done on this vm consist of:
           // numPortfoliosPerVM instances of Portfolio created for put operation
           // We do not have an index, so we have not deserialized any values
-          Wait.waitForCriterion(verifyPortfolioCount(numPortfoliosPerVM), 5000, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(numPortfoliosPerVM));
         }
         return null;
       }
@@ -247,18 +243,18 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // Since we have deserialized and cached these values, we just need to add the number of
           // results we did a copy of due to copy on read
           Index index = getCache().getQueryService().getIndex(region, "idIndex");
-          Wait.waitForCriterion(verifyPortfolioCount((int) index.getStatistics().getNumberOfValues()
-              + numPortfoliosPerVM + numExpectedResults), 5000, 200, true);
+          GeodeAwaitility.await()
+              .untilAsserted(verifyPortfolioCount((int) index.getStatistics().getNumberOfValues()
+                  + numPortfoliosPerVM + numExpectedResults));
         } else {
           // operations we have done on this vm consist of:
           // 50 instances of Portfolio created for put operation
           // Due to the query we deserialized the number of entries this vm currently hosts
           // We had to deserialized the results from the other data nodes when we iterated through
           // the results as well as our own
-          Wait.waitForCriterion(
-              verifyPortfolioCount((int) ((PartitionedRegion) region).getLocalSize()
-                  + numExpectedResults + numPortfoliosPerVM),
-              5000, 200, true);
+          GeodeAwaitility.await()
+              .untilAsserted(verifyPortfolioCount((int) ((PartitionedRegion) region).getLocalSize()
+                  + numExpectedResults + numPortfoliosPerVM));
         }
         return null;
       }
@@ -270,16 +266,12 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         if (hasIndex) {
           // After vm0 executed the query, we already had the values deserialized in our cache
           // So it's the same total as before
-          Wait.waitForCriterion(
-              verifyPortfolioCount(
-                  (int) ((PartitionedRegion) region).getLocalSize() + numPortfoliosPerVM),
-              5000, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
+              (int) ((PartitionedRegion) region).getLocalSize() + numPortfoliosPerVM));
         } else {
           // After vm0 executed the query, we had to deserialize the values in our vm
-          Wait.waitForCriterion(
-              verifyPortfolioCount(
-                  (int) ((PartitionedRegion) region).getLocalSize() + numPortfoliosPerVM),
-              5000, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
+              (int) ((PartitionedRegion) region).getLocalSize() + numPortfoliosPerVM));
         }
         return null;
       }
@@ -309,8 +301,9 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // This is the second query, because we have deserialized and cached these values, we just
           // need to add the number of results a second time
           Index index = getCache().getQueryService().getIndex(region, "idIndex");
-          Wait.waitForCriterion(verifyPortfolioCount((int) index.getStatistics().getNumberOfValues()
-              + numExpectedResults + numExpectedResults + numPortfoliosPerVM), 5000, 200, true);
+          GeodeAwaitility.await()
+              .untilAsserted(verifyPortfolioCount((int) index.getStatistics().getNumberOfValues()
+                  + numExpectedResults + numExpectedResults + numPortfoliosPerVM));
         } else {
           // operations we have done on this vm consist of:
           // 50 instances of Portfolio created for put operation
@@ -319,11 +312,10 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // need to add the number of results a second time
           // Because we have no index, we have to again deserialize all the values that this vm is
           // hosting
-          Wait.waitForCriterion(
-              verifyPortfolioCount((int) (((PartitionedRegion) region).getLocalSize()
+          GeodeAwaitility.await()
+              .untilAsserted(verifyPortfolioCount((int) (((PartitionedRegion) region).getLocalSize()
                   + ((PartitionedRegion) region).getLocalSize() + numExpectedResults
-                  + numExpectedResults + numPortfoliosPerVM)),
-              5000, 200, true);
+                  + numExpectedResults + numPortfoliosPerVM)));
         }
         return null;
       }
@@ -379,7 +371,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         }
 
         // We should have the same number of portfolio objects that we created for the put
-        Wait.waitForCriterion(verifyPortfolioCount(numPortfolios), 5000, 200, true);
+        GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(numPortfolios));
         return null;
       }
     });
@@ -388,7 +380,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         // At this point, we should only have serialized values in this vm
         Region region = getCache().getRegion("/portfolios");
-        Wait.waitForCriterion(verifyPortfolioCount(0), 0, 200, true);
+        GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(0));
         return null;
       }
     });
@@ -398,9 +390,9 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         // There is an index for vm2, so we should have deserialized values at this point,
         Region region = getCache().getRegion("/portfolios");
         if (hasIndex) {
-          Wait.waitForCriterion(verifyPortfolioCount(numPortfolios), 0, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(numPortfolios));
         } else {
-          Wait.waitForCriterion(verifyPortfolioCount(0), 0, 200, true);
+          GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(0));
         }
         return null;
       }
@@ -434,13 +426,13 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
           txManager.commit();
         } catch (CommitConflictException conflict) {
-          Assert.fail("commit conflict exception", conflict);
+          fail("commit conflict exception", conflict);
         }
 
         // We have created puts from our previous callable
         // Now we have copied the results from the query
-        Wait.waitForCriterion(verifyPortfolioCount(numExpectedResults + numPortfolios), 0, 200,
-            true);
+        GeodeAwaitility.await()
+            .untilAsserted(verifyPortfolioCount(numExpectedResults + numPortfolios));
         return null;
       }
     });
@@ -467,8 +459,8 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         }
         // first it must deserialize the portfolios in the replicated region
         // then we do a copy on read of these deserialized objects for the final result set
-        Wait.waitForCriterion(verifyPortfolioCount(numExpectedResults + numPortfolios), 0, 200,
-            true);
+        GeodeAwaitility.await()
+            .untilAsserted(verifyPortfolioCount(numExpectedResults + numPortfolios));
 
         results = (SelectResults) query.execute();
         assertEquals(numExpectedResults, results.size());
@@ -485,8 +477,8 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
         // we never created index on vm1
         // so in this case, we always have to deserialize the value from the region
-        Wait.waitForCriterion(verifyPortfolioCount(numPortfolios * 2 + numExpectedResults * 2), 0,
-            200, true);
+        GeodeAwaitility.await()
+            .untilAsserted(verifyPortfolioCount(numPortfolios * 2 + numExpectedResults * 2));
         return null;
       }
     });
@@ -512,8 +504,8 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           }
         }
         // with or without index, the values had to have been deserialized at one point
-        Wait.waitForCriterion(verifyPortfolioCount(numPortfolios + numExpectedResults), 0, 200,
-            true);
+        GeodeAwaitility.await()
+            .untilAsserted(verifyPortfolioCount(numPortfolios + numExpectedResults));
         results = (SelectResults) query.execute();
         assertEquals(numExpectedResults, results.size());
         for (Object o : results) {
@@ -532,13 +524,13 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // we have an index, so the values are already deserialized
           // total is now our original deserialization amount : numPortfolios
           // two query results copied.
-          Wait.waitForCriterion(verifyPortfolioCount(numPortfolios + numExpectedResults * 2), 0,
-              200, true);
+          GeodeAwaitility.await()
+              .untilAsserted(verifyPortfolioCount(numPortfolios + numExpectedResults * 2));
         } else {
           // we never created index on vm1
           // so in this case, we always have to deserialize the value from the region
-          Wait.waitForCriterion(verifyPortfolioCount(numPortfolios * 2 + numExpectedResults * 2), 0,
-              200, true);
+          GeodeAwaitility.await()
+              .untilAsserted(verifyPortfolioCount(numPortfolios * 2 + numExpectedResults * 2));
         }
         return null;
       }
@@ -564,8 +556,8 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         }
 
         // with or without index, the values we put in the region were already deserialized values
-        Wait.waitForCriterion(verifyPortfolioCount(numExpectedResults * 2 + numPortfolios), 0, 200,
-            true);
+        GeodeAwaitility.await()
+            .untilAsserted(verifyPortfolioCount(numExpectedResults * 2 + numPortfolios));
         return null;
       }
     });

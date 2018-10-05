@@ -14,11 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -65,11 +67,11 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -766,7 +768,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         }
       };
     }
-    Wait.waitForCriterion(wc, 5 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private void assertValue(String rName, String key, Object expected) {
@@ -783,7 +785,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private void confirmEviction(Integer port) {
     final EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
-        Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
+        SEPARATOR + generateNameForClientMsgsRegion(port))).entries)
             .getEvictionController();
 
     WaitCriterion wc = new WaitCriterion() {
@@ -795,7 +797,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         return "HA Overflow did not occure.";
       }
     };
-    Wait.waitForCriterion(wc, 10 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private void waitForLastKey() {
@@ -808,7 +810,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    Wait.waitForCriterion(wc, 10 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private void prepareDeltas() {

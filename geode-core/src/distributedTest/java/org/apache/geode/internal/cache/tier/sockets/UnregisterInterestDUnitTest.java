@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -33,18 +34,17 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -304,7 +304,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
 
   public static void timedWaitForInvalidates(Integer invalidates) {
     final int inv = invalidates;
-    final PoolImpl pool = (PoolImpl) PoolManager.find(cache.getRegion(regionname));
+    final PoolImpl pool = (PoolImpl) find(cache.getRegion(regionname));
 
     WaitCriterion wc = new WaitCriterion() {
       @Override
@@ -319,7 +319,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
             + pool.getInvalidateCount();
       }
     };
-    Wait.waitForCriterion(wc, 10000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static Integer createCacheAndStartServer() throws Exception {

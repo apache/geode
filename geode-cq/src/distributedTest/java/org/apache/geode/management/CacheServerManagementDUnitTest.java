@@ -19,6 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_H
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.getInstance;
+import static org.apache.geode.management.ManagementService.getManagementService;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getClientServiceMBeanName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -60,6 +63,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -315,8 +319,8 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     SerializableRunnable addClientNotifListener =
         new SerializableRunnable("Add Client Notif Listener") {
           public void run() {
-            GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-            ManagementService service = ManagementService.getManagementService(cache);
+            GemFireCacheImpl cache = getInstance();
+            ManagementService service = getManagementService(cache);
             final CacheServerMXBean bean = service.getLocalCacheServerMXBean(serverPort);
             assertNotNull(bean);
             WaitCriterion ev = new WaitCriterion() {
@@ -330,11 +334,11 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
                 return null;
               }
             };
-            Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             assertTrue(bean.isRunning());
             TestCacheServerNotif nt = new TestCacheServerNotif();
             try {
-              mbeanServer.addNotificationListener(MBeanJMXAdapter.getClientServiceMBeanName(
+              mbeanServer.addNotificationListener(getClientServiceMBeanName(
                   serverPort, cache.getDistributedSystem().getMemberId()), nt, null, null);
             } catch (InstanceNotFoundException e) {
               fail("Failed With Exception " + e);
@@ -413,8 +417,8 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   protected void verifyCacheServer(final VM vm, final int serverPort) throws Exception {
     SerializableRunnable verifyCacheServer = new SerializableRunnable("Verify Cache Server") {
       public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        ManagementService service = ManagementService.getManagementService(cache);
+        GemFireCacheImpl cache = getInstance();
+        ManagementService service = getManagementService(cache);
         final CacheServerMXBean bean = service.getLocalCacheServerMXBean(serverPort);
         assertNotNull(bean);
         WaitCriterion ev = new WaitCriterion() {
@@ -428,7 +432,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
             return null;
           }
         };
-        Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
         assertTrue(bean.isRunning());
         assertCacheServerConfig(bean);
 

@@ -24,7 +24,6 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

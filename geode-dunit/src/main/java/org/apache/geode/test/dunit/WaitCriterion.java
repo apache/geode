@@ -14,6 +14,10 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.junit.Assert.fail;
+
+import org.awaitility.core.ThrowingRunnable;
+
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
@@ -32,10 +36,17 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  * @see org.awaitility.Duration
  * @see org.awaitility.core.ConditionFactory
  */
-public interface WaitCriterion {
+public interface WaitCriterion extends ThrowingRunnable {
 
   public boolean done();
 
   public String description();
+
+  default void run() {
+    if (!done()) {
+      fail(description());
+    }
+
+  }
 
 }

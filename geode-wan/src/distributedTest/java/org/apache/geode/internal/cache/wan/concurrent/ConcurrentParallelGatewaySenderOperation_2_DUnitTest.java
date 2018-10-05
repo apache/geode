@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +28,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -640,7 +642,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
   public static void validateRegionSizeWithinRange(String regionName, final int min,
       final int max) {
-    final Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
@@ -655,7 +657,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
             + " but actual entries: " + r.keySet().size();
       }
     };
-    Wait.waitForCriterion(wc, 120000, 500, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   protected static void createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(Integer locPort) {

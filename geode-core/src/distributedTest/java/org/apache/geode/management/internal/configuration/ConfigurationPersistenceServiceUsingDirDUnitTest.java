@@ -37,7 +37,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.awaitility.core.ConditionFactory;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
