@@ -1223,8 +1223,9 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       assertTrue("Distributed system should not have disconnected",
           vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
-      assertEquals(sys.getDistributedMember(), MembershipManagerHelper.getCoordinator(sys));
-      assertEquals(mem2, MembershipManagerHelper.getLeadMember(sys));
+      await().untilAsserted(() -> assertEquals(sys.getDistributedMember(),
+          MembershipManagerHelper.getCoordinator(sys)));
+      await().untilAsserted(() -> assertEquals(mem2, MembershipManagerHelper.getLeadMember(sys)));
 
     } finally {
       vm2.invoke(() -> disconnectDistributedSystem());
