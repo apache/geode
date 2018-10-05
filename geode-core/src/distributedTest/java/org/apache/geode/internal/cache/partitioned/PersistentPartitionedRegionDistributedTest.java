@@ -953,8 +953,10 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     vm0.invoke(() -> createPartitionedRegion(1, -1, 1, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 1, true));
 
-    // Make sure we create a bucket
-    vm1.invoke(() -> createData(0, 1, "a"));
+    vm1.invoke(() -> {
+      Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
+      region.put(0, -1);
+    });
 
     // Try to make sure there are some operations in flight while closing the cache
     AsyncInvocation<Integer> createPartitionedRegionWithPutsOnVM0 = vm0.invokeAsync(() -> {
@@ -978,15 +980,11 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     vm0.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
-      // The value is initialized as a String so wait for it to be changed to an Integer.
-      await().until(() -> region.get(0) != null);
-      return region.get(0);
+      await().until(() -> region.get(0) > 0);
     });
     vm1.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
-      // The value is initialized as a String so wait for it to be changed to an Integer.
-      await().until(() -> region.get(0) != null);
-      return region.get(0);
+      await().until(() -> region.get(0) > 0);
     });
 
     AsyncInvocation<Void> closeCacheOnVM0 = vm0.invokeAsync(() -> getCache().close());

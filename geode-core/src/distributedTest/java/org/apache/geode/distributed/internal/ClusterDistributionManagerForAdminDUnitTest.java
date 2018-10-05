@@ -223,7 +223,8 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
         subRegion.destroyRegion();
 
         await()
-            .untilAsserted(() -> assertThat(rootRegion.subregions(false)).hasSize(expectedSize));
+            .untilAsserted(
+                () -> assertThat(rootRegion.subregions(false).size()).isEqualTo(expectedSize));
       }
     }
   }

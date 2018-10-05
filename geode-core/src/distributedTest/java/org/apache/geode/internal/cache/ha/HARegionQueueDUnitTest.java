@@ -678,6 +678,9 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         new SerializableCallable("Check Ops Occurred") {
           @Override
           public Object call() throws CacheException {
+            if (opThreads == null) {
+              return false;
+            }
             for (int i = 0; i < opThreads.length; ++i) {
               if (((RunOp) opThreads[i]).getNumOpsPerformed() == 0) {
                 return false;
