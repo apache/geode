@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.ExpirationAction.LOCAL_DESTROY;
+import static org.apache.geode.cache.LossAction.LIMITED_ACCESS;
+import static org.apache.geode.cache.ResumptionAction.NONE;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.distributed.internal.membership.InternalRole.getRole;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -70,11 +75,11 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXState;
 import org.apache.geode.internal.cache.TXStateInterface;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -752,7 +757,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
     for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+      requiredRolesSet.add(getRole(requiredRoles[i]));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -765,7 +770,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // create region in controller...
     MembershipAttributes ra =
-        new MembershipAttributes(requiredRoles, LossAction.LIMITED_ACCESS, ResumptionAction.NONE);
+        new MembershipAttributes(requiredRoles, LIMITED_ACCESS, NONE);
     AttributesFactory fac = new AttributesFactory();
     fac.setMembershipAttributes(ra);
     fac.setScope(getRegionScope());
@@ -777,7 +782,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     waitForMemberTimeout();
 
     // use vm1 to create role
-    Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+    getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -790,7 +795,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // test to make sure expiration is suspended
     region.put("expireMe", "expireMe");
     assertTrue(region.size() == 1);
-    Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Close Region") {
+    getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Close Region") {
       public void run2() throws CacheException {
         Region region = getRootRegion(name);
         region.close();
@@ -800,7 +805,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // set expiration and sleep
     AttributesMutator mutator = region.getAttributesMutator();
-    mutator.setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
+    mutator.setEntryTimeToLive(new ExpirationAttributes(1, LOCAL_DESTROY));
     WaitCriterion wc1 = new WaitCriterion() {
       public boolean done() {
         return ((LocalRegion) region).basicEntries(false).size() == 0;
@@ -811,10 +816,10 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
             + ((LocalRegion) region).basicEntries(false).size();
       }
     };
-    Wait.waitForCriterion(wc1, 30 * 1000, 10, true);
+    GeodeAwaitility.await().untilAsserted(wc1);
 
     // create region again
-    Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+    getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
       public void run2() throws CacheException {
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
@@ -998,7 +1003,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         return "expected region " + region + " to be destroyed";
       }
     };
-    Wait.waitForCriterion(wc, 30 * 1000, 10, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void waitForEntryDestroy(final Region region, final Object key) {
@@ -1011,7 +1016,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         return "expected entry " + key + " to not exist but it has the value " + region.get(key);
       }
     };
-    Wait.waitForCriterion(wc, 30 * 1000, 10, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   /**

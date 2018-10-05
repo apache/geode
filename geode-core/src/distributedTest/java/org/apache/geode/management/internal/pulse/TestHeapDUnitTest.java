@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -65,7 +65,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
       }
     };
 
-    Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
+    GeodeAwaitility.await().untilAsserted(waitCriteria);
     final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
     return bean.getTotalHeapSize() * 1000;

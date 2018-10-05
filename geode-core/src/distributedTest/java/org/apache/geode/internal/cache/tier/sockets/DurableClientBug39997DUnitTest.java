@@ -34,12 +34,12 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -101,7 +101,7 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Cache cache = getCache();
         final Region region = cache.getRegion("region");
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           public String description() {
             return "Wait for register interest to succeed";
@@ -116,7 +116,7 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
             return true;
           }
 
-        }, 30000, 1000, true);
+        });
       }
     });
   }

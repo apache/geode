@@ -60,8 +60,8 @@ import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -173,7 +173,7 @@ public class ConnectionManagerJUnitTest {
         return "waiting for manager " + descrip;
       }
     };
-    Wait.waitForCriterion(ev, 200, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   @Test

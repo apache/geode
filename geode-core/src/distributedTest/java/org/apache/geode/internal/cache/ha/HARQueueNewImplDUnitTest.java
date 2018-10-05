@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.cache.Region.Entry;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -24,7 +27,6 @@ import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.io.File;
 import java.util.HashMap;
@@ -58,6 +60,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -989,7 +992,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyNullValuesInCMR(final Integer numOfEntries, final Integer port,
       String[] keys) {
     final Region msgsRegion =
-        cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+        cache.getRegion(generateNameForClientMsgsRegion(port.intValue()));
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
@@ -1004,12 +1007,12 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         return excuse;
       }
     };
-    waitForCriterion(wc, 60 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     Set entries = msgsRegion.entrySet();
     Iterator iter = entries.iterator();
     for (; iter.hasNext();) {
-      Region.Entry entry = (Region.Entry) iter.next();
+      Entry entry = (Entry) iter.next();
       ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();
       for (int i = 0; i < keys.length; i++) {
         logger.fine("cum.key: " + cum.getKeyToConflate());
@@ -1133,7 +1136,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         return excuse;
       }
     };
-    waitForCriterion(wc, 120 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void verifyRegionSize(final Integer regionSize, final Integer msgsRegionsize) {
@@ -1172,7 +1175,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         return excuse;
       }
     };
-    waitForCriterion(wc, 120 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void verifyHaContainerType(Boolean isRegion, Integer port) {
@@ -1233,7 +1236,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
             return null;
           }
         };
-        waitForCriterion(ev, waitLimit.longValue(), 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       } else {
         WaitCriterion ev = new WaitCriterion() {
           @Override
@@ -1246,7 +1249,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
             return null;
           }
         };
-        waitForCriterion(ev, waitLimit.longValue(), 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       }
     } catch (Exception e) {
       fail("failed in verifyUpdatesReceived()" + e);
@@ -1257,7 +1260,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     try {
       Map haContainer = null;
       haContainer = cache.getRegion(
-          Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+          SEPARATOR + generateNameForClientMsgsRegion(port.intValue()));
       if (haContainer == null) {
         Object[] servers = cache.getCacheServers().toArray();
         for (int i = 0; i < servers.length; i++) {
@@ -1280,7 +1283,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
           return null;
         }
       };
-      waitForCriterion(ev, waitLimit.longValue(), 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } catch (Exception e) {
       fail("failed in waitTillMessagesAreDispatched()" + e);
     }

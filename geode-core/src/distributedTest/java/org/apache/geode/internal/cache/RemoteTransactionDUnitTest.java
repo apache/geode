@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.cache.ExpiryTask.permitExpiration;
+import static org.apache.geode.internal.cache.ExpiryTask.suspendExpiration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -108,6 +110,7 @@ import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
@@ -3953,7 +3956,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             return "listener was never invoked";
           }
         };
-        Wait.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
+        GeodeAwaitility.await().untilAsserted(waitForListenerInvocation);
         return null;
       }
     });
@@ -4036,7 +4039,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             return "listener invoked:" + l.invoked;
           }
         };
-        Wait.waitForCriterion(wc, 10 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -4089,7 +4092,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             return "listener was never invoked";
           }
         };
-        Wait.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
+        GeodeAwaitility.await().untilAsserted(waitForListenerInvocation);
         return null;
       }
     });
@@ -4428,7 +4431,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
                 + " r.containsKey(nonTXKey)=" + r.containsKey("nonTXKey");
           }
         };
-        ExpiryTask.suspendExpiration();
+        suspendExpiration();
         Region.Entry entry = null;
         long tilt;
         try {
@@ -4439,18 +4442,18 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           r.put("key", "newvalue");
           waitForEntryExpiration(lr, "key");
         } finally {
-          ExpiryTask.permitExpiration();
+          permitExpiration();
         }
         TransactionId tx = getCache().getCacheTransactionManager().suspend();
         // A remote tx will allow expiration to happen on the side that
         // is not hosting the tx. But it will not allow an expiration
         // initiated on the hosting jvm.
         // tx is hosted in vm2 so expiration can happen in vm1.
-        Wait.waitForCriterion(wc2, 30000, 5, true);
+        GeodeAwaitility.await().untilAsserted(wc2);
         getCache().getCacheTransactionManager().resume(tx);
         assertTrue(r.containsKey("key"));
         getCache().getCacheTransactionManager().commit();
-        Wait.waitForCriterion(wc2, 30000, 5, true);
+        GeodeAwaitility.await().untilAsserted(wc2);
         return null;
       }
     });

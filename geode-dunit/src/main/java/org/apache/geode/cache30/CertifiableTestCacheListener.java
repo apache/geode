@@ -28,7 +28,7 @@ import java.util.Set;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
@@ -96,7 +96,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key creation: " + key;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -110,7 +110,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key destroy: " + key;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -124,7 +124,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key invalidate: " + key;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -138,7 +138,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
         return "Waiting for key update: " + key;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 

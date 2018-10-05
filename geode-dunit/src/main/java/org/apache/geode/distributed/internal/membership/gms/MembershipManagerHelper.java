@@ -25,7 +25,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -118,7 +118,7 @@ public class MembershipManagerHelper {
         return "Waited over " + timeout + " ms for " + member + " to depart, but it didn't";
       }
     };
-    Wait.waitForCriterion(ev, timeout, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static void crashDistributedSystem(final DistributedSystem msys) {

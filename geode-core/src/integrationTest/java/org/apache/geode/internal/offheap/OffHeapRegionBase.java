@@ -53,6 +53,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -176,7 +177,7 @@ public abstract class OffHeapRegionBase {
           return "Waiting for disconnect to complete";
         }
       };
-      org.apache.geode.test.dunit.Wait.waitForCriterion(waitForDisconnect, 10 * 1000, 100, true);
+      GeodeAwaitility.await().untilAsserted(waitForDisconnect);
 
       assertTrue(gfc.isClosed());
     } finally {

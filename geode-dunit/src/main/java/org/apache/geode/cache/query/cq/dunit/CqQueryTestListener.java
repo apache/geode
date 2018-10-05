@@ -26,7 +26,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqStatusListener;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 public class CqQueryTestListener implements CqStatusListener {
@@ -218,7 +218,7 @@ public class CqQueryTestListener implements CqStatusListener {
         return "never got create event for CQ " + CqQueryTestListener.this.cqName + " key " + key;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -234,7 +234,7 @@ public class CqQueryTestListener implements CqStatusListener {
             + " expected: " + total + " receieved: " + CqQueryTestListener.this.totalEventCount;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -249,7 +249,7 @@ public class CqQueryTestListener implements CqStatusListener {
             + CqQueryTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -263,7 +263,7 @@ public class CqQueryTestListener implements CqStatusListener {
         return "never got invalidate event for CQ " + CqQueryTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -277,7 +277,7 @@ public class CqQueryTestListener implements CqStatusListener {
         return "never got update event for CQ " + CqQueryTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -291,7 +291,7 @@ public class CqQueryTestListener implements CqStatusListener {
         return "never got close event for CQ " + CqQueryTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -305,7 +305,7 @@ public class CqQueryTestListener implements CqStatusListener {
         return "never got region clear event for CQ " + CqQueryTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -319,7 +319,7 @@ public class CqQueryTestListener implements CqStatusListener {
         return "never got region invalidate event for CQ " + CqQueryTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -343,7 +343,7 @@ public class CqQueryTestListener implements CqStatusListener {
             + expectedMessage;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -359,7 +359,7 @@ public class CqQueryTestListener implements CqStatusListener {
             + CqQueryTestListener.this.cqsDisconnectedCount;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -375,7 +375,7 @@ public class CqQueryTestListener implements CqStatusListener {
             + CqQueryTestListener.this.cqsConnectedCount;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 

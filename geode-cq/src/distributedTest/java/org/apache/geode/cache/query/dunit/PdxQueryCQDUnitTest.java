@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -45,8 +46,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -195,16 +194,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         final CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
 
         // Wait for the events to show up on the client.
-        Wait.waitForCriterion(new WaitCriterion() {
-
-          public boolean done() {
-            return listener.getTotalEventCount() >= (numberOfEntries * 2 - queryLimit);
-          }
-
-          public String description() {
-            return null;
-          }
-        }, 30000, 100, false);
+        await().until(() -> listener.getTotalEventCount() >= (numberOfEntries * 2 - queryLimit));
 
         listener.printInfo(false);
 
