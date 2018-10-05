@@ -46,6 +46,7 @@ import org.springframework.shell.event.ShellStatus.Status;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.HostName;
@@ -484,7 +485,7 @@ public class Gfsh extends JLineShell {
    * Starts this GemFire Shell with console.
    */
   public void start() {
-    runner = new Thread(this, getShellName());
+    runner = new LoggingThread(getShellName(), false, this);
     runner.start();
   }
 

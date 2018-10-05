@@ -71,7 +71,7 @@ import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderE
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -672,9 +672,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         }
       }
     };
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup("Proxy Stomper Group", logger);
-    Thread t = new Thread(tg, stomper, "GatewaySender Proxy Stomper");
-    t.setDaemon(true);
+    Thread t = new LoggingThread("GatewaySender Proxy Stomper", stomper);
     t.start();
     try {
       t.join(GATEWAY_SENDER_TIMEOUT * 1000);

@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.HealthListenerMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
@@ -62,10 +62,9 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
     this.dm = dm;
     this.eval = new GemFireHealthEvaluator(config, dm);
     this.currentStatus = GemFireHealth.GOOD_HEALTH;
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup("HealthMonitor Threads", logger);
-    this.t = new Thread(tg, this,
-        LocalizedStrings.HealthMonitorImpl_HEALTH_MONITOR_OWNED_BY_0.toLocalizedString(owner));
-    this.t.setDaemon(true);
+    String threadName =
+        LocalizedStrings.HealthMonitorImpl_HEALTH_MONITOR_OWNED_BY_0.toLocalizedString(owner);
+    this.t = new LoggingThread(threadName, this);
   }
 
   /************** HealthMonitor interface implementation ******************/

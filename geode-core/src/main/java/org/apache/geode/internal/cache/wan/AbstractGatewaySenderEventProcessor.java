@@ -55,7 +55,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
@@ -68,7 +68,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  *
  * @since GemFire 7.0
  */
-public abstract class AbstractGatewaySenderEventProcessor extends Thread
+public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     implements GatewaySenderEventProcessor {
 
   private static final Logger logger = LogService.getLogger();
@@ -147,9 +147,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread
    */
   private int batchSize;
 
-  public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
+  public AbstractGatewaySenderEventProcessor(String string,
       GatewaySender sender, ThreadsMonitoring tMonitoring) {
-    super(createThreadGroup, string);
+    super(string);
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
     this.threadMonitoring = tMonitoring;

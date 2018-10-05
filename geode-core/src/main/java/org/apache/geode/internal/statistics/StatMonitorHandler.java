@@ -23,6 +23,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -248,8 +249,7 @@ public class StatMonitorHandler implements SampleHandler {
     void start() {
       synchronized (this) {
         if (this.consumer == null) {
-          this.consumer = new Thread(this, toString());
-          this.consumer.setDaemon(true);
+          this.consumer = new LoggingThread(toString(), this);
           this.alive = true;
           this.consumer.start();
         }

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.util.ArrayList;
@@ -23,18 +22,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
+import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -45,7 +41,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event
@@ -77,8 +73,6 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private static final long TOTAL_BYTES_TO_EVICT_FROM_HEAP = setTotalBytesToEvictFromHeap();
 
-  private static final String EVICTOR_THREAD_GROUP_NAME = "EvictorThreadGroup";
-
   private static final String EVICTOR_THREAD_NAME = "EvictorThread";
 
   private final Object evictionLock = new Object();
@@ -87,7 +81,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private final List<Integer> testTaskSetSizes = new ArrayList<>();
 
-  private final ThreadPoolExecutor evictorThreadPool;
+  private final ExecutorService evictorThreadPool;
 
   private final InternalCache cache;
 
@@ -109,30 +103,16 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   private volatile int numFastLoops;
 
   public HeapEvictor(final InternalCache cache) {
-    this(cache, EVICTOR_THREAD_GROUP_NAME, EVICTOR_THREAD_NAME);
+    this(cache, EVICTOR_THREAD_NAME);
   }
 
-  public HeapEvictor(final InternalCache cache, final String threadGroupName,
-      final String threadName) {
+  public HeapEvictor(final InternalCache cache, final String threadName) {
     this.cache = cache;
 
-    ThreadGroup evictorThreadGroup = LoggingThreadGroup.createThreadGroup(threadGroupName, logger);
-    ThreadFactory evictorThreadFactory = new ThreadFactory() {
-      private final AtomicInteger next = new AtomicInteger(0);
-
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread thread = new Thread(evictorThreadGroup, r, threadName + next.incrementAndGet());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
     if (!DISABLE_HEAP_EVICTOR_THREAD_POOL) {
-      BlockingQueue<Runnable> poolQueue =
-          new OverflowQueueWithDMStats(this.cache.getCachePerfStats().getEvictionQueueStatHelper());
-      this.evictorThreadPool = new ThreadPoolExecutor(MAX_EVICTOR_THREADS, MAX_EVICTOR_THREADS, 15,
-          SECONDS, poolQueue, evictorThreadFactory);
+      QueueStatHelper poolStats = this.cache.getCachePerfStats().getEvictionQueueStatHelper();
+      this.evictorThreadPool = LoggingExecutors.newFixedThreadPoolWithTimeout(threadName,
+          MAX_EVICTOR_THREADS, 15, poolStats);
     } else {
       // disabled
       this.evictorThreadPool = null;
@@ -224,7 +204,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     }
   }
 
-  public ThreadPoolExecutor getEvictorThreadPool() {
+  public ExecutorService getEvictorThreadPool() {
     if (isRunning()) {
       return evictorThreadPool;
     }
@@ -264,12 +244,11 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   }
 
   private Set<RegionEvictorTask> createRegionEvictionTasks() {
-    ThreadPoolExecutor pool = getEvictorThreadPool();
-    if (pool == null) {
+    if (getEvictorThreadPool() == null) {
       return Collections.emptySet();
     }
 
-    int threadsAvailable = pool.getCorePoolSize();
+    int threadsAvailable = MAX_EVICTOR_THREADS;
     long bytesToEvictPerTask = getTotalBytesToEvict() / threadsAvailable;
     List<LocalRegion> allRegionList = getAllRegionList();
     if (allRegionList.isEmpty()) {

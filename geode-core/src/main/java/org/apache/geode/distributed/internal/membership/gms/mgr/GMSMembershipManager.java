@@ -87,6 +87,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectRep
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -902,23 +903,19 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       if (latestView.getViewId() > member.getVmViewId()) {
         // tell the process that it should shut down distribution.
         // Run in a separate thread so we don't hold the view lock during the request. Bug #44995
-        new Thread(Thread.currentThread().getThreadGroup(),
-            "Removing shunned GemFire node " + member) {
-          @Override
-          public void run() {
-            // fix for bug #42548
-            // this is an old member that shouldn't be added
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GroupMembershipService_Invalid_Surprise_Member,
-                new Object[] {member, latestView}));
-            try {
-              requestMemberRemoval(member,
-                  "this member is no longer in the view but is initiating connections");
-            } catch (CancelException e) {
-              // okay to ignore
-            }
+        new LoggingThread("Removing shunned GemFire node " + member, false, () -> {
+          // fix for bug #42548
+          // this is an old member that shouldn't be added
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.GroupMembershipService_Invalid_Surprise_Member,
+              new Object[] {member, latestView}));
+          try {
+            requestMemberRemoval(member,
+                "this member is no longer in the view but is initiating connections");
+          } catch (CancelException e) {
+            // okay to ignore
           }
-        }.start();
+        }).start();
         addShunnedMember(member);
         return false;
       }
@@ -1971,35 +1968,24 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
     final DirectChannel dc = directChannel;
     if (dc != null) {
-      // if (crashed) {
-      // dc.closeEndpoint(member, reason);
-      // }
-      // else
       // Bug 37944: make sure this is always done in a separate thread,
       // so that shutdown conditions don't wedge the view lock
-      { // fix for bug 34010
-        Thread t = new Thread() {
-          @Override
-          public void run() {
-            try {
-              Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000).intValue());
-            } catch (InterruptedException ie) {
-              Thread.currentThread().interrupt();
-              // Keep going, try to close the endpoint.
-            }
-            if (!dc.isOpen()) {
-              return;
-            }
-            if (logger.isDebugEnabled())
-              logger.debug("Membership: closing connections for departed member {}", member);
-            // close connections, but don't do membership notification since it's already been done
-            dc.closeEndpoint(member, reason, false);
-          }
-        };
-        t.setDaemon(true);
-        t.setName("disconnect thread for " + member);
-        t.start();
-      } // fix for bug 34010
+      // fix for bug 34010
+      new LoggingThread("disconnect thread for " + member, () -> {
+        try {
+          Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000).intValue());
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          // Keep going, try to close the endpoint.
+        }
+        if (!dc.isOpen()) {
+          return;
+        }
+        if (logger.isDebugEnabled())
+          logger.debug("Membership: closing connections for departed member {}", member);
+        // close connections, but don't do membership notification since it's already been done
+        dc.closeEndpoint(member, reason, false);
+      }).start();
     }
   }
 
@@ -2551,7 +2537,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     }
 
 
-    Thread reconnectThread = new Thread(() -> {
+    Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
       // stop server locators immediately since they may not have correct
       // information. This has caused client failures in bridge/wan
       // network-down testing
@@ -2560,12 +2546,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         loc.stop(true, !services.getConfig().getDistributionConfig().getDisableAutoReconnect(),
             false);
       }
-
       uncleanShutdown(reason, shutdownCause);
     });
-
-    reconnectThread.setName("DisconnectThread");
-    reconnectThread.setDaemon(false);
     reconnectThread.start();
   }
 

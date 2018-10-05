@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -408,7 +409,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
         new SerializableCallable("Validate evictions") {
           public Object call() throws Exception {
             return getEvictor().getEvictorThreadPool() != null
-                ? getEvictor().getEvictorThreadPool().getTaskCount() : 0;
+                ? ((ThreadPoolExecutor) getEvictor().getEvictorThreadPool()).getTaskCount() : 0;
           }
         };
     Long taskCountOfVM = (Long) dataStore1.invoke(getThreadPoolTaskCount);

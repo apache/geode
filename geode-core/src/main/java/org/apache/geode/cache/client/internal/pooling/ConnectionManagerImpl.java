@@ -27,8 +27,6 @@ import java.util.Set;
 import java.util.SplittableRandom;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -60,6 +58,7 @@ import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -91,7 +90,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   protected volatile int connectionCount;
   protected ScheduledExecutorService backgroundProcessor;
-  protected ScheduledThreadPoolExecutor loadConditioningProcessor;
+  protected ScheduledExecutorService loadConditioningProcessor;
 
   protected ReentrantLock lock = new ReentrantLock();
   protected Condition freeConnection = lock.newCondition();
@@ -591,15 +590,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   public void start(ScheduledExecutorService backgroundProcessor) {
     this.backgroundProcessor = backgroundProcessor;
+    String name = "poolLoadConditioningMonitor-" + getPoolName();
     this.loadConditioningProcessor =
-        new ScheduledThreadPoolExecutor(1/* why not 0? */, new ThreadFactory() {
-          public Thread newThread(final Runnable r) {
-            Thread result = new Thread(r, "poolLoadConditioningMonitor-" + getPoolName());
-            result.setDaemon(true);
-            return result;
-          }
-        });
-    this.loadConditioningProcessor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        LoggingExecutors.newScheduledThreadPool(name, 1/* why not 0? */, false);
 
     endpointManager.addListener(endpointListener);
 

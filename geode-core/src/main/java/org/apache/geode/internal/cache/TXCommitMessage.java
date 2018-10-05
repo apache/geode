@@ -69,7 +69,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -1971,6 +1971,16 @@ public class TXCommitMessage extends PooledDistributionMessage
     return departureNoticed;
   }
 
+  private void doOriginDepartedCommit() {
+    try {
+      // Set processor to zero to avoid the ack to the now departed origin
+      processorId = 0;
+      basicProcess();
+    } finally {
+      txTracker.processed(this);
+    }
+  }
+
   @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, boolean crashed) {
@@ -1991,8 +2001,6 @@ public class TXCommitMessage extends PooledDistributionMessage
       this.departureNoticed = true;
     }
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("TXCommitMessage Threads", logger);
-
     // Send message to fellow FarSiders (aka recipients), if any, to
     // determine if any one of them have received a CommitProcessMessage
     if (getFarSiders() != null && !getFarSiders().isEmpty()) {
@@ -2003,15 +2011,10 @@ public class TXCommitMessage extends PooledDistributionMessage
 
       // Create a new thread, send the CommitProcessQuery, wait for a response and potentially
       // process
-      Thread fellowFarSidersQuery = new Thread(group, "CommitProcessQuery Thread") {
-        // Should I use a thread pool?, Darrel suggests look in DM somewhere or introduce a zero
-        // sized thread pool
-        @Override
-        public void run() {
-          doCommitProcessQuery(id);
-        }
-      };
-      fellowFarSidersQuery.setDaemon(true);
+      // Should I use a thread pool?, Darrel suggests look in DM somewhere or introduce a zero
+      // sized thread pool
+      Thread fellowFarSidersQuery = new LoggingThread("CommitProcessQuery Thread",
+          () -> doCommitProcessQuery(id));
       fellowFarSidersQuery.start();
     } else {
       if (logger.isDebugEnabled()) {
@@ -2022,20 +2025,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       // will never get the CommitProcess message, but it
       // doesn't matter since we can commit anyway.
       // Start a new thread to process the commit
-      Thread originDepartedCommit = new Thread(group, "Origin Departed Commit") {
-        @Override
-        public void run() {
-          final TXCommitMessage mess = TXCommitMessage.this;
-          try {
-            // Set processor to zero to avoid the ack to the now departed origin
-            mess.processorId = 0;
-            mess.basicProcess();
-          } finally {
-            txTracker.processed(mess);
-          }
-        }
-      };
-      originDepartedCommit.setDaemon(true);
+      Thread originDepartedCommit = new LoggingThread("Origin Departed Commit",
+          this::doOriginDepartedCommit);
       originDepartedCommit.start();
     }
   }

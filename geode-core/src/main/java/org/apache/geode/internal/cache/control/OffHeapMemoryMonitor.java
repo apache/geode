@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.MemoryUsageListener;
@@ -89,12 +89,9 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
         return;
       }
 
-      ThreadGroup group =
-          LoggingThreadGroup.createThreadGroup("OffHeapMemoryMonitor Threads", logger);
-      Thread t = new Thread(group, this.offHeapMemoryUsageListener);
-      t.setName(t.getName() + " OffHeapMemoryListener");
+      Thread t =
+          new LoggingThread("OffHeapMemoryListener", this.offHeapMemoryUsageListener);
       t.setPriority(Thread.MAX_PRIORITY);
-      t.setDaemon(true);
       t.start();
       this.memoryListenerThread = t;
 

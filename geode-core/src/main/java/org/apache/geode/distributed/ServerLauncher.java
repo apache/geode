@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -1179,16 +1180,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       // Another case of needing to use a non-daemon thread to keep the JVM alive until a clean
       // shutdown can be performed. If not, the JVM may exit too early causing the member to be
       // seen as having crashed and not cleanly departed.
-      final ServerLauncher shadow = this;
-      Thread t = new Thread(() -> {
-        shadow.cache.close();
-        shadow.cache = null;
-        if (shadow.process != null) {
-          shadow.process.stop(shadow.deletePidFileOnStop);
-          shadow.process = null;
-        }
-      });
-      t.setDaemon(false);
+      Thread t = new LoggingThread("ServerLauncherStopper", false, this::doStopInProcess);
       t.start();
 
       try {
@@ -1202,6 +1194,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return new ServerState(this, Status.STOPPED);
     } else {
       return new ServerState(this, Status.NOT_RESPONDING);
+    }
+  }
+
+  private void doStopInProcess() {
+    cache.close();
+    cache = null;
+    if (process != null) {
+      process.stop(deletePidFileOnStop);
+      process = null;
     }
   }
 

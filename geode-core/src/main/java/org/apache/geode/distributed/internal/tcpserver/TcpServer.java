@@ -30,11 +30,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLException;
 
@@ -52,7 +50,6 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.Version;
@@ -67,6 +64,8 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionN
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -117,7 +116,8 @@ public class TcpServer {
 
   private static final Logger log = LogService.getLogger();
 
-  protected static final int READ_TIMEOUT =
+  // no longer static so that tests can test this system property
+  private final int READ_TIMEOUT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000);
   // This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure
   // the locator backlog.
@@ -135,8 +135,7 @@ public class TcpServer {
   private final ClientProtocolServiceLoader clientProtocolServiceLoader;
 
 
-  private PooledExecutorWithDMStats executor;
-  private final ThreadGroup threadGroup;
+  private ExecutorService executor;
   private final String threadName;
   private volatile Thread serverThread;
 
@@ -154,7 +153,7 @@ public class TcpServer {
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
+      String threadName, InternalLocator internalLocator,
       ClientProtocolServiceLoader clientProtocolServiceLoader) {
     this.port = port;
     this.bind_address = bind_address;
@@ -167,8 +166,7 @@ public class TcpServer {
     // "precious" thread
     DSFIDFactory.registerTypes();
 
-    this.executor = createExecutor(poolHelper, threadGroup);
-    this.threadGroup = threadGroup;
+    this.executor = createExecutor(poolHelper);
     this.threadName = threadName;
 
     if (cfg == null) {
@@ -187,21 +185,9 @@ public class TcpServer {
     return socketCreator;
   }
 
-  private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper,
-      final ThreadGroup threadGroup) {
-    ThreadFactory factory = new ThreadFactory() {
-      private final AtomicInteger threadNum = new AtomicInteger();
-
-      public Thread newThread(Runnable r) {
-        Thread thread = new Thread(threadGroup, r,
-            "locator request thread[" + threadNum.incrementAndGet() + "]");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
-    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
-        factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
+  private static ExecutorService createExecutor(PoolStatHelper poolHelper) {
+    return LoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
+        MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   public void restarting(InternalDistributedSystem ds, InternalCache cache,
@@ -209,7 +195,7 @@ public class TcpServer {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
-    this.executor = createExecutor(this.poolHelper, this.threadGroup);
+    this.executor = createExecutor(this.poolHelper);
     log.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
@@ -224,13 +210,7 @@ public class TcpServer {
   private void startServerThread() throws IOException {
     initializeServerSocket();
     if (serverThread == null || !serverThread.isAlive()) {
-      serverThread = new Thread(threadGroup, threadName) {
-        @Override
-        public void run() {
-          TcpServer.this.run();
-        }
-      };
-      serverThread.setDaemon(true);
+      serverThread = new LoggingThread(threadName, this::run);
       serverThread.start();
     }
   }

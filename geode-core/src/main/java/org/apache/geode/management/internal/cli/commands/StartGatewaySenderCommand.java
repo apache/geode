@@ -22,10 +22,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.ObjectName;
 
@@ -34,6 +31,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -77,15 +75,8 @@ public class StartGatewaySenderCommand extends InternalGfshCommand {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    ExecutorService execService = Executors.newCachedThreadPool(new ThreadFactory() {
-      AtomicInteger threadNum = new AtomicInteger();
-
-      public Thread newThread(final Runnable r) {
-        Thread result = new Thread(r, "Start Sender Command Thread " + threadNum.incrementAndGet());
-        result.setDaemon(true);
-        return result;
-      }
-    });
+    ExecutorService execService =
+        LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
 
     List<Callable<List>> callables = new ArrayList<>();
 

@@ -96,6 +96,7 @@ import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.BlobHelper;
@@ -3666,28 +3667,26 @@ public class HARegionQueue implements RegionQueue {
 
         // Start a new thread which will update the clientMessagesRegion for
         // each of the HAEventWrapper instances present in the wrapperSet
-        Thread regionCleanupTask = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              Iterator iter = wrapperSet.iterator();
-              while (iter.hasNext()) {
-                Conflatable conflatable = (Conflatable) iter.next();
-                if (conflatable instanceof HAEventWrapper) {
-                  decAndRemoveFromHAContainer((HAEventWrapper) conflatable, "Destroy");
+        Thread regionCleanupTask =
+            new LoggingThread("HA Region Cleanup for " + regionName, false, () -> {
+              try {
+                Iterator iter = wrapperSet.iterator();
+                while (iter.hasNext()) {
+                  Conflatable conflatable = (Conflatable) iter.next();
+                  if (conflatable instanceof HAEventWrapper) {
+                    decAndRemoveFromHAContainer((HAEventWrapper) conflatable, "Destroy");
+                  }
+                }
+              } catch (CancelException ignore) {
+                return; // we're done
+              } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                  logger.debug(
+                      "Exception in regionCleanupTask thread of HARegionQueue.updateHAContainer$run()",
+                      e);
                 }
               }
-            } catch (CancelException ignore) {
-              return; // we're done
-            } catch (Exception e) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "Exception in regionCleanupTask thread of HARegionQueue.updateHAContainer$run()",
-                    e);
-              }
-            }
-          }
-        }, "HA Region Cleanup for " + regionName);
+            });
         regionCleanupTask.start();
       }
     } catch (CancelException e) {

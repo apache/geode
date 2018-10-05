@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.TeePrintStream;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process
@@ -667,56 +667,51 @@ public class OSProcess {
     } else {
       if (reapPid(-1)) {
         pids = Collections.synchronizedSet(new HashSet());
-        ThreadGroup group = LoggingThreadGroup
-            .createThreadGroup(LocalizedStrings.OSProcess_REAPER_THREAD.toLocalizedString());
-        reaperThread = new Thread(group, new Runnable() {
-          public void run() {
-            synchronized (myPid) {
-              myPid[0] = getProcessId();
-              reaperStarted = true;
-            }
-            String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
-            int secondsToSleep = (1000 * 60) * 1; // one minute
-            if (trace != null && trace.length() > 0) {
-              secondsToSleep = 1000; // every second
-            }
-            // reap all the pids we have every once in a while
-            while (true) {
-              SystemFailure.checkFailure();
-              try {
-                Iterator it = pids.iterator();
-                while (it.hasNext()) {
-                  Object o = it.next();
-                  int pid = ((Integer) o).intValue();
-                  if (reapPid(pid)) {
-                    try {
-                      it.remove();
-                      if (trace != null && trace.length() > 0) {
-                        System.out.println("reaped pid: " + pid);
-                      }
-                    } catch (Exception e) {
-                      // make sure and remove it since it was
-                      // reaped.
-                      pids.remove(o);
-                      if (trace != null && trace.length() > 0) {
-                        System.out.println("reaped pid: " + pid);
-                      }
-                      throw e;
+        reaperThread = new LoggingThread("osprocess reaper", () -> {
+          synchronized (myPid) {
+            myPid[0] = getProcessId();
+            reaperStarted = true;
+          }
+          String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
+          int secondsToSleep = (1000 * 60) * 1; // one minute
+          if (trace != null && trace.length() > 0) {
+            secondsToSleep = 1000; // every second
+          }
+          // reap all the pids we have every once in a while
+          while (true) {
+            SystemFailure.checkFailure();
+            try {
+              Iterator it = pids.iterator();
+              while (it.hasNext()) {
+                Object o = it.next();
+                int pid = ((Integer) o).intValue();
+                if (reapPid(pid)) {
+                  try {
+                    it.remove();
+                    if (trace != null && trace.length() > 0) {
+                      System.out.println("reaped pid: " + pid);
                     }
+                  } catch (Exception e) {
+                    // make sure and remove it since it was
+                    // reaped.
+                    pids.remove(o);
+                    if (trace != null && trace.length() > 0) {
+                      System.out.println("reaped pid: " + pid);
+                    }
+                    throw e;
                   }
                 }
-                Thread.sleep(secondsToSleep);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-              } catch (Exception e) {
-                // e.printStackTrace(); // DEBUG
-                // ignore
               }
+              Thread.sleep(secondsToSleep);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
+            } catch (Exception e) {
+              // e.printStackTrace(); // DEBUG
+              // ignore
             }
           }
-        }, "osprocess reaper");
-        reaperThread.setDaemon(true);
+        });
         reaperThread.start();
       } else {
         // platform does not need a reaper thread,

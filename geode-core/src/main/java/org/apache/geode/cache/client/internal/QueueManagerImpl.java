@@ -30,8 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -67,6 +65,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -103,7 +102,7 @@ public class QueueManagerImpl implements QueueManager {
 
   protected final CountDownLatch initializedLatch = new CountDownLatch(1);
 
-  private ScheduledThreadPoolExecutor recoveryThread;
+  private ScheduledExecutorService recoveryThread;
   private volatile boolean sentClientReady;
 
   // queueConnections in maintained by using copy-on-write
@@ -278,17 +277,7 @@ public class QueueManagerImpl implements QueueManager {
       // We don't want primary recovery (and therefore user threads) to wait for
       // things like pinging connections for health checks.
       final String name = "queueTimer-" + this.pool.getName();
-      this.recoveryThread = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-
-        public Thread newThread(Runnable r) {
-          Thread result = new Thread(r, name);
-          result.setDaemon(true);
-          return result;
-        }
-
-
-      });
-      recoveryThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+      this.recoveryThread = LoggingExecutors.newScheduledThreadPool(name, 1, false);
 
       getState().start(background, getPool().getSubscriptionAckInterval());
 

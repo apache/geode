@@ -78,7 +78,7 @@ public class TCPServerSSLJUnitTest {
 
     server = new DummyTcpServer(port, localhost, sslProperties, null,
         Mockito.mock(TcpHandler.class), Mockito.mock(PoolStatHelper.class),
-        Thread.currentThread().getThreadGroup(), "server thread");
+        "server thread");
     server.start();
   }
 
@@ -137,9 +137,8 @@ public class TCPServerSSLJUnitTest {
 
     public DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
         DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-        ThreadGroup threadGroup, String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup, threadName, null,
-          null);
+        String threadName) {
+      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName, null, null);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
       }

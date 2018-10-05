@@ -86,6 +86,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -1710,8 +1711,8 @@ public class PRHARedundancyProvider {
     try {
       if (proxyBucketArray.length > 0) {
         this.redundancyLogger = new RedundancyLogger(this);
-        Thread loggingThread = new Thread(this.redundancyLogger,
-            "RedundancyLogger for region " + this.prRegion.getName());
+        Thread loggingThread = new LoggingThread(
+            "RedundancyLogger for region " + this.prRegion.getName(), false, this.redundancyLogger);
         loggingThread.start();
       }
     } catch (RuntimeException e) {
@@ -1757,7 +1758,8 @@ public class PRHARedundancyProvider {
           }
         };
         Thread recoveryThread =
-            new Thread(recoveryRunnable, "Recovery thread for bucket " + proxyBucket.getName());
+            new LoggingThread("Recovery thread for bucket " + proxyBucket.getName(),
+                false, recoveryRunnable);
         recoveryThread.start();
         bucketsHostedLocally.add(proxyBucket);
       } else {

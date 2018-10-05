@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.JavaCommandBuilder;
@@ -367,8 +369,7 @@ public class AgentLauncher {
 
     final Agent agent = createAgent((Properties) options.get(AGENT_PROPS));
 
-    final Thread thread = createAgentProcessThread(createAgentProcessThreadGroup(), agent);
-    thread.setDaemon(true);
+    final Thread thread = createAgentProcessThread(agent);
     thread.start();
 
     // periodically check and see if the JMX Agent has been told to stop
@@ -393,21 +394,20 @@ public class AgentLauncher {
     return AgentFactory.getAgent(config);
   }
 
-  private ThreadGroup createAgentProcessThreadGroup() {
-    return new ThreadGroup(LocalizedStrings.AgentLauncher_STARTING_AGENT.toLocalizedString()) {
-      @Override
-      public void uncaughtException(final Thread t, final Throwable e) {
-        if (e instanceof VirtualMachineError) {
-          SystemFailure.setFailure((VirtualMachineError) e);
-        }
-        setServerError(LocalizedStrings.AgentLauncher_UNCAUGHT_EXCEPTION_IN_THREAD_0
-            .toLocalizedString(t.getName()), e);
+  private UncaughtExceptionHandler createUncaughtExceptionHandler() {
+    return (t, e) -> {
+      if (e instanceof VirtualMachineError) {
+        SystemFailure.setFailure((VirtualMachineError) e);
       }
+      setServerError(LocalizedStrings.AgentLauncher_UNCAUGHT_EXCEPTION_IN_THREAD_0
+          .toLocalizedString(t.getName()), e);
     };
   }
 
-  private Thread createAgentProcessThread(final ThreadGroup group, final Agent agent) {
-    return new Thread(group, createAgentProcessRunnable(agent), "Start agent");
+  private Thread createAgentProcessThread(final Agent agent) {
+    Thread thread = new LoggingThread("Start agent", createAgentProcessRunnable(agent));
+    thread.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
+    return thread;
   }
 
   private Runnable createAgentProcessRunnable(final Agent agent) {

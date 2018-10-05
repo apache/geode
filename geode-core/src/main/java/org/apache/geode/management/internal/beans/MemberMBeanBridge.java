@@ -75,6 +75,7 @@ import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
@@ -962,20 +963,17 @@ public class MemberMBeanBridge {
   public void shutDownMember() {
     final InternalDistributedSystem ids = dm.getSystem();
     if (ids.isConnected()) {
-      Thread t = new Thread(new Runnable() {
-        public void run() {
-          try {
-            // Allow the Function call to exit
-            Thread.sleep(1000);
-          } catch (InterruptedException ignore) {
-          }
-          ConnectionTable.threadWantsSharedResources();
-          if (ids.isConnected()) {
-            ids.disconnect();
-          }
+      Thread t = new LoggingThread("Shutdown member", false, () -> {
+        try {
+          // Allow the Function call to exit
+          Thread.sleep(1000);
+        } catch (InterruptedException ignore) {
+        }
+        ConnectionTable.threadWantsSharedResources();
+        if (ids.isConnected()) {
+          ids.disconnect();
         }
       });
-      t.setDaemon(false);
       t.start();
     }
   }

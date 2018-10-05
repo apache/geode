@@ -21,9 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -32,7 +30,7 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -118,26 +116,13 @@ public class DiskStoreMonitor {
     if (disableMonitor) {
       exec = null;
     } else {
-      final ThreadGroup tg = LoggingThreadGroup.createThreadGroup(
-          LocalizedStrings.DiskStoreMonitor_ThreadGroup.toLocalizedString(), logger);
-      exec = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-          Thread t = new Thread(tg, r, "DiskStoreMonitor");
-          t.setDaemon(true);
-          return t;
-        }
-      });
-
+      exec = LoggingExecutors.newScheduledThreadPool("DiskStoreMonitor", 1);
       // always monitor the log dir, even if there are no disk stores
-      exec.scheduleWithFixedDelay(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            checkUsage();
-          } catch (Exception e) {
-            logger.error(LocalizedMessage.create(LocalizedStrings.DiskStoreMonitor_ERR), e);
-          }
+      exec.scheduleWithFixedDelay(() -> {
+        try {
+          checkUsage();
+        } catch (Exception e) {
+          logger.error(LocalizedMessage.create(LocalizedStrings.DiskStoreMonitor_ERR), e);
         }
       }, 0, USAGE_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     }
