@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
@@ -183,8 +184,16 @@ public abstract class ServerContainer {
     config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(ports[1]));
     config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(ports[2]));
     config.setProperty(GeneralPropertySet.PORT_OFFSET, "0");
-    config.setProperty(GeneralPropertySet.START_JVMARGS,
-        "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + ports[3]);
+    String jvmArgs = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + ports[3];
+    if (SystemUtils.isJavaVersionAtLeast(900)) {
+      jvmArgs += " --add-opens java.base/java.lang.module=ALL-UNNAMED" +
+          " --add-opens java.base/jdk.internal.module=ALL-UNNAMED" +
+          " --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED" +
+          " --add-opens java.base/jdk.internal.misc=ALL-UNNAMED" +
+          " --add-opens java.base/jdk.internal.ref=ALL-UNNAMED" +
+          " --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED";
+    }
+    config.setProperty(GeneralPropertySet.START_JVMARGS, jvmArgs);
     container.setConfiguration(config);
 
 

@@ -32,7 +32,7 @@ import java.io.IOException;
  * specific code outside of the {@link GenericAppServerVersion}.
  */
 public class GenericAppServerInstall extends ContainerInstall {
-  private static final String JETTY_VERSION = "9.4.8.v20171121";
+  private static final String JETTY_VERSION = "9.4.12.v20180830";
 
   /**
    * Get the version number, download URL, and container name of a generic app server using
