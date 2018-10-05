@@ -350,13 +350,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           // The delay is so that both parent and child regions will be created on another member
           // and the PR root config
           // will have an entry for the parent region.
-          try {
-            await()
-                .until(() -> {
-                  return false;
-                });
-          } catch (Exception e) {
-          }
+          Thread.sleep(100);
           try {
             // Skip creation of first region - expect region2 creation to fail
             // createPR(PR_REGION_NAME, true);
