@@ -43,7 +43,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.ImageState;
@@ -952,7 +951,8 @@ public class RegionMapPutTest {
     when(internalRegion.lockWhenRegionIsInitializing()).thenReturn(false);
     createInstance();
 
-    instance.runWhileLockedForCacheModification(() -> {});
+    instance.runWhileLockedForCacheModification(() -> {
+    });
 
     verify(internalRegion).lockWhenRegionIsInitializing();
     verify(internalRegion, never()).unlockWhenRegionIsInitializing();
@@ -963,7 +963,8 @@ public class RegionMapPutTest {
     when(internalRegion.lockWhenRegionIsInitializing()).thenReturn(true);
     createInstance();
 
-    instance.runWhileLockedForCacheModification(() -> {});
+    instance.runWhileLockedForCacheModification(() -> {
+    });
 
     verify(internalRegion).lockWhenRegionIsInitializing();
     verify(internalRegion).unlockWhenRegionIsInitializing();
