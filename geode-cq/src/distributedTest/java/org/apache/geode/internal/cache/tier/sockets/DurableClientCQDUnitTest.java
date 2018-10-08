@@ -50,7 +50,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -457,8 +456,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
   public void testRejectClientWhenDrainingCq() {
     try {
       IgnoredException.addIgnoredException(
-          LocalizedStrings.CacheClientNotifier_COULD_NOT_CONNECT_DUE_TO_CQ_BEING_DRAINED
-              .toLocalizedString());
+          "CacheClientNotifier: Connection refused due to cq queue being drained from admin command, please wait...");
       IgnoredException.addIgnoredException(
           "Could not initialize a primary queue on startup. No queue servers available.");
 
@@ -628,14 +626,13 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
                 fail("Should have thrown an exception due to activating client");
               } catch (CqException e) {
                 String expected =
-                    LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT
-                        .toLocalizedString("All", proxyId.getDurableId());
+                    String.format(
+                        "CacheClientProxy: Could not drain cq %s due to client proxy id %s reconnecting.",
+                        "All", proxyId.getDurableId());
                 if (!e.getMessage().equals(expected)) {
                   fail("Not the expected exception, was expecting "
-                      + (LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT
-                          .toLocalizedString("All", proxyId.getDurableId())
-                          + " instead of exception: " + e.getMessage()),
-                      e);
+                      + expected
+                      + " instead of exception: " + e.getMessage());
                 }
               }
             }
@@ -732,13 +729,13 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
         } catch (CqException e) {
           // expected exception;
           String expected =
-              LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_ACTIVE_DURABLE_CLIENT
-                  .toLocalizedString("All", proxyId.getDurableId());
+              String.format(
+                  "CacheClientProxy: Could not drain cq %s because client proxy id %s is connected.",
+                  "All", proxyId.getDurableId());
           if (!e.getMessage().equals(expected)) {
             fail("Not the expected exception, was expecting "
-                + (LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_ACTIVE_DURABLE_CLIENT
-                    .toLocalizedString("All", proxyId.getDurableId()) + " instead of exception: "
-                    + e.getMessage()),
+                + expected + " instead of exception: "
+                + e.getMessage(),
                 e);
           }
         }

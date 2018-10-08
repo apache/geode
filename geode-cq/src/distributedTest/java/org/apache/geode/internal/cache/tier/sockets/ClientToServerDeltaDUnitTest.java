@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DeltaTestImpl;
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -51,7 +52,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -77,7 +77,7 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
    */
   private static Cache cache = null;
 
-  private static LogWriterI18n logger = null;
+  private static LogWriter logger = null;
 
   VM server = null;
   VM server2 = null;
@@ -667,7 +667,7 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     DistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
-    logger = cache.getLoggerI18n();
+    logger = cache.getLogger();
   }
 
   // to validate updates in listener

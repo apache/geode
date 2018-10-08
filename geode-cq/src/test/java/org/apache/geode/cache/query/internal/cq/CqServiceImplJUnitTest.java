@@ -27,7 +27,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CqServiceImplJUnitTest {
 
@@ -51,7 +50,7 @@ public class CqServiceImplJUnitTest {
       fail();
     } catch (Exception ex) {
       if (!(ex instanceof CqException && ex.getMessage()
-          .contains(LocalizedStrings.cq_CACHE_CLIENT_PROXY_IS_NULL.toLocalizedString()))) {
+          .contains("No Cache Client Proxy found while executing CQ."))) {
         fail();
       }
     }

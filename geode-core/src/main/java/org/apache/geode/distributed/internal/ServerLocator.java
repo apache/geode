@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
@@ -49,14 +50,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -418,13 +417,13 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
 
   public void profileUpdated(Profile profile) {
     cachedLocators = null;
-    getLogWriterI18n()
-        .warning(LocalizedStrings.ServerLocator_SERVERLOCATOR_UNEXPECTED_PROFILE_UPDATE);
+    getLogWriter()
+        .warning("ServerLocator - unexpected profile update.");
   }
 
   public void updateLoad(ServerLocation location, ServerLoad load, List clientIds) {
-    if (getLogWriterI18n().fineEnabled()) {
-      getLogWriterI18n()
+    if (getLogWriter().fineEnabled()) {
+      getLogWriter()
           .fine("ServerLocator: Received a load update from " + location + ", " + load);
     }
     loadSnapshot.updateLoad(location, load, clientIds);
@@ -485,8 +484,8 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return loadSnapshot.getLoadMap();
   }
 
-  LogWriterI18n getLogWriterI18n() {
-    return ds.getLogWriter().convertToLogWriterI18n();
+  LogWriter getLogWriter() {
+    return ds.getLogWriter();
   }
 
 }

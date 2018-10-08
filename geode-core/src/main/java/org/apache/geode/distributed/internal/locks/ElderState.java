@@ -23,9 +23,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -72,21 +70,18 @@ public class ElderState {
 
   private void checkForProblem(DistributionManager checkDM) {
     if (checkDM.getSystem() == null) {
-      logger.warn(LogMarker.DLS_MARKER, LocalizedMessage
-          .create(LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_SYSTEM_0, checkDM.getSystem()));
+      logger.warn(LogMarker.DLS_MARKER, "ElderState problem: system={}", checkDM.getSystem());
       return;
     }
     if (checkDM.getSystem().getDistributionManager() == null) {
       logger.warn(LogMarker.DLS_MARKER,
-          LocalizedMessage.create(
-              LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_SYSTEM_DISTRIBUTIONMANAGER_0,
-              checkDM.getSystem().getDistributionManager()));
+          "ElderState problem: system DistributionManager={}",
+          checkDM.getSystem().getDistributionManager());
     }
     if (checkDM != checkDM.getSystem().getDistributionManager()) {
       logger.warn(LogMarker.DLS_MARKER,
-          LocalizedMessage.create(
-              LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_DM_0_BUT_SYSTEM_DISTRIBUTIONMANAGER_1,
-              new Object[] {checkDM, checkDM.getSystem().getDistributionManager()}));
+          "ElderState problem: dm={}, but system DistributionManager={}",
+          new Object[] {checkDM, checkDM.getSystem().getDistributionManager()});
     }
   }
 
@@ -390,8 +385,7 @@ public class ElderState {
       GrantorInfo gi = (GrantorInfo) this.nameToInfo.get(serviceName);
       if (gi.isInitiatingTransfer()) {
         throw new IllegalStateException(
-            LocalizedStrings.ElderState_CANNOT_FORCE_GRANTOR_RECOVERY_FOR_GRANTOR_THAT_IS_TRANSFERRING
-                .toLocalizedString());
+            "Cannot force grantor recovery for grantor that is transferring");
       }
       this.nameToInfo.put(serviceName,
           new GrantorInfo(gi.getId(), gi.getVersionId(), gi.getSerialNumber(), true));

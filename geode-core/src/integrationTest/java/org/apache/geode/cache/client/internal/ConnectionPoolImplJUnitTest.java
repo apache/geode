@@ -46,9 +46,9 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ConnectionPoolImplJUnitTest {
 
   private static final String expectedRedundantErrorMsg =
-      "Could not find any server to create redundant client queue on.";
+      "Could not find any server to host redundant client queue.";
   private static final String expectedPrimaryErrorMsg =
-      "Could not find any server to create primary client queue on.";
+      "Could not find any server to host primary client queue.";
 
   private Cache cache;
   private int port;

@@ -24,7 +24,6 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * TxState on TX coordinator, created when coordinator is also a data node
@@ -261,24 +260,24 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setPrecommitMessage"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "setPrecommitMessage"));
   }
 
   @Override
   public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setCommitMessage"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "setCommitMessage"));
   }
 
   @Override
   public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setRollbackMessage"));
+        String.format("rollback() operation %s meant for Dist Tx is not supported",
+            "setRollbackMessage"));
   }
 
   @Override

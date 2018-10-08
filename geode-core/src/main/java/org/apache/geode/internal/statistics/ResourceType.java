@@ -38,7 +38,8 @@ public class ResourceType {
     // moved to StatArchiveWriter->SampleHandler#handleNewResourceType
     // if (this.stats.length >= ILLEGAL_STAT_OFFSET) {
     // throw new
-    // InternalGemFireException(LocalizedStrings.StatArchiveWriter_COULD_NOT_ARCHIVE_TYPE_0_BECAUSE_IT_HAD_MORE_THAN_1_STATISTICS.toLocalizedString(new
+    // InternalGemFireException(String.format("Could not archive type %s because it had more than %s
+    // statistics.",new
     // Object[] {type.getName(), Integer.valueOf(ILLEGAL_STAT_OFFSET-1)}));
     // }
   }

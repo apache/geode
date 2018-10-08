@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class is an implementation of the {@link CacheInfo} interface.
@@ -218,7 +217,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
 
   @Override
   public String toString() {
-    return LocalizedStrings.RemoteCacheInfo_INFORMATION_ABOUT_THE_CACHE_0_WITH_1_BRIDGE_SERVERS
-        .toLocalizedString(this.name, this.bridgeServerIds.length);
+    return String.format("Information about the cache %s with %s bridge servers",
+        this.name, this.bridgeServerIds.length);
   }
 }

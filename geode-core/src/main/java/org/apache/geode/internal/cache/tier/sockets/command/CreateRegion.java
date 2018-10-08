@@ -24,8 +24,6 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -68,20 +66,16 @@ public class CreateRegion extends BaseCommand {
     if (parentRegionName == null || regionName == null) {
       String errMessage = "";
       if (parentRegionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CreateRegion_0_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL,
-            serverConnection.getName()));
+        logger.warn("{}: The input parent region name for the create region request is null",
+            serverConnection.getName());
         errMessage =
-            LocalizedStrings.CreateRegion_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL
-                .toLocalizedString();
+            "The input parent region name for the create region request is null";
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CreateRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL,
-            serverConnection.getName()));
+        logger.warn("{}: The input region name for the create region request is null",
+            serverConnection.getName());
         errMessage =
-            LocalizedStrings.CreateRegion_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL
-                .toLocalizedString();
+            "The input region name for the create region request is null";
       }
       writeErrorResponse(clientMessage, MessageType.CREATE_REGION_DATA_ERROR, errMessage,
           serverConnection);
@@ -92,8 +86,8 @@ public class CreateRegion extends BaseCommand {
     Region parentRegion = serverConnection.getCache().getRegion(parentRegionName);
     if (parentRegion == null) {
       String reason =
-          LocalizedStrings.CreateRegion__0_WAS_NOT_FOUND_DURING_SUBREGION_CREATION_REQUEST
-              .toLocalizedString(parentRegionName);
+          String.format("%s was not found during subregion creation request",
+              parentRegionName);
       writeRegionDestroyedEx(clientMessage, parentRegionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

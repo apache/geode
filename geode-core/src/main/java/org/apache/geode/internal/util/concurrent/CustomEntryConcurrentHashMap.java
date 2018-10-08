@@ -62,6 +62,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.command.KeySet;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -1832,8 +1833,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
         }
         if (!submitted) {
           String name = this.getClass().getSimpleName() + "@" + this.hashCode() + " Clear Thread";
-          Thread thread = new Thread(runnable, name);
-          thread.setDaemon(true);
+          Thread thread = new LoggingThread(name, runnable);
           thread.start();
         }
       }

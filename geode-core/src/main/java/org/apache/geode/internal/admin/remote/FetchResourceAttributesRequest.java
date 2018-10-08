@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class FetchResourceAttributesRequest extends AdminRequest {
 
@@ -35,8 +34,7 @@ public class FetchResourceAttributesRequest extends AdminRequest {
   }
 
   public FetchResourceAttributesRequest() {
-    friendlyName = LocalizedStrings.FetchResourceAttributesRequest_FETCH_STATISTICS_FOR_RESOURCE
-        .toLocalizedString();
+    friendlyName = "Fetch statistics for resource";
   }
 
   @Override
@@ -62,8 +60,8 @@ public class FetchResourceAttributesRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchResourceAttributesRequest_FETCHRESOURCEATTRIBUTESREQUEST_FOR_0
-        .toLocalizedString(this.getRecipient());
+    return String.format("Fetch statistics for %s",
+        this.getRecipient());
   }
 
 }

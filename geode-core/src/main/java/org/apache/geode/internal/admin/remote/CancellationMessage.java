@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to cancel an admin request
@@ -61,7 +60,7 @@ public class CancellationMessage extends PooledDistributionMessage {
 
   @Override
   public String toString() {
-    return LocalizedStrings.CancellationMessage_CANCELLATIONMESSAGE_FROM_0_FOR_MESSAGE_ID_1
-        .toLocalizedString(new Object[] {this.getSender(), Integer.valueOf(msgToCancel)});
+    return String.format("CancellationMessage from %s for message id %s",
+        new Object[] {this.getSender(), Integer.valueOf(msgToCancel)});
   }
 }

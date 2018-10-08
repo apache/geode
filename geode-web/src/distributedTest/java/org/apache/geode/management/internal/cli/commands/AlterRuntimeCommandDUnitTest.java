@@ -121,7 +121,7 @@ public class AlterRuntimeCommandDUnitTest {
     result = gfsh.executeCommand("alter runtime  --log-disk-space-limit=2000000000");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-disk-space-limit\" to \"2,000,000,000\"");
+        .contains("Could not set \"log-disk-space-limit\" to \"2000000000\"");
   }
 
   @Test
@@ -401,18 +401,18 @@ public class AlterRuntimeCommandDUnitTest {
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-file-size-limit\" to \"1,000,001\"");
+        .contains("Could not set \"log-file-size-limit\" to \"1000001\"");
 
     csb.addOption(CliStrings.MEMBER, server2.getName());
     result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-file-size-limit\" to \"1,000,001\"");
+        .contains("Could not set \"log-file-size-limit\" to \"1000001\"");
 
     result = gfsh.executeCommand(csbGroup.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-file-size-limit\" to \"1,000,001\"");
+        .contains("Could not set \"log-file-size-limit\" to \"1000001\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
@@ -709,7 +709,7 @@ public class AlterRuntimeCommandDUnitTest {
     result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"statistic-sample-rate\" to \"60,001\"");
+        .contains("Could not set \"statistic-sample-rate\" to \"60001\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
@@ -883,7 +883,7 @@ public class AlterRuntimeCommandDUnitTest {
     result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"archive-disk-space-limit\" to \"1,000,001\"");
+        .contains("Could not set \"archive-disk-space-limit\" to \"1000001\"");
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
@@ -1069,7 +1069,7 @@ public class AlterRuntimeCommandDUnitTest {
     result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"archive-file-size-limit\" to \"1,000,001\"");
+        .contains("Could not set \"archive-file-size-limit\" to \"1000001\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }

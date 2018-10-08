@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeImpl;
@@ -72,8 +71,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
     if (realType.getDoubleStatCount() > 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.Atomic50StatisticsImpl_ATOMICS_DO_NOT_SUPPORT_DOUBLE_STATS
-              .toLocalizedString());
+          "Atomics do not support double stats");
     }
     int intCount = realType.getIntStatCount();
     int longCount = realType.getLongStatCount();
@@ -238,7 +236,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   @Override
   protected void _setDouble(int offset, double value) {
     throw new IllegalStateException(
-        LocalizedStrings.Atomic50StatisticsImpl_DOUBLE_STATS_NOT_ON_ATOMIC50.toLocalizedString());
+        "double stats not on Atomic50");
   }
 
   /////////////////////// get() Methods ///////////////////////
@@ -256,7 +254,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   @Override
   protected double _getDouble(int offset) {
     throw new IllegalStateException(
-        LocalizedStrings.Atomic50StatisticsImpl_DOUBLE_STATS_NOT_ON_ATOMIC50.toLocalizedString());
+        "double stats not on Atomic50");
   }
 
   //////////////////////// inc() Methods ////////////////////////
@@ -276,7 +274,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   @Override
   protected void _incDouble(int offset, double delta) {
     throw new IllegalStateException(
-        LocalizedStrings.Atomic50StatisticsImpl_DOUBLE_STATS_NOT_ON_ATOMIC50.toLocalizedString());
+        "double stats not on Atomic50");
   }
 
   private static final ThreadLocal samplerThread = new ThreadLocal();
@@ -500,16 +498,16 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
 
   int[] _getIntStorage() {
     throw new IllegalStateException(
-        LocalizedStrings.Atomic50StatisticsImpl_DIRECT_ACCESS_NOT_ON_ATOMIC50.toLocalizedString());
+        "direct access not on Atomic50");
   }
 
   long[] _getLongStorage() {
     throw new IllegalStateException(
-        LocalizedStrings.Atomic50StatisticsImpl_DIRECT_ACCESS_NOT_ON_ATOMIC50.toLocalizedString());
+        "direct access not on Atomic50");
   }
 
   double[] _getDoubleStorage() {
     throw new IllegalStateException(
-        LocalizedStrings.Atomic50StatisticsImpl_DIRECT_ACCESS_NOT_ON_ATOMIC50.toLocalizedString());
+        "direct access not on Atomic50");
   }
 }

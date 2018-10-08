@@ -33,9 +33,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Default administrative implementation of a DistributionLocator.
@@ -125,8 +123,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
    */
   public int setState(int state) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributionLocatorImpl_CAN_NOT_SET_THE_STATE_OF_A_LOCATOR
-            .toLocalizedString());
+        "Can not set the state of a locator.");
   }
 
   // -------------------------------------------------------------------------
@@ -151,8 +148,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
       }
     }
 
-    logger.info(
-        LocalizedMessage.create(LocalizedStrings.DistributionLocatorImpl_DONE_WAITING_FOR_LOCATOR));
+    logger.info("Done waiting for locator");
     return this.isRunning();
   }
 

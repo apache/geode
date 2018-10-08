@@ -20,9 +20,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -47,8 +45,8 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
     this.statsDisabled = Boolean.getBoolean(STATS_DISABLE_NAME_PROPERTY);
     if (statsDisabled) {
       this.sampler = null;
-      logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
-          LocalizedStrings.LocalStatisticsFactory_STATISTIC_COLLECTION_IS_DISABLED_USE_DSTATSDISABLEFALSE_TO_TURN_ON_STATISTICS));
+      logger.info(LogMarker.STATISTICS_MARKER,
+          "Statistic collection is disabled: use: -Dstats.disable=false to turn on statistics.");
     } else if (stopper != null) {
       this.sampler = new SimpleStatSampler(stopper, this);
       this.sampler.start();

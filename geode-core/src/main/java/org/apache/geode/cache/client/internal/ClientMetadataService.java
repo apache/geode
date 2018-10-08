@@ -44,7 +44,6 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -143,8 +142,7 @@ public class ClientMetadataService {
       resolveKey = resolver.getRoutingObject(entryOp);
       if (resolveKey == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_THE_ROUTINGOBJECT_RETURNED_BY_PARTITIONRESOLVER_IS_NULL
-                .toLocalizedString());
+            "The RoutingObject returned by PartitionResolver is null.");
       }
     }
     int bucketId;
@@ -157,8 +155,8 @@ public class ClientMetadataService {
       if (partition == null) {
         Object[] prms = new Object[] {region.getName(), resolver};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL
-                .toLocalizedString(prms));
+            String.format("For region %s, partition resolver %s returned partition name null",
+                prms));
       } else {
         bucketId = prAdvisor.assignFixedBucketId(region, partition, resolveKey);
         if (bucketId == -1) {
@@ -467,8 +465,7 @@ public class ClientMetadataService {
       resolveKey = resolver.getRoutingObject(entryOp);
       if (resolveKey == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_THE_ROUTINGOBJECT_RETURNED_BY_PARTITIONRESOLVER_IS_NULL
-                .toLocalizedString());
+            "The RoutingObject returned by PartitionResolver is null.");
       }
     }
 
@@ -481,8 +478,8 @@ public class ClientMetadataService {
       if (partition == null) {
         Object[] prms = new Object[] {region.getName(), resolver};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL
-                .toLocalizedString(prms));
+            String.format("For region %s, partition resolver %s returned partition name null",
+                prms));
       } else {
         bucketId = prAdvisor.assignFixedBucketId(region, partition, resolveKey);
         // This bucketid can be -1 in some circumstances where we don't have information about
@@ -697,8 +694,7 @@ public class ClientMetadataService {
       resolveKey = resolver.getRoutingObject(entryOp);
       if (resolveKey == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_THE_ROUTINGOBJECT_RETURNED_BY_PARTITIONRESOLVER_IS_NULL
-                .toLocalizedString());
+            "The RoutingObject returned by PartitionResolver is null.");
       }
     }
 
@@ -712,8 +708,8 @@ public class ClientMetadataService {
       if (partition == null) {
         Object[] prms = new Object[] {region.getName(), resolver};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL
-                .toLocalizedString(prms));
+            String.format("For region %s, partition resolver %s returned partition name null",
+                prms));
       } else {
         bucketId = prAdvisor.assignFixedBucketId(region, partition, resolveKey);
       }

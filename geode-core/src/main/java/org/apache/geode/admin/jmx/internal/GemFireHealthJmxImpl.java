@@ -27,7 +27,6 @@ import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.admin.internal.GemFireHealthImpl;
 import org.apache.geode.internal.admin.GfManagerAgent;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -110,8 +109,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
 
     } catch (AdminException ex) {
       throw new RuntimeAdminException(
-          LocalizedStrings.GemFireHealthJmxImpl_WHILE_GETTING_THE_DISTRIBUTEDSYSTEMHEALTHCONFIG
-              .toLocalizedString(),
+          "While getting the DistributedSystemHealthConfig",
           ex);
     }
   }
@@ -127,8 +125,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
 
     } catch (AdminException ex) {
       throw new RuntimeAdminException(
-          LocalizedStrings.GemFireHealthJmxImpl_WHILE_GETTING_THE_GEMFIREHEALTHCONFIG
-              .toLocalizedString(),
+          "While getting the GemFireHealthConfig",
           ex);
     }
   }

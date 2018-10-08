@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.IOException;
 
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class InterestEvent {
 
@@ -54,11 +53,10 @@ public class InterestEvent {
       value = CacheServerHelper.deserialize((byte[]) value);
     } catch (IOException ioe) {
       throw new RuntimeException(
-          LocalizedStrings.InterestEvent_IOEXCEPTION_DESERIALIZING_VALUE.toLocalizedString(), ioe);
+          "IOException deserializing value", ioe);
     } catch (ClassNotFoundException cnfe) {
       throw new RuntimeException(
-          LocalizedStrings.InterestEvent_CLASSNOTFOUNDEXCEPTION_DESERIALIZING_VALUE
-              .toLocalizedString(),
+          "ClassNotFoundException deserializing value",
           cnfe);
     }
     isDeserialized = true;

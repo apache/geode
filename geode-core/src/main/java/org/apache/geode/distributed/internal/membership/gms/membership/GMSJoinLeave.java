@@ -44,10 +44,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -81,7 +78,8 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -815,12 +813,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void createAndStartViewCreator(NetView newView) {
     if (viewCreator == null || viewCreator.isShutdown()) {
       services.getMessenger().initClusterKey();
-      viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
+      viewCreator = new ViewCreator("Geode Membership View Creator");
       if (newView != null) {
         viewCreator.setInitialView(newView, newView.getNewMembers(), newView.getShutdownMembers(),
             newView.getCrashedMembers());
       }
-      viewCreator.setDaemon(true);
       logger.info("ViewCreator starting on:" + localAddress);
       viewCreator.start();
     }
@@ -1419,8 +1416,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (isJoined && isNetworkPartition(newView, true)) {
         if (quorumRequired) {
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
-          forceDisconnect(LocalizedStrings.Network_partition_detected
-              .toLocalizedString(crashes.size(), crashes));
+          forceDisconnect(String.format(
+              "Exiting due to possible network partition event due to loss of %s cache processes: %s",
+              crashes.size(), crashes));
           return;
         }
       }
@@ -2045,7 +2043,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  class ViewCreator extends Thread {
+  class ViewCreator extends LoggingThread {
     volatile boolean shutdown = false;
     volatile boolean waiting = false;
     volatile boolean testFlagForRemovalRequest = false;
@@ -2071,8 +2069,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      */
     Set<InternalDistributedMember> initialRemovals;
 
-    ViewCreator(String name, ThreadGroup tg) {
-      super(tg, name);
+    ViewCreator(String name) {
+      super(name);
     }
 
     void shutdown() {
@@ -2505,8 +2503,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           Thread.sleep(BROADCAST_MESSAGE_SLEEP_TIME);
 
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
-          forceDisconnect(LocalizedStrings.Network_partition_detected
-              .toLocalizedString(crashes.size(), crashes));
+          forceDisconnect(String.format(
+              "Exiting due to possible network partition event due to loss of %s cache processes: %s",
+              crashes.size(), crashes));
           setShutdownFlag();
           return;
         }
@@ -2692,16 +2691,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       logger.debug("checking availability of these members: {}", checkers);
-      ExecutorService svc = Executors.newFixedThreadPool(suspects.size(), new ThreadFactory() {
-        AtomicInteger i = new AtomicInteger();
-
-        @Override
-        public Thread newThread(Runnable r) {
-          return new Thread(Services.getThreadGroup(), r,
-              "Geode View Creator verification thread " + i.incrementAndGet());
-        }
-      });
-
+      ExecutorService svc =
+          LoggingExecutors.newFixedThreadPool("Geode View Creator verification thread ",
+              false, suspects.size());
       try {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         // submit the tasks that will remove dead members from the suspects collection

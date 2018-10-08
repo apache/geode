@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular application to get its root region(s). All it really needs
@@ -40,7 +39,7 @@ public class RootRegionRequest extends AdminRequest {
 
   public RootRegionRequest() {
     friendlyName =
-        LocalizedStrings.RootRegionRequest_INSPECT_ROOT_CACHE_REGIONS.toLocalizedString();
+        "Inspect root cache regions";
   }
 
   /**

@@ -19,12 +19,13 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -112,7 +113,7 @@ public class SocketCloser {
   }
 
   private ExecutorService getWorkStealingPool(int maxParallelThreads) {
-    return Executors.newWorkStealingPool(maxParallelThreads);
+    return LoggingExecutors.newWorkStealingPool("SocketCloser-", maxParallelThreads);
   }
 
   /**

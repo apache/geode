@@ -25,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -58,9 +57,9 @@ public class SwaggerVerificationIntegrationTest {
 
     JsonNode info = json.get("info");
     assertThat(info.get("description").asText(),
-        is(LocalizedStrings.SwaggerConfig_DESCRIPTOR.toLocalizedString()));
+        is("Developer REST API and interface to Geode's distributed, in-memory data grid and cache."));
     assertThat(info.get("title").asText(),
-        is(LocalizedStrings.SwaggerConfig_VENDOR_PRODUCT_LINE.toLocalizedString()));
+        is("Apache Geode Developer REST API"));
 
     JsonNode license = info.get("license");
     assertThat(license.get("name").asText(), is("Apache License, version 2.0"));

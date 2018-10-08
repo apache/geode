@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.internal.cache.tier.Encryptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class MessageIdExtractor {
@@ -25,7 +24,7 @@ public class MessageIdExtractor {
     AuthIds aIds = getAuthIdsFromMessage(requestMessage, handshake);
     if (connectionId != aIds.getConnectionId()) {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
+          "No security credentials are provided");
     }
     return aIds.getUniqueId();
   }
@@ -38,7 +37,7 @@ public class MessageIdExtractor {
       return new AuthIds(secureBytes);
     } catch (Exception ex) {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString(), ex);
+          "No security credentials are provided", ex);
     }
   }
 }

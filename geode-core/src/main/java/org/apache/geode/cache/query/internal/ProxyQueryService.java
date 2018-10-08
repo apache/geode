@@ -42,7 +42,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -322,7 +321,7 @@ public class ProxyQueryService implements QueryService {
     try {
       if (cqName == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
+            "cqName must not be null");
       }
       ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
           queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
@@ -340,7 +339,7 @@ public class ProxyQueryService implements QueryService {
     try {
       if (cqName == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
+            "cqName must not be null");
       }
       ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
           queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);

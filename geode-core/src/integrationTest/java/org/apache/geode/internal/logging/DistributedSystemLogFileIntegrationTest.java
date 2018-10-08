@@ -14,26 +14,26 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -44,15 +44,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -61,22 +61,40 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category(LoggingTest.class)
 public class DistributedSystemLogFileIntegrationTest {
 
-  private static final int TIMEOUT_MILLISECONDS = 180 * 1000; // 2 minutes
-  private static final int INTERVAL_MILLISECONDS = 100; // 100 milliseconds
+  private static final AtomicInteger COUNTER = new AtomicInteger();
 
-  private DistributedSystem system;
+  private File logFile;
+  private String logFileName;
+  private File securityLogFile;
+  private String securityLogFileName;
+
+  private InternalDistributedSystem system;
+
+  private String prefix;
 
   @Rule
-  public TestName name = new TestName();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
-  public void setUp() throws Exception {}
+  public void setUp() {
+    logFile = new File(temporaryFolder.getRoot(),
+        testName.getMethodName() + "-system-" + System.currentTimeMillis() + ".log");
+    logFileName = logFile.getAbsolutePath();
+
+    securityLogFile = new File(temporaryFolder.getRoot(),
+        "security-" + testName.getMethodName() + "-system-" + System.currentTimeMillis() + ".log");
+    securityLogFileName = securityLogFile.getAbsolutePath();
+
+    prefix = "ExpectedStrings: " + testName.getMethodName() + " message logged at ";
+  }
 
   @After
   public void tearDown() throws Exception {
     if (system != null) {
       system.disconnect();
-      system = null;
     }
     // We will want to remove this at some point but right now the log context
     // does not clear out the security logconfig between tests
@@ -85,1212 +103,829 @@ public class DistributedSystemLogFileIntegrationTest {
   }
 
   @Test
+  public void testDistributedSystemLogWritersWithFilesDetails() throws Exception {
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(SECURITY_LOG_FILE, securityLogFileName);
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
+
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
+
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+      assertThat(logFile).exists();
+      assertThat(securityLogFile).exists();
+    });
+
+    // assertThat logFile is not empty
+    try (FileInputStream fis = new FileInputStream(logFile)) {
+      assertThat(fis.available()).isGreaterThan(0);
+    }
+
+    DistributionConfig distributionConfig = system.getConfig();
+
+    assertThat(distributionConfig.getLogLevel())
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
+    assertThat(distributionConfig.getSecurityLogLevel())
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
+
+    assertThat(distributionConfig.getLogFile().getAbsolutePath()).isEqualTo(logFileName);
+    assertThat(distributionConfig.getSecurityLogFile().getAbsolutePath())
+        .isEqualTo(securityLogFileName);
+
+    assertThat(system.getLogWriter()).isInstanceOf(LogWriterLogger.class);
+    assertThat(system.getSecurityLogWriter()).isInstanceOf(LogWriterLogger.class);
+
+    LogWriterLogger logWriterLogger = (LogWriterLogger) system.getLogWriter();
+    LogWriterLogger securityLogWriterLogger = (LogWriterLogger) system.getSecurityLogWriter();
+
+    assertThat(logWriterLogger.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(securityLogWriterLogger.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+
+    securityLogWriterLogger.info("test: security log file created at info");
+
+    // assertThat securityLogFile is not empty
+    try (FileInputStream fis = new FileInputStream(securityLogFile)) {
+      assertThat(fis.available()).isGreaterThan(0);
+    }
+
+    LogWriter logWriter = logWriterLogger;
+    assertThat(logWriter.finestEnabled()).isFalse();
+    assertThat(logWriter.finerEnabled()).isFalse();
+    assertThat(logWriter.fineEnabled()).isFalse();
+    assertThat(logWriter.configEnabled()).isTrue();
+    assertThat(logWriter.infoEnabled()).isTrue();
+    assertThat(logWriter.warningEnabled()).isTrue();
+    assertThat(logWriter.errorEnabled()).isTrue();
+    assertThat(logWriter.severeEnabled()).isTrue();
+
+    FastLogger logWriterFastLogger = logWriterLogger;
+    // assertThat(logWriterFastLogger.isDelegating()).isTrue();
+    assertThat(logWriterFastLogger.isTraceEnabled()).isFalse();
+    assertThat(logWriterFastLogger.isDebugEnabled()).isFalse();
+    assertThat(logWriterFastLogger.isInfoEnabled()).isTrue();
+    assertThat(logWriterFastLogger.isWarnEnabled()).isTrue();
+    assertThat(logWriterFastLogger.isErrorEnabled()).isTrue();
+    assertThat(logWriterFastLogger.isFatalEnabled()).isTrue();
+
+    LogWriter securityLogWriter = securityLogWriterLogger;
+    assertThat(securityLogWriter.finestEnabled()).isFalse();
+    assertThat(securityLogWriter.finerEnabled()).isFalse();
+    assertThat(securityLogWriter.fineEnabled()).isFalse();
+    assertThat(securityLogWriter.configEnabled()).isTrue();
+    assertThat(securityLogWriter.infoEnabled()).isTrue();
+    assertThat(securityLogWriter.warningEnabled()).isTrue();
+    assertThat(securityLogWriter.errorEnabled()).isTrue();
+    assertThat(securityLogWriter.severeEnabled()).isTrue();
+
+    FastLogger securityLogWriterFastLogger = logWriterLogger;
+    // assertThat(securityLogWriterFastLogger.isDelegating()).isFalse();
+    assertThat(securityLogWriterFastLogger.isTraceEnabled()).isFalse();
+    assertThat(securityLogWriterFastLogger.isDebugEnabled()).isFalse();
+    assertThat(securityLogWriterFastLogger.isInfoEnabled()).isTrue();
+    assertThat(securityLogWriterFastLogger.isWarnEnabled()).isTrue();
+    assertThat(securityLogWriterFastLogger.isErrorEnabled()).isTrue();
+    assertThat(securityLogWriterFastLogger.isFatalEnabled()).isTrue();
+  }
+
+  @Test
   public void testDistributedSystemCreatesLogFile() throws Exception {
-    final String logFileName = name.getMethodName() + "-system-0.log";
-
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "config");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
-
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
-
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.CONFIG_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.CONFIG_LEVEL, config.getLogLevel());
-
-    // CONFIG has been replaced with INFO -- all CONFIG statements are now logged at INFO as well
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(logWriter);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.INFO_LEVEL, logWriter.getLogWriterLevel());
-
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return logFile.exists();
-      }
-
-      @Override
-      public String description() {
-        return "waiting for log file to exist: " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(logFile.exists());
-
-    // assert not empty
-    FileInputStream fis = new FileInputStream(logFile);
-    try {
-      assertTrue("log file is empty: " + logFile.getAbsoluteFile(), fis.available() > 0);
-    } finally {
-      fis.close();
-    }
-
-    final Logger logger = LogService.getLogger();
-    final Logger appLogger = LogManager.getLogger("net.customer");
-    assertEquals(Level.INFO, appLogger.getLevel());
-    int i = 0;
-
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
-
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
-
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertFalse(fileContainsString(logFile, FINE_STRING));
-
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(logFile, CONFIG_STRING));
-
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(logFile, INFO_STRING));
-
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(logFile, WARNING_STRING));
-
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
-
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
-
-      i++;
-      final String TRACE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
-
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING));
-
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
-
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertTrue(fileContainsString(logFile, WARN_STRING));
-
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-
-      i++;
-      final String TRACE_STRING_A = "Message logged at TRACE level [" + i + "]";
-      appLogger.trace(TRACE_STRING_A);
-      assertFalse(fileContainsString(logFile, TRACE_STRING_A));
-
-      i++;
-      final String DEBUG_STRING_A = "Message logged at DEBUG level [" + i + "]";
-      appLogger.debug(DEBUG_STRING_A);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING_A));
-
-      i++;
-      final String INFO_STRING_A = "Message logged at INFO level [" + i + "]";
-      appLogger.info(INFO_STRING_A);
-      assertTrue(fileContainsString(logFile, INFO_STRING_A));
-
-      i++;
-      final String WARN_STRING_A = "ExpectedStrings: Message logged at WARN level [" + i + "]";
-      appLogger.warn(WARN_STRING_A);
-      assertTrue(fileContainsString(logFile, WARN_STRING_A));
-
-      i++;
-      final String ERROR_STRING_A = "ExpectedStrings: Message logged at ERROR level [" + i + "]";
-      appLogger.error(ERROR_STRING_A);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_A));
-
-      i++;
-      final String FATAL_STRING_A = "ExpectedStrings: Message logged at FATAL level [" + i + "]";
-      appLogger.fatal(FATAL_STRING_A);
-      assertTrue(fileContainsString(logFile, FATAL_STRING_A));
-    }
-
-    // change log level to fine and verify
-    config.setLogLevel(InternalLogWriter.FINE_LEVEL);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, logWriter.getLogWriterLevel());
-
-    assertEquals(Level.DEBUG, appLogger.getLevel());
-
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
-
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
-
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertTrue(fileContainsString(logFile, FINE_STRING));
-
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(logFile, CONFIG_STRING));
-
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(logFile, INFO_STRING));
-
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(logFile, WARNING_STRING));
-
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
-
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
-
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
-
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertTrue(fileContainsString(logFile, DEBUG_STRING));
-
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
-
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertTrue(fileContainsString(logFile, WARN_STRING));
-
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-
-      i++;
-      final String TRACE_STRING_A = "Message logged at TRACE level [" + i + "]";
-      appLogger.trace(TRACE_STRING_A);
-      assertFalse(fileContainsString(logFile, TRACE_STRING_A));
-
-      i++;
-      final String DEBUG_STRING_A = "Message logged at DEBUG level [" + i + "]";
-      appLogger.debug(DEBUG_STRING_A);
-      assertTrue(fileContainsString(logFile, DEBUG_STRING_A));
-
-      i++;
-      final String INFO_STRING_A = "Message logged at INFO level [" + i + "]";
-      appLogger.info(INFO_STRING_A);
-      assertTrue(fileContainsString(logFile, INFO_STRING_A));
-
-      i++;
-      final String WARN_STRING_A = "ExpectedStrings: Message logged at WARN level [" + i + "]";
-      appLogger.warn(WARN_STRING_A);
-      assertTrue(fileContainsString(logFile, WARN_STRING_A));
-
-      i++;
-      final String ERROR_STRING_A = "ExpectedStrings: Message logged at ERROR level [" + i + "]";
-      appLogger.error(ERROR_STRING_A);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_A));
-
-      i++;
-      final String FATAL_STRING_A = "ExpectedStrings: Message logged at FATAL level [" + i + "]";
-      appLogger.fatal(FATAL_STRING_A);
-      assertTrue(fileContainsString(logFile, FATAL_STRING_A));
-    }
-
-    // change log level to error and verify
-    config.setLogLevel(InternalLogWriter.ERROR_LEVEL);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.ERROR_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.ERROR_LEVEL, config.getLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.ERROR_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.ERROR_LEVEL, logWriter.getLogWriterLevel());
-
-    assertEquals(Level.ERROR, appLogger.getLevel());
-
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
-
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
-
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertFalse(fileContainsString(logFile, FINE_STRING));
-
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertFalse(fileContainsString(logFile, CONFIG_STRING));
-
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertFalse(fileContainsString(logFile, INFO_STRING));
-
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertFalse(fileContainsString(logFile, WARNING_STRING));
-
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
-
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
-
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
-
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING));
-
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertFalse(fileContainsString(logFile, INFO_STRING_J));
-
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertFalse(fileContainsString(logFile, WARN_STRING));
-
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-
-      i++;
-      final String TRACE_STRING_A = "Message logged at TRACE level [" + i + "]";
-      appLogger.trace(TRACE_STRING_A);
-      assertFalse(fileContainsString(logFile, TRACE_STRING_A));
-
-      i++;
-      final String DEBUG_STRING_A = "Message logged at DEBUG level [" + i + "]";
-      appLogger.debug(DEBUG_STRING_A);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING_A));
-
-      i++;
-      final String INFO_STRING_A = "Message logged at INFO level [" + i + "]";
-      appLogger.info(INFO_STRING_A);
-      assertFalse(fileContainsString(logFile, INFO_STRING_A));
-
-      i++;
-      final String WARN_STRING_A = "ExpectedStrings: Message logged at WARN level [" + i + "]";
-      appLogger.warn(WARN_STRING_A);
-      assertFalse(fileContainsString(logFile, WARN_STRING_A));
-
-      i++;
-      final String ERROR_STRING_A = "ExpectedStrings: Message logged at ERROR level [" + i + "]";
-      appLogger.error(ERROR_STRING_A);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_A));
-
-      i++;
-      final String FATAL_STRING_A = "ExpectedStrings: Message logged at FATAL level [" + i + "]";
-      appLogger.fatal(FATAL_STRING_A);
-      assertTrue(fileContainsString(logFile, FATAL_STRING_A));
-    }
-
-    system.disconnect();
-    system = null;
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(LOG_LEVEL, "config");
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
+
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
+
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    Logger geodeLogger = LogService.getLogger();
+    Logger applicationLogger = LogManager.getLogger("net.customer");
+
+    // -------------------------------------------------------------------------------------------
+    // CONFIG level
+
+    DistributionConfig distributionConfig = system.getConfig();
+
+    assertThat(distributionConfig.getLogLevel())
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.INFO);
+    assertThat(applicationLogger.getLevel()).isEqualTo(Level.INFO);
+
+    String message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.TRACE);
+    applicationLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.DEBUG);
+    applicationLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.INFO);
+    applicationLogger.info(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.WARN);
+    applicationLogger.warn(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.ERROR);
+    applicationLogger.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.FATAL);
+    applicationLogger.fatal(message);
+    assertThatFileContains(logFile, message);
+
+    // -------------------------------------------------------------------------------------------
+    // FINE level
+
+    distributionConfig.setLogLevel(LogWriterLevel.FINE.getLogWriterLevel());
+
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.DEBUG);
+    assertThat(applicationLogger.getLevel()).isEqualTo(Level.DEBUG);
+
+    message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.TRACE);
+    applicationLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.DEBUG);
+    applicationLogger.debug(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.INFO);
+    applicationLogger.info(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.WARN);
+    applicationLogger.warn(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.ERROR);
+    applicationLogger.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.FATAL);
+    applicationLogger.fatal(message);
+    assertThatFileContains(logFile, message);
+
+    // -------------------------------------------------------------------------------------------
+    // ERROR level
+
+    distributionConfig.setLogLevel(LogWriterLevel.ERROR.getLogWriterLevel());
+
+    assertThat(distributionConfig.getLogLevel())
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.ERROR);
+    assertThat(applicationLogger.getLevel()).isEqualTo(Level.ERROR);
+
+    message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.TRACE);
+    applicationLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.DEBUG);
+    applicationLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.INFO);
+    applicationLogger.info(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.WARN);
+    applicationLogger.warn(message);
+    assertThatFileDoesNotContain(logFile, message);
+
+    message = createMessage(Level.ERROR);
+    applicationLogger.error(message);
+    assertThatFileContains(logFile, message);
+
+    message = createMessage(Level.FATAL);
+    applicationLogger.fatal(message);
+    assertThatFileContains(logFile, message);
   }
 
   @Test
   public void testDistributedSystemWithFineLogLevel() throws Exception {
-    final String logFileName =
-        name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(LOG_LEVEL, "fine");
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "fine");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
 
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    Logger geodeLogger = LogService.getLogger();
 
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getLogLevel());
+    DistributionConfig distributionConfig = system.getConfig();
 
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(logWriter);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, logWriter.getLogWriterLevel());
-    assertTrue(logWriter.fineEnabled());
-    assertTrue(((LogWriterLogger) logWriter).isDebugEnabled());
-    assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger) logWriter).isDelegating());
+    // -------------------------------------------------------------------------------------------
+    // FINE level
 
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return logFile.exists();
-      }
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.DEBUG);
 
-      @Override
-      public String description() {
-        return "waiting for log file to exist: " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(logFile.exists());
+    String message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    // assert not empty
-    FileInputStream fis = new FileInputStream(logFile);
-    try {
-      assertTrue(fis.available() > 0);
-    } finally {
-      fis.close();
-    }
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    final Logger logger = LogService.getLogger();
-    int i = 0;
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileContains(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertTrue(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertTrue(fileContainsString(logFile, DEBUG_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertTrue(fileContainsString(logFile, WARN_STRING));
+    // -------------------------------------------------------------------------------------------
+    // ERROR level
 
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
+    distributionConfig.setLogLevel(LogWriterLevel.ERROR.getLogWriterLevel());
 
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
+    assertThat(distributionConfig.getLogLevel())
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.ERROR);
 
-    // change log level to error and verify
-    config.setLogLevel(InternalLogWriter.ERROR_LEVEL);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.ERROR_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.ERROR_LEVEL, config.getLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.ERROR_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.ERROR_LEVEL, logWriter.getLogWriterLevel());
+    message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertFalse(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertFalse(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertFalse(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertFalse(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertFalse(fileContainsString(logFile, INFO_STRING_J));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertFalse(fileContainsString(logFile, WARN_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
-
-    system.disconnect();
-    system = null;
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
   }
 
   @Test
   public void testDistributedSystemWithDebugLogLevel() throws Exception {
-    final String logFileName =
-        name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(LOG_LEVEL, "debug");
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "debug");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
 
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    Logger geodeLogger = LogService.getLogger();
 
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getLogLevel());
+    DistributionConfig distributionConfig = system.getConfig();
 
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(logWriter);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, logWriter.getLogWriterLevel());
-    assertTrue(logWriter.fineEnabled());
-    assertTrue(((LogWriterLogger) logWriter).isDebugEnabled());
-    assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger) logWriter).isDelegating());
+    // -------------------------------------------------------------------------------------------
+    // DEBUG LEVEL
 
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return logFile.exists();
-      }
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.DEBUG);
 
-      @Override
-      public String description() {
-        return "waiting for log file to exist: " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(logFile.exists());
+    String message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    // assert not empty
-    FileInputStream fis = new FileInputStream(logFile);
-    try {
-      assertTrue(fis.available() > 0);
-    } finally {
-      fis.close();
-    }
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    final Logger logger = LogService.getLogger();
-    int i = 0;
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileContains(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertTrue(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertTrue(fileContainsString(logFile, DEBUG_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertTrue(fileContainsString(logFile, WARN_STRING));
+    // -------------------------------------------------------------------------------------------
+    // ERROR LEVEL
 
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
+    distributionConfig.setLogLevel(LogWriterLevel.ERROR.getLogWriterLevel());
 
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
+    assertThat(distributionConfig.getLogLevel())
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.ERROR);
 
-    // change log level to error and verify
-    config.setLogLevel(InternalLogWriter.ERROR_LEVEL);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.ERROR_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.ERROR_LEVEL, config.getLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.ERROR_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.ERROR_LEVEL, logWriter.getLogWriterLevel());
+    message = createMessage(LogWriterLevel.FINEST);
+    logWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      logWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.FINER);
+    logWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      logWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.FINE);
+    logWriter.fine(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      logWriter.fine(FINE_STRING);
-      assertFalse(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.CONFIG);
+    logWriter.config(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      logWriter.config(CONFIG_STRING);
-      assertFalse(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(LogWriterLevel.INFO);
+    logWriter.info(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      logWriter.info(INFO_STRING);
-      assertFalse(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    logWriter.warning(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      logWriter.warning(WARNING_STRING);
-      assertFalse(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    logWriter.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    logWriter.severe(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      logWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertFalse(fileContainsString(logFile, INFO_STRING_J));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertFalse(fileContainsString(logFile, WARN_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
-
-    system.disconnect();
-    system = null;
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
   }
 
   @Test
   public void testDistributedSystemWithSecurityLogDefaultLevel() throws Exception {
-    final String logFileName =
-        name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
-    final String securityLogFileName =
-        "security" + name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(LOG_LEVEL, "fine");
+    config.put(SECURITY_LOG_FILE, securityLogFileName);
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "fine");
-    properties.put(SECURITY_LOG_FILE, securityLogFileName);
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    final File securityLogFile = new File(securityLogFileName);
-    if (securityLogFile.exists()) {
-      securityLogFile.delete();
-    }
-    assertFalse(securityLogFile.exists());
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+      assertThat(logFile).exists();
+      assertThat(securityLogFile).exists();
+    });
 
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
+    Logger geodeLogger = LogService.getLogger();
 
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
+    DistributionConfig distributionConfig = system.getConfig();
 
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.CONFIG_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.CONFIG_LEVEL, config.getSecurityLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getLogLevel());
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(distributionConfig.getSecurityLogLevel())
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
 
-    InternalLogWriter securityLogWriter = (InternalLogWriter) system.getSecurityLogWriter();
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(securityLogWriter);
-    assertNotNull(logWriter);
-    assertTrue(securityLogWriter instanceof LogWriterLogger);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.INFO_LEVEL, securityLogWriter.getLogWriterLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, logWriter.getLogWriterLevel());
-    assertFalse(securityLogWriter.fineEnabled());
-    assertTrue(logWriter.fineEnabled());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(securityLogWriter.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.DEBUG);
 
-    assertFalse(((LogWriterLogger) securityLogWriter).isDebugEnabled());
-    assertTrue(((LogWriterLogger) logWriter).isDebugEnabled());
-    assertTrue(securityLogWriter instanceof FastLogger);
-    assertTrue(logWriter instanceof FastLogger);
-    // Because debug available is a static volatile, it is shared between the two writers
-    // However we should not see any debug level logging due to the config level set in
-    // the log writer itself
-    assertTrue(((FastLogger) securityLogWriter).isDelegating());
-    assertTrue(((FastLogger) logWriter).isDelegating());
+    String message = createMessage(LogWriterLevel.FINEST);
+    securityLogWriter.finest(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return securityLogFile.exists() && logFile.exists();
-      }
+    message = createMessage(LogWriterLevel.FINE);
+    securityLogWriter.fine(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      @Override
-      public String description() {
-        return "waiting for log files to exist: " + securityLogFile + ", " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(securityLogFile.exists());
-    assertTrue(logFile.exists());
+    message = createMessage(LogWriterLevel.INFO);
+    securityLogWriter.info(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    securityLogWriter.info("test: security log file created at info");
-    // assert not empty
-    FileInputStream fis = new FileInputStream(securityLogFile);
-    try {
-      assertTrue(fis.available() > 0);
-    } finally {
-      fis.close();
-    }
-
-    final Logger logger = LogService.getLogger();
-    int i = 0;
-
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      securityLogWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(securityLogFile, FINEST_STRING));
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
-
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      securityLogWriter.fine(FINE_STRING);
-      assertFalse(fileContainsString(securityLogFile, FINE_STRING));
-      assertFalse(fileContainsString(logFile, FINE_STRING));
-
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      securityLogWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(securityLogFile, INFO_STRING));
-      assertFalse(fileContainsString(logFile, INFO_STRING));
-
-      i++;
-      final String FINE_STRING_FOR_LOGGER =
-          "testLogLevels Message logged at FINE level [" + i + "]";
-      logger.debug(FINE_STRING_FOR_LOGGER);
-      assertFalse(fileContainsString(securityLogFile, FINE_STRING_FOR_LOGGER));
-      assertTrue(fileContainsString(logFile, FINE_STRING_FOR_LOGGER));
-    }
-
-    system.disconnect();
-    system = null;
+    message = createMessage(LogWriterLevel.FINE);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileContains(logFile, message);
   }
 
   @Test
   public void testDistributedSystemWithSecurityLogFineLevel() throws Exception {
-    final String logFileName =
-        name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
-    final String securityLogFileName =
-        "security" + name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(LOG_LEVEL, "fine");
+    config.put(SECURITY_LOG_FILE, securityLogFileName);
+    config.put(SECURITY_LOG_LEVEL, "fine");
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "fine");
-    properties.put(SECURITY_LOG_FILE, securityLogFileName);
-    properties.put(SECURITY_LOG_LEVEL, "fine");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    final File securityLogFile = new File(securityLogFileName);
-    if (securityLogFile.exists()) {
-      securityLogFile.delete();
-    }
-    assertFalse(securityLogFile.exists());
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+      assertThat(logFile).exists();
+      assertThat(securityLogFile).exists();
+    });
 
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
+    Logger geodeLogger = LogService.getLogger();
 
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
+    DistributionConfig distributionConfig = system.getConfig();
 
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getSecurityLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getLogLevel());
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(distributionConfig.getSecurityLogLevel())
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
 
-    InternalLogWriter securityLogWriter = (InternalLogWriter) system.getSecurityLogWriter();
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(securityLogWriter);
-    assertNotNull(logWriter);
-    assertTrue(securityLogWriter instanceof LogWriterLogger);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, securityLogWriter.getLogWriterLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, logWriter.getLogWriterLevel());
-    assertTrue(securityLogWriter.fineEnabled());
-    assertTrue(logWriter.fineEnabled());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(securityLogWriter.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.DEBUG);
 
-    assertTrue(((LogWriterLogger) securityLogWriter).isDebugEnabled());
-    assertTrue(((LogWriterLogger) logWriter).isDebugEnabled());
-    assertTrue(securityLogWriter instanceof FastLogger);
-    assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger) securityLogWriter).isDelegating());
-    assertTrue(((FastLogger) logWriter).isDelegating());
+    String message = createMessage(LogWriterLevel.FINEST);
+    securityLogWriter.finest(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return securityLogFile.exists() && logFile.exists();
-      }
+    message = createMessage(LogWriterLevel.FINER);
+    securityLogWriter.finer(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      @Override
-      public String description() {
-        return "waiting for log files to exist: " + securityLogFile + ", " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(securityLogFile.exists());
-    assertTrue(logFile.exists());
+    message = createMessage(LogWriterLevel.FINE);
+    securityLogWriter.fine(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    // assert not empty
-    FileInputStream fis = new FileInputStream(securityLogFile);
-    try {
-      assertTrue(fis.available() > 0);
-    } finally {
-      fis.close();
-    }
+    message = createMessage(LogWriterLevel.CONFIG);
+    securityLogWriter.config(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    final Logger logger = LogService.getLogger();
-    int i = 0;
+    message = createMessage(LogWriterLevel.INFO);
+    securityLogWriter.info(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      securityLogWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(securityLogFile, FINEST_STRING));
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    securityLogWriter.warning(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      securityLogWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(securityLogFile, FINER_STRING));
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    securityLogWriter.error(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      securityLogWriter.fine(FINE_STRING);
-      assertTrue(fileContainsString(securityLogFile, FINE_STRING));
-      assertFalse(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    securityLogWriter.severe(message);
+    assertThatFileContains(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      securityLogWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(securityLogFile, CONFIG_STRING));
-      assertFalse(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      securityLogWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(securityLogFile, INFO_STRING));
-      assertFalse(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      securityLogWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(securityLogFile, WARNING_STRING));
-      assertFalse(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      securityLogWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(securityLogFile, ERROR_STRING));
-      assertFalse(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      securityLogWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(securityLogFile, SEVERE_STRING));
-      assertFalse(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(securityLogFile, TRACE_STRING));
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
-
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertFalse(fileContainsString(securityLogFile, DEBUG_STRING));
-      assertTrue(fileContainsString(logFile, DEBUG_STRING));
-
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertFalse(fileContainsString(securityLogFile, INFO_STRING_J));
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
-
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertFalse(fileContainsString(securityLogFile, WARN_STRING));
-      assertTrue(fileContainsString(logFile, WARN_STRING));
-
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertFalse(fileContainsString(securityLogFile, ERROR_STRING_J));
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertFalse(fileContainsString(securityLogFile, FATAL_STRING));
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
-
-    system.disconnect();
-    system = null;
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileDoesNotContain(securityLogFile, message);
+    assertThatFileContains(logFile, message);
   }
 
   /**
@@ -1301,159 +936,87 @@ public class DistributedSystemLogFileIntegrationTest {
   @Test
   public void testDistributedSystemWithSecurityInfoLevelAndLogAtFineLevelButNoSecurityLog()
       throws Exception {
-    final String logFileName =
-        name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
+    Properties CONFIG = new Properties();
+    CONFIG.put(LOG_FILE, logFileName);
+    CONFIG.put(LOG_LEVEL, "fine");
+    CONFIG.put(SECURITY_LOG_LEVEL, "info");
+    CONFIG.put(MCAST_PORT, "0");
+    CONFIG.put(LOCATORS, "");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "fine");
-    properties.put(SECURITY_LOG_LEVEL, "info");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    system = (InternalDistributedSystem) DistributedSystem.connect(CONFIG);
 
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
 
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
+    Logger geodeLogger = LogService.getLogger();
 
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.INFO_LEVEL, config.getSecurityLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getLogLevel());
+    DistributionConfig distributionConfig = system.getConfig();
 
-    InternalLogWriter securityLogWriter = (InternalLogWriter) system.getSecurityLogWriter();
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(securityLogWriter);
-    assertNotNull(logWriter);
-    assertTrue(securityLogWriter instanceof LogWriterLogger);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.INFO_LEVEL, securityLogWriter.getLogWriterLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, logWriter.getLogWriterLevel());
-    assertFalse(securityLogWriter.fineEnabled());
-    assertTrue(logWriter.fineEnabled());
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(distributionConfig.getSecurityLogLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
 
-    assertFalse(((LogWriterLogger) securityLogWriter).isDebugEnabled());
-    assertTrue(((LogWriterLogger) logWriter).isDebugEnabled());
-    assertTrue(securityLogWriter instanceof FastLogger);
-    assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger) securityLogWriter).isDelegating());
-    assertTrue(((FastLogger) logWriter).isDelegating());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(securityLogWriter.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.DEBUG);
 
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return logFile.exists();
-      }
+    String message = createMessage(LogWriterLevel.FINEST);
+    securityLogWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      @Override
-      public String description() {
-        return "waiting for log files to exist: " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(logFile.exists());
+    message = createMessage(LogWriterLevel.FINER);
+    securityLogWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    final Logger logger = LogService.getLogger();
-    int i = 0;
+    message = createMessage(LogWriterLevel.FINE);
+    securityLogWriter.fine(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      securityLogWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.CONFIG);
+    securityLogWriter.config(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      securityLogWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.INFO);
+    securityLogWriter.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      securityLogWriter.fine(FINE_STRING);
-      assertFalse(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    securityLogWriter.warning(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      securityLogWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    securityLogWriter.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      securityLogWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    securityLogWriter.severe(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      securityLogWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      securityLogWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      securityLogWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertTrue(fileContainsString(logFile, DEBUG_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
-
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertTrue(fileContainsString(logFile, WARN_STRING));
-
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
-
-    system.disconnect();
-    system = null;
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
   }
 
   /**
@@ -1464,174 +1027,127 @@ public class DistributedSystemLogFileIntegrationTest {
   @Test
   public void testDistributedSystemWithSecurityFineLevelAndLogAtInfoLevelButNoSecurityLog()
       throws Exception {
-    final String logFileName =
-        name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
+    Properties config = new Properties();
+    config.put(LOG_FILE, logFileName);
+    config.put(LOG_LEVEL, "info");
+    config.put(SECURITY_LOG_LEVEL, "fine");
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_FILE, logFileName);
-    properties.put(LOG_LEVEL, "info");
-    properties.put(SECURITY_LOG_LEVEL, "fine");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, "");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    final File logFile = new File(logFileName);
-    if (logFile.exists()) {
-      logFile.delete();
-    }
-    assertFalse(logFile.exists());
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
 
-    system = DistributedSystem.connect(properties);
-    assertNotNull(system);
+    LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
+    LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
+    Logger geodeLogger = LogService.getLogger();
 
-    DistributionConfig config = ((InternalDistributedSystem) system).getConfig();
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.FINE_LEVEL, config.getSecurityLogLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.INFO_LEVEL, config.getLogLevel());
+    DistributionConfig distributionConfig = system.getConfig();
 
+    assertThat(distributionConfig.getLogLevel()).isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(distributionConfig.getSecurityLogLevel())
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
 
-    InternalLogWriter securityLogWriter = (InternalLogWriter) system.getSecurityLogWriter();
-    InternalLogWriter logWriter = (InternalLogWriter) system.getLogWriter();
-    assertNotNull(securityLogWriter);
-    assertNotNull(logWriter);
-    assertTrue(securityLogWriter instanceof LogWriterLogger);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.FINE_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.FINE_LEVEL, securityLogWriter.getLogWriterLevel());
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(securityLogWriter.getLogWriterLevel()),
-        InternalLogWriter.INFO_LEVEL, logWriter.getLogWriterLevel());
-    assertTrue(securityLogWriter.fineEnabled());
-    assertFalse(logWriter.fineEnabled());
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(securityLogWriter.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(geodeLogger.getLevel()).isEqualTo(Level.INFO);
 
-    assertTrue(((LogWriterLogger) securityLogWriter).isDebugEnabled());
-    assertFalse(((LogWriterLogger) logWriter).isDebugEnabled());
-    assertTrue(securityLogWriter instanceof FastLogger);
-    assertTrue(logWriter instanceof FastLogger);
-    assertTrue(((FastLogger) securityLogWriter).isDelegating());
-    assertTrue(((FastLogger) logWriter).isDelegating());
+    String message = createMessage(LogWriterLevel.FINEST);
+    securityLogWriter.finest(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return logFile.exists();
-      }
+    message = createMessage(LogWriterLevel.FINER);
+    securityLogWriter.finer(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      @Override
-      public String description() {
-        return "waiting for log files to exist: " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(logFile.exists());
+    message = createMessage(LogWriterLevel.FINE);
+    securityLogWriter.fine(message);
+    assertThatFileContains(logFile, message);
 
-    final Logger logger = LogService.getLogger();
-    int i = 0;
+    message = createMessage(LogWriterLevel.CONFIG);
+    securityLogWriter.config(message);
+    assertThatFileContains(logFile, message);
 
-    {
-      i++;
-      final String FINEST_STRING = "testLogLevels Message logged at FINEST level [" + i + "]";
-      securityLogWriter.finest(FINEST_STRING);
-      assertFalse(fileContainsString(logFile, FINEST_STRING));
+    message = createMessage(LogWriterLevel.INFO);
+    securityLogWriter.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINER_STRING = "testLogLevels Message logged at FINER level [" + i + "]";
-      securityLogWriter.finer(FINER_STRING);
-      assertFalse(fileContainsString(logFile, FINER_STRING));
+    message = createMessage(LogWriterLevel.WARNING);
+    securityLogWriter.warning(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String FINE_STRING = "testLogLevels Message logged at FINE level [" + i + "]";
-      securityLogWriter.fine(FINE_STRING);
-      assertTrue(fileContainsString(logFile, FINE_STRING));
+    message = createMessage(LogWriterLevel.ERROR);
+    securityLogWriter.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String CONFIG_STRING = "testLogLevels Message logged at CONFIG level [" + i + "]";
-      securityLogWriter.config(CONFIG_STRING);
-      assertTrue(fileContainsString(logFile, CONFIG_STRING));
+    message = createMessage(LogWriterLevel.SEVERE);
+    securityLogWriter.severe(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String INFO_STRING = "testLogLevels Message logged at INFO level [" + i + "]";
-      securityLogWriter.info(INFO_STRING);
-      assertTrue(fileContainsString(logFile, INFO_STRING));
+    message = createMessage(Level.TRACE);
+    geodeLogger.trace(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String WARNING_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARNING level [" + i + "]";
-      securityLogWriter.warning(WARNING_STRING);
-      assertTrue(fileContainsString(logFile, WARNING_STRING));
+    message = createMessage(Level.DEBUG);
+    geodeLogger.debug(message);
+    assertThatFileDoesNotContain(logFile, message);
 
-      i++;
-      final String ERROR_STRING =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      securityLogWriter.error(ERROR_STRING);
-      assertTrue(fileContainsString(logFile, ERROR_STRING));
+    message = createMessage(Level.INFO);
+    geodeLogger.info(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String SEVERE_STRING =
-          "ExpectedStrings: testLogLevels Message logged at SEVERE level [" + i + "]";
-      securityLogWriter.severe(SEVERE_STRING);
-      assertTrue(fileContainsString(logFile, SEVERE_STRING));
+    message = createMessage(Level.WARN);
+    geodeLogger.warn(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String TRACE_STRING = "testLogLevels Message logged at TRACE level [" + i + "]";
-      logger.trace(TRACE_STRING);
-      assertFalse(fileContainsString(logFile, TRACE_STRING));
+    message = createMessage(Level.ERROR);
+    geodeLogger.error(message);
+    assertThatFileContains(logFile, message);
 
-      i++;
-      final String DEBUG_STRING = "testLogLevels Message logged at DEBUG level [" + i + "]";
-      logger.debug(DEBUG_STRING);
-      assertFalse(fileContainsString(logFile, DEBUG_STRING));
-
-      i++;
-      final String INFO_STRING_J = "testLogLevels Message logged at INFO level [" + i + "]";
-      logger.info(INFO_STRING_J);
-      assertTrue(fileContainsString(logFile, INFO_STRING_J));
-
-      i++;
-      final String WARN_STRING =
-          "ExpectedStrings: testLogLevels Message logged at WARN level [" + i + "]";
-      logger.warn(WARN_STRING);
-      assertTrue(fileContainsString(logFile, WARN_STRING));
-
-      i++;
-      final String ERROR_STRING_J =
-          "ExpectedStrings: testLogLevels Message logged at ERROR level [" + i + "]";
-      logger.error(ERROR_STRING_J);
-      assertTrue(fileContainsString(logFile, ERROR_STRING_J));
-
-      i++;
-      final String FATAL_STRING =
-          "ExpectedStrings: testLogLevels Message logged at FATAL level [" + i + "]";
-      logger.fatal(FATAL_STRING);
-      assertTrue(fileContainsString(logFile, FATAL_STRING));
-    }
-
-    system.disconnect();
-    system = null;
+    message = createMessage(Level.FATAL);
+    geodeLogger.fatal(message);
+    assertThatFileContains(logFile, message);
   }
 
-  private static boolean fileContainsString(final File file, final String string)
-      throws FileNotFoundException {
-    Scanner scanner = new Scanner(file);
-    try {
+  private String createMessage(LogWriterLevel logLevel) {
+    return prefix + logLevel.name() + " [" + COUNTER.incrementAndGet() + "]";
+  }
+
+  private String createMessage(Level level) {
+    return prefix + level.name() + " [" + COUNTER.incrementAndGet() + "]";
+  }
+
+  private void assertThatFileContains(final File file, final String string)
+      throws IOException {
+    try (Scanner scanner = new Scanner(file)) {
       while (scanner.hasNextLine()) {
         if (scanner.nextLine().trim().contains(string)) {
-          return true;
+          return;
         }
       }
-    } finally {
-      scanner.close();
     }
-    return false;
+
+    List<String> lines = Files.readAllLines(file.toPath());
+    fail("Expected file " + file.getAbsolutePath() + " to contain " + string + LINE_SEPARATOR
+        + "Actual: " + lines);
+  }
+
+  private void assertThatFileDoesNotContain(final File file, final String string)
+      throws IOException {
+    boolean fail = false;
+    try (Scanner scanner = new Scanner(file)) {
+      while (scanner.hasNextLine()) {
+        if (scanner.nextLine().trim().contains(string)) {
+          fail = true;
+          break;
+        }
+      }
+    }
+    if (fail) {
+      List<String> lines = Files.readAllLines(file.toPath());
+      fail("Expected file " + file.getAbsolutePath() + " to not contain " + string + LINE_SEPARATOR
+          + "Actual: " + lines);
+    }
   }
 }

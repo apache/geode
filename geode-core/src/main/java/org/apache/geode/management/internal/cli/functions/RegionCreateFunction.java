@@ -44,7 +44,6 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
@@ -101,7 +100,7 @@ public class RegionCreateFunction implements InternalFunction {
     } catch (IllegalStateException e) {
       String exceptionMsg = e.getMessage();
       String localizedString =
-          LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
+          "Only regions with persistence or overflow to disk can specify DiskStore";
       if (localizedString.equals(e.getMessage())) {
         exceptionMsg = exceptionMsg + " "
             + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,

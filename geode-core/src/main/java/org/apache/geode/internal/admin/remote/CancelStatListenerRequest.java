@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to get rid of a previously added
@@ -41,8 +40,7 @@ public class CancelStatListenerRequest extends AdminRequest {
   }
 
   public CancelStatListenerRequest() {
-    friendlyName = LocalizedStrings.CancelStatListenerRequest_REMOVE_STATISTIC_RESOURCE_LISTENER
-        .toLocalizedString();
+    friendlyName = "Remove statistic resource listener";
   }
 
   /**
@@ -71,7 +69,7 @@ public class CancelStatListenerRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return LocalizedStrings.CancelStatListenerRequest_CANCELSTATLISTENERREQUEST_FROM_0_FOR_1
-        .toLocalizedString(new Object[] {this.getRecipient(), Integer.valueOf(this.listenerId)});
+    return String.format("CancelStatListenerRequest from %s for %s",
+        new Object[] {this.getRecipient(), Integer.valueOf(this.listenerId)});
   }
 }

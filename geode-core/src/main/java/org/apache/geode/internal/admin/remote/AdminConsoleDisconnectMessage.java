@@ -26,10 +26,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 
 /**
@@ -83,9 +81,8 @@ public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
     if (alertListenerExpected) {
       if (!AlertAppender.getInstance().removeAlertListener(this.getSender())
           && !this.ignoreAlertListenerRemovalFailure) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ManagerLogWriter_UNABLE_TO_REMOVE_CONSOLE_WITH_ID_0_FROM_ALERT_LISTENERS,
-            this.getSender()));
+        logger.warn("Unable to remove console with id {} from alert listeners.",
+            this.getSender());
       }
     }
     GemFireStatSampler sampler = sys.getStatSampler();
@@ -93,8 +90,8 @@ public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
       sampler.removeListenersByRecipient(this.getSender());
     }
     dm.handleConsoleShutdown(this.getSender(), crashed,
-        LocalizedStrings.AdminConsoleDisconnectMessage_AUTOMATIC_ADMIN_DISCONNECT_0
-            .toLocalizedString(reason));
+        String.format("Reason for automatic admin disconnect : %s",
+            reason));
     // AppCacheSnapshotMessage.flushSnapshots(this.getSender());
   }
 

@@ -31,9 +31,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A class which monitors the load on a bridge server and periodically sends updates to the locator.
@@ -81,8 +79,7 @@ public class LoadMonitor implements ConnectionListener {
     try {
       this.pollingThread.join(5000);
     } catch (InterruptedException e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.LoadMonitor_INTERRUPTED_WAITING_FOR_POLLING_THREAD_TO_FINISH));
+      logger.warn("Interrupted waiting for polling thread to finish");
       Thread.currentThread().interrupt();
     }
     probe.close();
@@ -228,9 +225,7 @@ public class LoadMonitor implements ConnectionListener {
           return;
         } catch (Throwable t) {
           SystemFailure.checkFailure();
-          logger.warn(
-              LocalizedMessage.create(
-                  LocalizedStrings.LoadMonitor_CACHESERVER_LOAD_MONITOR_ERROR_IN_POLLING_THREAD),
+          logger.warn("CacheServer Load Monitor Error in polling thread",
               t);
         }
       } // while

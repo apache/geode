@@ -36,7 +36,6 @@ import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.CallbackInstantiator;
@@ -276,7 +275,7 @@ public abstract class Handshake {
       boolean hasCredentials) {
     if (requireAuthentication && !hasCredentials) {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
+          "No security credentials are provided");
     }
   }
 
@@ -300,7 +299,7 @@ public abstract class Handshake {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILURE_IN_READING_CREDENTIALS.toLocalizedString(), ex);
+          "Failure in reading credentials", ex);
     }
     return credentials;
   }
@@ -412,8 +411,8 @@ public abstract class Handshake {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHINITIALIZE_METHOD_0
-              .toLocalizedString(authInitMethod),
+          String.format("Failed to acquire AuthInitialize method %s",
+              authInitMethod),
           ex);
     }
     return credentials;
@@ -460,7 +459,7 @@ public abstract class Handshake {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILURE_IN_READING_CREDENTIALS.toLocalizedString(), ex);
+          "Failure in reading credentials", ex);
     }
     return credentials;
   }

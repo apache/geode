@@ -155,8 +155,9 @@ public class ClientUserAuths {
         // TODO:hitesh
         /*
          * if (securityLogger.warningEnabled()) { securityLogger.warning( LocalizedStrings.
-         * ServerConnection_0_AN_EXCEPTION_WAS_THROWN_WHILE_CLOSING_CLIENT_AUTHORIZATION_CALLBACK_1,
-         * new Object[] {"", ex}); }
+         * String.
+         * format("%s: An exception was thrown while closing client authorization callback. %s",
+         * new Object[] {"", ex})); }
          */
       }
       try {
@@ -169,8 +170,10 @@ public class ClientUserAuths {
         // TODO:hitesh
         /*
          * if (securityLogger.warningEnabled()) { securityLogger.warning( LocalizedStrings.
-         * ServerConnection_0_AN_EXCEPTION_WAS_THROWN_WHILE_CLOSING_CLIENT_POSTPROCESS_AUTHORIZATION_CALLBACK_1,
-         * new Object[] {"", ex}); }
+         * String.
+         * format("%s: An exception was thrown while closing client post-process authorization callback. %s"
+         * ,
+         * new Object[] {"", ex})); }
          */
       }
     }

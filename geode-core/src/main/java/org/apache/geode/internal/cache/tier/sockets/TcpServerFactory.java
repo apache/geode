@@ -38,9 +38,9 @@ public class TcpServerFactory {
 
   public TcpServer makeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      ThreadGroup threadGroup, String threadName, InternalLocator internalLocator) {
+      String threadName, InternalLocator internalLocator) {
 
-    return new TcpServer(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup,
+    return new TcpServer(port, bind_address, sslConfig, cfg, handler, poolHelper,
         threadName, internalLocator, clientProtocolServiceLoader);
   }
 }

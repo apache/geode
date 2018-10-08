@@ -88,7 +88,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -192,15 +191,17 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     assertThatThrownBy(() -> createPartitionedRegion(0, 0, 2, true))
         .isInstanceOf(IllegalStateException.class).hasMessageContaining(
-            LocalizedStrings.PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
-                .toString("/" + partitionedRegionName, 2, 5));
+            String.format(
+                "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
+                "/" + partitionedRegionName, 2, 5));
 
     getCache().close();
 
     assertThatThrownBy(() -> createPartitionedRegion(0, 0, 10, true))
         .isInstanceOf(IllegalStateException.class).hasMessageContaining(
-            LocalizedStrings.PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
-                .toString("/" + partitionedRegionName, 10, 5));
+            String.format(
+                "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
+                "/" + partitionedRegionName, 10, 5));
   }
 
   @Test

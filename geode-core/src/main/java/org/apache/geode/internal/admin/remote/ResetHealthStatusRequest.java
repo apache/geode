@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to reset its current health status.
@@ -43,7 +42,7 @@ public class ResetHealthStatusRequest extends AdminRequest {
 
   public ResetHealthStatusRequest() {
     friendlyName =
-        LocalizedStrings.ResetHealthStatusRequest_RESET_HEALTH_STATUS.toLocalizedString();
+        "reset health status";
   }
 
   /**

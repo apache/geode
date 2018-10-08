@@ -31,39 +31,39 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Tests the AlertAppender.
+ * Unit tests for {@link AlertAppender}.
  */
-public class AlertAppenderJUnitTest {
+@Category(LoggingTest.class)
+public class AlertAppenderTest {
 
-  private final List<DistributedMember> members = new ArrayList<DistributedMember>();
+  private List<DistributedMember> members;
   private Level previousLogLevel;
 
   @Before
   public void setUp() {
-    this.previousLogLevel = LogService.getBaseLogLevel();
+    members = new ArrayList<>();
+    previousLogLevel = LogService.getBaseLogLevel();
   }
 
   @After
   public void tearDown() {
-    LogService.setBaseLogLevel(this.previousLogLevel);
-    if (!this.members.isEmpty()) {
-      for (DistributedMember member : this.members) {
+    LogService.setBaseLogLevel(previousLogLevel);
+    if (!members.isEmpty()) {
+      for (DistributedMember member : members) {
         AlertAppender.getInstance().removeAlertListener(member);
       }
-      this.members.clear();
+      members.clear();
     }
-  }
-
-  private DistributedMember createTestDistributedMember(String name) {
-    return new TestDistributedMember(name);
   }
 
   /**
@@ -71,12 +71,12 @@ public class AlertAppenderJUnitTest {
    */
   @Test
   public void testListenerHandling() throws Exception {
-    DistributedMember member1 = createTestDistributedMember("Member1");
-    DistributedMember member2 = createTestDistributedMember("Member2");
-    DistributedMember member3 = createTestDistributedMember("Member3");
-    DistributedMember member4 = createTestDistributedMember("Member4");
-    DistributedMember member5 = createTestDistributedMember("Member5");
-    DistributedMember member6 = createTestDistributedMember("Member6");
+    DistributedMember member1 = createNamedDistributedMember("Member1");
+    DistributedMember member2 = createNamedDistributedMember("Member2");
+    DistributedMember member3 = createNamedDistributedMember("Member3");
+    DistributedMember member4 = createNamedDistributedMember("Member4");
+    DistributedMember member5 = createNamedDistributedMember("Member5");
+    DistributedMember member6 = createNamedDistributedMember("Member6");
 
     LogService.setBaseLogLevel(Level.WARN);
 
@@ -90,8 +90,7 @@ public class AlertAppenderJUnitTest {
     Field listenersField = AlertAppender.getInstance().getClass().getDeclaredField("listeners");
     listenersField.setAccessible(true);
 
-    @SuppressWarnings("unchecked")
-    final CopyOnWriteArrayList<AlertAppender.Listener> listeners =
+    CopyOnWriteArrayList<AlertAppender.Listener> listeners =
         (CopyOnWriteArrayList<AlertAppender.Listener>) listenersField
             .get(AlertAppender.getInstance());
 
@@ -146,26 +145,26 @@ public class AlertAppenderJUnitTest {
    * when the configuration is changed the appender is still there.
    */
   @Test
-  public void testAppenderToConfigHandling() throws Exception {
+  public void testAppenderToConfigHandling() {
     LogService.setBaseLogLevel(Level.WARN);
 
-    final String appenderName = AlertAppender.getInstance().getName();
-    final AppenderContext appenderContext = LogService.getAppenderContext();
+    String appenderName = AlertAppender.getInstance().getName();
+    AppenderContext appenderContext = LogService.getAppenderContext();
 
     LoggerConfig loggerConfig = appenderContext.getLoggerConfig();
 
     // Find out home many appenders exist before we get started
-    final int startingSize = loggerConfig.getAppenders().size();
+    int startingSize = loggerConfig.getAppenders().size();
 
     // Add a listener and verify that the appender was added to log4j
-    DistributedMember member1 = createTestDistributedMember("Member1");
+    DistributedMember member1 = createNamedDistributedMember("Member1");
     AlertAppender.getInstance().addAlertListener(member1, Alert.SEVERE);
     assertEquals(loggerConfig.getAppenders().values().toString(), startingSize + 1,
         loggerConfig.getAppenders().size());
     assertTrue(loggerConfig.getAppenders().containsKey(appenderName));
 
     // Add another listener and verify that there's still only 1 alert appender
-    DistributedMember member2 = createTestDistributedMember("Member1");
+    DistributedMember member2 = createNamedDistributedMember("Member1");
     AlertAppender.getInstance().addAlertListener(member2, Alert.SEVERE);
     assertEquals(startingSize + 1, loggerConfig.getAppenders().size());
 
@@ -186,16 +185,21 @@ public class AlertAppenderJUnitTest {
     assertFalse(loggerConfig.getAppenders().containsKey(appenderName));
   }
 
-  private static class TestDistributedMember implements DistributedMember {
+  private DistributedMember createNamedDistributedMember(final String name) {
+    return new NamedDistributedMember(name);
+  }
+
+  private static class NamedDistributedMember implements DistributedMember {
+
     private final String name;
 
-    public TestDistributedMember(final String name) {
+    NamedDistributedMember(final String name) {
       this.name = name;
     }
 
     @Override
     public String getName() {
-      return this.name;
+      return name;
     }
 
     @Override
@@ -215,12 +219,12 @@ public class AlertAppenderJUnitTest {
 
     @Override
     public String getId() {
-      return this.name;
+      return name;
     }
 
     @Override
-    public int compareTo(DistributedMember other) {
-      return getName().compareTo(other.getName());
+    public int compareTo(final DistributedMember o) {
+      return getName().compareTo(o.getName());
     }
 
     @Override
@@ -234,8 +238,12 @@ public class AlertAppenderJUnitTest {
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return compareTo((TestDistributedMember) obj) == 0;
+    public boolean equals(final Object obj) {
+      if (!(obj instanceof NamedDistributedMember)) {
+        return false;
+      }
+      NamedDistributedMember other = (NamedDistributedMember) obj;
+      return getName().equals(other.getName());
     }
 
     @Override
@@ -245,7 +253,7 @@ public class AlertAppenderJUnitTest {
 
     @Override
     public String toString() {
-      return "TestDistributedMember [name=" + this.name + "]";
+      return getClass().getSimpleName() + " [name=" + name + "]";
     }
   }
 }

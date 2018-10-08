@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -51,8 +50,8 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
@@ -128,7 +127,8 @@ public class LonerDistributionManager implements DistributionManager {
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds =
       new ConcurrentHashMap<>();
   private static final DummyDMStats stats = new DummyDMStats();
-  private final ExecutorService executor = Executors.newCachedThreadPool();
+  private final ExecutorService executor =
+      LoggingExecutors.newCachedThreadPool("LonerDistributionManagerThread", false);
 
   @Override
   public long cacheTimeMillis() {
@@ -1196,8 +1196,7 @@ public class LonerDistributionManager implements DistributionManager {
 
     } catch (UnknownHostException ex) {
       throw new InternalGemFireError(
-          LocalizedStrings.LonerDistributionManager_CANNOT_RESOLVE_LOCAL_HOST_NAME_TO_AN_IP_ADDRESS
-              .toLocalizedString());
+          "Cannot resolve local host name to an IP address");
     }
     return result;
   }
@@ -1210,8 +1209,9 @@ public class LonerDistributionManager implements DistributionManager {
    * @param newPort the new port to use
    */
   public void updateLonerPort(int newPort) {
-    this.logger.config(LocalizedStrings.LonerDistributionmanager_CHANGING_PORT_FROM_TO,
-        new Object[] {this.lonerPort, newPort, getId()});
+    this.logger.config(
+        String.format("Updating membership port.  Port changed from %s to %s.  ID is now %s",
+            new Object[] {this.lonerPort, newPort, getId()}));
     this.lonerPort = newPort;
     this.getId().setPort(this.lonerPort);
   }
@@ -1385,12 +1385,12 @@ public class LonerDistributionManager implements DistributionManager {
     InternalCache result = this.cache;
     if (result == null) {
       throw new CacheClosedException(
-          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+          "A cache has not yet been created.");
     }
     result.getCancelCriterion().checkCancelInProgress(null);
     if (result.isClosed()) {
       throw result.getCacheClosedException(
-          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+          "The cache has been closed.", null);
     }
     return result;
   }

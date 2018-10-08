@@ -21,6 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Unit tests for {@link HexThreadIdPatternConverter}.
+ */
 public class HexThreadIdPatternConverterTest {
 
   private HexThreadIdPatternConverter converter;

@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -36,6 +35,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -153,7 +153,7 @@ public class ShutdownCommand extends InternalGfshCommand {
 
   private void shutdownNode(final long timeout, final Set<DistributedMember> includeMembers)
       throws TimeoutException, InterruptedException, ExecutionException {
-    ExecutorService exec = Executors.newSingleThreadExecutor();
+    ExecutorService exec = LoggingExecutors.newSingleThreadExecutor("ShutdownCommand", false);
     try {
       final Function shutDownFunction = new ShutDownFunction();
       logger.info("Gfsh executing shutdown on members " + includeMembers);

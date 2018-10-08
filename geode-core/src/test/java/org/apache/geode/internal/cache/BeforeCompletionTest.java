@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.TimeUnit;
@@ -81,7 +81,7 @@ public class BeforeCompletionTest {
   public void doOpCallsDoBeforeCompletion() {
     beforeCompletion.doOp(txState);
 
-    verify(txState, times(1)).doBeforeCompletion();
+    verify(txState).doBeforeCompletion();
   }
 
   @Test
@@ -106,17 +106,17 @@ public class BeforeCompletionTest {
   }
 
   @Test
-  public void executeWaitsUntilDoOpFinish() throws Exception {
+  public void executeWaitsUntilDoOpFinish() {
     Thread thread = new Thread(() -> beforeCompletion.execute(cancelCriterion));
     thread.start();
     // give the thread a chance to get past the "finished" check by waiting until
     // checkCancelInProgress is called
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .untilAsserted(() -> verify(cancelCriterion, times(1)).checkCancelInProgress(null));
+    Awaitility.await().atMost(5, TimeUnit.MINUTES)
+        .untilAsserted(() -> verify(cancelCriterion, atLeastOnce()).checkCancelInProgress(null));
 
     beforeCompletion.doOp(txState);
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> !(thread.isAlive()));
+    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> !(thread.isAlive()));
   }
 
 }

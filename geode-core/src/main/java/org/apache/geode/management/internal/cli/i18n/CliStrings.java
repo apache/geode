@@ -1595,6 +1595,9 @@ public class CliStrings {
   public static final String IMPORT_DATA__INVOKE_CALLBACKS__HELP =
       "Whether callbacks should be invoked";
 
+  public static final String INTERCEPTOR_PASSWORD = "Password: ";
+  public static final String INTERCEPTOR_USERNAME = "Username: ";
+
   /* 'list async-event-queues' command */
   public static final String LIST_ASYNC_EVENT_QUEUES = "list async-event-queues";
   public static final String LIST_ASYNC_EVENT_QUEUES__HELP =

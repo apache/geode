@@ -37,8 +37,6 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -78,9 +76,9 @@ public class ExecuteFunction extends BaseCommand {
         memberMappedArg = (MemberMappedArgument) part.getObject();
       }
     } catch (ClassNotFoundException exception) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), exception);
+      logger.warn(String.format("Exception on server while executing function: %s",
+          function),
+          exception);
       if (hasResult == 1) {
         writeChunkedException(clientMessage, exception, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
@@ -89,8 +87,7 @@ public class ExecuteFunction extends BaseCommand {
     }
     if (function == null) {
       final String message =
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString();
+          "The input function for the execute function request is null";
       logger.warn("{}: {}", serverConnection.getName(), message);
       sendError(hasResult, clientMessage, message, serverConnection);
       return;
@@ -102,8 +99,9 @@ public class ExecuteFunction extends BaseCommand {
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
         if (functionObject == null) {
-          final String message = LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(function);
+          final String message =
+              String.format("Function named %s is not registered to FunctionService",
+                  function);
           logger.warn("{}: {}", serverConnection.getName(), message);
           sendError(hasResult, clientMessage, message, serverConnection);
           return;
@@ -166,11 +164,11 @@ public class ExecuteFunction extends BaseCommand {
         handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
     } catch (IOException ioException) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), ioException);
+      logger.warn(String.format("Exception on server while executing function: %s",
+          function),
+          ioException);
       String message =
-          LocalizedStrings.ExecuteFunction_SERVER_COULD_NOT_SEND_THE_REPLY.toLocalizedString();
+          "Server could not send the reply";
       sendException(hasResult, clientMessage, message, serverConnection, ioException);
     } catch (InternalFunctionInvocationTargetException internalfunctionException) {
       // Fix for #44709: User should not be aware of
@@ -184,16 +182,16 @@ public class ExecuteFunction extends BaseCommand {
       // 3> Multiple target nodes found for single hop operation
       // 4> in case of HA member departed
       if (logger.isDebugEnabled()) {
-        logger.debug(LocalizedMessage.create(
-            LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-            new Object[] {function}), internalfunctionException);
+        logger.debug(String.format("Exception on server while executing function: %s",
+            new Object[] {function}),
+            internalfunctionException);
       }
       final String message = internalfunctionException.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, internalfunctionException);
     } catch (Exception e) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), e);
+      logger.warn(String.format("Exception on server while executing function: %s",
+          function),
+          e);
       final String message = e.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, e);
     }

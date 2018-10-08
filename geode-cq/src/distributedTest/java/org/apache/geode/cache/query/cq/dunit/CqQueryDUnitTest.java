@@ -70,7 +70,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -2565,8 +2564,8 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     // Create CQs.
     createCQ(client, "testQuery_3", "select * from /" + regions[0]);
     String expectedError =
-        LocalizedStrings.CqQueryImpl_CQ_NOT_SUPPORTED_FOR_REPLICATE_WITH_LOCAL_DESTROY
-            .toLocalizedString("/" + regions[0], EvictionAction.LOCAL_DESTROY);
+        String.format("CQ is not supported for replicated region: %s with eviction action: %s",
+            "/" + regions[0], EvictionAction.LOCAL_DESTROY);
     try {
       executeCQ(client, "testQuery_3", false, expectedError);
     } catch (Exception e) {

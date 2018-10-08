@@ -43,16 +43,13 @@ import org.apache.geode.cache.query.internal.CompiledRegion;
 import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
   private static final Logger logger = LogService.getLogger();
@@ -134,7 +131,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     validateCq();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    StringId msg = LocalizedStrings.ONE_ARG;
+    String msg = "%s";
     Throwable t = null;
     try {
       this.query = constructServerSideQuery();
@@ -146,13 +143,13 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       t = ex;
       if (ex instanceof ClassNotFoundException) {
         msg =
-            LocalizedStrings.CqQueryImpl_CLASS_NOT_FOUND_EXCEPTION_THE_ANTLRJAR_OR_THE_SPCIFIED_CLASS_MAY_BE_MISSING_FROM_SERVER_SIDE_CLASSPATH_ERROR_0;
+            "Class not found exception. The antlr.jar or the spcified class may be missing from server side classpath. Error : %s";
       } else {
-        msg = LocalizedStrings.CqQueryImpl_ERROR_WHILE_PARSING_THE_QUERY_ERROR_0;
+        msg = "Error while parsing the query. Error : %s";
       }
     } finally {
       if (t != null) {
-        String s = msg.toLocalizedString(t);
+        String s = String.format(msg, t);
         if (isDebugEnabled) {
           logger.debug(s, t);
         }
@@ -166,8 +163,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.cqBaseRegion = (LocalRegion) cqService.getCache().getRegion(regionName);
     if (this.cqBaseRegion == null) {
       throw new RegionNotFoundException(
-          LocalizedStrings.CqQueryImpl_REGION__0_SPECIFIED_WITH_CQ_NOT_FOUND_CQNAME_1
-              .toLocalizedString(new Object[] {regionName, this.cqName}));
+          String.format("Region : %s specified with cq not found. CqName: %s",
+              new Object[] {regionName, this.cqName}));
     }
 
     // Make sure that the region is partitioned or
@@ -181,7 +178,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
           && cqBaseRegion.getAttributes().getEvictionAttributes().getAction()
               .equals(EvictionAction.LOCAL_DESTROY)) {
         errMsg =
-            LocalizedStrings.CqQueryImpl_CQ_NOT_SUPPORTED_FOR_REPLICATE_WITH_LOCAL_DESTROY.toString(
+            String.format("CQ is not supported for replicated region: %s with eviction action: %s",
                 this.regionName, cqBaseRegion.getAttributes().getEvictionAttributes().getAction());
       } else {
         errMsg = "The region " + this.regionName
@@ -252,8 +249,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
         cqService.addToCqMap(this);
       } catch (CqExistsException cqe) {
         // Should not happen.
-        throw new CqException(LocalizedStrings.CqQueryImpl_UNABLE_TO_CREATE_CQ_0_ERROR__1
-            .toLocalizedString(new Object[] {cqName, cqe.getMessage()}));
+        throw new CqException(String.format("Unable to create cq %s Error : %s",
+            new Object[] {cqName, cqe.getMessage()}));
       }
       this.cqBaseRegion.getFilterProfile().registerCq(this);
     }
@@ -306,7 +303,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     // Handle events that may have been deleted,
     // but added by result caching.
     if (this.cqResultKeys == null) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.CqQueryImpl_Null_CQ_Result_Key_Cache_0));
+      logger.warn(
+          "The CQ Result key cache is Null. This should not happen as the call to isPartOfCqResult() is based on the condition cqResultsCacheInitialized.");
       return false;
     }
 
@@ -519,13 +517,13 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     synchronized (this.cqState) {
       if (this.isClosed()) {
         throw new CqClosedException(
-            LocalizedStrings.CqQueryImpl_CQ_IS_CLOSED_CQNAME_0.toLocalizedString(this.cqName));
+            String.format("CQ is closed, CqName : %s", this.cqName));
       }
 
       if (!(this.isRunning())) {
         throw new IllegalStateException(
-            LocalizedStrings.CqQueryImpl_CQ_IS_NOT_IN_RUNNING_STATE_STOP_CQ_DOES_NOT_APPLY_CQNAME_0
-                .toLocalizedString(this.cqName));
+            String.format("CQ is not in running state, stop CQ does not apply, CqName : %s",
+                this.cqName));
       }
 
       // Change state and stats on the client side
