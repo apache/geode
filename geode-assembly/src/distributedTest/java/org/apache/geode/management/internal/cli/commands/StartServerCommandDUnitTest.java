@@ -37,12 +37,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,6 +48,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -65,26 +64,36 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 public class StartServerCommandDUnitTest {
+
   private static MemberVM locator;
   private static String locatorConnectionString;
+
   private File workingDir;
+  private String memberName;
+  private int serverPort;
 
   @ClassRule
-  public static final ClusterStartupRule cluster = new ClusterStartupRule();
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
-  public static final GfshCommandRule gfsh = new GfshCommandRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
+
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
-  @Before
-  public void before() throws IOException {
-    workingDir = temporaryFolder.newFolder();
-  }
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -96,6 +105,13 @@ public class StartServerCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
+  @Before
+  public void before() throws IOException {
+    workingDir = temporaryFolder.newFolder();
+    memberName = testName.getMethodName();
+    serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  }
+
   @AfterClass
   public static void afterClass() throws Exception {
     gfsh.connectAndVerify(locator);
@@ -104,17 +120,15 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithMissingCacheXml() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingCacheXmlPath =
+    String missingCacheXmlPath =
         Paths.get("missing", "cache.xml").toAbsolutePath().toString();
-    final String memberName = "testWithMissingCacheXml-server";
-    final String expectedError =
+    String expectedError =
         CliStrings.format(CACHE_XML_NOT_FOUND_MESSAGE, missingCacheXmlPath);
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__CACHE_XML_FILE, missingCacheXmlPath)
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
@@ -127,17 +141,15 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFirePropertiesFile() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingGemfirePropertiesPath =
+    String missingGemfirePropertiesPath =
         Paths.get("missing", "gemfire.properties").toAbsolutePath().toString();
-    final String memberName = "testWithMissingGemFirePropertiesFile-server";
-    final String expectedError =
+    String expectedError =
         CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingGemfirePropertiesPath);
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__PROPERTIES, missingGemfirePropertiesPath)
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
@@ -150,14 +162,12 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithMissingPassword() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithMissingPassword-server";
-    final String expectedError = "password must be specified.";
+    String expectedError = "password must be specified.";
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__USERNAME, "usernameValue")
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
@@ -170,17 +180,15 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithMissingSecurityPropertiesFile() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingSecurityPropertiesPath =
+    String missingSecurityPropertiesPath =
         Paths.get("missing", "security.properties").toAbsolutePath().toString();
-    final String memberName = "testWithMissingSecurityPropertiesFile-server";
-    final String expectedError = CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+    String expectedError = CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
         "Security ", missingSecurityPropertiesPath);
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .addOption(START_SERVER__SECURITY_PROPERTIES, missingSecurityPropertiesPath)
         .getCommandString();
@@ -193,21 +201,19 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithUnavailablePort() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithUnavailablePort-server";
-    final String expectedError =
+    String expectedError =
         "java.lang.RuntimeException: An IO error occurred while starting a Server";
-    final String expectedCause = "Caused by: java.net.BindException: "
+    String expectedCause = "Caused by: java.net.BindException: "
         + "Network is unreachable; port (" + serverPort + ") is not available on localhost.";
 
     try (Socket interferingProcess = new Socket()) {
-      interferingProcess.bind(new InetSocketAddress(serverPort)); // make the target port
-                                                                  // unavailable
+      // make the target port unavailable
+      interferingProcess.bind(new InetSocketAddress(serverPort));
 
       String command = new CommandStringBuilder(START_SERVER)
           .addOption(START_SERVER__NAME, memberName)
           .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-          .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+          .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
           .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
           .getCommandString();
 
@@ -220,15 +226,13 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithAvailablePort() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithAvailablePort-server";
-    final String expectedMessage = "Server in " + workingDir.getCanonicalPath();
-    final String expectedMessage2 = "as " + memberName + " is currently online.";
+    String expectedMessage = "Server in " + workingDir.getCanonicalPath();
+    String expectedMessage2 = "as " + memberName + " is currently online.";
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
@@ -239,40 +243,8 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingStartDirectoryThatCanBeCreated() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    // path to a missing dir that can be created
-    String readWritePathname = "readWriteDir";
-    File readWriteDir = new File(readWritePathname);
-    final String missingDirPath =
-        Paths.get(readWritePathname, "missing", "dir", "to", "start", "in").toString();
-
-    final String memberName = "testWithMissingStartDirectoryThatCanBeCreated-server";
-    final String expectedMessage = "Server in .*" + missingDirPath;
-
-    String command = new CommandStringBuilder(START_SERVER)
-        .addOption(START_SERVER__NAME, memberName)
-        .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
-        .addOption(START_SERVER__DIR, missingDirPath)
-        .getCommandString();
-
-    try {
-      CommandResult result = gfsh.executeCommand(command);
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
-    } finally {
-      FileUtils.deleteQuietly(readWriteDir);
-    }
-  }
-
-  @Test
-  public void testWithConflictingPIDFile() throws IOException {
-    final String fileName = ProcessType.SERVER.getPidFileName();
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithConflictingPIDFile-server";
+  public void testWithConflictingPIDFile() throws Exception {
+    String fileName = ProcessType.SERVER.getPidFileName();
 
     // create PID file
     File pidFile = new File(workingDir.getAbsolutePath(), fileName);
@@ -280,7 +252,7 @@ public class StartServerCommandDUnitTest {
 
     // write PID to PID file
     try (FileWriter fileWriter = new FileWriter(pidFile, false)) {
-      fileWriter.write(getPidOrOne().toString() + "\n");
+      fileWriter.write(ProcessUtils.identifyPid() + "\n");
       fileWriter.flush();
     }
     assertThat(pidFile.isFile()).isTrue();
@@ -288,28 +260,25 @@ public class StartServerCommandDUnitTest {
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__DIR, pidFile.getParentFile().getCanonicalPath())
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
 
-    final String expectedError = "A PID file already exists and a Server may be running in "
+    String expectedError = "A PID file already exists and a Server may be running in "
         + pidFile.getParentFile().getCanonicalPath();
-    final String expectedCause = "Caused by: "
+    String expectedCause = "Caused by: "
         + "org.apache.geode.internal.process.FileAlreadyExistsException: Pid file already exists: "
         + pidFile.getCanonicalPath();
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getMessageFromContent()).contains(expectedError).contains(expectedCause);
-
   }
 
   @Test
-  public void testWithForceOverwriteConflictingPIDFile() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithForceOverwriteConflictingPIDFile-server";
-    final String fileName = ProcessType.SERVER.getPidFileName();
+  public void testWithForceOverwriteConflictingPIDFile() throws Exception {
+    String fileName = ProcessType.SERVER.getPidFileName();
 
     // create PID file
     File pidFile = new File(workingDir.getAbsolutePath(), fileName);
@@ -317,7 +286,7 @@ public class StartServerCommandDUnitTest {
 
     // write PID to PID file
     try (FileWriter fileWriter = new FileWriter(pidFile, false)) {
-      fileWriter.write(getPidOrOne().toString() + "\n");
+      fileWriter.write(ProcessUtils.identifyPid() + "\n");
       fileWriter.flush();
     }
     assertThat(pidFile.isFile()).isTrue();
@@ -325,14 +294,14 @@ public class StartServerCommandDUnitTest {
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__DIR, pidFile.getParentFile().getCanonicalPath())
         .addOption(START_SERVER__FORCE, "true")
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
 
-    final String expectedMessage = "Server in " + pidFile.getParentFile().getCanonicalPath();
+    String expectedMessage = "Server in " + pidFile.getParentFile().getCanonicalPath();
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(result.getMessageFromContent()).contains(expectedMessage);
@@ -340,16 +309,14 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testWithConnectionToLocator() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithConnectionToLocator-server";
-    final String expectedVersionPattern = "Geode Version: \\d+\\.\\d+\\.\\d+";
-    final String expectedMessage = "Server in " + workingDir.getCanonicalPath();
+    String expectedVersionPattern = "Geode Version: \\d+\\.\\d+\\.\\d+";
+    String expectedMessage = "Server in " + workingDir.getCanonicalPath();
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
@@ -364,10 +331,8 @@ public class StartServerCommandDUnitTest {
 
   @Test
   public void testServerJVMTerminatesOnOutOfMemoryError() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testServerJVMTerminatesOnOutOfMemoryError-server";
-    final String groupName = "serverGroup";
-    final String regionName = "testRegion";
+    String groupName = "serverGroup";
+    String regionName = "testRegion";
 
     MemberVM server = cluster.startServerVM(1, locator.getPort());
 
@@ -377,7 +342,7 @@ public class StartServerCommandDUnitTest {
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__OFF_HEAP_MEMORY_SIZE, "0M")
         .addOption(START_SERVER__MAXHEAP, "300M")
-        .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
@@ -405,16 +370,16 @@ public class StartServerCommandDUnitTest {
     Integer serverPid = serverState.getPid();
     assertThat(ProcessUtils.isProcessAlive(serverPid)).isTrue();
 
-    final String jarName = "RunOutOfMemory.jar";
+    String jarName = "RunOutOfMemory.jar";
     File jar = temporaryFolder.newFile(jarName);
-    new ClassBuilder().writeJarFromClass(new RunOutOfMemoryFunction().getClass(), jar);
+    new ClassBuilder().writeJarFromClass(RunOutOfMemoryFunction.class, jar);
     gfsh.executeAndAssertThat("deploy --groups=" + groupName + " --jar=" + jar).statusIsSuccess();
 
     locator.invoke((() -> {
       try {
         FunctionService.onMember(groupName).execute(new RunOutOfMemoryFunction()).getResult();
       } catch (FunctionException e) {
-        e.printStackTrace();
+        errorCollector.addError(e);
       }
     }));
 
@@ -425,25 +390,4 @@ public class StartServerCommandDUnitTest {
 
     assertThat(ProcessUtils.isProcessAlive(serverPid)).isFalse();
   }
-
-  /**
-   * Attempts to determine the PID of the running process from the ManagementFactory's runtime MBean
-   *
-   * @return 1 if unable to determine the pid
-   * @return the PID if possible
-   */
-  private Integer getPidOrOne() {
-    Integer pid = 1;
-    String[] name = ManagementFactory.getRuntimeMXBean().getName().split("@");
-    if (name.length > 1) {
-      try {
-        pid = Integer.parseInt(name[0]);
-      } catch (NumberFormatException nex) {
-        // Ignored
-      }
-    }
-
-    return pid;
-  }
-
 }
