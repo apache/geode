@@ -92,8 +92,7 @@ configurations {
 
   //Configurations used to download and cache web application servers for session module testing
   webServerTomcat6
-  webServerTomcat73
-  webServerTomcat79
+  webServerTomcat7
   webServerTomcat8
   webServerTomcat9
   webServerJetty
@@ -176,14 +175,14 @@ dependencies {
   upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
   upgradeTestRuntime 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   upgradeTestRuntime project(':extensions:session-testing-war')
+  upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  webServerTomcat6 group: 'apache', name: 'tomcat', version: '6.0.37', ext: 'zip'
-  webServerTomcat73 group: 'org.apache.tomcat', name: 'tomcat', version: '7.0.73', ext: 'zip'
-  webServerTomcat79 group: 'org.apache.tomcat', name: 'tomcat', version: '7.0.79', ext: 'zip'
-  webServerTomcat8 group: 'org.apache.tomcat', name: 'tomcat', version: '8.5.15', ext: 'zip'
-  webServerTomcat9 group: 'org.apache.tomcat', name: 'tomcat', version: '9.0.12', ext: 'zip'
-  webServerJetty group: 'org.eclipse.jetty', name: 'jetty-distribution', version: '9.4.8.v20171121', ext: 'zip'
+  webServerTomcat6 group: 'apache', name: 'tomcat', version: project.'tomcat6.version', ext: 'zip'
+  webServerTomcat7 group: 'org.apache.tomcat', name: 'tomcat', version: project.'tomcat7.version', ext: 'zip'
+  webServerTomcat8 group: 'org.apache.tomcat', name: 'tomcat', version: project.'tomcat8.version', ext: 'zip'
+  webServerTomcat9 group: 'org.apache.tomcat', name: 'tomcat', version: project.'tomcat9.version', ext: 'zip'
+  webServerJetty group: 'org.eclipse.jetty', name: 'jetty-distribution', version: project.'jetty.version', ext: 'zip'
 
   gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
     exclude module: 'spring-core'
