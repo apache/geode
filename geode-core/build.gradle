@@ -169,6 +169,9 @@ dependencies {
   integrationTestCompile(project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
+  integrationTestCompile(project(":geode-junit")) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
@@ -215,9 +218,6 @@ jmh {
 }
 
 dependencies {
-  // Integration Tests
-  integrationTestCompile sourceSets.test.output
-
   // Distributed Tests
   distributedTestCompile sourceSets.integrationTest.output
 }
