@@ -489,7 +489,8 @@ public class VM implements Serializable {
         executeMethodOnObject(runnable, "run", new Object[0]);
       }
       processHolder.waitFor();
-      childVMLauncher.launchVM(version, id, true);
+      childVMLauncher.launchVM(targetVersion, id, true);
+      version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;
       logger.info("Bounced {} new pid is {}", id, getPid());
