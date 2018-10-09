@@ -348,30 +348,8 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
    * so that we can ignore it at cleanup.
    */
   public void crashVM(int index) {
-    VMProvider member = occupiedVMs.remove(index);
-    member.invokeAsync(() -> {
-      if (InternalDistributedSystem.shutdownHook != null) {
-        Runtime.getRuntime().removeShutdownHook(InternalDistributedSystem.shutdownHook);
-      }
-      System.exit(1);
-    });
-
-    // wait till member is not reachable anymore.
-    Awaitility.await().until(() -> {
-      try {
-        member.invoke(() -> {
-        });
-      } catch (RMIException e) {
-        return true;
-      }
-      return false;
-    });
-
-    // delete the lingering files under this vm
-    Arrays.stream(member.getVM().getWorkingDirectory().listFiles())
-        .forEach(FileUtils::deleteQuietly);
-
-    member.getVM().bounce();
+    VMProvider member = occupiedVMs.get(index);
+    member.getVM().bounceForcibly();
   }
 
   public File getWorkingDirRoot() {
