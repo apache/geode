@@ -26,11 +26,12 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.Authenticator;
 
 /**
- * A test implementation of the legacy {@link org.apache.geode.security.Authenticator}, mirroring
- * the structure of {@link org.apache.geode.examples.SimpleSecurityManager}. Authenticates a user
+ * A test implementation of the legacy {@link org.apache.geode.security.Authenticator}, but
+ * implementing the new {@link org.apache.geode.security.SecurityManager}. Authenticates a user
  * when the username matches the password, which in turn will match the user's permissions in
  * {@link org.apache.geode.security.templates.SimpleAccessController}.
  */
+@SuppressWarnings("deprecation")
 public class SimpleAuthenticator implements Authenticator {
   @Override
   public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)

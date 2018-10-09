@@ -24,11 +24,12 @@ import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
- * A test implementation of the legacy {@link org.apache.geode.security.AccessControl}, mirroring
- * the structure of {@link org.apache.geode.examples.SimpleSecurityManager}. An authenticated user's
+ * A test implementation of the legacy {@link org.apache.geode.security.AccessControl}, but
+ * implementing the new {@link org.apache.geode.security.SecurityManager}. An authenticated user's
  * permissions are defined by the username itself, e.g., user "dataRead" has permissions DATA:READ
  * and user "data,cluster" has permissions DATA and CLUSTER.
  */
+@SuppressWarnings("deprecation")
 public class SimpleAccessController implements AccessControl {
   private static Principal principal;
 
