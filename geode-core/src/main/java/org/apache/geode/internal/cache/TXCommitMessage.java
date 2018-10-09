@@ -1985,7 +1985,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (!getSender().equals(id)) {
       return;
     }
-    getDistributionManager().removeMembershipListener(this);
+    distributionManager.removeMembershipListener(this);
 
     synchronized (this) {
       if (isProcessing() || this.departureNoticed) {
