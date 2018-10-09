@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.security;
 
+import java.util.Arrays;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.security.SecurableCommunicationChannels;
 
@@ -25,23 +27,12 @@ public enum SecurableCommunicationChannel {
   WEB(SecurableCommunicationChannels.WEB),
   GATEWAY(SecurableCommunicationChannels.GATEWAY),
   LOCATOR(SecurableCommunicationChannels.LOCATOR),
-  NONE("NO_COMPONENT");
+  NONE("none");
 
   private final String constant;
 
   SecurableCommunicationChannel(final String constant) {
     this.constant = constant;
-  }
-
-  public static SecurableCommunicationChannel getEnum(String enumString) {
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableCommunicationChannel
-        .values()) {
-      if (securableCommunicationChannel.constant.equalsIgnoreCase(enumString)) {
-        return securableCommunicationChannel;
-      }
-    }
-    throw new GemFireConfigException(
-        "There is no registered component for the name: " + enumString);
   }
 
   public String getConstant() {
@@ -51,5 +42,11 @@ public enum SecurableCommunicationChannel {
   @Override
   public String toString() {
     return constant;
+  }
+
+  public static SecurableCommunicationChannel getEnum(String enumString) {
+    return Arrays.stream(values()).filter(ch -> ch.constant.equalsIgnoreCase(enumString)).findAny()
+        .orElseThrow(() -> new GemFireConfigException(
+            "There is no registered component for the name: " + enumString));
   }
 }
