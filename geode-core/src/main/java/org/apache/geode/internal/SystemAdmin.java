@@ -1491,52 +1491,69 @@ public class SystemAdmin {
   protected final Map helpMap = new HashMap();
 
   protected void initHelpMap() {
-    helpMap.put("gemfire", String.format(
-        "gemfire requires one of the following command strings:%sFor additional help on a command specify it along with the %s option.The %s option causes gemfire to print out extra information when it fails.The %s and %s are synonyms that cause gemfire to print out help information instead of performing a task.The %s option quiets gemfire down by suppressing extra messages.The %s option passes <vmOpt> to the java vm's command line.",
-        join(validCommands), "-h", "-debug", "-help", "-q", "-J<vmOpt>"));
+    helpMap.put("gemfire",
+        "GemFire requires one of the following command strings: " + join(validCommands)
+            + ". For additional help on a command specify it along with the '-h' option. "
+            + "The '-debug' option causes gemfire to print out extra information when it fails.  "
+            + "The '-h' and '-help' are synonyms that cause gemfire to print out help information instead of performing a task.  "
+            + "The '-q' option quiets GemFire down by suppressing extra messages.  The '-J<vmOpt>' option passes <vmOpt> to the Java VM's command line.");
     helpMap.put("version", "Prints GemFire product version information.");
     helpMap.put("help",
-        "Prints information on how to use this executable.If an optional help topic is specified then more detailed help is printed.");
+        "Prints information on how to use this executable.  If an optional help topic is specified then more detailed help is printed.");
     helpMap.put("stats",
-        String.format(
-            "Prints statistic values from a statistic archiveBy default all statistics are printed.The statSpec arguments can be used to print individual resources or a specific statistic.The format of a statSpec is: an optional combine operator, followed by an optional instanceId, followed by an optional typeId, followed by an optional statId.A combine operator can be %s to combine all matches in the same file, or %s to combine all matches across all files.An instanceId must be the name or id of a resource.A typeId is a %s followed by the name of a resource type.A statId is a %s followed by the name of a statistic.A typeId or instanceId with no statId prints out all the matching resources and all their statistics.A typeId or instanceId with a statId prints out just the named statistic on the matching resources.A statId with no typeId or instanceId matches all statistics with that name.The %s option causes statistic descriptions to also be printed.The %s option, in conjunction with %s, causes the printed statistics to all be raw, unfiltered, values.The %s option, in conjunction with %s, causes the printed statistics to be the rate of change, per second, of the raw values.The %s option, in conjunction with %s, causes the printed statistics to be the rate of change, per sample, of the raw values.The %s option, in conjunction with %s, causes statistics whose values are all zero to not be printed.",
-            "+", "++", ":", ".",
-            "-details", "-nofilter", "-archive=", "-persec", "-persample", "-prunezeros") + "\n"
-            + String.format(
-                "The %s option, in conjunction with %s, causes statistics samples taken before this time to be ignored. The argument format must match %s.The %s option, in conjunction with %s, causes statistics samples taken after this time to be ignored. The argument format must match %s.The %s option causes the data to come from an archive file.",
-                "-starttime",
-                "-archive=", DateFormatter.FORMAT_STRING, "-endtime"));
+        "Prints statistic values from a statistic archive.  By default all statistics are printed.\n"
+            + "The 'statSpec' arguments can be used to print individual resources or a specific statistic.\n"
+            + "The format of a 'statSpec' is: an optional combine operator, followed by an optional instanceId, followed by an optional typeId, followed by an optional statId.\n"
+            + "The '+' operator combines all matches in the same file.  The '++' operator combines all matches across all files.\n"
+            + "An instanceId must be the name or id of a resource.  A typeId is a ':' followed by the name of a resource type.\n"
+            + "A statId is a '.' followed by the name of a statistic.  A typeId or instanceId with no statId prints out all the matching resources and all their statistics.\n"
+            + "A typeId or instanceId with a statId prints out just the named statistic on the matching resources.  A statId with no typeId or instanceId matches all statistics with that name.\n"
+            + "The '-details' option causes statistic descriptions to also be printed.\n"
+            + "The '-nofilter' option, in conjunction with '-archive=', causes the printed statistics to all be raw, unfiltered, values.\n"
+            + "The '-persec' option, in conjunction with '-archive=', causes the printed statistics to be the rate of change, per second, of the raw values.\n"
+            + "The '-persample' option, in conjunction with '-archive=', causes the printed statistics to be the rate of change, per sample, of the raw values.\n"
+            + "The '-prunezeros' option', in conjunction with '-archive=', causes statistics whose values are all zero to not be printed.\n"
+            + "The '-starttime=' option, in conjunction with '-archive=', causes statistics samples taken before this time to be ignored. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".\n"
+            + "The '-endtime' option, in conjunction with '-archive=', causes statistics samples taken after this time to be ignored. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".\n"
+            + "The '-archive=' option causes the data to come from an archive file.");
     helpMap.put(START_LOCATOR,
-        String.format(
-            "Starts a locator.The %s option specifies the port the locator will listen on. It defaults to %sThe %s option specifies the address the locator will listen on. It defaults to listening on all local addresses.The %s option can be used to specify the directory the locator will run in.The %s option can be used to specify the gemfire.properties file for configuring the locator's distributed system.  The file's path should be absolute, or relative to the locator's directory (%s)The %s option can be used to specify whether peer locator service should be enabled. True (the default) will enable the service.The %s option can be used to specify whether server locator service should be enabled. True (the default) will enable the service.The %s option can be used to specify a host name or ip address that will be sent to clients so they can connect to this locator. The default is to use the address the locator is listening on.The %s option can be used to set system properties for the locator VMThe %s option can be used to set vendor-specific VM options and is usually used to increase the size of the locator VM when using multicast.",
-            "-port=",
-            Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir=",
-            "-properties=", "-peer=", "-server=", "-hostname-for-clients=", "-D", "-X"));
-    helpMap.put("stop-locator", String.format(
-        "Stops a locator.The %s option specifies the port the locator is listening on. It defaults to %sThe %s option specifies the address the locator is listening on. It defaults to the local host's address.The %s option can be used to specify the directory the locator is running in.",
-        "-port=", Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir="));
-    helpMap.put("status-locator", String.format(
-        "Prints the status of a locator. The status string will one of the following:%sThe %s option can be used to specify the directory of the locator whose status is desired.",
-        join(ManagerInfo.statusNames), "-dir="));
+        "Starts a locator.\n"
+            + "The 'port=' option specifies the port the locator will listen on.  It defaults to "
+            + DistributionLocator.DEFAULT_LOCATOR_PORT + "\n."
+            + "The '-address=' option specifies the address the locator will listen on.  It defaults to listening on all local addresses.\n"
+            + "The '-dir=' option can be used to specify the directory the locator will run in.\n"
+            + "The '-properties=' option can be used to specify the gemfire.properties file for configuring the locator's distributed system.  The file's path should be absolute, or relative to the locator's directory ('-dir=').\n"
+            + "The '-peer=' option can be used to specify whether peer locator service should be enabled.  True (the default) will enable the service.\n"
+            + "The '-server=' option can be used to specify whether server locator service should be enabled. True (the default) will enable the service.\n"
+            + "The '-hostname-for-clients=' option can be used to specify a host name or ip address that will be sent to clients so they can connect to this locator. The default is to use the address the locator is listening on.\n"
+            + "The '-D' option can be used to set system properties for the locator VM.  "
+            + "The '-X' option can be used to set vendor-specific VM options and is usually used to increase the size of the locator VM when using multicast.");
+    helpMap.put("stop-locator",
+        "Stops a locator.\n"
+            + "The '-port=' option specifies the port the locator is listening on. It defaults to "
+            + DistributionLocator.DEFAULT_LOCATOR_PORT + ".\n"
+            + "The '-address=' option specifies the address the locator is listening on. It defaults to the local host's address.\n"
+            + "The '-dir=' option can be used to specify the directory the locator is running in.");
+    helpMap.put("status-locator",
+        "Prints the status of a locator. The status string will one of the following: "
+            + join(ManagerInfo.statusNames) + ".\n"
+            + "The '-dir=' option can be used to specify the directory of the locator whose status is desired.");
     helpMap.put("info-locator",
-        String.format(
-            "Prints information on a locator.The information includes the process id of the locator, if the product is not running in PureJava mode.The %s option can be used to specify the directory of the locator whose information is desired.",
-            "-dir="));
+        "Prints information on a locator.  The information includes the process id of the locator, if the product is not running in PureJava mode.  "
+            + "The '-dir=' option can be used to specify the directory of the locator whose information is desired.");
     helpMap.put("tail-locator-log",
-        String.format(
-            "Prints the last 64K bytes of the locator's log file.The %s option can be used to specify the directory of the locator whose information is desired.",
-            "-dir="));
+        "Prints the last 64K bytes of the locator's log file.  The '-dir=' option can be used to specify the directory of the locator whose information is desired.");
     helpMap.put("merge-logs",
-        String.format(
-            "Merges multiple logs files into a single log.The %s option can be used to specify the file to write the merged log to. The default is stdout.",
-            "-out"));
+        "Merges multiple logs files into a single log.The -out option can be used to specify the file to write the merged log to. The default is stdout.");
     helpMap.put("validate-disk-store",
         "Checks to make sure files of a disk store are valid. The name of the disk store and the directories its files are stored in are required arguments.");
-    helpMap.put("upgrade-disk-store", "Upgrade an offline disk store with new version format. \n"
-        + "  -maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
+    helpMap.put("upgrade-disk-store", "Upgrade an offline disk store with new version format.\n"
+        + "'-maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
     helpMap.put("compact-disk-store",
         "Compacts an offline disk store. Compaction removes all unneeded records from the persistent files.\n"
-            + "  -maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
+            + "-maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
     helpMap.put("compact-all-disk-stores",
         "Connects to a running system and tells its members to compact their disk stores. "
             + "This command uses the compaction threshold that each member has "
@@ -1581,25 +1598,15 @@ public class SystemAdmin {
     helpMap.put("-debug",
         "Causes gemfire to print out extra information when it fails. This option is supported by all commands.");
     helpMap.put("-details",
-        String.format(
-            "Causes gemfire to print detailed information.  With the %s command it means statistic descriptions.",
-            "stats"));
+        "Causes gemfire to print detailed information.  With the 'stats' command it means statistic descriptions.");
     helpMap.put("-nofilter",
-        String.format(
-            "Causes gemfire %s command to print unfiltered, raw, statistic values. This is the default for non-counter statistics.",
-            "stats"));
+        "Causes gemfire 'stats' command to print unfiltered, raw, statistic values. This is the default for non-counter statistics.");
     helpMap.put("-persec",
-        String.format(
-            "Causes gemfire %s command to print the rate of change, per second, for statistic values. This is the default for counter statistics.",
-            "stats"));
+        "Causes gemfire 'stats' command to print the rate of change, per second, for statistic values. This is the default for counter statistics.");
     helpMap.put("-persample",
-        String.format(
-            "Causes gemfire %s command to print the rate of change, per sample, for statistic values.",
-            "stats"));
+        "Causes gemfire 'stats' command to print the rate of change, per sample, for statistic values.");
     helpMap.put("-prunezeros",
-        String.format(
-            "Causes gemfire %s command to not print statistics whose values are all zero.",
-            "stats"));
+        "Causes gemfire 'stats' command to not print statistics whose values are all zero.");
     helpMap.put("-port=",
         "Used to specify a non-default port when starting or stopping a locator.");
     helpMap.put("-address=",
@@ -1607,31 +1614,33 @@ public class SystemAdmin {
     helpMap.put("-hostname-for-clients=",
         "Used to specify a host name or IP address to give to clients so they can connect to a locator.");
     helpMap.put("-properties=",
-        String.format(
-            "Used to specify the %s file to be used in configuring the locator's DistributedSystem.",
-            DistributionConfig.GEMFIRE_PREFIX + "properties"));
+        "Used to specify the " + DistributionConfig.GEMFIRE_PREFIX
+            + "properties file to be used in configuring the locator's DistributedSystem.");
     helpMap.put("-archive=",
-        String.format("The argument is the statistic archive file the %s command should read.",
-            "stats"));
+        "The argument is the statistic archive file the 'stats' command should read.");
     helpMap.put("-h",
         "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
     helpMap.put("-help", helpMap.get("-h"));
     helpMap.put("-q",
         "Turns on quiet mode. This option is supported by all commands.");
     helpMap.put("-starttime=",
-        String.format(
-            "Causes the %s command to ignore statistics samples taken before this time. The argument format must match %s.",
-            "stats", DateFormatter.FORMAT_STRING));
+        "Causes the 'stats' command to ignore statistics samples taken before this time. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".");
     helpMap.put("-endtime=",
-        String.format(
-            "Causes the %s command to ignore statistics samples taken after this time. The argument format must match %s.",
-            "stats", DateFormatter.FORMAT_STRING));
+        "Causes the 'stats' command to ignore statistics samples taken after this time. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".");
     helpMap.put("-dir=",
-        String.format(
-            "The argument is the system directory the command should operate on.If the argument is empty then a default system directory will be search for.However the search will not include the %s file.By default if a command needs a system directory, and one is not specified, then a search is done. If a %s file can be located then %s property from that file is used. Otherwise if the %s environment variable is set to a directory that contains a subdirectory named %s then that directory is used.The property file is search for in the following locations:1. The current working directory.2. The user's home directory.3. The class path.All commands except %s, and %s use the system directory.",
-            DistributionConfig.GEMFIRE_PREFIX + "properties",
-            DistributionConfig.GEMFIRE_PREFIX + "systemDirectory", "GEMFIRE", "defaultSystem",
-            "version"));
+        "The argument is the system directory the command should operate on.  If the argument is empty then a default system directory will be search for.\n"
+            + "However the search will not include the " + DistributionConfig.GEMFIRE_PREFIX
+            + "properties file.  By default if a command needs a system directory, and one is not specified, then a search is done.\n"
+            + "If a " + DistributionConfig.GEMFIRE_PREFIX + "properties file can be located then "
+            + DistributionConfig.GEMFIRE_PREFIX
+            + "systemDirectory property from that file is used.\n"
+            + "Otherwise if the GEMFIRE environment variable is set to a directory that contains a subdirectory named defaultSystem then that directory is used.\n"
+            + "The property file is searched for in the following locations:\n"
+            + "1. The current working directory.\n"
+            + "2. The user's home directory.\n"
+            + "3. The class path.  All commands except 'version' use the system directory.");
     helpMap.put("-D",
         "Sets a Java system property in the locator VM.  Used most often for configuring SSL communication.");
     helpMap.put("-X",
