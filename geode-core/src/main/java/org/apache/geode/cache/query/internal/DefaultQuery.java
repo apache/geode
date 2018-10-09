@@ -239,7 +239,8 @@ public class DefaultQuery implements Query {
       indexObserver = this.startTrace();
       if (qe != null) {
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook(1);
+          DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION,
+              this);
         }
 
         result = qe.executeQuery(this, params, null);
@@ -429,7 +430,7 @@ public class DefaultQuery implements Query {
       observer.beforeQueryEvaluation(this.compiledQuery, context);
 
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(6, this);
+        DefaultQuery.testHook.doTestHook(TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION, this);
       }
       Object results = null;
       try {
@@ -437,7 +438,7 @@ public class DefaultQuery implements Query {
         // first pre-compute dependencies, cached in the context.
         this.compiledQuery.computeDependencies(context);
         if (testHook != null) {
-          testHook.doTestHook(1);
+          testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION, this);
         }
         results = this.compiledQuery.evaluate(context);
       } catch (QueryExecutionCanceledException ignore) {
@@ -977,13 +978,57 @@ public class DefaultQuery implements Query {
     this.keepSerialized = true;
   }
 
+  /**
+   * Test logic sets DefaultQuery.testHook to an implementation of this interface,
+   * to facilitate white-box testing.
+   *
+   * DefaultQuery and other classes in query* packages invoke doTestHook() at various points
+   * during query processing--identifying the location with a SPOT value.
+   */
+  @FunctionalInterface
   public interface TestHook {
-    default void doTestHook(int spot) {};
+    enum SPOTS {
 
-    default void doTestHook(int spot, DefaultQuery query) {
-      doTestHook(spot);
+      /*
+       * These spots pass a DefaultQuery
+       */
+      BEFORE_QUERY_EXECUTION, /* was 1 */
+      BEFORE_QUERY_DEPENDENCY_COMPUTATION, /* was 6 */
+
+      /*
+       * These spots do not pass a DefaultQuery
+       */
+      LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION, /* was 2 */
+      BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION, /* was 3 */
+      BEFORE_BUILD_CUMULATIVE_RESULT, /* was 4 */
+      BEFORE_THROW_QUERY_CANCELED_EXCEPTION, /* was 5 */
+      BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY,
+      TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY,
+      COMPLETE_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY,
+      BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
+      TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN,
+      COMPLETE_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
+      ATTEMPT_REMOVE,
+      ATTEMPT_RETRY,
+      BEGIN_REMOVE_FROM_ELEM_ARRAY,
+      REMOVE_CALLED_FROM_ELEM_ARRAY,
+      COMPLETE_REMOVE_FROM_ELEM_ARRAY,
+      PULL_OFF_PR_QUERY_TRACE_INFO,
+      CREATE_PR_QUERY_TRACE_STRING,
+      CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE,
+      CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
+      POPULATING_TRACE_INFO_FOR_REMOTE_QUERY
     };
 
-    default void doTestHook(String spot) {};
+    /**
+     * Called (for side-effects) at various points in query processing, to facilitate
+     * white-box testing.
+     *
+     * @param spot identifies the (logical) calling code location. Some SPOT values represent
+     *        more than one physical location in the query processing code.
+     * @param query nullable, DefaultQuery, for SPOTS in the DefaultQuery class
+     */
+    void doTestHook(SPOTS spot, DefaultQuery query);
   }
+
 }

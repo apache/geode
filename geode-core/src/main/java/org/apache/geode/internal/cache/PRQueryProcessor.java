@@ -43,18 +43,14 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
-import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.NWayMergeResults;
 import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryMonitor;
-import org.apache.geode.cache.query.internal.QueryObserver;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.PRQueryResultCollector;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -109,14 +105,6 @@ public class PRQueryProcessor {
     PRQueryExecutor.initializeExecutorService();
   }
 
-  private synchronized void incNumBucketsProcessed() {
-    this.numBucketsProcessed++;
-  }
-
-  private synchronized int getNumBucketsProcessed() {
-    return this.numBucketsProcessed;
-  }
-
   /**
    * Executes a pre-compiled query on a data store. Adds result objects to resultQueue
    *
@@ -125,12 +113,6 @@ public class PRQueryProcessor {
    */
   public boolean executeQuery(Collection<Collection> resultCollector)
       throws QueryException, InterruptedException, ForceReattemptException {
-    // Set indexInfoMap to this threads observer.
-    // QueryObserver observer = QueryObserverHolder.getInstance();
-    // if(observer != null && observer instanceof IndexTrackingQueryObserver){
-    // ((IndexTrackingQueryObserver)observer).setIndexInfo(resultCollector.getIndexInfoMap());
-    // }
-
     if (NUM_THREADS > 1 || TEST_NUM_THREADS > 1) {
       executeWithThreadPool(resultCollector);
     } else {
@@ -203,117 +185,10 @@ public class PRQueryProcessor {
     if (reattemptNeeded) {
       throw fre;
     }
-
-  }
-
-  /**
-   * @throws ForceReattemptException if bucket was moved so caller should try query again
-   */
-  private void doBucketQuery(final Integer bId, final PartitionedRegionDataStore prds,
-      final DefaultQuery query, final Object[] params, final PRQueryResultCollector rq)
-      throws QueryException, ForceReattemptException, InterruptedException {
-    final BucketRegion bukRegion = (BucketRegion) prds.getLocalBucket2RegionMap().get(bId);
-    final PartitionedRegion pr = prds.getPartitionedRegion();
-    try {
-      pr.checkReadiness();
-      if (bukRegion == null) {
-        if (pr.isLocallyDestroyed || pr.isClosed) {
-          throw new RegionDestroyedException("PR destroyed during query", pr.getFullPath());
-        } else {
-          throw new ForceReattemptException(
-              "Bucket id " + pr.bucketStringForLogs(bId) + " not found on VM " + pr.getMyId());
-        }
-      }
-      bukRegion.waitForData();
-      SelectResults results = null;
-
-      // If the query has LIMIT and is not order by, apply the limit while building the result set.
-      int limit = -1;
-      if (query.getSimpleSelect().getOrderByAttrs() == null) {
-        limit = query.getLimit(params);
-      }
-
-      if (!bukRegion.isBucketDestroyed()) {
-        // If the result queue has reached the limit, no need to
-        // execute the query. Handle the bucket destroy condition
-        // and add the end bucket token.
-        int numBucketsProcessed = getNumBucketsProcessed();
-        if (limit < 0 || (rq.size() - numBucketsProcessed) < limit) {
-          results = (SelectResults) query.prExecuteOnBucket(params, pr, bukRegion);
-          this.resultType = results.getCollectionType().getElementType();
-        }
-
-        if (!bukRegion.isBucketDestroyed()) {
-          // someday, when queries can return objects as a stream, the entire results set won't need
-          // to be manifested
-          // here before we can start adding to the results queue
-          if (results != null) {
-            for (Object r : results) {
-              if (r == null) { // Blocking queue does not support adding null.
-                rq.put(DefaultQuery.NULL_RESULT);
-              } else {
-                // Count from each bucket should be > 0 otherwise limit makes the final result
-                // wrong.
-                // Avoid if query is distinct as this Integer could be a region value.
-                if (!query.getSimpleSelect().isDistinct() && query.getSimpleSelect().isCount()
-                    && r instanceof Integer) {
-                  if ((Integer) r != 0) {
-                    rq.put(r);
-                  }
-                } else {
-                  rq.put(r);
-                }
-              }
-
-              // Check if limit is satisfied.
-              if (limit >= 0 && (rq.size() - numBucketsProcessed) >= limit) {
-                break;
-              }
-            }
-          }
-          rq.put(new EndOfBucket(bId));
-          this.incNumBucketsProcessed();
-          return; // success
-        }
-      }
-
-      // if we get here then the bucket must have been moved
-      checkForBucketMoved(bId, bukRegion, pr);
-      Assert.assertTrue(false, "checkForBucketMoved should have thrown ForceReattemptException");
-    } catch (RegionDestroyedException rde) {
-      checkForBucketMoved(bId, bukRegion, pr);
-      throw rde;
-    } catch (QueryException qe) {
-      checkForBucketMoved(bId, bukRegion, pr);
-      throw qe;
-    }
-  }
-
-  /**
-   * @throws ForceReattemptException if it detects that the given bucket moved
-   * @throws RegionDestroyedException if the given pr was destroyed
-   */
-  private static void checkForBucketMoved(Integer bId, BucketRegion br, PartitionedRegion pr)
-      throws ForceReattemptException, RegionDestroyedException {
-    if (br.isBucketDestroyed()) {
-      // see if the pr is destroyed
-      if (pr.isLocallyDestroyed || pr.isClosed) {
-        throw new RegionDestroyedException("PR destroyed during query", pr.getFullPath());
-      }
-      pr.checkReadiness();
-      throw new ForceReattemptException(
-          "Bucket id " + pr.bucketStringForLogs(bId) + " not found on VM " + pr.getMyId());
-    }
   }
 
   private void executeSequentially(Collection<Collection> resultCollector, List buckets)
       throws QueryException, InterruptedException, ForceReattemptException {
-    /*
-     * for (Iterator itr = _bucketsToQuery.iterator(); itr.hasNext(); ) { Integer bId =
-     * (Integer)itr.next(); doBucketQuery(bId, this._prds, this.query, this.parameters,
-     * resultCollector); }
-     */
-
     ExecutionContext context =
         new QueryExecutionContext(this.parameters, this.pr.getCache(), this.query);
 
@@ -369,8 +244,6 @@ public class PRQueryProcessor {
       Object results = query.executeUsingContext(context);
 
       synchronized (resultCollector) {
-        // TODO: In what situation would the results object itself be undefined?
-        // The elements of the results can be undefined , but not the resultset itself
         this.resultType = ((SelectResults) results).getCollectionType().getElementType();
         resultCollector.add((Collection) results);
       }
@@ -399,10 +272,9 @@ public class PRQueryProcessor {
     }
   }
 
-  private List buildCallableTaskList(Collection<Collection> resultsColl) {
-    List callableTasks = new ArrayList();
-    for (Iterator itr = _bucketsToQuery.iterator(); itr.hasNext();) {
-      Integer bId = (Integer) itr.next();
+  private List<QueryTask> buildCallableTaskList(Collection<Collection> resultsColl) {
+    List<QueryTask> callableTasks = new ArrayList<>();
+    for (Integer bId : _bucketsToQuery) {
       callableTasks.add(new QueryTask(this.query, this.parameters, _prds, bId, resultsColl));
     }
     return callableTasks;
@@ -423,8 +295,6 @@ public class PRQueryProcessor {
   /**
    * A ThreadPool ( Fixed Size ) with an executor service to execute the query execution spread over
    * buckets.
-   *
-   *
    */
   static class PRQueryExecutor {
 
@@ -501,7 +371,6 @@ public class PRQueryProcessor {
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -530,28 +399,14 @@ public class PRQueryProcessor {
 
     public Object call() throws Exception {
       BucketQueryResult bukResult = new BucketQueryResult(this._bucketId);
-      boolean retry = false;
       try {
-        // Add indexInfo of this thread to result collector
-        QueryObserver observer = QueryObserverHolder.getInstance();
-        if (observer != null && observer instanceof IndexTrackingQueryObserver) {
-          // ((IndexTrackingQueryObserver)observer).setIndexInfo(resultColl.getIndexInfoMap());
-        }
-
         List<Integer> bucketList = Collections.singletonList(this._bucketId);
         ExecutionContext context =
             new QueryExecutionContext(this.parameters, pr.getCache(), this.query);
         context.setBucketList(bucketList);
         executeQueryOnBuckets(this.resultColl, context);
-        // executeSequentially(this.resultColl, bucketList);
-        // success
-        // doBucketQuery(bId, this._prDs, this.query, this.parameters, this.resultColl);
-      } catch (ForceReattemptException fre) {
+      } catch (ForceReattemptException | QueryException | CacheRuntimeException fre) {
         bukResult.setException(fre);
-      } catch (QueryException e) {
-        bukResult.setException(e);
-      } catch (CacheRuntimeException cre) {
-        bukResult.setException(cre);
       }
       // Exception
       return bukResult;

@@ -341,30 +341,28 @@ public class CompactRangeIndexJUnitTest {
       readyToStartRemoveLatch = new CountDownLatch(1);
     }
 
-    public void doTestHook(int spot) {
-
-    }
-
-    public void doTestHook(String description) {
+    @Override
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
       try {
-        if (description.equals("ATTEMPT_REMOVE")) {
-          if (!readyToStartRemoveLatch.await(21, TimeUnit.SECONDS)) {
-            throw new AssertionError("Time ran out waiting for other thread to initiate put");
-          }
-        } else if (description.equals("TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY")) {
-          readyToStartRemoveLatch.countDown();
-          if (!waitForRemoveLatch.await(21, TimeUnit.SECONDS)) {
-            throw new AssertionError("Time ran out waiting for other thread to initiate remove");
-          }
-        } else if (description.equals("BEGIN_REMOVE_FROM_ELEM_ARRAY")) {
-          waitForRemoveLatch.countDown();
-          if (waitForTransitioned.await(21, TimeUnit.SECONDS)) {
-            throw new AssertionError(
-                "Time ran out waiting for transition from region entry to elem array");
-          }
-        } else if (description.equals("TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY")) {
-          waitForTransitioned.countDown();
-        } else if (description.equals("REMOVE_CALLED_FROM_ELEM_ARRAY")) {
+        switch (spot) {
+          case ATTEMPT_REMOVE:
+            if (!readyToStartRemoveLatch.await(21, TimeUnit.SECONDS)) {
+              throw new AssertionError("Time ran out waiting for other thread to initiate put");
+            }
+            break;
+          case TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY:
+            readyToStartRemoveLatch.countDown();
+            if (!waitForRemoveLatch.await(21, TimeUnit.SECONDS)) {
+              throw new AssertionError("Time ran out waiting for other thread to initiate remove");
+            }
+            break;
+          case BEGIN_REMOVE_FROM_ELEM_ARRAY:
+            waitForRemoveLatch.countDown();
+            if (waitForTransitioned.await(21, TimeUnit.SECONDS)) {
+              throw new AssertionError(
+                  "Time ran out waiting for transition from region entry to elem array");
+            }
+            break;
         }
       } catch (InterruptedException e) {
         throw new AssertionError("Interrupted while waiting for test to complete");
@@ -377,7 +375,8 @@ public class CompactRangeIndexJUnitTest {
    * continue to set the token then continue and convert to chs while holding the lock to the elem
    * array still After the conversion of chs, the lock is released and then remove can proceed
    */
-  private class MemoryIndexStoreIndexElemToTokenToConcurrentHashSetTestHook implements TestHook {
+  private static class MemoryIndexStoreIndexElemToTokenToConcurrentHashSetTestHook
+      implements TestHook {
 
     private CountDownLatch waitForRemoveLatch;
     private CountDownLatch waitForTransitioned;
@@ -392,28 +391,30 @@ public class CompactRangeIndexJUnitTest {
     }
 
     @Override
-    public void doTestHook(int spot) {}
-
-    @Override
-    public void doTestHook(String description) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
       try {
-        if (description.equals("ATTEMPT_REMOVE")) {
-          if (!readyToStartRemoveLatch.await(21, TimeUnit.SECONDS)) {
-            throw new AssertionError("Time ran out waiting for other thread to initiate put");
-          }
-        } else if (description.equals("BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET")) {
-          readyToStartRemoveLatch.countDown();
-          if (!waitForRemoveLatch.await(21, TimeUnit.SECONDS)) {
-            throw new AssertionError("Time ran out waiting for other thread to initiate remove");
-          }
-        } else if (description.equals("BEGIN_REMOVE_FROM_ELEM_ARRAY")) {
-          waitForRemoveLatch.countDown();
-          if (!waitForTransitioned.await(21, TimeUnit.SECONDS)) {
-            throw new AssertionError(
-                "Time ran out waiting for transition from elem array to token");
-          }
-        } else if (description.equals("TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN")) {
-          waitForTransitioned.countDown();
+        switch (spot) {
+          case ATTEMPT_REMOVE:
+            if (!readyToStartRemoveLatch.await(21, TimeUnit.SECONDS)) {
+              throw new AssertionError("Time ran out waiting for other thread to initiate put");
+            }
+            break;
+          case BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET:
+            readyToStartRemoveLatch.countDown();
+            if (!waitForRemoveLatch.await(21, TimeUnit.SECONDS)) {
+              throw new AssertionError("Time ran out waiting for other thread to initiate remove");
+            }
+            break;
+          case BEGIN_REMOVE_FROM_ELEM_ARRAY:
+            waitForRemoveLatch.countDown();
+            if (!waitForTransitioned.await(21, TimeUnit.SECONDS)) {
+              throw new AssertionError(
+                  "Time ran out waiting for transition from elem array to token");
+            }
+            break;
+          case TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN:
+            waitForTransitioned.countDown();
+            break;
         }
       } catch (InterruptedException e) {
         throw new AssertionError("Interrupted while waiting for test to complete");

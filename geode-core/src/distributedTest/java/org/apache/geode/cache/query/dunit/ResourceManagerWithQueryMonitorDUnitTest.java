@@ -75,7 +75,6 @@ import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -299,12 +298,13 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private void doCriticalMemoryHitTest(final String regionName, boolean createPR,
-      final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout, final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server = host.getVM(0);
-    final VM client = host.getVM(1);
+    final VM server = VM.getVM(0);
+    final VM client = VM.getVM(1);
     final int numObjects = 200;
     try {
       final int port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -363,14 +363,16 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   // test to verify what happens during index creation if memory threshold is hit
   private void doCriticalMemoryHitWithIndexTest(final String regionName, boolean createPR,
-      final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold, final String indexType)
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold,
+      final String indexType)
       throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server1 = host.getVM(0);
-    final VM server2 = host.getVM(2);
-    final VM client = host.getVM(1);
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(2);
+    final VM client = VM.getVM(1);
     final int numObjects = 200;
     try {
       final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -419,13 +421,16 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private void doCriticalMemoryHitAddResultsTestWithMultipleServers(final String regionName,
-      boolean createPR, final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      boolean createPR,
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server1 = host.getVM(0);
-    final VM server2 = host.getVM(1);
-    final VM client = host.getVM(2);
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(1);
+    final VM client = VM.getVM(2);
     final int numObjects = 200;
     try {
       final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -500,13 +505,16 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   // tests low memory hit while gathering partition region results
   private void doCriticalMemoryHitDuringGatherTestWithMultipleServers(final String regionName,
-      boolean createPR, final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      boolean createPR,
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server1 = host.getVM(0);
-    final VM server2 = host.getVM(1);
-    final VM client = host.getVM(2);
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(1);
+    final VM client = VM.getVM(2);
     final int numObjects = 200;
     try {
       final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -588,13 +596,15 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   // Executes on client cache with multiple configured servers
   private void doCriticalMemoryHitTestWithMultipleServers(final String regionName, boolean createPR,
-      final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server1 = host.getVM(0);
-    final VM server2 = host.getVM(1);
-    final VM client = host.getVM(2);
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(1);
+    final VM client = VM.getVM(2);
     final int numObjects = 200;
 
     try {
@@ -659,12 +669,13 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   // Executes the query on the server with the RM and QM configured
   private void doCriticalMemoryHitTestOnServer(final String regionName, boolean createPR,
-      final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server = host.getVM(0);
-    final VM client = host.getVM(1);
+    final VM server = VM.getVM(0);
     final int numObjects = 200;
     try {
       final int port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -724,12 +735,15 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
 
   private void executeQueryFromClientWithTimeoutSetAndCriticalThreshold(final String regionName,
-      boolean createPR, final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      boolean createPR,
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server = host.getVM(0);
-    final VM client = host.getVM(1);
+    final VM server = VM.getVM(0);
+    final VM client = VM.getVM(1);
     final int numObjects = 200;
     try {
       final int port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -749,11 +763,14 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private void executeQueryWithTimeoutSetAndCriticalThreshold(final String regionName,
-      boolean createPR, final int criticalThreshold, final boolean disabledQueryMonitorForLowMem,
-      final int queryTimeout, final boolean hitCriticalThreshold) throws Exception {
+      boolean createPR,
+      final int criticalThreshold,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold)
+      throws Exception {
     // create region on the server
-    final Host host = Host.getHost(0);
-    final VM server = host.getVM(0);
+    final VM server = VM.getVM(0);
     final int numObjects = 200;
     try {
       final int port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -781,7 +798,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   // The last part of the test is to execute another query with the system under duress and have it
   // be rejected/cancelled if rm and qm are in use
   private void doTestCriticalHeapAndQueryTimeout(VM server, VM client, final String regionName,
-      final boolean disabledQueryMonitorForLowMem, final int queryTimeout,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
       final boolean hitCriticalThreshold) {
     createLatchTestHook(server);
 
@@ -820,7 +838,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private void executeQueryWithCriticalHeapCalledAfterTimeout(VM server, VM client,
-      final String regionName, final int queryTimeout, final boolean hitCriticalThreshold) {
+      final String regionName,
+      final int queryTimeout,
+      final boolean hitCriticalThreshold) {
     createLatchTestHook(server);
     AsyncInvocation queryExecution = executeQueryWithTimeout(client, regionName, queryTimeout);
 
@@ -890,7 +910,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private AsyncInvocation invokeClientQuery(VM client, final String regionName,
-      final boolean disabledQueryMonitorForLowMem, final int queryTimeout,
+      final boolean disabledQueryMonitorForLowMem,
+      final int queryTimeout,
       final boolean hitCriticalThreshold) {
     return client.invokeAsync(new SerializableCallable("execute query from client") {
       public Object call() throws CacheException {
@@ -931,7 +952,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private void handleException(Exception e, boolean hitCriticalThreshold,
-      boolean disabledQueryMonitorForLowMem, long queryTimeout) throws CacheException {
+      boolean disabledQueryMonitorForLowMem, long queryTimeout)
+      throws CacheException {
     if (e instanceof QueryExecutionLowMemoryException) {
       if (!(hitCriticalThreshold && disabledQueryMonitorForLowMem == false)) {
         // meaning the query should not be canceled due to low memory
@@ -1103,8 +1125,10 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private void startCacheServer(VM server, final int port, final int criticalThreshold,
-      final boolean disableQueryMonitorForLowMemory, final int queryTimeout,
-      final String regionName, final boolean createPR, final int prRedundancy) throws Exception {
+      final boolean disableQueryMonitorForLowMemory,
+      final int queryTimeout,
+      final String regionName, final boolean createPR,
+      final int prRedundancy) throws Exception {
 
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -1242,22 +1266,26 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     return new CancelDuringAddResultsHook();
   }
 
-  private class PauseTestHook implements DefaultQuery.TestHook {
+  private static class PauseTestHook implements DefaultQuery.TestHook {
     private CountDownLatch latch = new CountDownLatch(1);
     public boolean rejectedObjects = false;
 
-    public void doTestHook(int spot) {
-      if (spot == 1) {
-        try {
-          if (!latch.await(8, TimeUnit.SECONDS)) {
-            fail("query was never unlatched");
+    @Override
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+      switch (spot) {
+        case BEFORE_QUERY_EXECUTION:
+          try {
+            if (!latch.await(8, TimeUnit.SECONDS)) {
+              fail("query was never unlatched");
+            }
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
           }
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-          Thread.currentThread().interrupt();
-        }
-      } else if (spot == 2) {
-        rejectedObjects = true;
+          break;
+        case LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION:
+          rejectedObjects = true;
+          break;
       }
     }
 
@@ -1266,45 +1294,55 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     }
   }
 
+  // non-static class because it needs to call getCache()
   private class CancelDuringGatherHook implements DefaultQuery.TestHook {
     public boolean rejectedObjects = false;
     public boolean triggeredOOME = false;
     private int count = 0;
     private int numObjectsBeforeCancel = 5;
 
-    public void doTestHook(int spot) {
-      if (spot == 2) {
-        rejectedObjects = true;
-      } else if (spot == 3) {
-        if (count++ == numObjectsBeforeCancel) {
-          InternalResourceManager resourceManager =
-              (InternalResourceManager) getCache().getResourceManager();
-          resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
-          triggeredOOME = true;
-        }
+    @Override
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+      switch (spot) {
+        case LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION:
+          rejectedObjects = true;
+          break;
+        case BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION:
+          if (count++ == numObjectsBeforeCancel) {
+            InternalResourceManager resourceManager =
+                (InternalResourceManager) getCache().getResourceManager();
+            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
+            triggeredOOME = true;
+          }
+          break;
       }
     }
   }
 
+  // non-static class because it needs to call getCache()
   private class CancelDuringAddResultsHook implements DefaultQuery.TestHook {
     public boolean triggeredOOME = false;
     public boolean rejectedObjects = false;
 
-    public void doTestHook(int spot) {
-      if (spot == 4) {
-        if (triggeredOOME == false) {
-          InternalResourceManager resourceManager =
-              (InternalResourceManager) getCache().getResourceManager();
-          resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
-          triggeredOOME = true;
-          try {
-            Thread.sleep(1000);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+    @Override
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+      switch (spot) {
+        case BEFORE_BUILD_CUMULATIVE_RESULT:
+          if (triggeredOOME == false) {
+            InternalResourceManager resourceManager =
+                (InternalResourceManager) getCache().getResourceManager();
+            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
+            triggeredOOME = true;
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
           }
-        }
-      } else if (spot == 5) {
-        rejectedObjects = true;
+          break;
+        case BEFORE_THROW_QUERY_CANCELED_EXCEPTION:
+          rejectedObjects = true;
+          break;
       }
     }
   }

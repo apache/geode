@@ -57,9 +57,9 @@ public class QueryMonitor implements Runnable {
   private final AtomicBoolean stopped = new AtomicBoolean(Boolean.FALSE);
 
   // Variables for cancelling queries due to low memory
-  private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
+  private static volatile Boolean isLowMemory = Boolean.FALSE;
 
-  private static volatile long LOW_MEMORY_USED_BYTES = 0;
+  private static volatile long lowMemoryUsedBytes = 0;
 
   public QueryMonitor(InternalCache cache, long maxQueryExecutionTime) {
     this.cache = cache;
@@ -78,10 +78,10 @@ public class QueryMonitor implements Runnable {
       return;
     }
 
-    if (LOW_MEMORY) {
+    if (isLowMemory) {
       String reason = String.format(
           "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
-          LOW_MEMORY_USED_BYTES);
+          lowMemoryUsedBytes);
       query.setCanceled(new QueryExecutionLowMemoryException(reason));
       throw new QueryExecutionLowMemoryException(reason);
     }
@@ -191,8 +191,7 @@ public class QueryMonitor implements Runnable {
           Thread.sleep(sleepTime);
           continue;
         }
-        // Query execution has taken more than the max time, Set queryCancelled flag
-        // to true.
+        // Cancel the query if hasn't already completed.
         boolean[] queryCompleted = queryTask.query.getQueryCompletedForMonitoring();
         synchronized (queryCompleted) {
           // check if query is already completed
@@ -219,20 +218,20 @@ public class QueryMonitor implements Runnable {
   }
 
   /**
-   * Assumes LOW_MEMORY will only be set if query monitor is enabled
+   * Assumes isLowMemory will only be set if query monitor is enabled
    */
   public static boolean isLowMemory() {
-    return LOW_MEMORY;
+    return isLowMemory;
   }
 
   public static long getMemoryUsedDuringLowMemory() {
-    return LOW_MEMORY_USED_BYTES;
+    return lowMemoryUsedBytes;
   }
 
   public void setLowMemory(boolean lowMemory, long usedBytes) {
     if (cache != null && !cache.isQueryMonitorDisabledForLowMemory()) {
-      QueryMonitor.LOW_MEMORY_USED_BYTES = usedBytes;
-      QueryMonitor.LOW_MEMORY = lowMemory;
+      QueryMonitor.lowMemoryUsedBytes = usedBytes;
+      QueryMonitor.isLowMemory = lowMemory;
     }
   }
 
@@ -240,7 +239,7 @@ public class QueryMonitor implements Runnable {
     synchronized (queryThreads) {
       QueryThreadTask queryTask = (QueryThreadTask) queryThreads.poll();
       while (queryTask != null) {
-        cancelQueryDueToLowMemory(queryTask, LOW_MEMORY_USED_BYTES);
+        cancelQueryDueToLowMemory(queryTask, lowMemoryUsedBytes);
         queryTask = (QueryThreadTask) queryThreads.poll();
       }
       queryThreads.clear();
@@ -248,14 +247,14 @@ public class QueryMonitor implements Runnable {
     }
   }
 
-  private void cancelQueryDueToLowMemory(QueryThreadTask queryTask, long memoryThreshold) {
+  private void cancelQueryDueToLowMemory(QueryThreadTask queryTask, long memoryUsed) {
     boolean[] queryCompleted = queryTask.query.getQueryCompletedForMonitoring();
     synchronized (queryCompleted) {
       if (!queryCompleted[0]) {
         // cancel if query is not completed
         String reason = String.format(
             "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
-            memoryThreshold);
+            memoryUsed);
         queryTask.query.setCanceled(
             new QueryExecutionLowMemoryException(reason));
         queryTask.queryCancelled.set(Boolean.TRUE);

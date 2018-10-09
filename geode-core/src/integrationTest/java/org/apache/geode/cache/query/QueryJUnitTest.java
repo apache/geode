@@ -376,7 +376,7 @@ public class QueryJUnitTest {
     }
   }
 
-  public class ScopeThreadingTestHook implements DefaultQuery.TestHook {
+  private static class ScopeThreadingTestHook implements DefaultQuery.TestHook {
     private CyclicBarrier barrier;
     private List<Exception> exceptionsThrown = new LinkedList<Exception>();
 
@@ -385,13 +385,8 @@ public class QueryJUnitTest {
     }
 
     @Override
-    public void doTestHook(int spot) {
-      this.doTestHook(spot + "");
-    }
-
-    @Override
-    public void doTestHook(String spot) {
-      if (spot.equals("1")) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+      if (spot == SPOTS.BEFORE_QUERY_EXECUTION) {
         try {
           barrier.await(8, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

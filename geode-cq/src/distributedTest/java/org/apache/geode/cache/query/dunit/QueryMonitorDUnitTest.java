@@ -85,7 +85,7 @@ public class QueryMonitorDUnitTest {
     // configure the server to make the query to wait for at least 1 second in every execution spot
     // and set a MAX_QUERY_EXECUTION_TIME to be 10ms
     VMProvider.invokeInEveryMember(() -> {
-      DefaultQuery.testHook = new QueryTimeoutHook();
+      DefaultQuery.testHook = QueryMonitorDUnitTest::delayQueryTestHook;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
     }, server1, server2);
     gfsh.connectAndVerify(locator);
@@ -112,7 +112,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query
-    VMProvider.invokeInEveryMember(() -> exuteQuery(), client3, client4);
+    VMProvider.invokeInEveryMember(() -> executeQuery(), client3, client4);
   }
 
   @Test
@@ -128,7 +128,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from client3
-    client3.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
   }
 
   @Test
@@ -146,8 +146,8 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
     server2.invoke(() -> populateRegion(100, 200));
 
-    client3.invoke(() -> exuteQuery());
-    client4.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
+    client4.invoke(() -> executeQuery());
   }
 
   @Test
@@ -159,7 +159,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from one server
-    server1.invoke(() -> exuteQuery());
+    server1.invoke(() -> executeQuery());
 
     // Create index and Perform cache op. Bug#44307
     server1.invoke(() -> {
@@ -183,8 +183,8 @@ public class QueryMonitorDUnitTest {
     server2.invoke(() -> populateRegion(200, 300));
 
     // execute the query from one server
-    server1.invoke(() -> exuteQuery());
-    server2.invoke(() -> exuteQuery());
+    server1.invoke(() -> executeQuery());
+    server2.invoke(() -> executeQuery());
   }
 
   @Test
@@ -206,8 +206,8 @@ public class QueryMonitorDUnitTest {
     client4 = cluster.startClientVM(4, ccf -> {
       configureClientCacheFactory(ccf, server2Port);
     });
-    client3.invoke(() -> exuteQuery());
-    client4.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
+    client4.invoke(() -> executeQuery());
   }
 
   @Test
@@ -235,8 +235,8 @@ public class QueryMonitorDUnitTest {
     client3 = cluster.startClientVM(3, true, server1Port);
     client4 = cluster.startClientVM(4, true, server2Port);
 
-    client3.invoke(() -> exuteQuery());
-    client4.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
+    client4.invoke(() -> executeQuery());
   }
 
   @Test
@@ -279,7 +279,7 @@ public class QueryMonitorDUnitTest {
     MemberVM server3 = cluster.startServerVM(3, locatorPort);
 
     server3.invoke(() -> {
-      DefaultQuery.testHook = new QueryTimeoutHook();
+      DefaultQuery.testHook = QueryMonitorDUnitTest::delayQueryTestHook;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
     });
 
@@ -346,7 +346,7 @@ public class QueryMonitorDUnitTest {
     }
   }
 
-  private static void exuteQuery() {
+  private static void executeQuery() {
     QueryService queryService;
     if (ClusterStartupRule.getClientCache() == null) {
       queryService = ClusterStartupRule.getCache().getQueryService();
@@ -411,17 +411,30 @@ public class QueryMonitorDUnitTest {
         + "\"Query execution taking more than the max execution time\"" + "\n Found \n" + error);
   }
 
-  private static class QueryTimeoutHook implements DefaultQuery.TestHook {
-    public void doTestHook(int spot, DefaultQuery query) {
-      if (spot != 6) {
-        return;
-      }
-      if (query.isCqQuery() || QueryMonitor.getQueryMonitorThreadCount() == 0) {
-        return;
-      }
-
-      Awaitility.await().pollDelay(5, TimeUnit.MILLISECONDS).until(() -> query.isCanceled());
+  /**
+   * This method is used as an implementation of the TestHook functional interface, to delay
+   * query execution long enough for the QueryMonitor to mark the query as cancelled.
+   */
+  private static void delayQueryTestHook(final DefaultQuery.TestHook.SPOTS spot,
+      final DefaultQuery query) {
+    if (spot != DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION) {
+      return;
     }
+    if (query.isCqQuery() || QueryMonitor.getQueryMonitorThreadCount() == 0) {
+      return;
+    }
+
+    /*
+     * The atMost() value was chosen to account for situations where QueryMonitor (thread)
+     * gets delayed by long GC pauses. Values around 10s resulted in false-positive test failures.
+     *
+     * The pollDelay() value was chosen to be larger than the
+     * GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME (system property) value,
+     * set during test initialization.
+     */
+    Awaitility.await("stall the query execution so that it gets cancelled")
+        .atMost(2, TimeUnit.MINUTES).pollDelay(10, TimeUnit.MILLISECONDS)
+        .until(() -> query.isCanceled());
   }
 
   private static String[] queryStr = {"SELECT ID FROM /exampleRegion p WHERE  p.ID > 100",

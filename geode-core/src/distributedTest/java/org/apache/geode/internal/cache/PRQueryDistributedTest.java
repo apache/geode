@@ -148,24 +148,29 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO))
           .isTrue();
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING))
+          .isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isTrue();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isTrue();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
     });
   }
 
   /**
    * Tests trace for PR queries when {@code <trace>} is used and query verbose is set to true on
-   * local but false on remote servers All flags should be true still as the {@code <trace>} is
-   * OR'd with query verbose flag
+   * local but false on remote servers All flags should be true still as the {@code <trace>} is OR'd
+   * with query verbose flag
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOnLocalServerOnly() throws Exception {
@@ -192,24 +197,29 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO))
           .isTrue();
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING))
+          .isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isTrue();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isTrue();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
     });
   }
 
   /**
-   * Tests trace for PR queries when {@code <trace>} is NOT used and query verbose is set to true
-   * on local but false on remote. The remote should not send a pr query trace info back because
-   * trace was not requested.
+   * Tests trace for PR queries when {@code <trace>} is NOT used and query verbose is set to true on
+   * local but false on remote. The remote should not send a pr query trace info back because trace
+   * was not requested.
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOffLocalServerVerboseOn() throws Exception {
@@ -236,24 +246,30 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isNull();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
-          .isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO)).isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING)).isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isTrue();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isNull();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isNull();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isNull();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isNull();
     });
   }
 
   /**
    * Tests trace for PR queries when {@code <trace>} is NOT used and query verbose is set to false
    * on local but true on remote servers We don't output the string or do anything on the local
-   * side, but we still pull off the object due to the remote server generating and sending it over.
+   * side, but we still pull off the object due to the remote server generating and sending it
+   * over.
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOffRemoteServerOnly() throws Exception {
@@ -280,17 +296,22 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isNull();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
-          .isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO)).isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING)).isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isNull();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isTrue();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
     });
   }
 
@@ -323,17 +344,22 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO))
           .isTrue();
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING))
+          .isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isTrue();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isTrue();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
     });
   }
 
@@ -367,17 +393,22 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isNull();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
-          .isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO)).isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING)).isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isNull();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isTrue();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
     });
   }
 
@@ -410,17 +441,22 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isNull();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isNull();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
-          .isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO)).isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING)).isNull();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isNull();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isNull();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isNull();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isNull();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isNull();
     });
   }
 
@@ -453,17 +489,22 @@ public class PRQueryDistributedTest implements Serializable {
 
     vm1.invoke(() -> {
       PRQueryTraceTestHook server1TestHookInVM1 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server1TestHookInVM1.getHooks().get("Pull off PR Query Trace Info")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace String")).isTrue();
-      assertThat(server1TestHookInVM1.getHooks().get("Create PR Query Trace Info From Local Node"))
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO))
           .isTrue();
+      assertThat(server1TestHookInVM1.getHooks().get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING))
+          .isTrue();
+      assertThat(server1TestHookInVM1.getHooks()
+          .get(TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE))
+              .isTrue();
     });
     vm2.invoke(() -> {
       PRQueryTraceTestHook server2TestHookInVM2 = (PRQueryTraceTestHook) DefaultQuery.testHook;
-      assertThat(server2TestHookInVM2.getHooks().get("Populating Trace Info for Remote Query"))
-          .isTrue();
-      assertThat(server2TestHookInVM2.getHooks().get("Create PR Query Trace Info for Remote Query"))
-          .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
+      assertThat(server2TestHookInVM2.getHooks()
+          .get(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY))
+              .isTrue();
     });
   }
 
@@ -527,19 +568,14 @@ public class PRQueryDistributedTest implements Serializable {
 
   private static class PRQueryTraceTestHook implements TestHook, Serializable {
 
-    private final Map<String, Boolean> hooks = new HashMap<>();
+    private final Map<SPOTS, Boolean> hooks = new HashMap<>();
 
-    Map<String, Boolean> getHooks() {
+    Map<SPOTS, Boolean> getHooks() {
       return hooks;
     }
 
     @Override
-    public void doTestHook(int spot) {
-      // nothing
-    }
-
-    @Override
-    public void doTestHook(String spot) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
       hooks.put(spot, Boolean.TRUE);
     }
   }

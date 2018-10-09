@@ -211,7 +211,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       Object traceObject = objects.get(0);
       if (traceObject instanceof PRQueryTraceInfo) {
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook("Pull off PR Query Trace Info");
+          DefaultQuery.testHook
+              .doTestHook(DefaultQuery.TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO, null);
         }
         PRQueryTraceInfo queryTrace = (PRQueryTraceInfo) objects.remove(0);
         queryTrace.setSender(sender);
@@ -642,7 +643,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     final DistributedMember me = this.pr.getMyId();
 
     if (DefaultQuery.testHook != null) {
-      DefaultQuery.testHook.doTestHook(4);
+      DefaultQuery.testHook
+          .doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_BUILD_CUMULATIVE_RESULT, null);
     }
 
     boolean localResults = false;
@@ -737,7 +739,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     if (prQueryTraceInfoList != null && this.query.isTraced() && logger.isInfoEnabled()) {
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook("Create PR Query Trace String");
+        DefaultQuery.testHook
+            .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING, null);
       }
       StringBuilder sb = new StringBuilder();
       sb.append(String.format("Trace Info for Query: %s",
@@ -761,7 +764,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
           "Query execution canceled due to low memory while gathering results from partitioned regions";
       query.setCanceled(new QueryExecutionLowMemoryException(reason));
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(5);
+        DefaultQuery.testHook
+            .doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_THROW_QUERY_CANCELED_EXCEPTION, null);
       }
       throw query.getQueryCanceledException();
     } else if (query.isCanceled()) {
@@ -986,7 +990,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         // Adds a query trace info object to the results list
         if (query.isTraced() && prQueryTraceInfoList != null) {
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook("Create PR Query Trace Info From Local Node");
+            DefaultQuery.testHook
+                .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE,
+                    null);
           }
           PRQueryTraceInfo queryTraceInfo = new PRQueryTraceInfo();
           queryTraceInfo.setNumResults(queryTraceInfo.calculateNumberOfResults(resultCollector));

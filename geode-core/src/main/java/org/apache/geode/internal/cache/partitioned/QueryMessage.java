@@ -192,7 +192,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       if (isQueryTraced) {
         this.isTraceInfoIteration = true;
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook("Create PR Query Trace Info for Remote Query");
+          DefaultQuery.testHook
+              .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
+                  null);
         }
         queryTraceInfo = new PRQueryTraceInfo();
         queryTraceList = Collections.singletonList(queryTraceInfo);
@@ -211,7 +213,8 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       // information here rather than the finally block.
       if (isQueryTraced) {
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook("Populating Trace Info for Remote Query");
+          DefaultQuery.testHook
+              .doTestHook(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY, null);
         }
 
         // calculate the number of rows being sent

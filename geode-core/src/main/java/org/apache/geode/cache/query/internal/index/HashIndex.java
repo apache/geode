@@ -188,7 +188,9 @@ public class HashIndex extends AbstractIndex {
 
     try {
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(3);
+        DefaultQuery.testHook.doTestHook(
+            DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
+            null);
       }
       Object newKey = TypeUtils.indexKeyFor(key);
       if (newKey.equals(QueryService.UNDEFINED)) {
