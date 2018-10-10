@@ -41,8 +41,7 @@ public class GenericAppServerInstall extends ContainerInstall {
    * Currently the only supported keyword instance is JETTY9.
    */
   public enum GenericAppServerVersion {
-    JETTY9(9, "http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/"
-        + JETTY_VERSION + "/jetty-distribution-" + JETTY_VERSION + ".zip", "jetty");
+    JETTY9(9, "jetty-distribution-" + JETTY_VERSION + ".zip", "jetty");
 
     private final int version;
     private final String downloadURL;

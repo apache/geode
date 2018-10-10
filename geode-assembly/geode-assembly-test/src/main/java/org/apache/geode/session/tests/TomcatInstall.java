@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+
 /**
  * Tomcat specific container installation class
  *
@@ -41,18 +42,10 @@ public class TomcatInstall extends ContainerInstall {
    * version, and other properties or XML attributes needed to setup tomcat containers within Cargo
    */
   public enum TomcatVersion {
-    TOMCAT6(6,
-        "http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.37/bin/apache-tomcat-6.0.37.zip"),
-    TOMCAT7(7,
-        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.73/bin/apache-tomcat-7.0.73.zip"),
-    TOMCAT755(7,
-        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.55/bin/apache-tomcat-7.0.55.zip"),
-    TOMCAT779(7,
-        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.79/bin/apache-tomcat-7.0.79.zip"),
-    TOMCAT8(8,
-        "http://archive.apache.org/dist/tomcat/tomcat-8/v8.5.15/bin/apache-tomcat-8.5.15.zip"),
-    TOMCAT9(9,
-        "http://archive.apache.org/dist/tomcat/tomcat-9/v9.0.0.M21/bin/apache-tomcat-9.0.0.M21.zip");
+    TOMCAT6(6, "tomcat-6.0.37.zip"),
+    TOMCAT7(7, "tomcat-7.0.90.zip"),
+    TOMCAT8(8, "tomcat-8.5.34.zip"),
+    TOMCAT9(9, "tomcat-9.0.12.zip");
 
     private final int version;
     private final String downloadURL;
@@ -99,8 +92,6 @@ public class TomcatInstall extends ContainerInstall {
         case TOMCAT6:
           return null;
         case TOMCAT7:
-        case TOMCAT755:
-        case TOMCAT779:
           return "tomcat.util.scan.DefaultJarScanner.jarsToSkip";
         case TOMCAT8:
         case TOMCAT9:

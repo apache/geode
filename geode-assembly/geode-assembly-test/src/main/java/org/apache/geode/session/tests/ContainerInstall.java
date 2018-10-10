@@ -42,6 +42,7 @@ import org.w3c.dom.NodeList;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * Base class for handling downloading and configuring J2EE containers.
@@ -135,11 +136,12 @@ public abstract class ContainerInstall {
 
     clearPreviousInstall(installDir);
 
-    logger.info("Installing container from URL " + downloadURL);
+    String url = "file://" + TestUtil.getResourcePath(getClass(), "/" + downloadURL);
+    logger.info("Installing container from URL " + url);
 
     // Optional step to install the container from a URL pointing to its distribution
     Installer installer =
-        new ZipURLInstaller(new URL(downloadURL), TMP_DIR + "/downloads", installDir);
+        new ZipURLInstaller(new URL(url), TMP_DIR + "/downloads", installDir);
     installer.install();
 
     // Set install home
