@@ -54,7 +54,7 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor -%}
-  {%- if repository.sanitized_fork == "apache" -%}
+  {%- if repository.sanitized_fork == "apache" %}
   - UpdatePassingRef
   - PublishArtifacts
   {%- endif %}
