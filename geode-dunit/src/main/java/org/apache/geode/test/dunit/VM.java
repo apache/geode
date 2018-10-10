@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.test.dunit.standalone.BounceResult;
 import org.apache.geode.test.dunit.standalone.ChildVMLauncher;
 import org.apache.geode.test.dunit.standalone.MethExecutorResult;
 import org.apache.geode.test.dunit.standalone.ProcessHolder;
@@ -483,13 +484,13 @@ public class VM implements Serializable {
     available = false;
     try {
       if (force) {
-        processHolder.killForcibly();
+        BounceResult result = DUnitEnv.get().bounce(targetVersion, id, force);
       } else {
         SerializableRunnableIF runnable = () -> new Thread(() -> System.exit(0)).start();
         executeMethodOnObject(runnable, "run", new Object[0]);
+        processHolder.waitFor();
+        childVMLauncher.launchVM(targetVersion, id, true);
       }
-      processHolder.waitFor();
-      childVMLauncher.launchVM(targetVersion, id, true);
       version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;
