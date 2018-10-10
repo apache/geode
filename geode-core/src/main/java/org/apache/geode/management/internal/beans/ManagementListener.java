@@ -109,7 +109,7 @@ public class ManagementListener implements ResourceEventsListener {
     try {
       if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
         readWriteLock.writeLock().lock();
-      } else {
+      } else if (event != ResourceEvent.SYSTEM_ALERT) {
         readWriteLock.readLock().lock();
       }
       switch (event) {
