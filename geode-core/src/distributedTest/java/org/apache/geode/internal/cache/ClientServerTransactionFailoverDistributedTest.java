@@ -428,6 +428,9 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     await().atMost(60, SECONDS).until(() -> getBlackboard().isGateSignaled("bounce"));
+    server1.invoke(() -> {
+      DistributionMessageObserver.setInstance(null);
+    });
     server1.bounceForcibly();
 
     clientAsync.join();
@@ -448,6 +451,13 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
       Region region = clientCacheRule.getClientCache().getRegion(regionName);
       assertThat(region.get("TxKey-1")).isEqualTo("TxValue-1");
       assertThat(region.get("TxKey-2")).isEqualTo("TxValue-2");
+    });
+
+    server2.invoke(() -> {
+      DistributionMessageObserver.setInstance(null);
+    });
+    server3.invoke(() -> {
+      DistributionMessageObserver.setInstance(null);
     });
   }
 }
