@@ -61,7 +61,7 @@ class ProcessManager implements ChildVMLauncher {
   }
 
   @Override
-  public synchronized void launchVM(String version, int vmNum, boolean bouncedVM)
+  public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM)
       throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
@@ -100,6 +100,7 @@ class ProcessManager implements ChildVMLauncher {
       processes.put(vmNum, holder);
       linkStreams(version, vmNum, holder, holder.getErrorStream(), System.err);
       linkStreams(version, vmNum, holder, holder.getInputStream(), System.out);
+      return holder;
     } catch (RuntimeException | Error t) {
       t.printStackTrace();
       throw t;
