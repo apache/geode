@@ -38,4 +38,5 @@ RUN apk --no-cache add \
   && (cd winrm-cli; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
   && cp winrm-cli/bin/winrm /usr/local/bin/ \
   && rm -rf winrm-cli \
-  && gcloud components install -q beta
+  && gcloud components install -q beta \
+  && printf "Host *\n  ServerAliveInterval 60 \n  ServerAliveCountMax 2\n" >> /etc/ssh/ssh_config
