@@ -21,7 +21,6 @@ resource_types:
   type: docker-image
   source:
     repository: concourse/concourse-pipeline-resource
-    tag: 3
 
 resources:
 - name: apachegeode-concourse

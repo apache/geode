@@ -25,7 +25,6 @@ import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.pdx.FieldType;
@@ -689,8 +688,8 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       pdxClass = InternalDataSerializer.getCachedClass(pdxClassName);
     } catch (Exception e) {
       PdxSerializationException ex = new PdxSerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-              .toLocalizedString(pdxClassName),
+          String.format("Could not create an instance of a class %s",
+              pdxClassName),
           e);
       throw ex;
     }
@@ -738,8 +737,8 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
         result = pdxClass.newInstance();
       } catch (Exception e) {
         PdxSerializationException ex = new PdxSerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-                .toLocalizedString(pdxClassName),
+            String.format("Could not create an instance of a class %s",
+                pdxClassName),
             e);
         throw ex;
       }

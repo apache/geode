@@ -22,7 +22,6 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.StatisticsDisabledException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /** ******************* Class Entry ***************************************** */
@@ -62,8 +61,7 @@ public class TXEntry implements Region.Entry {
     // Protect against the case where the transaction associated with this entry is not in progress
     if (!this.myTX.isInProgressAndSameAs(this.localRegion.getTXState())) {
       throw new IllegalStateException(
-          LocalizedStrings.LocalRegion_REGIONENTRY_WAS_CREATED_WITH_TRANSACTION_THAT_IS_NO_LONGER_ACTIVE
-              .toLocalizedString(this.myTX.getTransactionId()));
+          "Region.Entry was created with transaction that is no longer active.");
     }
   }
 
@@ -117,8 +115,8 @@ public class TXEntry implements Region.Entry {
     checkTX();
     if (!this.localRegion.statisticsEnabled) {
       throw new StatisticsDisabledException(
-          LocalizedStrings.LocalRegion_STATISTICS_DISABLED_FOR_REGION_0
-              .toLocalizedString(this.localRegion.getFullPath()));
+          String.format("Statistics disabled for region '%s'",
+              this.localRegion.getFullPath()));
     }
     // On a TXEntry stats are non-existent so return a dummy impl
     return new CacheStatistics() {
@@ -178,7 +176,7 @@ public class TXEntry implements Region.Entry {
   private void throwIfUAOperationForPR() {
     if (this.localRegion instanceof PartitionedRegion) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.TXEntry_UA_NOT_SUPPORTED_FOR_PR.toLocalizedString());
+          "Partitioned region does not support UserAttributes in transactional context");
     }
   }
 

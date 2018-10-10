@@ -3231,7 +3231,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     IgnoredException.addIgnoredException("ClassCastException");
     SerializableRunnable suspectStrings = new SerializableRunnable("suspect string") {
       public void run() {
-        InternalDistributedSystem.getLoggerI18n().convertToLogWriter()
+        InternalDistributedSystem.getLogger()
             .info("<ExpectedException action=add>" + "ClassCastException" + "</ExpectedException>"
                 + "<ExpectedException action=add>" + "TransactionDataNodeHasDeparted"
                 + "</ExpectedException>");
@@ -3316,7 +3316,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     } finally {
       suspectStrings = new SerializableRunnable("suspect string") {
         public void run() {
-          InternalDistributedSystem.getLoggerI18n().convertToLogWriter()
+          InternalDistributedSystem.getLogger()
               .info("<ExpectedException action=remove>" + "ClassCastException"
                   + "</ExpectedException>" + "<ExpectedException action=remove>"
                   + "TransactionDataNodeHasDeparted" + "</ExpectedException>");

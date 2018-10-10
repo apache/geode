@@ -95,7 +95,8 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       "Properties for the custom XADataSource driver. Append json string containing (name, type, value) to set any property. Eg: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
+      interceptor = "org.apache.geode.management.internal.cli.commands.UsernamePasswordInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createJDNIBinding(
@@ -115,10 +116,10 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       @CliOption(key = MANAGED_CONN_FACTORY_CLASS,
           help = MANAGED_CONN_FACTORY_CLASS__HELP) String managedConnFactory,
       @CliOption(key = MAX_POOL_SIZE, help = MAX_POOL_SIZE__HELP) Integer maxPoolSize,
+      @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
       @CliOption(key = TRANSACTION_TYPE, help = TRANSACTION_TYPE__HELP) String transactionType,
       @CliOption(key = TYPE, mandatory = true, help = TYPE__HELP) DATASOURCE_TYPE type,
-      @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = XA_DATASOURCE_CLASS, help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,

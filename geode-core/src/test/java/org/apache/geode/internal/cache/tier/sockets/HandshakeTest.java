@@ -16,7 +16,6 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
@@ -37,7 +36,7 @@ public class HandshakeTest {
   public void authRequiredHasNoCredentials() throws Exception {
     assertThatThrownBy(() -> Handshake.throwIfMissingRequiredCredentials(true, false))
         .isExactlyInstanceOf(AuthenticationRequiredException.class)
-        .hasMessage(HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
+        .hasMessage("No security credentials are provided");
   }
 
   @Test

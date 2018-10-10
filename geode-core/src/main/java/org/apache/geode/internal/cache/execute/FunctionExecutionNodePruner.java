@@ -29,7 +29,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class FunctionExecutionNodePruner {
@@ -197,8 +196,8 @@ public class FunctionExecutionNodePruner {
       }
       if (mem == null) {
         throw new FunctionException(
-            LocalizedStrings.PartitionedRegion_NO_TARGET_NODE_FOUND_FOR_KEY_0
-                .toLocalizedString(key));
+            String.format("No target node found for KEY, %s",
+                key));
       }
       HashSet bucketKeys = (HashSet) bucketToKeysMap.get(bucketId);
       if (bucketKeys == null) {

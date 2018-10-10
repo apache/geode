@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -47,10 +45,8 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -70,9 +66,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring) {
-    super(LoggingThreadGroup
-        .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.sender = sender;
 
     initializeMessageQueue(sender.getId());
@@ -80,7 +74,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     for (SerialGatewaySenderEventProcessor processor : processors) {
       queues.add(processor.getQueue());
     }
-    setDaemon(true);
   }
 
   @Override
@@ -230,8 +223,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
         Exception ex = serialProcessor.getException();
         if (ex != null) {
           throw new GatewaySenderException(
-              LocalizedStrings.Sender_COULD_NOT_START_GATEWAYSENDER_0_BECAUSE_OF_EXCEPTION_1
-                  .toLocalizedString(new Object[] {this.sender.getId(), ex.getMessage()}),
+              String.format("Could not start a gateway sender %s because of exception %s",
+                  new Object[] {this.sender.getId(), ex.getMessage()}),
               ex.getCause());
         }
       }
@@ -284,24 +277,14 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
     setIsStopped(true);
 
-    final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup
-        .createThreadGroup("ConcurrentSerialGatewaySenderEventProcessor Logger Group", logger);
-
-    ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable task) {
-        final Thread thread = new Thread(loggingThreadGroup, task,
-            "ConcurrentSerialGatewaySenderEventProcessor Stopper Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
     List<SenderStopperCallable> stopperCallables = new ArrayList<SenderStopperCallable>();
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       stopperCallables.add(new SenderStopperCallable(serialProcessor));
     }
 
-    ExecutorService stopperService = Executors.newFixedThreadPool(processors.size(), threadFactory);
+    ExecutorService stopperService = LoggingExecutors.newFixedThreadPool(
+        "ConcurrentSerialGatewaySenderEventProcessor Stopper Thread",
+        true, processors.size());
     try {
       List<Future<Boolean>> futures = stopperService.invokeAll(stopperCallables);
       for (Future<Boolean> f : futures) {
@@ -314,9 +297,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
         } catch (ExecutionException e) {
           // we don't expect any exception but if caught then eat it and log
           // warning
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewaySender_0_CAUGHT_EXCEPTION_WHILE_STOPPING_1,
-              new Object[] {sender, e.getCause()}));
+          logger.warn("GatewaySender {} caught exception while stopping: {}",
+              new Object[] {sender, e.getCause()});
         }
       }
     } catch (InterruptedException e) {

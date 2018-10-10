@@ -18,7 +18,6 @@ import java.io.Serializable;
 
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementing class for <code>Conflatable</code> interface. Objects of this class will be add to
@@ -109,7 +108,7 @@ public class CqConflatable implements Conflatable, Serializable {
    */
   public void setLatestValue(Object value) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.CqConflatable_SETLATESTVALUE_SHOULD_NOT_BE_USED.toLocalizedString());
+        "setLatestValue should not be used");
   }
 
   /**

@@ -186,6 +186,8 @@ jobs:
       {{- alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          JAVA_BUILD_VERSION: 8
+          JAVA_TEST_VERSION: 8
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
           DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
@@ -218,6 +220,9 @@ jobs:
       do:
       - task: rsync_code_down
         {{- alpine_tools_config()|indent(8) }}
+          params:
+            JAVA_BUILD_VERSION: 8
+            ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:

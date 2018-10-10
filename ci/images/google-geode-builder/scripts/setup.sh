@@ -44,13 +44,22 @@ apt-get install -y --no-install-recommends \
     htop \
     jq \
     less \
-    openjdk-8-jdk-headless \
     python3 \
     python3-pip \
     rsync \
     tmux \
     unzip \
     vim
+
+cp -R /etc/alternatives /etc/keep-alternatives
+apt-get install -y --no-install-recommends \
+    openjdk-8-jdk
+rm -rf /etc/alternatives
+mv /etc/keep-alternatives /etc/alternatives
+
+tar xfvz <(curl https://download.java.net/java/GA/jdk11/28/GPL/openjdk-11+28_linux-x64_bin.tar.gz) -C /usr/lib/jvm
+mv /usr/lib/jvm/jdk-11 /usr/lib/jvm/java-11-openjdk-amd64
+
 pushd /tmp
   curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
   tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz -C /

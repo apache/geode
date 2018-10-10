@@ -20,9 +20,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Helper class for CacheXmlPropertyResolver. Helps in parsing ${...${}..}..${} strings.
@@ -87,9 +85,9 @@ public class CacheXmlPropertyResolverHelper {
             buf.substring(prefixIndex + propertyPrefix.length(), suffixIndex);
         // Check for circular references
         if (!visitedReplaceableStrings.add(replaceableString)) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.CacheXmlPropertyResolverHelper_SOME_UNRESOLVED_STRING_REPLACED_CIRCULAR_ERROR__0,
-              replaceableString));
+          logger.info(
+              "Some still unresolved string {} was replaced by resolver, leading to circular references.",
+              replaceableString);
           throw new IllegalArgumentException("Some still unresolved string " + replaceableString
               + " was replaced by resolver, leading to circular references.");
         }

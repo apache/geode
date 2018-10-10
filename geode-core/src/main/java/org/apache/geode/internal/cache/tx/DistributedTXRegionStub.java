@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.tx.RemoteContainsKeyValueMessage.RemoteCo
 import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.internal.cache.tx.RemotePutMessage.PutResult;
 import org.apache.geode.internal.cache.tx.RemotePutMessage.RemotePutResponse;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
@@ -56,8 +55,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -75,8 +74,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       return null;
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (TransactionException e) {
       throw e;
@@ -93,8 +92,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -109,8 +108,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       return response.waitForContainsResult();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -125,8 +124,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       return response.waitForContainsResult();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -147,8 +146,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       retVal = response.waitForResponse(preferCD);
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -178,8 +177,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       throw enfe;
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (CacheException | RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -196,8 +195,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
@@ -214,8 +213,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              rde.getRegionFullPath()),
           rde);
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);

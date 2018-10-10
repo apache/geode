@@ -21,6 +21,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -151,6 +152,8 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
   @Test
   public void testDataSerializables() throws Exception {
+    assumeTrue("Ignoring this test when java version is 9 and above",
+        !SystemUtils.isJavaVersionAtLeast(900));
     System.out.println(this.testName.getMethodName() + " starting");
     findClasses();
     loadExpectedDataSerializables();

@@ -183,6 +183,7 @@ jobs:
         GEODE_FORK: ((!geode-fork))
         GEODE_BRANCH: ((!geode-build-branch))
         GEODE_DOCKER_IMAGE: gcr.io/apachegeode-ci/((!docker-image-prefix))test-container
+        JAVA_BUILD_VERSION: 8
       run:
         path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
 

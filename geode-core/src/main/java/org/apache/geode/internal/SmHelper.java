@@ -21,7 +21,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class defines general native utils.
@@ -41,7 +40,7 @@ public class SmHelper {
   public static int pointerSizeBytes() {
     if (pureMode) {
       throw new IllegalStateException(
-          LocalizedStrings.SmHelper_POINTERSIZEBYTES_UNAVAILABLE_IN_PURE_MODE.toLocalizedString());
+          "pointerSizeBytes unavailable in pure mode");
     } else {
       return _pointerSizeBytes();
     }
@@ -83,7 +82,7 @@ public class SmHelper {
    */
   public static String getNativeVersion() {
     if (pureMode) {
-      return LocalizedStrings.SmHelper_NATIVE_CODE_UNAVAILABLE.toLocalizedString();
+      return "native code unavailable";
     } else {
       return _getNativeVersion();
     }
@@ -122,11 +121,11 @@ public class SmHelper {
   public static Object allocateJOMObject(Class c, Class initClass)
       throws IllegalAccessException, InvalidClassException {
     if (c.isPrimitive()) {
-      throw new InvalidClassException(LocalizedStrings.SmHelper_IS_PRIMITIVE.toLocalizedString(),
+      throw new InvalidClassException("Is primitive",
           c.getName());
 
     } else if (initClass.isPrimitive()) {
-      throw new InvalidClassException(LocalizedStrings.SmHelper_IS_PRIMITIVE.toLocalizedString(),
+      throw new InvalidClassException("Is primitive",
           initClass.getName());
     }
 

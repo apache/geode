@@ -34,7 +34,6 @@ import org.apache.geode.internal.cache.tx.DistributedTXRegionStub;
 import org.apache.geode.internal.cache.tx.PartitionedTXRegionStub;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class PeerTXStateStub extends TXStateStub {
@@ -79,12 +78,12 @@ public class PeerTXStateStub extends TXStateStub {
         }
       } else {
         throw new TransactionException(
-            LocalizedStrings.TXStateStub_ROLLBACK_ON_NODE_0_FAILED.toLocalizedString(target), e);
+            String.format("Rollback operation on node %s failed", target), e);
       }
     } catch (Exception e) {
       this.getCache().getCancelCriterion().checkCancelInProgress(e);
       throw new TransactionException(
-          LocalizedStrings.TXStateStub_ROLLBACK_ON_NODE_0_FAILED.toLocalizedString(target), e);
+          String.format("Rollback operation on node %s failed", target), e);
     } finally {
       cleanup();
     }

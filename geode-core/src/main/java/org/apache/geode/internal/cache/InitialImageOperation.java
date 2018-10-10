@@ -85,10 +85,8 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.sequencelog.RegionLogger;
@@ -490,9 +488,8 @@ public class InitialImageOperation {
         }
 
         // do not remove the following log statement
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.InitialImageOperation_REGION_0_REQUESTING_INITIAL_IMAGE_FROM_1,
-            new Object[] {this.region.getName(), recipient}));
+        logger.info("Region {} requesting initial image from {}",
+            new Object[] {this.region.getName(), recipient});
 
         dm.putOutgoing(m);
         this.region.cache.getCancelCriterion().checkCancelInProgress(null);
@@ -570,9 +567,9 @@ public class InitialImageOperation {
             logger.info("{} failed to get image from {}", this.region.getName(), recipient);
           }
           if (this.region.getDataPolicy().withPersistence()) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.InitialImageOperation_REGION_0_INITIALIZED_PERSISTENT_REGION_WITH_ID_1_FROM_2,
-                new Object[] {this.region.getName(), this.region.getPersistentID(), recipient}));
+            logger.info("Region {} initialized persistent id: {} with data from {}.",
+                new Object[] {this.region.getName(), this.region.getPersistentID(),
+                    recipient});
           }
           // bug 39050 - no partial images after GII when network partition
           // detection is enabled
@@ -1765,8 +1762,7 @@ public class InitialImageOperation {
 
                   if (this.last) {
                     throw new InternalGemFireError(
-                        LocalizedStrings.InitialImageOperation_ALREADY_PROCESSED_LAST_CHUNK
-                            .toLocalizedString());
+                        "Already processed last chunk");
                   }
 
                   List entries = (List) entList;
@@ -2052,15 +2048,9 @@ public class InitialImageOperation {
         }
         // can't disconnect the distributed system in a thread owned by the ds,
         // so start a new thread to do the work
-        ThreadGroup group =
-            LoggingThreadGroup.createThreadGroup("InitialImageOperation abortTest Threads", logger);
-        Thread disconnectThread = new Thread(group, "InitialImageOperation abortTest Thread") {
-          @Override
-          public void run() {
-            dm.getSystem().disconnect();
-          }
-        };
-        disconnectThread.setDaemon(true);
+        Thread disconnectThread =
+            new LoggingThread("InitialImageOperation abortTest Thread",
+                () -> dm.getSystem().disconnect());
         disconnectThread.start();
       } // !isDisconnecting
       // ...end of abortTest code
@@ -3049,8 +3039,7 @@ public class InitialImageOperation {
         return dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            LocalizedStrings.InitialImageOperation_COULD_NOT_CALCULATE_SIZE_OF_OBJECT
-                .toLocalizedString());
+            "Could not calculate size of object");
         ex2.initCause(ex);
         throw ex2;
       }

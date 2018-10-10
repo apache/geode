@@ -75,8 +75,6 @@ ZONE="$(cat instance-data/zone)"
 
 scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRESS}:.
 
-
-
 if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
   PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode"
   if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
@@ -87,6 +85,7 @@ else
   DUNIT_PARALLEL_FORKS=""
 fi
 
+SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64"
 
 if [ -v CALL_STACK_TIMEOUT ]; then
   ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
@@ -94,7 +93,7 @@ fi
 
 GRADLE_COMMAND="./gradlew \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
-    build install"
+    build install -x test"
 
 echo "${GRADLE_COMMAND}"
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${GRADLE_COMMAND}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ${GRADLE_COMMAND}"

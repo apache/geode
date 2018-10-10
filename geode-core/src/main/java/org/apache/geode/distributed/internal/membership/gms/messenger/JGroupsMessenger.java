@@ -100,9 +100,7 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 
@@ -198,7 +196,7 @@ public class JGroupsMessenger implements Messenger {
     is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), r);
     if (is == null) {
       throw new GemFireConfigException(
-          LocalizedStrings.GroupMembershipService_CANNOT_FIND_0.toLocalizedString(r));
+          String.format("Cannot find  %s", r));
     }
 
     String properties;
@@ -214,8 +212,7 @@ public class JGroupsMessenger implements Messenger {
       properties = sb.toString();
     } catch (Exception ex) {
       throw new GemFireConfigException(
-          LocalizedStrings.GroupMembershipService_AN_EXCEPTION_WAS_THROWN_WHILE_READING_JGROUPS_CONFIG
-              .toLocalizedString(),
+          "An Exception was thrown while reading JGroups config.",
           ex);
     }
 
@@ -715,7 +712,7 @@ public class JGroupsMessenger implements Messenger {
           }
         }
         final String channelClosed =
-            LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
+            "Channel closed";
         throw new DistributedSystemDisconnectedException(channelClosed, problem);
       }
     } // useMcast
@@ -792,7 +789,7 @@ public class JGroupsMessenger implements Messenger {
             }
           }
           final String channelClosed =
-              LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
+              "Channel closed";
           throw new DistributedSystemDisconnectedException(channelClosed, problem);
         }
       } // send individually
@@ -1018,8 +1015,7 @@ public class JGroupsMessenger implements Messenger {
       problem = e;
     }
     if (problem != null) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.GroupMembershipService_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0, jgmsg),
+      logger.error(String.format("Exception deserializing message payload: %s", jgmsg),
           problem);
       return null;
     }

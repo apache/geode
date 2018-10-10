@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -199,8 +198,9 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   public void checkCredentials(String clUser, String clPass) throws SQLException {
     if (clUser == null || !clUser.equals(user) || clPass == null || !clPass.equals(password)) {
       String error =
-          LocalizedStrings.AbstractDataSource_CANNOT_CREATE_A_CONNECTION_WITH_THE_USER_0_AS_IT_DOESNT_MATCH_THE_EXISTING_USER_NAMED_1_OR_THE_PASSWORD_WAS_INCORRECT
-              .toLocalizedString(new Object[] {clUser, clPass});
+          String.format(
+              "Cannot create a connection with the user, %s, as it doesnt match the existing user named %s, or the password was incorrect.",
+              new Object[] {clUser, clPass});
       throw new SQLException(error);
     }
   }

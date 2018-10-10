@@ -40,10 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,7 +149,6 @@ import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
@@ -236,10 +233,8 @@ import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -574,8 +569,7 @@ public class PartitionedRegion extends LocalRegion
   private static DisconnectListener dsPRIdCleanUpListener = new DisconnectListener() {
     @Override
     public String toString() {
-      return LocalizedStrings.PartitionedRegion_SHUTDOWN_LISTENER_FOR_PARTITIONEDREGION
-          .toLocalizedString();
+      return "Shutdown listener for PartitionedRegion";
     }
 
     public void onDisconnect(InternalDistributedSystem sys) {
@@ -603,8 +597,7 @@ public class PartitionedRegion extends LocalRegion
     @Override
     public Object get(Object key) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.PartitionedRegion_PRIDMAPGET_NOT_SUPPORTED_USE_GETREGION_INSTEAD
-              .toLocalizedString());
+          "PRIdMap.get not supported - use getRegion instead");
     }
 
     public Object getRegion(Object key) throws PRLocallyDestroyedException {
@@ -613,19 +606,19 @@ public class PartitionedRegion extends LocalRegion
       Object o = super.get(key);
       if (o == DESTROYED) {
         throw new RegionDestroyedException(
-            LocalizedStrings.PartitionedRegion_REGION_FOR_PRID_0_IS_DESTROYED
-                .toLocalizedString(key),
+            String.format("Region for prId= %s  is destroyed",
+                key),
             NO_PATH_FOUND);
       }
       if (o == LOCALLY_DESTROYED) {
         throw new PRLocallyDestroyedException(
-            LocalizedStrings.PartitionedRegion_REGION_WITH_PRID_0_IS_LOCALLY_DESTROYED_ON_THIS_NODE
-                .toLocalizedString(key));
+            String.format("Region with prId= %s  is locally destroyed on this node",
+                key));
       }
       if (o == FAILED_REGISTRATION) {
         throw new PRLocallyDestroyedException(
-            LocalizedStrings.PartitionedRegion_REGION_WITH_PRID_0_FAILED_INITIALIZATION_ON_THIS_NODE
-                .toLocalizedString(key));
+            String.format("Region with prId= %s  failed initialization on this node",
+                key));
       }
       return o;
     }
@@ -647,21 +640,19 @@ public class PartitionedRegion extends LocalRegion
 
       if (key == null) {
         throw new NullPointerException(
-            LocalizedStrings.PartitionedRegion_NULL_KEY_NOT_ALLOWED_FOR_PRIDTOPR_MAP
-                .toLocalizedString());
+            "null key not allowed for prIdToPR Map");
       }
       if (value == null) {
         throw new NullPointerException(
-            LocalizedStrings.PartitionedRegion_NULL_VALUE_NOT_ALLOWED_FOR_PRIDTOPR_MAP
-                .toLocalizedString());
+            "null value not allowed for prIdToPR Map");
       }
       Assert.assertTrue(key instanceof Integer);
       if (sendIdentityRequestMessage)
         IdentityRequestMessage.setLatestId((Integer) key);
       if ((super.get(key) == DESTROYED) && (value instanceof PartitionedRegion)) {
         throw new PartitionedRegionException(
-            LocalizedStrings.PartitionedRegion_CAN_NOT_REUSE_OLD_PARTITIONED_REGION_ID_0
-                .toLocalizedString(key));
+            String.format("Can NOT reuse old Partitioned Region Id= %s",
+                key));
       }
       return super.put(key, value);
     }
@@ -812,15 +803,7 @@ public class PartitionedRegion extends LocalRegion
     if (this.getEvictionAttributes() != null
         && this.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       this.sortedBuckets = new ArrayList<BucketRegion>();
-      final ThreadGroup grp = LoggingThreadGroup.createThreadGroup("BucketSorterThread", logger);
-      ThreadFactory tf = new ThreadFactory() {
-        public Thread newThread(Runnable r) {
-          Thread t = new Thread(grp, r, "BucketSorterThread");
-          t.setDaemon(true);
-          return t;
-        }
-      };
-      this.bucketSorter = Executors.newScheduledThreadPool(1, tf);
+      this.bucketSorter = LoggingExecutors.newScheduledThreadPool("BucketSorterThread", 1);
     }
     // If eviction is on, Create an instance of PartitionedRegionLRUStatistics
     if ((this.getEvictionAttributes() != null
@@ -873,11 +856,12 @@ public class PartitionedRegion extends LocalRegion
               TransformUtils.persistentMemberIdToLogEntryTransformer);
 
           logger
-              .info(LocalizedMessage.create(LocalizedStrings.PersistenceAdvisorImpl_PERSISTENT_VIEW,
+              .info(
+                  "The following persistent member has gone offline for region {}:{}.  Remaining participating members for the region include: {}",
                   new Object[] {PartitionedRegion.this.getName(),
                       TransformUtils.persistentMemberIdToLogEntryTransformer
                           .transform(cacheProfile.persistentID),
-                      onlineMembers}));
+                      onlineMembers});
         }
       }
     });
@@ -918,9 +902,9 @@ public class PartitionedRegion extends LocalRegion
     DiskStoreImpl diskStore = this.getDiskStore();
     if (this.getDataPolicy().withPersistence() && !this.getConcurrencyChecksEnabled()
         && supportsConcurrencyChecks()) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_ENABLING_CONCURRENCY_CHECKS_FOR_PERSISTENT_PR,
-          this.getFullPath()));
+      logger.info(
+          "Turning on concurrency checks for region: {} since it has been configured to persist data to disk.",
+          this.getFullPath());
       this.setConcurrencyChecksEnabled(true);
     }
     if (diskStore != null && this.getDataPolicy().withPersistence()) {
@@ -931,8 +915,9 @@ public class PartitionedRegion extends LocalRegion
           Object[] prms = new Object[] {this.getFullPath(), this.getTotalNumberOfBuckets(),
               config.getTotalNumBuckets()};
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
-                  .toString(prms));
+              String.format(
+                  "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
+                  prms));
         }
         // Make sure we don't change to be colocated with a different region
         // We also can't change from colocated to not colocated without writing
@@ -941,13 +926,15 @@ public class PartitionedRegion extends LocalRegion
           Object[] prms =
               new Object[] {this.getFullPath(), colocatedWith, config.getColocatedWith()};
           DiskAccessException dae = new DiskAccessException(
-              LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_REGION_WILL_BE_CLOSED
-                  .toLocalizedString(this.getFullPath()),
+              String.format(
+                  "A DiskAccessException has occurred while writing to the disk for region %s. The region will be closed.",
+                  this.getFullPath()),
               null, diskStore);
           diskStore.handleDiskAccessException(dae);
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegion_FOR_REGION_0_ColocatedWith_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
-                  .toString(prms));
+              String.format(
+                  "For partition region %s, Cannot change colocated-with to %s because there is persistent data with different colocation. Previous configured value is %s.",
+                  prms));
         }
       } else {
 
@@ -1119,9 +1106,7 @@ public class PartitionedRegion extends LocalRegion
             // error condition, so you also need to check to see if the JVM
             // is still usable:
             SystemFailure.checkFailure();
-            logger.error(
-                LocalizedMessage.create(
-                    LocalizedStrings.DistributedRegion_EXCEPTION_OCCURRED_IN_REGIONMEMBERSHIPLISTENER),
+            logger.error("Exception occurred in RegionMembershipListener",
                 t);
           }
         }
@@ -1275,18 +1260,20 @@ public class PartitionedRegion extends LocalRegion
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
     if (!senderIds.isEmpty()) {
       throw new GatewaySenderConfigurationException(
-          LocalizedStrings.Region_REGION_0_HAS_1_GATEWAY_SENDER_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_GATEWAY_SENDER_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_GATEWAY_SENDER_IDS_SHOULD_BE_SAME
-              .toLocalizedString(
-                  new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
+          String.format(
+              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
+
+              new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
     }
 
     List asycnQueueIds = this.getCacheDistributionAdvisor()
         .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
     if (!asycnQueueIds.isEmpty()) {
       throw new GatewaySenderConfigurationException(
-          LocalizedStrings.Region_REGION_0_HAS_1_ASYNC_EVENT_QUEUE_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_QUEUE_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_ASYNC_EVENT_QUEUE_IDS_SHOULD_BE_SAME
-              .toLocalizedString(
-                  new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
+          String.format(
+              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
+
+              new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
     }
   }
 
@@ -1372,9 +1359,8 @@ public class PartitionedRegion extends LocalRegion
             getAttributes().getRegionIdleTimeout(), getAttributes().getRegionTimeToLive(),
             getAttributes().getEntryIdleTimeout(), getAttributes().getEntryTimeToLive(),
             this.getAllGatewaySenderIds());
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionedRegion_PARTITIONED_REGION_0_IS_BORN_WITH_PRID_1_IDENT_2,
-            new Object[] {getFullPath(), this.partitionedRegionId, getRegionIdentifier()}));
+        logger.info("Partitioned Region {} is born with prId={} ident:{}",
+            new Object[] {getFullPath(), this.partitionedRegionId, getRegionIdentifier()});
 
         PRSanityCheckMessage.schedule(this);
       } else {
@@ -1386,9 +1372,8 @@ public class PartitionedRegion extends LocalRegion
         }
 
         this.partitionedRegionId = prConfig.getPRId();
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionedRegion_PARTITIONED_REGION_0_IS_CREATED_WITH_PRID_1,
-            new Object[] {getFullPath(), this.partitionedRegionId}));
+        logger.info("Partitioned Region {} is created with prId={}",
+            new Object[] {getFullPath(), this.partitionedRegionId});
       }
 
       synchronized (prIdToPR) {
@@ -1411,8 +1396,7 @@ public class PartitionedRegion extends LocalRegion
       }
       cleanupFailedInitialization();
       throw new PartitionedRegionException(
-          LocalizedStrings.PartitionedRegion_CAN_NOT_CREATE_PARTITIONEDREGION_FAILED_TO_ACQUIRE_REGIONLOCK
-              .toLocalizedString(),
+          "Can not create PartitionedRegion (failed to acquire RegionLock).",
           lsde);
     } catch (IllegalStateException ill) {
       cleanupFailedInitialization();
@@ -1430,15 +1414,15 @@ public class PartitionedRegion extends LocalRegion
       // is still usable:
       SystemFailure.checkFailure();
       String registerErrMsg =
-          LocalizedStrings.PartitionedRegion_AN_EXCEPTION_WAS_CAUGHT_WHILE_REGISTERING_PARTITIONEDREGION_0_DUMPPRID_1
-              .toLocalizedString(getFullPath(), prIdToPR.dump());
+          String.format(
+              "An exception was caught while registering PartitionedRegion %s. dumpPRId: %s",
+              getFullPath(), prIdToPR.dump());
       try {
         synchronized (prIdToPR) {
           if (prIdToPR.containsKey(this.partitionedRegionId)) {
             prIdToPR.put(this.partitionedRegionId, PRIdMap.FAILED_REGISTRATION, false);
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_FAILED_REGISTRATION_PRID_0_NAMED_1,
-                new Object[] {this.partitionedRegionId, this.getName()}));
+            logger.info("FAILED_REGISTRATION prId={} named {}",
+                new Object[] {this.partitionedRegionId, this.getName()});
           }
         }
       } catch (VirtualMachineError err) {
@@ -1514,8 +1498,9 @@ public class PartitionedRegion extends LocalRegion
                 continue;
               } else {
                 throw new IllegalStateException(
-                    LocalizedStrings.PartitionRegion_NON_COLOCATED_REGIONS_1_2_CANNOT_HAVE_SAME_PARALLEL_GATEWAY_SENDER_ID_2
-                        .toString(new Object[] {this.getFullPath(), config.getFullPath(),
+                    String.format(
+                        "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
+                        new Object[] {this.getFullPath(), config.getFullPath(),
                             senderId.contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
                                 ? "async event queue" : "gateway sender",
                             senderId}));
@@ -1523,8 +1508,9 @@ public class PartitionedRegion extends LocalRegion
             }
           } else {
             throw new IllegalStateException(
-                LocalizedStrings.PartitionRegion_NON_COLOCATED_REGIONS_1_2_CANNOT_HAVE_SAME_PARALLEL_GATEWAY_SENDER_ID_2
-                    .toString(new Object[] {this.getFullPath(), config.getFullPath(),
+                String.format(
+                    "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
+                    new Object[] {this.getFullPath(), config.getFullPath(),
                         senderId.contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
                             ? "async event queue" : "gateway sender",
                         senderId}));
@@ -1564,8 +1550,8 @@ public class PartitionedRegion extends LocalRegion
           new HashSet(getRegionAdvisor().advisePersistentMembers().values());
       persistIds.removeAll(getRegionAdvisor().adviseInitializedPersistentMembers().values());
       throw new PartitionOfflineException(persistIds,
-          LocalizedStrings.PRHARedundancyProvider_PARTITIONED_REGION_0_OFFLINE_HAS_UNRECOVERED_PERSISTENT_DATA_1
-              .toLocalizedString(new Object[] {getFullPath(), persistIds}));
+          String.format("Partitioned Region %s is offline due to unrecovered persistent data, %s",
+              new Object[] {getFullPath(), persistIds}));
     }
   }
 
@@ -1724,11 +1710,10 @@ public class PartitionedRegion extends LocalRegion
     PartitionedRegionDistributionException e = null; // Fix for bug 36014
     if (logger.isDebugEnabled()) {
       e = new PartitionedRegionDistributionException(
-          LocalizedStrings.PartitionRegion_NO_VM_AVAILABLE_FOR_GETENTRY_IN_0_ATTEMPTS
-              .toLocalizedString(count));
+          String.format("No VM available for getEntry in %s attempts",
+              count));
     }
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionRegion_NO_VM_AVAILABLE_FOR_GETENTRY_IN_0_ATTEMPTS, count), e);
+    logger.warn(String.format("No VM available for getEntry in %s attempts", count), e);
     return null;
   }
 
@@ -1936,8 +1921,7 @@ public class PartitionedRegion extends LocalRegion
     CompiledSelect selectExpr = query.getSimpleSelect();
     if (selectExpr == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionedRegion_QUERY_MUST_BE_A_SELECT_EXPRESSION_ONLY
-              .toLocalizedString());
+          "query must be a select expression only");
     }
 
     // this can return a BAG even if it's a DISTINCT select expression,
@@ -1964,8 +1948,8 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (QueryException qe) {
         throw new QueryInvocationTargetException(
-            LocalizedStrings.PartitionedRegion_UNEXPECTED_QUERY_EXCEPTION_OCCURRED_DURING_QUERY_EXECUTION_0
-                .toLocalizedString(qe.getMessage()),
+            String.format("Unexpected query exception occurred during query execution  %s",
+                qe.getMessage()),
             qe);
       } finally {
         if (interrupted) {
@@ -2124,10 +2108,8 @@ public class PartitionedRegion extends LocalRegion
         // may fail due to concurrency conflict
         // failed for unknown reason
         // throw new PartitionedRegionStorageException("unable to execute operation");
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_PRVIRTUALPUT_RETURNING_FALSE_WHEN_IFNEW_AND_IFOLD_ARE_BOTH_FALSE),
-            new Exception(LocalizedStrings.PartitionedRegion_STACK_TRACE.toLocalizedString()));
+        logger.warn("PR.virtualPut returning false when ifNew and ifOld are both false",
+            new Exception("stack trace"));
       }
     }
     return result;
@@ -2283,8 +2265,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     if (partialKeys.hasFailure()) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
-          new Object[] {getFullPath(), partialKeys}));
+      logger.info("Region {} putAll: {}",
+          new Object[] {getFullPath(), partialKeys});
       if (putAllOp.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -2374,8 +2356,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     if (partialKeys.hasFailure()) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
-          new Object[] {getFullPath(), partialKeys}));
+      logger.info("Region {} putAll: {}",
+          new Object[] {getFullPath(), partialKeys});
       if (op.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -2906,8 +2888,7 @@ public class PartitionedRegion extends LocalRegion
         if (!result && !ifOld && !ifNew) {
           Assert.assertTrue(!isLocal);
           ForceReattemptException fre = new ForceReattemptException(
-              LocalizedStrings.PartitionedRegion_FALSE_RESULT_WHEN_IFNEW_AND_IFOLD_IS_UNACCEPTABLE_RETRYING
-                  .toLocalizedString());
+              "false result when !ifNew and !ifOld is unacceptable - retrying");
           fre.setHash(event.getKey().hashCode());
           throw fre;
         }
@@ -3094,8 +3075,9 @@ public class PartitionedRegion extends LocalRegion
       } else {
         int red = getRegionAdvisor().getBucketRedundancy(bucketId);
         final TimeoutException noTime = new TimeoutException(
-            LocalizedStrings.PartitionedRegion_ATTEMPT_TO_ACQUIRE_PRIMARY_NODE_FOR_WRITE_ON_BUCKET_0_TIMED_OUT_IN_1_MS_CURRENT_REDUNDANCY_2_DOES_NOT_SATISFY_MINIMUM_3
-                .toLocalizedString(new Object[] {bucketStringForLogs(bucketId),
+            String.format(
+                "Attempt to acquire primary node for write on bucket  %s  timed out in  %s  ms. Current redundancy [ %s ] does not satisfy minimum [ %s ]",
+                new Object[] {bucketStringForLogs(bucketId),
                     localSnoozer.getRetryTime(), red, this.minimumWriteRedundancy}));
         checkReadiness();
         throw noTime;
@@ -3274,8 +3256,8 @@ public class PartitionedRegion extends LocalRegion
       } catch (CacheException ce) {
         // Fix for bug 36014
         throw new PartitionedRegionDistributionException(
-            LocalizedStrings.PartitionedRegion_PUTTING_ENTRY_ON_0_FAILED
-                .toLocalizedString(recipient),
+            String.format("Putting entry on  %s  failed",
+                recipient),
             ce);
       }
     }
@@ -3313,8 +3295,9 @@ public class PartitionedRegion extends LocalRegion
       int startBucketId = fpa.getStartingBucketID();
       if (startBucketId == -1) {
         throw new PartitionNotAvailableException(
-            LocalizedStrings.FOR_FIXED_PARTITION_REGION_0_PARTITION_1_IS_NOT_YET_INITIALIZED_ON_DATASTORE
-                .toString(new Object[] {getName(), partitionName}));
+            String.format(
+                "For FixedPartitionedRegion %s, Partition %s is not yet initialized on datastore",
+                new Object[] {getName(), partitionName}));
       }
       if (startBucketId != bucketId) {
         createBucket(startBucketId, size, snoozer);
@@ -3476,8 +3459,7 @@ public class PartitionedRegion extends LocalRegion
                     logger.debug("FunctionServiceSingleHop: Found multiple nodes.{}", getMyId());
                   }
                   throw new InternalFunctionInvocationTargetException(
-                      LocalizedStrings.PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR
-                          .toLocalizedString());
+                      "Multiple target nodes found for single hop operation");
                 }
               }
             }
@@ -3528,8 +3510,8 @@ public class PartitionedRegion extends LocalRegion
     }
     // memberToKeysMap.keySet().retainAll(memberToBuckets.keySet());
     if (memberToKeysMap.isEmpty()) {
-      throw new FunctionException(LocalizedStrings.PartitionedRegion_NO_TARGET_NODE_FOUND_FOR_KEY_0
-          .toLocalizedString(routingKeys));
+      throw new FunctionException(String.format("No target node found for KEY, %s",
+          routingKeys));
     }
     Set<InternalDistributedMember> dest = memberToKeysMap.keySet();
     execution.validateExecution(function, dest);
@@ -3627,8 +3609,7 @@ public class PartitionedRegion extends LocalRegion
               logger.debug("FunctionServiceSingleHop: Found remote node.{}", localVm);
             }
             throw new InternalFunctionInvocationTargetException(
-                LocalizedStrings.PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR
-                    .toLocalizedString());
+                "Multiple target nodes found for single hop operation");
           }
         }
       }
@@ -3636,7 +3617,7 @@ public class PartitionedRegion extends LocalRegion
 
     if (targetNode == null) {
       throw new FunctionException(
-          LocalizedStrings.PartitionedRegion_NO_TARGET_NODE_FOUND_FOR_KEY_0.toLocalizedString(key));
+          String.format("No target node found for KEY, %s", key));
     }
 
     if (logger.isDebugEnabled()) {
@@ -3667,8 +3648,8 @@ public class PartitionedRegion extends LocalRegion
         }
         if (targetNode == null) {
           throw new FunctionException(
-              LocalizedStrings.PartitionedRegion_NO_TARGET_NODE_FOUND_FOR_KEY_0
-                  .toLocalizedString(key));
+              String.format("No target node found for KEY, %s",
+                  key));
         }
       } else {
         execution.clearFailedNodes();
@@ -3720,8 +3701,7 @@ public class PartitionedRegion extends LocalRegion
             bucketSet, memberToBuckets);
       }
       throw new EmptyRegionFunctionException(
-          LocalizedStrings.PartitionedRegion_FUNCTION_NOT_EXECUTED_AS_REGION_IS_EMPTY
-              .toLocalizedString());
+          "Region is empty and the function cannot be executed");
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing on bucketset : {} executeOnBucketSet Member to buckets map is : {}",
@@ -3745,8 +3725,7 @@ public class PartitionedRegion extends LocalRegion
                         getMyId());
                   }
                   throw new InternalFunctionInvocationTargetException(
-                      LocalizedStrings.PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR
-                          .toLocalizedString());
+                      "Multiple target nodes found for single hop operation");
                 }
               }
             }
@@ -3846,8 +3825,7 @@ public class PartitionedRegion extends LocalRegion
 
     if (memberToBuckets.isEmpty()) {
       throw new EmptyRegionFunctionException(
-          LocalizedStrings.PartitionedRegion_FUNCTION_NOT_EXECUTED_AS_REGION_IS_EMPTY
-              .toLocalizedString());
+          "Region is empty and the function cannot be executed");
     }
 
     while (!execution.getFailedNodes().isEmpty()) {
@@ -4025,8 +4003,7 @@ public class PartitionedRegion extends LocalRegion
           // with transaction
           if (prce instanceof BucketNotFoundException) {
             throw new TransactionDataRebalancedException(
-                LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                    .toLocalizedString(key),
+                "Transactional data moved, due to rebalancing.",
                 prce);
           }
           Throwable cause = prce.getCause();
@@ -4036,8 +4013,7 @@ public class PartitionedRegion extends LocalRegion
             throw (TransactionDataRebalancedException) cause;
           } else if (cause instanceof RegionDestroyedException) {
             throw new TransactionDataRebalancedException(
-                LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                    .toLocalizedString(key),
+                "Transactional data moved, due to rebalancing.",
                 cause);
           } else {
             // Make transaction fail so client could retry
@@ -4080,11 +4056,10 @@ public class PartitionedRegion extends LocalRegion
     PartitionedRegionDistributionException e = null; // Fix for bug 36014
     if (logger.isDebugEnabled()) {
       e = new PartitionedRegionDistributionException(
-          LocalizedStrings.PartitionRegion_NO_VM_AVAILABLE_FOR_GET_IN_0_ATTEMPTS
-              .toLocalizedString(count));
+          String.format("No VM available for get in %s attempts",
+              count));
     }
-    logger.warn(LocalizedMessage
-        .create(LocalizedStrings.PartitionRegion_NO_VM_AVAILABLE_FOR_GET_IN_0_ATTEMPTS, count), e);
+    logger.warn(String.format("No VM available for get in %s attempts", count), e);
     return null;
   }
 
@@ -4354,8 +4329,9 @@ public class PartitionedRegion extends LocalRegion
           if (snoozer.overMaximum()) {
             checkReadiness();
             throw new TimeoutException(
-                LocalizedStrings.PartitionedRegion_ATTEMPT_TO_ACQUIRE_PRIMARY_NODE_FOR_READ_ON_BUCKET_0_TIMED_OUT_IN_1_MS
-                    .toLocalizedString(new Object[] {getBucketName(buck), snoozer.getRetryTime()}));
+                String.format(
+                    "Attempt to acquire primary node for read on bucket  %s  timed out in  %s  ms",
+                    new Object[] {getBucketName(buck), snoozer.getRetryTime()}));
           }
           snoozer.waitToRetryNode();
         }
@@ -4860,9 +4836,9 @@ public class PartitionedRegion extends LocalRegion
             PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID);
       }
     } catch (Exception es) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_RELEASEPRIDLOCK_UNLOCKING_0_CAUGHT_AN_EXCEPTION,
-          Integer.valueOf(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID)), es);
+      logger.warn(String.format("releasePRIDLock: unlocking %s caught an exception",
+          Integer.valueOf(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID),
+          es));
     }
   }
 
@@ -5067,14 +5043,12 @@ public class PartitionedRegion extends LocalRegion
         PartitionedRegion pr = (PartitionedRegion) o;
         if (pr.getPRId() == prId) {
           if (!pr.getRegionIdentifier().equals(regionId)) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_0_IS_USING_PRID_1_FOR_2_BUT_THIS_PROCESS_MAPS_THAT_PRID_TO_3,
-                new Object[] {sender.toString(), prId, pr.getRegionIdentifier()}));
+            logger.warn("{} is using PRID {} for {} but this process maps that PRID to {}",
+                new Object[] {sender.toString(), prId, pr.getRegionIdentifier()});
           }
         } else if (pr.getRegionIdentifier().equals(regionId)) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PartitionedRegion_0_IS_USING_PRID_1_FOR_2_BUT_THIS_PROCESS_IS_USING_PRID_3,
-              new Object[] {sender, prId, pr.getRegionIdentifier(), pr.getPRId()}));
+          logger.warn("{} is using PRID {} for {} but this process is using PRID {}",
+              new Object[] {sender, prId, pr.getRegionIdentifier(), pr.getPRId()});
         }
       }
     }
@@ -5223,12 +5197,12 @@ public class PartitionedRegion extends LocalRegion
           if (getRegionAdvisor().getBucket(bucketId).getBucketAdvisor()
               .basicGetPrimaryMember() == null) {
             throw new EntryNotFoundException(
-                LocalizedStrings.PartitionedRegion_ENTRY_NOT_FOUND_FOR_KEY_0
-                    .toLocalizedString(event.getKey()));
+                String.format("Entry not found for key  %s",
+                    event.getKey()));
           }
           TimeoutException e = new TimeoutException(
-              LocalizedStrings.PartitionedRegion_TIME_OUT_LOOKING_FOR_TARGET_NODE_FOR_DESTROY_WAITED_0_MS
-                  .toLocalizedString(retryTime.getRetryTime()));
+              String.format("Time out looking for target node for destroy; waited  %s  ms",
+                  retryTime.getRetryTime()));
           if (logger.isDebugEnabled()) {
             logger.debug(e.getMessage(), e);
           }
@@ -5427,8 +5401,8 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            LocalizedStrings.PartitionedRegion_DESTROY_OF_ENTRY_ON_0_FAILED
-                .toLocalizedString(recipient),
+            String.format("Destroy of entry on  %s  failed",
+                recipient),
             ce);
       } catch (RegionDestroyedException ignore) {
         throw new RegionDestroyedException(toString(), getFullPath());
@@ -5504,8 +5478,7 @@ public class PartitionedRegion extends LocalRegion
       sendDestroyRegionMessage(event, serials);
     } catch (Exception ex) {
       logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.PartitionedRegion_PARTITIONEDREGION_CLEANUPFAILEDINITIALIZATION_FAILED_TO_CLEAN_THE_PARTIONREGION_DATA_STORE),
+          "PartitionedRegion#cleanupFailedInitialization(): Failed to clean the PartionRegion data store",
           ex);
     }
     if (null != this.dataStore) {
@@ -5513,8 +5486,7 @@ public class PartitionedRegion extends LocalRegion
         this.dataStore.cleanUp(true, false);
       } catch (Exception ex) {
         logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_PARTITIONEDREGION_CLEANUPFAILEDINITIALIZATION_FAILED_TO_CLEAN_THE_PARTIONREGION_DATA_STORE),
+            "PartitionedRegion#cleanupFailedInitialization(): Failed to clean the PartionRegion data store",
             ex);
       }
     }
@@ -5535,8 +5507,7 @@ public class PartitionedRegion extends LocalRegion
             this.getRegionIdentifier(), getGemFireCache(), true);
       } catch (Exception ex) {
         logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_PARTITIONEDREGION_CLEANUPFAILEDINITIALIZATION_FAILED_TO_CLEAN_THE_PARTIONREGION_ALLPARTITIONEDREGIONS),
+            "PartitionedRegion#cleanupFailedInitialization: Failed to clean the PartionRegion allPartitionedRegions",
             ex);
       }
     }
@@ -5610,8 +5581,8 @@ public class PartitionedRegion extends LocalRegion
     }
     if (thr != null) {
       PartitionedRegionDistributionException e = new PartitionedRegionDistributionException(
-          LocalizedStrings.PartitionedRegion_INVALIDATING_REGION_CAUGHT_EXCEPTION
-              .toLocalizedString(count));
+          String.format("Invalidating partitioned region caught exception %s",
+              count));
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
       }
@@ -5689,8 +5660,8 @@ public class PartitionedRegion extends LocalRegion
           if (getRegionAdvisor().isStorageAssignedForBucket(bucketId)) {
             // bucket no longer exists
             throw new EntryNotFoundException(
-                LocalizedStrings.PartitionedRegion_ENTRY_NOT_FOUND_FOR_KEY_0
-                    .toLocalizedString(event.getKey()));
+                String.format("Entry not found for key  %s",
+                    event.getKey()));
           }
           break; // fall out to failed exception
         }
@@ -5763,11 +5734,10 @@ public class PartitionedRegion extends LocalRegion
 
     // No target was found
     PartitionedRegionDistributionException e = new PartitionedRegionDistributionException(
-        LocalizedStrings.PartitionedRegion_NO_VM_AVAILABLE_FOR_INVALIDATE_IN_0_ATTEMPTS
-            .toLocalizedString(count)); // Fix for bug 36014
+        String.format("No VM available for invalidate in %s attempts.",
+            count)); // Fix for bug 36014
     if (!isDebugEnabled) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_NO_VM_AVAILABLE_FOR_INVALIDATE_IN_0_ATTEMPTS, count));
+      logger.warn("No VM available for invalidate in {} attempts.", count);
     } else {
       logger.warn(e.getMessage(), e);
     }
@@ -5801,8 +5771,8 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            LocalizedStrings.PartitionedRegion_INVALIDATION_OF_ENTRY_ON_0_FAILED
-                .toLocalizedString(recipient),
+            String.format("Invalidation of entry on  %s  failed",
+                recipient),
             ce);
       }
     }
@@ -5855,8 +5825,8 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            LocalizedStrings.PartitionedRegion_CREATE_OF_ENTRY_ON_0_FAILED
-                .toLocalizedString(recipient),
+            String.format("Create of entry on  %s  failed",
+                recipient),
             ce);
       } catch (RegionDestroyedException rde) {
         if (logger.isDebugEnabled()) {
@@ -6224,8 +6194,7 @@ public class PartitionedRegion extends LocalRegion
   public boolean containsValue(final Object value) {
     if (value == null) {
       throw new NullPointerException(
-          LocalizedStrings.LocalRegion_VALUE_FOR_CONTAINSVALUEVALUE_CANNOT_BE_NULL
-              .toLocalizedString());
+          "Value for containsValue(value) cannot be null");
     }
     checkReadiness();
     // First check the values is present locally.
@@ -6252,7 +6221,7 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (FunctionException fe) {
       checkShutdown();
-      logger.warn(LocalizedMessage.create(LocalizedStrings.PR_CONTAINSVALUE_WARNING),
+      logger.warn("PR containsValue warning. Got an exception while executing function",
           fe.getCause());
     }
     return false;
@@ -6386,20 +6355,20 @@ public class PartitionedRegion extends LocalRegion
 
     }
 
-    StringId msg = null;
+    String msg;
     if (valueCheck) {
       msg =
-          LocalizedStrings.PartitionedRegion_NO_VM_AVAILABLE_FOR_CONTAINS_VALUE_FOR_KEY_IN_1_ATTEMPTS;
+          "No VM available for contains value for key in %s attempts";
     } else {
-      msg = LocalizedStrings.PartitionedRegion_NO_VM_AVAILABLE_FOR_CONTAINS_KEY_IN_1_ATTEMPTS;
+      msg = "No VM available for contains key in %s attempts";
     }
 
     Integer countInteger = count;
     PartitionedRegionDistributionException e = null; // Fix for bug 36014
     if (logger.isDebugEnabled()) {
-      e = new PartitionedRegionDistributionException(msg.toLocalizedString(countInteger));
+      e = new PartitionedRegionDistributionException(String.format(msg, countInteger));
     }
-    logger.warn(LocalizedMessage.create(msg, countInteger), e);
+    logger.warn(String.format(msg, countInteger), e);
     return false;
   }
 
@@ -6711,9 +6680,10 @@ public class PartitionedRegion extends LocalRegion
                     && lockHolder.equals(remoteToken.getLessee())) {
                   if (!severeAlertIssued) {
                     severeAlertIssued = true;
-                    logger.fatal(LocalizedMessage.create(
-                        LocalizedStrings.PartitionedRegion_0_SECONDS_HAVE_ELAPSED_WAITING_FOR_THE_PARTITIONED_REGION_LOCK_HELD_BY_1,
-                        new Object[] {(ackWaitThreshold + ackSAThreshold) / 1000, lockHolder}));
+                    logger.fatal(
+                        "{} seconds have elapsed waiting for the partitioned region lock held by {}",
+                        new Object[] {(ackWaitThreshold + ackSAThreshold) / 1000,
+                            lockHolder});
                   }
                 } else {
                   // either no lock holder now, or the lock holder has changed
@@ -6797,9 +6767,10 @@ public class PartitionedRegion extends LocalRegion
                     && lockHolder.equals(remoteToken.getLessee())) {
                   if (!severeAlertIssued) {
                     severeAlertIssued = true;
-                    logger.fatal(LocalizedMessage.create(
-                        LocalizedStrings.PartitionedRegion_0_SECONDS_HAVE_ELAPSED_WAITING_FOR_GLOBAL_REGION_ENTRY_LOCK_HELD_BY_1,
-                        new Object[] {(ackWaitThreshold + ackSAThreshold) / 1000, lockHolder}));
+                    logger.fatal(
+                        "{} seconds have elapsed waiting for global region entry lock held by {}",
+                        (ackWaitThreshold + ackSAThreshold) / 1000,
+                        lockHolder);
                   }
                 } else {
                   // the lock holder has changed
@@ -6960,7 +6931,7 @@ public class PartitionedRegion extends LocalRegion
   public void checkClosed() {
     if (this.isClosed) {
       throw new RegionDestroyedException(
-          LocalizedStrings.PartitionedRegion_PR_0_IS_LOCALLY_CLOSED.toLocalizedString(this),
+          String.format("PR  %s  is locally closed", this),
           getFullPath());
     }
   }
@@ -7001,9 +6972,8 @@ public class PartitionedRegion extends LocalRegion
     final RegionLock rl = getRegionLock();
     try {
       rl.lock();
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_PARTITIONED_REGION_0_WITH_PRID_1_CLOSING,
-          new Object[] {getFullPath(), getPRId()}));
+      logger.info("Partitioned Region {} with prId={} closing.",
+          new Object[] {getFullPath(), getPRId()});
       if (!checkIfAlreadyDestroyedOrOldReference()) {
         PartitionedRegionHelper.removeGlobalMetadataForFailedNode(getNode(),
             this.getRegionIdentifier(), getGemFireCache(), false);
@@ -7041,9 +7011,8 @@ public class PartitionedRegion extends LocalRegion
       rl.unlock();
     }
 
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegion_PARTITIONED_REGION_0_WITH_PRID_1_CLOSED,
-        new Object[] {getFullPath(), getPRId()}));
+    logger.info("Partitioned Region {} with prId={} closed.",
+        new Object[] {getFullPath(), getPRId()});
   }
 
   public void checkForColocatedChildren() {
@@ -7162,12 +7131,13 @@ public class PartitionedRegion extends LocalRegion
         String exception = null;
         if (pausedSenders.size() == 1) {
           exception =
-              LocalizedStrings.PartitionedRegion_GATEWAYSENDER_0_IS_PAUSED_RESUME_IT_BEFORE_DESTROYING_USER_REGION_1
-                  .toLocalizedString(pausedSenders, this.getName());
+              String.format("GatewaySender %s is paused. Resume it before destroying region %s.",
+                  pausedSenders, this.getName());
         } else {
           exception =
-              LocalizedStrings.PartitionedRegion_GATEWAYSENDERS_0_ARE_PAUSED_RESUME_THEM_BEFORE_DESTROYING_USER_REGION_1
-                  .toLocalizedString(pausedSenders, this.getName());
+              String.format(
+                  "GatewaySenders %s are paused. Resume them before destroying region %s.",
+                  pausedSenders, this.getName());
         }
         isDestroyedForParallelWAN = false;
         throw new GatewaySenderException(exception);
@@ -7288,9 +7258,8 @@ public class PartitionedRegion extends LocalRegion
 
     boolean removeFromDisk = !event.getOperation().isClose();
     try {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_PARTITIONED_REGION_0_WITH_PRID_1_IS_BEING_DESTROYED,
-          new Object[] {getFullPath(), getPRId()}));
+      logger.info("Partitioned Region {} with prId={} is being destroyed.",
+          new Object[] {getFullPath(), getPRId()});
       if (!event.isOriginRemote()) {
         try {
           rl.lock();
@@ -7329,18 +7298,15 @@ public class PartitionedRegion extends LocalRegion
           }
         }
       }
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_PARTITIONED_REGION_0_WITH_PRID_1_IS_DESTROYED,
-          new Object[] {getFullPath(), getPRId()}));
+      logger.info("Partitioned Region {} with prId={} is destroyed.",
+          new Object[] {getFullPath(), getPRId()});
     } finally {
       try {
         if (isLocked) {
           rl.unlock();
         }
       } catch (Exception es) {
-        logger.info(
-            LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_CAUGHT_EXCEPTION_WHILE_TRYING_TO_UNLOCK_DURING_REGION_DESTRUCTION),
+        logger.info("Caught exception while trying to unlock during Region destruction.",
             es);
       }
     }
@@ -7486,8 +7452,7 @@ public class PartitionedRegion extends LocalRegion
         return true;
       }
       logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.PartitionedRegion_PARTITIONEDREGION_SENDDESTROYREGIONMESSAGE_CAUGHT_EXCEPTION_DURING_DESTROYREGIONMESSAGE_SEND_AND_WAITING_FOR_RESPONSE),
+          "PartitionedRegion#sendDestroyRegionMessage: Caught exception during DestroyRegionMessage send and waiting for response",
           e);
     }
     return false;
@@ -8256,13 +8221,13 @@ public class PartitionedRegion extends LocalRegion
       // data store where as it should have.
       if (getLocalMaxMemory() != 0) {
         throw new IndexCreationException(
-            LocalizedStrings.PartitionedRegion_DATA_STORE_ON_THIS_VM_IS_NULL_AND_THE_LOCAL_MAX_MEMORY_IS_NOT_ZERO_THE_DATA_POLICY_IS_0_AND_THE_LOCALMAXMEMEORY_IS_1
-                .toLocalizedString(getDataPolicy(), (long) getLocalMaxMemory()));
+            String.format(
+                "Data Store on this vm is null and the local max Memory is not zero, the data policy is  %s  and the localMaxMemeory is :  %s",
+                getDataPolicy(), (long) getLocalMaxMemory()));
       }
       // Not have to do anything since the region is just an Accessor and
       // does not store any data.
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_THIS_IS_AN_ACCESSOR_VM_AND_DOESNT_CONTAIN_DATA));
+      logger.info("This is an accessor vm and doesnt contain data");
       return null;
     }
 
@@ -8292,7 +8257,7 @@ public class PartitionedRegion extends LocalRegion
       }
 
       throw new IndexNameConflictException(
-          LocalizedStrings.IndexManager_INDEX_NAMED_0_ALREADY_EXISTS.toLocalizedString(indexName));
+          String.format("Index named ' %s ' already exists.", indexName));
     }
 
     FutureTask<Index> oldIndexFutureTask = (FutureTask<Index>) ind;
@@ -8312,9 +8277,9 @@ public class PartitionedRegion extends LocalRegion
           // Locally originated create index request.
           // Send create request to other PR nodes.
           if (!remotelyOriginated && sendMessage) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegion_CREATED_INDEX_LOCALLY_SENDING_INDEX_CREATION_MESSAGE_TO_ALL_MEMBERS_AND_WILL_BE_WAITING_FOR_RESPONSE_0,
-                prIndex));
+            logger.info(
+                "Created index locally, sending index creation message to all members, and will be waiting for response {}.",
+                prIndex);
             HashSet<IndexCreationData> singleIndexDefinition = new HashSet<IndexCreationData>();
             IndexCreationData icd = new IndexCreationData(indexName);
             icd.setIndexData(indexType, fromClause, indexedExpression, imports, loadEntries);
@@ -8337,8 +8302,7 @@ public class PartitionedRegion extends LocalRegion
               this.indexes.remove(index);
               indexManager.removeIndex(index);
               throw new IndexCreationException(
-                  LocalizedStrings.PartitionedRegion_INDEX_CREATION_FAILED_ROLLING_UPGRADE
-                      .toLocalizedString());
+                  "Indexes should not be created when there are older versions of gemfire in the cluster.");
             }
           }
         }
@@ -8353,8 +8317,8 @@ public class PartitionedRegion extends LocalRegion
         }
 
         throw new IndexNameConflictException(
-            LocalizedStrings.IndexManager_INDEX_NAMED_0_ALREADY_EXISTS
-                .toLocalizedString(indexName));
+            String.format("Index named ' %s ' already exists.",
+                indexName));
       }
     } catch (InterruptedException ignore) {
       interrupted = true;
@@ -8397,13 +8361,14 @@ public class PartitionedRegion extends LocalRegion
       // data store where as it should have.
       if (getLocalMaxMemory() != 0) {
         throw new IndexCreationException(
-            LocalizedStrings.PartitionedRegion_DATA_STORE_ON_THIS_VM_IS_NULL_AND_THE_LOCAL_MAX_MEMORY_IS_NOT_ZERO_THE_DATA_POLICY_IS_0_AND_THE_LOCALMAXMEMEORY_IS_1
-                .toLocalizedString(getDataPolicy(), (long) getLocalMaxMemory()));
+            String.format(
+                "Data Store on this vm is null and the local max Memory is not zero, the data policy is  %s  and the localMaxMemeory is :  %s",
+                getDataPolicy(), (long) getLocalMaxMemory()));
       }
       // Not have to do anything since the region is just an Accessor and
       // does not store any data.
       logger
-          .info(LocalizedStrings.PartitionedRegion_THIS_IS_AN_ACCESSOR_VM_AND_DOESNT_CONTAIN_DATA);
+          .info("This is an accessor vm and doesnt contain data");
       return new ArrayList<Index>();
     }
 
@@ -8532,7 +8497,7 @@ public class PartitionedRegion extends LocalRegion
     boolean throwException = false;
     if (!remotelyOriginated) {
       logger.info(
-          LocalizedStrings.PartitionedRegion_CREATED_INDEX_LOCALLY_SENDING_INDEX_CREATION_MESSAGE_TO_ALL_MEMBERS_AND_WILL_BE_WAITING_FOR_RESPONSE_0);
+          "Created index locally, sending index creation message to all members, and will be waiting for response.");
       IndexCreationMsg.IndexCreationResponse response;
       try {
         response = (IndexCreationMsg.IndexCreationResponse) IndexCreationMsg.send(null, this,
@@ -8557,8 +8522,7 @@ public class PartitionedRegion extends LocalRegion
         for (Index ind : indexes) {
           exceptionsMap.put(ind.getName(),
               new IndexCreationException(
-                  LocalizedStrings.PartitionedRegion_INDEX_CREATION_FAILED_ROLLING_UPGRADE
-                      .toLocalizedString()));
+                  "Indexes should not be created when there are older versions of gemfire in the cluster."));
           this.indexes.remove(ind);
           indexManager.removeIndex(ind);
         }
@@ -8581,9 +8545,9 @@ public class PartitionedRegion extends LocalRegion
     RegionAdvisor advisor = (RegionAdvisor) getCacheDistributionAdvisor();
     final Set<InternalDistributedMember> recipients = advisor.adviseDataStore();
     if (!recipients.contains(idM)) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_NEWLY_ADDED_MEMBER_TO_THE_PR_IS_AN_ACCESSOR_AND_WILL_NOT_RECEIVE_INDEX_INFORMATION_0,
-          idM));
+      logger.info(
+          "Newly added member to the PR is an accessor and will not receive index information : {}",
+          idM);
       return;
     }
     // this should add the member to a synchronized set and then sent this member
@@ -8630,7 +8594,7 @@ public class PartitionedRegion extends LocalRegion
               .setRemoteBucketesIndexed(remoteIndexBucketsMap.get(ind.getName()));
         }
       } catch (ForceReattemptException e) {
-        logger.info(LocalizedStrings.PartitionedRegion_FORCEREATTEMPT_EXCEPTION___0, e);
+        logger.info(String.format("ForceReattempt exception :  %s", e));
       }
     }
   }
@@ -8651,9 +8615,8 @@ public class PartitionedRegion extends LocalRegion
 
     this.hasPartitionedIndex = false;
 
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegion_REMOVING_ALL_THE_INDEXES_ON_THIS_PARITITION_REGION__0,
-        this));
+    logger.info("Removing all the indexes on this paritition region {}",
+        this);
 
     try {
       for (Object bucketEntryObject : dataStore.getAllLocalBuckets()) {
@@ -8678,16 +8641,14 @@ public class PartitionedRegion extends LocalRegion
       RemoveIndexesMessage.RemoveIndexesResponse response;
 
       if (!remotelyOriginated) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionedRegion_SENDING_REMOVEINDEX_MESSAGE_TO_ALL_THE_PARTICIPATING_PRS));
+        logger.info("Sending removeIndex message to all the participating prs.");
 
         response = (RemoveIndexesMessage.RemoveIndexesResponse) RemoveIndexesMessage.send(this,
             null, true);
 
         if (null != response) {
           response.waitForResults();
-          logger.info(LocalizedMessage
-              .create(LocalizedStrings.PartitionedRegion_DONE_WATING_FOR_REMOVE_INDEX));
+          logger.info("Done wating for remove index...");
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "Total number of buckets which removed indexes , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
@@ -8725,9 +8686,8 @@ public class PartitionedRegion extends LocalRegion
     // Check if the returned value is instance of Index (this means the index is
     // not in create phase, its created successfully).
     if (prIndex == null || !(prIndex instanceof Index)) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_THIS_INDEX__0_IS_NOT_ON_THIS_PARTITONED_REGION___1,
-          new Object[] {ind, this}));
+      logger.info("This index  %s is not on this partitoned region :  {}",
+          ind, this);
       return numBuckets;
     }
 
@@ -8782,15 +8742,13 @@ public class PartitionedRegion extends LocalRegion
     if (!remotelyOriginated) {
       // send remove index message.
       RemoveIndexesMessage.RemoveIndexesResponse response;
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_SENDING_REMOVEINDEX_MESSAGE_TO_ALL_THE_PARTICIPATING_PRS));
+      logger.info("Sending removeIndex message to all the participating prs.");
       response =
           (RemoveIndexesMessage.RemoveIndexesResponse) RemoveIndexesMessage.send(this, ind, false);
 
       if (response != null) {
         response.waitForResults();
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.PartitionedRegion_DONE_WATING_FOR_REMOVE_INDEX));
+        logger.info("Done wating for remove index...");
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Total number of buckets which removed indexs , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
@@ -9353,7 +9311,7 @@ public class PartitionedRegion extends LocalRegion
       PartitionedRegionDataStore ds = getDataStore();
       if (ds == null) {
         throw new TransactionException(
-            LocalizedStrings.PartitionedRegion_TX_ON_DATASTORE.toLocalizedString());
+            "PartitionedRegion Transactions cannot execute on nodes with local max memory zero");
       }
       // TODO provide appropriate Operation and arg
       int bucketId = keyInfo.getBucketId();
@@ -9368,16 +9326,15 @@ public class PartitionedRegion extends LocalRegion
           br.checkForPrimary();
         } catch (PrimaryBucketException pbe) {
           throw new TransactionDataRebalancedException(
-              LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                  .toLocalizedString(),
+              "Transactional data moved, due to rebalancing.",
               pbe);
         }
       }
     } catch (RegionDestroyedException ignore) {
       // TODO: why is this purposely not wrapping the original cause?
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(entryKey));
+          String.format("Key %s is not colocated with transaction",
+              entryKey));
     } catch (ForceReattemptException ignore) {
       br = null;
     }
@@ -9403,7 +9360,7 @@ public class PartitionedRegion extends LocalRegion
           PartitionedRegionDataStore ds = getDataStore();
           if (ds == null) {
             throw new TransactionException(
-                LocalizedStrings.PartitionedRegion_TX_ON_DATASTORE.toLocalizedString());
+                "PartitionedRegion Transactions cannot execute on nodes with local max memory zero");
           }
           br = ds.getInitializedBucketWithKnownPrimaryForId(entryKey, bucketId);
           break;
@@ -9423,14 +9380,13 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (PrimaryBucketException pbe) {
       throw new TransactionDataRebalancedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-              .toLocalizedString(),
+          "Transactional data moved, due to rebalancing.",
           pbe);
     } catch (RegionDestroyedException ignore) {
       // TODO: why is this purposely not wrapping the original cause?
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(entryKey));
+          String.format("Key %s is not colocated with transaction",
+              entryKey));
     }
     return br;
   }
@@ -9571,11 +9527,10 @@ public class PartitionedRegion extends LocalRegion
       } else {
         if (getLocalMaxMemory() != 0) {
           throw new IndexCreationException(
-              LocalizedStrings.PartitionedRegion_DATA_STORE_ON_THIS_VM_IS_NULL_AND_THE_LOCAL_MAX_MEMORY_IS_NOT_ZERO_0
-                  .toLocalizedString((long) getLocalMaxMemory()));
+              String.format("Data Store on this vm is null and the local max Memory is not zero %s",
+                  (long) getLocalMaxMemory()));
         }
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionedRegion_THIS_IS_AN_ACCESSOR_VM_AND_DOESNT_CONTAIN_DATA));
+        logger.info("This is an accessor vm and doesnt contain data");
 
         prIndex = new PartitionedIndex(cache, indexType, indexName, PartitionedRegion.this,
             indexedExpression, fromClause, imports);
@@ -9833,8 +9788,8 @@ public class PartitionedRegion extends LocalRegion
           if (getRegionAdvisor().isStorageAssignedForBucket(bucketId)) {
             // bucket no longer exists
             throw new EntryNotFoundException(
-                LocalizedStrings.PartitionedRegion_ENTRY_NOT_FOUND_FOR_KEY_0
-                    .toLocalizedString(event.getKey()));
+                String.format("Entry not found for key  %s",
+                    event.getKey()));
           }
           break; // fall out to failed exception
         }
@@ -9904,12 +9859,11 @@ public class PartitionedRegion extends LocalRegion
 
     // No target was found
     PartitionedRegionDistributionException e = new PartitionedRegionDistributionException(
-        LocalizedStrings.PartitionedRegion_NO_VM_AVAILABLE_FOR_UPDATE_ENTRY_VERSION_IN_0_ATTEMPTS
-            .toLocalizedString(count)); // Fix for bug 36014
+        String.format("No VM available for update-version in %s attempts.",
+            count)); // Fix for bug 36014
     if (!isDebugEnabled) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_NO_VM_AVAILABLE_FOR_UPDATE_ENTRY_VERSION_IN_0_ATTEMPTS,
-          count));
+      logger.warn("No VM available for update-version in {} attempts.",
+          count);
     } else {
       logger.warn(e.getMessage(), e);
     }
@@ -9943,8 +9897,8 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            LocalizedStrings.PartitionedRegion_UPDATE_VERSION_OF_ENTRY_ON_0_FAILED
-                .toLocalizedString(recipient),
+            String.format("Update version of entry on %s failed.",
+                recipient),
             ce);
       }
     }

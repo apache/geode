@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static org.apache.geode.internal.logging.log4j.AlertLevel.alertLevelToLogLevel;
+import static org.apache.geode.internal.logging.log4j.AlertLevel.logLevelToAlertLevel;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
@@ -134,7 +137,7 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
       }
       ClusterDistributionManager distMgr = (ClusterDistributionManager) ds.getDistributionManager();
 
-      final int intLevel = logLevelToAlertLevel(event.getLevel().intLevel());
+      final int intLevel = logLevelToAlertLevel(event.getLevel());
       final Date date = new Date(event.getTimeMillis());
       final String threadName = event.getThreadName();
       final String logMessage = event.getMessage().getFormattedMessage();
@@ -271,49 +274,6 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
     }
 
     this.listeners.add(listener);
-  }
-
-  /**
-   * Converts an int alert level to an int log level.
-   *
-   * @param alertLevel The int value for the alert level
-   * @return The int value for the matching log level
-   * @throws java.lang.IllegalArgumentException If there is no matching log level
-   */
-  public static int alertLevelToLogLevel(final int alertLevel) {
-    switch (alertLevel) {
-      case Alert.SEVERE:
-        return Level.FATAL.intLevel();
-      case Alert.ERROR:
-        return Level.ERROR.intLevel();
-      case Alert.WARNING:
-        return Level.WARN.intLevel();
-      case Alert.OFF:
-        return Level.OFF.intLevel();
-    }
-
-    throw new IllegalArgumentException("Unknown Alert level [" + alertLevel + "].");
-  }
-
-  /**
-   * Converts an int log level to an int alert level.
-   *
-   * @param logLevel The int value for the log level
-   * @return The int value for the matching alert level
-   * @throws java.lang.IllegalArgumentException If there is no matching log level
-   */
-  public static int logLevelToAlertLevel(final int logLevel) {
-    if (logLevel == Level.FATAL.intLevel()) {
-      return Alert.SEVERE;
-    } else if (logLevel == Level.ERROR.intLevel()) {
-      return Alert.ERROR;
-    } else if (logLevel == Level.WARN.intLevel()) {
-      return Alert.WARNING;
-    } else if (logLevel == Level.OFF.intLevel()) {
-      return Alert.OFF;
-    }
-
-    throw new IllegalArgumentException("Unknown Log level [" + logLevel + "].");
   }
 
   public synchronized void shuttingDown() {

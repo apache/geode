@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
-import static org.apache.geode.internal.i18n.LocalizedStrings.LOCATOR_UNABLE_TO_RECOVER_VIEW;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -464,7 +462,8 @@ public class GMSLocator implements Locator, NetLocator {
       return true;
 
     } catch (Exception e) {
-      String msg = LOCATOR_UNABLE_TO_RECOVER_VIEW.toLocalizedString(file.toString());
+      String msg =
+          String.format("Unable to recover previous membership view from %s", file.toString());
       logger.warn(msg, e);
       if (!file.delete() && file.exists()) {
         logger.warn("Peer locator was unable to recover from or delete " + file);

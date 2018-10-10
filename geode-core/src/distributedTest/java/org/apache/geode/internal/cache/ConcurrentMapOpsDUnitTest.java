@@ -429,7 +429,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
               assertNull(r.putIfAbsent("clientNullKey", null));
               assertNull(pr.putIfAbsent("clientNullKey", null));
             } catch (AssertionError ex) {
-              r.getCache().getLoggerI18n().fine("SWAP:caught ", ex);
+              r.getCache().getLogger().fine("SWAP:caught ", ex);
               e = ex;
               return false;
             }

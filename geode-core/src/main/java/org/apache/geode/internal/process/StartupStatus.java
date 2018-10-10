@@ -18,7 +18,6 @@ import static org.apache.commons.lang.Validate.notNull;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -40,11 +39,11 @@ public class StartupStatus {
    *
    * @since GemFire 7.0
    */
-  public static synchronized void startup(final StringId msgId, final Object... params) {
-    notNull(msgId, "Invalid msgId '" + msgId + "' specified");
+  public static synchronized void startup(final String msg, final Object... params) {
+    notNull(msg, "Invalid msgId '" + msg + "' specified");
     notNull(params, "Invalid params '" + params + "' specified");
 
-    String message = msgId.toLocalizedString(params);
+    String message = (params == null) ? msg : String.format(msg, params);
 
     if (listener != null) {
       listener.setStatus(message);

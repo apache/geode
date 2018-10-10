@@ -24,7 +24,6 @@ import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of an object used for managing cache servers.
@@ -66,8 +65,7 @@ public class SystemMemberBridgeServerImpl
   private void checkRunning() throws AdminException {
     if (this.isRunning()) {
       throw new AdminException(
-          LocalizedStrings.SystemMemberBridgeServerImpl_CANNOT_CHANGE_THE_CONFIGURATION_OF_A_RUNNING_BRIDGE_SERVER
-              .toLocalizedString());
+          "Cannot change the configuration of a running bridge server.");
     }
   }
 
@@ -105,8 +103,7 @@ public class SystemMemberBridgeServerImpl
 
     } catch (AdminException ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.SystemMemberBridgeServerImpl_UNEXPECTED_EXCEPTION_WHILE_REFRESHING
-              .toLocalizedString(),
+          "Unexpected exception while refreshing",
           ex);
     }
   }

@@ -48,9 +48,9 @@ jobs:
   - task: get_metrics
     config:
       inputs:
-        - name: geode-ci
+      - name: geode-ci
       outputs:
-        - name: workspace
+      - name: workspace
       platform: linux
       image_resource: *docker-geode-build-image
       run:
@@ -62,82 +62,7 @@ jobs:
         - Build
         - 50
 
-
-- name: GeodeAcceptanceTestMetrics
-  serial: true
-  public: true
-  plan:
-  - get: geode-ci
-  - get: once-a-day
-    trigger: true
-  - task: get_metrics
-    config:
-      inputs:
-        - name: geode-ci
-      outputs:
-        - name: workspace
-      platform: linux
-      image_resource: *docker-geode-build-image
-      run:
-        path: /usr/bin/python3
-        args:
-        - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
-        - develop
-        - AcceptanceTest
-        - 50
-
-- name: GeodeDistributedTestMetrics
-  serial: true
-  public: true
-  plan:
-  - get: geode-ci
-  - get: once-a-day
-    trigger: true
-  - task: get_metrics
-    config:
-      inputs:
-        - name: geode-ci
-      outputs:
-        - name: workspace
-      platform: linux
-      image_resource: *docker-geode-build-image
-      run:
-        path: /usr/bin/python3
-        args:
-        - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
-        - develop
-        - DistributedTest
-        - 50
-
-
-- name: GeodeIntegrationTestMetrics
-  serial: true
-  public: true
-  plan:
-  - get: geode-ci
-  - get: once-a-day
-    trigger: true
-  - task: get_metrics
-    config:
-      inputs:
-        - name: geode-ci
-      outputs:
-        - name: workspace
-      platform: linux
-      image_resource: *docker-geode-build-image
-      run:
-        path: /usr/bin/python3
-        args:
-        - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
-        - develop
-        - IntegrationTest
-        - 50
-
-
-- name: GeodeUpgradeTestMetrics
+- name: GeodeUnitTestOpenJDK8Metrics
   serial: true
   public: true
   plan:
@@ -158,6 +83,414 @@ jobs:
         - geode-ci/ci/bin/concourse_job_performance.py
         - https://concourse.apachegeode-ci.info
         - develop
-        - UpgradeTest
+        - UnitTestOpenJDK8
+        - 50
+
+- name: GeodeUnitTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - UnitTestOpenJDK11
+        - 50
+
+- name: GeodeAcceptanceTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - AcceptanceTestOpenJDK8
+        - 50
+
+- name: GeodeAcceptanceTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - AcceptanceTestOpenJDK11
+        - 50
+
+- name: GeodeDistributedTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - DistributedTestOpenJDK8
+        - 50
+
+- name: GeodeDistributedTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - DistributedTestOpenJDK11
+        - 50
+
+- name: GeodeIntegrationTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - IntegrationTestOpenJDK8
+        - 50
+
+- name: GeodeIntegrationTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - IntegrationTestOpenJDK11
+        - 50
+
+- name: GeodeUpgradeTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - UpgradeTestOpenJDK8
+        - 50
+
+- name: GeodeUpgradeTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - UpgradeTestOpenJDK11
+        - 50
+
+- name: GeodeWindowsAcceptanceTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsAcceptanceTestOpenJDK8
+        - 50
+
+- name: GeodeWindowsAcceptanceTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsAcceptanceTestOpenJDK11
+        - 50
+
+- name: GeodeWindowsGfshDistributedTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsGfshDistributedTestOpenJDK8
+        - 50
+
+- name: GeodeWindowsGfshDistributedTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsGfshDistributedTestOpenJDK11
+        - 50
+
+- name: GeodeWindowsIntegrationTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsIntegrationTestOpenJDK8
+        - 50
+
+- name: GeodeWindowsIntegrationTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsIntegrationTestOpenJDK11
+        - 50
+
+- name: GeodeWindowsUnitTestOpenJDK8Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsUnitTestOpenJDK8
+        - 50
+
+- name: GeodeWindowsUnitTestOpenJDK11Metrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+      - name: geode-ci
+      outputs:
+      - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      run:
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - WindowsUnitTestOpenJDK11
         - 50
 

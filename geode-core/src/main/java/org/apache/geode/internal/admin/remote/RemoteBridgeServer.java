@@ -35,7 +35,6 @@ import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
@@ -121,8 +120,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
   @Override
   public void start() throws IOException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RemoteBridgeServer_A_REMOTE_BRIDGESERVER_CANNOT_BE_STARTED
-            .toLocalizedString());
+        "A remote BridgeServer cannot be started.");
   }
 
   public boolean isRunning() {
@@ -131,8 +129,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   public void stop() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RemoteBridgeServer_A_REMOTE_BRIDGESERVER_CANNOT_BE_STOPPED
-            .toLocalizedString());
+        "A remote BridgeServer cannot be stopped.");
   }
 
   /**
@@ -142,23 +139,22 @@ public class RemoteBridgeServer extends AbstractCacheServer
   @Override
   public Cache getCache() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RemoteBridgeServer_CANNOT_GET_THE_CACHE_OF_A_REMOTE_BRIDGESERVER
-            .toLocalizedString());
+        "Cannot get the Cache of a remote BridgeServer.");
   }
 
   public ClientSession getClientSession(String durableClientId) {
-    String s = LocalizedStrings.RemoteBridgeServer_CANNOT_GET_CLIENT_SESSION.toLocalizedString();
+    String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
   public ClientSession getClientSession(DistributedMember member) {
-    String s = LocalizedStrings.RemoteBridgeServer_CANNOT_GET_CLIENT_SESSION.toLocalizedString();
+    String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
   public Set getAllClientSessions() {
     String s =
-        LocalizedStrings.RemoteBridgeServer_CANNOT_GET_ALL_CLIENT_SESSIONS.toLocalizedString();
+        "Cannot get all client sessions for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
@@ -256,8 +252,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    */
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     final String s =
-        LocalizedStrings.RemoteBridgeServer_INTERESTREGISTRATIONLISTENERS_CANNOT_BE_REGISTERED_ON_A_REMOTE_BRIDGESERVER
-            .toLocalizedString();
+        "InterestRegistrationListeners cannot be registered on a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
@@ -271,8 +266,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    */
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
     final String s =
-        LocalizedStrings.RemoteBridgeServer_INTERESTREGISTRATIONLISTENERS_CANNOT_BE_UNREGISTERED_FROM_A_REMOTE_BRIDGESERVER
-            .toLocalizedString();
+        "InterestRegistrationListeners cannot be unregistered from a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
@@ -287,8 +281,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    */
   public Set getInterestRegistrationListeners() {
     final String s =
-        LocalizedStrings.RemoteBridgeServer_INTERESTREGISTRATIONLISTENERS_CANNOT_BE_RETRIEVED_FROM_A_REMOTE_BRIDGESERVER
-            .toLocalizedString();
+        "InterestRegistrationListeners cannot be retrieved from a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 }

@@ -12,25 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.logging;
 
-import java.util.concurrent.ThreadFactory;
+public enum LogWriterLevel {
 
-/*
- * Purpose of this class to create threadfactory and other helper classes for GemfireCache. If we
- * keep these classes as inner class of GemFireCache then some time it holds reference of static
- * cache Which can cause leak if app is just starting and closing cache
- */
-public class GemfireCacheHelper {
+  ALL(InternalLogWriter.ALL_LEVEL),
+  FINEST(InternalLogWriter.FINEST_LEVEL),
+  FINER(InternalLogWriter.FINER_LEVEL),
+  FINE(InternalLogWriter.FINE_LEVEL),
+  CONFIG(InternalLogWriter.CONFIG_LEVEL),
+  INFO(InternalLogWriter.INFO_LEVEL),
+  WARNING(InternalLogWriter.WARNING_LEVEL),
+  ERROR(InternalLogWriter.ERROR_LEVEL),
+  SEVERE(InternalLogWriter.SEVERE_LEVEL),
+  NONE(InternalLogWriter.NONE_LEVEL);
 
-  public static ThreadFactory CreateThreadFactory(final ThreadGroup tg, final String threadName) {
-    final ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(Runnable command) {
-        Thread thread = new Thread(tg, command, threadName);
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    return threadFactory;
+  private final int logWriterLevel;
+
+  LogWriterLevel(int logWriterLevel) {
+    this.logWriterLevel = logWriterLevel;
+  }
+
+  public int getLogWriterLevel() {
+    return logWriterLevel;
   }
 }

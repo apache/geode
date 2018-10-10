@@ -53,7 +53,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -77,8 +76,7 @@ public class WANConfigurationJUnitTest {
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
       if ((e instanceof IllegalStateException && e.getMessage().startsWith(
-          LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER
-              .toLocalizedString()))) {
+          "Locators must be configured before starting gateway-sender."))) {
       } else {
         fail("Expected IllegalStateException but received :" + e);
       }

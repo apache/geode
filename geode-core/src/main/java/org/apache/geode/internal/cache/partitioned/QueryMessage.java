@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -96,8 +95,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (QueryMonitor.isLowMemory()) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          QueryMonitor.getMemoryUsedDuringLowMemory());
       throw new QueryExecutionLowMemoryException(reason);
     }
     if (Thread.interrupted()) {
@@ -160,8 +160,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     pr.waitOnInitialization();
 
     if (QueryMonitor.isLowMemory()) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          QueryMonitor.getMemoryUsedDuringLowMemory());
       // throw query exception to piggyback on existing error handling as qp.executeQuery also
       // throws the same error for low memory
       throw new QueryExecutionLowMemoryException(reason);
@@ -240,8 +241,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       }
 
       if (QueryMonitor.isLowMemory()) {
-        String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-            .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+        String reason = String.format(
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+            QueryMonitor.getMemoryUsedDuringLowMemory());
         throw new QueryExecutionLowMemoryException(reason);
       } else if (query.isCanceled()) {
         throw query.getQueryCanceledException();

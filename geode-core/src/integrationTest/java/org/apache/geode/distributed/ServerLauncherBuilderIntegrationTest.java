@@ -40,7 +40,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
@@ -257,18 +256,20 @@ public class ServerLauncherBuilderIntegrationTest {
   }
 
   private String memberNameValidationErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(
+        AbstractLauncher.MEMBER_NAME_ERROR_MESSAGE,
+        "Server", "Server");
   }
 
   private String workingDirectoryOptionNotValidErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(
+        AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+        "Server", "Server");
   }
 
   private String workingDirectoryNotFoundErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
+        "Server", "Server");
   }
 
   private File getWorkingDirectory() {

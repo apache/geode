@@ -20,14 +20,12 @@ import java.util.List;
 
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -102,18 +100,18 @@ public class UnregisterInterestList extends BaseCommand {
 
     // Process the unregister interest request
     if (keys.isEmpty() || regionName == null) {
-      StringId errMessage = null;
+      String errMessage = null;
       if (keys.isEmpty() && regionName == null) {
         errMessage =
-            LocalizedStrings.UnRegisterInterestList_THE_INPUT_LIST_OF_KEYS_IS_EMPTY_AND_THE_INPUT_REGION_NAME_IS_NULL_FOR_THE_UNREGISTER_INTEREST_REQUEST;
+            "The input list of keys is empty and the input region name is null for the unregister interest request.";
       } else if (keys.isEmpty()) {
         errMessage =
-            LocalizedStrings.UnRegisterInterestList_THE_INPUT_LIST_OF_KEYS_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_EMPTY;
+            "The input list of keys for the unregister interest request is empty.";
       } else if (regionName == null) {
         errMessage =
-            LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
+            "The input region name for the unregister interest request is null.";
       }
-      String s = errMessage.toLocalizedString();
+      String s = errMessage;
       logger.warn("{}: {}", serverConnection.getName(), s);
       writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s,
           serverConnection);

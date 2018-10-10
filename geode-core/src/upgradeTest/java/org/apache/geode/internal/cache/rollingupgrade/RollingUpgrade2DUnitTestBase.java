@@ -89,7 +89,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -1082,8 +1081,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
         Assert.assertTrue("Index creation should have been failed with IndexCreationException ",
             ex instanceof IndexCreationException);
         Assert.assertEquals("Incorrect exception message ",
-            LocalizedStrings.PartitionedRegion_INDEX_CREATION_FAILED_ROLLING_UPGRADE
-                .toLocalizedString(),
+            "Indexes should not be created when there are older versions of gemfire in the cluster.",
             ex.getMessage());
       }
     } catch (Exception e) {

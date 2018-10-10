@@ -24,9 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 
 public class ClusterElderManager {
@@ -72,8 +70,7 @@ public class ClusterElderManager {
   public InternalDistributedMember getElderId() throws DistributedSystemDisconnectedException {
     if (clusterDistributionManager.isCloseInProgress()) {
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.DistributionManager_NO_VALID_ELDER_WHEN_SYSTEM_IS_SHUTTING_DOWN
-              .toLocalizedString(),
+          "no valid elder when system is shutting down",
           clusterDistributionManager.getRootCause());
     }
     clusterDistributionManager.getSystem().getCancelCriterion().checkCancelInProgress(null);
@@ -136,9 +133,8 @@ public class ClusterElderManager {
     try {
       if (logger.isDebugEnabled()) {
         currentElder = getElderCandidate();
-        logger.debug(LocalizedMessage.create(
-            LocalizedStrings.DistributionManager_CHANGING_ELDER_TO_0_FROM_1,
-            new Object[] {desiredElder, currentElder}));
+        logger.debug("Waiting for Elder to change. Expecting Elder to be %s, is %s.",
+            desiredElder, currentElder);
       }
 
       while (true) {

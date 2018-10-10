@@ -16,7 +16,6 @@ package org.apache.geode.internal;
 
 import java.lang.ref.WeakReference;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * An <code>ObjIdMap</code> maps GemFire object ids to an <code>Object</code>. This is an
@@ -49,13 +48,13 @@ public class ObjIdMap {
    */
   public ObjIdMap(int initialCapacity, float loadFactor) {
     if (initialCapacity < 0) {
-      throw new IllegalArgumentException(LocalizedStrings.ObjIdMap_ILLEGAL_INITIAL_CAPACITY_0
-          .toLocalizedString(Integer.valueOf(initialCapacity)));
+      throw new IllegalArgumentException(String.format("Illegal Initial Capacity:  %s",
+          Integer.valueOf(initialCapacity)));
     }
 
     if (loadFactor <= 0 || Float.isNaN(loadFactor)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ObjIdMap_ILLEGAL_LOAD_FACTOR_0.toLocalizedString(new Float(loadFactor)));
+          String.format("Illegal Load factor:  %s", new Float(loadFactor)));
     }
 
     if (initialCapacity == 0) {

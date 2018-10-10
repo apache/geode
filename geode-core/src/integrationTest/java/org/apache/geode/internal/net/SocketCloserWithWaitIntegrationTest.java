@@ -24,8 +24,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * Tests SocketCloser with a wait time. The default SocketCloser does not wait. This test configures
  * a closer much like the one used by CacheClientNotifier.
  */
-@Category({MembershipTest.class})
-public class SocketCloserWithWaitJUnitTest extends SocketCloserJUnitTest {
+@Category(MembershipTest.class)
+public class SocketCloserWithWaitIntegrationTest extends SocketCloserIntegrationTest {
 
   @Override
   protected SocketCloser createSocketCloser() {

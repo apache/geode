@@ -86,6 +86,12 @@ def dockerConfig = {
         tmpEnv[pathIdx] = 'PATH_REMOVED='
       }
 
+      if (project.hasProperty('testJVM')) {
+        // Docker command is just 'java' so set to full path
+        tmpEnv << ("JAVA_HOME=${project.testJVM}" as String)
+      }
+
+
       // Unfortunately this snippet of code is here and is required by dev-tools/docker/base/entrypoint.sh.
       // This allows preserving the outer user inside the running container. Required for Jenkins
       // and other environments. There doesn't seem to be a way to pass this environment variable
@@ -100,6 +106,12 @@ def dockerConfig = {
 
       // Infer the index of this invocation
       def cmdList = cmd.getCmd()
+
+      if (project.hasProperty('testJVM')) {
+        // Docker command is just 'java' so set to full path
+        cmdList[0] = ("${project.testJVM}/bin/java" as String)
+      }
+
       def matcher = (cmdList[cmdList.length - 1] =~ /.*Executor (\d*).*/)
 
       def workdir = new File(cmd.getWorkingDir() + matcher[0][1])

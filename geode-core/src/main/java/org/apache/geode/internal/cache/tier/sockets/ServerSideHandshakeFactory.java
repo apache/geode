@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -65,8 +64,7 @@ class ServerSideHandshakeFactory {
       short clientVersionOrdinal = Version.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(
-            LocalizedStrings.ServerHandShakeProcessor_HANDSHAKEREADER_EOF_REACHED_BEFORE_CLIENT_VERSION_COULD_BE_READ
-                .toLocalizedString());
+            "HandShakeReader: EOF reached before client version could be read");
       }
       Version clientVersion = null;
       try {

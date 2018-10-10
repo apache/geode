@@ -44,11 +44,10 @@ import java.util.zip.GZIPInputStream;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This program merges entries from multiple GemFire log files (those written using a
- * {@link org.apache.geode.i18n.LogWriterI18n} together, sorting them by their timestamp. Note that
+ * {@link org.apache.geode.LogWriter} together, sorting them by their timestamp. Note that
  * this program assumes that the entries in the individual log files are themselves sorted by
  * timestamp.
  * <p>
@@ -148,37 +147,31 @@ public class MergeLogFiles {
     // note that we don't document the -pids switch because it is tailored
     // to how hydra works and would not be useful for customers
     err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
-    err.println(LocalizedStrings.MergeLogFiles_USAGE.toLocalizedString()
+    err.println("Usage"
         + ": java MergeLogFiles [(directory | logFile)]+");
     err.println("-dirCount n      "
-        + LocalizedStrings.MergeLogFiles_NUMBER_OF_PARENT_DIRS_TO_PRINT.toLocalizedString());
+        + "Number of parent dirs to print");
     err.println("-mergeFile file  "
-        + LocalizedStrings.MergeLogFiles_FILE_IN_WHICH_TO_PUT_MERGED_LOGS.toLocalizedString());
+        + "File in which to put merged logs");
     err.println("-pids            "
-        + LocalizedStrings.MergeLogFiles_SEARCH_FOR_PIDS_IN_FILE_NAMES_AND_USE_THEM_TO_IDENTIFY_FILES
-            .toLocalizedString());
+        + "Search for PIDs in file names and use them to identify files");
     err.println(
-        "-align           " + LocalizedStrings.MergeLogFiles_ALIGN_NONTIMESTAMPED_LINES_WITH_OTHERS
-            .toLocalizedString());
+        "-align           " + "Align non-timestamped lines with others");
     err.println("-noblanks        "
-        + LocalizedStrings.MergeLogFiles_SUPPRESS_OUTPUT_OF_BLANK_LINES.toLocalizedString());
+        + "Suppress output of blank lines");
     err.println("-threaded        "
-        + LocalizedStrings.MergeLogFiles_USE_MULTITHREADING_TO_TAKE_ADVANTAGE_OF_MULTIPLE_CPUS
-            .toLocalizedString());
+        + "Use multithreading to take advantage of multiple CPUs");
     // err.println("-regex pattern Case-insensitive search for a regular expression.");
     // err.println(" May be used multiple times. Use Java regular ");
     // err.println(" expression syntax (see java.util.regex.Pattern).");
     err.println("");
     err.println(
-        LocalizedStrings.MergeLogFiles_MERGES_MULTIPLE_GEMFIRE_LOG_FILES_AND_SORTS_THEM_BY_TIMESTAMP
-            .toLocalizedString());
+        "Merges multiple GemFire log files and sorts them by timestamp.");
     err.println(
-        LocalizedStrings.MergeLogFiles_THE_MERGED_LOG_FILE_IS_WRITTEN_TO_SYSTEM_OUT_OR_A_FILE
-            .toLocalizedString());
+        "The merged log file is written to System.out (or a file).");
     err.println("");
     err.println(
-        LocalizedStrings.MergeLogFiles_IF_A_DIRECTORY_IS_SPECIFIED_ALL_LOG_FILES_IN_THAT_DIRECTORY_ARE_MERGED
-            .toLocalizedString());
+        "If a directory is specified, all .log files in that directory are merged.");
     err.println("");
     ExitCode.FATAL.doSystemExit();
   }
@@ -234,20 +227,19 @@ public class MergeLogFiles {
         i++;
       } else if (args[i].equals("-dirCount")) {
         if (++i >= args.length) {
-          usage(LocalizedStrings.MergeLogFiles_MISSING_NUMBER_OF_PARENT_DIRECTORIES
-              .toLocalizedString());
+          usage("Missing number of parent directories");
         }
 
         try {
           dirCount = Integer.parseInt(args[i]);
 
         } catch (NumberFormatException ex) {
-          usage(LocalizedStrings.MergeLogFiles_NOT_A_NUMBER_0.toLocalizedString(args[i]));
+          usage(String.format("Not a number: %s", args[i]));
         }
 
       } else if (args[i].equals("-mergeFile")) {
         if (++i >= args.length) {
-          usage(LocalizedStrings.MergeLogFiles_MISSING_MERGE_FILE_NAME.toLocalizedString());
+          usage("Missing merge file name");
         }
 
         mergeFile = new File(args[i]);
@@ -255,14 +247,14 @@ public class MergeLogFiles {
       } else {
         File file = new File(args[i]);
         if (!file.exists()) {
-          usage(LocalizedStrings.MergeLogFiles_FILE_0_DOES_NOT_EXIST.toLocalizedString(file));
+          usage(String.format("File %s does not exist", file));
         }
 
         files.add(file.getAbsoluteFile());
       }
     } // for
     if (files.isEmpty()) {
-      usage(LocalizedStrings.MergeLogFiles_MISSING_FILENAME.toLocalizedString());
+      usage("Missing filename");
     }
 
     // Expand directory names found in list
@@ -271,7 +263,7 @@ public class MergeLogFiles {
       File f = (File) files.get(i);
       String n = f.getAbsolutePath();
       if (!f.exists()) {
-        usage(LocalizedStrings.MergeLogFiles_FILE_0_DOES_NOT_EXIST.toLocalizedString(n));
+        usage(String.format("File %s does not exist", n));
       }
       if (f.isFile()) {
         expandedFiles.add(f);
@@ -282,8 +274,8 @@ public class MergeLogFiles {
         expandedFiles.addAll(moreFiles);
         continue;
       }
-      usage(LocalizedStrings.MergeLogFiles_FILE_0_IS_NEITHER_A_FILE_NOR_A_DIRECTORY
-          .toLocalizedString(n));
+      usage(String.format("File '%s' is neither a file nor a directory.",
+          n));
     }
     Collections.sort(expandedFiles);
     files = expandedFiles;
@@ -661,7 +653,7 @@ public class MergeLogFiles {
     public ThreadedReader(InputStream logFile, String logFileName, ThreadGroup group,
         boolean tabOut, boolean suppressBlanks, List<Pattern> patterns) {
       // super(group, "Reader for " + ((logFileName != null) ? logFileName : logFile.toString()));
-      super(group, LocalizedStrings.MergeLogFiles_LOG_FILE_READER.toLocalizedString());
+      super(group, "Log File Reader");
       if (logFileName.endsWith(".gz")) {
         try {
           this.logFile = new BufferedReader(new InputStreamReader(new GZIPInputStream(logFile)));
@@ -809,7 +801,7 @@ public class MergeLogFiles {
         SystemFailure.setFailure((VirtualMachineError) e); // don't throw
       }
       this.exceptionOccurred = true;
-      System.err.println(LocalizedStrings.MergeLogFiles_EXCEPTION_IN_0.toLocalizedString(t));
+      System.err.println(String.format("Exception in %s", t));
       e.printStackTrace(System.err);
     }
 
@@ -851,7 +843,7 @@ public class MergeLogFiles {
 
       // First start the Reader threads
       ReaderGroup group =
-          new ReaderGroup(LocalizedStrings.MergeLogFiles_READER_THREADS.toLocalizedString());
+          new ReaderGroup("Reader threads");
       Collection readers = new ArrayList(logFiles.size());
       for (Map.Entry<String, InputStream> e : logFiles.entrySet()) {
         if (multithreaded) {

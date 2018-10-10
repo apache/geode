@@ -30,7 +30,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -48,9 +47,12 @@ public class ClusterConfigWithoutSecurityDUnitTest {
   @Before
   public void before() throws Exception {
     IgnoredException
-        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
+        .addIgnoredException(
+            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
+                .toString());
     IgnoredException
-        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+        .addIgnoredException(
+            "A server must use cluster configuration when joining a secured cluster.".toString());
     this.lsRule.startLocatorVM(0, new Properties());
   }
 
@@ -94,7 +96,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
     assertThatThrownBy(
         () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
-                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
+                "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
   }
 
   @Test

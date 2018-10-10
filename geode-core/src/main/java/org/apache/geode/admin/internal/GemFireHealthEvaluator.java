@@ -24,7 +24,6 @@ import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -76,7 +75,7 @@ public class GemFireHealthEvaluator {
   public GemFireHealthEvaluator(GemFireHealthConfig config, ClusterDistributionManager dm) {
     if (config == null) {
       throw new NullPointerException(
-          LocalizedStrings.GemFireHealthEvaluator_NULL_GEMFIREHEALTHCONFIG.toLocalizedString());
+          "Null GemFireHealthConfig");
     }
 
     this.config = config;

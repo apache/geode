@@ -133,7 +133,7 @@ public class ManagementFunction implements InternalFunction {
       if (!executedSuccessfully) {
         if (cache == null || (cache != null && cache.isClosed())) {
           Exception e =
-              new Exception(ManagementStrings.MEMBER_IS_SHUTTING_DOWN.toLocalizedString());
+              new Exception("Member Is Shutting down");
           sendException(e, fc);
           return; // member is closing or invalid member
         }
@@ -147,8 +147,7 @@ public class ManagementFunction implements InternalFunction {
 
   private void sendException(Exception e, FunctionContext fc) {
     if (logger.isDebugEnabled()) {
-      logger.debug(ManagementStrings.MANAGEMENT_FUNCTION_COULD_NOT_EXECUTE.toLocalizedString());
-      logger.debug(e.getMessage(), e);
+      logger.debug("Management Function Could Not Be Executed", e);
     }
     fc.getResultSender().sendException(e);
   }

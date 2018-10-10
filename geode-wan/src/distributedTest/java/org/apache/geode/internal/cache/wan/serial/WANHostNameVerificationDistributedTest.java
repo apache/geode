@@ -226,12 +226,14 @@ public class WANHostNameVerificationDistributedTest {
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
 
     CertificateBuilder server_ny_cert = new CertificateBuilder()
         .commonName("server_ny")
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost());
 
     setupWanSites(locator_ln_cert, server_ln_cert, locator_ny_cert, server_ny_cert);

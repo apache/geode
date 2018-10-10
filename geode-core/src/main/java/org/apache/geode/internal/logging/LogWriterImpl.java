@@ -32,7 +32,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.StartupStatusListener;
 
 /**
@@ -320,7 +319,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void severe(Throwable throwable) {
-    severe(LocalizedStrings.EMPTY, throwable);
+    this.severe("", throwable);
   }
 
   /**
@@ -418,7 +417,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void error(Throwable throwable) {
-    error(LocalizedStrings.EMPTY, throwable);
+    this.error("", throwable);
   }
 
   /**
@@ -516,7 +515,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void warning(Throwable throwable) {
-    warning(LocalizedStrings.EMPTY, throwable);
+    this.warning("", throwable);
   }
 
   /**
@@ -614,7 +613,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void info(Throwable throwable) {
-    info(LocalizedStrings.EMPTY, throwable);
+    this.info("", throwable);
   }
 
   /**
@@ -712,7 +711,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void config(Throwable throwable) {
-    config(LocalizedStrings.EMPTY, throwable);
+    this.config("", throwable);
   }
 
   /**
@@ -1092,38 +1091,37 @@ public abstract class LogWriterImpl implements InternalLogWriter {
     if (targetThread == null) {
       return;
     }
-    Thread watcherThread = new Thread("Stack Tracer for '" + targetThread.getName() + "'") {
-      @Override
-      public void run() {
-        while (!done.get()) {
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            return;
-          }
-          if (!done.get() && targetThread.isAlive()) {
-            StringBuilder sb = new StringBuilder(500);
-            if (toStdout) {
-              sb.append("[trace ").append(getTimeStamp()).append("] ");
+    Thread watcherThread =
+        new LoggingThread("Stack Tracer for '" + targetThread.getName() + "'", false, () -> {
+          while (!done.get()) {
+            try {
+              Thread.sleep(500);
+            } catch (InterruptedException e) {
+              return;
             }
-            StackTraceElement[] els = targetThread.getStackTrace();
-            sb.append("Stack trace for '").append(targetThread).append("'").append(LINE_SEPARATOR);
-            if (els.length > 0) {
-              for (int i = 0; i < els.length; i++) {
-                sb.append("\tat ").append(els[i]).append(LINE_SEPARATOR);
+            if (!done.get() && targetThread.isAlive()) {
+              StringBuilder sb = new StringBuilder(500);
+              if (toStdout) {
+                sb.append("[trace ").append(getTimeStamp()).append("] ");
               }
-            } else {
-              sb.append("    no stack").append(LINE_SEPARATOR);
-            }
-            if (toStdout) {
-              System.out.println(sb);
-            } else {
-              info(LocalizedStrings.DEBUG, sb.toString());
+              StackTraceElement[] els = targetThread.getStackTrace();
+              sb.append("Stack trace for '").append(targetThread).append("'")
+                  .append(LINE_SEPARATOR);
+              if (els.length > 0) {
+                for (int i = 0; i < els.length; i++) {
+                  sb.append("\tat ").append(els[i]).append(LINE_SEPARATOR);
+                }
+              } else {
+                sb.append("    no stack").append(LINE_SEPARATOR);
+              }
+              if (toStdout) {
+                System.out.println(sb);
+              } else {
+                info(sb.toString());
+              }
             }
           }
-        }
-      }
-    };
+        });
     watcherThread.start();
   }
 

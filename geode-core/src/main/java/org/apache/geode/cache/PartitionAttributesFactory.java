@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <p>
@@ -273,8 +272,7 @@ public class PartitionAttributesFactory<K, V> {
   public PartitionAttributesFactory<K, V> addPartitionListener(PartitionListener listener) {
     if (listener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionAttributesFactory_PARTITION_LISTENER_PARAMETER_WAS_NULL
-              .toLocalizedString());
+          "PartitionListner parameter was null");
     }
     synchronized (this.partitionAttributes) {
       this.partitionAttributes.addPartitionListener(listener);

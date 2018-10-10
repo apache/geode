@@ -47,7 +47,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -217,8 +216,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           badIds.append(", ");
       }
       throw new IllegalStateException(
-          LocalizedStrings.CacheDistributionAdvisor_ILLEGAL_REGION_CONFIGURATION_FOR_MEMBERS_0
-              .toLocalizedString(badIds.toString()));
+          String.format("Illegal Region Configuration for members:  %s",
+              badIds.toString()));
     }
   }
 

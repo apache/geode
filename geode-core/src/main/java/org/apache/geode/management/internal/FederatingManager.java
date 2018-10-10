@@ -22,7 +22,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,6 +49,7 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -116,7 +116,8 @@ public class FederatingManager extends Manager {
       }
 
       Runtime rt = Runtime.getRuntime();
-      this.pooledMembershipExecutor = Executors.newFixedThreadPool(rt.availableProcessors());
+      this.pooledMembershipExecutor =
+          LoggingExecutors.newFixedThreadPool("FederatingManager", false, rt.availableProcessors());
 
       running = true;
       startManagingActivity();

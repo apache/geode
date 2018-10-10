@@ -59,7 +59,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -1106,8 +1105,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       fail("Test failed after the put operation");
     } catch (FunctionException expected) {
       assertTrue(expected.getMessage()
-          .startsWith((LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("return any"))));
+          .startsWith((String.format("Cannot %s result as the Function#hasResult() is false",
+              "return any"))));
     } finally {
       cache.getLogger()
           .info("<ExpectedException action=remove>" + "FunctionException" + "</ExpectedException>");

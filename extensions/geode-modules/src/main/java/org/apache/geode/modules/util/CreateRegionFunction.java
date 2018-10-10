@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
@@ -106,8 +105,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
         RegionHelper.validateRegion(this.cache, configuration, region);
       } catch (Exception e) {
         if (!e.getMessage()
-            .equals(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
-                .toLocalizedString())) {
+            .equals("CacheListeners are not the same")) {
           this.cache.getLogger().warning(e);
         }
         status = RegionStatus.INVALID;
@@ -184,8 +182,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
           RegionHelper.validateRegion(this.cache, configuration, region);
         } catch (Exception e) {
           if (!e.getMessage()
-              .equals(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
-                  .toLocalizedString())) {
+              .equals("CacheListeners are not the same")) {
             this.cache.getLogger().warning(e);
           }
           status = RegionStatus.INVALID;
@@ -229,7 +226,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       return gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION, ra, ira);
     } catch (IOException | ClassNotFoundException e) {
       InternalGemFireError assErr = new InternalGemFireError(
-          LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+          "unexpected exception");
       assErr.initCause(e);
       throw assErr;
     }

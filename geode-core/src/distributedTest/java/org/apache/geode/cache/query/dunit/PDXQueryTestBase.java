@@ -45,7 +45,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
@@ -173,7 +172,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   public void printResults(SelectResults results, String message) {
     Object r;
     Struct s;
-    LogWriterI18n logger = GemFireCacheImpl.getInstance().getLoggerI18n();
+    LogWriter logger = GemFireCacheImpl.getInstance().getLogger();
     logger.fine(message);
     int row = 0;
     for (Iterator iter = results.iterator(); iter.hasNext();) {
@@ -327,7 +326,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object o) {
-      GemFireCacheImpl.getInstance().getLoggerI18n()
+      GemFireCacheImpl.getInstance().getLogger()
           .fine("In TestObject2.equals() this: " + this + " other :" + o);
       TestObject2 other = (TestObject2) o;
       if (_id == other._id) {
@@ -339,7 +338,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLoggerI18n()
+      GemFireCacheImpl.getInstance().getLogger()
           .fine("In TestObject2.hashCode() : " + this._id);
       return this._id;
     }
@@ -444,7 +443,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLoggerI18n().fine("In TestObject.hashCode() : " + this.id);
+      GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.hashCode() : " + this.id);
       return this.id;
     }
 

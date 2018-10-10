@@ -39,9 +39,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -242,7 +240,9 @@ public class PoolFactoryImpl implements PoolFactory {
       // ex.initCause(cause);
       // throw ex;
       // Fix for #45348
-      logger.warn(LocalizedMessage.create(LocalizedStrings.PoolFactoryImpl_HOSTNAME_UNKNOWN, host));
+      logger.warn(
+          "Hostname is unknown: {}. Creating pool with unknown host in case the host becomes known later.",
+          host);
       sockAddr = new InetSocketAddress(host, port);
     }
     return sockAddr;

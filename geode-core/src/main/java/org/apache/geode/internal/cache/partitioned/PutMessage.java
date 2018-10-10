@@ -62,7 +62,6 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -384,7 +383,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.PutMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return processor;
   }
@@ -1055,7 +1054,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       }
       if (this.op == null) {
         throw new ForceReattemptException(
-            LocalizedStrings.PutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());
+            "did not receive a valid reply");
       }
       // try {
       // waitForRepliesUninterruptibly();

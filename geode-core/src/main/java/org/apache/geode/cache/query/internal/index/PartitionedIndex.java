@@ -43,7 +43,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class implements a Partitioned index over a group of partitioned region buckets.
@@ -97,8 +96,7 @@ public class PartitionedIndex extends AbstractIndex {
     if (iType == IndexType.HASH) {
       if (!getRegion().getAttributes().getIndexMaintenanceSynchronous()) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE
-                .toLocalizedString());
+            "Hash index is currently not supported for regions with Asynchronous index maintenance.");
       }
     }
   }
@@ -316,7 +314,7 @@ public class PartitionedIndex extends AbstractIndex {
   @Override
   void addMapping(RegionEntry entry) throws IMQException {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
   }
 
   /**
@@ -326,7 +324,7 @@ public class PartitionedIndex extends AbstractIndex {
   @Override
   public void initializeIndex(boolean loadEntries) throws IMQException {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
   }
 
   /**
@@ -336,7 +334,7 @@ public class PartitionedIndex extends AbstractIndex {
       RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
 
   }
 
@@ -346,7 +344,7 @@ public class PartitionedIndex extends AbstractIndex {
   @Override
   void recreateIndexData() throws IMQException {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
 
   }
 
@@ -355,7 +353,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   void removeMapping(RegionEntry entry, int opCode) {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
 
   }
 
@@ -372,7 +370,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   /*
    * public void destroy() { throw new
-   * RuntimeException(LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.
+   * RuntimeException("Not supported on partitioned index".
    * toLocalizedString()); }
    */
 
@@ -567,7 +565,7 @@ public class PartitionedIndex extends AbstractIndex {
       int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
       throws TypeMismatchException {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
 
   }
 
@@ -585,14 +583,14 @@ public class PartitionedIndex extends AbstractIndex {
   @Override
   void addMapping(Object key, Object value, RegionEntry entry) throws IMQException {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
 
   }
 
   @Override
   void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
     throw new RuntimeException(
-        LocalizedStrings.PartitionedIndex_NOT_SUPPORTED_ON_PARTITIONED_INDEX.toLocalizedString());
+        "Not supported on partitioned index");
 
   }
 

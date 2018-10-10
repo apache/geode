@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -64,6 +63,13 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
  * @since GemFire 7.0
  */
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
+
+  public static final String MEMBER_NAME_ERROR_MESSAGE =
+      "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.";
+  public static final String WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE =
+      "Specifying the --dir option is not valid when starting a %s with the %sLauncher.";
+  public static final String WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE =
+      "The working directory for the %s could not be found.";
 
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
 
@@ -760,22 +766,24 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     public String toString() {
       switch (getStatus()) {
         case STARTING:
-          return LocalizedStrings.Launcher_ServiceStatus_STARTING_MESSAGE.toLocalizedString(
+          return String.format(
+              "Starting %s in %s on %s as %s at %sProcess ID: %sGeode Version: %sJava Version: %sLog File: %sJVM Arguments: %sClass-Path: %s",
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
               toString(getTimestamp()), toString(getPid()), toString(getGemFireVersion()),
               toString(getJavaVersion()), getLogFile(), ArgumentRedactor.redact(getJvmArguments()),
               toString(getClasspath()));
         case ONLINE:
-          return LocalizedStrings.Launcher_ServiceStatus_RUNNING_MESSAGE.toLocalizedString(
+          return String.format(
+              "%s in %s on %s as %s is currently %s.Process ID: %sUptime: %sGeode Version: %sJava Version: %sLog File: %sJVM Arguments: %sClass-Path: %s",
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
               getStatus(), toString(getPid()), toDaysHoursMinutesSeconds(getUptime()),
               toString(getGemFireVersion()), toString(getJavaVersion()), getLogFile(),
               ArgumentRedactor.redact(getJvmArguments()), toString(getClasspath()));
         case STOPPED:
-          return LocalizedStrings.Launcher_ServiceStatus_STOPPED_MESSAGE
-              .toLocalizedString(getServiceName(), getWorkingDirectory(), getServiceLocation());
+          return String.format("%s in %s on %s has been requested to stop.",
+              getServiceName(), getWorkingDirectory(), getServiceLocation());
         default: // NOT_RESPONDING
-          return LocalizedStrings.Launcher_ServiceStatus_MESSAGE.toLocalizedString(getServiceName(),
+          return String.format("%s in %s on %s is currently %s.", getServiceName(),
               getWorkingDirectory(), getServiceLocation(), getStatus());
       }
     }
@@ -806,10 +814,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * as a Cache Server, a Locator or a Manager).
    */
   public enum Status {
-    NOT_RESPONDING(LocalizedStrings.Launcher_Status_NOT_RESPONDING.toLocalizedString()),
-    ONLINE(LocalizedStrings.Launcher_Status_ONLINE.toLocalizedString()),
-    STARTING(LocalizedStrings.Launcher_Status_STARTING.toLocalizedString()),
-    STOPPED(LocalizedStrings.Launcher_Status_STOPPED.toLocalizedString());
+    NOT_RESPONDING("not responding"),
+    ONLINE("online"),
+    STARTING("starting"),
+    STOPPED("stopped");
 
     private final String description;
 

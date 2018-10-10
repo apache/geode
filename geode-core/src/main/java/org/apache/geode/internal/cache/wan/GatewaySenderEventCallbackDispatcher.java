@@ -23,10 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Class <code>SerialGatewayEventCallbackDispatcher</code> dispatches batches of
@@ -89,8 +86,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
       throw e;
     } catch (Exception e) {
       logger.fatal(
-          LocalizedMessage.create(
-              LocalizedStrings.SerialGatewayEventCallbackDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH),
+          "Stopping the processor because the following exception occurred while processing a batch:",
           e);
       this.eventProcessor.setIsStopped(true);
     }
@@ -156,12 +152,12 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
         }
       }
     } catch (Exception e) {
-      final StringId alias =
-          LocalizedStrings.SerialGatewayEventCallbackDispatcher__0___EXCEPTION_DURING_PROCESSING_BATCH__1_;
+      final String alias =
+          "%s: Exception during processing batch %s";
       final Object[] aliasArgs = new Object[] {this, Integer.valueOf(batchId)};
-      String exMsg = alias.toLocalizedString(aliasArgs);
+      String exMsg = String.format(alias, aliasArgs);
       GatewaySenderException ge = new GatewaySenderException(exMsg, e);
-      logger.warn(LocalizedMessage.create(alias, aliasArgs), ge);
+      logger.warn(exMsg, ge);
       throw ge;
     }
     return successAll;

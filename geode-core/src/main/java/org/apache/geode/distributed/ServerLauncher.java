@@ -66,8 +66,8 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -106,39 +106,42 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   static {
     helpMap.put("launcher",
-        LocalizedStrings.ServerLauncher_SERVER_LAUNCHER_HELP.toLocalizedString());
-    helpMap.put(Command.START.getName(), LocalizedStrings.ServerLauncher_START_SERVER_HELP
-        .toLocalizedString(String.valueOf(getDefaultServerPort())));
+        "A GemFire launcher used to start, stop and determine a Server's status.");
+    helpMap.put(Command.START.getName(), String.format(
+        "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the GemFire cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
+        String.valueOf(getDefaultServerPort())));
     helpMap.put(Command.STATUS.getName(),
-        LocalizedStrings.ServerLauncher_STATUS_SERVER_HELP.toLocalizedString());
+        "Displays the status of a Server given any combination of the member name/ID, PID, or the directory in which the Server is running.");
     helpMap.put(Command.STOP.getName(),
-        LocalizedStrings.ServerLauncher_STOP_SERVER_HELP.toLocalizedString());
+        "Stops a running Server given given a member name/ID, PID, or the directory in which the Server is running.");
     helpMap.put(Command.VERSION.getName(),
-        LocalizedStrings.ServerLauncher_VERSION_SERVER_HELP.toLocalizedString());
+        "Displays GemFire product version information.");
     helpMap.put("assign-buckets",
-        LocalizedStrings.ServerLauncher_SERVER_ASSIGN_BUCKETS_HELP.toLocalizedString());
-    helpMap.put("debug", LocalizedStrings.ServerLauncher_SERVER_DEBUG_HELP.toLocalizedString());
+        "Causes buckets to be assigned to the partitioned regions in the GemFire cache on Server start.");
+    helpMap.put("debug", "Displays verbose information during the invocation of the launcher.");
     helpMap.put("delete-pid-file-on-stop",
         "Specifies that this Server's PID file should be deleted on stop.  The default is to not delete this Server's PID file until JVM exit if --delete-pid-file-on-stop is not specified.");
-    helpMap.put("dir", LocalizedStrings.ServerLauncher_SERVER_DIR_HELP.toLocalizedString());
+    helpMap.put("dir",
+        "Specifies the working directory where the Server is running.  Defaults to the current working directory.");
     helpMap.put("disable-default-server",
-        LocalizedStrings.ServerLauncher_SERVER_DISABLE_DEFAULT_SERVER_HELP.toLocalizedString());
-    helpMap.put("force", LocalizedStrings.ServerLauncher_SERVER_FORCE_HELP.toLocalizedString());
+        "Disables the addition of a default GemFire cache server.");
+    helpMap.put("force",
+        "Enables any existing Server PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
     helpMap.put("help",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_TO_PRINT_OUT_INFORMATION_INSTEAD_OF_PERFORMING_THE_COMMAND_THIS_OPTION_IS_SUPPORTED_BY_ALL_COMMANDS
-            .toLocalizedString());
-    helpMap.put("member", LocalizedStrings.ServerLauncher_SERVER_MEMBER_HELP.toLocalizedString());
-    helpMap.put("pid", LocalizedStrings.ServerLauncher_SERVER_PID_HELP.toLocalizedString());
+        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
+    helpMap.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
+    helpMap.put("pid", "Indicates the OS process ID of the running Server.");
     helpMap.put("rebalance",
-        LocalizedStrings.ServerLauncher_SERVER_REBALANCE_HELP.toLocalizedString());
+        "An option to cause the GemFire cache's partitioned regions to be rebalanced on start.");
     helpMap.put("redirect-output",
-        LocalizedStrings.ServerLauncher_SERVER_REDIRECT_OUTPUT_HELP.toLocalizedString());
+        "An option to cause the Server to redirect standard out and standard error to the GemFire log file.");
     helpMap.put(SERVER_BIND_ADDRESS,
-        LocalizedStrings.ServerLauncher_SERVER_BIND_ADDRESS_HELP.toLocalizedString());
+        "Specifies the IP address on which to bind, or on which the Server is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
     helpMap.put("hostname-for-clients",
-        LocalizedStrings.ServerLauncher_SERVER_HOSTNAME_FOR_CLIENT_HELP.toLocalizedString());
-    helpMap.put("server-port", LocalizedStrings.ServerLauncher_SERVER_PORT_HELP
-        .toLocalizedString(String.valueOf(getDefaultServerPort())));
+        "An option to specify the hostname or IP address to send to clients so they can connect to this Server. The default is to use the IP address to which the Server is bound.");
+    helpMap.put("server-port", String.format(
+        "Specifies the port on which the Server is listening for client requests. Defaults to %s.",
+        String.valueOf(getDefaultServerPort())));
   }
 
   private static final Map<Command, String> usageMap = new TreeMap<>();
@@ -812,19 +815,20 @@ public class ServerLauncher extends AbstractLauncher<String> {
         throw new GemFireSecurityException(e.getMessage());
       } catch (IOException e) {
         failOnStart(e);
-        throw new RuntimeException(LocalizedStrings.Launcher_Command_START_IO_ERROR_MESSAGE
-            .toLocalizedString(getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
+        throw new RuntimeException(
+            String.format("An IO error occurred while starting a %s in %s on %s: %s",
+                getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
             e);
       } catch (FileAlreadyExistsException e) {
         failOnStart(e);
         throw new RuntimeException(
-            LocalizedStrings.Launcher_Command_START_PID_FILE_ALREADY_EXISTS_ERROR_MESSAGE
-                .toLocalizedString(getServiceName(), getWorkingDirectory(), getId()),
+            String.format("A PID file already exists and a %s may be running in %s on %s.",
+                getServiceName(), getWorkingDirectory(), getId()),
             e);
       } catch (PidUnavailableException e) {
         failOnStart(e);
         throw new RuntimeException(
-            LocalizedStrings.Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE.toLocalizedString(
+            String.format("The process ID could not be determined while starting %s %s in %s: %s",
                 getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
             e);
       } catch (RuntimeException | Error e) {
@@ -838,8 +842,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.Launcher_Command_START_SERVICE_ALREADY_RUNNING_ERROR_MESSAGE
-              .toLocalizedString(getServiceName(), getWorkingDirectory(), getId()));
+          String.format("A %s is already running in %s on %s.",
+              getServiceName(), getWorkingDirectory(), getId()));
     }
   }
 
@@ -1179,16 +1183,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       // Another case of needing to use a non-daemon thread to keep the JVM alive until a clean
       // shutdown can be performed. If not, the JVM may exit too early causing the member to be
       // seen as having crashed and not cleanly departed.
-      final ServerLauncher shadow = this;
-      Thread t = new Thread(() -> {
-        shadow.cache.close();
-        shadow.cache = null;
-        if (shadow.process != null) {
-          shadow.process.stop(shadow.deletePidFileOnStop);
-          shadow.process = null;
-        }
-      });
-      t.setDaemon(false);
+      Thread t = new LoggingThread("ServerLauncherStopper", false, this::doStopInProcess);
       t.start();
 
       try {
@@ -1202,6 +1197,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return new ServerState(this, Status.STOPPED);
     } else {
       return new ServerState(this, Status.NOT_RESPONDING);
+    }
+  }
+
+  private void doStopInProcess() {
+    cache.close();
+    cache = null;
+    if (process != null) {
+      process.stop(deletePidFileOnStop);
+      process = null;
     }
   }
 
@@ -1605,8 +1609,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       } catch (OptionException e) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE
-                .toLocalizedString("Server", e.getMessage()),
+            String.format("An error occurred while parsing command-line arguments for the %s: %s",
+                "Server", e.getMessage()),
             e);
       } catch (Exception e) {
         throw new RuntimeException(e.getMessage(), e);
@@ -1911,8 +1915,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public Builder setMemberName(final String memberName) {
       if (isBlank(memberName)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE
-                .toLocalizedString("Server"));
+            String.format("The %s member name must be specified.",
+                "Server"));
       }
       this.memberName = memberName;
       return this;
@@ -1944,7 +1948,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public Builder setPid(final Integer pid) {
       if (pid != null && pid < 0) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_PID_ERROR_MESSAGE.toLocalizedString());
+            "A process ID (PID) must be a non-negative integer value.");
       }
       this.pid = pid;
       return this;
@@ -2032,8 +2036,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
         } catch (UnknownHostException e) {
           throw new IllegalArgumentException(
-              LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE
-                  .toLocalizedString("Server"),
+              String.format("The hostname/IP address to which the %s will be bound is unknown.",
+                  "Server"),
               e);
         }
       }
@@ -2074,8 +2078,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       if ((serverPort < 0 || serverPort > 65535)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE
-                .toLocalizedString("Server"));
+            String.format(
+                "The port on which the %s will listen must be between 1 and 65535 inclusive.",
+                "Server"));
       }
 
       if (serverPort == 0) {
@@ -2144,8 +2149,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public Builder setWorkingDirectory(final String workingDirectory) {
       if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-                .toLocalizedString("Server"),
+            String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
+                "Server"),
             new FileNotFoundException(workingDirectory));
       }
       this.workingDirectory = workingDirectory;
@@ -2399,14 +2404,16 @@ public class ServerLauncher extends AbstractLauncher<String> {
             && !isSet(getDistributedSystemProperties(), NAME)
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(
-              LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-                  .toLocalizedString("Server"));
+              String.format(
+                  MEMBER_NAME_ERROR_MESSAGE,
+                  "Server", "Server"));
         }
 
         if (!CURRENT_DIRECTORY.equalsIgnoreCase(getWorkingDirectory())) {
           throw new IllegalStateException(
-              LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-                  .toLocalizedString("Server"));
+              String.format(
+                  AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+                  "Server", "Server"));
         }
       }
     }

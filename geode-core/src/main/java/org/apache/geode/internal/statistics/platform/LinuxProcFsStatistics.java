@@ -529,7 +529,7 @@ public class LinuxProcFsStatistics {
       longs[LinuxSystemStats.timeIosInProgressLONG] = timeIosInProgress;
       longs[LinuxSystemStats.ioTimeLONG] = ioTime;
     } catch (NoSuchElementException nsee) {
-      // org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance().getLoggerI18n().fine("unexpected
+      // org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance().getLogger().fine("unexpected
       // NoSuchElementException line=" + line, nsee);
     } catch (IOException ioe) {
     } finally {

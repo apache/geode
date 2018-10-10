@@ -24,7 +24,6 @@ import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent as a reply to a {@link AdminRequest}.
@@ -80,8 +79,8 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
       return null;
     } else if (size > 1) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminResponse_COULD_NOT_RETURN_ONE_RECIPIENT_BECAUSE_THIS_MESSAGE_HAS_0_RECIPIENTS
-              .toLocalizedString(Integer.valueOf(size)));
+          String.format("Could not return one recipient because this message has %s recipients",
+              Integer.valueOf(size)));
     } else {
       return recipients[0];
     }

@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheServerLauncher;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -88,7 +87,7 @@ public class FetchHostResponse extends AdminResponse {
       URL url = GemFireVersion.getJarURL();
       if (url == null) {
         throw new IllegalStateException(
-            LocalizedStrings.FetchHostResponse_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());
+            "Could not find gemfire.jar.");
       }
       String path = url.getPath();
       if (path.startsWith("file:")) {
@@ -167,7 +166,7 @@ public class FetchHostResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchHostResponse_FETCHHOSTRESPONSE_FOR_0_HOST_1
-        .toLocalizedString(new Object[] {this.getRecipient(), this.host});
+    return String.format("FetchHostResponse for %s host=%s",
+        new Object[] {this.getRecipient(), this.host});
   }
 }

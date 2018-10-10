@@ -29,7 +29,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 
@@ -311,8 +310,7 @@ public class LogWrapper {
           formatText(pw, msg, 40);
         } catch (RuntimeException e) {
           pw.println(msg);
-          pw.println(LocalizedStrings.GemFireFormatter_IGNORING_THE_FOLLOWING_EXCEPTION
-              .toLocalizedString());
+          pw.println("Ignoring the following exception:");
           e.printStackTrace(pw);
         }
       } else {

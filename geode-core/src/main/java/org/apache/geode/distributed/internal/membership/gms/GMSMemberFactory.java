@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.tcp.ConnectionException;
@@ -106,7 +105,7 @@ public class GMSMemberFactory implements MemberServices {
       services.start();
     } catch (ConnectionException e) {
       throw new DistributionException(
-          LocalizedStrings.MemberFactory_UNABLE_TO_CREATE_MEMBERSHIP_MANAGER.toLocalizedString(),
+          "Unable to create membership manager",
           e);
     } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
       throw e;

@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -62,9 +61,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     try {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
-        throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+        throw new IllegalStateException("Cannot send result as the Function#hasResult() is false");
       }
 
       if (!headerSent) {
@@ -101,8 +98,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_LAST_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the last chunk to client",
             ex);
       }
     }
@@ -128,8 +124,8 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
 
       if (!headerSent) {
@@ -165,8 +161,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_LAST_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the last chunk to client",
             ex);
       }
     }
@@ -189,8 +184,8 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
       if (!headerSent) {
         sendHeader();
@@ -211,8 +206,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_RESULT_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the result chunk to client",
             ex);
       }
     }
@@ -235,8 +229,8 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
       if (!headerSent) {
         sendHeader();
@@ -256,8 +250,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_RESULT_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the result chunk to client",
             ex);
       }
     }

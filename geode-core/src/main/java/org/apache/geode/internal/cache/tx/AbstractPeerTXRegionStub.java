@@ -24,7 +24,6 @@ import org.apache.geode.cache.TransactionException;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateStub;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
 
@@ -44,8 +43,8 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
       return response.waitForKeys();
     } catch (RegionDestroyedException regionDestroyedException) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(regionDestroyedException.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              regionDestroyedException.getRegionFullPath()),
           regionDestroyedException);
     } catch (CacheClosedException cacheClosedException) {
       throw new TransactionDataNodeHasDepartedException("Cache was closed while fetching keys");
@@ -64,8 +63,8 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
       return response.waitForSize();
     } catch (RegionDestroyedException regionDestroyedException) {
       throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(regionDestroyedException.getRegionFullPath()),
+          String.format("Region %s not colocated with other regions in transaction",
+              regionDestroyedException.getRegionFullPath()),
           regionDestroyedException);
     } catch (CacheClosedException cacheClosedException) {
       throw new TransactionDataNodeHasDepartedException(

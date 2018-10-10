@@ -38,7 +38,6 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.internal.utils.PDXUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CompiledGroupBySelect extends CompiledSelect {
 
@@ -145,7 +144,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       CompiledSortCriterion csc = iter.next();
       if (!csc.mapExpressionToProjectionField(this.projAttrs, context)) {
         throw new QueryInvalidException(
-            LocalizedStrings.DefaultQuery_ORDER_BY_ATTRIBS_NOT_PRESENT_IN_PROJ.toLocalizedString());
+            "Query contains atleast one order by field which is not present in projected fields.");
       }
     }
     this.replaceAggregateFunctionInProjection();
@@ -443,7 +442,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       if (!this.aggregateColsPos.get(index)) {
         if (!checkProjectionInGroupBy(projElem, context)) {
           throw new QueryInvalidException(
-              LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString());
+              "Query contains projected column not present in group by clause");
         }
       }
       ++index;
@@ -456,7 +455,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       numColsInProj -= this.aggregateFunctions.length;
       if (numGroupCols != numColsInProj) {
         throw new QueryInvalidException(
-            LocalizedStrings.DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ.toLocalizedString());
+            "Query contains group by columns not present in projected fields");
       }
     }
   }
