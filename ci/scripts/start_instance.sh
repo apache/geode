@@ -45,11 +45,13 @@ fi
 
 
 . ${SCRIPTDIR}/../pipelines/shared/utilities.sh
+set -x
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
 SANITIZED_BUILD_PIPELINE_NAME=$(sanitizeName ${BUILD_PIPELINE_NAME})
 SANITIZED_BUILD_JOB_NAME=$(sanitizeName ${BUILD_JOB_NAME})
+SHORTENED_BUILD_JOB_NAME=$(shortenJobName ${BUILD_JOB_NAME})
 SANITIZED_BUILD_NAME=$(sanitizeName ${BUILD_NAME})
 IMAGE_FAMILY_PREFIX=""
 WINDOWS_PREFIX=""
@@ -62,7 +64,8 @@ if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
   WINDOWS_PREFIX="windows-"
 fi
 
-INSTANCE_NAME=$(sanitizeName "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}")
+INSTANCE_NAME=$(sanitizeName "${BUILD_PIPELINE_NAME}-${SHORTENED_BUILD_JOB_NAME}-${BUILD_NAME}")
+set +x
 PROJECT=apachegeode-ci
 ZONE=us-central1-f
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
@@ -77,8 +80,9 @@ while true; do
     LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME}"
 
     set +e
-# Try to kill any existing machine before starting
-    gcloud compute --project=${PROJECT} instances delete ${INSTANCE_NAME} --zone=${ZONE} --delete-disks=all -q
+    # Try to kill any existing machine before starting
+    gcloud compute --project=${PROJECT} instances delete ${INSTANCE_NAME} --zone=${ZONE} --delete-disks=all -q &>/dev/null
+
     INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
       --zone=${ZONE} \
       --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \

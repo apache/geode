@@ -71,8 +71,18 @@ if [ -v CALL_STACK_TIMEOUT ]; then
   ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
 fi
 
+case $ARTIFACT_SLUG in
+  windows*)
+    JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
+    JAVA_TEST_PATH=C:/java${JAVA_TEST_VERSION}
+    ;;
+  *)
+    JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
+    JAVA_TEST_PATH=/usr/lib/jvm/java-${JAVA_TEST_VERSION}-openjdk-amd64
+    ;;
+esac
 
-GRADLE_COMMAND="./gradlew \
+GRADLE_ARGS="-PtestJVM=${JAVA_TEST_PATH} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \
@@ -80,5 +90,14 @@ GRADLE_COMMAND="./gradlew \
     ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS}"
 
-echo "${GRADLE_COMMAND}"
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "bash -c 'mkdir -p tmp; cd geode; ${GRADLE_COMMAND}'"
+case $ARTIFACT_SLUG in
+  windows*)
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; echo Building with:; "'"'"${JAVA_BUILD_PATH}\bin\java.exe"'"'" -version; echo Testing with:; "'"'"${JAVA_TEST_PATH}\bin\java.exe"'"'" -version; cd geode; ./gradlew ${GRADLE_ARGS}'"
+    ;;
+  *)
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && echo Building with: && ${JAVA_BUILD_PATH}/bin/java -version && echo Testing with: && ${JAVA_TEST_PATH}/bin/java -version && cd geode && ./gradlew ${GRADLE_ARGS}'"
+    ;;
+esac
+
+echo "${EXEC_COMMAND}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"

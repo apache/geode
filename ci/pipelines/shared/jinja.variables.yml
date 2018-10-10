@@ -31,7 +31,27 @@ build_test:
   GRADLE_TASK: build
   execute_test_timeout: 10m
 
+java_test_versions:
+- name: OpenJDK8
+  version: 8
+- name: OpenJDK11
+  version: 11
+
+java_build_version:
+  name: OpenJDK8
+  version: 8
+
 tests:
+- name: "Unit"
+  CPUS: "8"
+  RAM: "16"
+  ARTIFACT_SLUG: unittestfiles
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "0"
+  GRADLE_TASK: test
+  execute_test_timeout: 10m
+  PARALLEL_DUNIT: "false"
+  PARALLEL_GRADLE: "true"
 - name: "Acceptance"
   CPUS: "8"
   RAM: "12"

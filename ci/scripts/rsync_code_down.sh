@@ -39,7 +39,19 @@ ZONE="$(cat instance-data/zone)"
 
 OUTPUT_DIR=${BASE_DIR}/geode-results
 
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "bash -c 'cd geode; ./gradlew --no-daemon combineReports'"
+case $ARTIFACT_SLUG in
+  windows*)
+    JAVA_BUILD_PATH=C:/java8
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; cd geode; ./gradlew --no-daemon combineReports'"
+    ;;
+  *)
+    JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && cd geode && ./gradlew --no-daemon combineReports'"
+    ;;
+esac
+
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
 
 time rsync -e "ssh ${SSH_OPTIONS}" -ah geode@${INSTANCE_IP_ADDRESS}:geode ${OUTPUT_DIR}/
+
 set +x
