@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticsFactory;
@@ -41,6 +43,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
 
@@ -90,6 +93,8 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @see #existingSystems
    */
   protected static final Object existingSystemsLock = new Object();
+
+  private static final Logger logger = LogService.getLogger();
 
   //////////////////////// Static Methods ////////////////////////
 

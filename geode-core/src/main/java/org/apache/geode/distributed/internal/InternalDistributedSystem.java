@@ -2673,9 +2673,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
         logger.info(
             "Attempting to reconnect to the distributed system.  This is attempt #{}.",
-            new Object[] {reconnectAttemptCounter});
+            reconnectAttemptCounter);
 
-        int savNumOfTries = reconnectAttemptCounter;
+        int saveNumberOfTries = reconnectAttemptCounter;
         try {
           // notify listeners of each attempt and then again after successful
           notifyReconnectListeners(this, this.reconnectDS, true);
@@ -2743,7 +2743,7 @@ public class InternalDistributedSystem extends DistributedSystem
           if (this.locatorDMTypeForced) {
             System.getProperties().remove(InternalLocator.FORCE_LOCATOR_DM_TYPE);
           }
-          reconnectAttemptCounter = savNumOfTries;
+          reconnectAttemptCounter = saveNumberOfTries;
         }
 
 
@@ -2759,13 +2759,13 @@ public class InternalDistributedSystem extends DistributedSystem
               }
               cache = GemFireCacheImpl.create(this.reconnectDS, config);
 
-              createAndStartCacheServers(cacheServerCreation, cache);
-
-              if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
-                reconnectAttemptCounter = 0;
-              } else {
-                // this try failed. The new cache will call reconnect again
+              if (!cache.isClosed()) {
+                createAndStartCacheServers(cacheServerCreation, cache);
+                if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
+                  reconnectAttemptCounter = 0;
+                }
               }
+
             } catch (CacheXmlException e) {
               logger.warn("Exception occurred while trying to create the cache during reconnect",
                   e);
@@ -2774,6 +2774,11 @@ public class InternalDistributedSystem extends DistributedSystem
               reconnectCancelled = true;
               break;
             } catch (CancelException ignor) {
+              // If this reconnect is for required-roles the algorithm is recursive and we
+              // shouldn't retry at this level
+              if (!forcedDisconnect) {
+                break;
+              }
               logger.warn("Exception occurred while trying to create the cache during reconnect",
                   ignor);
               reconnectDS.disconnect();
@@ -2795,7 +2800,6 @@ public class InternalDistributedSystem extends DistributedSystem
             return;
           }
         }
-
       } // while()
 
       if (isReconnectCancelled()) {
@@ -2804,7 +2808,9 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       } else {
         reconnectDS.isReconnectingDS = false;
-        notifyReconnectListeners(this, this.reconnectDS, false);
+        if (reconnectDS.isConnected()) {
+          notifyReconnectListeners(this, this.reconnectDS, false);
+        }
       }
 
     } finally {
@@ -2832,7 +2838,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
       attemptingToReconnect = false;
       return;
-    } else {
+    } else if (reconnectDS != null && reconnectDS.isConnected()) {
       logger.info("Reconnect completed.\nNew DistributedSystem is {}\nNew Cache is {}", reconnectDS,
           cache);
     }
