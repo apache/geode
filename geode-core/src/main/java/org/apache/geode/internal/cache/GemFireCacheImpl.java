@@ -2446,7 +2446,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void stopMemcachedServer() {
     if (this.memcachedServer != null) {
-      logger.info("GemFireMemcachedServer on port %s is shutting down",
+      logger.info("GemFireMemcachedServer on port {} is shutting down",
           new Object[] {this.system.getConfig().getMemcachedPort()});
       this.memcachedServer.shutdown();
     }
@@ -2459,7 +2459,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void stopRestAgentServer() {
     if (this.restAgent != null) {
-      logger.info("Rest Server on port %s is shutting down",
+      logger.info("Rest Server on port {} is shutting down",
           new Object[] {this.system.getConfig().getHttpServicePort()});
       this.restAgent.stop();
     }

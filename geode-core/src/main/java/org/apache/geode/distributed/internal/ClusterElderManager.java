@@ -133,7 +133,7 @@ public class ClusterElderManager {
     try {
       if (logger.isDebugEnabled()) {
         currentElder = getElderCandidate();
-        logger.debug("Waiting for Elder to change. Expecting Elder to be %s, is %s.",
+        logger.debug("Waiting for Elder to change. Expecting Elder to be {}, is {}.",
             desiredElder, currentElder);
       }
 

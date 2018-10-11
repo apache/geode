@@ -125,7 +125,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
           logger.debug("Unable to connect to {}: connection refused", location);
         }
       } else {// print a warning with the exception stack trace
-        logger.warn("Could not connect to: %s", location, e);
+        logger.warn("Could not connect to: " + location, e);
       }
       testFailedConnectionToServer = true;
     } finally {

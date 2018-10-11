@@ -556,7 +556,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         if (isBucketDestroyed()) {
           throw new ForceReattemptException("Bucket moved",
               new RegionDestroyedException(
-                  "Region has been destroyed: %s",
+                  "Region has been destroyed",
                   getPartitionedRegion().getFullPath()));
         }
       }

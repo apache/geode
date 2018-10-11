@@ -108,7 +108,7 @@ public class StartupOperation {
               // the member must have connected back to us and now we just
               // need to get its startup response
               logger.warn(
-                  "Membership: received connection from <%s> but received no startup response after {} ms.",
+                  "Membership: received connection from <{}> but received no startup response after {} ms.",
                   new Object[] {um, timeout});
             }
           } // for

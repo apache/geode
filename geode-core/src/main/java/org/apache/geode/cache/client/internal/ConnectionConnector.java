@@ -81,7 +81,7 @@ public class ConnectionConnector {
     } finally {
       if (!initialized && connection != null) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Destroy failed connection to {}", location);
+          logger.debug("Destroying failed connection to {}", location);
         }
         destroyConnection(connection);
       }
