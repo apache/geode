@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
@@ -26,10 +25,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -40,19 +37,19 @@ import org.junit.Test;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.lang.SystemUtils;
 
 public class StartLocatorCommandTest {
-  private StartLocatorCommand locatorCommands;
+
+  private StartLocatorCommand startLocatorCommand;
 
   @Before
-  public void setup() {
-    locatorCommands = new StartLocatorCommand();
+  public void setUp() {
+    startLocatorCommand = new StartLocatorCommand();
   }
 
   @After
   public void tearDown() {
-    locatorCommands = null;
+    startLocatorCommand = null;
   }
 
   @Test
@@ -62,7 +59,7 @@ public class StartLocatorCommandTest {
         StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
             .concat(File.pathSeparator).concat(System.getProperty("java.class.path"))
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
-    String actualClasspath = locatorCommands.getLocatorClasspath(true, userClasspath);
+    String actualClasspath = startLocatorCommand.getLocatorClasspath(true, userClasspath);
     assertEquals(expectedClasspath, actualClasspath);
   }
 
@@ -77,8 +74,9 @@ public class StartLocatorCommandTest {
     gemfireProperties.setProperty(HTTP_SERVICE_PORT, "8089");
     gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
 
-    String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
-        null, null, gemfireProperties, null, false, new String[0], null, null);
+    String[] commandLineElements =
+        startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
+            null, null, gemfireProperties, null, false, new String[0], null, null);
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
@@ -102,59 +100,13 @@ public class StartLocatorCommandTest {
   }
 
   @Test
-  public void testAddJvmOptionsForOutOfMemoryErrors() {
-    final List<String> jvmOptions = new ArrayList<>(1);
-
-    addJvmOptionsForOutOfMemoryErrors(jvmOptions);
-
-    if (SystemUtils.isHotSpotVM()) {
-      if (SystemUtils.isWindows()) {
-        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=taskkill /F /PID %p"));
-      } else {
-        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=kill -KILL %p"));
-      }
-    } else if (SystemUtils.isJ9VM()) {
-      assertEquals(1, jvmOptions.size());
-      assertTrue(jvmOptions.contains("-Xcheck:memory"));
-    } else if (SystemUtils.isJRockitVM()) {
-      assertEquals(1, jvmOptions.size());
-      assertTrue(jvmOptions.contains("-XXexitOnOutOfMemory"));
-    } else {
-      assertTrue(jvmOptions.isEmpty());
-    }
-  }
-
-  private void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
-    if (SystemUtils.isHotSpotVM()) {
-      if (SystemUtils.isWindows()) {
-        // ProcessBuilder "on Windows" needs every word (space separated) to be
-        // a different element in the array/list. See #47312. Need to study why!
-        commandLine.add("-XX:OnOutOfMemoryError=taskkill /F /PID %p");
-      } else { // All other platforms (Linux, Mac OS X, UNIX, etc)
-        commandLine.add("-XX:OnOutOfMemoryError=kill -KILL %p");
-      }
-    } else if (SystemUtils.isJ9VM()) {
-      // NOTE IBM states the following IBM J9 JVM command-line option/switch has side-effects on
-      // "performance",
-      // as noted in the reference documentation...
-      // http://publib.boulder.ibm.com/infocenter/javasdk/v6r0/index.jsp?topic=/com.ibm.java.doc.diagnostics.60/diag/appendixes/cmdline/commands_jvm.html
-      commandLine.add("-Xcheck:memory");
-    } else if (SystemUtils.isJRockitVM()) {
-      // NOTE the following Oracle JRockit JVM documentation was referenced to identify the
-      // appropriate JVM option to
-      // set when handling OutOfMemoryErrors.
-      // http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionXX.html
-      commandLine.add("-XXexitOnOutOfMemory");
-    }
-  }
-
-  @Test
   public void testCreateStartLocatorCommandLine() throws Exception {
     LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setMemberName("defaultLocator")
         .setCommand(LocatorLauncher.Command.START).build();
 
-    String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
-        null, null, new Properties(), null, false, null, null, null);
+    String[] commandLineElements =
+        startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
+            null, null, new Properties(), null, false, null, null, null);
 
     Set<String> expectedCommandLineElements = new HashSet<>();
     expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
@@ -206,9 +158,11 @@ public class StartLocatorCommandTest {
     String[] jvmArguments = new String[] {"-verbose:gc", "-Xloggc:member-gc.log",
         "-XX:+PrintGCDateStamps", "-XX:+PrintGCDetails"};
 
-    String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
-        gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, customClasspath,
-        Boolean.FALSE, jvmArguments, heapSize, heapSize);
+    String[] commandLineElements =
+        startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
+            gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
+            customClasspath,
+            Boolean.FALSE, jvmArguments, heapSize, heapSize);
 
     Set<String> expectedCommandLineElements = new HashSet<>();
     expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
