@@ -16,45 +16,38 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
+/**
+ * Consumes {@link SerializableNameContainer} as built and packaged into the jar deployed below.
+ */
 public class PutCommandWithJsonTest {
 
-  private File jarToDeploy;
+  private URL jarToDeploy = getClass().getResource("/SerializableNameContainer.jar");
 
   @Rule
   public GfshRule gfsh = new GfshRule();
 
-  @Before
-  public void setup() throws IOException {
-    jarToDeploy = new File(gfsh.getTemporaryFolder().getRoot(), "ourJar.jar");
-
-    String classContents =
-        "public class Customer implements java.io.Serializable {private String name; public void setName(String name){this.name=name;}}";
-    JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJar(jarToDeploy, classContents);
-  }
-
   @Test
-  public void putWithJsonString() throws Exception {
+  public void putWithJsonString() throws URISyntaxException {
     GfshExecution execution = GfshScript
         .of("start locator --name=locator", "start server --name=server", "sleep --time=1",
-            "deploy --jar=" + jarToDeploy.getAbsolutePath(),
+            "deploy --jar=" + jarToDeploy.toURI().getPath(),
             "create region --name=region --type=REPLICATE", "sleep --time=1",
-            "put --region=region --key=key --value=('name':'Jinmei') --value-class=Customer")
+            "put --region=region --key=key --value=('name':'Jinmei')" +
+                " --value-class=org.apache.geode.management.internal.cli.commands.SerializableNameContainer")
         .execute(gfsh);
 
     assertThat(execution.getOutputText()).doesNotContain("Couldn't convert JSON to Object");
-    assertThat(execution.getOutputText()).contains("Value Class : Customer");
+    assertThat(execution.getOutputText())
+        .contains("Value Class : org.apache.geode.management.internal.cli.commands.SerializableNameContainer");
   }
 }
