@@ -173,26 +173,36 @@ subprojects {
   }
 
   task repeatDistributedTest(type: RepeatTest) {
+    // Any dependencies added to the base test task must cascade to this task
+    dependsOn distributedTest
     classpath = project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
   }
 
   task repeatIntegrationTest(type: RepeatTest) {
+    // Any dependencies added to the base test task must cascade to this task
+    dependsOn integrationTest
     classpath = project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
   }
 
   task repeatAcceptanceTest(type: RepeatTest) {
+    // Any dependencies added to the base test task must cascade to this task
+    dependsOn acceptanceTest
     classpath = project.sourceSets.acceptanceTest.runtimeClasspath
     testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
   }
 
   task repeatUpgradeTest(type: RepeatTest) {
+    // Any dependencies added to the base test task must cascade to this task
+    dependsOn upgradeTest
     classpath = project.sourceSets.upgradeTest.runtimeClasspath
     testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
   }
 
   task repeatUnitTest(type: RepeatTest) {
+    // Any dependencies added to the base test task must cascade to this task
+    dependsOn test
     // default classpath works for this one.
   }
 

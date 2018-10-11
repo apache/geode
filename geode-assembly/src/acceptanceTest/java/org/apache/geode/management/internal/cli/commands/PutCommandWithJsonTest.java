@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -31,7 +32,13 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
  */
 public class PutCommandWithJsonTest {
 
-  private URL jarToDeploy = getClass().getResource("/SerializableNameContainer.jar");
+  private URL jarToDeploy;
+
+  @Before
+  public void setJar() {
+    jarToDeploy = getClass().getResource("/SerializableNameContainer.jar");
+    assertThat(jarToDeploy).isNotNull();
+  }
 
   @Rule
   public GfshRule gfsh = new GfshRule();
@@ -47,7 +54,7 @@ public class PutCommandWithJsonTest {
         .execute(gfsh);
 
     assertThat(execution.getOutputText()).doesNotContain("Couldn't convert JSON to Object");
-    assertThat(execution.getOutputText())
-        .contains("Value Class : org.apache.geode.management.internal.cli.commands.SerializableNameContainer");
+    assertThat(execution.getOutputText()).contains(
+        "Value Class : org.apache.geode.management.internal.cli.commands.SerializableNameContainer");
   }
 }
