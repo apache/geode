@@ -58,7 +58,7 @@ public class LocalRegionBulkOperationTest {
     when(region.getCancelCriterion()).thenReturn(cancelCriterion);
     when(exception.getFailure()).thenReturn(cacheClosedException);
     when(cancelCriterion.generateCancelledException(cacheClosedException))
-        .thenThrow(cacheClosedException);
+        .thenReturn(cacheClosedException);
   }
 
   @Test(expected = CacheClosedException.class)
