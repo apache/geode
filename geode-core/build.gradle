@@ -40,7 +40,104 @@ configurations {
   archives
 }
 
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+  test {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+}
+
+jmh {
+  include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
+  duplicateClassesStrategy = 'warn'
+}
+
+// Creates the version properties file and writes it to the classes dir
+task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
+
+  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
+  def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
+
+  inputs.files {
+    scmInfoFile
+  }
+  outputs.files {
+    propertiesFile
+  }
+
+
+  doLast {
+    def scmInfo = new Properties()
+    new FileInputStream(scmInfoFile.singleFile).withStream { fis ->
+      scmInfo.load(fis)
+    }
+
+    def props = [
+        "Product-Name"      : productName,
+        "Product-Version"   : version,
+        "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+        "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+        "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+        "Build-Java-Version": System.properties['java.version']
+    ] as Properties
+    props.putAll(scmInfo)
+
+    propertiesFile.getParentFile().mkdirs()
+    new FileOutputStream(propertiesFile).withStream { fos ->
+      props.store(fos, '')
+    }
+  }
+}
+
+jar {
+
+  from sourceSets.main.output
+  from sourceSets.jca.output
+
+  exclude 'org/apache/geode/management/internal/web/**'
+  exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
+  exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
+}
+
+jar.dependsOn(createVersionPropertiesFile)
+
+task webJar(type: Jar, dependsOn: classes) {
+  description 'Assembles the jar archive containing the gemfire management web classes.'
+  from sourceSets.main.output
+  baseName 'geode-web'
+  include 'org/apache/geode/management/internal/web/**'
+}
+
+task raJar(type: Jar, dependsOn: classes) {
+  description 'Assembles the jar archive that contains the JCA classes'
+  from sourceSets.jca.output
+  exclude 'org/apache/geode/ra/**'
+  archiveName 'ra.jar'
+}
+
+task jcaJar(type: Jar, dependsOn: raJar) {
+  description 'Assembles the jar archive that contains the JCA bundle'
+  baseName 'geode-jca'
+  extension 'rar'
+  metaInf { from 'src/jca/ra.xml' }
+  from raJar.archivePath
+}
+
+configurations {
+  classesOutput {
+    extendsFrom compile
+    description 'a dependency that exposes the compiled classes'
+  }
+}
+
 dependencies {
+  classesOutput sourceSets.main.output
+
+
   // Source Dependencies
   antlr 'antlr:antlr:' + project.'antlr.version'
 
@@ -196,112 +293,9 @@ dependencies {
 
 
   performanceTestCompile project(":geode-junit")
-}
 
-def generatedResources = "$buildDir/generated-resources/main"
-
-sourceSets {
-  main {
-    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
-  }
-  test {
-    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
-  }
-}
-
-jmh {
-  include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
-  duplicateClassesStrategy = 'warn'
-}
-
-dependencies {
-  // Integration Tests
-  integrationTestCompile sourceSets.test.output
-
-  // Distributed Tests
-  distributedTestCompile sourceSets.integrationTest.output
-}
-
-// Creates the version properties file and writes it to the classes dir
-task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
-
-  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
-  def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
-
-  inputs.files {
-    scmInfoFile
-  }
-  outputs.files {
-    propertiesFile
-  }
-
-
-  doLast {
-    def scmInfo = new Properties()
-    new FileInputStream(scmInfoFile.singleFile).withStream { fis ->
-      scmInfo.load(fis)
-    }
-
-    def props = [
-        "Product-Name"      : productName,
-        "Product-Version"   : version,
-        "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
-        "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
-        "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-        "Build-Java-Version": System.properties['java.version']
-    ] as Properties
-    props.putAll(scmInfo)
-
-    propertiesFile.getParentFile().mkdirs()
-    new FileOutputStream(propertiesFile).withStream { fos ->
-      props.store(fos, '')
-    }
-  }
-}
-
-jar {
-
-  from sourceSets.main.output
-  from sourceSets.jca.output
-
-  exclude 'org/apache/geode/management/internal/web/**'
-  exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
-  exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
-}
-
-jar.dependsOn(createVersionPropertiesFile)
-
-task webJar(type: Jar, dependsOn: classes) {
-  description 'Assembles the jar archive containing the gemfire management web classes.'
-  from sourceSets.main.output
-  baseName 'geode-web'
-  include 'org/apache/geode/management/internal/web/**'
-}
-
-task raJar(type: Jar, dependsOn: classes) {
-  description 'Assembles the jar archive that contains the JCA classes'
-  from sourceSets.jca.output
-  exclude 'org/apache/geode/ra/**'
-  archiveName 'ra.jar'
-}
-
-task jcaJar(type: Jar, dependsOn: raJar) {
-  description 'Assembles the jar archive that contains the JCA bundle'
-  baseName 'geode-jca'
-  extension 'rar'
-  metaInf { from 'src/jca/ra.xml' }
-  from raJar.archivePath
-}
-
-configurations {
-  classesOutput {
-    extendsFrom compile
-    description 'a dependency that exposes the compiled classes'
-  }
-}
-
-dependencies {
-  classesOutput sourceSets.main.output
+  integrationTestCompile sourceSets.test.output              // To be removed by GEODE-5803
+  distributedTestCompile sourceSets.integrationTest.output   // To be removed by GEODE-5803
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
