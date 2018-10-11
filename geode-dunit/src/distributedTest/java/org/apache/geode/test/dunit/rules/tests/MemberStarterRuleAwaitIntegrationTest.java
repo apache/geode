@@ -27,7 +27,6 @@ import java.util.function.UnaryOperator;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.awaitility.core.ConditionTimeoutException;
-import org.awaitility.core.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,11 +41,10 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class MemberStarterRuleAwaitIntegrationTest {
-
   private static MemberStarterRule locatorStarterRule = new LocatorStarterRule();
   private static MemberStarterRule serverStarterRule = new ServerStarterRule();
 
-  @Parameter(0)
+  @Parameter
   public MemberStarterRule ruleToUse;
 
   @Parameter(1)
@@ -61,7 +59,7 @@ public class MemberStarterRuleAwaitIntegrationTest {
   }
 
   @Test
-  public void testWithDefaultPresentation() throws Exception {
+  public void testWithDefaultPresentation() {
     Supplier<Boolean> alwaysFalseProvider = () -> false;
     String description = "Awaiting until boolean becomes true.";
 
@@ -73,9 +71,8 @@ public class MemberStarterRuleAwaitIntegrationTest {
   }
 
   @Test
-  public void waitCanAcceptNullsIfPredicateAcceptsNulls() throws Exception {
+  public void waitCanAcceptNullsIfPredicateAcceptsNulls() {
     Supplier<Boolean> alwaysNullProvider = () -> null;
-    Predicate<Boolean> booleanIdentityPredicate = b -> b != null && b.equals(true);
     String description = "Awaiting until boolean becomes not null and also true.";
     assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(alwaysNullProvider,
         UnaryOperator.identity(), true, description, 1, TimeUnit.SECONDS)))
@@ -85,9 +82,9 @@ public class MemberStarterRuleAwaitIntegrationTest {
   }
 
   @Test
-  public void waitCanPrintMoreComplexResults() throws Exception {
+  public void waitCanPrintMoreComplexResults() {
     Supplier<List<String>> abcListProvider = () -> Arrays.asList("A", "B", "C");
-    Function<List<String>, Integer> examiner = list -> list.size();
+    Function<List<String>, Integer> examiner = List::size;
     String description = "Awaiting until list becomes empty.";
     assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(abcListProvider,
         examiner, 0, description, 1, TimeUnit.SECONDS)))
@@ -101,7 +98,7 @@ public class MemberStarterRuleAwaitIntegrationTest {
       try {
         throwingCallable.call();
       } catch (Exception e) {
-        System.out.println(e);
+        e.printStackTrace(System.out);
         throw (e);
       }
     };

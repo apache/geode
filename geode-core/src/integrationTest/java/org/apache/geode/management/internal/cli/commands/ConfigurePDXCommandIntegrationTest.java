@@ -21,11 +21,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({ClientServerTest.class})
+@Category(GfshTest.class)
 public class ConfigurePDXCommandIntegrationTest {
   private static final String BASE_COMMAND_STRING = "configure pdx ";
 
@@ -34,7 +34,7 @@ public class ConfigurePDXCommandIntegrationTest {
 
   @Rule
   public LocatorStarterRule locator =
-      new LocatorStarterRule().withWorkingDir().withAutoStart().withJMXManager();;
+      new LocatorStarterRule().withWorkingDir().withAutoStart().withJMXManager();
 
   @Before
   public void before() throws Exception {

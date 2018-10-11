@@ -25,7 +25,7 @@ import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 public class AlterRegionCommandIntegrationTest {
   @ClassRule
   public static ServerStarterRule server =
@@ -40,34 +40,34 @@ public class AlterRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateGroup() throws Exception {
+  public void validateGroup() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --group=unknown").statusIsError()
         .containsOutput("Group(s) \"[unknown]\" are invalid.");
   }
 
   @Test
-  public void invalidCacheListener() throws Exception {
+  public void invalidCacheListener() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-listener=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName[] for option 'cache-listener'");
   }
 
   @Test
-  public void invalidCacheLoader() throws Exception {
+  public void invalidCacheLoader() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-loader=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName for option 'cache-loader'");
   }
 
   @Test
-  public void invalidCacheWriter() throws Exception {
+  public void invalidCacheWriter() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-writer=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName for option 'cache-writer'");
   }
 
   @Test
-  public void invalidEvictionMax() throws Exception {
+  public void invalidEvictionMax() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --eviction-max=-1").statusIsError()
         .containsOutput("Specify 0 or a positive integer value for eviction-max");
   }

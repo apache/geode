@@ -14,9 +14,8 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +38,7 @@ import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
@@ -68,8 +67,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
   private String regexForExpectedExceptions = ".*Unauthorized access.*";
 
   @Test
-  public void cqExecuteNoMethodInvocationWithUsersWithCqPermissionsWithPrepopulatedRegionShouldBeAllowed()
-      throws Exception {
+  public void cqExecuteNoMethodInvocationWithUsersWithCqPermissionsWithPrepopulatedRegionShouldBeAllowed() {
     putIntoRegion(superUserClient, keys, values, regionName);
     String query = "select * from /" + regionName + " r where r.id = 0";
     specificUserClient.invoke(() -> {
@@ -83,10 +81,8 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
     putIntoRegion(superUserClient, keys, new Object[] {new QueryTestObject(0, "Bethany")},
         regionName);
 
-    specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertEquals(1, cqListener.getNumEvent()));
-    });
+    specificUserClient.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(cqListener.getNumEvent()).isEqualTo(1)));
   }
 
   @Test
@@ -104,8 +100,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
   }
 
   @Test
-  public void cqExecuteWithInitialResultsWithMethodInvocationWithUsersWithCqPermissionsWithPrepopulatedRegionShouldBeDeniedBecauseOfInvocation()
-      throws Exception {
+  public void cqExecuteWithInitialResultsWithMethodInvocationWithUsersWithCqPermissionsWithPrepopulatedRegionShouldBeDeniedBecauseOfInvocation() {
     putIntoRegion(superUserClient, keys, values, regionName);
     String query = "select * from /" + regionName + " r where r.name = 'Beth'";
 
@@ -120,8 +115,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
 
 
   @Test
-  public void cqExecuteWithInitialResultsWithMethodInvocationWithUnpopulatedRegionAndFollowedByAPutShouldTriggerCqError()
-      throws Exception {
+  public void cqExecuteWithInitialResultsWithMethodInvocationWithUnpopulatedRegionAndFollowedByAPutShouldTriggerCqError() {
     String query = "select * from /" + regionName + " r where r.name = 'Beth'";
 
     specificUserClient.invoke(() -> {
@@ -136,16 +130,13 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
     Object[] values = {new QueryTestObject(1, "Mary")};
     putIntoRegion(superUserClient, keys, values, regionName);
 
-    specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
-    });
+    specificUserClient.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(cqListener.getNumErrors()).isEqualTo(1)));
   }
 
   @Test
-  public void cqExecuteWithMethodInvocationWithUnpopulatedRegionAndFollowedByAPutShouldTriggerCqError()
-      throws Exception {
-    String query = "select * from /" + regionName + " r where r.name = 'Beth'";;
+  public void cqExecuteWithMethodInvocationWithUnpopulatedRegionAndFollowedByAPutShouldTriggerCqError() {
+    String query = "select * from /" + regionName + " r where r.name = 'Beth'";
 
     specificUserClient.invoke(() -> {
       QueryService queryService = getClientCache().getQueryService();
@@ -159,14 +150,12 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
     Object[] values = {new QueryTestObject(1, "Mary")};
     putIntoRegion(superUserClient, keys, values, regionName);
 
-    specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
-    });
+    specificUserClient.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(cqListener.getNumErrors()).isEqualTo(1)));
   }
 
   @Test
-  public void cqCanBeClosedByTheCreator() throws Exception {
+  public void cqCanBeClosedByTheCreator() {
     String query = "select * from /" + regionName + " r where r.id = 0";
 
     specificUserClient.invoke(() -> {
@@ -176,21 +165,20 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
       CqQuery cq = createCq(queryService, query, cqListener);
       cq.execute();
       cq.close();
-      assertTrue(cq.isClosed());
+      assertThat(cq.isClosed()).isTrue();
     });
-    assertEquals(0, server.getCache().getCqService().getAllCqs().size());
+    assertThat(server.getCache().getCqService().getAllCqs().size()).isEqualTo(0);
   }
 
-
-  protected CqQuery createCq(QueryService queryService, String query, CqListener cqListener)
+  CqQuery createCq(QueryService queryService, String query, CqListener cqListener)
       throws CqException {
     CqAttributesFactory cqaf = new CqAttributesFactory();
     cqaf.addCqListener(cqListener);
-    CqQuery cq = queryService.newCq(query, cqaf.create());
-    return cq;
+
+    return queryService.newCq(query, cqaf.create());
   }
 
-  protected void executeCqButExpectException(CqQuery cq, String user,
+  private void executeCqButExpectException(CqQuery cq, String user,
       String regexForExpectedException) {
     try {
       cq.execute();
@@ -247,17 +235,15 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
       numErrors++;
     }
 
-    public int getNumEvent() {
+    int getNumEvent() {
       return numEvents;
     }
 
-    public int getNumErrors() {
+    int getNumErrors() {
       return numErrors;
     }
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
   }
 }

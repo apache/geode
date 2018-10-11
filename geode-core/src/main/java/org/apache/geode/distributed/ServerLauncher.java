@@ -337,7 +337,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return a reference to the Cache created by the GemFire Server start operation.
    * @see org.apache.geode.cache.Cache
    */
-  Cache getCache() {
+  public Cache getCache() {
     if (this.cache != null) {
       boolean isReconnecting = this.cache.isReconnecting();
       if (isReconnecting) {
@@ -1282,11 +1282,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
     return new ServerState(this, Status.NOT_RESPONDING, errorMessage);
   }
 
-  private Properties getOverriddenDefaults() throws IOException {
+  private Properties getOverriddenDefaults() {
     final Properties overriddenDefaults = new Properties();
 
     overriddenDefaults.put(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX.concat(LOG_FILE),
-        getLogFile().getCanonicalPath());
+        getLogFileCanonicalPath());
 
     for (String key : System.getProperties().stringPropertyNames()) {
       if (key.startsWith(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX)) {

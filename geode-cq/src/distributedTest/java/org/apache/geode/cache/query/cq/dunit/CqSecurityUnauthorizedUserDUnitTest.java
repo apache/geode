@@ -14,12 +14,10 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assume.assumeTrue;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -38,10 +36,11 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.security.query.QuerySecurityBase;
 import org.apache.geode.security.query.data.QueryTestObject;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
@@ -67,31 +66,28 @@ public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
   // Variables that need to be shared across invoke calls.
   protected static CqSecurityTestCqListener cqListener = null;
 
-  public List<String> getAllUsersOnlyAllowedWrite() {
-    return Arrays.asList("dataWriter");
-  }
-
-
   private String regexForExpectedExceptions = ".*DATA:READ:.*";
 
-  @Test
-  public void cqExecuteNoMethodInvocationWithUsersWithoutCqPermissionsWithPrepopulatedRegionShouldThrowSecurityException()
-      throws Exception {
-    putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "select * from /" + regionName + " r where r.id = 0";
-
-    specificUserClient.invoke(() -> {
+  private SerializableRunnableIF registerClientCq(String query) {
+    return () -> {
       QueryService queryService = getClientCache().getQueryService();
       CqSecurityTestCqListener cqListener = new CqSecurityTestCqListener();
       CqSecurityUnauthorizedUserDUnitTest.cqListener = cqListener;
       CqQuery cq = createCq(queryService, query, cqListener);
       executeCqButExpectException(cq, user, regexForExpectedExceptions);
-    });
+    };
   }
 
   @Test
-  public void cqExecuteWithInitialResultsWithMethodInvocationWithoutPermissionWithUnpopulatedRegionThrowSecurityException()
-      throws Exception {
+  public void cqExecuteNoMethodInvocationWithUsersWithoutCqPermissionsWithPrepopulatedRegionShouldThrowSecurityException() {
+    putIntoRegion(superUserClient, keys, values, regionName);
+    String query = "select * from /" + regionName + " r where r.id = 0";
+
+    specificUserClient.invoke(registerClientCq(query));
+  }
+
+  @Test
+  public void cqExecuteWithInitialResultsWithMethodInvocationWithoutPermissionWithUnpopulatedRegionThrowSecurityException() {
     String query = "select * from /" + regionName + " r where r.name = 'Beth'";
     specificUserClient.invoke(() -> {
       QueryService queryService = getClientCache().getQueryService();
@@ -103,20 +99,13 @@ public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
   }
 
   @Test
-  public void cqExecuteWithOutPermissionsWithUnpopulatedRegionShouldNotAllowCq() throws Exception {
+  public void cqExecuteWithOutPermissionsWithUnpopulatedRegionShouldNotAllowCq() {
     String query = "select * from /" + regionName + " r where r.name = 'Beth'";
-    specificUserClient.invoke(() -> {
-      QueryService queryService = getClientCache().getQueryService();
-      CqSecurityTestCqListener cqListener = new CqSecurityTestCqListener();
-      CqSecurityUnauthorizedUserDUnitTest.cqListener = cqListener;
-      CqQuery cq = createCq(queryService, query, cqListener);
-      executeCqButExpectException(cq, user, regexForExpectedExceptions);
-    });
+    specificUserClient.invoke(registerClientCq(query));
   }
 
   @Test
-  public void cqCreatedByAllowedUserButPutDoneByUnallowedReaderShouldStillExecuteWithCqEvent()
-      throws Exception {
+  public void cqCreatedByAllowedUserButPutDoneByUnallowedReaderShouldStillExecuteWithCqEvent() {
     assumeTrue(user.equals("dataWriter"));
     String query = "select * from /" + regionName + " r where r.id = 1";
     superUserClient.invoke(() -> {
@@ -131,22 +120,19 @@ public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
     Object[] values = {new QueryTestObject(1, "Mary")};
     putIntoRegion(specificUserClient, keys, values, regionName);
 
-    superUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertEquals(1, cqListener.getNumEvent()));
-    });
+    superUserClient.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(cqListener.getNumEvent()).isEqualTo(1)));
   }
 
-
-  protected CqQuery createCq(QueryService queryService, String query, CqListener cqListener)
+  private CqQuery createCq(QueryService queryService, String query, CqListener cqListener)
       throws CqException {
     CqAttributesFactory cqaf = new CqAttributesFactory();
     cqaf.addCqListener(cqListener);
-    CqQuery cq = queryService.newCq(query, cqaf.create());
-    return cq;
+
+    return queryService.newCq(query, cqaf.create());
   }
 
-  protected void executeCqButExpectException(CqQuery cq, String user,
+  private void executeCqButExpectException(CqQuery cq, String user,
       String regexForExpectedException) {
     try {
       cq.execute();
@@ -201,14 +187,11 @@ public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
 
     }
 
-    public int getNumEvent() {
+    int getNumEvent() {
       return numEvents;
     }
 
-
     @Override
-    public void close() {
-
-    }
+    public void close() {}
   }
 }

@@ -14,9 +14,8 @@
  */
 package org.apache.geode.security.query;
 
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,7 @@ import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class IndexSecurityDUnitTest extends QuerySecurityBase {
@@ -63,7 +62,7 @@ public class IndexSecurityDUnitTest extends QuerySecurityBase {
   public void indexCreatedButPutWithNoReadCredentialsShouldNotThrowSecurityException()
       throws Exception {
     QueryService queryService = server.getCache().getQueryService();
-    Index idIndex = queryService.createIndex("IdIndex", "id", "/" + regionName);
+    queryService.createIndex("IdIndex", "id", "/" + regionName);
     putIntoRegion(specificUserClient, keys, values, regionName);
   }
 
@@ -71,22 +70,19 @@ public class IndexSecurityDUnitTest extends QuerySecurityBase {
   public void indexCreatedWithRegionEntriesButPutWithNoReadCredentialsShouldNotThrowSecurityException()
       throws Exception {
     QueryService queryService = server.getCache().getQueryService();
-    Index idIndex = queryService.createIndex("IdIndex", "e.id", "/" + regionName + ".entries e");
+    queryService.createIndex("IdIndex", "e.id", "/" + regionName + ".entries e");
     putIntoRegion(specificUserClient, keys, values, regionName);
   }
 
   @Test
-  public void indexCreatedWithMethodInvocationOnPrepopulatedRegionShouldThrowSecurityException()
-      throws Exception {
+  public void indexCreatedWithMethodInvocationOnPrepopulatedRegionShouldThrowSecurityException() {
     QueryService queryService = server.getCache().getQueryService();
     putIntoRegion(superUserClient, keys, values, regionName);
 
-    try {
-      queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e");
-      fail("Index creation should have failed due to method invocation");
-    } catch (IndexInvalidException e) {
-      assertTrue(e.getMessage().contains("Unauthorized access to method: getName"));
-    }
+    assertThatThrownBy(
+        () -> queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e"))
+            .isInstanceOf(IndexInvalidException.class)
+            .hasMessageContaining("Unauthorized access to method: getName");
   }
 
   @Test
@@ -95,7 +91,6 @@ public class IndexSecurityDUnitTest extends QuerySecurityBase {
     QueryService queryService = server.getCache().getQueryService();
     Index index = queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e");
     putIntoRegion(superUserClient, keys, values, regionName);
-    assertFalse(index.isValid());
+    assertThat(index.isValid()).isFalse();
   }
-
 }

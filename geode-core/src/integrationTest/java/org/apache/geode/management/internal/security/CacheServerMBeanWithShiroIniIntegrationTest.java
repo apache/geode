@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class CacheServerMBeanWithShiroIniIntegrationTest {
   private CacheServerMXBean bean;
 
@@ -47,6 +47,7 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "root", password = "secret")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");
@@ -60,8 +61,9 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "guest", password = "guest")
-  public void testNoAccess() throws Exception {
+  public void testNoAccess() {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
         .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
@@ -81,20 +83,21 @@ public class CacheServerMBeanWithShiroIniIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "regionAReader", password = "password")
-  public void testRegionAccess() throws Exception {
+  public void testRegionAccess() {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
         .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     assertThatThrownBy(() -> bean.fetchLoadProbe())
         .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     assertThatThrownBy(() -> bean.getActiveCQCount())
         .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
-
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
         .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "dataReader", password = "12345")
   public void testDataRead() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))

@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class CommandOverHttpTest {
 
   @ClassRule
@@ -55,21 +55,21 @@ public class CommandOverHttpTest {
   }
 
   @Test
-  public void testListClient() throws Exception {
+  public void testListClient() {
     CommandResult result = gfshRule.executeCommand("list clients");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.toString()).contains("No clients were retrieved for cache-servers");
   }
 
   @Test
-  public void testDescribeClient() throws Exception {
+  public void testDescribeClient() {
     CommandResult result = gfshRule.executeCommand("describe client --clientID=xyz");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getErrorMessage()).contains("Specified Client ID xyz not present");
   }
 
   @Test
-  public void exportLogs() throws Exception {
+  public void exportLogs() {
     gfshRule.executeAndAssertThat("export logs").statusIsSuccess()
         .containsOutput("Logs exported to:");
   }
@@ -84,7 +84,7 @@ public class CommandOverHttpTest {
   }
 
   @Test
-  public void exportConfig() throws Exception {
+  public void exportConfig() {
     String dir = temporaryFolder.getRoot().getAbsolutePath();
     gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
         .containsOutput("File saved to " + Paths.get(dir, "server-cache.xml").toString())

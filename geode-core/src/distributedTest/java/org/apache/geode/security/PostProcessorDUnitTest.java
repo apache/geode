@@ -18,8 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,13 +45,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class PostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
   private static String REGION_NAME = "AuthRegion";
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -63,14 +62,16 @@ public class PostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
   @Before
   public void before() throws Exception {
-    Region region =
-        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    Region<String, String> region =
+        server.getCache().<String, String>createRegionFactory(RegionShortcut.REPLICATE)
+            .create(REGION_NAME);
     for (int i = 0; i < 5; i++) {
       region.put("key" + i, "value" + i);
     }
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testPostProcessRegionGet() {
     List<String> keys = new ArrayList<>();
     keys.add("key1");
@@ -82,13 +83,13 @@ public class PostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
       // post process for get
       Object value = region.get("key3");
-      assertEquals("super-user/AuthRegion/key3/value3", value);
+      assertThat(value).isEqualTo("super-user/AuthRegion/key3/value3");
 
       // post processs for getAll
       Map values = region.getAll(keys);
-      assertEquals(2, values.size());
-      assertEquals("super-user/AuthRegion/key1/value1", values.get("key1"));
-      assertEquals("super-user/AuthRegion/key2/value2", values.get("key2"));
+      assertThat(values.size()).isEqualTo(2);
+      assertThat(values.get("key1")).isEqualTo("super-user/AuthRegion/key1/value1");
+      assertThat(values.get("key2")).isEqualTo("super-user/AuthRegion/key2/value2");
     });
   }
 
@@ -101,21 +102,20 @@ public class PostProcessorDUnitTest extends JUnit4DistributedTestCase {
       // post process for query
       String query = "select * from /AuthRegion";
       SelectResults result = region.query(query);
-      assertEquals(5, result.size());
-
-      assertTrue(result.contains("super-user/null/null/value0"));
-      assertTrue(result.contains("super-user/null/null/value1"));
-      assertTrue(result.contains("super-user/null/null/value2"));
-      assertTrue(result.contains("super-user/null/null/value3"));
-      assertTrue(result.contains("super-user/null/null/value4"));
+      assertThat(result.size()).isEqualTo(5);
+      assertThat(result.contains("super-user/null/null/value0")).isTrue();
+      assertThat(result.contains("super-user/null/null/value1")).isTrue();
+      assertThat(result.contains("super-user/null/null/value2")).isTrue();
+      assertThat(result.contains("super-user/null/null/value3")).isTrue();
+      assertThat(result.contains("super-user/null/null/value4")).isTrue();
 
       Pool pool = PoolManager.find(region);
       result = (SelectResults) pool.getQueryService().newQuery(query).execute();
-      assertTrue(result.contains("super-user/null/null/value0"));
-      assertTrue(result.contains("super-user/null/null/value1"));
-      assertTrue(result.contains("super-user/null/null/value2"));
-      assertTrue(result.contains("super-user/null/null/value3"));
-      assertTrue(result.contains("super-user/null/null/value4"));
+      assertThat(result.contains("super-user/null/null/value0")).isTrue();
+      assertThat(result.contains("super-user/null/null/value1")).isTrue();
+      assertThat(result.contains("super-user/null/null/value2")).isTrue();
+      assertThat(result.contains("super-user/null/null/value3")).isTrue();
+      assertThat(result.contains("super-user/null/null/value4")).isTrue();
     });
   }
 
@@ -124,25 +124,26 @@ public class PostProcessorDUnitTest extends JUnit4DistributedTestCase {
     client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
 
-      ClientRegionFactory factory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      factory.addCacheListener(new CacheListenerAdapter() {
+      ClientRegionFactory<String, String> factory =
+          cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      factory.addCacheListener(new CacheListenerAdapter<String, String>() {
         @Override
         public void afterUpdate(EntryEvent event) {
-          assertEquals("super-user/AuthRegion/key1/value2",
-              event.getSerializedNewValue().getDeserializedValue());
+          assertThat(event.getSerializedNewValue().getDeserializedValue())
+              .isEqualTo("super-user/AuthRegion/key1/value2");
         }
       });
 
-      Region region = factory.create(REGION_NAME);
+      Region<String, String> region = factory.create(REGION_NAME);
       region.put("key1", "value1");
       region.registerInterest("key1");
     });
 
     client2.invoke(() -> {
       ClientCache cache = createClientCache("dataUser", "1234567", server.getPort());
-      Region region = createProxyRegion(cache, REGION_NAME);
+      @SuppressWarnings("unchecked")
+      Region<String, String> region = createProxyRegion(cache, REGION_NAME);
       region.put("key1", "value2");
     });
   }
-
 }

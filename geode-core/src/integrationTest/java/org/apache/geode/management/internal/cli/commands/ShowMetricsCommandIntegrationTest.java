@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class ShowMetricsCommandIntegrationTest {
   private static final Logger logger = LogService.getLogger();
   private static final String REGION_NAME = "test-region";
@@ -51,7 +51,7 @@ public class ShowMetricsCommandIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
 
   @Test
-  public void everyCategoryHasAUseCase() throws Exception {
+  public void everyCategoryHasAUseCase() {
     Set<ShowMetricsCommand.Category> categoriesUsed = new HashSet<>();
     categoriesUsed.addAll(ShowMetricsCommand.REGION_METRIC_CATEGORIES);
     categoriesUsed.addAll(ShowMetricsCommand.MEMBER_METRIC_CATEGORIES);
@@ -74,7 +74,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void getRegionMetricsShowsExactlyDefaultCategories() throws Exception {
+  public void getRegionMetricsShowsExactlyDefaultCategories() {
     // Use --region and --member to get RegionMetricsFromMember
     String cmd = "show metrics --region=/" + REGION_NAME + " --member=" + MEMBER_NAME;
     List<String> expectedCategories =
@@ -87,7 +87,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void getSystemRegionMetricsShowsExactlyDefaultCategories() throws Exception {
+  public void getSystemRegionMetricsShowsExactlyDefaultCategories() {
     // Use --region alone to get SystemRegionMetrics
     String cmd = "show metrics --region=/" + REGION_NAME;
     List<String> expectedCategories =
@@ -101,7 +101,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void getMemberMetricsShowsExactlyDefaultCategories() throws Exception {
+  public void getMemberMetricsShowsExactlyDefaultCategories() {
     // Use --member to get member metrics
     String cmd = "show metrics --member=" + MEMBER_NAME;
     List<String> expectedCategories =
@@ -115,7 +115,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void getMemberWithPortMetricsShowsExactlyDefaultCategories() throws Exception {
+  public void getMemberWithPortMetricsShowsExactlyDefaultCategories() {
     // Use --member and --port to get member metrics with port info
     String cmd = "show metrics --member=" + MEMBER_NAME + " --port=" + server.getPort();
     List<String> expectedCategories =
@@ -129,7 +129,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void getSystemMetricsShowsExactlyDefaultCategories() throws Exception {
+  public void getSystemMetricsShowsExactlyDefaultCategories() {
     // No specified options yield system-wide metrics
     String cmd = "show metrics";
     List<String> expectedCategories =
@@ -143,7 +143,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void invalidCategoryGetsReported() throws Exception {
+  public void invalidCategoryGetsReported() {
     String cmd =
         "show metrics --categories=\"cluster,cache,some_invalid_category,another_invalid_category\"";
 
@@ -153,7 +153,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void categoryOptionAbridgesOutput() throws Exception {
+  public void categoryOptionAbridgesOutput() {
     String cmd = "show metrics --categories=\"cluster,cache\"";
     List<String> expectedCategories = Arrays.asList("cluster", "cache", "");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
@@ -163,7 +163,7 @@ public class ShowMetricsCommandIntegrationTest {
   }
 
   @Test
-  public void getRegionMetricsForPartitionedRegionWithStatistics() throws Exception {
+  public void getRegionMetricsForPartitionedRegionWithStatistics() {
     String cmd = "create region --name=region2 --type=PARTITION --enable-statistics";
     gfsh.executeAndAssertThat(cmd).statusIsSuccess();
     String cmd2 = "show metrics --member=" + MEMBER_NAME + " --region=region2";

@@ -35,11 +35,9 @@ public class CacheConfigIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private File xmlFile;
-
   @Test
   public void testXmlCreatedByCacheConfigCanBeUsedToStartupServer() throws Exception {
-    xmlFile = temporaryFolder.newFile("cache.xml");
+    File xmlFile = temporaryFolder.newFile("cache.xml");
     CacheConfig cacheConfig = new CacheConfig();
     cacheConfig.setVersion("1.0");
     JAXBService service = new JAXBService(CacheConfig.class);
@@ -49,5 +47,4 @@ public class CacheConfigIntegrationTest {
     server.withProperty("cache-xml-file", xmlFile.getAbsolutePath());
     server.startServer();
   }
-
 }

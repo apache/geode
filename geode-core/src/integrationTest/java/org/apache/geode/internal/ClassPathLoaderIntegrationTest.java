@@ -16,10 +16,6 @@ package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -53,7 +49,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
@@ -65,11 +60,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
  * Extracted from ClassPathLoaderTest.
  */
 public class ClassPathLoaderIntegrationTest {
-
   private static final int TEMP_FILE_BYTES_COUNT = 256;
-
   private File tempFile;
-  private File tempFile2;
   private ClassBuilder classBuilder = new ClassBuilder();
 
   @Rule
@@ -90,8 +82,8 @@ public class ClassPathLoaderIntegrationTest {
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
-    this.tempFile2 = this.temporaryFolder.newFile("tempFile2.tmp");
-    fos = new FileOutputStream(this.tempFile2);
+    File tempFile2 = this.temporaryFolder.newFile("tempFile2.tmp");
+    fos = new FileOutputStream(tempFile2);
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
@@ -104,15 +96,12 @@ public class ClassPathLoaderIntegrationTest {
     // GEODE-2796
     Thread.currentThread().setContextClassLoader(null);
     String jarName = "JarDeployerIntegrationTest.jar";
-
     String classAResource = "integration/parent/ClassA.class";
-
     String classAName = "integration.parent.ClassA";
-
     File firstJar = createJarWithClass("ClassA");
 
     // First deploy of the JAR file
-    ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, firstJar).getFile();
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, firstJar);
 
     assertThatClassCanBeLoaded(classAName);
     assertThatResourceCanBeLoaded(classAResource);
@@ -192,11 +181,39 @@ public class ClassPathLoaderIntegrationTest {
         ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
     assertThat(newJarClassLoader).isNull();
     assertThat(deployedJar).exists();
-
   }
 
   @Test
-  public void testDeployWithExistingDependentJars() throws Exception {
+  public void deployNewVersionOfFunctionOverOldVersion() throws Exception {
+    File jarVersion1 = createVersionOfJar("Version1");
+    File jarVersion2 = createVersionOfJar("Version2");
+
+    ServerStarterRule serverStarterRule = new ServerStarterRule().withWorkingDir();
+    serverStarterRule.before();
+    serverStarterRule.startServer();
+    DistributedSystem distributedSystem =
+        serverStarterRule.getCache().getInternalDistributedSystem();
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion1);
+
+    assertThatClassCanBeLoaded("jddunit.function.MyFunction");
+    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
+
+    @SuppressWarnings("unchecked")
+    List<String> result = (List<String>) execution.execute("MyFunction").getResult();
+    assertThat(result.get(0)).isEqualTo("Version1");
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion2);
+
+    @SuppressWarnings("unchecked")
+    List<String> result2 = (List<String>) execution.execute("MyFunction").getResult();
+    assertThat(result2.get(0)).isEqualTo("Version2");
+
+    serverStarterRule.after();
+  }
+
+  @Test
+  public void deployWithExistingDependentJars() throws Exception {
     ClassBuilder classBuilder = new ClassBuilder();
     final File parentJarFile =
         new File(temporaryFolder.getRoot(), "JarDeployerDUnitAParent.v1.jar");
@@ -256,48 +273,23 @@ public class ClassPathLoaderIntegrationTest {
 
     ServerStarterRule serverStarterRule =
         new ServerStarterRule().withWorkingDir(temporaryFolder.getRoot());
+    serverStarterRule.before();
     serverStarterRule.startServer();
+    DistributedSystem distributedSystem =
+        serverStarterRule.getCache().getInternalDistributedSystem();
 
-    GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
-    DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
     Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
     ResultCollector resultCollector = execution.execute("JarDeployerDUnitFunction");
     @SuppressWarnings("unchecked")
     List<String> result = (List<String>) resultCollector.getResult();
-    assertEquals("PARENT:USES", result.get(0));
+    assertThat(result.get(0)).isEqualTo("PARENT:USES");
 
     serverStarterRule.after();
   }
 
-  @Test
-  public void deployNewVersionOfFunctionOverOldVersion() throws Exception {
-    File jarVersion1 = createVersionOfJar("Version1", "MyFunction", "MyJar.jar");
-    File jarVersion2 = createVersionOfJar("Version2", "MyFunction", "MyJar.jar");
-
-    ServerStarterRule serverStarterRule = new ServerStarterRule();
-    serverStarterRule.startServer();
-
-    GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
-    DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
-
-    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion1);
-
-    assertThatClassCanBeLoaded("jddunit.function.MyFunction");
-    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
-
-    List<String> result = (List<String>) execution.execute("MyFunction").getResult();
-    assertThat(result.get(0)).isEqualTo("Version1");
-
-    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion2);
-    result = (List<String>) execution.execute("MyFunction").getResult();
-    assertThat(result.get(0)).isEqualTo("Version2");
-
-    serverStarterRule.after();
-  }
-
-
-  private File createVersionOfJar(String version, String functionName, String jarName)
-      throws IOException {
+  private File createVersionOfJar(String version) throws IOException {
+    String jarName = "MyJar.jar";
+    String functionName = "MyFunction";
     String classContents =
         "package jddunit.function;" + "import org.apache.geode.cache.execute.Function;"
             + "import org.apache.geode.cache.execute.FunctionContext;" + "public class "
@@ -318,7 +310,7 @@ public class ClassPathLoaderIntegrationTest {
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 
-  private void assertThatClassCannotBeLoaded(String className) throws ClassNotFoundException {
+  private void assertThatClassCannotBeLoaded(String className) {
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
         .isExactlyInstanceOf(ClassNotFoundException.class);
   }
@@ -350,7 +342,6 @@ public class ClassPathLoaderIntegrationTest {
     assertThat(is).isNull();
   }
 
-
   /**
    * Verifies that <tt>getResource</tt> works with TCCL from {@link ClassPathLoader}.
    */
@@ -361,16 +352,16 @@ public class ClassPathLoaderIntegrationTest {
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
 
     String resourceToGet = "com/nowhere/testGetResourceWithTCCL.rsc";
-    assertNull(dcl.getResource(resourceToGet));
+    assertThat(dcl.getResource(resourceToGet)).isNull();
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
       URL url = dcl.getResource(resourceToGet);
-      assertNotNull(url);
+      assertThat(url).isNotNull();
 
       InputStream is = url.openStream();
-      assertNotNull(is);
+      assertThat(is).isNotNull();
 
       int totalBytesRead = 0;
       byte[] input = new byte[128];
@@ -382,7 +373,7 @@ public class ClassPathLoaderIntegrationTest {
       }
       bis.close();
 
-      assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
+      assertThat(totalBytesRead).isEqualTo(TEMP_FILE_BYTES_COUNT);
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
     }
@@ -399,18 +390,18 @@ public class ClassPathLoaderIntegrationTest {
 
     String resourceToGet = "com/nowhere/testGetResourceWithTCCL.rsc";
     Enumeration<URL> urls = dcl.getResources(resourceToGet);
-    assertNotNull(urls);
-    assertFalse(urls.hasMoreElements());
+    assertThat(urls).isNotNull();
+    assertThat(urls.hasMoreElements()).isFalse();
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
       urls = dcl.getResources(resourceToGet);
-      assertNotNull(urls);
+      assertThat(urls).isNotNull();
 
       URL url = urls.nextElement();
       InputStream is = url.openStream();
-      assertNotNull(is);
+      assertThat(is).isNotNull();
 
       int totalBytesRead = 0;
       byte[] input = new byte[128];
@@ -422,7 +413,7 @@ public class ClassPathLoaderIntegrationTest {
       }
       bis.close();
 
-      assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
+      assertThat(totalBytesRead).isEqualTo(TEMP_FILE_BYTES_COUNT);
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
     }
@@ -438,14 +429,14 @@ public class ClassPathLoaderIntegrationTest {
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
 
     String resourceToGet = "com/nowhere/testGetResourceAsStreamWithTCCL.rsc";
-    assertNull(dcl.getResourceAsStream(resourceToGet));
+    assertThat(dcl.getResourceAsStream(resourceToGet)).isNull();
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
       // ensure that TCCL is only CL that can find this resource
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
       InputStream is = dcl.getResourceAsStream(resourceToGet);
-      assertNotNull(is);
+      assertThat(is).isNotNull();
 
       int totalBytesRead = 0;
       byte[] input = new byte[128];
@@ -457,13 +448,14 @@ public class ClassPathLoaderIntegrationTest {
       }
       bis.close();
 
-      assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
+      assertThat(totalBytesRead).isEqualTo(TEMP_FILE_BYTES_COUNT);
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
     }
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testDeclarableFunctionsWithNoCacheXml() throws Exception {
     final String jarFilename = "JarClassLoaderJUnitNoXml.jar";
 
@@ -498,6 +490,7 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testDependencyBetweenJars() throws Exception {
     final File parentJarFile = temporaryFolder.newFile("JarClassLoaderJUnitParent.jar");
     final File usesJarFile = temporaryFolder.newFile("JarClassLoaderJUnitUses.jar");
@@ -576,7 +569,7 @@ public class ClassPathLoaderIntegrationTest {
     assertThat(inputStream).isNotNull();
 
     final byte[] fileBytes = new byte[fileContent.length()];
-    inputStream.read(fileBytes);
+    assertThat(inputStream.read(fileBytes)).isNotNull();
     inputStream.close();
     assertThat(fileContent).isEqualTo(new String(fileBytes));
   }
@@ -638,14 +631,15 @@ public class ClassPathLoaderIntegrationTest {
     /**
      * Specifies no parent to ensure that this loader generates the named class.
      */
-    public GeneratingClassLoader() {
+    GeneratingClassLoader() {
       super(null); // no parent!!
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
+    @SuppressWarnings("deprecation")
+    protected Class<?> findClass(String name) {
       ClassGen cg = new ClassGen(name, "java.lang.Object", "<generated>",
-          Constants.ACC_PUBLIC | Constants.ACC_SUPER, null);
+          Constants.ACC_SUPER | Constants.ACC_PUBLIC, null);
       cg.addEmptyConstructor(Constants.ACC_PUBLIC);
       JavaClass jClazz = cg.getJavaClass();
       byte[] bytes = jClazz.getBytes();
@@ -659,36 +653,29 @@ public class ClassPathLoaderIntegrationTest {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResource returning " + url);
       } catch (IOException e) {
+        // Do nothing.
       }
+
       return url;
     }
 
     @Override
-    protected Enumeration<URL> findResources(String name) throws IOException {
+    protected Enumeration<URL> findResources(String name) {
       URL url = null;
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResources returning " + url);
       } catch (IOException e) {
+        // Do nothing.
       }
-      Vector<URL> urls = new Vector<URL>();
+
+      Vector<URL> urls = new Vector<>();
       urls.add(url);
       return urls.elements();
     }
 
-    protected File getTempFile() {
+    private File getTempFile() {
       return tempFile;
-    }
-  }
-
-  /**
-   * Custom class loader which uses BCEL to always dynamically generate a class for any class name
-   * it tries to load.
-   */
-  private class GeneratingClassLoader2 extends GeneratingClassLoader {
-    @Override
-    protected File getTempFile() {
-      return tempFile2;
     }
   }
 
@@ -707,7 +694,7 @@ public class ClassPathLoaderIntegrationTest {
   private static class TestResultSender implements ResultSender<Object> {
     private Object result;
 
-    public TestResultSender() {}
+    TestResultSender() {}
 
     protected Object getResults() {
       return this.result;

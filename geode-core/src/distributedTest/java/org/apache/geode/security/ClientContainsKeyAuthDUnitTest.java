@@ -17,7 +17,7 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,13 +34,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -51,8 +51,9 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Before
   public void before() throws Exception {
-    Region region =
-        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    Region<String, String> region =
+        server.getCache().<String, String>createRegionFactory(RegionShortcut.REPLICATE)
+            .create(REGION_NAME);
     for (int i = 0; i < 5; i++) {
       region.put("key" + i, "value" + i);
     }
@@ -63,7 +64,7 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
       ClientCache cache = createClientCache("key1User", "1234567", server.getPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
-      assertTrue(region.containsKeyOnServer("key1"));
+      assertThat(region.containsKeyOnServer("key1")).isTrue();
       SecurityTestUtil.assertNotAuthorized(() -> region.containsKeyOnServer("key3"),
           "DATA:READ:AuthRegion:key3");
     });
@@ -72,11 +73,10 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
       ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
       region.containsKeyOnServer("key3");
-      assertTrue(region.containsKeyOnServer("key1"));
+      assertThat(region.containsKeyOnServer("key1")).isTrue();
     });
 
     ai1.await();
     ai2.await();
   }
-
 }

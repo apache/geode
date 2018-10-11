@@ -14,10 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,23 +33,18 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({OQLQueryTest.class})
+@Category(OQLQueryTest.class)
 public class ArithmeticOperationsIntegrationTest {
   @Rule
   public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
-
-  private Cache cache;
-  QueryService queryService;
+  private QueryService queryService;
 
   @Before
   public void setup() {
-    String regionName = "portfolio";
-
-    cache = serverStarterRule.getCache();
-    assertNotNull(cache);
-    Region region =
-        cache.createRegionFactory().setDataPolicy(DataPolicy.REPLICATE).create(regionName);
-
+    Cache cache = serverStarterRule.getCache();
+    assertThat(cache).isNotNull();
+    Region<Integer, Portfolio> region = cache.<Integer, Portfolio>createRegionFactory()
+        .setDataPolicy(DataPolicy.REPLICATE).create("portfolio");
     Portfolio p = new Portfolio(1);
     region.put(1, p);
     Portfolio p2 = new Portfolio(2);
@@ -63,180 +56,143 @@ public class ArithmeticOperationsIntegrationTest {
   }
 
   @Test
-  public void modOnNonNumericShouldThrowException() throws Exception {
-    try {
-      queryService.newQuery("select * from /portfolio p where p % 2 = 1").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Arithmetic Operations can only be applied to numbers", qite.getMessage());
-    }
+  public void modOnNonNumericShouldThrowException() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p % 2 = 1").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Arithmetic Operations can only be applied to numbers");
   }
 
   @Test
-  public void modOnNullShouldThrowException() throws Exception {
-    try {
-      queryService.newQuery("select * from /portfolio p where null % 2 = 1").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Cannot evaluate arithmetic operations on null values", qite.getMessage());
-    }
+  public void modOnNullShouldThrowException() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where null % 2 = 1").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Cannot evaluate arithmetic operations on null values");
   }
 
   @Test
   public void modOnNumericShouldApplyOperationAndReturnMatchingResults() throws Exception {
     SelectResults modPercentageResults = (SelectResults) queryService
         .newQuery("select * from /portfolio p where p.ID % 2 = 1").execute();
-
     SelectResults modKeywordResults = (SelectResults) queryService
         .newQuery("select * from /portfolio p where p.ID MOD 2 = 1").execute();
 
-    assertEquals(2, modPercentageResults.size());
-    assertEquals(modPercentageResults.size(), modKeywordResults.size());
+    assertThat(modPercentageResults.size()).isEqualTo(2);
+    assertThat(modKeywordResults.size()).isEqualTo(modPercentageResults.size());
   }
 
   @Test
   public void modOperationAsProjectionShouldCorrectlyModReturnValue() throws Exception {
     SelectResults modPercentageResults = (SelectResults) queryService
         .newQuery("select (ID % 2) from /portfolio p where p.ID % 2 = 1").execute();
-
     SelectResults modKeywordResults = (SelectResults) queryService
         .newQuery("select ID mod 2 from /portfolio p where p.ID MOD 2 = 1").execute();
 
-    assertEquals(2, modPercentageResults.size());
-    assertEquals(modPercentageResults.size(), modKeywordResults.size());
-    for (Object o : modKeywordResults) {
-      assertEquals(1, o);
-    }
+    assertThat(modPercentageResults.size()).isEqualTo(2);
+    assertThat(modKeywordResults.size()).isEqualTo(modPercentageResults.size());
+    for (Object o : modKeywordResults)
+      assertThat(o).isEqualTo(1);
   }
 
   @Test
   public void addOperationShouldApplyOpInQuery() throws Exception {
     SelectResults results = (SelectResults) queryService
         .newQuery("select * from /portfolio p where p.ID + 1 = 2").execute();
-    assertEquals(1, results.size());
+    assertThat(results.size()).isEqualTo(1);
   }
 
   @Test
-  public void addOperationShouldThrowExceptionWhenAddingNonNumeric() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID + '1' = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Arithmetic Operations can only be applied to numbers", qite.getMessage());
-    }
+  public void addOperationShouldThrowExceptionWhenAddingNonNumeric() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID + '1' = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Arithmetic Operations can only be applied to numbers");
   }
 
   @Test
-  public void addOperationShouldThrowExceptionWhenAddingNull() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID + null = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Cannot evaluate arithmetic operations on null values", qite.getMessage());
-    }
+  public void addOperationShouldThrowExceptionWhenAddingNull() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID + null = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Cannot evaluate arithmetic operations on null values");
   }
 
   @Test
-  public void subtractOperationShouldThrowExceptionWhenAddingNonNumeric() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID - '1' = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Arithmetic Operations can only be applied to numbers", qite.getMessage());
-    }
+  public void subtractOperationShouldThrowExceptionWhenAddingNonNumeric() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID - '1' = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Arithmetic Operations can only be applied to numbers");
   }
 
   @Test
-  public void subtractOperationShouldThrowExceptionWhenAddingNull() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID - null = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Cannot evaluate arithmetic operations on null values", qite.getMessage());
-    }
+  public void subtractOperationShouldThrowExceptionWhenAddingNull() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID - null = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Cannot evaluate arithmetic operations on null values");
   }
 
   @Test
   public void subtractOperationShouldCorrectlySubtractInQuery() throws Exception {
     SelectResults results = (SelectResults) queryService
         .newQuery("select * from /portfolio p where (p.ID - 1) = 2").execute();
-
-    assertEquals(1, results.size());
+    assertThat(results.size()).isEqualTo(1);
   }
 
   @Test
-  public void multiplyOperationShouldThrowExceptionWhenAddingNonNumeric() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID * '1' = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Arithmetic Operations can only be applied to numbers", qite.getMessage());
-    }
+  public void multiplyOperationShouldThrowExceptionWhenAddingNonNumeric() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID * '1' = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Arithmetic Operations can only be applied to numbers");
   }
 
   @Test
-  public void multiplyOperationShouldThrowExceptionWhenAddingNull() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID * null = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Cannot evaluate arithmetic operations on null values", qite.getMessage());
-    }
+  public void multiplyOperationShouldThrowExceptionWhenAddingNull() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID * null = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Cannot evaluate arithmetic operations on null values");
   }
 
   @Test
   public void multiplyOperationShouldCorrectlyExecuteInQuery() throws Exception {
     SelectResults results = (SelectResults) queryService
         .newQuery("select * from /portfolio p where (p.ID * 1) = 3").execute();
-
-    assertEquals(1, results.size());
+    assertThat(results.size()).isEqualTo(1);
   }
 
   @Test
-  public void divideOperationShouldThrowExceptionWhenDividingNonNumeric() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID / '1' = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Arithmetic Operations can only be applied to numbers", qite.getMessage());
-    }
+  public void divideOperationShouldThrowExceptionWhenDividingNonNumeric() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID / '1' = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Arithmetic Operations can only be applied to numbers");
   }
 
   @Test
-  public void divideOperationShouldThrowExceptionWhenDividingNull() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where p.ID / null = 2").execute();
-      fail();
-    } catch (TypeMismatchException qite) {
-      assertEquals("Cannot evaluate arithmetic operations on null values", qite.getMessage());
-    }
+  public void divideOperationShouldThrowExceptionWhenDividingNull() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where p.ID / null = 2").execute())
+            .isInstanceOf(TypeMismatchException.class)
+            .hasMessage("Cannot evaluate arithmetic operations on null values");
   }
 
   @Test
-  public void divideByZeroShouldThrowException() throws Exception {
-    try {
-      SelectResults results = (SelectResults) queryService
-          .newQuery("select * from /portfolio p where (p.ID / 0) = 3").execute();
-      fail();
-    } catch (QueryInvocationTargetException e) {
-      assertTrue(e.getCause() instanceof ArithmeticException);
-    }
+  public void divideByZeroShouldThrowException() {
+    assertThatThrownBy(
+        () -> queryService.newQuery("select * from /portfolio p where (p.ID / 0) = 3").execute())
+            .isInstanceOf(QueryInvocationTargetException.class)
+            .hasCauseInstanceOf(ArithmeticException.class);
   }
 
   @Test
   public void divideOperationShouldCorrectlyExecuteInQuery() throws Exception {
     SelectResults results = (SelectResults) queryService
         .newQuery("select * from /portfolio p where (p.ID / 1) = 3").execute();
-
-    assertEquals(1, results.size());
+    assertThat(results.size()).isEqualTo(1);
   }
 
   @Test
@@ -246,8 +202,7 @@ public class ArithmeticOperationsIntegrationTest {
         .newQuery(
             "select * from /portfolio p where (p.ID - 1 + 1 - 1 + 1 - 1 + 1 * 1 / 1 - 1 + 1 - 1) = 2")
         .execute();
-
-    assertEquals(1, results.size());
+    assertThat(results.size()).isEqualTo(1);
   }
 
   @Test
@@ -255,8 +210,7 @@ public class ArithmeticOperationsIntegrationTest {
       throws Exception {
     SelectResults results =
         (SelectResults) queryService.newQuery("select 1 + 2 * 3 from /portfolio p").execute();
-
-    assertEquals(7, results.iterator().next());
+    assertThat(results.iterator().next()).isEqualTo(7);
   }
 
   @Test
@@ -264,8 +218,7 @@ public class ArithmeticOperationsIntegrationTest {
       throws Exception {
     SelectResults results =
         (SelectResults) queryService.newQuery("select 2 * 3 + 1 from /portfolio p").execute();
-
-    assertEquals(7, results.iterator().next());
+    assertThat(results.iterator().next()).isEqualTo(7);
   }
 
   @Test
@@ -273,15 +226,13 @@ public class ArithmeticOperationsIntegrationTest {
       throws Exception {
     SelectResults results =
         (SelectResults) queryService.newQuery("select (1 + 2) * 3 from /portfolio p").execute();
-
-    assertEquals(9, results.iterator().next());
+    assertThat(results.iterator().next()).isEqualTo(9);
   }
 
   @Test
   public void arithmeticOperationsRetainCorrectOperatorPrecedence() throws Exception {
     SelectResults results = (SelectResults) queryService
         .newQuery("select 1 + 2 * 12 - 4 / 2 + 10 from /portfolio p").execute();
-
-    assertEquals(33, results.iterator().next());
+    assertThat(results.iterator().next()).isEqualTo(33);
   }
 }

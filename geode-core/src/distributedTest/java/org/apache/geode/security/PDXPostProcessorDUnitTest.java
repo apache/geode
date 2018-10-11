@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -43,8 +42,8 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -52,7 +51,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
@@ -77,9 +76,8 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
   @Before
   public void before() throws Exception {
-    Host host = Host.getHost(0);
-    this.client1 = host.getVM(1);
-    this.client2 = host.getVM(2);
+    this.client1 = VM.getVM(1);
+    this.client2 = VM.getVM(2);
   }
 
   @Rule
@@ -91,16 +89,21 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
           .withProperty("security-pdx", this.pdxPersistent + "").withJMXManager()
           .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
-  @Test
-  public void testRegionGet() {
-    this.client2.invoke(() -> {
+  @SuppressWarnings("unchecked")
+  private SerializableRunnableIF populateClientRegion() {
+    return () -> {
       ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       // put in a byte value
       region.put("key2", BYTES);
-    });
+    };
+  }
+
+  @Test
+  public void testRegionGet() {
+    this.client2.invoke(populateClientRegion());
 
     this.client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
@@ -123,13 +126,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testQuery() {
-    this.client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
-      Region region = createProxyRegion(cache, REGION_NAME);
-      // put in a value that's a domain object
-      region.put("key1", new SimpleClass(1, (byte) 1));
-      region.put("key2", BYTES);
-    });
+    this.client2.invoke(populateClientRegion());
 
     this.client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
@@ -139,9 +136,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       String query = "select * from /AuthRegion";
       SelectResults result = region.query(query);
 
-      Iterator itr = result.iterator();
-      while (itr.hasNext()) {
-        Object obj = itr.next();
+      for (Object obj : result) {
         if (obj instanceof byte[]) {
           assertThat(Arrays.equals(BYTES, (byte[]) obj)).isTrue();
         } else {
@@ -157,6 +152,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testRegisterInterest() {
     IgnoredException.addIgnoredException("NoAvailableServersException");
 
@@ -200,14 +196,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testGfshCommand() {
     // have client2 input some domain data into the region
-    this.client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
-      Region region = createProxyRegion(cache, REGION_NAME);
-      // put in a value that's a domain object
-      region.put("key1", new SimpleClass(1, (byte) 1));
-      // put in a byte value
-      region.put("key2", BYTES);
-    });
+    this.client2.invoke(populateClientRegion());
 
     this.client1.invoke(() -> {
       GfshCommandRule gfsh = new GfshCommandRule();

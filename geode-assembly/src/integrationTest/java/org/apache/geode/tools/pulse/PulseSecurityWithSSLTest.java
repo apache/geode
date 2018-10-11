@@ -100,6 +100,7 @@ public class PulseSecurityWithSSLTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void loginWithDeprecatedSSLOptions() throws Exception {
     Properties securityProps = new Properties();
     securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");

@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class CacheServerMBeanAuthorizationJUnitTest {
   private CacheServerMXBean bean;
 
@@ -52,6 +52,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testDataAdmin() throws Exception {
     bean.removeIndex("foo");
@@ -68,8 +69,9 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
-  public void testClusterAdmin() throws Exception {
+  public void testClusterAdmin() {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
         .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
@@ -79,6 +81,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
 
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
@@ -89,8 +92,9 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "stranger", password = "1234567")
-  public void testNoAccess() throws Exception {
+  public void testNoAccess() {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.removeIndex("foo"))

@@ -17,8 +17,8 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
@@ -35,7 +35,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClusterConfigWithoutSecurityDUnitTest {
 
   @Rule
@@ -46,13 +46,10 @@ public class ClusterConfigWithoutSecurityDUnitTest {
 
   @Before
   public void before() throws Exception {
-    IgnoredException
-        .addIgnoredException(
-            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
-                .toString());
-    IgnoredException
-        .addIgnoredException(
-            "A server must use cluster configuration when joining a secured cluster.".toString());
+    IgnoredException.addIgnoredException(
+        "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
+    IgnoredException.addIgnoredException(
+        "A server must use cluster configuration when joining a secured cluster.");
     this.lsRule.startLocatorVM(0, new Properties());
   }
 
@@ -66,7 +63,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
    * manager if use-cluster-config is false
    */
   @Test
-  public void serverShouldBeAllowedToStartWithSecurityIfNotUsingClusterConfig() throws Exception {
+  public void serverShouldBeAllowedToStartWithSecurityIfNotUsingClusterConfig() {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
@@ -78,17 +75,18 @@ public class ClusterConfigWithoutSecurityDUnitTest {
 
     // after cache is created, the configuration won't chagne
     Properties secProps = ds.getSecurityProperties();
-    assertEquals(2, secProps.size());
-    assertEquals(SimpleTestSecurityManager.class.getName(),
-        secProps.getProperty("security-manager"));
-    assertEquals(PDXPostProcessor.class.getName(), secProps.getProperty("security-post-processor"));
+    assertThat(secProps.size()).isEqualTo(2);
+    assertThat(secProps.getProperty("security-manager"))
+        .isEqualTo(SimpleTestSecurityManager.class.getName());
+    assertThat(secProps.getProperty("security-post-processor"))
+        .isEqualTo(PDXPostProcessor.class.getName());
   }
 
   /**
    * when locator is not secured, server should not be secured if use-cluster-config is true
    */
   @Test
-  public void serverShouldNotBeAllowedToStartWithSecurityIfUsingClusterConfig() throws Exception {
+  public void serverShouldNotBeAllowedToStartWithSecurityIfUsingClusterConfig() {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
@@ -100,7 +98,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
   }
 
   @Test
-  public void nonExistentSecurityManagerThrowsGemFireSecurityException() throws Exception {
+  public void nonExistentSecurityManagerThrowsGemFireSecurityException() {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, "mySecurityManager");
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
@@ -109,5 +107,4 @@ public class ClusterConfigWithoutSecurityDUnitTest {
         .getPort())).isInstanceOf(GemFireSecurityException.class).hasMessage(
             "Instance could not be obtained, java.lang.ClassNotFoundException: mySecurityManager");
   }
-
 }

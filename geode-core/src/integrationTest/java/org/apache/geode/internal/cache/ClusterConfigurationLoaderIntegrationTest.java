@@ -116,9 +116,9 @@ public class ClusterConfigurationLoaderIntegrationTest {
 
   class CustomAnswer implements Answer {
     public int calls;
-    public int mockLimit;
+    int mockLimit;
 
-    public CustomAnswer(int mockLimit) {
+    CustomAnswer(int mockLimit) {
       this.calls = 0;
       this.mockLimit = mockLimit;
     }

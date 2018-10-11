@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class DataCommandsSecurityTest {
   private MemberMXBean bean;
 
@@ -45,7 +45,7 @@ public class DataCommandsSecurityTest {
       .withAutoStart();
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     Cache cache = server.getCache();
     cache.createRegionFactory().create("region1");
     cache.createRegionFactory().create("region2");
@@ -63,7 +63,7 @@ public class DataCommandsSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "region1-user", password = "1234567")
-  public void testDataUser() throws Exception {
+  public void testDataUser() {
     bean.processCommand("locate entry --key=k1 --region=region1");
 
     // can't operate on secureRegion
@@ -100,5 +100,4 @@ public class DataCommandsSecurityTest {
     assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2"))
         .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("DATA:READ:region2");
   }
-
 }

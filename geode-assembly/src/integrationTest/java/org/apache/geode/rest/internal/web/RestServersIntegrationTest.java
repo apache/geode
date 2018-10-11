@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 public class RestServersIntegrationTest {
 
   private static GeodeDevRestClient restClient;
@@ -41,12 +41,11 @@ public class RestServersIntegrationTest {
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withRestService(true);
 
-
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
-  public static void before() throws Exception {
+  public static void before() {
     assumeTrue(
         "Default port was unavailable for testing.  Please ensure the testing environment is clean.",
         AvailablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePort.SOCKET));
@@ -56,7 +55,7 @@ public class RestServersIntegrationTest {
   }
 
   @Test
-  public void testGet() throws Exception {
+  public void testGet() {
     assertResponse(restClient.doGet("/", null, null))
         .hasStatusCode(HttpStatus.SC_OK);
   }

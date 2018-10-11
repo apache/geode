@@ -18,8 +18,7 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -35,7 +34,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 
 public class SecurityWithoutClusterConfigDUnitTest {
 
@@ -51,11 +50,10 @@ public class SecurityWithoutClusterConfigDUnitTest {
   public void before() throws Exception {
     IgnoredException
         .addIgnoredException(
-            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
-                .toString());
+            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
     IgnoredException
         .addIgnoredException(
-            "A server must use cluster configuration when joining a secured cluster.".toString());
+            "A server must use cluster configuration when joining a secured cluster.");
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
@@ -67,7 +65,7 @@ public class SecurityWithoutClusterConfigDUnitTest {
   // if a secured locator is started without cluster config service, the server is free to use any
   // security manager
   // or no security manager at all. Currently this is valid, but not recommended.
-  public void testStartServerWithClusterConfig() throws Exception {
+  public void testStartServerWithClusterConfig() {
 
     Properties props = new Properties();
     // the following are needed for peer-to-peer authentication
@@ -79,12 +77,13 @@ public class SecurityWithoutClusterConfigDUnitTest {
     // initial security properties should only contain initial set of values
     serverStarter.withProperties(props).withConnectionToLocator(locator.getPort()).startServer();
     DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
-    assertEquals(3, ds.getSecurityProperties().size());
+    assertThat(ds.getSecurityProperties().size()).isEqualTo(3);
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
-    assertEquals(3, secProps.size());
-    assertEquals(TestSecurityManager.class.getName(), secProps.getProperty("security-manager"));
-    assertFalse(secProps.containsKey("security-post-processor"));
+    assertThat(secProps.size()).isEqualTo(3);
+    assertThat(secProps.getProperty("security-manager"))
+        .isEqualTo(TestSecurityManager.class.getName());
+    assertThat(secProps.containsKey("security-post-processor")).isFalse();
   }
 }

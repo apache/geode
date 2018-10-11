@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.web.shell;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
@@ -53,7 +52,7 @@ public class HttpOperationInvokerMBeanOperationTest {
   }
 
   @Test
-  public void getAttribute() throws Exception {
+  public void getAttribute() {
     Integer distributedSystemId =
         (Integer) invoker.getAttribute(ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN,
             "DistributedSystemId");
@@ -61,7 +60,7 @@ public class HttpOperationInvokerMBeanOperationTest {
   }
 
   @Test
-  public void invoke() throws Exception {
+  public void invoke() {
     String[] gatewayReceivers =
         (String[]) invoker.invoke(ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN,
             "listGatewayReceivers", new Object[0], new String[0]);
@@ -75,16 +74,16 @@ public class HttpOperationInvokerMBeanOperationTest {
     QueryExp query = Query.eq(Query.attr("Name"), Query.value("mock"));
 
     Set<ObjectName> names = invoker.queryNames(objectName, query);
-    assertTrue(names.isEmpty());
+    assertThat(names.isEmpty()).isTrue();
   }
 
   @Test
-  public void getClusterId() throws Exception {
+  public void getClusterId() {
     assertThat(invoker.getClusterId()).isEqualTo(100);
   }
 
   @Test
-  public void getDistributedSystemMbean() throws Exception {
+  public void getDistributedSystemMbean() {
     DistributedSystemMXBean bean = invoker.getDistributedSystemMXBean();
     assertThat(bean).isInstanceOf(DistributedSystemMXBean.class);
   }

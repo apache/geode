@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class QueryCommandIntegrationTestBase {
 
   private final String DEFAULT_FETCH_SIZE = String.valueOf(Gfsh.DEFAULT_APP_FETCH_SIZE);
@@ -87,14 +87,14 @@ public class QueryCommandIntegrationTestBase {
   }
 
   @Test
-  public void doesShowLimitIfLimitNotInQuery() throws Exception {
+  public void doesShowLimitIfLimitNotInQuery() {
     gfsh.executeAndAssertThat("query --query='select * from /simpleRegion'")
         .containsKeyValuePair("Rows", DEFAULT_FETCH_SIZE)
         .containsKeyValuePair("Limit", DEFAULT_FETCH_SIZE).hasResult();
   }
 
   @Test
-  public void doesNotShowLimitIfLimitInQuery() throws Exception {
+  public void doesNotShowLimitIfLimitInQuery() {
     gfsh.executeAndAssertThat("query --query='select * from /simpleRegion limit 50'")
         .containsKeyValuePair("Rows", "50").doesNotContainOutput("Limit").hasResult();
   }
@@ -208,7 +208,7 @@ public class QueryCommandIntegrationTestBase {
   }
 
   @Test
-  public void queryWithInvalidRegionNameGivesDescriptiveErrorMessage() throws Exception {
+  public void queryWithInvalidRegionNameGivesDescriptiveErrorMessage() {
     gfsh.executeAndAssertThat("query --query='select * from /nonExistentRegion'")
         .containsKeyValuePair("Result", "false")
         .containsOutput("Cannot find regions <[/nonExistentRegion]> in any of the members");
@@ -281,5 +281,4 @@ public class QueryCommandIntegrationTestBase {
       this.city = city;
     }
   }
-
 }

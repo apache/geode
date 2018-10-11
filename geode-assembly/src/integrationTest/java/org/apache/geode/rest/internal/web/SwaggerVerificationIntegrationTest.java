@@ -64,6 +64,5 @@ public class SwaggerVerificationIntegrationTest {
     JsonNode license = info.get("license");
     assertThat(license.get("name").asText(), is("Apache License, version 2.0"));
     assertThat(license.get("url").asText(), is("http://www.apache.org/licenses/"));
-
   }
 }

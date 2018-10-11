@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class DiskStoreMXBeanSecurityJUnitTest {
   private DiskStoreMXBean bean;
 
@@ -51,7 +51,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterRead", password = "clusterRead")
-  public void testClusterReadAccess() throws Exception {
+  public void testClusterReadAccess() {
     assertThatThrownBy(() -> bean.flush()).hasMessageContaining(TestCommand.diskManage.toString());
     assertThatThrownBy(() -> bean.forceCompaction())
         .hasMessageContaining(TestCommand.diskManage.toString());
@@ -71,7 +71,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterManageDisk", password = "clusterManageDisk")
-  public void testDiskManageAccess() throws Exception {
+  public void testDiskManageAccess() {
     assertThatThrownBy(() -> bean.getCompactionThreshold())
         .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     assertThatThrownBy(() -> bean.getDiskDirectories())
@@ -92,7 +92,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
-  public void testAllAccess() throws Exception {
+  public void testAllAccess() {
     bean.flush();
     bean.forceCompaction();
     bean.forceRoll();
@@ -107,7 +107,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "noAccess", password = "noAccess")
-  public void testNoAccess() throws Exception {
+  public void testNoAccess() {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.flush())

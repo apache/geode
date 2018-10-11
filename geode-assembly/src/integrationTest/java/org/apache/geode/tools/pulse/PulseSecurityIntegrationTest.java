@@ -42,7 +42,7 @@ public class PulseSecurityIntegrationTest {
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
 
   @Test
-  public void getAttributesWithSecurityManager() throws Exception {
+  public void getAttributesWithSecurityManager() {
     pulse.useJmxPort(locator.getJmxPort());
 
     ManagementService service =

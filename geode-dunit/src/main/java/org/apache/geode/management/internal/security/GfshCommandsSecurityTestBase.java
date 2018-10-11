@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class GfshCommandsSecurityTestBase {
   @ClassRule
   public static ServerStarterRule serverStarter =
@@ -51,83 +51,83 @@ public class GfshCommandsSecurityTestBase {
       new GfshCommandRule(serverStarter::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
   @Test
   @ConnectionConfiguration(user = "data", password = "wrongPwd")
-  public void testInvalidCredentials() throws Exception {
+  public void testInvalidCredentials() {
     assertThat(gfshConnection.isConnected()).isFalse();
   }
 
   @Test
   @ConnectionConfiguration(user = "data", password = "data")
-  public void testValidCredentials() throws Exception {
+  public void testValidCredentials() {
     assertThat(gfshConnection.isConnected()).isTrue();
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterRead", password = "clusterRead")
-  public void testClusterReader() throws Exception {
+  public void testClusterReader() {
     runCommandsPermittedAndForbiddenBy("CLUSTER:READ");
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterWrite", password = "clusterWrite")
-  public void testClusterWriter() throws Exception {
+  public void testClusterWriter() {
     runCommandsPermittedAndForbiddenBy("CLUSTER:WRITE");
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
-  public void testClusterManager() throws Exception {
+  public void testClusterManager() {
     runCommandsPermittedAndForbiddenBy("CLUSTER:MANAGE");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testDataReader() throws Exception {
+  public void testDataReader() {
     runCommandsPermittedAndForbiddenBy("DATA:READ");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testDataWriter() throws Exception {
+  public void testDataWriter() {
     runCommandsPermittedAndForbiddenBy("DATA:WRITE");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataManage", password = "dataManage")
-  public void testDataManager() throws Exception {
+  public void testDataManager() {
     runCommandsPermittedAndForbiddenBy("DATA:MANAGE");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataReadRegionA", password = "dataReadRegionA")
-  public void testRegionAReader() throws Exception {
+  public void testRegionAReader() {
     runCommandsPermittedAndForbiddenBy("DATA:READ:RegionA");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWriteRegionA", password = "dataWriteRegionA")
-  public void testRegionAWriter() throws Exception {
+  public void testRegionAWriter() {
     runCommandsPermittedAndForbiddenBy("DATA:WRITE:RegionA");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataManageRegionA", password = "dataManageRegionA")
-  public void testRegionAManager() throws Exception {
+  public void testRegionAManager() {
     runCommandsPermittedAndForbiddenBy("DATA:MANAGE:RegionA");
   }
 
   @Test
   @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
-  public void testRegionSuperUser() throws Exception {
+  public void testRegionSuperUser() {
     runCommandsPermittedAndForbiddenBy("*");
   }
 
-  private void runCommandsPermittedAndForbiddenBy(String permission) throws Exception {
+  private void runCommandsPermittedAndForbiddenBy(String permission) {
     List<TestCommand> allPermitted =
         TestCommand.getPermittedCommands(new WildcardPermission(permission, true));
 
@@ -168,7 +168,7 @@ public class GfshCommandsSecurityTestBase {
 
   @Test
   @ConnectionConfiguration(user = "data", password = "data")
-  public void testGetPostProcess() throws Exception {
+  public void testGetPostProcess() {
     gfshConnection.executeCommand("put --region=region1 --key=key2 --value=value2");
     gfshConnection.executeCommand("put --region=region1 --key=key2 --value=value2");
     gfshConnection.executeCommand("put --region=region1 --key=key3 --value=value3");
@@ -179,7 +179,7 @@ public class GfshCommandsSecurityTestBase {
 
   @Test
   @ConnectionConfiguration(user = "data", password = "data")
-  public void createDiskStore() throws Exception {
+  public void createDiskStore() {
     CommandResult result =
         gfshConnection.executeCommand("create disk-store --name=disk1 --dir=disk1");
 
@@ -189,14 +189,14 @@ public class GfshCommandsSecurityTestBase {
   @Test
   @ConnectionConfiguration(user = "dataManage,clusterWriteDisk",
       password = "dataManage,clusterWriteDisk")
-  public void createPartitionedPersistentRegionWithCorrectPermissions() throws Exception {
+  public void createPartitionedPersistentRegionWithCorrectPermissions() {
     gfshConnection.executeAndAssertThat("create region --name=region2 --type=PARTITION_PERSISTENT")
         .statusIsSuccess();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataManage", password = "dataManage")
-  public void createPartitionedPersistentRegionWithoutClusterWriteDisk() throws Exception {
+  public void createPartitionedPersistentRegionWithoutClusterWriteDisk() {
     CommandResult result =
         gfshConnection.executeCommand("create region --name=region2 --type=PARTITION_PERSISTENT");
 
@@ -205,7 +205,7 @@ public class GfshCommandsSecurityTestBase {
 
   @Test
   @ConnectionConfiguration(user = "clusterWriteDisk", password = "clusterWriteDisk")
-  public void createPartitionedPersistentRegionWithoutDataManage() throws Exception {
+  public void createPartitionedPersistentRegionWithoutDataManage() {
     CommandResult result =
         gfshConnection.executeCommand("create region --name=region2 --type=PARTITION_PERSISTENT");
 

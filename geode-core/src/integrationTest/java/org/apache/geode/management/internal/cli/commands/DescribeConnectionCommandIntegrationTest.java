@@ -26,7 +26,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class DescribeConnectionCommandIntegrationTest {
   public static Logger logger = LogService.getLogger();
 
@@ -44,9 +44,8 @@ public class DescribeConnectionCommandIntegrationTest {
   }
 
   @Test
-  public void executeWhileNotConnected() throws Exception {
+  public void executeWhileNotConnected() {
     gfsh.executeAndAssertThat("describe connection")
         .tableHasColumnWithValuesContaining("Connection Endpoints", "Not connected");
   }
-
 }

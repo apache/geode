@@ -49,8 +49,7 @@ public class ShorteningExpirationTimeRegressionTest {
   private static final String KEY = "key";
 
   @ClassRule
-  public static ServerStarterRule server =
-      new ServerStarterRule().withNoCacheServer().withAutoStart();
+  public static ServerStarterRule server = new ServerStarterRule().withAutoStart();
 
   @ClassRule
   public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -81,7 +80,7 @@ public class ShorteningExpirationTimeRegressionTest {
   }
 
   @Test
-  public void customEntryIdleTimeoutCanBeShortened() throws Exception {
+  public void customEntryIdleTimeoutCanBeShortened() {
     RegionFactory<String, String> rf = server.getCache().createRegionFactory(RegionShortcut.LOCAL);
     rf.setCustomEntryIdleTimeout(new CustomExpiryTestClass<>());
     rf.setStatisticsEnabled(true);

@@ -75,15 +75,12 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void functionRequireExpectedPermission() throws Exception {
-    functionStringMap.entrySet().stream().forEach(entry -> {
-      Function function = entry.getKey();
-      String permission = entry.getValue();
-      gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + function.getId())
-          .tableHasRowCount(RESULT_HEADER, 1)
-          .tableHasRowWithValues(RESULT_HEADER, "Exception: user not authorized for " + permission)
-          .statusIsError();
-    });
+  public void functionRequireExpectedPermission() {
+    functionStringMap.forEach((function, permission) -> gfsh
+        .executeAndAssertThat("execute function --region=testRegion --id=" + function.getId())
+        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasRowWithValues(RESULT_HEADER, "Exception: user not authorized for " + permission)
+        .statusIsError());
   }
 
   // use DumpDirectoryFile function to verify that all the permissions returned by the

@@ -29,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -49,7 +48,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 /**
  * this test class test: CreateIndexCommand, DestroyIndexCommand, ListIndexCommand
  */
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class IndexCommandsIntegrationTestBase {
   private static final String regionName = "regionA";
   private static final String groupName = "groupA";
@@ -62,9 +61,14 @@ public class IndexCommandsIntegrationTestBase {
           .withAutoStart();
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     InternalCache cache = server.getCache();
-    Region region = createPartitionedRegion(regionName, cache, String.class, Stock.class);
+    RegionFactory<String, Stock> regionFactory = cache.createRegionFactory();
+    regionFactory.setDataPolicy(DataPolicy.PARTITION);
+    regionFactory.setKeyConstraint(String.class);
+    regionFactory.setValueConstraint(Stock.class);
+
+    Region<String, Stock> region = regionFactory.create(regionName);
     region.put("VMW", new Stock("VMW", 98));
     region.put("APPL", new Stock("APPL", 600));
   }
@@ -81,9 +85,8 @@ public class IndexCommandsIntegrationTestBase {
   public void after() throws Exception {
     // destroy all existing indexes
     Collection<Index> indices = server.getCache().getQueryService().getIndexes();
-    indices.stream().map(Index::getName).forEach(indexName -> {
-      gfsh.executeAndAssertThat("destroy index --name=" + indexName).statusIsSuccess();
-    });
+    indices.stream().map(Index::getName).forEach(indexName -> gfsh
+        .executeAndAssertThat("destroy index --name=" + indexName).statusIsSuccess());
 
     gfsh.executeAndAssertThat("list index").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("No Indexes Found");
@@ -94,12 +97,12 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCreate() throws Exception {
+  public void testCreate() {
     createSimpleIndexA();
   }
 
   @Test
-  public void testCreateIndexWithMultipleIterators() throws Exception {
+  public void testCreateIndexWithMultipleIterators() {
     CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, "indexA");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
@@ -114,7 +117,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testListIndexValidField() throws Exception {
+  public void testListIndexValidField() {
     CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
@@ -129,7 +132,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotCreateIndexWithExistingIndexName() throws Exception {
+  public void testCannotCreateIndexWithExistingIndexName() {
     createSimpleIndexA();
 
     // CREATE the same index
@@ -144,7 +147,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void creatIndexWithNoBeginningSlash() throws Exception {
+  public void creatIndexWithNoBeginningSlash() {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
@@ -157,7 +160,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotCreateIndexInIncorrectRegion() throws Exception {
+  public void testCannotCreateIndexInIncorrectRegion() {
     // Create index on a wrong regionPath
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
@@ -171,7 +174,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void cannotCreateWithTheSameName() throws Exception {
+  public void cannotCreateWithTheSameName() {
     createSimpleIndexA();
     gfsh.executeAndAssertThat("create index --name=indexA --expression=key --region=/regionA")
         .statusIsError()
@@ -179,7 +182,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotCreateIndexWithInvalidIndexExpression() throws Exception {
+  public void testCannotCreateIndexWithInvalidIndexExpression() {
     // Create index with wrong expression
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
@@ -192,7 +195,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotDestroyIndexWithInvalidIndexName() throws Exception {
+  public void testCannotDestroyIndexWithInvalidIndexName() {
     // Destroy index with incorrect indexName
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, "IncorrectIndexName");
@@ -203,7 +206,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotDestroyIndexWithInvalidRegion() throws Exception {
+  public void testCannotDestroyIndexWithInvalidRegion() {
     // Destroy index with incorrect region
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
@@ -214,7 +217,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotDestroyIndexWithInvalidMember() throws Exception {
+  public void testCannotDestroyIndexWithInvalidMember() {
     // Destroy index with incorrect member name
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
@@ -226,7 +229,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testCannotDestroyIndexWithNoOptions() throws Exception {
+  public void testCannotDestroyIndexWithNoOptions() {
     // Destroy index with no option
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     CommandResult result = gfsh.executeCommand(csb.toString());
@@ -235,7 +238,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testDestroyIndexViaRegion() throws Exception {
+  public void testDestroyIndexViaRegion() {
     createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -245,7 +248,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testDestroyIndexViaGroup() throws Exception {
+  public void testDestroyIndexViaGroup() {
     createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -255,7 +258,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testFailWhenDestroyIndexIsNotIdempotent() throws Exception {
+  public void testFailWhenDestroyIndexIsNotIdempotent() {
     createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -268,7 +271,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testDestroyIndexOnRegionIsIdempotent() throws Exception {
+  public void testDestroyIndexOnRegionIsIdempotent() {
     createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -281,7 +284,7 @@ public class IndexCommandsIntegrationTestBase {
   }
 
   @Test
-  public void testDestroyIndexByNameIsIdempotent() throws Exception {
+  public void testDestroyIndexByNameIsIdempotent() {
     createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -298,7 +301,7 @@ public class IndexCommandsIntegrationTestBase {
     assertThat(table.get("Message")).containsExactly("Index named \"" + indexName + "\" not found");
   }
 
-  private void createSimpleIndexA() throws Exception {
+  private void createSimpleIndexA() {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
@@ -306,14 +309,4 @@ public class IndexCommandsIntegrationTestBase {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Index successfully created");
   }
-
-  private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,
-      Class keyConstraint, Class valueConstraint) {
-    RegionFactory regionFactory = cache.createRegionFactory();
-    regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    regionFactory.setKeyConstraint(keyConstraint);
-    regionFactory.setValueConstraint(valueConstraint);
-    return regionFactory.create(regionName);
-  }
-
 }

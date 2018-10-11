@@ -19,8 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,28 +41,23 @@ import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
-  final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
-
-  private boolean pdxPersistent = false;
+  private final VM client1 = VM.getVM(1);
+  private final VM client2 = VM.getVM(2);
+  private boolean pdxPersistent;
   private static byte[] BYTES = {1, 0};
 
   @Parameterized.Parameters
@@ -86,6 +80,7 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testCQ() {
     String query = "select * from /" + REGION_NAME;
     client1.invoke(() -> {
@@ -103,9 +98,9 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
           Object key = aCqEvent.getKey();
           Object value = aCqEvent.getNewValue();
           if (key.equals("key1")) {
-            assertTrue(value instanceof SimpleClass);
+            assertThat(value).isInstanceOf(SimpleClass.class);
           } else if (key.equals("key2")) {
-            assertTrue(Arrays.equals(BYTES, (byte[]) value));
+            assertThat(Arrays.equals(BYTES, (byte[]) value)).isTrue();
           }
         }
       });
@@ -114,7 +109,7 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
       // Create the CqQuery
       CqQuery cq = qs.newCq("CQ1", query, cqa);
-      CqResults results = cq.executeWithInitialResults();
+      cq.executeWithInitialResults();
     });
 
     client2.invoke(() -> {
@@ -128,7 +123,7 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     Awaitility.await().atMost(1, TimeUnit.SECONDS);
     PDXPostProcessor pp =
         (PDXPostProcessor) server.getCache().getSecurityService().getPostProcessor();
-    assertEquals(pp.getCount(), 2);
+    assertThat(pp.getCount()).isEqualTo(2);
   }
 
 }

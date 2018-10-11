@@ -26,7 +26,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PartitionedQuerySecurityRestrictedButMethodsDoNotExistQueriesDUnitTest
-    extends QuerySecurityRetrictedButMethodsDoNotExistDUnitTest {
+    extends QuerySecurityRestrictedButMethodsDoNotExistDUnitTest {
 
   public RegionShortcut getRegionType() {
     return RegionShortcut.PARTITION;

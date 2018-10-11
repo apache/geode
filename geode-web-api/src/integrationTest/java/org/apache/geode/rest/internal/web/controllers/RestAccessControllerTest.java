@@ -106,6 +106,7 @@ public class RestAccessControllerTest {
   private WebApplicationContext webApplicationContext;
 
   @BeforeClass
+  @SuppressWarnings("unchecked")
   public static void setupCClass() throws Exception {
     loadResource(ORDER1_JSON);
     loadResource(ORDER1_NO_TYPE_JSON);
@@ -481,6 +482,7 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  @SuppressWarnings("unchecked")
   public void getCustomers() throws Exception {
     putAll();
     mockMvc.perform(get("/v1/customers?limit=ALL")
@@ -650,6 +652,7 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  @SuppressWarnings("unchecked")
   public void executeQueryWithParams() throws Exception {
     String QUERY_ARGS =
         "[{\"@type\": \"int\", \"@value\": 2}, {\"@type\": \"double\", \"@value\": 150.00}]";
@@ -666,6 +669,7 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  @SuppressWarnings("unchecked")
   public void executeAdhocQuery() throws Exception {
     putAll();
     mockMvc.perform(get("/v1/queries/adhoc?q=SELECT * FROM /customers LIMIT 100")
@@ -887,6 +891,7 @@ public class RestAccessControllerTest {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void init(Properties props) {
       // nothing
     }

@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class AccessControlMBeanJUnitTest {
 
   private AccessControlMXBean bean;
@@ -55,7 +55,7 @@ public class AccessControlMBeanJUnitTest {
    */
   @Test
   @ConnectionConfiguration(user = "stranger", password = "1234567")
-  public void testAnyAccess() throws Exception {
+  public void testAnyAccess() {
     assertThat(bean.authorize("DATA", "READ")).isEqualTo(false);
     assertThat(bean.authorize("CLUSTER", "READ")).isEqualTo(false);
   }

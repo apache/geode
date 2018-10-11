@@ -16,7 +16,7 @@
 
 package org.apache.geode.management.internal.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.ClassRule;
@@ -37,12 +37,11 @@ public class JavaRmiServerNameTest {
    */
   @Test
   public void testThatJavaRmiServerNameGetsSet() {
-    assertEquals(JMX_HOST, System.getProperty("java.rmi.server.hostname"));
+    assertThat(System.getProperty("java.rmi.server.hostname")).isEqualTo(JMX_HOST);
   }
 
   @After
   public void after() {
     System.setProperty("java.rmi.server.hostname", "");
   }
-
 }

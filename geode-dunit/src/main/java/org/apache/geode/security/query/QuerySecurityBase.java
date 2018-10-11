@@ -15,10 +15,8 @@
 package org.apache.geode.security.query;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Collection;
 import java.util.List;
@@ -75,13 +73,13 @@ public abstract class QuerySecurityBase extends JUnit4DistributedTestCase {
   @Before
   public void configureTest() {
     host = Host.getHost(0);
-    superUserClient = host.getVM(1);
-    specificUserClient = host.getVM(2);
+    superUserClient = VM.getVM(1);
+    specificUserClient = VM.getVM(2);
     createClientCache(superUserClient, "super-user", userPerms.getUserPassword("super-user"));
     createProxyRegion(superUserClient, regionName);
   }
 
-  public void closeAnyPollutedCache() {
+  private void closeAnyPollutedCache() {
     if (GemFireCacheImpl.getInstance() != null) {
       GemFireCacheImpl.getInstance().close();
     }
@@ -115,7 +113,7 @@ public abstract class QuerySecurityBase extends JUnit4DistributedTestCase {
     closeClientCache(specificUserClient);
   }
 
-  public void closeClientCache(VM vm) {
+  private void closeClientCache(VM vm) {
     vm.invoke(() -> {
       if (getClientCache() != null) {
         getClientCache().close();
@@ -123,55 +121,49 @@ public abstract class QuerySecurityBase extends JUnit4DistributedTestCase {
     });
   }
 
-  protected void assertExceptionOccurred(QueryService qs, String query, String authErrorRegexp) {
-    try {
-      qs.newQuery(query).execute();
-      fail();
-    } catch (Exception e) {
-      e.printStackTrace();
-      if (!e.getMessage().matches(authErrorRegexp)) {
-        Throwable cause = e.getCause();
-        while (cause != null) {
-          if (cause.getMessage().matches(authErrorRegexp)) {
-            return;
-          }
-          cause = cause.getCause();
+  private void stackTraceMatchesMessage(Exception exception, String authErrorRegexp) {
+    if (!exception.getMessage().matches(authErrorRegexp)) {
+      Throwable cause = exception.getCause();
+      while (cause != null) {
+        if (cause.getMessage().matches(authErrorRegexp)) {
+          return;
         }
-        e.printStackTrace();
-        fail();
+        cause = cause.getCause();
       }
+      exception.printStackTrace();
+      fail("Expression " + authErrorRegexp + " not found within the stack trace.");
     }
   }
 
-  protected void assertExceptionOccurred(QueryService qs, String query, Object[] bindParams,
+  private void assertExceptionOccurred(QueryService qs, String query, String authErrorRegexp) {
+    try {
+      qs.newQuery(query).execute();
+      fail("An exception should have been thrown.");
+    } catch (Exception e) {
+      e.printStackTrace();
+      stackTraceMatchesMessage(e, authErrorRegexp);
+    }
+  }
+
+  void assertExceptionOccurred(QueryService qs, String query, Object[] bindParams,
       String authErrorRegexp) {
     System.out.println("Execution exception should match:" + authErrorRegexp);
     try {
       qs.newQuery(query).execute(bindParams);
-      fail();
+      fail("An exception should have been thrown.");
     } catch (Exception e) {
-
-      if (!e.getMessage().matches(authErrorRegexp)) {
-        Throwable cause = e.getCause();
-        while (cause != null) {
-          if (cause.getMessage().matches(authErrorRegexp)) {
-            return;
-          }
-          cause = cause.getCause();
-        }
-        e.printStackTrace();
-        fail();
-      }
+      stackTraceMatchesMessage(e, authErrorRegexp);
     }
   }
 
-  protected void assertQueryResults(ClientCache clientCache, String query,
+  private void assertQueryResults(ClientCache clientCache, String query,
       List<Object> expectedResults) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     assertQueryResults(clientCache, query, null, expectedResults);
   }
 
-  protected void assertQueryResults(ClientCache clientCache, String queryString,
+  @SuppressWarnings("unchecked")
+  void assertQueryResults(ClientCache clientCache, String queryString,
       Object[] bindParameters, List<Object> expectedResults) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Query query = clientCache.getQueryService().newQuery(queryString);
@@ -181,45 +173,43 @@ public abstract class QuerySecurityBase extends JUnit4DistributedTestCase {
     } else {
       results = (Collection) query.execute(bindParameters);
     }
-    assertNotNull(results);
-    assertEquals("Query results size did not match expected for " + query, expectedResults.size(),
-        results.size());
+    assertThat(results).isNotNull();
+    assertThat(results.size()).as("Query results size did not match expected for " + query)
+        .isEqualTo(expectedResults.size());
 
-    results.forEach((i) -> {
-      assertTrue("Result:" + i + " was not found in the expectedResults",
-          expectedResults.contains(i));
-    });
+    results.forEach((i) -> assertThat(expectedResults.contains(i))
+        .as("Result:" + i + " was not found in the expectedResults").isTrue());
   }
 
-  public void executeAndConfirmRegionMatches(VM vm, String regionName,
-      List<Object> expectedRegionResults) throws Exception {
-    vm.invoke(() -> {
-      assertQueryResults(getClientCache(), "select * from /" + regionName, expectedRegionResults);
-    });
+  void executeAndConfirmRegionMatches(VM vm, String regionName,
+      List<Object> expectedRegionResults) {
+    vm.invoke(() -> assertQueryResults(getClientCache(), "select * from /" + regionName,
+        expectedRegionResults));
   }
 
+  @SuppressWarnings("unchecked")
   protected void putIntoRegion(VM vm, Object[] keys, Object[] values, String regionName) {
     vm.invoke(() -> {
       Region region = getClientCache().getRegion(regionName);
-      assertEquals(
-          "Bad region put. The list of keys does not have the same length as the list of values.",
-          keys.length, values.length);
+      assertThat(values.length)
+          .as("Bad region put. The list of keys does not have the same length as the list of values.")
+          .isEqualTo(keys.length);
       for (int i = 0; i < keys.length; i++) {
         region.put(keys[i], values[i]);
       }
     });
   }
 
-  protected void executeQueryWithCheckForAccessPermissions(VM vm, String query, String regionName,
+  void executeQueryWithCheckForAccessPermissions(VM vm, String query, String regionName,
       List<Object> expectedSuccessfulQueryResults) {
     vm.invoke(() -> {
+      @SuppressWarnings("unused")
       Region region = getClientCache().getRegion(regionName);
       assertQueryResults(getClientCache(), query, expectedSuccessfulQueryResults);
     });
   }
 
-
-  protected void executeQueryWithCheckForAccessPermissions(VM vm, String query, String regionName,
+  void executeQueryWithCheckForAccessPermissions(VM vm, String query, String regionName,
       String regexForExpectedExceptions) {
     vm.invoke(() -> {
       Region region = getClientCache().getRegion(regionName);

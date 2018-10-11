@@ -28,20 +28,15 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
-  final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
-  final VM client3 = host.getVM(3);
+  private final VM client1 = VM.getVM(1);
 
   @Rule
   public ServerStarterRule server =

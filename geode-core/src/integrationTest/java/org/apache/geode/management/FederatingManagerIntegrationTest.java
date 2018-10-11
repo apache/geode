@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({JMXTest.class})
+@Category(JMXTest.class)
 public class FederatingManagerIntegrationTest {
 
   @Rule

@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class MemberMBeanSecurityJUnitTest {
 
   private MemberMXBean bean;
@@ -57,7 +57,7 @@ public class MemberMBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "super-user", password = "1234567")
-  public void testAllAccess() throws Exception {
+  public void testAllAccess() {
     bean.shutDownMember();
     bean.compactAllDiskStores();
     bean.createManager();
@@ -74,7 +74,7 @@ public class MemberMBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
-  public void testClusterAdmin() throws Exception {
+  public void testClusterAdmin() {
     bean.compactAllDiskStores();
     bean.shutDownMember();
     bean.createManager();
@@ -91,7 +91,7 @@ public class MemberMBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
-  public void testDataAdmin() throws Exception {
+  public void testDataAdmin() {
     assertThatThrownBy(() -> bean.compactAllDiskStores())
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
     assertThatThrownBy(() -> bean.shutDownMember())
@@ -104,7 +104,7 @@ public class MemberMBeanSecurityJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "data-user", password = "1234567")
-  public void testDataUser() throws Exception {
+  public void testDataUser() {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.shutDownMember())

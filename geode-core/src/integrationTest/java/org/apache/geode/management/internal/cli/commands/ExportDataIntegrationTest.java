@@ -17,7 +17,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,14 +59,14 @@ public class ExportDataIntegrationTest {
   public void setup() throws Exception {
     gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     region = server.getCache().getRegion(TEST_REGION_NAME);
-    loadRegion("value");
+    IntStream.range(0, DATA_POINTS).forEach(i -> region.put("key" + i, "value"));
     Path basePath = tempDir.getRoot().toPath();
     snapshotFile = basePath.resolve(SNAPSHOT_FILE);
     snapshotDir = basePath.resolve(SNAPSHOT_DIR);
   }
 
   @Test
-  public void testExport() throws Exception {
+  public void testExport() {
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
@@ -75,7 +74,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testParallelExport() throws Exception {
+  public void testParallelExport() {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
@@ -84,7 +83,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testInvalidMember() throws Exception {
+  public void testInvalidMember() {
     String invalidMemberName = "invalidMember";
     String invalidMemberCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, invalidMemberName)
@@ -95,7 +94,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testNonExistentRegion() throws Exception {
+  public void testNonExistentRegion() {
     String nonExistentRegionCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__REGION, "/nonExistentRegion")
@@ -105,7 +104,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testInvalidFile() throws Exception {
+  public void testInvalidFile() {
     String invalidFileCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString() + ".invalid")
         .getCommandString();
@@ -115,7 +114,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testMissingRegion() throws Exception {
+  public void testMissingRegion() {
     String missingRegionCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
@@ -124,14 +123,14 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testMissingFileAndDirectory() throws Exception {
+  public void testMissingFileAndDirectory() {
     String missingFileAndDirCommand = buildBaseExportCommand().getCommandString();
     gfsh.executeCommand(missingFileAndDirCommand);
     assertThat(gfsh.getGfshOutput()).contains("Must specify a location to save snapshot");
   }
 
   @Test
-  public void testParallelExportWithOnlyFile() throws Exception {
+  public void testParallelExportWithOnlyFile() {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
@@ -140,7 +139,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testSpecifyingDirectoryAndFileCommands() throws Exception {
+  public void testSpecifyingDirectoryAndFileCommands() {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString())
             .addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString()).getCommandString();
@@ -148,11 +147,7 @@ public class ExportDataIntegrationTest {
     assertThat(gfsh.getGfshOutput())
         .contains("Options \"file\" and \"dir\" cannot be specified at the same time");
 
-    assertFalse(Files.exists(snapshotDir));
-  }
-
-  private void loadRegion(String value) {
-    IntStream.range(0, DATA_POINTS).forEach(i -> region.put("key" + i, value));
+    assertThat(Files.exists(snapshotDir)).isFalse();
   }
 
   private CommandStringBuilder buildBaseExportCommand() {

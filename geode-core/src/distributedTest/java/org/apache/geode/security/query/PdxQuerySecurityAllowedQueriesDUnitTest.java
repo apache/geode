@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security.query;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -27,7 +27,7 @@ import org.apache.geode.security.query.data.PdxQueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PdxQuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
@@ -53,7 +53,7 @@ public class PdxQuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectOnPublicFieldQuery() {
     String query = "select * from /" + regionName + " r where r.id = 3";
-    List<Object> expectedResults = Arrays.asList(values[1]);
+    List<Object> expectedResults = Collections.singletonList(values[1]);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
@@ -62,7 +62,7 @@ public class PdxQuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   public void checkUserAuthorizationsForSelectWithPdxFieldNamedGetQuery() {
     server.getCache().setReadSerializedForTest(true);
     String query = "select * from /" + regionName + " r where r.getName = 'Beth'";
-    List<Object> expectedResults = Arrays.asList(values[1]);
+    List<Object> expectedResults = Collections.singletonList(values[1]);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }

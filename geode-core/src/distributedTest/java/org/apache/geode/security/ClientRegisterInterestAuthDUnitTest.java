@@ -39,17 +39,17 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientRegisterInterestAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
-  final VM client3 = host.getVM(3);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
+  private final VM client3 = VM.getVM(3);
 
   @Rule
+  @SuppressWarnings("deprecation")
   public ServerStarterRule server =
       new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
@@ -58,6 +58,7 @@ public class ClientRegisterInterestAuthDUnitTest extends JUnit4DistributedTestCa
           .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
+  @SuppressWarnings({"deprecation", "unchecked"})
   public void testRegisterInterest() throws Exception {
     final Properties extraProperties = new Properties();
     extraProperties.setProperty(SECURITY_CLIENT_DHALGO, "AES:128");
@@ -92,6 +93,7 @@ public class ClientRegisterInterestAuthDUnitTest extends JUnit4DistributedTestCa
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testRegisterInterestRegex() throws Exception {
     final Properties extraProperties = new Properties();
     extraProperties.setProperty(SECURITY_CLIENT_DHALGO, "AES:128");
@@ -133,6 +135,7 @@ public class ClientRegisterInterestAuthDUnitTest extends JUnit4DistributedTestCa
   }
 
   @Test
+  @SuppressWarnings({"deprecation", "unchecked"})
   public void testRegisterInterestList() throws Exception {
     final Properties extraProperties = new Properties();
     extraProperties.setProperty(SECURITY_CLIENT_DHALGO, "AES:128");
@@ -175,5 +178,4 @@ public class ClientRegisterInterestAuthDUnitTest extends JUnit4DistributedTestCa
     ai2.await();
     ai3.await();
   }
-
 }

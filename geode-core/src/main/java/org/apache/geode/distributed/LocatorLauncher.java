@@ -1097,11 +1097,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
 
-  private Properties getOverriddenDefaults() throws IOException {
+  private Properties getOverriddenDefaults() {
     Properties overriddenDefaults = new Properties();
 
     overriddenDefaults.put(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX.concat(LOG_FILE),
-        getLogFile().getCanonicalPath());
+        getLogFileCanonicalPath());
 
     for (String key : System.getProperties().stringPropertyNames()) {
       if (key.startsWith(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX)) {

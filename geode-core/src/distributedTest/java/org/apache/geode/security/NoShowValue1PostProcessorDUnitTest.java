@@ -18,10 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,13 +41,12 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class NoShowValue1PostProcessorDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
+  final VM client1 = VM.getVM(1);
 
   @Rule
   public ServerStarterRule server =
@@ -62,14 +58,16 @@ public class NoShowValue1PostProcessorDUnitTest extends JUnit4DistributedTestCas
 
   @Before
   public void before() throws Exception {
-    Region region =
-        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    Region<String, String> region =
+        server.getCache().<String, String>createRegionFactory(RegionShortcut.REPLICATE)
+            .create(REGION_NAME);
     for (int i = 0; i < 5; i++) {
       region.put("key" + i, "value" + i);
     }
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testPostProcess() {
     List<String> keys = new ArrayList<>();
     keys.add("key1");
@@ -80,36 +78,35 @@ public class NoShowValue1PostProcessorDUnitTest extends JUnit4DistributedTestCas
       Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for get
-      assertEquals("value3", region.get("key3"));
+      assertThat(region.get("key3")).isEqualTo("value3");
 
-      assertNull(region.get("key1"));
+      assertThat(region.get("key1")).isNull();
 
       // post processs for getAll
       Map values = region.getAll(keys);
-      assertEquals(2, values.size());
-      assertEquals("value2", values.get("key2"));
-      assertNull(values.get("key1"));
+      assertThat(values.size()).isEqualTo(2);
+      assertThat(values.get("key2")).isEqualTo("value2");
+      assertThat(values.get("key1")).isNull();
 
       // post process for query
       String query = "select * from /AuthRegion";
       SelectResults result = region.query(query);
       System.out.println("query result: " + result);
-      assertEquals(5, result.size());
-      assertTrue(result.contains("value0"));
-      assertFalse(result.contains("value1"));
-      assertTrue(result.contains("value2"));
-      assertTrue(result.contains("value3"));
-      assertTrue(result.contains("value4"));
+      assertThat(result.size()).isEqualTo(5);
+      assertThat(result.contains("value0")).isTrue();
+      assertThat(result.contains("value1")).isFalse();
+      assertThat(result.contains("value2")).isTrue();
+      assertThat(result.contains("value3")).isTrue();
+      assertThat(result.contains("value4")).isTrue();
 
       Pool pool = PoolManager.find(region);
       result = (SelectResults) pool.getQueryService().newQuery(query).execute();
       System.out.println("query result: " + result);
-      assertTrue(result.contains("value0"));
-      assertFalse(result.contains("value1"));
-      assertTrue(result.contains("value2"));
-      assertTrue(result.contains("value3"));
-      assertTrue(result.contains("value4"));
+      assertThat(result.contains("value0")).isTrue();
+      assertThat(result.contains("value1")).isFalse();
+      assertThat(result.contains("value2")).isTrue();
+      assertThat(result.contains("value3")).isTrue();
+      assertThat(result.contains("value4")).isTrue();
     });
   }
-
 }

@@ -16,7 +16,6 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
@@ -32,12 +31,13 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class PeerAuthenticatorDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Before
+  @SuppressWarnings("deprecation")
   public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, DummyAuthenticator.class.getName());
@@ -45,27 +45,23 @@ public class PeerAuthenticatorDUnitTest {
   }
 
   @Test
-  public void testPeerAuthenticator() throws Exception {
-
+  public void testPeerAuthenticator() {
     int locatorPort = lsRule.getMember(0).getPort();
     Properties server1Props = new Properties();
     server1Props.setProperty("security-username", "user");
     server1Props.setProperty("security-password", "user");
     lsRule.startServerVM(1, server1Props, locatorPort);
 
-
     Properties server2Props = new Properties();
     server2Props.setProperty("security-username", "bogus");
     server2Props.setProperty("security-password", "user");
-    VM server2 = getHost(0).getVM(2);
+    VM server2 = VM.getVM(2);
 
     server2.invoke(() -> {
       ServerStarterRule serverStarter = new ServerStarterRule();
       ClusterStartupRule.memberStarter = serverStarter;
       assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
-
     });
   }
-
 }

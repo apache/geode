@@ -25,7 +25,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({ConfigurationTest.class})
+@Category(ConfigurationTest.class)
 public class DescribeConfigCommandIntegrationTest {
   private static final String[] EXPECTED_BASE_CONFIGURATION_DATA = {"Configuration of member :",
       "JVM command line arguments", "GemFire properties defined using the API"};
@@ -41,13 +41,13 @@ public class DescribeConfigCommandIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
 
   @Test
-  public void describeConfig() throws Exception {
+  public void describeConfig() {
     gfsh.executeAndAssertThat("describe config --member=" + server.getName()).statusIsSuccess()
         .containsOutput(EXPECTED_BASE_CONFIGURATION_DATA);
   }
 
   @Test
-  public void describeConfigAndShowDefaults() throws Exception {
+  public void describeConfigAndShowDefaults() {
     gfsh.executeAndAssertThat("describe config --hide-defaults=false --member=" + server.getName())
         .statusIsSuccess().containsOutput(EXPECTED_BASE_CONFIGURATION_DATA)
         .containsOutput(EXPECTED_EXPANDED_CONFIGURATION_DATA);
@@ -61,7 +61,7 @@ public class DescribeConfigCommandIntegrationTest {
   }
 
   @Test
-  public void describeConfigOnInvalidMember() throws Exception {
+  public void describeConfigOnInvalidMember() {
     String invalidMemberName = "invalid-member-name";
     String expectedErrorString = String.format("Member %s could not be found", invalidMemberName);
     gfsh.executeAndAssertThat("describe config --member=" + invalidMemberName).statusIsError()

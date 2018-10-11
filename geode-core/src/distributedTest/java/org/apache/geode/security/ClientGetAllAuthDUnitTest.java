@@ -15,10 +15,9 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.jgroups.util.Util.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -36,14 +35,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientGetAllAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -53,13 +51,14 @@ public class ClientGetAllAuthDUnitTest extends JUnit4DistributedTestCase {
           .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testGetAll() {
     client1.invoke("logging in Stranger", () -> {
       ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);
       Map emptyMap = region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));
-      assertTrue(emptyMap.isEmpty());
+      assertThat(emptyMap.isEmpty()).isTrue();
     });
 
     client2.invoke("logging in authRegionReader", () -> {
@@ -67,8 +66,9 @@ public class ClientGetAllAuthDUnitTest extends JUnit4DistributedTestCase {
 
       Region region = createProxyRegion(cache, REGION_NAME);
       Map filledMap = region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));
-      assertEquals("Map should contain 4 entries", 4, filledMap.size());
-      assertTrue(filledMap.containsKey("key1"));
+
+      assertThat(filledMap.size()).as("Map should contain 4 entries").isEqualTo(4);
+      assertThat(filledMap.containsKey("key1")).isTrue();
     });
   }
 }

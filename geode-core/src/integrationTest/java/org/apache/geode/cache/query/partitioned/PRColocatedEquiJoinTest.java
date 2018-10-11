@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({OQLQueryTest.class})
+@Category(OQLQueryTest.class)
 public class PRColocatedEquiJoinTest {
   private static final int count = 100;
 
@@ -42,6 +42,7 @@ public class PRColocatedEquiJoinTest {
   public ServerStarterRule server = new ServerStarterRule().withAutoStart();
 
   @Test
+  @SuppressWarnings("unchecked")
   public void prQueryWithHeteroIndex() throws Exception {
     InternalCache cache = server.getCache();
     QueryService qs = cache.getQueryService();
@@ -64,10 +65,10 @@ public class PRColocatedEquiJoinTest {
     NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(count);
 
     for (int i = 0; i < count; i++) {
-      r1.put(new Integer(i), portfolio[i]);
-      r2.put(new Integer(i), newPortfolio[i]);
-      r3.put(new Integer(i), portfolio[i]);
-      r4.put(new Integer(i), newPortfolio[i]);
+      r1.put(i, portfolio[i]);
+      r2.put(i, newPortfolio[i]);
+      r3.put(i, portfolio[i]);
+      r4.put(i, newPortfolio[i]);
     }
 
     ArrayList results[][] = new ArrayList[whereClauses.length][2];

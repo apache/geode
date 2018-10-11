@@ -76,12 +76,12 @@ public class ConcurrentDeployDUnitTest {
     gfsh3.invoke(() -> gfsh.close());
   }
 
-  public static void connectToLocator(int locatorPort) throws Exception {
+  private static void connectToLocator(int locatorPort) throws Exception {
     gfsh = new GfshCommandRule();
     gfsh.connectAndVerify(locatorPort, GfshCommandRule.PortType.locator);
   }
 
-  public static void loopThroughDeployAndUndeploys(File jar1) throws Exception {
+  private static void loopThroughDeployAndUndeploys(File jar1) {
     int numTimesToExecute = 50;
     String command;
 
@@ -94,8 +94,6 @@ public class ConcurrentDeployDUnitTest {
 
       command = "undeploy --jar=" + jar1.getName();
       gfsh.executeAndAssertThat(command).statusIsSuccess();
-
     }
   }
-
 }

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -61,11 +62,11 @@ public class RestRegionAPIDUnitTest {
     getRegionA().clear();
   }
 
-  private Region getRegionA() {
+  private Region<String, Customer> getRegionA() {
     return server.getCache().getRegion("/regionA");
   }
 
-  public static GeodeDevRestClient restClient;
+  private static GeodeDevRestClient restClient;
 
   private static List<String> jsonDocuments = new ArrayList<>();
 
@@ -93,7 +94,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void getRegionAWhenHasData() throws Exception {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("customer2", new Customer(2L, "jane", "doe", "123-456-999"));
 
@@ -106,7 +107,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void getSingleKey() throws Exception {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
 
     JsonNode jsonObject = restClient.doGetAndAssert("/regionA/customer1")
@@ -121,7 +122,7 @@ public class RestRegionAPIDUnitTest {
       restClient.doPutAndAssert("/regionA/" + key, jsonDocuments.get(key)).statusIsOk();
     }
 
-    Region region = server.getCache().getRegion("regionA");
+    Region<String, Customer> region = server.getCache().getRegion("regionA");
     assertThat(region).hasSize(jsonDocuments.size());
   }
 
@@ -130,13 +131,13 @@ public class RestRegionAPIDUnitTest {
     for (int key = 0; key < jsonDocuments.size(); key++) {
       restClient.doPostAndAssert("/regionA?key=" + key, jsonDocuments.get(key)).statusIsOk();
     }
-    Region region = server.getCache().getRegion("regionA");
+    Region<String, Customer> region = server.getCache().getRegion("regionA");
     assertThat(region).hasSize(jsonDocuments.size());
   }
 
   @Test
   public void putDuplicateWithoutReplace() {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
 
     // put with the same key and same value
@@ -162,7 +163,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void putDuplicateWithReplace() {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
 
     // replace with an existing key and different value
@@ -180,7 +181,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void putWithCAS() {
-    Region region = server.getCache().getRegion("/regionA");
+    Region<String, Customer> region = server.getCache().getRegion("/regionA");
     // do a regular put first
     restClient.doPutAndAssert("/regionA/customer1",
         "{\"customerId\":1,\"firstName\":\"jon\",\"lastName\":\"doe\"}")
@@ -219,7 +220,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void deleteAll() {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("2", new Customer(2L, "jane", "doe", "123-456-999"));
     region.put("3", new Customer(3L, "mary", "doe", "123-456-899"));
@@ -230,7 +231,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void deleteWithKeys() {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("2", new Customer(2L, "jane", "doe", "123-456-999"));
     region.put("3", new Customer(3L, "mary", "doe", "123-456-899"));
@@ -247,7 +248,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void listKeys() throws Exception {
-    Region region = getRegionA();
+    Region<String, Customer> region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("customer2", new Customer(2L, "jane", "doe", "123-456-999"));
 
@@ -359,7 +360,9 @@ public class RestRegionAPIDUnitTest {
 
   private static void initJsonDocuments() throws URISyntaxException, IOException {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    URI uri = classLoader.getResource("sampleJson.json").toURI();
+    URL url = classLoader.getResource("sampleJson.json");
+    assertThat(url).isNotNull();
+    URI uri = url.toURI();
 
     String rawJson = IOUtils.toString(uri, Charset.defaultCharset());
 

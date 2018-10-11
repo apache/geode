@@ -28,7 +28,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({PersistenceTest.class})
+@Category(PersistenceTest.class)
 public class ListDiskStoreCommandIntegrationTest {
   private static final String REGION_NAME = "test-region";
   private static final String MEMBER_NAME = "testServer";
@@ -56,7 +56,7 @@ public class ListDiskStoreCommandIntegrationTest {
   }
 
   @Test
-  public void commandFailsWhenNotConnected() throws Exception {
+  public void commandFailsWhenNotConnected() {
     gfsh.executeAndAssertThat("list disk-stores").statusIsError().containsOutput("Command",
         "was found but is not currently available");
   }

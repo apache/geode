@@ -26,7 +26,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 public class DescribeRegionIntegrationTest {
   private static String MEMBER_NAME = "test-server";
   private static String REGION_NAME = "test-region";
@@ -49,13 +49,13 @@ public class DescribeRegionIntegrationTest {
   }
 
   @Test
-  public void commandFailsWithBadNameOption() throws Exception {
+  public void commandFailsWithBadNameOption() {
     String cmd = "describe region --name=invalid-region-name";
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("invalid-region-name not found");
   }
 
   @Test
-  public void commandSucceedsWithGoodNameOption() throws Exception {
+  public void commandSucceedsWithGoodNameOption() {
     String cmd = "describe region --name=" + REGION_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess().containsOutput("Name", "Data Policy",
         "Hosting Members");

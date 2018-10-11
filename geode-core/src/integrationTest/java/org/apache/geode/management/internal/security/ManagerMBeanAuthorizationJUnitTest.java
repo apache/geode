@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ManagerMBeanAuthorizationJUnitTest {
   private ManagerMXBean managerMXBean;
 
@@ -76,7 +76,7 @@ public class ManagerMBeanAuthorizationJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
-  public void testSomeAccess() throws Exception {
+  public void testSomeAccess() {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> managerMXBean.start())

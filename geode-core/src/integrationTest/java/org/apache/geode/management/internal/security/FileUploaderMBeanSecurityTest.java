@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class FileUploaderMBeanSecurityTest {
 
   private FileUploaderMBean bean;
@@ -54,13 +54,13 @@ public class FileUploaderMBeanSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterManageDeploy", password = "clusterManageDeploy")
-  public void testClusterManageDeployAccess() throws Exception {
+  public void testClusterManageDeployAccess() {
     assertThatThrownBy(() -> bean.uploadFile(null)).isNotInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
-  public void testClusterManageAccess() throws Exception {
+  public void testClusterManageAccess() {
     assertThatThrownBy(() -> bean.uploadFile(null)).isNotInstanceOf(NotAuthorizedException.class);
   }
 }

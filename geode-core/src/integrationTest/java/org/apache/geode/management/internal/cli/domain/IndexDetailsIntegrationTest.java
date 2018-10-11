@@ -35,7 +35,7 @@ public class IndexDetailsIntegrationTest {
   private static final String INDEX_REGION_NAME = "/REGION1";
   private static final String INDEX_1 = "INDEX1";
 
-  private Region region;
+  private Region<Integer, Stock> region;
 
   @Rule
   public ServerStarterRule serverRule =
@@ -66,7 +66,9 @@ public class IndexDetailsIntegrationTest {
     assertThat(details.getMemberName()).isEqualTo(member.getName());
     assertThat(details.getFromClause()).isEqualTo(INDEX_REGION_NAME);
     assertThat(details.getIndexedExpression()).isEqualTo("key");
-    assertThat(details.getIndexType()).isEqualTo(IndexType.FUNCTIONAL);
+    @SuppressWarnings("deprecation")
+    IndexType functionalIndexType = IndexType.FUNCTIONAL;
+    assertThat(details.getIndexType()).isEqualTo(functionalIndexType);
     assertThat(details.getProjectionAttributes()).isEqualTo("*");
     assertThat(details.getIsValid()).isEqualTo(true);
 

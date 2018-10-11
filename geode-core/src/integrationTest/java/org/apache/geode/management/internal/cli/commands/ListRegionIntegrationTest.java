@@ -26,7 +26,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 public class ListRegionIntegrationTest {
   private static String MEMBER_NAME = "test-server";
   private static String REGION_NAME = "test-region";
@@ -49,28 +49,28 @@ public class ListRegionIntegrationTest {
   }
 
   @Test
-  public void memberAndGroupAreMutuallyExclusive() throws Exception {
+  public void memberAndGroupAreMutuallyExclusive() {
     String cmd = "list regions --member=" + MEMBER_NAME + " --group=" + GROUP_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsError()
         .containsOutput("Please provide either \"member\" or \"group\" option.");
   }
 
   @Test
-  public void commandWithNoOptionsSucceeds() throws Exception {
+  public void commandWithNoOptionsSucceeds() {
     String cmd = "list regions";
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .tableHasColumnWithValuesContaining(OUTPUT_HEADER, REGION_NAME);
   }
 
   @Test
-  public void commandWithMemberSucceeds() throws Exception {
+  public void commandWithMemberSucceeds() {
     String cmd = "list regions --member=" + MEMBER_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .tableHasColumnWithValuesContaining(OUTPUT_HEADER, REGION_NAME);
   }
 
   @Test
-  public void commandWithGroupSucceeds() throws Exception {
+  public void commandWithGroupSucceeds() {
     String cmd = "list regions --group=" + GROUP_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .tableHasColumnWithValuesContaining(OUTPUT_HEADER, REGION_NAME);

@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class DeployCommandsSecurityTest {
 
   private MemberMXBean bean;
@@ -47,11 +47,10 @@ public class DeployCommandsSecurityTest {
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
   private static String deployCommand = null;
-  private static String zipFileName = "functions.jar";
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    File zipFile = temporaryFolder.newFile(zipFileName);
+    File zipFile = temporaryFolder.newFile("functions.jar");
     deployCommand = "deploy --jar=" + zipFile.getAbsolutePath();
   }
 
@@ -63,7 +62,6 @@ public class DeployCommandsSecurityTest {
   public void setUp() throws Exception {
     bean = connectionRule.getProxyMXBean(MemberMXBean.class);
   }
-
 
   @Test // regular user can't deploy
   @ConnectionConfiguration(user = "user", password = "user")

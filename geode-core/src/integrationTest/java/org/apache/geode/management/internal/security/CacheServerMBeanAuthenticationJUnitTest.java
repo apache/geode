@@ -44,6 +44,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");

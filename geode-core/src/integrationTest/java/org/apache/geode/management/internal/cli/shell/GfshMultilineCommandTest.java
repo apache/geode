@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class GfshMultilineCommandTest {
 
   @Rule
@@ -53,5 +53,4 @@ public class GfshMultilineCommandTest {
     gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
   }
-
 }

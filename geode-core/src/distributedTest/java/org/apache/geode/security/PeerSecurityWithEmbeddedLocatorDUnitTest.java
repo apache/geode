@@ -17,7 +17,6 @@ package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
@@ -33,22 +32,20 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
-
   @Test
-  public void testPeerSecurityManager() throws Exception {
+  public void testPeerSecurityManager() {
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
     server0Props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     server0Props.setProperty("start-locator", "localhost[" + locatorPort + "]");
     lsRule.startServerVM(0, server0Props);
-
 
     Properties server1Props = new Properties();
     server1Props.setProperty("security-username", "cluster");
@@ -59,7 +56,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
     server2Props.setProperty("security-username", "user");
     server2Props.setProperty("security-password", "wrongPwd");
 
-    VM server2 = getHost(0).getVM(2);
+    VM server2 = VM.getVM(2);
     server2.invoke(() -> {
       ServerStarterRule serverStarter = new ServerStarterRule();
       ClusterStartupRule.memberStarter = serverStarter;
@@ -69,10 +66,9 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
     });
   }
 
-
-
   @Test
-  public void testPeerAuthenticator() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testPeerAuthenticator() {
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
@@ -90,7 +86,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
     server2Props.setProperty("security-username", "bogus");
     server2Props.setProperty("security-password", "user");
 
-    VM server2 = getHost(0).getVM(2);
+    VM server2 = VM.getVM(2);
     server2.invoke(() -> {
       ServerStarterRule serverStarter = new ServerStarterRule();
       ClusterStartupRule.memberStarter = serverStarter;
@@ -98,5 +94,4 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
     });
   }
-
 }

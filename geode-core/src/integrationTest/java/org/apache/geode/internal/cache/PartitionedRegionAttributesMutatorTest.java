@@ -14,7 +14,7 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -54,6 +54,7 @@ public class PartitionedRegionAttributesMutatorTest {
   private PartitionedRegion pr;
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testChangeCacheLoaderDuringBucketCreation()
       throws InterruptedException, TimeoutException, ExecutionException {
     createRegion();
@@ -66,10 +67,12 @@ public class PartitionedRegionAttributesMutatorTest {
     mutationMade.countDown();
     createBucket.get(DEFAULT_WAIT_DURATION, DEFAULT_WAIT_UNIT);
 
-    getAllBucketRegions(pr).forEach(region -> assertEquals(loader, region.getCacheLoader()));
+    getAllBucketRegions(pr)
+        .forEach(region -> assertThat(region.getCacheLoader()).isEqualTo(loader));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testChangeCustomEntryTtlDuringBucketCreation()
       throws InterruptedException, ExecutionException {
     createRegion();
@@ -83,10 +86,11 @@ public class PartitionedRegionAttributesMutatorTest {
     createBucket.get();
 
     getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(customExpiry, region.customEntryTimeToLive));
+        .forEach(region -> assertThat(region.customEntryTimeToLive).isEqualTo(customExpiry));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testChangeCustomEntryIdleTimeoutDuringBucketCreation()
       throws InterruptedException, ExecutionException {
     createRegion();
@@ -100,7 +104,7 @@ public class PartitionedRegionAttributesMutatorTest {
     createBucket.get();
 
     getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(customExpiry, region.customEntryIdleTimeout));
+        .forEach(region -> assertThat(region.customEntryIdleTimeout).isEqualTo(customExpiry));
   }
 
   @Test
@@ -118,7 +122,8 @@ public class PartitionedRegionAttributesMutatorTest {
     createBucket.get();
 
     getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(expirationAttributes, region.getEntryIdleTimeout()));
+        .forEach(
+            region -> assertThat(region.getEntryIdleTimeout()).isEqualTo(expirationAttributes));
   }
 
   @Test
@@ -136,7 +141,7 @@ public class PartitionedRegionAttributesMutatorTest {
     createBucket.get();
 
     getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(expirationAttributes, region.getEntryTimeToLive()));
+        .forEach(region -> assertThat(region.getEntryTimeToLive()).isEqualTo(expirationAttributes));
   }
 
   private void createRegion() {

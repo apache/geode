@@ -14,8 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +35,7 @@ import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({OQLIndexTest.class})
+@Category(OQLIndexTest.class)
 public class CompactRangeIndexQueryIntegrationTest {
 
   @Rule
@@ -46,7 +45,8 @@ public class CompactRangeIndexQueryIntegrationTest {
   public void multipleNotEqualsClausesOnAPartitionedRegionShouldReturnCorrectResults()
       throws Exception {
     Cache cache = serverStarterRule.getCache();
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("portfolios");
+    Region<String, PortfolioPdx> region = cache
+        .<String, PortfolioPdx>createRegionFactory(RegionShortcut.PARTITION).create("portfolios");
     int numMatching = 10;
     QueryService qs = cache.getQueryService();
     qs.createIndex("statusIndex", "p.status", "/portfolios p");
@@ -61,19 +61,21 @@ public class CompactRangeIndexQueryIntegrationTest {
     Query q = qs.newQuery(
         "select * from /portfolios p where p.pk <> '0' and p.status <> '0' and p.status <> '1' and p.status <> '2'");
     SelectResults rs = (SelectResults) q.execute();
-    assertEquals(numMatching, rs.size());
+    assertThat(rs.size()).isEqualTo(numMatching);
   }
 
   @Test
   public void whenAuxFilterWithAnIterableFilterShouldNotCombineFiltersIntoAndJunction()
       throws Exception {
     Cache cache = serverStarterRule.getCache();
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("ExampleRegion");
+    Region<String, Map<String, Object>> region =
+        cache.<String, Map<String, Object>>createRegionFactory(RegionShortcut.PARTITION)
+            .create("ExampleRegion");
     QueryService qs = cache.getQueryService();
     qs.createIndex("ExampleRegionIndex", "er['codeNumber','origin']", "/ExampleRegion er");
 
     for (int i = 0; i < 10; i++) {
-      Map<String, Object> data = new HashMap<String, Object>();
+      Map<String, Object> data = new HashMap<>();
       data.put("codeNumber", 1);
       if ((i % 3) == 0) {
         data.put("origin", "src_common");
@@ -89,7 +91,7 @@ public class CompactRangeIndexQueryIntegrationTest {
     Query q = qs.newQuery(
         "select * from /ExampleRegion E where E['codeNumber']=1 and E['origin']='src_common' and (E['country']='JPY' or E['ccountrycy']='USD')");
     SelectResults rs = (SelectResults) q.execute();
-    assertEquals(4, rs.size());
+    assertThat(rs.size()).isEqualTo(4);
   }
 
   @Test
@@ -98,9 +100,9 @@ public class CompactRangeIndexQueryIntegrationTest {
     String regionName = "portfolio";
 
     Cache cache = serverStarterRule.getCache();
-    assertNotNull(cache);
-    Region region =
-        cache.createRegionFactory().setDataPolicy(DataPolicy.REPLICATE).create(regionName);
+    assertThat(cache).isNotNull();
+    Region<Integer, Portfolio> region = cache.<Integer, Portfolio>createRegionFactory()
+        .setDataPolicy(DataPolicy.REPLICATE).create(regionName);
 
     Portfolio p = new Portfolio(1);
     region.put(1, p);
@@ -114,6 +116,6 @@ public class CompactRangeIndexQueryIntegrationTest {
     SelectResults results = (SelectResults) queryService
         .newQuery("select * from /portfolio where status = 4 AND ID = 'StringID'").execute();
 
-    assertNotNull(results);
+    assertThat(results).isNotNull();
   }
 }

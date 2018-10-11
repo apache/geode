@@ -24,7 +24,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class ConnectCommandIntegrationTest {
 
   @ClassRule

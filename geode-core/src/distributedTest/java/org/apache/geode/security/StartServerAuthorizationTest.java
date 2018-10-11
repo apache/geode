@@ -31,7 +31,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class StartServerAuthorizationTest {
 
   @ClassRule
@@ -42,14 +42,14 @@ public class StartServerAuthorizationTest {
   public ServerStarterRule serverStarter = new ServerStarterRule();
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     locator = lsRule.startLocatorVM(0, props);
   }
 
   @Test
-  public void testStartServerWithInvalidCredential() throws Exception {
+  public void testStartServerWithInvalidCredential() {
     Properties props = new Properties();
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "user");
@@ -61,7 +61,7 @@ public class StartServerAuthorizationTest {
   }
 
   @Test
-  public void testStartServerWithInsufficientPrevilage() throws Exception {
+  public void testStartServerWithInsufficientPrivileges() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
@@ -74,7 +74,7 @@ public class StartServerAuthorizationTest {
   }
 
   @Test
-  public void testStartServerWithSufficientPrevilage() throws Exception {
+  public void testStartServerWithSufficientPrivileges() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
@@ -83,5 +83,4 @@ public class StartServerAuthorizationTest {
 
     lsRule.startServerVM(1, props);
   }
-
 }

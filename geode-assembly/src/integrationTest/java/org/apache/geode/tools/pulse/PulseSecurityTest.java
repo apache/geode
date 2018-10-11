@@ -49,7 +49,6 @@ public class PulseSecurityTest {
   @Rule
   public GeodeHttpClientRule client = new GeodeHttpClientRule(server::getHttpPort);
 
-
   @Test
   public void loginWithIncorrectPassword() throws Exception {
     HttpResponse response = client.loginToPulse("data", "wrongPassword");
@@ -98,7 +97,7 @@ public class PulseSecurityTest {
   }
 
   @Test
-  public void queryUsingEmbededPulseWillHaveAuthorizationEnabled() throws Exception {
+  public void queryUsingEmbededPulseWillHaveAuthorizationEnabled() {
     pulse.useJmxPort(server.getJmxPort());
     // using "cluster" to connect to jmx manager will not get authorized to execute query
     Cluster cluster = pulse.getRepository().getCluster("cluster", "cluster");

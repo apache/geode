@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
  * other than security-username and security-password. But this will be doable only in peer/client
  * case. For gfsh/rest, we still expected the credentials to be wrapped as expected.
  */
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class IntegratedSecurityPeerAuthDUnitTest {
 
   @ClassRule
@@ -50,14 +49,14 @@ public class IntegratedSecurityPeerAuthDUnitTest {
   private static MemberVM locator;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     Properties properties = new Properties();
     properties.put(SECURITY_MANAGER, MySecurityManager.class.getName());
     locator = cluster.startLocatorVM(0, properties);
   }
 
   @Test
-  public void startServer1WithPeerAuthInit_success() throws IOException {
+  public void startServer1WithPeerAuthInit_success() {
     Properties props = new Properties();
     props.setProperty(SECURITY_PEER_AUTH_INIT, MyAuthInit.class.getName());
     props.setProperty("security-name", "server-1");
@@ -73,7 +72,7 @@ public class IntegratedSecurityPeerAuthDUnitTest {
     cluster.getVM(2).invoke(() -> {
       ServerStarterRule server = new ServerStarterRule();
       server.withProperties(props).withConnectionToLocator(locatorPort).withAutoStart();
-      assertThatThrownBy(() -> server.before()).isInstanceOf(GemFireSecurityException.class)
+      assertThatThrownBy(server::before).isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("server-2 not authorized for CLUSTER:MANAGE");
     });
   }
@@ -87,7 +86,7 @@ public class IntegratedSecurityPeerAuthDUnitTest {
     cluster.getVM(3).invoke(() -> {
       ServerStarterRule server = new ServerStarterRule();
       server.withProperties(props).withConnectionToLocator(locatorPort).withAutoStart();
-      assertThatThrownBy(() -> server.before()).isInstanceOf(GemFireSecurityException.class)
+      assertThatThrownBy(server::before).isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("Authentication error");
     });
   }

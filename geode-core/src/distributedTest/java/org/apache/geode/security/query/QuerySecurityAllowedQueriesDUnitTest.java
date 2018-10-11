@@ -15,6 +15,7 @@
 package org.apache.geode.security.query;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
@@ -66,7 +67,7 @@ public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectByPublicFieldQuery() {
     String query = "select * from /" + regionName + " r where r.id = 1";
-    List<Object> expectedResults = Arrays.asList(values[0]);
+    List<Object> expectedResults = Collections.singletonList(values[0]);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
@@ -82,7 +83,7 @@ public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectCountOfPublicFieldQuery() {
     String query = "select count(r.id) from /" + regionName + " r";
-    List<Object> expectedResults = Arrays.asList(2);
+    List<Object> expectedResults = Collections.singletonList(2);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
@@ -90,7 +91,7 @@ public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectMaxOfPublicFieldQuery() {
     String query = "select max(r.id) from /" + regionName + " r";
-    List<Object> expectedResults = Arrays.asList(3);
+    List<Object> expectedResults = Collections.singletonList(3);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
@@ -98,7 +99,7 @@ public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectMinOfPublicFieldQuery() {
     String query = "select min(r.id) from /" + regionName + " r";
-    List<Object> expectedResults = Arrays.asList(1);
+    List<Object> expectedResults = Collections.singletonList(1);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
@@ -115,7 +116,7 @@ public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectRegionContainsKeyQuery() {
     String query = "select * from /" + regionName + ".containsKey('" + keys[0] + "')";
-    List<Object> expectedResults = Arrays.asList(true);
+    List<Object> expectedResults = Collections.singletonList(true);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }

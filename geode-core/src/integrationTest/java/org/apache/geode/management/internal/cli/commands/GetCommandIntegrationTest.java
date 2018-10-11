@@ -16,8 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.io.Serializable;
 import java.util.Formatter;
@@ -48,8 +46,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
 public class GetCommandIntegrationTest {
-
-  private static final Map<String, User> userDataStore = new HashMap<String, User>(5);
+  private static final Map<String, User> userDataStore = new HashMap<>(5);
 
   static {
     userDataStore.put("jackhandy", new User("jackhandy"));
@@ -69,7 +66,7 @@ public class GetCommandIntegrationTest {
   public static RuleChain chain = RuleChain.outerRule(server).around(gfsh);
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     InternalCache cache = server.getCache();
 
     // Region containing POJOs
@@ -79,8 +76,8 @@ public class GetCommandIntegrationTest {
     Region<String, User> users = userRegionFactory.create("Users");
 
     users.put("jonbloom", new User("jonbloom"));
-    assertFalse(users.isEmpty());
-    assertEquals(1, users.size());
+    assertThat(users.isEmpty()).isFalse();
+    assertThat(users.size()).isEqualTo(1);
 
     // Region containing PdxInstances
     RegionFactory<String, PdxInstance> userPdxRegionFactory =
@@ -96,22 +93,22 @@ public class GetCommandIntegrationTest {
     Region<String, String> usersString = userStringRegionFactory.create("UsersString");
 
     usersString.put("jonbloom", "6a6f6e626c6f6f6d");
-    assertFalse(usersString.isEmpty());
-    assertEquals(1, usersString.size());
+    assertThat(usersString.isEmpty()).isFalse();
+    assertThat(usersString.size()).isEqualTo(1);
   }
 
   @Test
-  public void get() throws Exception {
+  public void get() {
     gfsh.executeAndAssertThat("get --region=Users --key=jonbloom").statusIsSuccess();
   }
 
   @Test
-  public void getWithSlashedRegionName() throws Exception {
+  public void getWithSlashedRegionName() {
     gfsh.executeAndAssertThat("get --region=/Users --key=jonbloom").statusIsSuccess();
   }
 
   @Test
-  public void getOnCacheMissForRegularRegion() throws Exception {
+  public void getOnCacheMissForRegularRegion() {
     CommandResult result = gfsh.executeCommand("get --region=Users --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
@@ -173,7 +170,7 @@ public class GetCommandIntegrationTest {
   }
 
   @Test
-  public void getOnCacheMissForStringRegion() throws Exception {
+  public void getOnCacheMissForStringRegion() {
     CommandResult result = gfsh.executeCommand("get --region=UsersString --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 

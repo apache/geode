@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.web.shell;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -76,7 +75,7 @@ public class HttpOperationInvokerSecurityTest {
     QueryExp query = Query.eq(Query.attr("Name"), Query.value("mock"));
 
     Set<ObjectName> names = invoker.queryNames(objectName, query);
-    assertTrue(names.isEmpty());
+    assertThat(names.isEmpty()).isTrue();
     gfsh.disconnect();
   }
 

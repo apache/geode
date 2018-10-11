@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 public class CreateRegionCommandIntegrationTest {
 
   private static String CREATE_REGION = "create region --type=REPLICATE ";
@@ -47,7 +47,7 @@ public class CreateRegionCommandIntegrationTest {
   public static class TestCacheListener extends CacheListenerAdapter {
   }
 
-  public static class TestConstraint {
+  private static class TestConstraint {
   }
 
   @ClassRule
@@ -63,25 +63,25 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void parentRegionDoesNotExist() throws Exception {
+  public void parentRegionDoesNotExist() {
     gfsh.executeAndAssertThat(CREATE_REGION + "--name=/A/B").statusIsError()
         .containsOutput("Parent region for \"/A/B\" doesnt exist");
   }
 
   @Test
-  public void groupDoesNotExist() throws Exception {
+  public void groupDoesNotExist() {
     gfsh.executeAndAssertThat(CREATE_REGION + "--name=/FOO --groups=unknown").statusIsError()
         .containsOutput("Group(s) \"unknown\" are invalid");
   }
 
   @Test
-  public void templateRegionDoesNotExist() throws Exception {
+  public void templateRegionDoesNotExist() {
     gfsh.executeAndAssertThat("create region --name=/FOO --template-region=/BAR").statusIsError()
         .containsOutput("Specify a valid region path for template-region");
   }
 
   @Test
-  public void conflictingPartitionAttributesWithTemplate() throws Exception {
+  public void conflictingPartitionAttributesWithTemplate() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --template-region=REPLICATED --redundant-copies=2")
         .statusIsError().containsOutput(
@@ -89,52 +89,52 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void conflictingPartitionAttributesWithShortCut() throws Exception {
+  public void conflictingPartitionAttributesWithShortCut() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --redundant-copies=2")
         .statusIsError().containsOutput(
             "Parameter(s) \"[redundant-copies]\" can be used only for creating a Partitioned Region");
   }
 
   @Test
-  public void colocatedWithRegionDoesNotExist() throws Exception {
+  public void colocatedWithRegionDoesNotExist() {
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=/FOO --colocated-with=/BAR")
         .statusIsError().containsOutput("Specify a valid region path for colocated-with");
   }
 
   @Test
-  public void colocatedWithRegionIsNotPartitioned() throws Exception {
+  public void colocatedWithRegionIsNotPartitioned() {
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION --name=/FOO --colocated-with=/REPLICATED").statusIsError()
         .containsOutput("colocated-with \"/REPLICATED\" is not a Partitioned Region");
   }
 
   @Test
-  public void negativeLocalMaxMemory() throws Exception {
+  public void negativeLocalMaxMemory() {
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=/FOO --local-max-memory=-1")
         .statusIsError().containsOutput("PartitionAttributes localMaxMemory must not be negative");
   }
 
   @Test
-  public void zeroLocalMaxMemoryIsOK() throws Exception {
+  public void zeroLocalMaxMemoryIsOK() {
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=/FOO --local-max-memory=0")
         .statusIsSuccess().containsOutput("Region \"/FOO\" created");
     gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
   }
 
   @Test
-  public void negativeTotalMaxMemory() throws Exception {
+  public void negativeTotalMaxMemory() {
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=/FOO --total-max-memory=-1")
         .statusIsError().containsOutput("Total size of partition region must be > 0");
   }
 
   @Test
-  public void zeroTotalMaxMemory() throws Exception {
+  public void zeroTotalMaxMemory() {
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=/FOO --total-max-memory=0")
         .statusIsError().containsOutput("Total size of partition region must be > 0");
   }
 
   @Test
-  public void redundantCopies() throws Exception {
+  public void redundantCopies() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=PARTITION --redundant-copies=2")
         .statusIsSuccess().containsOutput("Region \"/FOO\" created");
 
@@ -142,26 +142,26 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void tooManyredundantCopies() throws Exception {
+  public void tooManyRedundantCopies() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=PARTITION --redundant-copies=4")
         .statusIsError().containsOutput("redundant-copies \"4\" is not valid");
   }
 
   @Test
-  public void keyConstraint() throws Exception {
+  public void keyConstraint() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --key-constraint=abc-def")
         .statusIsError().containsOutput("Specify a valid class name for key-constraint");
   }
 
   @Test
-  public void valueConstraint() throws Exception {
+  public void valueConstraint() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE --value-constraint=abc-def").statusIsError()
         .containsOutput("Specify a valid class name for value-constraint");
   }
 
   @Test
-  public void ifNotExistsIsIdempotent() throws Exception {
+  public void ifNotExistsIsIdempotent() {
     gfsh.executeAndAssertThat(
         "create region --if-not-exists --type=PARTITION --name=/FOO --local-max-memory=0")
         .statusIsSuccess().containsOutput("Region \"/FOO\" created");
@@ -178,28 +178,28 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void invalidCacheListener() throws Exception {
+  public void invalidCacheListener() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-listener=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName");
   }
 
   @Test
-  public void invalidCacheLoader() throws Exception {
+  public void invalidCacheLoader() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-loader=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName");
   }
 
   @Test
-  public void invalidCacheWriter() throws Exception {
+  public void invalidCacheWriter() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-writer=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName");
   }
 
   @Test
-  public void invalidGatewaySenders() throws Exception {
+  public void invalidGatewaySenders() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE --gateway-sender-id=unknown").statusIsError()
         .containsOutput("There are no GatewaySenders defined currently in the system");
@@ -208,21 +208,21 @@ public class CreateRegionCommandIntegrationTest {
   // TODO: Write test for invalid gateway name (gateways already need to exist).
 
   @Test
-  public void invalidConcurrencyLevel() throws Exception {
+  public void invalidConcurrencyLevel() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --template-region=/REPLICATED --concurrency-level=-1")
         .statusIsError().containsOutput("Specify positive integer value for concurrency-level");
   }
 
   @Test
-  public void nonPersistentRegionWithdiskStore() throws Exception {
+  public void nonPersistentRegionWithDiskStore() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --disk-store=unknown")
         .statusIsError()
         .containsOutput("Only regions with persistence or overflow to disk can specify DiskStore");
   }
 
   @Test
-  public void nonPersistentTemplateWithdiskStore() throws Exception {
+  public void nonPersistentTemplateWithdiskStore() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --template-region=/REPLICATED --disk-store=unknown")
         .statusIsError().containsOutput("template-region region \"/REPLICATED\" is not persistent")
@@ -231,7 +231,7 @@ public class CreateRegionCommandIntegrationTest {
 
 
   @Test
-  public void invalidDiskStore() throws Exception {
+  public void invalidDiskStore() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE_PERSISTENT --disk-store=unknown")
         .statusIsError()
@@ -239,14 +239,14 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void entryIdleTimeWithoutStatisticsEnabled() throws Exception {
+  public void entryIdleTimeWithoutStatisticsEnabled() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE --entry-idle-time-expiration=1").statusIsError()
         .containsOutput("Statistics must be enabled for expiration");
   }
 
   @Test
-  public void invalidCompressor() throws Exception {
+  public void invalidCompressor() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE --compressor=java.lang.String").statusIsError()
         .containsOutput(
@@ -254,7 +254,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateDefaultExpirationAttributes() throws Exception {
+  public void validateDefaultExpirationAttributes() {
     gfsh.executeAndAssertThat("create region --name=/A --type=REPLICATE").statusIsSuccess();
 
     Region region = server.getCache().getRegion("/A");
@@ -281,7 +281,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateNonDefaultBinaryOptions() throws Exception {
+  public void validateNonDefaultBinaryOptions() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE"
         + " --enable-async-conflation" + " --enable-cloning" + " --enable-concurrency-checks=false"
         + " --enable-multicast" + " --enable-statistics" + " --enable-subscription-conflation"
@@ -301,7 +301,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateExpirationOptions() throws Exception {
+  public void validateExpirationOptions() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE" + " --enable-statistics"
         + " --entry-idle-time-expiration=3" + " --entry-idle-time-expiration-action=DESTROY"
         + " --entry-time-to-live-expiration=5" + " --entry-time-to-live-expiration-action=DESTROY"
@@ -329,7 +329,8 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validatePartitionRegionOptions() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void validatePartitionRegionOptions() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=PARTITION_REDUNDANT"
         + " --local-max-memory=1001" + " --recovery-delay=7" + " --redundant-copies=1"
         + " --startup-recovery-delay=5" + " --total-max-memory=2001" + " --total-num-buckets=11"
@@ -351,7 +352,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateCallbackOptions() throws Exception {
+  public void validateCallbackOptions() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=PARTITION_REDUNDANT --cache-listener="
             + TestCacheListener.class.getName() + " --cache-loader="
@@ -375,7 +376,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateConstraints() throws Exception {
+  public void validateConstraints() {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE" + " --key-constraint="
         + TestConstraint.class.getName() + " --value-constraint=" + TestConstraint.class.getName())
         .statusIsSuccess();
@@ -391,7 +392,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateEntryIdleTimeExpiration() throws Exception {
+  public void validateEntryIdleTimeExpiration() {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE --entry-idle-time-expiration=7 --enable-statistics")
         .statusIsSuccess();
@@ -402,7 +403,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateTemplateRegionAttributesForReplicate() throws Exception {
+  public void validateTemplateRegionAttributesForReplicate() {
     gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=REPLICATE"
         + " --enable-async-conflation" + " --enable-cloning" + " --enable-concurrency-checks=false"
         + " --enable-multicast" + " --enable-statistics" + " --enable-subscription-conflation"
@@ -460,7 +461,8 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateTemplateRegionAttributesForPartitionRedundant() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void validateTemplateRegionAttributesForPartitionRedundant() {
     gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_REDUNDANT"
         + " --enable-async-conflation" + " --enable-cloning" + " --enable-concurrency-checks=false"
         + " --enable-multicast" + " --enable-statistics" + " --enable-subscription-conflation"
@@ -524,7 +526,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForLRUHeap() throws Exception {
+  public void testEvictionAttributesForLRUHeap() {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy")
         .statusIsSuccess();
@@ -539,7 +541,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForLRUHeapWithObjectSizer() throws Exception {
+  public void testEvictionAttributesForLRUHeapWithObjectSizer() {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy --eviction-object-sizer="
             + TestObjectSizer.class.getName())
@@ -557,7 +559,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForLRUEntry() throws Exception {
+  public void testEvictionAttributesForLRUEntry() {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 --eviction-action=overflow-to-disk")
         .statusIsSuccess();
@@ -573,7 +575,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForLRUMemory() throws Exception {
+  public void testEvictionAttributesForLRUMemory() {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk")
         .statusIsSuccess();
@@ -589,7 +591,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForObjectSizer() throws Exception {
+  public void testEvictionAttributesForObjectSizer() {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
             + TestObjectSizer.class.getName())
@@ -607,7 +609,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForNonDeclarableObjectSizer() throws Exception {
+  public void testEvictionAttributesForNonDeclarableObjectSizer() {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
             + TestObjectSizerNotDeclarable.class.getName())

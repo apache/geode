@@ -43,9 +43,8 @@ public class JmxPasswordFileTest {
   public void connectWhenJmxManagerSecuredWithPasswordFile() throws Exception {
     File passwordFile = temporaryFolder.newFile("password.properties");
     FileUtils.writeLines(passwordFile, Collections.singleton("user user"));
-    locator.withProperty("jmx-manager-password-file", passwordFile.getAbsolutePath());
-
-    locator.startLocator();
+    locator.withProperty("jmx-manager-password-file", passwordFile.getAbsolutePath())
+        .startLocator();
 
     gfsh.secureConnectAndVerify(locator.getJmxPort(), jmxManager, "user", "user");
   }

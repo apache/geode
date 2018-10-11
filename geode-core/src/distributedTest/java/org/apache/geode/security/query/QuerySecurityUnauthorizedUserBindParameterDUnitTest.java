@@ -21,11 +21,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.internal.QRegion;
 import org.apache.geode.cache.query.internal.index.DummyQRegion;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class QuerySecurityUnauthorizedUserBindParameterDUnitTest extends QuerySecurityBase {
 
   @Before
@@ -45,13 +46,12 @@ public class QuerySecurityUnauthorizedUserBindParameterDUnitTest extends QuerySe
     String regexForExpectedException = ".*DATA:READ.*";
     specificUserClient.invoke(() -> {
       Region region = getClientCache().getRegion(regionName);
-      HashSet hashset = new HashSet();
+      HashSet<Region> hashset = new HashSet<>();
       hashset.add(region);
       assertExceptionOccurred(getClientCache().getQueryService(), query, new Object[] {hashset},
           regexForExpectedException);
     });
   }
-
 
   // If DummyQRegion is ever serializable, then this test will fail and a security hole with query
   // will have been opened
@@ -63,7 +63,7 @@ public class QuerySecurityUnauthorizedUserBindParameterDUnitTest extends QuerySe
     String regexForExpectedException = ".*failed serializing object.*";
     specificUserClient.invoke(() -> {
       Region region = getClientCache().getRegion(regionName);
-      HashSet hashset = new HashSet();
+      HashSet<QRegion> hashset = new HashSet<>();
       hashset.add(new DummyQRegion(region));
       assertExceptionOccurred(getClientCache().getQueryService(), query, new Object[] {hashset},
           regexForExpectedException);

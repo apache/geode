@@ -38,9 +38,8 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientCQAuthDUnitTest {
-
   private static final String REGION_NAME = "AuthRegion";
 
   private VM client1;

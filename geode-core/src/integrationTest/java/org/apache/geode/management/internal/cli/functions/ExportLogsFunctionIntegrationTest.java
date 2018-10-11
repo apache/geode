@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -28,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -51,12 +52,14 @@ public class ExportLogsFunctionIntegrationTest {
   @Test
   public void exportLogsFunctionDoesNotBlowUp() throws Throwable {
     File logFile1 = new File(serverWorkingDir, "server1.log");
-    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
+    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line",
+        Charset.defaultCharset());
     File logFile2 = new File(serverWorkingDir, "server2.log");
-    FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line");
+    FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line",
+        Charset.defaultCharset());
 
     File notALogFile = new File(serverWorkingDir, "foo.txt");
-    FileUtils.writeStringToFile(notALogFile, "some text");
+    FileUtils.writeStringToFile(notALogFile, "some text", Charset.defaultCharset());
 
     verifyExportLogsFunctionDoesNotBlowUp(serverStarterRule.getCache());
 
@@ -66,14 +69,14 @@ public class ExportLogsFunctionIntegrationTest {
 
   @Test
   public void createOrGetExistingExportLogsRegionDoesNotBlowUp() throws Exception {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = serverStarterRule.getCache();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(false, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
   }
 
   @Test
   public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember() throws Exception {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = serverStarterRule.getCache();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
 

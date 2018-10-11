@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class MBeanSecurityJUnitTest {
 
   @ClassRule
@@ -100,7 +100,7 @@ public class MBeanSecurityJUnitTest {
    * throwing the SecurityExceptions
    */
   @Test
-  public void testLocalCalls() throws Exception {
+  public void testLocalCalls() {
     MBeanServer server = MBeanJMXAdapter.mbeanServer;
     assertThatThrownBy(
         () -> server.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))

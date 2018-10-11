@@ -18,7 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 
@@ -36,14 +36,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -53,6 +52,7 @@ public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
           .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testRemoveAll() throws Exception {
 
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
@@ -68,11 +68,11 @@ public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
 
       Region region = createProxyRegion(cache, REGION_NAME);
       region.removeAll(Arrays.asList("key1", "key2", "key3", "key4"));
-      assertFalse(region.containsKey("key1"));
+      assertThat(region.containsKey("key1")).isFalse();
       assertNotAuthorized(() -> region.containsKeyOnServer("key1"), "DATA:READ:AuthRegion:key1");
     });
+
     ai1.await();
     ai2.await();
   }
-
 }

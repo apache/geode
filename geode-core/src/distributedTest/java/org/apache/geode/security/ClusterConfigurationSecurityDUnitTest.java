@@ -31,7 +31,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClusterConfigurationSecurityDUnitTest {
 
   @ClassRule
@@ -44,21 +44,21 @@ public class ClusterConfigurationSecurityDUnitTest {
   private static MemberVM locator;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     Properties properties = new Properties();
     properties.put(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     locator = lsRule.startLocatorVM(0, properties);
   }
 
   @Test
-  public void startServerWithNoCredentialWouldFail() throws Exception {
+  public void startServerWithNoCredentialWouldFail() {
     assertThatThrownBy(() -> serverStarter.startServer(new Properties(), locator.getPort()))
         .isInstanceOf(AuthenticationRequiredException.class)
         .hasMessageContaining("Failed to find credentials");
   }
 
   @Test
-  public void startServerWithInvalidCredentialWouldfail() throws Exception {
+  public void startServerWithInvalidCredentialWouldFail() {
     Properties properties = new Properties();
     properties.put("security-username", "test");
     properties.put("security-password", "invalidPassword");
@@ -68,7 +68,7 @@ public class ClusterConfigurationSecurityDUnitTest {
   }
 
   @Test
-  public void startServerWithInsufficientCredential() throws Exception {
+  public void startServerWithInsufficientCredential() {
     Properties properties = new Properties();
     properties.put("security-username", "test");
     properties.put("security-password", "test");
@@ -78,7 +78,7 @@ public class ClusterConfigurationSecurityDUnitTest {
   }
 
   @Test
-  public void startServerWithValidCredential() throws Exception {
+  public void startServerWithValidCredential() {
     Properties properties = new Properties();
     properties.put("security-username", "clusterManage");
     properties.put("security-password", "clusterManage");

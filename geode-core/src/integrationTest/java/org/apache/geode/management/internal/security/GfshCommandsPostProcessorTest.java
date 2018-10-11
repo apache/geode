@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class GfshCommandsPostProcessorTest {
 
   @ClassRule
@@ -44,13 +44,13 @@ public class GfshCommandsPostProcessorTest {
       new GfshCommandRule(serverStarter::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite,dataRead", password = "dataWrite,dataRead")
-  public void testGetPostProcess() throws Exception {
+  public void testGetPostProcess() {
     gfshConnection.executeCommand("put --region=region1 --key=key1 --value=value1");
     gfshConnection.executeCommand("put --region=region1 --key=key2 --value=value2");
     gfshConnection.executeCommand("put --region=region1 --key=key3 --value=value3");

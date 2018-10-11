@@ -33,14 +33,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -50,14 +49,14 @@ public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
           .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
-  public void testRegionClear() throws InterruptedException {
+  public void testRegionClear() {
     // Verify that an unauthorized user can't clear the region
     SerializableRunnable clearUnauthorized = new SerializableRunnable() {
       @Override
       public void run() {
         ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
         Region region = createProxyRegion(cache, REGION_NAME);
-        assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
+        assertNotAuthorized(region::clear, "DATA:WRITE:AuthRegion");
       }
     };
     client1.invoke(clearUnauthorized);

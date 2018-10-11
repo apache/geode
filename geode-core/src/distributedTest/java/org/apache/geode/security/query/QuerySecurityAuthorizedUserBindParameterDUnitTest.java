@@ -25,7 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class QuerySecurityAuthorizedUserBindParameterDUnitTest extends QuerySecurityBase {
 
   @Before
@@ -44,7 +44,7 @@ public class QuerySecurityAuthorizedUserBindParameterDUnitTest extends QuerySecu
     String query = "select v from $1 r, r.values() v";
     specificUserClient.invoke(() -> {
       Region region = getClientCache().getRegion(regionName);
-      HashSet hashset = new HashSet();
+      HashSet<Region> hashset = new HashSet<>();
       hashset.add(region);
       assertQueryResults(getClientCache(), query, new Object[] {hashset}, Arrays.asList(values));
     });

@@ -18,7 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,15 +41,14 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
-  final VM client3 = host.getVM(3);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
+  private final VM client3 = VM.getVM(3);
 
   @Rule
   public ServerStarterRule server =
@@ -60,16 +59,18 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Before
   public void before() throws Exception {
-    Region region =
-        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    Region<String, String> region =
+        server.getCache().<String, String>createRegionFactory(RegionShortcut.REPLICATE)
+            .create(REGION_NAME);
     for (int i = 0; i < 5; i++) {
       region.put("key" + i, "value" + i);
     }
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testGetPutAuthorization() throws InterruptedException {
-    Map<String, String> allValues = new HashMap<String, String>();
+    Map<String, String> allValues = new HashMap<>();
     allValues.put("key1", "value1");
     allValues.put("key2", "value2");
 
@@ -90,9 +91,9 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
       // not authorized for either keys, get no record back
       Map keyValues = region.getAll(keys);
-      assertEquals(0, keyValues.size());
+      assertThat(keyValues.size()).isEqualTo(0);
 
-      assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
+      assertNotAuthorized(region::keySetOnServer, "DATA:READ:AuthRegion");
     });
 
 
@@ -102,18 +103,18 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
       Region region = createProxyRegion(cache, REGION_NAME);
 
       region.put("key3", "value3");
-      assertEquals("value3", region.get("key3"));
+      assertThat(region.get("key3")).isEqualTo("value3");
 
       // put all
       region.putAll(allValues);
 
       // get all
       Map keyValues = region.getAll(keys);
-      assertEquals(2, keyValues.size());
+      assertThat(keyValues.size()).isEqualTo(2);
 
       // keyset
       Set keySet = region.keySetOnServer();
-      assertEquals(5, keySet.size());
+      assertThat(keySet.size()).isEqualTo(5);
     });
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
@@ -128,10 +129,10 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
       // only authorized for one recrod
       Map keyValues = region.getAll(keys);
-      assertEquals(1, keyValues.size());
+      assertThat(keyValues.size()).isEqualTo(1);
 
       // keyset
-      assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
+      assertNotAuthorized(region::keySetOnServer, "DATA:READ:AuthRegion");
     });
 
     ai1.join();
@@ -142,5 +143,4 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
     ai2.checkException();
     ai3.checkException();
   }
-
 }

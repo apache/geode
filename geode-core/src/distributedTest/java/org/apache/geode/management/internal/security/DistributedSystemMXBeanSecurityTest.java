@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class DistributedSystemMXBeanSecurityTest {
 
   private DistributedSystemMXBean bean;
@@ -54,14 +54,14 @@ public class DistributedSystemMXBeanSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testDataReadAccess() throws Exception {
+  public void testDataReadAccess() {
     assertThatThrownBy(() -> bean.backupAllMembers(null, null))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterManageDisk", password = "clusterManageDisk")
-  public void testDiskManageAccess() throws Exception {
+  public void testDiskManageAccess() {
     assertThatThrownBy(() -> bean.backupAllMembers(null, null))
         .isInstanceOf(NotAuthorizedException.class);
   }
@@ -69,7 +69,7 @@ public class DistributedSystemMXBeanSecurityTest {
   @Test
   @ConnectionConfiguration(user = "dataRead,clusterWriteDisk",
       password = "dataRead,clusterWriteDisk")
-  public void testBothAccess() throws Exception {
+  public void testBothAccess() {
     assertThatThrownBy(() -> bean.backupAllMembers(null, null))
         .isNotInstanceOf(NotAuthorizedException.class);
   }

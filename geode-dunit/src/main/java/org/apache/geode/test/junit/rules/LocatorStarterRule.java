@@ -15,16 +15,22 @@
 package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.Locator.startLocatorAndDS;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.awaitility.Awaitility;
 
+import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 
@@ -56,50 +62,16 @@ import org.apache.geode.internal.cache.InternalCache;
  */
 public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
   private transient InternalLocator locator;
+  private transient LocatorLauncher locatorLauncher;
 
   @Override
-  public void before() {
-    super.before();
-    // always use a random jmxPort/httpPort when using the rule to start the locator
-    if (jmxPort < 0) {
-      withJMXManager(false);
-    }
-    if (autoStart) {
-      startLocator();
-    }
+  public InternalCache getCache() {
+    return locator.getCache();
   }
 
   @Override
   public InternalLocator getLocator() {
     return locator;
-  }
-
-  @Override
-  protected void stopMember() {
-    if (locator != null) {
-      locator.stop();
-    }
-  }
-
-  public void startLocator() {
-    try {
-      // this will start a jmx manager and admin rest service by default
-      locator = (InternalLocator) startLocatorAndDS(memberPort, null, properties);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-    // memberPort is by default zero, which translates to "randomly select an available port,"
-    // which is why it is updated here after being specified above.
-    memberPort = locator.getPort();
-
-    DistributionConfig config = locator.getConfig();
-    jmxPort = config.getJmxManagerPort();
-    httpPort = config.getHttpServicePort();
-
-    if (config.getEnableClusterConfiguration()) {
-      Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertTrue(locator.isSharedConfigurationRunning()));
-    }
   }
 
   public LocatorStarterRule withoutClusterConfigurationService() {
@@ -108,7 +80,98 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
   }
 
   @Override
-  public InternalCache getCache() {
-    return locator.getCache();
+  public void before() {
+    super.before();
+
+    // MemberStarterRule deletes the member's workingDirectory (TemporaryFolder) within the after()
+    // method but doesn't recreate it during before(), breaking the purpose of the TemporaryFolder
+    // rule all together (it gets created only from the withWorkingDir() method, which is generally
+    // called only once).
+    try {
+      if (temporaryFolder != null) {
+        temporaryFolder.create();
+      }
+    } catch (IOException ioException) {
+      // Should never happen.
+      throw new RuntimeException(ioException);
+    }
+
+    // Always use a random jmxPort/httpPort when using the rule to start the locator
+    if (jmxPort < 0) {
+      withJMXManager(false);
+    }
+
+    if (autoStart) {
+      startLocator();
+    }
+  }
+
+  public void startLocator() {
+    LocatorLauncher.Builder locatorLauncherBuilder = new LocatorLauncher.Builder();
+    properties.forEach((key, value) -> locatorLauncherBuilder.set((String) key, (String) value));
+    locatorLauncherBuilder.setForce(true);
+    locatorLauncherBuilder.setPort(memberPort);
+    locatorLauncherBuilder.setDeletePidFileOnStop(true);
+
+    // Set the name configured, or the default is none is configured.
+    if (StringUtils.isNotBlank(this.name)) {
+      locatorLauncherBuilder.setMemberName(this.name);
+    } else {
+      this.name = locatorLauncherBuilder.getMemberName();
+    }
+
+    // The LocatorLauncher class doesn't provide a public way of logging only to console.
+    locatorLauncher = spy(locatorLauncherBuilder.build());
+    doAnswer((invocation) -> (!logFile) ? null : invocation.callRealMethod()).when(locatorLauncher)
+        .getLogFile();
+
+    // Start locator and wait until it comes online (max 60 seconds).
+    locatorLauncher.start();
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(locatorLauncher.isRunning()).isTrue());
+    locator = InternalLocator.getLocator();
+
+    // Initially zero by default ("select random available port"), that's why it needs to be updated
+    memberPort = locator.getPort();
+    DistributionConfig config = locator.getConfig();
+    jmxPort = config.getJmxManagerPort();
+    httpPort = config.getHttpServicePort();
+
+    // Wait at most 60 seconds for the cluster configuration service to come online.
+    if (config.getEnableClusterConfiguration()) {
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(locator.isSharedConfigurationRunning()).isTrue());
+    }
+  }
+
+  @Override
+  protected void stopMember() {
+    if (locatorLauncher != null) {
+      try {
+        locatorLauncher.stop();
+      } catch (Exception exception) {
+        exception.printStackTrace(System.out);
+      }
+    }
+  }
+
+  @Override
+  public void after() {
+    super.after();
+
+    // Files are generated in the current dir by default if workingDir is not set, clean them up.
+    if (getWorkingDir() == null) {
+      String baseName = this.name + this.memberPort;
+      // GMS and view persistent files.
+      Path locatorDatFile = Paths.get(baseName + "view.dat");
+      Path locatorViewsFile = Paths.get(baseName + "views.log");
+      FileUtils.deleteQuietly(locatorDatFile.toFile());
+      FileUtils.deleteQuietly(locatorViewsFile.toFile());
+
+      // InternalConfigurationPersistenceService
+      Path clusterConfigDirectory = Paths
+          .get(InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX + this.name);
+      FileUtils.deleteQuietly(clusterConfigDirectory.toFile());
+    }
   }
 }

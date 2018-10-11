@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class GatewaySenderMBeanSecurityTest {
   private static GatewaySenderMBean mock = mock(GatewaySenderMBean.class);
   private static ObjectName mockBeanName = null;
@@ -74,7 +74,7 @@ public class GatewaySenderMBeanSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
-  public void testAllAccess() throws Exception {
+  public void testAllAccess() {
     bean.getAlertThreshold();
     bean.getAverageDistributionTimePerBatch();
     bean.getBatchSize();
@@ -91,7 +91,7 @@ public class GatewaySenderMBeanSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "stranger", password = "stranger")
-  public void testNoAccess() throws Exception {
+  public void testNoAccess() {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.getAlertThreshold())
@@ -121,5 +121,4 @@ public class GatewaySenderMBeanSecurityTest {
 
     softly.assertAll();
   }
-
 }

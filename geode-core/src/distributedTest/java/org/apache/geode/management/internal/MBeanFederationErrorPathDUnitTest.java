@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.Region;
@@ -45,7 +44,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({JMXTest.class})
+@Category(JMXTest.class)
 public class MBeanFederationErrorPathDUnitTest {
   private static final int SERVER_1_VM_INDEX = 1;
   private static final String REGION_NAME = "test-region-1";
@@ -57,7 +56,6 @@ public class MBeanFederationErrorPathDUnitTest {
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
-
 
   private InternalBlackboard bb;
 
@@ -84,29 +82,27 @@ public class MBeanFederationErrorPathDUnitTest {
     MBeanProxyFactory spy = spy(mBeanProxyFactory);
     service.getFederatingManager().setProxyFactory(spy);
 
-    Answer answer1 = new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        server1.invoke(() -> {
-          InternalCache serverCache = ClusterStartupRule.getCache();
-          Region region = serverCache.getRegionByPath("/" + REGION_NAME);
-          region.destroyRegion();
-        });
+    Answer answer1 = (invocation) -> {
+      server1.invoke(() -> {
+        InternalCache serverCache = ClusterStartupRule.getCache();
+        assertThat(serverCache).isNotNull();
+        Region region = serverCache.getRegionByPath("/" + REGION_NAME);
+        region.destroyRegion();
+      });
 
-        Region<String, Object> monitoringRegion = invocation.getArgument(2);
-        monitoringRegion.destroy(objectName.toString());
+      Region<String, Object> monitoringRegion = invocation.getArgument(2);
+      monitoringRegion.destroy(objectName.toString());
 
-        assertThat((monitoringRegion).get(objectName.toString())).isNull();
+      assertThat((monitoringRegion).get(objectName.toString())).isNull();
 
-        try {
-          invocation.callRealMethod();
-        } catch (Exception e) {
-          bb.setMailbox(bbKey, e);
-          return null;
-        }
-        bb.setMailbox(bbKey, "this is fine");
+      try {
+        invocation.callRealMethod();
+      } catch (Exception e) {
+        bb.setMailbox(bbKey, e);
         return null;
       }
+      bb.setMailbox(bbKey, "this is fine");
+      return null;
     };
 
     doAnswer(answer1).when(spy).createProxy(any(), eq(objectName), any(), any());
@@ -115,6 +111,7 @@ public class MBeanFederationErrorPathDUnitTest {
 
     server1.invoke(() -> {
       InternalCache cache1 = ClusterStartupRule.getCache();
+      assertThat(cache1).isNotNull();
       cache1.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
     });
 

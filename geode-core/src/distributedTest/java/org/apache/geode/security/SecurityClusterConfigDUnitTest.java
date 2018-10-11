@@ -37,7 +37,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class SecurityClusterConfigDUnitTest {
 
   @Rule
@@ -49,10 +49,8 @@ public class SecurityClusterConfigDUnitTest {
   @Before
   public void before() throws Exception {
     addIgnoredException(
-        "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
-            .toString());
-    addIgnoredException(
-        "A server must use cluster configuration when joining a secured cluster.".toString());
+        "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
+    addIgnoredException("A server must use cluster configuration when joining a secured cluster.");
 
     Properties props = new Properties();
     props.setProperty(JMX_MANAGER, "false");
@@ -65,7 +63,7 @@ public class SecurityClusterConfigDUnitTest {
   }
 
   @Test
-  public void testStartServerWithClusterConfig() throws Exception {
+  public void testStartServerWithClusterConfig() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
@@ -86,7 +84,7 @@ public class SecurityClusterConfigDUnitTest {
   }
 
   @Test
-  public void testStartServerWithSameSecurityManager() throws Exception {
+  public void testStartServerWithSameSecurityManager() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
@@ -108,8 +106,7 @@ public class SecurityClusterConfigDUnitTest {
   }
 
   @Test
-  public void serverWithDifferentSecurityManagerShouldThrowGemFireConfigException()
-      throws Exception {
+  public void serverWithDifferentSecurityManagerShouldThrowGemFireConfigException() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
@@ -126,7 +123,7 @@ public class SecurityClusterConfigDUnitTest {
   }
 
   @Test
-  public void serverWithDifferentPostProcessorShouldThrowGemFireConfigException() throws Exception {
+  public void serverWithDifferentPostProcessorShouldThrowGemFireConfigException() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication
@@ -144,7 +141,7 @@ public class SecurityClusterConfigDUnitTest {
   }
 
   @Test
-  public void serverConnectingToSecuredLocatorMustUseClusterConfig() throws Exception {
+  public void serverConnectingToSecuredLocatorMustUseClusterConfig() {
     Properties props = new Properties();
 
     // the following are needed for peer-to-peer authentication

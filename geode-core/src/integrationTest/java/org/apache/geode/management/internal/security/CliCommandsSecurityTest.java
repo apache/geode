@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class CliCommandsSecurityTest {
   private MemberMXBean bean;
 
@@ -79,7 +79,7 @@ public class CliCommandsSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "super-user", password = "1234567")
-  public void testAdminUser() throws Exception {
+  public void testAdminUser() {
     for (TestCommand command : commands) {
       LogService.getLogger().info("processing: " + command.getCommand());
       bean.processCommand(command.getCommand());

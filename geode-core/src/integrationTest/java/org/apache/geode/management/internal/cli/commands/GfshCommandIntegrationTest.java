@@ -24,7 +24,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class GfshCommandIntegrationTest {
   @ClassRule
   public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
@@ -33,7 +33,7 @@ public class GfshCommandIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
-  public void invalidCommandWhenNotConnected() throws Exception {
+  public void invalidCommandWhenNotConnected() {
     gfsh.executeAndAssertThat("abc").statusIsError().containsOutput("Command 'abc' not found");
   }
 

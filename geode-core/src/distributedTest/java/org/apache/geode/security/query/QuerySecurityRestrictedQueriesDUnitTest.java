@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security.query;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Arrays;
 
@@ -32,7 +32,7 @@ import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
@@ -56,7 +56,7 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
     putIntoRegion(superUserClient, keys, values, regionName);
   }
 
-  protected String regexForExpectedExceptions = ".*Unauthorized access.*";
+  private String regexForExpectedExceptions = ".*Unauthorized access.*";
 
 
   /* ----- Implicit Getter Tests ----- */
@@ -162,7 +162,7 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
       QueryService queryService = getClientCache().getQueryService();
       try {
         queryService.newQuery(query).execute();
-        fail();
+        fail("An exception should have been thrown.");
       } catch (Exception e) {
         e.printStackTrace();
         if (!e.getMessage().matches(regexForExpectedExceptions)) {
@@ -174,15 +174,14 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
             cause = cause.getCause();
           }
           e.printStackTrace();
-          fail();
+          fail("Expression " + regexForExpectedExceptions + " not found within the stack trace.");
         }
       }
     });
   }
 
   @Test
-  public void usersWhoCanExecuteQueryShouldNotInvokeRegionCreateForSelectRegionCreateQuery()
-      throws Exception {
+  public void usersWhoCanExecuteQueryShouldNotInvokeRegionCreateForSelectRegionCreateQuery() {
     String query = "select * from /" + regionName + ".create('key2', 15)";
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         regexForExpectedExceptions);
@@ -203,8 +202,7 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
   }
 
   @Test
-  public void usersWhoCanExecuteQueryShouldNotInvokeRegionPutForSelectRegionPutQuery()
-      throws Exception {
+  public void usersWhoCanExecuteQueryShouldNotInvokeRegionPutForSelectRegionPutQuery() {
     String query = "select * from /" + regionName + ".put('key-2', 'something')";
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         regexForExpectedExceptions);
@@ -213,8 +211,7 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
 
   @Test
   @Parameters(method = "getAllUsersWhoCanExecuteQuery")
-  public void usersWhoCanExecuteQueryShouldNotInvokedRegionRemoveForSelectRegionRemoveQuery()
-      throws Exception {
+  public void usersWhoCanExecuteQueryShouldNotInvokedRegionRemoveForSelectRegionRemoveQuery() {
     String query = "select * from /" + regionName + ".remove('key-0')";
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         regexForExpectedExceptions);

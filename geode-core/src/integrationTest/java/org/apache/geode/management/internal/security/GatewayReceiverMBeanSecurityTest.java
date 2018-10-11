@@ -36,9 +36,8 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class GatewayReceiverMBeanSecurityTest {
-
   private static GatewayReceiverMXBean mock = mock(GatewayReceiverMXBean.class);
   private static ObjectName mockBeanName = null;
   private static ManagementService service = null;
@@ -85,7 +84,7 @@ public class GatewayReceiverMBeanSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void testNoAccess() throws Exception {
+  public void testNoAccess() {
     SoftAssertions softly = new SoftAssertions();
     softly.assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut())
         .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
@@ -95,5 +94,4 @@ public class GatewayReceiverMBeanSecurityTest {
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
     softly.assertAll();
   }
-
 }

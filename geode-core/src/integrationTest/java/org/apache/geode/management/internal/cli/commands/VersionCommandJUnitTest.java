@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class VersionCommandJUnitTest {
   private static final String[] EXPECTED_FULL_DATA =

@@ -42,7 +42,7 @@ class InheritsDefaultPermissionsJDBCFunction extends CliFunction<String> {
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<String> context) {
-    return new CliFunctionResult("some-member", true, "some-message");
+    return new CliFunctionResult("some-member", CliFunctionResult.StatusState.OK, "some-message");
   }
 }
 
@@ -73,15 +73,12 @@ public class JDBCConnectorFunctionsSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void functionRequireExpectedPermission() throws Exception {
-    functionStringMap.entrySet().stream().forEach(entry -> {
-      Function function = entry.getKey();
-      String permission = entry.getValue();
-      gfsh.executeAndAssertThat("execute function --id=" + function.getId())
-          .tableHasRowCount("Message", 1)
-          .tableHasRowWithValues("Message",
-              "Exception: user not authorized for " + permission)
-          .statusIsError();
-    });
+  public void functionRequireExpectedPermission() {
+    functionStringMap.forEach((function, permission) -> gfsh
+        .executeAndAssertThat("execute function --id=" + function.getId())
+        .tableHasRowCount("Message", 1)
+        .tableHasRowWithValues("Message",
+            "Exception: user not authorized for " + permission)
+        .statusIsError());
   }
 }

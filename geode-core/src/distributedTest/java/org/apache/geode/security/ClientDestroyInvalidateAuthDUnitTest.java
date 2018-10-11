@@ -15,10 +15,7 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,11 +31,10 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientDestroyInvalidateAuthDUnitTest {
   private static String REGION_NAME = "AuthRegion";
 
-  private ClientVM client1, client2;
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
   @Rule
@@ -48,8 +44,9 @@ public class ClientDestroyInvalidateAuthDUnitTest {
 
   @Before
   public void before() throws Exception {
-    Region region =
-        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    Region<String, String> region =
+        server.getCache().<String, String>createRegionFactory(RegionShortcut.REPLICATE)
+            .create(REGION_NAME);
     for (int i = 0; i < 5; i++) {
       region.put("key" + i, "value" + i);
     }
@@ -57,46 +54,47 @@ public class ClientDestroyInvalidateAuthDUnitTest {
 
   @Test
   public void testDestroyInvalidate() throws Exception {
-    client1 = lsRule.startClientVM(1, "data", "data", true, server.getPort());
+    ClientVM client1 = lsRule.startClientVM(1, "data", "data", true, server.getPort());
     // Delete one key and invalidate another key with an authorized user.
     client1.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
-      Region region =
-          cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      assertTrue(region.containsKeyOnServer("key1"));
+      assertThat(cache).isNotNull();
+      Region<String, String> region =
+          cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+              .create(REGION_NAME);
+      assertThat(region.containsKeyOnServer("key1")).isTrue();
 
       // Destroy key1
       region.destroy("key1");
-      assertFalse(region.containsKeyOnServer("key1"));
+      assertThat(region.containsKeyOnServer("key1")).isFalse();
 
       // Invalidate key2
-      assertNotNull("Value of key2 should not be null", region.get("key2"));
+      assertThat(region.get("key2")).as("Value of key2 should not be null").isNotNull();
       region.invalidate("key2");
-      assertNull("Value of key2 should have been null", region.get("key2"));
+      assertThat(region.get("key2")).as("Value of key2 should have been null").isNull();
       cache.close();
     });
 
-    client2 = lsRule.startClientVM(2, "dataRead", "dataRead", true, server.getPort());
+    ClientVM client2 = lsRule.startClientVM(2, "dataRead", "dataRead", true, server.getPort());
     // Delete one key and invalidate another key with an unauthorized user.
     client2.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
-
+      assertThat(cache).isNotNull();
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
-      assertTrue(region.containsKeyOnServer("key3"));
+      assertThat(region.containsKeyOnServer("key3")).isTrue();
 
       // Destroy key1
       SecurityTestUtil.assertNotAuthorized(() -> region.destroy("key3"), "DATA:WRITE:AuthRegion");
-      assertTrue(region.containsKeyOnServer("key3"));
+      assertThat(region.containsKeyOnServer("key3")).isTrue();
 
       // Invalidate key2
-      assertNotNull("Value of key4 should not be null", region.get("key4"));
+      assertThat(region.get("key4")).as("Value of key4 should not be null").isNotNull();
       SecurityTestUtil.assertNotAuthorized(() -> region.invalidate("key4"),
           "DATA:WRITE:AuthRegion");
-      assertNotNull("Value of key4 should not be null", region.get("key4"));
+      assertThat(region.get("key4")).as("Value of key4 should not be null").isNotNull();
       cache.close();
     });
   }
-
 }

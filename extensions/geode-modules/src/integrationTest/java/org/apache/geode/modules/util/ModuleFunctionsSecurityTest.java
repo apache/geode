@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ModuleFunctionsSecurityTest {
 
   private static final String RESULT_HEADER = "Message";
@@ -62,13 +62,10 @@ public class ModuleFunctionsSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void functionRequireExpectedPermission() throws Exception {
-    functionStringMap.entrySet().stream().forEach(entry -> {
-      Function function = entry.getKey();
-      String permission = entry.getValue();
-      gfsh.executeAndAssertThat("execute function --region=AuthRegion --id=" + function.getId())
-          .tableHasRowCount(RESULT_HEADER, 1)
-          .tableHasColumnWithValuesContaining(RESULT_HEADER, permission).statusIsError();
-    });
+  public void functionRequireExpectedPermission() {
+    functionStringMap.forEach((function, permission) -> gfsh
+        .executeAndAssertThat("execute function --region=AuthRegion --id=" + function.getId())
+        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, permission).statusIsError());
   }
 }

@@ -15,6 +15,7 @@
 package org.apache.geode.security.query;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -28,10 +29,10 @@ import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class QuerySecurityRetrictedButMethodsDoNotExistDUnitTest extends QuerySecurityBase {
+public class QuerySecurityRestrictedButMethodsDoNotExistDUnitTest extends QuerySecurityBase {
 
   @Parameterized.Parameters
   public static Object[] usersAllowed() {
@@ -63,7 +64,7 @@ public class QuerySecurityRetrictedButMethodsDoNotExistDUnitTest extends QuerySe
   @Test
   public void cloneExecutedOnQRegionWillReturnEmptyResults() {
     String query = "select * from /" + regionName + ".clone";
-    List<Object> expectedResults = Arrays.asList();
+    List<Object> expectedResults = Collections.emptyList();
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
@@ -71,13 +72,13 @@ public class QuerySecurityRetrictedButMethodsDoNotExistDUnitTest extends QuerySe
   @Test
   public void executingMethodThatDoesNotExistOnQRegionWillReturnEmptyResult() {
     String query = "select * from /" + regionName + ".getKey('" + keys[0] + "')";
-    List<Object> expectedResults = Arrays.asList();
+    List<Object> expectedResults = Collections.emptyList();
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
 
   @Test
-  public void executingCreateOnRegionWillResultInUndefinedButNotModifyRegion() throws Exception {
+  public void executingCreateOnRegionWillResultInUndefinedButNotModifyRegion() {
     String query = "select r.create('key2', 15) from /" + regionName + " r";
     List<Object> expectedResults = Arrays.asList(QueryService.UNDEFINED, QueryService.UNDEFINED);
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
@@ -86,29 +87,27 @@ public class QuerySecurityRetrictedButMethodsDoNotExistDUnitTest extends QuerySe
   }
 
   @Test
-  public void executingDestroyKeyOnRegionWillReturnEmptyResultsAndNotModifyRegion()
-      throws Exception {
+  public void executingDestroyKeyOnRegionWillReturnEmptyResultsAndNotModifyRegion() {
     String query = "select * from /" + regionName + ".destroyKey('" + keys[0] + "')";
-    List<Object> expectedResults = Arrays.asList();
+    List<Object> expectedResults = Collections.emptyList();
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
     executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
   }
 
   @Test
-  public void executingPutIfAbsentOnRegionWillReturnEmptyResultsAndNotModifyRegion()
-      throws Exception {
+  public void executingPutIfAbsentOnRegionWillReturnEmptyResultsAndNotModifyRegion() {
     String query = "select * from /" + regionName + ".putIfAbsent('key-2', 'something')";
-    List<Object> expectedResults = Arrays.asList();
+    List<Object> expectedResults = Collections.emptyList();
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
     executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
   }
 
   @Test
-  public void executingReplaceOnRegionWillReturnEmptyResultsAndNotModifyRegion() throws Exception {
+  public void executingReplaceOnRegionWillReturnEmptyResultsAndNotModifyRegion() {
     String query = "select * from /" + regionName + ".replace('key-0', 'something')";
-    List<Object> expectedResults = Arrays.asList();
+    List<Object> expectedResults = Collections.emptyList();
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
     executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
@@ -121,5 +120,4 @@ public class QuerySecurityRetrictedButMethodsDoNotExistDUnitTest extends QuerySe
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         expectedResults);
   }
-
 }

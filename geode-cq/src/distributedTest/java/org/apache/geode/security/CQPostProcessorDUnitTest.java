@@ -22,8 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -48,19 +47,16 @@ import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
-public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
-
+@Category(SecurityTest.class)
+public class CQPostProcessorDUnitTest extends JUnit4DistributedTestCase {
   private static String REGION_NAME = "AuthRegion";
-  final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  private final VM client1 = VM.getVM(1);
+  private final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -70,15 +66,17 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
           .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName()).withAutoStart();
 
   @Before
-  public void before() throws Exception {
-    Region region =
-        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+  public void before() {
+    Region<String, String> region =
+        server.getCache().<String, String>createRegionFactory(RegionShortcut.REPLICATE)
+            .create(REGION_NAME);
     for (int i = 0; i < 5; i++) {
       region.put("key" + i, "value" + i);
     }
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testPostProcess() {
     String query = "select * from /AuthRegion";
     client1.invoke(() -> {
@@ -92,24 +90,23 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
       factory.addCqListener(new CqListenerImpl() {
         @Override
         public void onEvent(final CqEvent aCqEvent) {
-          assertEquals("key6", aCqEvent.getKey());
-          assertEquals("super-user/AuthRegion/key6/value6", aCqEvent.getNewValue());
+          assertThat(aCqEvent.getKey()).isEqualTo("key6");
+          assertThat(aCqEvent.getNewValue()).isEqualTo("super-user/AuthRegion/key6/value6");
         }
       });
-
 
       CqAttributes cqa = factory.create();
 
       // Create the CqQuery
       CqQuery cq = qs.newCq("CQ1", query, cqa);
       CqResults results = cq.executeWithInitialResults();
-      assertEquals(5, results.size());
+      assertThat(results.size()).isEqualTo(5);
       String resultString = results.toString();
-      assertTrue(resultString, resultString.contains("key:key0,value:super-user/null/key0/value0"));
-      assertTrue(resultString.contains("key:key1,value:super-user/null/key1/value1"));
-      assertTrue(resultString.contains("key:key2,value:super-user/null/key2/value2"));
-      assertTrue(resultString.contains("key:key3,value:super-user/null/key3/value3"));
-      assertTrue(resultString.contains("key:key4,value:super-user/null/key4/value4"));
+      assertThat(resultString.contains("key:key0,value:super-user/null/key0/value0")).isTrue();
+      assertThat(resultString.contains("key:key1,value:super-user/null/key1/value1")).isTrue();
+      assertThat(resultString.contains("key:key2,value:super-user/null/key2/value2")).isTrue();
+      assertThat(resultString.contains("key:key3,value:super-user/null/key3/value3")).isTrue();
+      assertThat(resultString.contains("key:key4,value:super-user/null/key4/value4")).isTrue();
     });
 
     client2.invoke(() -> {
@@ -160,5 +157,4 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
       cq.execute();
     });
   }
-
 }

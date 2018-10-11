@@ -254,7 +254,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    *
    * @return a File reference to the path of the log file for the process.
    */
-  protected File getLogFile() {
+  public File getLogFile() {
     return new File(getWorkingDirectory(), getLogFileName());
   }
 
@@ -265,7 +265,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    */
   protected String getLogFileCanonicalPath() {
     try {
-      return getLogFile().getCanonicalPath();
+      File logFile = getLogFile();
+      return logFile != null ? logFile.getCanonicalPath() : "";
     } catch (IOException handled) {
       return getLogFileName();
     }

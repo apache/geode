@@ -16,6 +16,7 @@ package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
@@ -43,7 +44,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthDUnitTest {
@@ -74,9 +75,10 @@ public class ClientAuthDUnitTest {
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      ClientRegionFactory clientRegionFactory =
+      assertThat(clientCache).isNotNull();
+      ClientRegionFactory<String, String> clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      Region region = clientRegionFactory.create("region");
+      Region<String, String> region = clientRegionFactory.create("region");
       region.put("A", "A");
     });
   }
@@ -106,6 +108,7 @@ public class ClientAuthDUnitTest {
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
+      assertThat(clientCache).isNotNull();
       ClientRegionFactory clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       assertThatThrownBy(() -> clientRegionFactory.create("region"))
@@ -125,9 +128,10 @@ public class ClientAuthDUnitTest {
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      ClientRegionFactory clientRegionFactory =
+      assertThat(clientCache).isNotNull();
+      ClientRegionFactory<String, String> clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      Region region = clientRegionFactory.create("region");
+      Region<String, String> region = clientRegionFactory.create("region");
       assertThatThrownBy(() -> region.put("A", "A")).isInstanceOf(ServerOperationException.class)
           .hasCauseInstanceOf(AuthenticationFailedException.class);
     });

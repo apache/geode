@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class MemberStarterRuleTest {
-
   private LocatorStarterRule locator;
 
   @After
@@ -88,7 +87,7 @@ public class MemberStarterRuleTest {
   }
 
   @Test
-  public void workingDirNotCreatedByDefault() throws Exception {
+  public void workingDirNotCreatedByDefault() {
     String userDir = System.getProperty("user.dir");
     locator = new LocatorStarterRule();
     locator.before();
@@ -97,7 +96,7 @@ public class MemberStarterRuleTest {
   }
 
   @Test
-  public void logFileDoesNotCreatesWorkingDir() throws Exception {
+  public void logFileDoesNotCreatesWorkingDir() {
     locator = new LocatorStarterRule().withLogFile();
     locator.before();
 
@@ -106,7 +105,7 @@ public class MemberStarterRuleTest {
   }
 
   @Test
-  public void workDirCreatesWorkDir() throws Exception {
+  public void workDirCreatesWorkDir() {
     locator = new LocatorStarterRule().withWorkingDir();
     locator.before();
 

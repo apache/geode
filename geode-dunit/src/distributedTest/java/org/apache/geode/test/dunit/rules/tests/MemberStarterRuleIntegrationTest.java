@@ -27,8 +27,6 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class MemberStarterRuleIntegrationTest {
-
-
   private LocatorStarterRule locator;
   private ServerStarterRule server;
 
@@ -54,7 +52,6 @@ public class MemberStarterRuleIntegrationTest {
     assertThat(locator.getPort()).isEqualTo(targetPort);
     // This is the actual, live member's port.
     assertThat(internalMember.getPort()).isEqualTo(targetPort);
-
   }
 
   @Test
@@ -69,6 +66,5 @@ public class MemberStarterRuleIntegrationTest {
     assertThat(server.getPort()).isEqualTo(targetPort);
     // This is the actual, live member's port.
     assertThat(internalMember.getPort()).isEqualTo(targetPort);
-
   }
 }

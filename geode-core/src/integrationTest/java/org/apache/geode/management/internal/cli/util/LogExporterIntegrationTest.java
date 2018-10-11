@@ -48,11 +48,9 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({GfshTest.class, LoggingTest.class})
 public class LogExporterIntegrationTest {
-
-  private final LogFilter filter = new LogFilter(Level.INFO, null, null);
-
-  private LogExporter logExporter;
   private Properties properties;
+  private LogExporter logExporter;
+  private final LogFilter filter = new LogFilter(Level.INFO, null, null);
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule().withWorkingDir();

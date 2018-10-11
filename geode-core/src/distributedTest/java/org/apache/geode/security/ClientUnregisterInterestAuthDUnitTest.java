@@ -32,14 +32,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ClientUnregisterInterestAuthDUnitTest extends JUnit4DistributedTestCase {
-
   private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  final VM client1 = VM.getVM(1);
+  final VM client2 = VM.getVM(2);
 
   @Rule
   public ServerStarterRule server =
@@ -49,6 +48,7 @@ public class ClientUnregisterInterestAuthDUnitTest extends JUnit4DistributedTest
           .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testUnregisterInterest() throws Exception {
     // client2 connects to user as a user authorized to use AuthRegion region
     AsyncInvocation ai1 = client2.invokeAsync(() -> {
@@ -58,6 +58,7 @@ public class ClientUnregisterInterestAuthDUnitTest extends JUnit4DistributedTest
       region.registerInterest("key3");
       region.unregisterInterest("key3"); // DATA:READ:AuthRegion:key3;
     });
+
     ai1.await();
   }
 }

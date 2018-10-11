@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 
-@Category({PulseTest.class})
+@Category(PulseTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PulseConnectivityTest {
@@ -60,11 +60,11 @@ public class PulseConnectivityTest {
     if ("localhost".equals(nonDefaultJmxBindAddress)) {
       nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostAddress();
     }
-    return Arrays.asList(new String[] {"localhost", nonDefaultJmxBindAddress});
+    return Arrays.asList("localhost", nonDefaultJmxBindAddress);
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     Properties locatorProperties = new Properties();
     if (!"localhost".equals(jmxBindAddress))
       locatorProperties.setProperty(JMX_MANAGER_BIND_ADDRESS, jmxBindAddress);
@@ -81,7 +81,7 @@ public class PulseConnectivityTest {
   }
 
   @Test
-  public void testConnectToJmx() throws Exception {
+  public void testConnectToJmx() {
     pulse.useJmxManager(jmxBindAddress, locator.getJmxPort());
     Cluster cluster = pulse.getRepository().getCluster("admin", null);
     assertThat(cluster.isConnectedFlag()).isTrue();
@@ -89,7 +89,7 @@ public class PulseConnectivityTest {
   }
 
   @Test
-  public void testConnectToLocator() throws Exception {
+  public void testConnectToLocator() {
     pulse.useLocatorPort(locator.getPort());
     Cluster cluster = pulse.getRepository().getCluster("admin", null);
     assertThat(cluster.isConnectedFlag()).isTrue();

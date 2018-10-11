@@ -45,31 +45,31 @@ public class GfshStatusCommandsIntegrationTest {
   }
 
   @Test
-  public void statusLocatorWithBadPortReportsNotResponding() throws Exception {
+  public void statusLocatorWithBadPortReportsNotResponding() {
     CommandResult result = gfsh.executeCommand("status locator --host=localhost --port="
         + String.valueOf(locator.getLocator().getPort() - 1));
     assertThat(result.getMessageFromContent()).contains("not responding");
   }
 
   @Test
-  public void statusLocatorWithActivePortReportsOnline() throws Exception {
+  public void statusLocatorWithActivePortReportsOnline() {
     CommandResult result = gfsh.executeCommand(
         "status locator --host=localhost --port=" + String.valueOf(locator.getLocator().getPort()));
     assertThat(result.getMessageFromContent()).contains("is currently online");
   }
 
   @Test
-  public void statusServerWithWithNoOptions() throws Exception {
+  public void statusServerWithWithNoOptions() {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
-    serverDir.mkdirs();
+    assertThat(serverDir.mkdirs()).isTrue();
     CommandResult result = gfsh.executeCommand("status server");
     assertThat(result.getMessageFromContent()).contains("not responding");
   }
 
   @Test
-  public void statusServerWithInvalidDirReturnsMeangingfulMessage() throws Exception {
+  public void statusServerWithInvalidDirReturnsMeangingfulMessage() {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
-    serverDir.mkdirs();
+    assertThat(serverDir.mkdirs()).isTrue();
     CommandResult result = gfsh.executeCommand("status server --dir=" + serverDir.toString());
     assertThat(result.getMessageFromContent()).contains("not responding");
   }

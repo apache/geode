@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class LockServiceMBeanAuthorizationJUnitTest {
   private LockServiceMXBean lockServiceMBean;
 
@@ -67,7 +67,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   @Test
   @ConnectionConfiguration(user = "clusterRead,clusterManage",
       password = "clusterRead,clusterManage")
-  public void testAllAccess() throws Exception {
+  public void testAllAccess() {
     lockServiceMBean.becomeLockGrantor();
     lockServiceMBean.fetchGrantorMember();
     lockServiceMBean.getMemberCount();
@@ -77,7 +77,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
-  public void testClusterManage() throws Exception {
+  public void testClusterManage() {
     SoftAssertions softly = new SoftAssertions();
     lockServiceMBean.becomeLockGrantor(); // c:m
     softly.assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember())
@@ -93,7 +93,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterRead", password = "clusterRead")
-  public void testClusterRead() throws Exception {
+  public void testClusterRead() {
     SoftAssertions softly = new SoftAssertions();
     softly.assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())
         .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
@@ -106,7 +106,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void testNoAccess() throws Exception {
+  public void testNoAccess() {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())

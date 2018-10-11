@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({PersistenceTest.class})
+@Category(PersistenceTest.class)
 public class DescribeDiskStoreCommandIntegrationTest {
   private static final String REGION_NAME = "test-region";
   private static final String MEMBER_NAME = "testServer";
@@ -57,7 +57,7 @@ public class DescribeDiskStoreCommandIntegrationTest {
   public static GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Test
-  public void commandFailsWithoutOptions() throws Exception {
+  public void commandFailsWithoutOptions() {
     String cmd = "describe disk-store";
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("You should specify option (",
         "--name", "--member", ") for this command");
@@ -65,35 +65,35 @@ public class DescribeDiskStoreCommandIntegrationTest {
   }
 
   @Test
-  public void commandFailsWithOnlyMember() throws Exception {
+  public void commandFailsWithOnlyMember() {
     String cmd = "describe disk-store --member=" + MEMBER_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("You should specify option (",
         "--name", ") for this command");
   }
 
   @Test
-  public void commandFailsWithOnlyName() throws Exception {
+  public void commandFailsWithOnlyName() {
     String cmd = "describe disk-store --name=" + DISK_STORE_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("You should specify option (",
         "--member", ") for this command");
   }
 
   @Test
-  public void commandFailsWithBadMember() throws Exception {
+  public void commandFailsWithBadMember() {
     String cmd = "describe disk-store --member=invalid-member-name --name=" + DISK_STORE_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("Member",
         "could not be found.  Please verify the member name or ID and try again.");
   }
 
   @Test
-  public void commandFailsWithBadName() throws Exception {
+  public void commandFailsWithBadName() {
     String cmd = "describe disk-store --name=invalid-diskstore-name --member=" + MEMBER_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("A disk store with name",
         "was not found on member");
   }
 
   @Test
-  public void commandSucceedsWithNameAndMember() throws Exception {
+  public void commandSucceedsWithNameAndMember() {
     String cmd = "describe disk-store --name=" + DISK_STORE_NAME + " --member=" + MEMBER_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .containsOutput(expectedData.toArray(new String[0]));
