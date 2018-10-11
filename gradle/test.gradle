@@ -173,42 +173,37 @@ subprojects {
   }
 
   task repeatDistributedTest(type: RepeatTest) {
-    // Any dependencies added to the base test task must cascade to this task
-    dependsOn distributedTest
+    dependsOn distributedTest.taskDependencies
     classpath = project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
   }
 
   task repeatIntegrationTest(type: RepeatTest) {
-    // Any dependencies added to the base test task must cascade to this task
-    dependsOn integrationTest
+    dependsOn integrationTest.taskDependencies
     classpath = project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
   }
 
   task repeatAcceptanceTest(type: RepeatTest) {
-    // Any dependencies added to the base test task must cascade to this task
-    dependsOn acceptanceTest
+    dependsOn acceptanceTest.taskDependencies
     classpath = project.sourceSets.acceptanceTest.runtimeClasspath
     testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
   }
 
   task repeatUpgradeTest(type: RepeatTest) {
-    // Any dependencies added to the base test task must cascade to this task
-    dependsOn upgradeTest
+    dependsOn upgradeTest.taskDependencies
     classpath = project.sourceSets.upgradeTest.runtimeClasspath
     testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
   }
 
   task repeatUnitTest(type: RepeatTest) {
-    // Any dependencies added to the base test task must cascade to this task
-    dependsOn test
+    dependsOn test.taskDependencies
     // default classpath works for this one.
   }
 
   configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
     times = Integer.parseInt(repeat)
-    useJUnit {}
+    useJUnit()
     outputs.upToDateWhen { false }
 
     if (project.hasProperty("failOnNoMatchingTests")) {
