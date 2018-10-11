@@ -50,7 +50,7 @@ groups:
   jobs:
   - {{ build_test.name }}
   {%- for test in (tests) if not test.name=="StressNew" -%}
-    {%- for java_test_version in (java_test_versions) %}
+    {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK11") and not test.name.startswith("Windows") %}
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor -%}
