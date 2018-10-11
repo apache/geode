@@ -225,7 +225,7 @@ subprojects {
 
         maxHeapSize '768m'
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
-        if (!testJVM.trim().isEmpty()) {
+        if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
           executable = "${testJVM}/bin/java"
         }
 
