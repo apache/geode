@@ -36,6 +36,7 @@ task createGeodeClasspathsFile {
   addOldVersion('test140', '1.4.0', true)
   addOldVersion('test150', '1.5.0', true)
   addOldVersion('test160', '1.6.0', true)
+  addOldVersion('test170', '1.7.0', true)
 
   doLast {
     Properties versions = new Properties();
