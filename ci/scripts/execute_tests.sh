@@ -83,6 +83,7 @@ case $ARTIFACT_SLUG in
 esac
 
 GRADLE_ARGS="-PtestJVM=${JAVA_TEST_PATH} \
+    -PtestJVMVer=${JAVA_TEST_VERSION} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \

@@ -225,6 +225,11 @@ subprojects {
 
         maxHeapSize '768m'
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
+        if (project.hasProperty('testJVMVer') &&  testJVMVer.toInteger() >= 9) {
+          jvmArgs += ["--add-opens", "java.xml/jdk.xml.internal=ALL-UNNAMED"]
+          jvmArgs += ["--add-opens", "java.base/jdk.internal.module=ALL-UNNAMED"]
+          jvmArgs += ["--add-opens", "java.base/java.lang.module=ALL-UNNAMED"]
+        }
         if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
           executable = "${testJVM}/bin/java"
         }
