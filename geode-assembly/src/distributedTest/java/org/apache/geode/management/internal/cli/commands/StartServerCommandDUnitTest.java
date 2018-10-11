@@ -33,10 +33,12 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SER
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__SERVER_PORT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.isA;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
@@ -47,8 +49,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
 
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -67,8 +67,10 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-public class StartServerCommandDUnitTest {
+public class StartServerCommandDUnitTest implements Serializable {
 
   private static MemberVM locator;
   private static String locatorConnectionString;
@@ -90,10 +92,10 @@ public class StartServerCommandDUnitTest {
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public TestName testName = new TestName();
+  public SerializableTestName testName = new SerializableTestName();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -379,7 +381,7 @@ public class StartServerCommandDUnitTest {
       try {
         FunctionService.onMember(groupName).execute(new RunOutOfMemoryFunction()).getResult();
       } catch (FunctionException e) {
-        errorCollector.addError(e);
+        errorCollector.checkThat(e, isA(FunctionException.class));
       }
     }));
 
