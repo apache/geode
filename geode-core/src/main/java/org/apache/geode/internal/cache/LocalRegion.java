@@ -9753,6 +9753,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           txException = txException.getCause();
         }
         if (runtimeException == null) {
+          runtimeException = getCancelCriterion().generateCancelledException(e.getFailure());
           runtimeException = new ServerOperationException(
               String.format("Region %s removeAll at server applied partial keys due to exception.",
                   getFullPath()),
