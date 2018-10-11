@@ -36,32 +36,6 @@ java_test_versions:
   version: 8
 - name: OpenJDK11
   version: 11
-  override:
-    Distributed:
-      CPUS: "8"
-      RAM: "16"
-      PARALLEL_DUNIT: "false"
-      PARALLEL_GRADLE: "false"
-      DUNIT_PARALLEL_FORKS: "0"
-      execute_test_timeout: 4h10m
-      CALL_STACK_TIMEOUT: "14400"
-    Integration:
-      CPUS: "8"
-      RAM: "16"
-      PARALLEL_DUNIT: "false"
-      PARALLEL_GRADLE: "false"
-      DUNIT_PARALLEL_FORKS: "0"
-      execute_test_timeout: 4h10m
-      CALL_STACK_TIMEOUT: "14400"
-    Upgrade:
-      CPUS: "8"
-      RAM: "16"
-      PARALLEL_DUNIT: "false"
-      PARALLEL_GRADLE: "false"
-      DUNIT_PARALLEL_FORKS: "0"
-      execute_test_timeout: 4h10m
-      CALL_STACK_TIMEOUT: "14400"
-
 
 java_build_version:
   name: OpenJDK8
