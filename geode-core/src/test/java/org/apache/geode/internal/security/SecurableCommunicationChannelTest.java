@@ -29,15 +29,13 @@ public class SecurableCommunicationChannelTest {
 
   @Test
   public void getEnumShouldThrowExceptionWhenTheConstantIsNotKnown() {
-    assertThatThrownBy(() -> SecurableCommunicationChannel.getEnum("unknownComponent"))
+    assertThatThrownBy(() -> SecurableCommunicationChannel.getEnum("none"))
         .isInstanceOf(GemFireConfigException.class)
-        .hasMessage("There is no registered component for the name: unknownComponent");
+        .hasMessage("There is no registered component for the name: none");
   }
 
   @Test
   public void getEnumShouldReturnTheCorrectEnumWhenTheConstantIsKnown() {
-    assertThat(SecurableCommunicationChannel.getEnum("none"))
-        .isEqualTo(SecurableCommunicationChannel.NONE);
     assertThat(SecurableCommunicationChannel.getEnum(SecurableCommunicationChannels.ALL))
         .isEqualTo(SecurableCommunicationChannel.ALL);
     assertThat(SecurableCommunicationChannel.getEnum(SecurableCommunicationChannels.JMX))

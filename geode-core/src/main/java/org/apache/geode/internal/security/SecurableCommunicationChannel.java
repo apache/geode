@@ -26,8 +26,7 @@ public enum SecurableCommunicationChannel {
   JMX(SecurableCommunicationChannels.JMX),
   WEB(SecurableCommunicationChannels.WEB),
   GATEWAY(SecurableCommunicationChannels.GATEWAY),
-  LOCATOR(SecurableCommunicationChannels.LOCATOR),
-  NONE("none");
+  LOCATOR(SecurableCommunicationChannels.LOCATOR);
 
   private final String constant;
 
