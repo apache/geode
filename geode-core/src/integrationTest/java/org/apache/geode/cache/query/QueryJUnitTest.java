@@ -50,6 +50,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -247,6 +248,15 @@ public class QueryJUnitTest {
 
   @Test
   public void test008NullCollectionField() {
+
+    /*
+     This test relies on the static Position counter starting at the same value each time.
+     By starting the counter at a well-defined value, this test can be run more than once
+     in the same JVM.
+     Because of its reliance on that static counter, this test cannot be run in parallel.
+      */
+    Position.resetCounter();
+
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     for (int i = 0; i < 10; i++) {
       Portfolio p = new Portfolio(i);
