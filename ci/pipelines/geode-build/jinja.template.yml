@@ -30,6 +30,15 @@
     trigger: true
 {% endmacro %}
 
+{% macro common_instance_params(test, java) -%}
+  {% set override = {} -%}
+  {% if java.override is defined and java.override[test.name] is defined -%}
+    {% set override = java.override[test.name] -%}
+  {% endif -%}
+CPUS: {{override.CPUS | default(test.CPUS)}}
+RAM: {{override.RAM | default(test.RAM)}}
+{%- endmacro %}
+
 {% macro common_test_params(test, java) -%}
   {% set override = {} -%}
   {% if java.override is defined and java.override[test.name] is defined -%}
@@ -171,10 +180,9 @@ jobs:
       - task: start_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
-            CPUS: {{build_test.CPUS}}
+            {{ common_instance_params(build_test, java_build_version) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
-            RAM: {{build_test.RAM}}
           run:
             path: geode-ci/ci/scripts/start_instance.sh
           inputs:
@@ -336,10 +344,9 @@ jobs:
         - task: start_instance
           {{ alpine_tools_config()|indent(10) }}
             params:
-              CPUS: {{test.CPUS}}
+              {{ common_instance_params(test, java_test_version) | indent(14) }}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
-              RAM: {{test.RAM}}
             run:
               path: geode-ci/ci/scripts/start_instance.sh
             inputs:
