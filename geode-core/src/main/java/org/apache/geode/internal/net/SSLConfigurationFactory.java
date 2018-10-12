@@ -188,8 +188,9 @@ public class SSLConfigurationFactory {
   private boolean determineIfSSLEnabledForSSLComponent(final DistributionConfig distributionConfig,
       final SecurableCommunicationChannel sslEnabledComponent) {
     if (ArrayUtils.contains(distributionConfig.getSecurableCommunicationChannels(),
-        SecurableCommunicationChannel.ALL))
+        SecurableCommunicationChannel.ALL)) {
       return true;
+    }
 
     return ArrayUtils.contains(distributionConfig.getSecurableCommunicationChannels(),
         sslEnabledComponent);
