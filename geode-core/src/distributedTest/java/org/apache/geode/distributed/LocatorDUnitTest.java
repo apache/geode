@@ -95,6 +95,7 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -454,15 +455,11 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     final String locators = hostname + "[" + port1 + "]";
     properties.put(LOCATORS, locators);
 
+
     // we set port2 so that the state file gets cleaned up later.
-    port2 = startLocatorGetPort(loc2, properties, 0);
-
-    loc1.invoke("expectSystemToContainThisManyMembers",
-        () -> expectSystemToContainThisManyMembers(1));
-
-    // loc2 should die from inability to connect.
-    loc2.invoke(() -> Awaitility.await("locator2 dies").atMost(5, MINUTES)
-        .until(() -> Locator.getLocator() == null));
+    assertThatThrownBy(() -> startLocatorGetPort(loc2, properties, 0))
+        .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
+    assertThat(Locator.getLocator()).isNull();
 
     loc1.invoke("expectSystemToContainThisManyMembers",
         () -> expectSystemToContainThisManyMembers(1));
@@ -513,7 +510,11 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
       properties.put(SSL_LOCATOR_ALIAS, "locatorkey");
 
-      startLocator(loc2, properties, port2);
+      assertThatThrownBy(() -> startLocator(loc2, properties, port2))
+          .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
+      assertThat(Locator.getLocator()).isNull();
+
+
 
     } finally {
       try {
