@@ -17,25 +17,36 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
+/**
+ * Consumes {@link ObjectSizerTen} as built and packaged into the jar deployed below.
+ */
 // GEODE-1897 Users should be able to configure eviction through gfsh
 public class ConfigureEvictionThroughGfsh {
 
   @Rule
   public GfshRule gfsh = new GfshRule();
 
+  private URL jarToDeploy;
+
+  @Before
+  public void setJar() {
+    jarToDeploy = getClass().getResource("/ObjectSizerTen.jar");
+    assertThat(jarToDeploy).isNotNull();
+  }
+
   @Test
-  public void configureEvictionByEntryCount() throws Exception {
+  public void configureEvictionByEntryCount() {
 
     GfshExecution execution = GfshScript
         .of("start locator --name=locator", "start server --name=server",
@@ -92,7 +103,7 @@ public class ConfigureEvictionThroughGfsh {
   }
 
   @Test
-  public void configureEvictionByMaxMemory() throws Exception {
+  public void configureEvictionByMaxMemory() {
     GfshExecution execution = GfshScript
         .of("start locator --name=locator", "start server --name=server",
             "create region --name=region1 --eviction-action=local-destroy --eviction-max-memory=1000 --type=REPLICATE",
@@ -145,28 +156,16 @@ public class ConfigureEvictionThroughGfsh {
         .containsPattern("eviction-max-memory\\s+ | 1000");
   }
 
-  private File createJar() throws IOException {
-    File jarToDeploy = new File(gfsh.getTemporaryFolder().getRoot(), "ourJar.jar");
-
-    String classContents =
-        "import org.apache.geode.cache.util.ObjectSizer; import org.apache.geode.cache.Declarable;public class MySizer implements ObjectSizer, Declarable { public int sizeof(Object o) { return 10; } }";
-
-    JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJar(jarToDeploy, classContents);
-
-    return jarToDeploy;
-  }
-
   @Test
-  public void configureEvictionByObjectSizer() throws Exception {
+  public void configureEvictionByObjectSizer() throws URISyntaxException {
     GfshExecution execution = GfshScript
         .of("start locator --name=locator", "start server --name=server", "sleep --time=1",
-            "deploy --jar=" + createJar().getAbsolutePath(),
-            "create region --name=region1 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE",
-            "create region --name=region2 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE",
-            "create region --name=region3 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE_PERSISTENT",
-            "create region --name=region4 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=LOCAL",
-            "create region --name=region5 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=LOCAL")
+            "deploy --jar=" + jarToDeploy.toURI().getPath(),
+            "create region --name=region1 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=org.apache.geode.management.internal.cli.commands.ObjectSizerTen --type=REPLICATE",
+            "create region --name=region2 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=org.apache.geode.management.internal.cli.commands.ObjectSizerTen --type=REPLICATE",
+            "create region --name=region3 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=org.apache.geode.management.internal.cli.commands.ObjectSizerTen --type=REPLICATE_PERSISTENT",
+            "create region --name=region4 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=org.apache.geode.management.internal.cli.commands.ObjectSizerTen --type=LOCAL",
+            "create region --name=region5 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=org.apache.geode.management.internal.cli.commands.ObjectSizerTen --type=LOCAL")
         .execute(gfsh);
 
     assertThat(execution.getOutputText()).contains("Region \"/region1\" created on \"server\"");
@@ -177,7 +176,7 @@ public class ConfigureEvictionThroughGfsh {
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]",
-            "create region --name=region6 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE_PERSISTENT")
+            "create region --name=region6 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=org.apache.geode.management.internal.cli.commands.ObjectSizerTen --type=REPLICATE_PERSISTENT")
         .expectFailure().execute(gfsh);
     assertThat(execution.getOutputText()).contains(
         "ERROR: An Eviction Controller with local destroy eviction action is incompatible with");

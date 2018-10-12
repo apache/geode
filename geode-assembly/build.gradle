@@ -36,6 +36,15 @@ publishing {
   }
 }
 
+task createObjectSizerTenJar(type: Jar) {
+  description 'Assembles jar for use in "ConfigureEvictionThroughGfsh" "deploy jar" command.'
+  archiveName 'ObjectSizerTen.jar'
+  from sourceSets.acceptanceTest.output
+  destinationDir new File("${buildDir}/resources/acceptanceTest")
+  include 'org/apache/geode/management/internal/cli/commands/ObjectSizerTen.*'
+}
+acceptanceTest.dependsOn createObjectSizerTenJar
+
 logger.info("Gradle doesn't automatically remove the jar artifact even though we disabled it")
 logger.info("this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.")
 configurations.all {
