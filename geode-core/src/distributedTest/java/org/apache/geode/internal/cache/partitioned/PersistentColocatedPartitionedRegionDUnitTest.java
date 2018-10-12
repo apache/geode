@@ -41,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
@@ -835,6 +836,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that missing colocated child persistent PRs are logged as warning
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testMissingColocatedChildPRDueToDelayedStart() throws Throwable {
     int loggerTestInterval = 4000; // millis
     Host host = Host.getHost(0);
@@ -880,6 +882,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that missing colocated child persistent PRs are logged as warning
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testMissingColocatedChildPR() throws Throwable {
     int loggerTestInterval = 4000; // millis
     Host host = Host.getHost(0);
@@ -981,6 +984,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * appear in the warning.
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testMultipleColocatedChildPRsMissingWithSequencedStart() throws Throwable {
     int loggerTestInterval = 4000; // millis
     int numChildPRs = 2;
@@ -1036,6 +1040,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testHierarchyOfColocatedChildPRsMissing() throws Throwable {
     int loggerTestInterval = 4000; // millis
     int numChildGenerations = 2;
@@ -1091,6 +1096,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testHierarchyOfColocatedChildPRsMissingGrandchild() throws Throwable {
     int loggerTestInterval = 4000; // millis
     int numChildGenerations = 3;
