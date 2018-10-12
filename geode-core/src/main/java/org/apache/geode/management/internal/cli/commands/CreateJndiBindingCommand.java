@@ -182,7 +182,8 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
     MANAGED("ManagedDataSource"),
     SIMPLE("SimpleDataSource"),
     POOLED("PooledDataSource"),
-    XAPOOLED("XAPooledDataSource");
+    XAPOOLED("XAPooledDataSource"),
+    HIKARI("HikariDataSource");
 
     private final String type;
 

@@ -45,6 +45,7 @@ dependencies {
   antlr 'antlr:antlr:' + project.'antlr.version'
 
   // External
+  compile group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version'
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
   compile 'org.jgroups:jgroups:' + project.'jgroups.version'

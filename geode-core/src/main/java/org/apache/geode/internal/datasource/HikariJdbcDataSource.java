@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.internal.datasource;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -24,24 +24,12 @@ import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariDataSource;
 
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.internal.datasource.ConfiguredDataSourceProperties;
-
-public class HikariJdbcDataSource implements DataSource, JdbcDataSource {
+class HikariJdbcDataSource implements DataSource, AutoCloseable {
 
   private final HikariDataSource delegate;
 
-  HikariJdbcDataSource(ConnectorService.Connection config) {
-    HikariDataSource ds = new HikariDataSource();
-    ds.setJdbcUrl(config.getUrl());
-    ds.setUsername(config.getUser());
-    ds.setPassword(config.getPassword());
-    ds.setDataSourceProperties(config.getConnectionProperties());
-    this.delegate = ds;
-  }
-
   // TODO: set more config properties
-  public HikariJdbcDataSource(ConfiguredDataSourceProperties config) {
+  HikariJdbcDataSource(ConfiguredDataSourceProperties config) {
     HikariDataSource ds = new HikariDataSource();
     ds.setJdbcUrl(config.getURL());
     ds.setUsername(config.getUser());
