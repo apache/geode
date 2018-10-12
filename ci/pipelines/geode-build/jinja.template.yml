@@ -346,9 +346,11 @@ jobs:
 {% endif %}
 
 {%- for test in tests if not test.name=="StressNew" %}
+  {%- set parameters = {} %}}
+  {%- do deep_merge(parameters, test) %}
   {%- for java_test_version in (java_test_versions) %}
     {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
-      {%- do deep_merge(test, java_test_version.override[test.name]) %}
+      {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
     {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
@@ -360,7 +362,7 @@ jobs:
         - task: start_instance
           {{ alpine_tools_config()|indent(10) }}
             params:
-              {{ common_instance_params(test) | indent(14) }}
+              {{ common_instance_params(parameters) | indent(14) }}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
             run:
@@ -389,14 +391,14 @@ jobs:
           JAVA_BUILD_VERSION: {{ java_build_version.version }}
           JAVA_TEST_VERSION: {{ java_test_version.version }}
           GRADLE_TASK: {{test.GRADLE_TASK}}
-          {{ common_test_params(test) | indent(10) }}
+          {{ common_test_params(parameters) | indent(10) }}
         run:
           path: geode-ci/ci/scripts/execute_tests.sh
         inputs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: {{test.execute_test_timeout}}
+      timeout: {{parameters.execute_test_timeout}}
     ensure:
       do:
       - task: rsync_code_down
