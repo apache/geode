@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,11 +25,13 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -40,37 +44,67 @@ import org.apache.geode.internal.logging.LogService;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({InternalDistributedSystem.class, LogService.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.script.*"})
 @SuppressStaticInitializationFor({"org.apache.geode.internal.logging.LogService",
     "org.apache.geode.distributed.internal.InternalDistributedSystem"})
 public class MBeanJMXAdapterTest {
+  private ObjectName objectName;
+  private MBeanServer mockMBeanServer;
+  private Logger mockLogger;
 
-  @Test
-  public void unregisterMBeanInstanceNotFoundMessageLogged() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     mockStatic(InternalDistributedSystem.class);
     when(InternalDistributedSystem.getConnectedInstance())
         .thenReturn(mock(InternalDistributedSystem.class));
 
     mockStatic(LogService.class);
-    Logger logger = mock(Logger.class);
-    when(logger.isDebugEnabled()).thenReturn(true);
-    when(LogService.getLogger()).thenReturn(logger);
+    mockLogger = mock(Logger.class);
+    when(mockLogger.isDebugEnabled()).thenReturn(true);
+    when(LogService.getLogger()).thenReturn(mockLogger);
 
-    MBeanServer mBeanServer = mock(MBeanServer.class);
-    final ObjectName objectName = new ObjectName("d:type=Foo,name=Bar");
-    when(mBeanServer.isRegistered(objectName)).thenReturn(true);
+    mockMBeanServer = mock(MBeanServer.class);
+    objectName = new ObjectName("d:type=Foo,name=Bar");
+  }
+
+  @Test
+  public void unregisterMBeanInstanceNotFoundMessageLogged() throws Exception {
+    // This mocks the race condition where the server indicates that the object is registered,
+    // but when we go to unregister it, it has already been unregistered.
+    when(mockMBeanServer.isRegistered(objectName)).thenReturn(true);
 
     // Mock unregisterMBean to throw the InstanceNotFoundException, indicating that the MBean
     // has already been unregistered
-    doThrow(new InstanceNotFoundException()).when(mBeanServer).unregisterMBean(objectName);
+    doThrow(new InstanceNotFoundException()).when(mockMBeanServer).unregisterMBean(objectName);
 
     MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter();
-    MBeanJMXAdapter.mbeanServer = mBeanServer;
+    MBeanJMXAdapter.mbeanServer = mockMBeanServer;
 
     mBeanJMXAdapter.unregisterMBean(objectName);
 
     // InstanceNotFoundException should just log a debug message as it is essentially a no-op
     // during unregistration
-    verify(logger, times(1)).debug(any(String.class));
+    verify(mockLogger, times(1)).warn(anyString());
+  }
+
+  @Test
+  public void registerMBeanProxyInstanceNotFoundMessageLogged() throws Exception {
+    // This mocks the race condition where the server indicates that the object is unregistered,
+    // but when we go to register it, it has already been register.
+    when(mockMBeanServer.isRegistered(objectName)).thenReturn(false);
+
+    // Mock unregisterMBean to throw the InstanceAlreadyExistsException, indicating that the MBean
+    // has already been unregistered
+    doThrow(new InstanceAlreadyExistsException()).when(mockMBeanServer)
+        .registerMBean(any(Object.class), eq(objectName));
+
+    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter();
+    MBeanJMXAdapter.mbeanServer = mockMBeanServer;
+
+    mBeanJMXAdapter.registerMBeanProxy(mock(Object.class), objectName);
+
+    // InstanceNotFoundException should just log a debug message as it is essentially a no-op
+    // during registration
+    verify(mockLogger, times(1)).warn(anyString());
   }
 }
