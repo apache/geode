@@ -346,7 +346,7 @@ jobs:
 {% endif %}
 
 {%- for test in tests if not test.name=="StressNew" %}
-  {%- set parameters = {} %}}
+  {%- set parameters = {} %}
   {%- do deep_merge(parameters, test) %}
   {%- for java_test_version in (java_test_versions) %}
     {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
