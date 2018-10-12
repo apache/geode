@@ -250,11 +250,11 @@ public class QueryJUnitTest {
   public void test008NullCollectionField() {
 
     /*
-     This test relies on the static Position counter starting at the same value each time.
-     By starting the counter at a well-defined value, this test can be run more than once
-     in the same JVM.
-     Because of its reliance on that static counter, this test cannot be run in parallel.
-      */
+     * This test relies on the static Position counter starting at the same value each time.
+     * By starting the counter at a well-defined value, this test can be run more than once
+     * in the same JVM.
+     * Because of its reliance on that static counter, this test cannot be run in parallel.
+     */
     Position.resetCounter();
 
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
