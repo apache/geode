@@ -30,30 +30,43 @@
     trigger: true
 {% endmacro %}
 
-{% macro common_instance_params(test, java) -%}
-  {% set override = {} -%}
-  {% if java.override is defined and java.override[test.name] is defined -%}
-    {% set override = java.override[test.name] -%}
-  {% endif -%}
-CPUS: {{override.CPUS | default(test.CPUS)}}
-RAM: {{override.RAM | default(test.RAM)}}
+{%- macro deep_merge(a, b): %}
+  {%- if b is defined %}
+    {%- for k,v in b.items(): %}
+      {%- if v is not defined: %}
+        {%- do a.pop(k) %}
+      {%- else: %}
+        {%- if v is mapping: %}
+          {%- if a[k] is not mapping: %}
+            {%- do a.update({ k: { } }) %}
+          {%- endif %}
+          {%- do deep_merge(a[k], v) %}
+        {%- else: %}
+          {%- do a.update({ k: v }) %}
+        {%- endif %}
+      {% endif %}
+    {%- endfor %}
+  {%- endif %}
 {%- endmacro %}
 
-{% macro common_test_params(test, java) -%}
-  {% set override = {} -%}
-  {% if java.override is defined and java.override[test.name] is defined -%}
-    {% set override = java.override[test.name] -%}
-  {% endif -%}
+{%- do deep_merge(a, b) %}
+
+{% macro common_instance_params(test) -%}
+CPUS: {{ test.CPUS }}
+RAM: {{ test.RAM }}
+{%- endmacro %}
+
+{% macro common_test_params(test) -%}
   {%- if test.CALL_STACK_TIMEOUT -%}
-CALL_STACK_TIMEOUT: {{override.CALL_STACK_TIMEOUT | default(test.CALL_STACK_TIMEOUT)}}
+CALL_STACK_TIMEOUT: {{ test.CALL_STACK_TIMEOUT }}
   {%- endif %}
   {%- if test.GRADLE_TASK_OPTIONS -%}
-GRADLE_TASK_OPTIONS: {{override.GRADLE_TASK_OPTIONS | default(test.GRADLE_TASK_OPTIONS)}}
+GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
   {%- endif %}
-DUNIT_PARALLEL_FORKS: {{override.DUNIT_PARALLEL_FORKS | default(test.DUNIT_PARALLEL_FORKS)}}
-MAINTENANCE_VERSION: {{repository.branch}}
-PARALLEL_DUNIT: {{override.PARALLEL_DUNIT | default(test.PARALLEL_DUNIT)}}
-PARALLEL_GRADLE: {{override.PARALLEL_GRADLE | default(test.PARALLEL_GRADLE)}}
+DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
+MAINTENANCE_VERSION: {{ repository.branch }}
+PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
+PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
 PUBLIC_BUCKET: ((!public-bucket))
 SERVICE_ACCOUNT: ((!concourse-gcp-account))
 {%- endmacro %}
@@ -180,7 +193,7 @@ jobs:
       - task: start_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
-            {{ common_instance_params(build_test, java_build_version) | indent(12) }}
+            {{ common_instance_params(build_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
           run:
@@ -206,7 +219,7 @@ jobs:
       params:
         JAVA_BUILD_VERSION: {{ java_build_version.version }}
         GRADLE_TASK: {{ build_test.GRADLE_TASK }}
-        {{ common_test_params(build_test, java_build_version) | indent(8) }}
+        {{ common_test_params(build_test) | indent(8) }}
       run:
         path: geode-ci/ci/scripts/execute_build.sh
       inputs:
@@ -332,8 +345,11 @@ jobs:
       - name: geode-build-version
 {% endif %}
 
-{% for test in tests if not test.name=="StressNew" %}
-{% for java_test_version in (java_test_versions) -%}
+{%- for test in tests if not test.name=="StressNew" %}
+  {%- for java_test_version in (java_test_versions) %}
+    {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
+      {%- do deep_merge(test, java_test_version.override[test.name]) %}
+    {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:
@@ -344,7 +360,7 @@ jobs:
         - task: start_instance
           {{ alpine_tools_config()|indent(10) }}
             params:
-              {{ common_instance_params(test, java_test_version) | indent(14) }}
+              {{ common_instance_params(test) | indent(14) }}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
             run:
@@ -373,7 +389,7 @@ jobs:
           JAVA_BUILD_VERSION: {{ java_build_version.version }}
           JAVA_TEST_VERSION: {{ java_test_version.version }}
           GRADLE_TASK: {{test.GRADLE_TASK}}
-          {{ common_test_params(test, java_test_version) | indent(10) }}
+          {{ common_test_params(test) | indent(10) }}
         run:
           path: geode-ci/ci/scripts/execute_tests.sh
         inputs:

@@ -37,7 +37,9 @@ def main(template_dir_name):
     cwd_ = os.getcwd()
     # Jinja2 template loaded does not allow looking UP from the paths below, so be verbose to make sure we can include
     # shared/common templates
-    env = Environment(loader=FileSystemLoader([cwd_, script_dir_]))
+    env = Environment(loader=FileSystemLoader([cwd_, script_dir_]),
+      extensions=['jinja2.ext.do']
+    )
     template = env.get_template(template_file)
 
     with open(variables_file, 'r') as variablesFromYml:
