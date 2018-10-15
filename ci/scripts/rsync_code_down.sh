@@ -32,10 +32,7 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 SSHKEY_FILE="instance-data/sshkey"
 SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
 
-INSTANCE_NAME="$(cat instance-data/instance-name)"
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
-PROJECT="$(cat instance-data/project)"
-ZONE="$(cat instance-data/zone)"
 
 OUTPUT_DIR=${BASE_DIR}/geode-results
 

@@ -30,12 +30,11 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 INSTANCE_NAME="$(cat instance-data/instance-name)"
-PROJECT="$(cat instance-data/project)"
 ZONE="$(cat instance-data/zone)"
 
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
-gcloud compute --project=${PROJECT} instances delete ${INSTANCE_NAME} \
+gcloud compute instances stop ${INSTANCE_NAME} \
   --zone=${ZONE} \
   --quiet

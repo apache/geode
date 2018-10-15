@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM alpine:3.7
+FROM alpine:latest
 
 COPY --from=google/cloud-sdk:alpine /google-cloud-sdk /google-cloud-sdk
 COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
@@ -31,6 +31,7 @@ RUN apk --no-cache add \
       python \
       py2-pip \
       rsync \
+      util-linux \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
   && gcloud config set metrics/environment github_docker_image \
