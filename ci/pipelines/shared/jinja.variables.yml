@@ -42,6 +42,8 @@ java_test_versions:
   version: 8
 - name: OpenJDK11
   version: 11
+- name: OpenJDK12
+  version: 12
 
 java_build_version:
   name: OpenJDK8

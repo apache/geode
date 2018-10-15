@@ -77,7 +77,7 @@ SERVICE_ACCOUNT: ((!concourse-gcp-account))
 
 {% macro all_gating_jobs(test) %}
 {%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK11") %}
+  {%- for java_test_version in (java_test_versions) if java_test_version.name.endswith("JDK8") %}
 - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
 {%- endfor -%}

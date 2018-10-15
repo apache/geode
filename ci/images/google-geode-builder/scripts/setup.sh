@@ -60,6 +60,9 @@ mv /etc/keep-alternatives /etc/alternatives
 tar xfvz <(curl https://download.java.net/java/GA/jdk11/28/GPL/openjdk-11+28_linux-x64_bin.tar.gz) -C /usr/lib/jvm
 mv /usr/lib/jvm/jdk-11 /usr/lib/jvm/java-11-openjdk-amd64
 
+tar xfvz <(curl https://download.java.net/java/early_access/jdk12/15/GPL/openjdk-12-ea+15_linux-x64_bin.tar.gz) -C /usr/lib/jvm
+mv /usr/lib/jvm/jdk-12 /usr/lib/jvm/java-12-openjdk-amd64
+
 pushd /tmp
   curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
   tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz -C /
