@@ -271,6 +271,16 @@ subprojects {
     }
   })
 
+  // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
+  // If the test JVM version is specified, make sure we run the corresponding gfsh
+  acceptanceTest {
+    if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+      environment "JAVA_HOME", "${project.testJVM}"
+      environment "GF_JAVA", "${project.testJVM}/bin/java"
+    }
+  }
+
+
   // Make precheckin task run all validation tests for checking in code.
   task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
