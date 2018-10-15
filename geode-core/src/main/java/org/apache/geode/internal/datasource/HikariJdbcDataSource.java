@@ -18,6 +18,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -29,13 +31,21 @@ class HikariJdbcDataSource implements DataSource, AutoCloseable {
   private final HikariDataSource delegate;
 
   // TODO: set more config properties
-  HikariJdbcDataSource(ConfiguredDataSourceProperties config) {
+  HikariJdbcDataSource(ConfiguredDataSourceProperties config, List<ConfigProperty> props) {
     HikariDataSource ds = new HikariDataSource();
     ds.setJdbcUrl(config.getURL());
     ds.setUsername(config.getUser());
     ds.setPassword(config.getPassword());
-    // ds.setDataSourceProperties(config.getConnectionProperties());
+    ds.setDataSourceProperties(createProperties(props));
     this.delegate = ds;
+  }
+
+  private Properties createProperties(List<ConfigProperty> props) {
+    Properties result = new Properties();
+    for (ConfigProperty prop : props) {
+      result.setProperty(prop.getName(), prop.getValue());
+    }
+    return result;
   }
 
   @Override

@@ -358,7 +358,7 @@ public class JNDIInvoker {
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("HikariDataSource")) {
-        ds = DataSourceFactory.getHikariDataSource(map);
+        ds = DataSourceFactory.getHikariDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds);
         dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
