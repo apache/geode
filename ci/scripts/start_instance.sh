@@ -111,7 +111,7 @@ if [[ -z "${WINDOWS_PREFIX}" ]]; then
   SSH_TIME=$(($(date +%s) + 60))
   echo -n "Attempting to SSH to instance."
   while ! gcloud compute ssh geode@${INSTANCE_NAME} --zone=${ZONE} --internal-ip --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
-    if [ $(date +%s) > ${SSH_TIME} ]; then
+    if [[ $(date +%s) > ${SSH_TIME} ]]; then
       echo "error: ssh attempt timeout exceeded. Quitting"
       exit 1
     fi
