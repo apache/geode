@@ -244,6 +244,15 @@ jobs:
         CONCOURSE_PASSWORD: ((!concourse-password))
       run:
         path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
+  - put: concourse
+      params:
+        pipelines:
+        - name: ((!pipeline-prefix))pr
+          team: ((!concourse-team))
+          config_file: results/generated-pipeline.yml
+          vars_files:
+          - results/pipeline-vars.yml
+
 
 - name: set-metrics-pipeline
   serial: true
