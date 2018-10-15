@@ -15,10 +15,8 @@
 package org.apache.geode.internal.jndi;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +33,6 @@ import javax.sql.DataSource;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.LogWriter;
@@ -231,11 +228,9 @@ public class JNDIInvoker {
           logger.debug("Exception closing DataSource", e);
         }
       }
-    }
-    else if (dataSource instanceof AbstractDataSource) {
+    } else if (dataSource instanceof AbstractDataSource) {
       ((AbstractDataSource) dataSource).clearUp();
-    }
-    else if (dataSource instanceof ClientConnectionFactoryWrapper) {
+    } else if (dataSource instanceof ClientConnectionFactoryWrapper) {
       ((ClientConnectionFactoryWrapper) dataSource).clearUp();
     }
   }

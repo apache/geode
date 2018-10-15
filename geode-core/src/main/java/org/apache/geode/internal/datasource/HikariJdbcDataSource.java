@@ -34,7 +34,7 @@ class HikariJdbcDataSource implements DataSource, AutoCloseable {
     ds.setJdbcUrl(config.getURL());
     ds.setUsername(config.getUser());
     ds.setPassword(config.getPassword());
-//    ds.setDataSourceProperties(config.getConnectionProperties());
+    // ds.setDataSourceProperties(config.getConnectionProperties());
     this.delegate = ds;
   }
 

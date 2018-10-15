@@ -53,7 +53,7 @@ public class DataSourceFactory {
   /** Creates a new instance of DataSourceFactory */
   public DataSourceFactory() {}
 
-  public static DataSource getHikariDataSource(Map configMap)  throws DataSourceCreateException {
+  public static DataSource getHikariDataSource(Map configMap) throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     if (configs.getURL() == null) {
       logger.error("DataSourceFactory::getHikariDataSource:URL String to Database is null");
