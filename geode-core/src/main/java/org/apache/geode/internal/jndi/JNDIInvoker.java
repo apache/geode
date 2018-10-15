@@ -112,7 +112,6 @@ public class JNDIInvoker {
    * List of DataSource bound to the context, used for cleaning gracefully closing datasource and
    * associated threads.
    */
-//  private static List dataSourceList = new ArrayList();
   private static final ConcurrentMap<String, DataSource> dataSourceMap = new ConcurrentHashMap<>();
 
   /**
