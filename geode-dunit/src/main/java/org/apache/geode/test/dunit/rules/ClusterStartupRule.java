@@ -341,8 +341,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   /**
-   * this crashes the VM hosting the member/client. It removes the VM from the occupied VM list
-   * so that we can ignore it at cleanup.
+   * this crashes the VM hosting the member/client.
    */
   public void crashVM(int index) {
     VMProvider member = occupiedVMs.get(index);
