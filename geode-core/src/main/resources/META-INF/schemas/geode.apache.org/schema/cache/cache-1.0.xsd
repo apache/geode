@@ -1437,6 +1437,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
                 <xsd:enumeration value="SimpleDataSource" />
                 <xsd:enumeration value="PooledDataSource" />
                 <xsd:enumeration value="XAPooledDataSource" />
+                <xsd:enumeration value="HikariDataSource" />
               </xsd:restriction>
             </xsd:simpleType>
           </xsd:attribute>
