@@ -71,8 +71,24 @@ PUBLIC_BUCKET: ((!public-bucket))
 SERVICE_ACCOUNT: ((!concourse-gcp-account))
 {%- endmacro %}
 
+{% macro all_gating_jobs(test) %}
+{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK11") %}
+- {{test.name}}Test{{java_test_version.name}}
+  {%- endfor -%}
+{%- endfor -%}
+{% endmacro %}
+
 groups:
 - name: main
+  jobs:
+  - {{ build_test.name }}
+  {{ all_gating_jobs() | indent(2) }}
+  {%- if repository.sanitized_fork == "apache" %}
+  - UpdatePassingRef
+  - PublishArtifacts
+  {%- endif %}
+- name: complete
   jobs:
   - {{ build_test.name }}
   {%- for test in (tests) if not test.name=="StressNew" -%}
@@ -289,9 +305,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows")) -%}
-    - {{test.name}}TestOpenJDK8
-    {% endfor %}
+    {{ all_gating_jobs() | indent(4) }}
     trigger: true
   - get: geode-ci
   - get: docker-geode-build-image
@@ -315,9 +329,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows"))-%}
-    - {{test.name}}TestOpenJDK8
-    {% endfor %}
+    {{ all_gating_jobs() | indent(4) }}
     trigger: true
   - get: geode-ci
   - get: geode-build-version
