@@ -267,6 +267,16 @@ subprojects {
     }
   })
 
+  acceptanceTest {
+    // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
+    // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
+    // See also environment configuration for parallel testing in docker.gradle
+    if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+      environment "JAVA_HOME", "${project.testJVM}"
+    }
+  }
+
+
   // Make precheckin task run all validation tests for checking in code.
   task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
