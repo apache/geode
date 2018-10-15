@@ -222,12 +222,6 @@ jmh {
   duplicateClassesStrategy = 'warn'
 }
 
-dependencies {
-  // Distributed Tests
-  distributedTestCompile sourceSets.test.output
-  distributedTestCompile sourceSets.integrationTest.output
-}
-
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
 
