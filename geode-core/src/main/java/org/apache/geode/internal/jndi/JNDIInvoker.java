@@ -109,7 +109,7 @@ public class JNDIInvoker {
    * List of DataSource bound to the context, used for cleaning gracefully closing datasource and
    * associated threads.
    */
-  private static final ConcurrentMap<String, DataSource> dataSourceMap = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<String, Object> dataSourceMap = new ConcurrentHashMap<>();
 
   /**
    * If this system property is set to true, GemFire will not try to lookup for an existing JTA
@@ -219,7 +219,7 @@ public class JNDIInvoker {
     IGNORE_JTA = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
   }
 
-  private static void closeDataSource(DataSource dataSource) {
+  private static void closeDataSource(Object dataSource) {
     if (dataSource instanceof AbstractDataSource) {
       ((AbstractDataSource) dataSource).clearUp();
     } else if (dataSource instanceof ClientConnectionFactoryWrapper) {
@@ -352,7 +352,7 @@ public class JNDIInvoker {
       } else if (value.equals("ManagedDataSource")) {
         ClientConnectionFactoryWrapper ds1 = DataSourceFactory.getManagedDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds1.getClientConnFactory());
-        dataSourceMap.put(jndiName, ds);
+        dataSourceMap.put(jndiName, ds1);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else {
@@ -377,7 +377,7 @@ public class JNDIInvoker {
 
   public static void unMapDatasource(String jndiName) throws NamingException {
     ctx.unbind("java:/" + jndiName);
-    DataSource removedDataSource = dataSourceMap.remove(jndiName);
+    Object removedDataSource = dataSourceMap.remove(jndiName);
     closeDataSource(removedDataSource);
   }
 
