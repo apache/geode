@@ -238,6 +238,7 @@ jobs:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
         GEODE_FORK: ((!geode-fork))
+        UPSTREAM_FORK: {{ repository.upstream_fork }}
         ARTIFACT_BUCKET: ((artifact-bucket))
         CONCOURSE_USERNAME: ((!concourse-username))
         CONCOURSE_PASSWORD: ((!concourse-password))

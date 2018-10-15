@@ -74,7 +74,7 @@ fi
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
   # Template and output share a directory with this script, but variables are shared in the parent directory.
-  python3 ../render.py $(basename ${SCRIPTDIR}) || exit 1
+  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} || exit 1
 
   fly login -t ${TARGET} \
             -c https://concourse.apachegeode-ci.info \
