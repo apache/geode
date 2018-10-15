@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
 
@@ -26,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -41,28 +38,25 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
   }
 
   @Test
-  public void testLocatorWithUDPSecurityButServer() throws Exception {
+  public void testLocatorWithUDPSecurityButServer() {
     disconnectAllFromDS();
-    VM vm0 = VM.getVM(0);
+    VM vm = VM.getVM(0);
 
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
     final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
 
-    vm0.invoke("Start locator " + locators, () -> startLocator(port));
-    try {
+    startLocatorWithSomeBasicProperties(vm, port);
 
-      Properties props = new Properties();
-      props.setProperty(MCAST_PORT, "0");
-      props.setProperty(LOCATORS, locators);
+    try {
+      Properties props = getBasicProperties(locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
-      // addDSProps(props);
-      system = (InternalDistributedSystem) DistributedSystem.connect(props);
+      system = getConnectedDistributedSystem(props);
 
     } catch (GemFireConfigException gce) {
       Assert.assertTrue(gce.getMessage().contains("Rejecting findCoordinatorRequest"));
     } finally {
-      vm0.invoke(() -> stopLocator());
+      vm.invoke(LocatorDUnitTest::stopLocator);
     }
   }
 }
