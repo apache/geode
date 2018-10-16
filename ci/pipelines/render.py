@@ -26,7 +26,7 @@ import jinja2.exceptions
 import os
 import subprocess
 
-def main(template_dir_name):
+def main(template_dir_name, geode_fork, geode_branch, upstream_fork):
 
     script_dir_ = os.path.dirname(os.path.abspath(__file__))
     shared_dir_ = os.path.join(script_dir_, 'shared')
@@ -45,16 +45,15 @@ def main(template_dir_name):
     with open(variables_file, 'r') as variablesFromYml:
         variables = yaml.load(variablesFromYml)
 
-    geode_branch_ = os.environ['GEODE_BRANCH']
-    variables['repository']['branch'] = geode_branch_
-    geode_fork_ = os.environ['GEODE_FORK']
-    variables['repository']['fork'] = geode_fork_
+    variables['repository']['branch'] = geode_branch
+    variables['repository']['fork'] = geode_fork
+    variables['repository']['upstream_fork'] = upstream_fork
 
     # Use the one-true-way to truncate fork and branches, trimming the Python bytestream characters from the front and
     # back. If this is too ugly, then convert the BASH functions into python files, and call that Python from the
     # deploy_XYZ.sh scripts
-    variables['repository']['sanitized_branch'] = subprocess.run(['bash', '-c', '. ' + script_dir_ + '/shared/utilities.sh; getSanitizedBranch ' + geode_branch_], stdout=subprocess.PIPE).stdout.decode('utf-8')[:-1]
-    variables['repository']['sanitized_fork'] = subprocess.run(['bash', '-c', '. ' + script_dir_ + '/shared/utilities.sh; getSanitizedFork ' + geode_fork_], stdout=subprocess.PIPE).stdout.decode('utf-8')[:-1]
+    variables['repository']['sanitized_branch'] = subprocess.run(['bash', '-c', '. ' + script_dir_ + '/shared/utilities.sh; getSanitizedBranch ' + geode_branch], stdout=subprocess.PIPE).stdout.decode('utf-8')[:-1]
+    variables['repository']['sanitized_fork'] = subprocess.run(['bash', '-c', '. ' + script_dir_ + '/shared/utilities.sh; getSanitizedFork ' + geode_fork], stdout=subprocess.PIPE).stdout.decode('utf-8')[:-1]
 
     logging.debug(f"Variables = {variables}")
 
@@ -77,6 +76,9 @@ class RaiseExceptionIfUndefined(Undefined):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("template_dir_name", help="Directory containing Jinja template file.")
+    parser.add_argument("geode_fork", help="Name of the git fork")
+    parser.add_argument("geode_branch", help="Branch against which pull-requests are made")
+    parser.add_argument("upstream_fork", help="Name of the upstream into which this fork would merge")
     # parser.add_argument("variables", help="Jinja variables file.")
     # parser.add_argument("output", help="Output target.")
     parser.add_argument("--debug", help="It's debug.  If you have to ask, you'll never know.", action="store_true")
@@ -88,5 +90,5 @@ if __name__ == '__main__':
 
     logging.debug(f"cwd: {os.getcwd()}")
 
-    main(_args.template_dir_name)
+    main(_args.template_dir_name, _args.geode_fork, _args.geode_branch, _args.upstream_fork)
 

@@ -19,14 +19,6 @@
 {{- docker_config() }}
 {%- endmacro %}
 
-
-{%- macro pipeline_prefix() %}
-{%- if repository.fork=="apache" %}
-{%- else -%}
-{{repository.sanitized_fork}}-{{repository.sanitized_branch}}-
-{%- endif -%}
-{%- endmacro %}
-
 {%- macro docker_config(repository_url) %}
 config:
   platform: linux
@@ -35,6 +27,6 @@ config:
     source:
       username: ((!docker-username))
       password: ((!docker-password))
-      repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}alpine-tools
+      repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
       tag: latest
 {%- endmacro %}

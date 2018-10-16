@@ -15,6 +15,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -x
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -26,21 +27,35 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 pushd ${SCRIPTDIR}
 
-IMAGE_FAMILY_PREFIX=""
-if [[ -z "${GEODE_FORK}" ]]; then
-  echo "GEODE_FORK environment variable must be set for this script to work."
-  exit 1
+if [[ -n "${CONCOURSE_GCP_KEY}" ]]; then
+  dd of=credentials.json <<< "${CONCOURSE_GCP_KEY}"
+  export GOOGLE_APPLICATION_CREDENTIALS=${SCRIPTDIR}/credentials.json
 fi
 
-GEODE_BRANCH=${GEODE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-20)
-SANITIZED_GEODE_FORK=$(echo ${GEODE_FORK} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-16)
+GCP_NETWORK="default"
+GCP_SUBNETWORK="default"
 
-if [[ "${SANITIZED_GEODE_FORK}" != "apache" ]]; then
-  IMAGE_FAMILY_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
+if [[ -n "${MY_NAME}" ]]; then
+  MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
+  MY_ZONE=${MY_ZONE##*/}
+  NETWORK_INTERFACE_INFO="$(gcloud compute instances describe ${MY_NAME} --zone ${MY_ZONE} --format="json(networkInterfaces)")"
+  GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].network')
+  GCP_NETWORK=${GCP_NETWORK##*/}
+  GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
+  GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
 fi
+
+HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 
 echo "Running packer"
-packer build \
-  --var "image_family_prefix=${IMAGE_FAMILY_PREFIX}" \
+PACKER_LOG=1 packer build \
+  --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
+  --var "pipeline_prefix=${PIPELINE_PREFIX}" \
+  --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \
+  --var "java_build_version=${JAVA_BUILD_VERSION}" \
+  --var "gcp_project=${GCP_PROJECT}" \
+  --var "gcp_network=${GCP_NETWORK}" \
+  --var "gcp_subnetwork=${GCP_SUBNETWORK}" \
+  --var "use_internal_ip=true" \
   windows-packer.json

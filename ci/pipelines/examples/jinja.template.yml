@@ -45,7 +45,7 @@ resources:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
+    repository: gcr.io/((gcp-project))/((!docker-image-prefix))((!docker-image-name))
     tag: latest
 - name: 24h
   type: time
@@ -78,7 +78,7 @@ jobs:
       params:
         MAINTENANCE_VERSION: {{repository.branch}}
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
-        PUBLIC_BUCKET: ((!public-bucket))
+        ARTIFACT_BUCKET: ((artifact-bucket))
       run:
         args:
         path: geode-ci/ci/scripts/build-examples.sh
