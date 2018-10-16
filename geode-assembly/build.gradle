@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import java.nio.file.Paths
-import java.nio.file.Path
+
+import java.nio.file.Paths 
 
 evaluationDependsOn(":geode-core")
 
@@ -141,6 +141,7 @@ dependencies {
   integrationTestCompile project(":geode-pulse")
   integrationTestCompile project(':geode-assembly:geode-assembly-test')
   integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  integrationTestCompile 'javax.annotation:javax.annotation-api:' + project.'javax-annotation.version'
 
 
   distributedTestCompile project(':geode-core')
