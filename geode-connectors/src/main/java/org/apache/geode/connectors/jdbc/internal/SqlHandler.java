@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
@@ -30,6 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
@@ -37,20 +40,41 @@ public class SqlHandler {
   private final JdbcConnectorService configService;
   private final DataSourceManager manager;
   private final TableMetaDataManager tableMetaDataManager;
+  private final DataSourceFactory dataSourceFactory;
 
-  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
-      JdbcConnectorService configService) {
+  SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
+      JdbcConnectorService configService, DataSourceFactory dataSourceFactory) {
     this.manager = manager;
     this.tableMetaDataManager = tableMetaDataManager;
     this.configService = configService;
+    this.dataSourceFactory = dataSourceFactory;
+  }
+
+  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
+      JdbcConnectorService configService) {
+    this(manager, tableMetaDataManager, configService,
+        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
+  }
+
+  public interface DataSourceFactory {
+    public DataSource getDataSource(String dataSourceName);
   }
 
   public void close() {
     manager.close();
   }
 
-  Connection getConnection(ConnectorService.Connection config) throws SQLException {
-    return manager.getOrCreateDataSource(config).getConnection();
+  Connection getConnection(String connectionName) throws SQLException {
+    return getDataSource(connectionName).getConnection();
+  }
+
+  DataSource getDataSource(String connectionName) {
+    DataSource dataSource = this.dataSourceFactory.getDataSource(connectionName);
+    if (dataSource == null) {
+      throw new JdbcConnectorException("JDBC connection with name " + connectionName
+          + " not found. Create the connection with the gfsh command 'create jndi-binding'");
+    }
+    return dataSource;
   }
 
   public <K, V> PdxInstance read(Region<K, V> region, K key) throws SQLException {
@@ -59,10 +83,8 @@ public class SqlHandler {
     }
 
     ConnectorService.RegionMapping regionMapping = getMappingForRegion(region.getName());
-    ConnectorService.Connection connectionConfig =
-        getConnectionConfig(regionMapping.getConnectionConfigName());
     PdxInstance result;
-    try (Connection connection = getConnection(connectionConfig)) {
+    try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
       EntryColumnData entryColumnData =
@@ -94,16 +116,6 @@ public class SqlHandler {
           + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     }
     return regionMapping;
-  }
-
-  private ConnectorService.Connection getConnectionConfig(String connectionConfigName) {
-    ConnectorService.Connection connectionConfig =
-        this.configService.getConnectionConfig(connectionConfigName);
-    if (connectionConfig == null) {
-      throw new JdbcConnectorException("JDBC connection with name " + connectionConfigName
-          + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
-    }
-    return connectionConfig;
   }
 
   private void setValuesInStatement(PreparedStatement statement, EntryColumnData entryColumnData)
@@ -158,10 +170,8 @@ public class SqlHandler {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
     ConnectorService.RegionMapping regionMapping = getMappingForRegion(region.getName());
-    ConnectorService.Connection connectionConfig =
-        getConnectionConfig(regionMapping.getConnectionConfigName());
 
-    try (Connection connection = getConnection(connectionConfig)) {
+    try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
       EntryColumnData entryColumnData =

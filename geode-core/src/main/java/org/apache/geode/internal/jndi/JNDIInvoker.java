@@ -395,6 +395,10 @@ public class JNDIInvoker {
     closeDataSource(removedDataSource);
   }
 
+  public static DataSource getDataSource(String name) {
+    return dataSourceMap.get(name);
+  }
+
   /**
    * @return Context the existing JNDI Context. If there is no pre-esisting JNDI Context, the
    *         GemFire JNDI Context is returned.

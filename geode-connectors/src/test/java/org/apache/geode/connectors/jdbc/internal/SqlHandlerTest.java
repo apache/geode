@@ -35,6 +35,8 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
 
+import javax.sql.DataSource;
+
 import junitparams.JUnitParamsRunner;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,6 +48,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
@@ -53,7 +56,7 @@ import org.apache.geode.pdx.internal.PdxType;
 
 @RunWith(JUnitParamsRunner.class)
 public class SqlHandlerTest {
-  private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
+  private static final String DATA_SOURCE_NAME = "dataSourceName";
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
   private static final String KEY_COLUMN = "keyColumn";
@@ -62,9 +65,9 @@ public class SqlHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private DataSourceManager manager;
-  private JdbcDataSource dataSource;
-  private ConnectorService.Connection connectionConfig;
+  private DataSource dataSource;
   private JdbcConnectorService connectorService;
+  private DataSourceFactory dataSourceFactory;
   private TableMetaDataManager tableMetaDataManager;
   private TableMetaDataView tableMetaDataView;
   private Connection connection;
@@ -80,10 +83,7 @@ public class SqlHandlerTest {
   @Before
   public void setup() throws Exception {
     manager = mock(DataSourceManager.class);
-    dataSource = mock(JdbcDataSource.class);
-    connectionConfig = mock(ConnectorService.Connection.class);
-    when(connectionConfig.getName()).thenReturn(CONNECTION_CONFIG_NAME);
-    when(connectionConfig.getUrl()).thenReturn("fake:url");
+    dataSource = mock(DataSource.class);
     region = mock(Region.class);
     when(region.getName()).thenReturn(REGION_NAME);
     cache = mock(InternalCache.class);
@@ -96,22 +96,20 @@ public class SqlHandlerTest {
     when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
         .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
-    handler = new SqlHandler(manager, tableMetaDataManager, connectorService);
+    dataSourceFactory = mock(DataSourceFactory.class);
+    when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(dataSource);
+    handler = new SqlHandler(manager, tableMetaDataManager, connectorService, dataSourceFactory);
     key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
 
-    when(connectorService.getConnectionConfig(CONNECTION_CONFIG_NAME)).thenReturn(connectionConfig);
-
     regionMapping = mock(ConnectorService.RegionMapping.class);
-    when(regionMapping.getConnectionConfigName()).thenReturn(CONNECTION_CONFIG_NAME);
+    when(regionMapping.getConnectionConfigName()).thenReturn(DATA_SOURCE_NAME);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
 
-
-    when(manager.getOrCreateDataSource(any())).thenReturn(this.dataSource);
     when(dataSource.getConnection()).thenReturn(this.connection);
 
     statement = mock(PreparedStatement.class);
@@ -575,7 +573,7 @@ public class SqlHandlerTest {
   public void handlesSQLExceptionFromGetConnection() throws Exception {
     doThrow(new SQLException("test exception")).when(dataSource).getConnection();
 
-    assertThatThrownBy(() -> handler.getConnection(connectionConfig))
+    assertThatThrownBy(() -> handler.getConnection(DATA_SOURCE_NAME))
         .isInstanceOf(SQLException.class).hasMessage("test exception");
   }
 
