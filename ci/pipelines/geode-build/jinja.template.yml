@@ -377,6 +377,7 @@ jobs:
       run:
         path: geode-ci/ci/scripts/execute_publish.sh
       inputs:
+      - name: instance-data
       - name: geode
       - name: geode-ci
       - name: geode-build-version
