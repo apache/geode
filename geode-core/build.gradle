@@ -222,6 +222,16 @@ jmh {
   duplicateClassesStrategy = 'warn'
 }
 
+sourceSets {
+// This works around resource-look up between integrationTest and test source-sets.
+// See GEODE-5803 / GEODE-5882
+  test.resources.srcDirs.each { testResourceSrc ->
+    integrationTest.resources.srcDir {
+      testResourceSrc
+    }
+  }
+}
+
 dependencies {
   // Distributed Tests
   distributedTestCompile sourceSets.test.output
