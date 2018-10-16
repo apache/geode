@@ -110,7 +110,7 @@ subprojects {
 
       // As the method name suggests, bump this number if any of the below "custom" rules change.
       // Spotless will not run on unchanged files unless this number changes.
-      bumpThisNumberIfACustomStepChanges(0)
+//      bumpThisNumberIfACustomStepChanges(0)
 
       custom 'Use single-quote in project directives.', {
         it.replaceAll(/project\(":([^"]*)"\)/, 'project(\':$1\')')
@@ -118,15 +118,102 @@ subprojects {
 
       custom 'Use parenthesis in single-line gradle dependency declarations.', {
         it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) (?!\()([^{\n]*)\n/, { original, declaration, dep ->
+          println("Got:")
+          println("ori:" + original.trim())
+          println("dec:" + declaration.trim())
+          println("dep:" + dep.trim())
           "\n${declaration}(${dep})\n"
         })
       }
 
-      custom 'Do not pad spaces before parenthesis in gradle dependency declaration.', {
-        it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) +\(/, '\n$1(')
-      }
-
       indentWithSpaces(2)
+
+      custom 'Sort declared dependencies.', { file_as_string ->
+        // The sorting of dependency configuration lines will follow the following rules:
+        // (a) Internal dependencies first (e.g., 'compile project(":geode-core")')
+        // (b) Then sort by scope, as ranked below.
+        // (c) Then sort by type, as ranked below.
+        // (*) Some special cases exist and are given first-listing priority.
+        //
+        // Note the actual dependency configuration directive is a combination of scope and type
+        // (e.g., 'integrationTestCompileOnly').  These are produced below the rankings.
+
+        def dependency_scope_ranking = [
+            ''               : 0,
+            'test'           : 1,
+            'integrationTest': 2,
+            'distributedTest': 3,
+            'acceptanceTest' : 4,
+            'uiTest'         : 5,
+            'upgradeTest'    : 6,
+        ]
+        def dependency_type_ranking = [
+            'compile'        : 1,
+            'compileOnly'    : 2,
+            'runtime'        : 3,
+            'runtimeOnly'    : 4,
+        ]
+        def dependency_keyword_ranking = dependency_scope_ranking.collectEntries {
+          scope_key, scope_value ->
+            dependency_type_ranking.collectEntries {
+              type_key, type_value ->
+                [(scope_key + type_key.capitalize()).uncapitalize(), scope_value * 100 + type_value * 10]
+            }
+        }
+        // Some special cases:
+        dependency_keyword_ranking['classesOutput'] = 1
+        dependency_keyword_ranking['slf4jDeps'] = 2
+
+        def rank_dependency_directive = { line ->
+          // Given a line, return a sortable string.
+          // We 'score' based on the dependency configuration directive, "penalizing" non-internal
+          // dependencies.  We append the original string after this score to sort alphabetically
+          // within a given directive.
+
+          def first_word = line.trim().split(/[ \(]/)[0].trim()
+          def order_score = dependency_keyword_ranking.getOrDefault(first_word, 0)
+          if (order_score == 0){
+            logger.warn("Missing rank for: '" + first_word + "' in custom Gradle spotless.")
+          }
+          def is_project_score = line.contains('project(') ? 0 : 1000
+          String.format("%04d", is_project_score + order_score) + "_" + line.trim()
+        }
+
+        // Trying to match `dependencies { ... }`, anchored (but possibly space-padded) at line start.
+        // Content may itself contain `{ exclude ... }` blocks, or others (such as whenMerged).
+        // Groovy Regex does not permit recursion, so we explicitly detect `dependencies` blocks,
+        // including nesting of up to three inner blocks.
+
+        def block_matcher = /\{[^\{\}]*\}/
+        def depth_two_block_matcher = /\{[^\{\}]*(?:${block_matcher})*[^\{\}]*\}/
+        def not_delimited_depth_three_block_matcher = /[^\{\}]*(?:${depth_two_block_matcher})*[^\{\}]/
+        def dependency_block_pattern = /(?smx)^((?: ))*dependencies\s*\{(${not_delimited_depth_three_block_matcher})\}/
+        def spaces_per_tab = 2
+        def make_new_dependency_block = { padding, ordered_dep_blocks ->
+          ("dependencies {\n" +
+              ordered_dep_blocks.withIndex().collect {
+                element, index ->
+                  // Add an extra newline if we're into a new keyword:
+                  // Not the first line, this line is not "project(...", and the previous line was.
+                  def extra_newline = index > 0 && !element.contains("project(") && (element.split(/[ \(]/)[0] != ordered_dep_blocks[index - 1].split(/[ \(]/)[0] || ordered_dep_blocks[index - 1].contains("project("))
+                  
+                  (extra_newline ? "\n" : "") + padding + " " * spaces_per_tab + element.trim()
+              }.join("\n") + "\n" + padding + "}")
+        }
+
+
+        file_as_string.replaceAll(dependency_block_pattern, { original_string, space_padding, matched_deps ->
+          space_padding = space_padding ? space_padding : ""
+          // We want to break on lines, but keep blocks that are present.
+          def dependency_with_blocks = matched_deps
+              .findAll(/(?sm)^[^\n\{\}]*(?:${depth_two_block_matcher})?\n/) // Find each dependency
+              *.trim()                                                      // trim whitespace
+              .findAll { it.trim() }                                        // ignore empty lines
+              .sort( {rank_dependency_directive(it) } )                     // and sort
+
+          make_new_dependency_block(space_padding, dependency_with_blocks)
+        })
+      }
     }
   }
 
