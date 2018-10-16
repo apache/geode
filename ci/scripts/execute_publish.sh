@@ -56,8 +56,6 @@ else
   echo "Build ID is ${BUILD_ID}"
 fi
 
-echo -n "${FULL_PRODUCT_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
-
 DEFAULT_GRADLE_TASK_OPTIONS="--parallel --console=plain --no-daemon"
 
 SSHKEY_FILE="instance-data/sshkey"
