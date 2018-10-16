@@ -67,6 +67,7 @@ upstream-fork: ${UPSTREAM_FORK}
 pipeline-prefix: "${PIPELINE_PREFIX}"
 public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
+version-bucket: ${VERSION_BUCKET}
 artifact-bucket: ${ARTIFACT_BUCKET}
 YML
 
