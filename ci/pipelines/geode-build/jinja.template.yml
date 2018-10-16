@@ -143,15 +143,6 @@ resources:
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
-{% if repository.sanitized_fork == "apache" %}
-- name: docker-geode-build-image
-  type: docker-image
-  source:
-    password: ((!docker-password))
-    repository: gcr.io/((gcp-project))/((pipeline-prefix))((!docker-image-name))
-    tag: latest
-    username: ((!docker-username))
-{% endif %}
 - name: geode
   type: git
   source:
