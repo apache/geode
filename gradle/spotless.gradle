@@ -42,6 +42,11 @@ subprojects {
           throw new AssertionError("Do not use wildcard imports.  'spotlessApply' cannot resolve this issue.");
         }
       }
+      custom 'Refuse Awaitility import', {
+        if(it =~ /import\s+(static\s+)?org.awaitility.Awaitility.*/) {
+          throw new AssertionError("Do not use Awaitility.await(). Use GeodeAwaitility.await() instead. 'spotlessApply' cannot resolve this issue.")
+        }
+      }
       importOrderFile "${project(':geode-core').projectDir}/../etc/eclipseOrganizeImports.importorder"
 
       custom 'Remove unhelpful javadoc stubs', {
