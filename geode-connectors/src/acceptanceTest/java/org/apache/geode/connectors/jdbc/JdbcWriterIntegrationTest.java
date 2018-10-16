@@ -86,11 +86,14 @@ public abstract class JdbcWriterIntegrationTest {
 
   private void closeDB() throws Exception {
     if (statement == null) {
-      statement = connection.createStatement();
+      if (connection != null) {
+        statement = connection.createStatement();
+      }
     }
-    statement.execute("Drop table " + REGION_TABLE_NAME);
-    statement.close();
-
+    if (statement != null) {
+      statement.execute("Drop table " + REGION_TABLE_NAME);
+      statement.close();
+    }
     if (connection != null) {
       connection.close();
     }
@@ -225,7 +228,8 @@ public abstract class JdbcWriterIntegrationTest {
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl()));
+        TestConfigService.getTestConfigService(getConnectionUrl()),
+        new TestDataSourceFactory(getConnectionUrl()));
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

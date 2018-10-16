@@ -42,7 +42,7 @@ public class SqlHandler {
   private final TableMetaDataManager tableMetaDataManager;
   private final DataSourceFactory dataSourceFactory;
 
-  SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
+  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
       JdbcConnectorService configService, DataSourceFactory dataSourceFactory) {
     this.manager = manager;
     this.tableMetaDataManager = tableMetaDataManager;
