@@ -66,18 +66,24 @@ dependencies {
   compileOnly('org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version')
 
 
-  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   testCompile(project(':geode-core'))
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
 
 
-  integrationTestCompile(project(':geode-junit'))
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
   integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
 
 
-  uiTestCompile(project(':geode-junit'))
+  uiTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   uiTestCompile(project(':geode-json'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
   uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version')

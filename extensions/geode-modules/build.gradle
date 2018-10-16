@@ -29,7 +29,9 @@ dependencies {
 
   testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
 
-  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':extensions:geode-modules-test'))
 
   integrationTestRuntime('org.apache.tomcat:coyote:' + project.'tomcat6.version')

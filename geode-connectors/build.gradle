@@ -27,10 +27,15 @@ repositories {
 dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-core'))
-  testCompile(project(':geode-junit'))
-  integrationTestCompile(project(':geode-dunit'))
-  acceptanceTestCompile(project(':geode-dunit'))
-
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  acceptanceTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   compile(group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version')
 
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
