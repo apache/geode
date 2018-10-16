@@ -336,8 +336,8 @@ jobs:
   - get: geode-ci
   - aggregate:
     - get: geode
-    passed:
-    {{ all_gating_jobs() | indent(4) }}
+      passed:
+      {{ all_gating_jobs() | indent(4) }}
       trigger: true
     - get: geode-build-version
       params:
