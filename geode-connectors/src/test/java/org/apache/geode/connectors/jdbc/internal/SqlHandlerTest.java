@@ -64,7 +64,6 @@ public class SqlHandlerTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private DataSourceManager manager;
   private DataSource dataSource;
   private JdbcConnectorService connectorService;
   private DataSourceFactory dataSourceFactory;
@@ -82,7 +81,6 @@ public class SqlHandlerTest {
   @SuppressWarnings("unchecked")
   @Before
   public void setup() throws Exception {
-    manager = mock(DataSourceManager.class);
     dataSource = mock(DataSource.class);
     region = mock(Region.class);
     when(region.getName()).thenReturn(REGION_NAME);
@@ -98,7 +96,7 @@ public class SqlHandlerTest {
     connectorService = mock(JdbcConnectorService.class);
     dataSourceFactory = mock(DataSourceFactory.class);
     when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(dataSource);
-    handler = new SqlHandler(manager, tableMetaDataManager, connectorService, dataSourceFactory);
+    handler = new SqlHandler(tableMetaDataManager, connectorService, dataSourceFactory);
     key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
@@ -114,13 +112,6 @@ public class SqlHandlerTest {
 
     statement = mock(PreparedStatement.class);
     when(this.connection.prepareStatement(any())).thenReturn(statement);
-  }
-
-  @Test
-  public void verifyCloseCallsManagerClose() {
-    handler.close();
-
-    verify(manager).close();
   }
 
   @Test

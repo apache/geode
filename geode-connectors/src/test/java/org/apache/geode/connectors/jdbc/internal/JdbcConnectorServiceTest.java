@@ -104,10 +104,4 @@ public class JdbcConnectorServiceTest {
     assertThatThrownBy(() -> service.createConnectionConfig(config2))
         .isInstanceOf(ConnectionConfigExistsException.class).hasMessageContaining(TEST_CONFIG_NAME);
   }
-
-  @Test
-  public void hasDataSourceManagerOnCreation() {
-    assertThat(service.getDataSourceManager()).isNotNull();
-  }
-
 }

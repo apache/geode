@@ -38,30 +38,23 @@ import org.apache.geode.pdx.PdxInstance;
 @Experimental
 public class SqlHandler {
   private final JdbcConnectorService configService;
-  private final DataSourceManager manager;
   private final TableMetaDataManager tableMetaDataManager;
   private final DataSourceFactory dataSourceFactory;
 
-  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
-      JdbcConnectorService configService, DataSourceFactory dataSourceFactory) {
-    this.manager = manager;
+  public SqlHandler(TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
+      DataSourceFactory dataSourceFactory) {
     this.tableMetaDataManager = tableMetaDataManager;
     this.configService = configService;
     this.dataSourceFactory = dataSourceFactory;
   }
 
-  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
-      JdbcConnectorService configService) {
-    this(manager, tableMetaDataManager, configService,
+  public SqlHandler(TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService) {
+    this(tableMetaDataManager, configService,
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
   public interface DataSourceFactory {
     public DataSource getDataSource(String dataSourceName);
-  }
-
-  public void close() {
-    manager.close();
   }
 
   Connection getConnection(String connectionName) throws SQLException {

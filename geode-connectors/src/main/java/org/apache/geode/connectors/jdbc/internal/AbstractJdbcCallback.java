@@ -35,11 +35,7 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
   }
 
   @Override
-  public void close() {
-    if (sqlHandler != null) {
-      sqlHandler.close();
-    }
-  }
+  public void close() {}
 
   protected SqlHandler getSqlHandler() {
     return sqlHandler;
@@ -60,7 +56,7 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
       this.cache = cache;
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
       TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
-      sqlHandler = new SqlHandler(service.getDataSourceManager(), tableMetaDataManager, service);
+      sqlHandler = new SqlHandler(tableMetaDataManager, service);
     }
   }
 }

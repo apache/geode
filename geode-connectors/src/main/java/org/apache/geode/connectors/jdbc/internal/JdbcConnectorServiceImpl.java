@@ -33,8 +33,6 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
       new ConcurrentHashMap<>();
   private final Map<String, ConnectorService.RegionMapping> mappingsByRegion =
       new ConcurrentHashMap<>();
-  private final DataSourceManager manager =
-      new DataSourceManager(new HikariJdbcDataSourceFactory());
   private volatile InternalCache cache;
   private boolean registered;
 
@@ -81,11 +79,6 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     Set<ConnectorService.RegionMapping> regionMappings = new HashSet<>();
     regionMappings.addAll(mappingsByRegion.values());
     return regionMappings;
-  }
-
-  @Override
-  public DataSourceManager getDataSourceManager() {
-    return manager;
   }
 
   @Override

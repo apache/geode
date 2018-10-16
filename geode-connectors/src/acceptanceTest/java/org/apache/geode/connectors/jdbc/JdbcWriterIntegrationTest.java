@@ -37,7 +37,6 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
-import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -227,7 +226,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
+    return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService(getConnectionUrl()),
         new TestDataSourceFactory(getConnectionUrl()));
   }
