@@ -35,46 +35,10 @@ gradle.taskGraph.whenReady({ graph ->
 
 
 subprojects {
-  dependencies {
-    testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
-      exclude module: 'junit-dep'
-    }
-    testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
-    testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
-    testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
-    testCompile 'junit:junit:' + project.'junit.version'
-    testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-    testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
-
-    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
-
-    testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-
-    testRuntime('cglib:cglib:' + project.'cglib.version') {
-      exclude module: 'org.apache.ant'
-    }
-  }
-
   // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
   // and associated classes are themselves removed, per GEODE-5606
   configurations {
     apt
-  }
-
-  dependencies {
-    apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
-    apt(group: 'junit', name: 'junit', version: project.'junit.version') {
-      transitive = false
-    }
-    // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory.
-    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
-    apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
-      transitive = false
-    }
   }
 
   compileTestJava {
@@ -138,6 +102,38 @@ subprojects {
   }
 
   dependencies {
+    apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
+    apt(group: 'junit', name: 'junit', version: project.'junit.version') {
+      transitive = false
+    }
+    // Because EnsureCorrectRunsWithProcessor needs access to
+    // CategoryWithParameterizedRunnerFactory.
+    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
+    apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
+      transitive = false
+    }
+
+    testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+      exclude module: 'junit-dep'
+    }
+    testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
+    testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
+    testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
+    testCompile 'junit:junit:' + project.'junit.version'
+    testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
+    testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+
+    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+    testCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
+
+    testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+
+    testRuntime('cglib:cglib:' + project.'cglib.version') {
+      exclude module: 'org.apache.ant'
+    }
+
     integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
 
     integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
