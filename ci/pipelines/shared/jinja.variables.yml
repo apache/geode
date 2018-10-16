@@ -31,6 +31,12 @@ build_test:
   GRADLE_TASK: build
   execute_test_timeout: 10m
 
+publish_artifacts:
+  name: "PublishArtifacts"
+  CPUS: "8"
+  RAM: "16"
+  execute_test_timeout: 10m
+
 java_test_versions:
 - name: OpenJDK8
   version: 8
