@@ -316,9 +316,7 @@ jobs:
   - get: geode-ci
   - get: docker-geode-build-image
   - task: updatepassingref
-    image: docker-geode-build-image
-    config:
-      platform: linux
+    {{ alpine_tools_config()|indent(4) }}
       params:
         MAINTENANCE_VERSION: ((geode-build-branch))
         ARTIFACT_BUCKET: ((artifact-bucket))
