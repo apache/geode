@@ -238,10 +238,12 @@ jobs:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
         GEODE_FORK: ((!geode-fork))
-        UPSTREAM_FORK: {{ repository.upstream_fork }}
+        GEODE_REPO_NAME: ((geode-repo-name))
         ARTIFACT_BUCKET: ((artifact-bucket))
-        CONCOURSE_USERNAME: ((!concourse-username))
-        CONCOURSE_PASSWORD: ((!concourse-password))
+        UPSTREAM_FORK: {{ repository.upstream_fork }}
+        PIPELINE_PREFIX: ((pipeline-prefix))
+        GCP_PROJECT: ((gcp-project))
+        PUBLIC_PIPELINES: ((public-pipelines))
       run:
         path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
   - put: concourse
