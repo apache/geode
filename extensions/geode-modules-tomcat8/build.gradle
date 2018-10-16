@@ -18,6 +18,12 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
+  distributedTestCompile('junit:junit:' + project.'junit.version')
+  compile('javax.servlet:servlet-api:2.4')
+  compile('mx4j:mx4j:' + project.'mx4j.version')
+  distributedTestCompile('org.httpunit:httpunit:' + project.'httpunit.version')
+  distributedTestCompile('org.apache.tomcat:tomcat-jaspic-api:' + project.'tomcat8.version')
+  compile(project(':geode-core'))
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
@@ -30,8 +36,15 @@ dependencies {
     exclude module: 'tomcat-servlet-api'
   }
   compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version')
-  compile('javax.servlet:javax.servlet-api:' + '3.1.0')
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 
+  distributedTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   distributedTestCompile(project(':extensions:geode-modules-test'))
 
   distributedTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
