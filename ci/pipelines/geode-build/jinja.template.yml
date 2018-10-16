@@ -337,7 +337,7 @@ jobs:
   - aggregate:
     - get: geode
       passed:
-      {{ all_gating_jobs() | indent(4) }}
+      {{ all_gating_jobs() | indent(6) }}
       trigger: true
     - get: geode-build-version
       params:
