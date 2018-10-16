@@ -14,19 +14,28 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.internal.cache.InternalCache;
 
 /**
@@ -37,67 +46,79 @@ import org.apache.geode.internal.cache.InternalCache;
  */
 public class QueryMonitorTest {
 
-  private static InternalCache cache;
-  private static QueryMonitor monitor;
-  private static long max_execution_time = 5;
+  private InternalCache cache;
+  private QueryMonitor monitor;
+  private long max_execution_time = 5;
+  private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+  private ArgumentCaptor<Runnable> captor;
 
-  @BeforeClass
-  public static void setUp() {
+  @Before
+  public void setUp() {
     cache = mock(InternalCache.class);
-    monitor = new QueryMonitor(cache, max_execution_time);
-    Thread monitorThread = new Thread(() -> monitor.run(), "query monitor thread");
-    monitorThread.setDaemon(true);
-    monitorThread.start();
+    scheduledThreadPoolExecutor = mock(ScheduledThreadPoolExecutor.class);
+    when(scheduledThreadPoolExecutor.getQueue()).thenReturn(new ArrayBlockingQueue<Runnable>(1));
+    monitor = new QueryMonitor(() -> scheduledThreadPoolExecutor, cache, max_execution_time);
+    captor = ArgumentCaptor.forClass(Runnable.class);
   }
 
-  @AfterClass
-  public static void afterClass() {
+  @After
+  public void afterClass() {
     // cleanup the thread local of the queryCancelled status
     DefaultQuery query = mock(DefaultQuery.class);
-    when(query.getQueryCompletedForMonitoring()).thenReturn(new boolean[] {true});
-    monitor.stopMonitoringQueryThread(Thread.currentThread(), query);
+    doReturn(Optional.empty()).when(query).getCancelationTask();
+    monitor.stopMonitoringQueryThread(query);
+    monitor.setLowMemory(false, 100);
   }
 
   @Test
-  public void queryIsCancelled() {
-    List<DefaultQuery> queries = new ArrayList<>();
-    List<Thread> threads = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      DefaultQuery query = new DefaultQuery("query" + i, cache, false);
-      queries.add(query);
-      Thread queryExecutionThread = createQueryExecutionThread(i);
-      threads.add(queryExecutionThread);
-      monitor.monitorQueryThread(queryExecutionThread, query);
-    }
-
-    for (DefaultQuery query : queries) {
-      // make sure the isCancelled flag in Query is set correctly
-      await().until(() -> query.isCanceled());
-    }
-    await().until(() -> monitor.getQueryMonitorThreadCount() == 0);
-    // make sure all thread died
-    for (Thread thread : threads) {
-      await().until(() -> !thread.isAlive());
-    }
-  }
-
-  @Test
-  public void cqQueryIsNotMonitored() {
+  public void monitorQueryThreadCqQueryIsNotMonitored() {
     DefaultQuery query = mock(DefaultQuery.class);
     when(query.isCqQuery()).thenReturn(true);
-    monitor.monitorQueryThread(mock(Thread.class), query);
-    assertThat(monitor.getQueryMonitorThreadCount()).isEqualTo(0);
+    monitor.monitorQueryThread(query);
+
+    // Verify that the expiration task was not scheduled for the CQ query
+    Mockito.verify(scheduledThreadPoolExecutor, never()).schedule(captor.capture(), anyLong(),
+        isA(TimeUnit.class));
   }
 
-  private Thread createQueryExecutionThread(int i) {
-    Thread thread = new Thread(() -> {
-      // make sure the threadlocal variable is updated
-      await()
-          .untilAsserted(() -> assertThatCode(() -> QueryMonitor.isQueryExecutionCanceled())
-              .doesNotThrowAnyException());
-    });
-    thread.setName("query" + i);
-    return thread;
+  @Test
+  public void monitorQueryThreadLowMemoryExceptionThrown() {
+    DefaultQuery query = mock(DefaultQuery.class);
+    monitor.setLowMemory(true, 100);
+
+    assertThatThrownBy(() -> monitor.monitorQueryThread(query))
+        .isExactlyInstanceOf(QueryExecutionLowMemoryException.class);
   }
 
+  @Test
+  public void monitorQueryThreadExpirationTaskScheduled() {
+    DefaultQuery query = mock(DefaultQuery.class);
+
+    monitor.monitorQueryThread(query);
+    Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
+        isA(TimeUnit.class));
+    captor.getValue().run();
+
+    Mockito.verify(query, times(1))
+        .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
+    assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled())
+        .isExactlyInstanceOf(QueryExecutionCanceledException.class);
+  }
+
+  @Test
+  public void setLowMemoryTrueShutsDownExecutor() throws InterruptedException {
+    monitor.setLowMemory(true, 1);
+    Mockito.verify(scheduledThreadPoolExecutor, times(1)).shutdown();
+  }
+
+  @Test
+  public void setLowMemoryTrueThenFalseAllowsSubsequentMonitoring() {
+    monitor.setLowMemory(true, 1);
+    monitor.setLowMemory(false, 1);
+    /*
+     * Verify we can still monitor and expire a query after
+     * cancelling all queries due to low memory.
+     */
+    monitorQueryThreadExpirationTaskScheduled();
+  }
 }
