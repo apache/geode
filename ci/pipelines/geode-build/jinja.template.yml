@@ -330,15 +330,7 @@ jobs:
     params:
       pre: build
   - task: publish
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          password: ((!docker-password))
-          repository: gcr.io/((gcp-project))/((pipeline-prefix))((!docker-image-name))
-          tag: latest
-          username: ((!docker-username))
+    {{ alpine_tools_config()|indent(4) }}
       params:
         MAINTENANCE_VERSION: ((geode-build-branch))
         ARTIFACT_BUCKET: ((artifact-bucket))
