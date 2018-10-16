@@ -100,6 +100,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --boot-disk-type=pd-ssd \
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
+  --scopes="default,storage-rw" \
   --format=json)
 
 echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
