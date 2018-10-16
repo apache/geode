@@ -18,6 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -411,6 +412,9 @@ public class QueryMonitorDUnitTest {
   }
 
   private static class QueryTimeoutHook implements DefaultQuery.TestHook {
+    /**
+     * Delay query execution long enough for the QueryMonitor to mark the query as cancelled.
+     */
     public void doTestHook(int spot, DefaultQuery query) {
       if (spot != 6) {
         return;
@@ -419,7 +423,14 @@ public class QueryMonitorDUnitTest {
         return;
       }
 
-      await().until(() -> query.isCanceled());
+      /*
+       * The pollDelay() value was chosen to be larger than the
+       * GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME (system property) value,
+       * set during test initialization.
+       */
+      await("stall the query execution so that it gets cancelled")
+          .pollDelay(10, TimeUnit.MILLISECONDS)
+          .until(() -> query.isCanceled());
     }
   }
 
