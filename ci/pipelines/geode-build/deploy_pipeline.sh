@@ -59,6 +59,8 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
 popd 2>&1 > /dev/null
 cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
 
+grep -n . ${OUTPUT_DIRECTORY}/generated-pipeline.yml
+
 cat > ${OUTPUT_DIRECTORY}/pipeline-vars.yml <<YML
 geode-build-branch: ${GEODE_BRANCH}
 geode-fork: ${GEODE_FORK}
