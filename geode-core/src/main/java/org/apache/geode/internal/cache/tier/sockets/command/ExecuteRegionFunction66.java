@@ -246,24 +246,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
             hasResult);
       }
       if (hasResult == 1) {
-        if (function instanceof String) {
-          switch (functionState) {
-            case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
-            case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
-            case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
-            case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
-          }
-        } else {
-          execution.execute(functionObject).getResult();
-        }
+        executeFunctionWithResult(function, functionState, functionObject, execution);
       } else {
         if (function instanceof String) {
           switch (functionState) {
@@ -336,6 +319,33 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     } finally {
       handshake.setClientReadTimeout(earlierClientReadTimeout);
       ServerConnection.executeFunctionOnLocalNodeOnly((byte) 0);
+    }
+  }
+
+  void executeFunctionWithResult(Object function, byte functionState,
+                                         Function<?> functionObject, AbstractExecution execution) {
+    if (function instanceof String) {
+      switch (functionState) {
+        case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
+          execution.setWaitOnExceptionFlag(true);
+          execution.execute((String) function).getResult();
+          break;
+        case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
+          execution.execute((String) function).getResult();
+          break;
+        case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
+          execution.execute((String) function).getResult();
+          break;
+        case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
+          execution.setWaitOnExceptionFlag(true);
+          execution.execute((String) function).getResult();
+          break;
+      }
+    } else {
+      if (!functionObject.isHA()) {
+        execution.setWaitOnExceptionFlag(true);
+      }
+      execution.execute(functionObject).getResult();
     }
   }
 
