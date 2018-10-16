@@ -17,12 +17,12 @@ package org.apache.geode.test.awaitility;
 
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
 
 /**
- * Utility to set consistent defaults for {@link Awaitility} calls for all geode tests
+ * Utility to set consistent defaults for {@link org.awaitility.Awaitility} calls for all geode
+ * tests
  */
 public class GeodeAwaitility {
 
@@ -36,7 +36,7 @@ public class GeodeAwaitility {
    * Start building an await statement using Geode's default test timeout
    *
    * @return a {@link ConditionFactory} that is a builder for the await
-   * @see Awaitility#await()
+   * @see org.awaitility.Awaitility#await()
    */
   public static ConditionFactory await() {
     return await(null);
@@ -48,10 +48,10 @@ public class GeodeAwaitility {
    * @param alias A name for this await, if you test has multiple await statements
    *
    * @return a {@link ConditionFactory} that is a builder for the await
-   * @see Awaitility#await(String)
+   * @see org.awaitility.Awaitility#await(String)
    */
   public static ConditionFactory await(String alias) {
-    return Awaitility.await(alias)
+    return org.awaitility.Awaitility.await(alias)
         .atMost(TIMEOUT)
         .pollDelay(POLL_DELAY)
         .pollInterval(POLL_INTERVAL);
