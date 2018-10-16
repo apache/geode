@@ -118,7 +118,6 @@ subprojects {
     }
     testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
-    testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
@@ -285,4 +284,3 @@ classes.dependsOn subprojects.compileAcceptanceTestJava
 classes.dependsOn subprojects.compileUiTestJava
 classes.dependsOn subprojects.compilePerformanceTestJava
 classes.dependsOn subprojects.compileUpgradeTestJava
-
