@@ -558,11 +558,35 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   }
 
 
+  /**
+   * Data is sent to all members containing the Partitioned Region when senders are killed.
+   *
+   * Setup:
+   * vm0 - locator with DSID=1 - on lnPort
+   * vm1 - remote locator with DSID=2 - on nyPort - connected to lnPort
+   * vm2-3 - server with cache connected to nyPort - has partitionedRegion w/o sender - has receiver
+   * vm4-7 - server with cache connected to lnPort - has partitionedRegion w/ ln sender - has sender
+   *
+   * Test:
+   * 1. Put 5000 entries to VM7 (async)
+   * 2. Assert that VM2 received at least 10 entries from VM7 through the sender (sync)
+   * 3. Kill sender on VM4 (async)
+   * 4. Get number of entries from VM2 (sync)
+   * 5. Put 10000 entries to VM6, with the first 5000 entries having the same keys as in the first
+   * round of puts (async)
+   * 6. Assert that VM2 has twenty more entries than it did before puts on VM6 were started (sync)
+   * 7. Kill sender on VM5 (async)
+   * 8. Wait for previously started async invocations to complete
+   * 9. Assert that VM2, VM3, VM6, and VM7 all have 10000 entries
+   * 10. Assert that the sender queues on VM6 and VM7 are empty
+   *
+   **/
   @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
 
@@ -595,7 +619,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    AsyncInvocation inv1 =
+    AsyncInvocation putsToVM7 =
         vm7.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
 
     vm2.invoke(() -> await()
@@ -603,24 +627,26 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
             "Failure in waiting for at least 10 events to be received by the receiver", true,
             (getRegionSize(getTestMethodName() + "_PR") > 10))));
 
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation killsSenderFromVM4 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
     int prevRegionSize = vm2.invoke(() -> WANTestBase.getRegionSize(getTestMethodName() + "_PR"));
 
-    AsyncInvocation inv3 =
+    AsyncInvocation putsToVM6 =
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
-    vm2.invoke(() -> await()
-        .untilAsserted(() -> assertEquals(
-            "Failure in waiting for additional 20 events to be received by the receiver ", true,
-            getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));
+    AsyncInvocation assertsRegionSizeInVM2 =
+        vm2.invokeAsync(() -> await()
+            .untilAsserted(() -> assertEquals(
+                "Failure in waiting for additional 20 events to be received by the receiver ", true,
+                getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));
 
-    AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation killsSenderFromVM5 = vm5.invokeAsync(() -> WANTestBase.killSender());
 
-    inv1.join();
-    inv2.join();
-    inv3.join();
-    inv4.join();
+    putsToVM7.join();
+    killsSenderFromVM4.join();
+    putsToVM6.join();
+    killsSenderFromVM5.join();
+    assertsRegionSizeInVM2.join();
 
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000));
     vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000));
