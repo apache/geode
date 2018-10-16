@@ -314,7 +314,6 @@ jobs:
     {{ all_gating_jobs() | indent(4) }}
     trigger: true
   - get: geode-ci
-  - get: docker-geode-build-image
   - task: updatepassingref
     {{ alpine_tools_config()|indent(4) }}
       params:
