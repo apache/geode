@@ -17,6 +17,9 @@
 
 {% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
 {% from 'shared/shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared/shared_jinja.yml' import github_access with context %}
+
+---
 
 {% macro plan_resource_gets() %}
 - get: geode-ci
@@ -150,7 +153,7 @@ resources:
     depth: 1
     ignore_paths:
     - ci/*
-    uri: https://github.com/((geode-fork))/{{repository.project}}.git
+    {{ github_access() | indent(4) }}
 - name: geode-ci
   type: git
   source:
@@ -159,7 +162,7 @@ resources:
     paths:
     - ci/pipelines/geode-build/*
     - ci/scripts/*
-    uri: https://github.com/((geode-fork))/{{repository.project}}.git
+    {{ github_access() | indent(4) }}
 - name: geode-build-version
   type: semver
   source:

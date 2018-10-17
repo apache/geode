@@ -988,7 +988,6 @@ javadoc/org/apache/geode/pdx/DomainObjectPdxAutoNoDefaultConstructor.Day.html
 javadoc/org/apache/geode/pdx/DomainObjectPdxAutoNoDefaultConstructor.html
 javadoc/org/apache/geode/pdx/Employee.html
 javadoc/org/apache/geode/pdx/FieldType.html
-javadoc/org/apache/geode/pdx/JSONFormatVerifyUtility.html
 javadoc/org/apache/geode/pdx/JSONFormatter.html
 javadoc/org/apache/geode/pdx/JSONFormatterException.html
 javadoc/org/apache/geode/pdx/NestedPdx.html
