@@ -20,7 +20,7 @@ image_resource: &docker-geode-build-image
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/metric-tools
+    repository: gcr.io/((gcp-project))/metric-tools
     tag: latest
 
 resources:
@@ -57,7 +57,7 @@ jobs:
         path: /usr/bin/python3
         args:
         - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
+        - ((concourse-url))
         - develop
         - Build
         - 50
@@ -105,7 +105,7 @@ jobs:
         path: /usr/bin/python3
         args:
         - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
+        - ((concourse-url))
         - develop
         - UnitTestOpenJDK11
         - 50
@@ -129,7 +129,7 @@ jobs:
         path: /usr/bin/python3
         args:
         - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
+        - ((concourse-url))
         - develop
         - AcceptanceTestOpenJDK8
         - 50
@@ -177,7 +177,7 @@ jobs:
         path: /usr/bin/python3
         args:
         - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
+        - ((concourse-url))
         - develop
         - DistributedTestOpenJDK8
         - 50
@@ -489,7 +489,7 @@ jobs:
         path: /usr/bin/python3
         args:
         - geode-ci/ci/bin/concourse_job_performance.py
-        - https://concourse.apachegeode-ci.info
+        - ((concourse-url))
         - develop
         - WindowsUnitTestOpenJDK11
         - 50

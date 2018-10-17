@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -136,12 +137,13 @@ public abstract class ContainerInstall {
 
     clearPreviousInstall(installDir);
 
-    String url = "file://" + TestUtil.getResourcePath(getClass(), "/" + downloadURL);
+    String resource = TestUtil.getResourcePath(getClass(), "/" + downloadURL);
+    URL url = Paths.get(resource).toUri().toURL();
     logger.info("Installing container from URL " + url);
 
     // Optional step to install the container from a URL pointing to its distribution
     Installer installer =
-        new ZipURLInstaller(new URL(url), TMP_DIR + "/downloads", installDir);
+        new ZipURLInstaller(url, TMP_DIR + "/downloads", installDir);
     installer.install();
 
     // Set install home

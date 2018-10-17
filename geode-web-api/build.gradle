@@ -19,30 +19,30 @@ apply plugin: 'war'
 
 dependencies {
 
-  compileOnly project(':geode-core')
+  compileOnly(project(':geode-core'))
 
-  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compileOnly('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
   compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version'
+  compile('com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version')
+  compile('com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version')
+  compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
+  compile('com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version')
   compile('io.springfox:springfox-swagger2:' + project.'springfox.version') {
     exclude module: 'slf4j-api'
   }
   compile('io.springfox:springfox-swagger-ui:' + project.'springfox.version') {
     exclude module: 'slf4j-api'
   }
-  compile 'org.springframework:spring-beans:' + project.'springframework.version'
-  compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
-  compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
-  compile 'org.springframework.security:spring-security-config:' + project.'spring-security.version'
-  compile 'org.springframework:spring-web:' + project.'springframework.version'
-  compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
+  compile('org.springframework:spring-beans:' + project.'springframework.version')
+  compile('org.springframework.security:spring-security-core:' + project.'spring-security.version')
+  compile('org.springframework.security:spring-security-web:' + project.'spring-security.version')
+  compile('org.springframework.security:spring-security-config:' + project.'spring-security.version')
+  compile('org.springframework:spring-web:' + project.'springframework.version')
+  compile('org.springframework:spring-webmvc:' + project.'springframework.version')
   compile('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateoas.version') {
     exclude module: 'aopalliance'
     exclude module: 'commons-logging'
@@ -61,15 +61,15 @@ dependencies {
   }
 
 
-  testCompile project(':geode-junit')
-  testCompile project(':geode-core')
-  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-core'))
+  testCompile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 
-  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  integrationTestCompile 'org.springframework.security:spring-security-test:' + project.'spring-security.version'
+  integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
+  integrationTestCompile('org.springframework.security:spring-security-test:' + project.'spring-security.version')
 
-  integrationTestCompile project(":geode-junit")
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile(project(':geode-junit'))
+  integrationTestCompile(project(':geode-dunit'))
 }
 
 sourceSets {

@@ -17,72 +17,72 @@
 apply plugin: 'war'
 
 dependencies {
-  compile 'org.springframework:spring-beans:' + project.'springframework.version'
+  compile('org.springframework:spring-beans:' + project.'springframework.version')
 
   // Needed to fully use log4j instead of commons-logging.
-  compile 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
 
-  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
-  compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
-  compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version'
-  runtimeOnly 'org.springframework:spring-expression:' + project.'springframework.version'
+  compile('commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version')
+  compile('commons-collections:commons-collections:' + project.'commons-collections.version')
+  compile('commons-digester:commons-digester:' + project.'commons-digester.version')
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version')
+  runtimeOnly('org.springframework:spring-expression:' + project.'springframework.version')
 
   // added only to ensure common version with other geode modules
-  runtimeOnly 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  runtimeOnly('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
 
-  compile ('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
   }
-  compile ('org.springframework.security:spring-security-ldap:' + project.'spring-security.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
-  }
-  compile ('org.springframework.security:spring-security-web:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-ldap:' + project.'spring-security.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile ('org.springframework:spring-context:' + project.'springframework.version');
-  compile ('org.springframework:spring-web:' + project.'springframework.version');
-  runtimeOnly ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compile('org.springframework.security:spring-security-web:' + project.'spring-security.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-asm'
+    exclude module: 'spring-expression'
+    exclude module: 'spring-jdbc'
+  }
+  compile('org.springframework:spring-context:' + project.'springframework.version');
+  compile('org.springframework:spring-web:' + project.'springframework.version');
+  runtimeOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  compile('org.springframework:spring-tx:' + project.'spring-tx.version')
+  compile('com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version')
+  compile('com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version')
+  compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
 
-  providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
+  providedCompile('commons-logging:commons-logging:' + project.'commons-logging.version')
 
-  compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-
-
-  testCompile project(':geode-junit')
-  testCompile project(':geode-core')
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  compileOnly('org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version')
 
 
-  integrationTestCompile project(':geode-junit')
-  integrationTestCompile project(':geode-core')
-  integrationTestCompile project(':geode-pulse:geode-pulse-test')
-  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-core'))
+  testCompile('org.springframework:spring-test:' + project.'springframework.version')
 
 
-  uiTestCompile project(':geode-junit')
-  uiTestCompile project(':geode-json')
-  uiTestCompile project(':geode-pulse:geode-pulse-test')
-  uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
+  integrationTestCompile(project(':geode-junit'))
+  integrationTestCompile(project(':geode-core'))
+  integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
+  integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
 
-  uiTestRuntime project(':geode-core')
+
+  uiTestCompile(project(':geode-junit'))
+  uiTestCompile(project(':geode-json'))
+  uiTestCompile(project(':geode-pulse:geode-pulse-test'))
+  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version')
+
+  uiTestRuntime(project(':geode-core'))
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
