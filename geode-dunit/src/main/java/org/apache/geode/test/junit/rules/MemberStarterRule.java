@@ -129,10 +129,10 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // invoke stop() first and then ds.disconnect
     stopMember();
 
+    disconnectDSIfAny();
     // this will clean up the SocketCreators created in this VM so that it won't contaminate
     // future tests
     SocketCreatorFactory.close();
-    disconnectDSIfAny();
 
     if (temporaryFolder != null) {
       temporaryFolder.delete();

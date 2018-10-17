@@ -22,20 +22,20 @@ dependencies {
     exclude group: 'org.apache.tomcat'
   }
 
-  compile ('org.apache.tomcat:tomcat-catalina:' + project.'tomcat8.version') {
+  compile('org.apache.tomcat:tomcat-catalina:' + project.'tomcat8.version') {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile ('org.apache.tomcat:tomcat-coyote:' + project.'tomcat8.version') {
+  compile('org.apache.tomcat:tomcat-coyote:' + project.'tomcat8.version') {
     exclude module: 'tomcat-servlet-api'
   }
-  compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version'
-  compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
+  compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version')
+  compile('javax.servlet:javax.servlet-api:' + '3.1.0')
 
-  distributedTestCompile project(":extensions:geode-modules-test")
+  distributedTestCompile(project(':extensions:geode-modules-test'))
 
-  distributedTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
-  distributedTestRuntime 'javax.annotation:javax.annotation-api:' + project.'javax-annotation.version'
+  distributedTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
+  distributedTestRuntime('javax.annotation:javax.annotation-api:' + project.'javax-annotation.version')
 
   eclipse.classpath.file {
     whenMerged { classpath ->

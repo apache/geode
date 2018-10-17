@@ -63,18 +63,18 @@ subprojects {
       // Enforce style modifier order
       custom 'Modifier ordering', {
         def modifierRanking = [
-                public      : 1,
-                protected   : 2,
-                private     : 3,
-                abstract    : 4,
-                default     : 5,
-                static      : 6,
-                final       : 7,
-                transient   : 8,
-                volatile    : 9,
-                synchronized: 10,
-                native      : 11,
-                strictfp    : 12]
+                "public": 1,
+                "protected": 2,
+                "private": 3,
+                "abstract": 4,
+                "default": 5,
+                "static": 6,
+                "final": 7,
+                "transient": 8,
+                "volatile": 9,
+                "synchronized": 10,
+                "native": 11,
+                "strictfp": 12]
         // Find any instance of multiple modifiers. Lead with a non-word character to avoid
         // accidental matching against for instance, "an alternative default value"
         it.replaceAll(/\W(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
@@ -99,6 +99,34 @@ subprojects {
       eclipse('4.6.3').configFile "${project(':geode-core').projectDir}/../etc/eclipse-java-google-style.xml"
       trimTrailingWhitespace()
       endWithNewline()
+    }
+
+    groovyGradle {
+      target project.fileTree(project.projectDir) {
+        include '**/*.gradle'
+        exclude '**/generated-src/**'
+        exclude '**/build/**'
+      }
+
+      // As the method name suggests, bump this number if any of the below "custom" rules change.
+      // Spotless will not run on unchanged files unless this number changes.
+      bumpThisNumberIfACustomStepChanges(0)
+
+      custom 'Use single-quote in project directives.', {
+        it.replaceAll(/project\(":([^"]*)"\)/, 'project(\':$1\')')
+      }
+
+      custom 'Use parenthesis in single-line gradle dependency declarations.', {
+        it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) (?!\()([^{\n]*)\n/, { original, declaration, dep ->
+          "\n${declaration}(${dep})\n"
+        })
+      }
+
+      custom 'Do not pad spaces before parenthesis in gradle dependency declaration.', {
+        it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) +\(/, '\n$1(')
+      }
+
+      indentWithSpaces(2)
     }
   }
 

@@ -23,23 +23,23 @@ dependencies {
     exclude group: 'org.apache.tomcat'
   }
 
-  compile ('org.apache.tomcat:tomcat-catalina:' + project.'tomcat7.version') {
+  compile('org.apache.tomcat:tomcat-catalina:' + project.'tomcat7.version') {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile ('org.apache.tomcat:tomcat-coyote:' + project.'tomcat7.version') {
+  compile('org.apache.tomcat:tomcat-coyote:' + project.'tomcat7.version') {
     exclude module: 'tomcat-servlet-api'
   }
-  compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version'
+  compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version')
 
-  integrationTestCompile project(":geode-dunit")
-  integrationTestCompile project(":extensions:geode-modules-test")
+  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':extensions:geode-modules-test'))
 
-  integrationTestRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
-  integrationTestRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
-  integrationTestRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  integrationTestRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
-  integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
+  integrationTestRuntime('javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version')
+  integrationTestRuntime('javax.ejb:ejb-api:' + project.'javax.ejb-api.version')
+  integrationTestRuntime('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  integrationTestRuntime('org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version')
+  integrationTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
 
   eclipse.classpath.file {
     whenMerged { classpath ->
