@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 
+{% from 'shared/shared_jinja.yml' import github_access with context %}
+
 ---
 resource_types:
 - name: concourse-pipeline
@@ -35,7 +37,7 @@ resources:
 - name: geode-pipeline
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/geode-build/*
@@ -44,21 +46,21 @@ resources:
 - name: geode-images-pipeline
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/images/*
 - name: geode-reaper-pipeline
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/reaper.yml
 - name: meta-mini-dockerfile
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/images/meta-mini/*
@@ -72,7 +74,7 @@ resources:
 - name: geode-examples-pipeline
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/examples/*
@@ -81,7 +83,7 @@ resources:
 - name: geode-pr-pipeline
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/pull-request/*
@@ -90,7 +92,7 @@ resources:
 - name: geode-metrics-pipeline
   type: git
   source:
-    uri: https://github.com/((!geode-fork))/((geode-repo-name)).git
+    {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/metrics.yml
@@ -122,6 +124,7 @@ jobs:
         GEODE_BRANCH: ((geode-build-branch))
         GEODE_FORK: ((geode-fork))
         GEODE_REPO_NAME: ((geode-repo-name))
+        REPOSITORY_PUBLIC: {{ repository.public }}
         UPSTREAM_FORK: {{ repository.upstream_fork }}
         PIPELINE_PREFIX: ((pipeline-prefix))
         SANITIZED_GEODE_BRANCH: ((sanitized-geode-build-branch))
@@ -135,7 +138,7 @@ jobs:
       pipelines:
       - name: ((!pipeline-prefix))images
         team: ((!concourse-team))
-        config_file: geode-images-pipeline/ci/pipelines/images/images.yml
+        config_file: results/generated-pipeline.yml
         vars_files:
         - results/pipeline-vars.yml
 
@@ -164,6 +167,7 @@ jobs:
         GEODE_BRANCH: ((geode-build-branch))
         GEODE_FORK: ((geode-fork))
         GEODE_REPO_NAME: ((geode-repo-name))
+        REPOSITORY_PUBLIC: {{ repository.public }}
         ARTIFACT_BUCKET: ((artifact-bucket))
         UPSTREAM_FORK: {{ repository.upstream_fork }}
         PIPELINE_PREFIX: ((pipeline-prefix))
@@ -239,6 +243,7 @@ jobs:
         GEODE_BRANCH: ((!geode-build-branch))
         GEODE_FORK: ((!geode-fork))
         GEODE_REPO_NAME: ((geode-repo-name))
+        REPOSITORY_PUBLIC: {{ repository.public }}
         ARTIFACT_BUCKET: ((artifact-bucket))
         UPSTREAM_FORK: {{ repository.upstream_fork }}
         PIPELINE_PREFIX: ((pipeline-prefix))
