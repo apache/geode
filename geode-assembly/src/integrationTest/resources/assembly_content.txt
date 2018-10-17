@@ -88,6 +88,7 @@ javadoc/org/apache/geode/StatisticsTypeFactory.html
 javadoc/org/apache/geode/SystemConnectException.html
 javadoc/org/apache/geode/SystemFailure.html
 javadoc/org/apache/geode/SystemIsRunningException.html
+javadoc/org/apache/geode/TXWriterTestCase.html
 javadoc/org/apache/geode/ToDataException.html
 javadoc/org/apache/geode/UncreatedSystemException.html
 javadoc/org/apache/geode/UnmodifiableException.html
@@ -489,6 +490,7 @@ javadoc/org/apache/geode/cache/query/IndexNameConflictException.html
 javadoc/org/apache/geode/cache/query/IndexStatistics.html
 javadoc/org/apache/geode/cache/query/IndexType.html
 javadoc/org/apache/geode/cache/query/MultiIndexCreationException.html
+javadoc/org/apache/geode/cache/query/MultithreadedTester.html
 javadoc/org/apache/geode/cache/query/NameNotFoundException.html
 javadoc/org/apache/geode/cache/query/NameResolutionException.html
 javadoc/org/apache/geode/cache/query/ParameterCountInvalidException.html
@@ -598,6 +600,7 @@ javadoc/org/apache/geode/cache/snapshot/SnapshotIterator.html
 javadoc/org/apache/geode/cache/snapshot/SnapshotOptions.SnapshotFormat.html
 javadoc/org/apache/geode/cache/snapshot/SnapshotOptions.html
 javadoc/org/apache/geode/cache/snapshot/SnapshotReader.html
+javadoc/org/apache/geode/cache/snapshot/SnapshotTestCase.html
 javadoc/org/apache/geode/cache/snapshot/package-frame.html
 javadoc/org/apache/geode/cache/snapshot/package-summary.html
 javadoc/org/apache/geode/cache/snapshot/package-tree.html
@@ -824,6 +827,10 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
+javadoc/org/apache/geode/management/bean/stats/MBeanStatsTestCase.html
+javadoc/org/apache/geode/management/bean/stats/package-frame.html
+javadoc/org/apache/geode/management/bean/stats/package-summary.html
+javadoc/org/apache/geode/management/bean/stats/package-tree.html
 javadoc/org/apache/geode/management/cli/CliFunction.html
 javadoc/org/apache/geode/management/cli/CliMetaData.AvailabilityMetadata.html
 javadoc/org/apache/geode/management/cli/CliMetaData.html
@@ -851,6 +858,13 @@ javadoc/org/apache/geode/management/membership/UniversalMembershipListenerAdapte
 javadoc/org/apache/geode/management/membership/package-frame.html
 javadoc/org/apache/geode/management/membership/package-summary.html
 javadoc/org/apache/geode/management/membership/package-tree.html
+javadoc/org/apache/geode/management/model/EmptyObject.html
+javadoc/org/apache/geode/management/model/Item.html
+javadoc/org/apache/geode/management/model/Order.html
+javadoc/org/apache/geode/management/model/SubOrder.html
+javadoc/org/apache/geode/management/model/package-frame.html
+javadoc/org/apache/geode/management/model/package-summary.html
+javadoc/org/apache/geode/management/model/package-tree.html
 javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
@@ -1144,6 +1158,10 @@ javadoc/org/apache/geode/tools/pulse/tests/ui/PulseTestConstants.html
 javadoc/org/apache/geode/tools/pulse/tests/ui/package-frame.html
 javadoc/org/apache/geode/tools/pulse/tests/ui/package-summary.html
 javadoc/org/apache/geode/tools/pulse/tests/ui/package-tree.html
+javadoc/org/apache/geode/util/JSR166TestCase.html
+javadoc/org/apache/geode/util/package-frame.html
+javadoc/org/apache/geode/util/package-summary.html
+javadoc/org/apache/geode/util/package-tree.html
 javadoc/org/apache/geode/util/test/TestUtil.html
 javadoc/org/apache/geode/util/test/package-frame.html
 javadoc/org/apache/geode/util/test/package-summary.html

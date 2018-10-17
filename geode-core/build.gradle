@@ -56,6 +56,17 @@ jmh {
   duplicateClassesStrategy = 'warn'
 }
 
+sourceSets {
+// This works around resource-look up between integrationTest and test source-sets.
+// See GEODE-5803 / GEODE-5882
+  test.resources.srcDirs.each { testResourceSrc ->
+    integrationTest.resources.srcDir {
+      testResourceSrc
+    }
+  }
+}
+
+
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
 
@@ -293,9 +304,10 @@ dependencies {
 
 
   performanceTestCompile(project(':geode-junit'))
-
-  integrationTestCompile(sourceSets.test.output)              // To be removed by GEODE-5803
-  distributedTestCompile(sourceSets.integrationTest.output)   // To be removed by GEODE-5803
+  
+  // Distributed Tests
+  distributedTestCompile(sourceSets.test.output)            // To be removed by GEODE-5803
+  distributedTestCompile(sourceSets.integrationTest.output) // To be removed by GEODE-5803
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
