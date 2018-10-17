@@ -27,18 +27,21 @@ If you do not have the cache's `copy-on-read` attribute set to true, do not chan
 
 ## <a id="managing_data_entry_keys" class="no-quick-link"></a>Keys
 
-The `hashCode()` of the key for a data entry maps the entry
-within the region; no duplicates are permitted.
-Further, that `hashCode` must return the same value for
+<%=vars.product_name%> calls `hashCode()` on the key
+to map an entry within the region.
+The `hashCode()` return value must be the same for
 a given key on every server that hosts the region.
+
+An `equals()` call return value on a given key also must be
+the same on every server that hosts the region.
 
 A key may be a primitive type or a custom class.
 For custom classes, see [Classes Used as Keys](using_custom_classes.html#using_custom_classes__section_CE776B94EDCB4D269A71C3C9CFEDD5FD).
 
 Do not use an enumerated type (`enum`) for a key.
-Its `hashCode` may not be overridden,
-and the hash is based upon an address.
-Therefore, the `hashCode` return value can be different
+The `enum` `hashCode()` may not be overridden,
+and its hash code is based upon an address.
+Therefore, the return value for a `hashCode()` call can be different
 on each server, violating the restriction that it must return
 the same value on every server that hosts the region. 
 
