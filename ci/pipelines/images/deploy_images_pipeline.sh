@@ -45,6 +45,13 @@ echo "Sanitized Goede Branch = ${SANITIZED_GEODE_BRANCH}"
 #echo "Pipeline prefix = ${PIPELINE_PREFIX}"
 #echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"
 
+pushd ${SCRIPTDIR} 2>&1 > /dev/null
+  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} ${REPOSITORY_PUBLIC} || exit 1
+popd 2>&1 > /dev/null
+cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
+
+grep -n . ${OUTPUT_DIRECTORY}/generated-pipeline.yml
+
 cat > ${OUTPUT_DIRECTORY}/pipeline-vars.yml <<YML
 geode-build-branch: ${GEODE_BRANCH}
 geode-fork: ${GEODE_FORK}
