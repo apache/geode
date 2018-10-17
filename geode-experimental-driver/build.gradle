@@ -16,17 +16,14 @@
  */
 
 dependencies {
-    compile project(':geode-common')
-    compile project(':geode-protobuf-messages')
-    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
+  compile(project(':geode-common'))
+  compile(project(':geode-protobuf-messages'))
+  testCompile(project(':geode-core'))
+  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-protobuf'))
+  integrationTestCompile(project(':geode-core'))
+  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':geode-protobuf'))
 
-
-    testCompile project(':geode-core')
-    testCompile project(':geode-junit')
-    testCompile project(':geode-protobuf')
-
-
-    integrationTestCompile project(':geode-core')
-    integrationTestCompile project(":geode-dunit")
-    integrationTestCompile project(':geode-protobuf')
+  compile('com.google.protobuf:protobuf-java:' + project.'protobuf-java.version')
 }

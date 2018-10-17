@@ -143,20 +143,20 @@ dependencies {
 
   // External
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
-  compile 'org.jgroups:jgroups:' + project.'jgroups.version'
-  compile 'antlr:antlr:' + project.'antlr.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compile 'commons-io:commons-io:' + project.'commons-io.version'
-  compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
-  compile 'javax.activation:activation:' + project.'javax-activation.version'
-  compile 'javax.xml.bind:jaxb-api:' + project.'jaxb.version'
-  compile 'com.sun.xml.bind:jaxb-core:' + project.'jaxb.version'
-  compile 'com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version'
+  compile('com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version')
+  compile('org.jgroups:jgroups:' + project.'jgroups.version')
+  compile('antlr:antlr:' + project.'antlr.version')
+  compile('com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version')
+  compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
+  compile('commons-io:commons-io:' + project.'commons-io.version')
+  compile('commons-validator:commons-validator:' + project.'commons-validator.version')
+  compile('commons-digester:commons-digester:' + project.'commons-digester.version')
+  compile('javax.activation:activation:' + project.'javax-activation.version')
+  compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
+  compile('com.sun.xml.bind:jaxb-core:' + project.'jaxb.version')
+  compile('com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version')
 
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
   compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
     exclude module: 'commons-digester'
     exclude module: 'commons-logging-api'
@@ -167,11 +167,11 @@ dependencies {
   compile('io.netty:netty-all:' + project.'netty-all.version') {
     ext.optional = true
   }
-  compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
+  compile('it.unimi.dsi:fastutil:' + project.'fastutil.version')
   compile('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
     ext.optional = true;
   }
-  compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
+  compile('javax.resource:javax.resource-api:' + project.'javax.resource-api.version')
   compile('mx4j:mx4j:' + project.'mx4j.version') {
     ext.optional = true;
   }
@@ -185,22 +185,22 @@ dependencies {
 
   compile('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
 
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
 
-  runtimeOnly ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+  runtimeOnly('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
-  runtimeOnly 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  runtimeOnly('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
 
-  runtimeOnly ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtimeOnly ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtimeOnly ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
   compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
@@ -232,70 +232,70 @@ dependencies {
     ext.optional = true
   }
 
-  compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
+  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
 
-  compile 'io.github.classgraph:classgraph:' + project.'classgraph.version'
+  compile('io.github.classgraph:classgraph:' + project.'classgraph.version')
 
-  compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
+  compile('com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version')
 
-  compile project(':geode-common')
-  compile project(':geode-json')
+  compile(project(':geode-common'))
+  compile(project(':geode-json'))
 
 
   jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
 
 
-  jcaCompile sourceSets.main.output
+  jcaCompile(sourceSets.main.output)
 
 
-  testCompile project(':geode-junit')
-  testCompile project(':geode-concurrency-test')
-  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
+  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-concurrency-test'))
+  testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
+  testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  testCompile('org.springframework:spring-test:' + project.'springframework.version')
+  testCompile('com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version')
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
-  testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
-  testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
-  testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
+  testRuntime('commons-collections:commons-collections:' + project.'commons-collections.version')
+  testRuntime('commons-configuration:commons-configuration:' + project.'commons-configuration.version')
+  testRuntime('commons-io:commons-io:' + project.'commons-io.version')
+  testRuntime('commons-validator:commons-validator:' + project.'commons-validator.version')
+  testRuntime('com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version')
 
 
-  integrationTestCompile(project(":geode-dunit")) {
+  integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile project(':geode-concurrency-test')
-  integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
-  integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  integrationTestCompile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':tests'
-  integrationTestCompile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':test-sources'
-  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  integrationTestCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
-  integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+  integrationTestCompile(project(':geode-concurrency-test'))
+  integrationTestCompile('redis.clients:jedis:' + project.'jedis.version')
+  integrationTestCompile('org.apache.bcel:bcel:' + project.'bcel.version')
+  integrationTestCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':tests')
+  integrationTestCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':test-sources')
+  integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
+  integrationTestCompile('net.spy:spymemcached:' + project.'spymemcached.version')
+  integrationTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
-  integrationTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
-  integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
-
-
-  distributedTestCompile project(":geode-dunit")
-  distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
-  distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-  distributedTestCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
-
-  distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
+  integrationTestRuntime('org.apache.derby:derby:' + project.'derby.version')
+  integrationTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
 
 
-  upgradeTestCompile(project(":geode-dunit")) {
+  distributedTestCompile(project(':geode-dunit'))
+  distributedTestCompile('redis.clients:jedis:' + project.'jedis.version')
+  distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  distributedTestCompile('com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version')
+
+  distributedTestRuntime('org.apache.derby:derby:' + project.'derby.version')
+
+
+  upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 
 
-  performanceTestCompile project(":geode-junit")
+  performanceTestCompile(project(':geode-junit'))
 
-  integrationTestCompile sourceSets.test.output              // To be removed by GEODE-5803
-  distributedTestCompile sourceSets.integrationTest.output   // To be removed by GEODE-5803
+  integrationTestCompile(sourceSets.test.output)              // To be removed by GEODE-5803
+  distributedTestCompile(sourceSets.integrationTest.output)   // To be removed by GEODE-5803
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

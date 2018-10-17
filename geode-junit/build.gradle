@@ -16,31 +16,31 @@
  */
 
 dependencies {
-  compileOnly project(':geode-core')
+  compileOnly(project(':geode-core'))
 
-  compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  compile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'
   }
-  compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
-  compile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-  compile 'commons-io:commons-io:' + project.'commons-io.version'
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'com.google.guava:guava:' + project.'guava.version'
-  compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-  compile 'org.awaitility:awaitility:' + project.'awaitility.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compile('com.jayway.jsonpath:json-path:' + project.'json-path.version')
+  compile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  compile('commons-io:commons-io:' + project.'commons-io.version')
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('com.google.guava:guava:' + project.'guava.version')
+  compile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  compile('org.awaitility:awaitility:' + project.'awaitility.version')
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }
-  compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
-  compile ('org.skyscreamer:jsonassert:' + project.'jsonassert.version') {
+  compile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
+  compile('org.skyscreamer:jsonassert:' + project.'jsonassert.version') {
     exclude module: 'android-json'
   }
 
-  compile 'org.bouncycastle:bcpkix-jdk15on:' + project.'bounty-castle.version'
+  compile('org.bouncycastle:bcpkix-jdk15on:' + project.'bounty-castle.version')
 
-  runtimeOnly project(":geode-old-versions")
+  runtimeOnly(project(':geode-old-versions'))
 }
 
 test {

@@ -131,54 +131,54 @@ dependencies {
   archives project(':geode-rebalancer')
 
 
-  testCompile project(':geode-core')
-  testCompile project(':geode-junit')
+  testCompile(project(':geode-core'))
+  testCompile(project(':geode-junit'))
 
 
-  integrationTestCompile project(':geode-core')
-  integrationTestCompile project(":geode-junit")
-  integrationTestCompile project(":geode-dunit")
-  integrationTestCompile project(":geode-pulse")
-  integrationTestCompile project(':geode-assembly:geode-assembly-test')
-  integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  integrationTestCompile 'javax.annotation:javax.annotation-api:' + project.'javax-annotation.version'
+  integrationTestCompile(project(':geode-core'))
+  integrationTestCompile(project(':geode-junit'))
+  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':geode-pulse'))
+  integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
+  integrationTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  integrationTestCompile('javax.annotation:javax.annotation-api:' + project.'javax-annotation.version')
 
 
-  distributedTestCompile project(':geode-core')
-  distributedTestCompile project(':extensions:session-testing-war')
-  distributedTestCompile project(':geode-assembly:geode-assembly-test')
-  distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  distributedTestCompile(project(':geode-core'))
+  distributedTestCompile(project(':extensions:session-testing-war'))
+  distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
+  distributedTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
 
-  distributedTestRuntime (project(':extensions:geode-modules-session-internal')) {
+  distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  distributedTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
 
 
-  acceptanceTestCompile project(':geode-core')
-  acceptanceTestCompile project(":geode-dunit")
+  acceptanceTestCompile(project(':geode-core'))
+  acceptanceTestCompile(project(':geode-dunit'))
 
 
-  uiTestCompile project(':geode-core')
-  uiTestCompile project(":geode-dunit")
-  uiTestCompile project(":geode-pulse")
-  uiTestCompile project(":geode-pulse:geode-pulse-test")
-  uiTestCompile project(':geode-assembly:geode-assembly-test')
-  uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
-  uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+  uiTestCompile(project(':geode-core'))
+  uiTestCompile(project(':geode-dunit'))
+  uiTestCompile(project(':geode-pulse'))
+  uiTestCompile(project(':geode-pulse:geode-pulse-test'))
+  uiTestCompile(project(':geode-assembly:geode-assembly-test'))
+  uiTestCompile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-support:' + project.'selenium.version')
 
-  uiTestRuntime project(":geode-core")
-  uiTestRuntime 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
+  uiTestRuntime(project(':geode-core'))
+  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version')
 
 
-  upgradeTestCompile project(':geode-core')
-  upgradeTestCompile project(":geode-dunit")
-  upgradeTestCompile project(':geode-assembly:geode-assembly-test')
+  upgradeTestCompile(project(':geode-core'))
+  upgradeTestCompile(project(':geode-dunit'))
+  upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 
-  upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
-  upgradeTestRuntime 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  upgradeTestRuntime project(':extensions:session-testing-war')
+  upgradeTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
+  upgradeTestRuntime('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing
@@ -416,37 +416,37 @@ distributions {
       }
 
       into ('lib') {
-        from project(":geode-common").configurations.runtimeClasspath
-        from project(":geode-common").configurations.archives.allArtifacts.files
-        from project(":geode-json").configurations.runtimeClasspath
-        from project(":geode-json").configurations.archives.allArtifacts.files
-        from project(":geode-wan").configurations.runtimeClasspath
-        from project(":geode-wan").configurations.archives.allArtifacts.files
-        from project(":geode-cq").configurations.runtimeClasspath
-        from project(":geode-cq").configurations.archives.allArtifacts.files
-        from project(":geode-core").configurations.runtimeClasspath
-        from project(":geode-core").configurations.archives.allArtifacts.files
-        from project(":geode-lucene").configurations.runtimeClasspath
-        from project(":geode-lucene").configurations.archives.allArtifacts.files
-        from project(":geode-connectors").configurations.runtimeClasspath
-        from project(":geode-connectors").configurations.archives.allArtifacts.files
-        from project(":geode-old-client-support").configurations.runtimeClasspath
-        from project(":geode-old-client-support").configurations.archives.allArtifacts.files
-        from project(":geode-protobuf").configurations.runtimeClasspath
-        from project(":geode-protobuf").configurations.archives.allArtifacts.files
-        from project(":geode-protobuf-messages").configurations.runtimeClasspath
-        from project(":geode-protobuf-messages").configurations.archives.allArtifacts.files
-        from project(":geode-rebalancer").configurations.runtimeClasspath
-        from project(":geode-rebalancer").configurations.archives.allArtifacts.files
+        from project(':geode-common').configurations.runtimeClasspath
+        from project(':geode-common').configurations.archives.allArtifacts.files
+        from project(':geode-json').configurations.runtimeClasspath
+        from project(':geode-json').configurations.archives.allArtifacts.files
+        from project(':geode-wan').configurations.runtimeClasspath
+        from project(':geode-wan').configurations.archives.allArtifacts.files
+        from project(':geode-cq').configurations.runtimeClasspath
+        from project(':geode-cq').configurations.archives.allArtifacts.files
+        from project(':geode-core').configurations.runtimeClasspath
+        from project(':geode-core').configurations.archives.allArtifacts.files
+        from project(':geode-lucene').configurations.runtimeClasspath
+        from project(':geode-lucene').configurations.archives.allArtifacts.files
+        from project(':geode-connectors').configurations.runtimeClasspath
+        from project(':geode-connectors').configurations.archives.allArtifacts.files
+        from project(':geode-old-client-support').configurations.runtimeClasspath
+        from project(':geode-old-client-support').configurations.archives.allArtifacts.files
+        from project(':geode-protobuf').configurations.runtimeClasspath
+        from project(':geode-protobuf').configurations.archives.allArtifacts.files
+        from project(':geode-protobuf-messages').configurations.runtimeClasspath
+        from project(':geode-protobuf-messages').configurations.archives.allArtifacts.files
+        from project(':geode-rebalancer').configurations.runtimeClasspath
+        from project(':geode-rebalancer').configurations.archives.allArtifacts.files
 
         from configurations.bundled
         from configurations.gfshDependencies
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
         //this CopySpec before it evaluates the geode-core build file.
-        from { project(":geode-core").webJar }
-        from { project(":geode-core").raJar }
-        from { project(":geode-core").jcaJar }
+        from { project(':geode-core').webJar }
+        from { project(':geode-core').raJar }
+        from { project(':geode-core').jcaJar }
 
         // dependency jars
         from depsJar
@@ -454,16 +454,16 @@ distributions {
       }
 
       into ('tools/Extensions') {
-        from (project(":geode-web").configurations.archives.allArtifacts.files) {
+        from (project(':geode-web').configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
-        from (project(":geode-web-api").configurations.archives.allArtifacts.files) {
+        from (project(':geode-web-api').configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
       }
 
       into('tools/ClientProtocol') {
-        from {project(":geode-protobuf-messages").zip.outputs.files}
+        from {project(':geode-protobuf-messages').zip.outputs.files}
       }
 
       into ('javadoc') {
@@ -471,7 +471,7 @@ distributions {
       }
 
       into ('tools/Pulse') {
-        from (project(":geode-pulse").configurations.archives.allArtifacts.files)
+        from (project(':geode-pulse').configurations.archives.allArtifacts.files)
       }
 
       into ('tools/Modules') {
