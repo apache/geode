@@ -403,7 +403,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    *
    * @return first key found in CM null means not found
    */
-  private LockObject searchAndLock(Object keys[]) {
+  LockObject searchAndLock(Object keys[]) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     LockObject foundLock = null;
@@ -476,12 +476,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     final String title = "BucketRegion.waitUntilLocked:";
     while (true) {
       LockObject foundLock = searchAndLock(keys);
-
+      partitionedRegion.checkReadiness();
       if (foundLock != null) {
         synchronized (foundLock) {
           try {
             while (!foundLock.isRemoved()) {
-              this.partitionedRegion.checkReadiness();
+              partitionedRegion.checkReadiness();
               foundLock.wait(1000);
               // primary could be changed by prRebalancing while waiting here
               checkForPrimary();
