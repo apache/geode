@@ -108,7 +108,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
           help = CONNECTION_URL__HELP) String connectionUrl,
       @CliOption(key = IDLE_TIMEOUT_SECONDS, help = IDLE_TIMEOUT_SECONDS__HELP) Integer idleTimeout,
       @CliOption(key = INIT_POOL_SIZE, help = INIT_POOL_SIZE__HELP) Integer initPoolSize,
-      @CliOption(key = JDBC_DRIVER_CLASS, mandatory = true,
+      @CliOption(key = JDBC_DRIVER_CLASS,
           help = JDBC_DRIVER_CLASS__HELP) String jdbcDriver,
       @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
       @CliOption(key = LOGIN_TIMEOUT_SECONDS,

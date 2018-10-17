@@ -44,6 +44,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -66,8 +67,9 @@ public class CreateJndiBindingCommandTest {
   @Before
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
+    when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
     command = spy(CreateJndiBindingCommand.class);
-    doReturn(cache).when(command).getCache();
+    command.setCache(cache);
 
     binding = new JndiBindingsType.JndiBinding();
     binding.setJndiName("name");
@@ -99,6 +101,12 @@ public class CreateJndiBindingCommandTest {
     assertThat(configProperties).hasSize(2);
     assertThat(configProperties[0].getValue()).isEqualTo("value1");
     assertThat(configProperties[1].getValue()).isEqualTo("value2");
+  }
+
+  @Test
+  public void verifyJdbcDriverClassNotRequired() {
+    gfsh.executeAndAssertThat(command, COMMAND + " --type=SIMPLE --name=name --connection-url=url")
+        .statusIsSuccess();
   }
 
   @Test

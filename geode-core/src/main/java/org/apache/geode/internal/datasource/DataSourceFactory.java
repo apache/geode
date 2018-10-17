@@ -33,10 +33,10 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ManagedConnectionFactory;
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -163,27 +163,27 @@ public class DataSourceFactory {
     return new ClientConnectionFactoryWrapper(cf, cm);
   }
 
+  private static final String DEFAULT_CONNECTION_POOL_DS_CLASS =
+      "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
+
   /**
    * This function returns the datasource with connection pooling.
-   *
-   * @param configMap a map containing configurations required for datasource.
-   * @return ???
    */
   public static DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String connpoolClassName = configs.getConnectionPoolDSClass();
     if (connpoolClassName == null) {
-      logger.error(
-          "DataSourceFactory::getPooledDataSource:ConnectionPoolDataSource class name for the ResourceManager is not available");
-      throw new DataSourceCreateException(
-          "DataSourceFactory::getPooledDataSource:ConnectionPoolDataSource class name for the ResourceManager is not available");
+      connpoolClassName = DEFAULT_CONNECTION_POOL_DS_CLASS;
     }
     try {
+      Properties poolProperties = createPoolProperties(configMap);
+      Properties dataSourceProperties = createDataSourceProperties(props);
       Class cl = ClassPathLoader.getLatest().forName(connpoolClassName);
-      Object Obj = cl.newInstance();
-      invokeAllMethods(cl, Obj, props);
-      return new GemFireConnPooledDataSource((ConnectionPoolDataSource) Obj, configs);
+      Object obj = cl.newInstance();
+      Method createDataSourceMethod =
+          cl.getMethod("createDataSource", Properties.class, Properties.class);
+      return (DataSource) createDataSourceMethod.invoke(obj, poolProperties, dataSourceProperties);
     } catch (Exception ex) {
       String exception =
           String.format(
@@ -196,6 +196,48 @@ public class DataSourceFactory {
       throw new DataSourceCreateException(exception, ex);
     }
   }
+
+  private static Properties createPoolProperties(Map<String, String> configMap) {
+    Properties result = new Properties();
+    if (configMap != null) {
+      for (Map.Entry<String, String> entry : configMap.entrySet()) {
+        if (entry.getValue() == null || entry.getValue().equals("")) {
+          continue;
+        }
+        if (entry.getKey().equals("type")) {
+          continue;
+        }
+        if (entry.getKey().equals("jndi-name")) {
+          continue;
+        }
+        if (entry.getKey().equals("transaction-type")) {
+          continue;
+        }
+        if (entry.getKey().equals("conn-pooled-datasource-class")) {
+          continue;
+        }
+        if (entry.getKey().equals("managed-conn-factory-class")) {
+          continue;
+        }
+        if (entry.getKey().equals("xa-datasource-class")) {
+          continue;
+        }
+        result.setProperty(entry.getKey(), entry.getValue());
+      }
+    }
+    return result;
+  }
+
+  private static Properties createDataSourceProperties(List<ConfigProperty> props) {
+    Properties result = new Properties();
+    if (props != null) {
+      for (ConfigProperty prop : props) {
+        result.setProperty(prop.getName(), prop.getValue());
+      }
+    }
+    return result;
+  }
+
 
   /**
    * This function returns the datasource with connection pooling and transaction participation
