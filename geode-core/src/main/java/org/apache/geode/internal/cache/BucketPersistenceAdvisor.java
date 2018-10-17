@@ -131,7 +131,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
         TransformUtils.transform(offlineMembersWaitingFor, membersToWaitForPrettyFormat,
             TransformUtils.persistentMemberIdToLogEntryTransformer);
         logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-            "Region {}, bucket {} has potentially stale data.  It is waiting for another member to recover the latest data.My persistent id:%sMembers with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+            "Region {}, bucket {} has potentially stale data.  It is waiting for another member to recover the latest data.My persistent id: {} Members with potentially new data:{}  Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
             new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
                 proxyBucket.getBucketId(),
                 TransformUtils.persistentMemberIdToLogEntryTransformer

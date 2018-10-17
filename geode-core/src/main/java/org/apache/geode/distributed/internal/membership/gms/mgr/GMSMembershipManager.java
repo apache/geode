@@ -1591,7 +1591,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     if (mbr.equals(this.address)) {
       return false;
     }
-    logger.warn("Membership: requesting removal of %s. Reason=%s",
+    logger.warn("Membership: requesting removal of {}. Reason={}",
         new Object[] {mbr, reason});
     try {
       services.getJoinLeave().remove((InternalDistributedMember) mbr, reason);

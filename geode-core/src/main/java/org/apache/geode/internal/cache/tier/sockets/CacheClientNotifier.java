@@ -509,7 +509,7 @@ public class CacheClientNotifier {
           // client is already using this durable id.
           unsuccessfulMsg =
               String.format(
-                  "CacheClientNotifier: The requested durable client has the same identifier ( %s ) as an existing durable client ( %s ). Duplicate durable clients are not allowed.",
+                  "The requested durable client has the same identifier ( %s ) as an existing durable client ( %s ). Duplicate durable clients are not allowed.",
                   new Object[] {proxyId.getDurableId(), proxy});
           logger.warn(unsuccessfulMsg);
           // Set the unsuccessful response byte.

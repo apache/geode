@@ -853,14 +853,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       if (getMembershipAttributes().getLossAction().isReconnect()) {
         async = true;
-        if (this.isInitializingThread) {
-          doLostReliability(true, id, newlyMissingRoles);
-        } else {
-          doLostReliability(false, id, newlyMissingRoles);
-        }
-        // we don't do this in the waiting pool because we're going to
-        // disconnect
-        // the distributed system, and it will wait for the pool to empty
+        doLostReliability(isInitializingThread, id, newlyMissingRoles);
       }
     } catch (CancelException cce) {
       throw cce;
@@ -1455,6 +1448,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           if (!getSystem().isLoner()) {
             waitForRequiredRoles(memberTimeout);
           }
+          boolean initiateLossAction = false;
           synchronized (this.advisorListener) {
             synchronized (this.missingRequiredRoles) {
               if (this.missingRequiredRoles.isEmpty()) {
@@ -1478,9 +1472,12 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                       this.missingRequiredRoles);
                 }
                 this.isInitializingThread = true;
-                lostReliability(null, null);
+                initiateLossAction = true;
               }
             }
+          }
+          if (initiateLossAction) {
+            lostReliability(null, null);
           }
         }
       } catch (RegionDestroyedException ignore) {

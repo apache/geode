@@ -45,12 +45,9 @@ DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon -x j
 
 
 SSHKEY_FILE="instance-data/sshkey"
-SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60"
 
-INSTANCE_NAME="$(cat instance-data/instance-name)"
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
-PROJECT="$(cat instance-data/project)"
-ZONE="$(cat instance-data/zone)"
 
 scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRESS}:.
 
@@ -83,6 +80,7 @@ case $ARTIFACT_SLUG in
 esac
 
 GRADLE_ARGS="-PtestJVM=${JAVA_TEST_PATH} \
+    -PtestJVMVer=${JAVA_TEST_VERSION} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \

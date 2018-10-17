@@ -315,7 +315,7 @@ public class QueueManagerImpl implements QueueManager {
       }
       if (primary.sendClientReady()) {
         try {
-          logger.info("Sending ready for events to primary: %s", primary);
+          logger.info("Sending ready for events to primary: {}", primary);
           ReadyForEventsOp.execute(pool, primary);
         } catch (Exception e) {
           if (logger.isDebugEnabled()) {
@@ -398,7 +398,7 @@ public class QueueManagerImpl implements QueueManager {
     }
 
     logger
-        .info("Cache client updater for %s on endpoint %s exiting. Scheduling recovery.",
+        .info("Cache client updater for {} on endpoint {} exiting. Scheduling recovery.",
             (deadConnection != null && deadConnection.getUpdater() != null)
                 ? (deadConnection.getUpdater().isPrimary() ? "Primary" : "Redundant")
                 : "Queue",
@@ -821,9 +821,9 @@ public class QueueManagerImpl implements QueueManager {
 
     if (printErrorMessage) {
       if (servers == null || servers.isEmpty()) {
-        logger.error(msg,
+        logger.error(String.format(msg,
             new Object[] {(excludedServers != null ? excludedServers.size() : 0),
-                (ex != null ? ex.getMessage() : "no exception")});
+                (ex != null ? ex.getMessage() : "no exception")}));
       }
     }
     return servers;

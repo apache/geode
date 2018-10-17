@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.TimeUnit;
@@ -63,7 +63,7 @@ public class AfterCompletionTest {
 
     afterCompletion.executeCommit();
     verifyDoOpFinished();
-    verify(txState, times(1)).doAfterCompletionCommit();
+    verify(txState).doAfterCompletionCommit();
   }
 
   @Test
@@ -83,7 +83,7 @@ public class AfterCompletionTest {
 
     afterCompletion.executeRollback();
     verifyDoOpFinished();
-    verify(txState, times(1)).doAfterCompletionRollback();
+    verify(txState).doAfterCompletionRollback();
   }
 
   @Test
@@ -112,19 +112,19 @@ public class AfterCompletionTest {
 
     afterCompletion.cancel();
     verifyDoOpFinished();
-    verify(txState, times(1)).doCleanup();
+    verify(txState).doCleanup();
   }
 
   private void startDoOp() {
     doOpThread = new Thread(() -> afterCompletion.doOp(txState, cancelCriterion));
     doOpThread.start();
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .untilAsserted(() -> verify(cancelCriterion, times(1)).checkCancelInProgress(null));
+    Awaitility.await().atMost(5, TimeUnit.MINUTES)
+        .untilAsserted(() -> verify(cancelCriterion, atLeastOnce()).checkCancelInProgress(null));
 
   }
 
   private void verifyDoOpFinished() {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> !doOpThread.isAlive());
+    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> !doOpThread.isAlive());
   }
 
 }

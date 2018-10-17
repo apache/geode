@@ -16,18 +16,18 @@
  */
 
 dependencies {
-  compile project(':geode-core')
+  compile(project(':geode-core'))
   //compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  compile project(':geode-junit')
-  compile project(':geode-json')
+  compile(project(':geode-junit'))
+  compile(project(':geode-json'))
 
-  compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  compile 'commons-io:commons-io:' + project.'commons-io.version'
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+  compile('com.jayway.jsonpath:json-path:' + project.'json-path.version')
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
+  compile('commons-io:commons-io:' + project.'commons-io.version')
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
@@ -36,14 +36,14 @@ dependencies {
     exclude module: 'spring-context-support'
     ext.optional = true
   }
-  compile 'com.google.guava:guava:' + project.'guava.version'
-  compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  compile('com.google.guava:guava:' + project.'guava.version')
+  compile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'
   }
 
-  compile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-  compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-  compile 'org.awaitility:awaitility:' + project.'awaitility.version'
+  compile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  compile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  compile('org.awaitility:awaitility:' + project.'awaitility.version')
 
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'

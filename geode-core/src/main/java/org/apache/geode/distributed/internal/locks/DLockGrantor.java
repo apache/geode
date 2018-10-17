@@ -851,7 +851,7 @@ public class DLockGrantor {
             synchronized (grantToken) {
               if (grantToken.isLeaseHeld()) {
                 logger.error(LogMarker.DLS_MARKER,
-                    "Initialization of held locks is skipping %s because lock is already held: %s",
+                    "Initialization of held locks is skipping {} because lock is already held: {}",
                     token, grantToken);
                 continue;
               }

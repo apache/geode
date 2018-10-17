@@ -1210,7 +1210,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (RuntimeException e) {
-      logger.error("Cache initialization failed because: " + e.toString()); // fix GEODE-3038
+      logger.error("Cache initialization for {} failed because: {}", this, e); // fix GEODE-3038
       throw e;
     } finally {
       if (!completedCacheXml) {
@@ -2446,7 +2446,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void stopMemcachedServer() {
     if (this.memcachedServer != null) {
-      logger.info("GemFireMemcachedServer on port %s is shutting down",
+      logger.info("GemFireMemcachedServer on port {} is shutting down",
           new Object[] {this.system.getConfig().getMemcachedPort()});
       this.memcachedServer.shutdown();
     }
@@ -2459,7 +2459,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void stopRestAgentServer() {
     if (this.restAgent != null) {
-      logger.info("Rest Server on port %s is shutting down",
+      logger.info("Rest Server on port {} is shutting down",
           new Object[] {this.system.getConfig().getHttpServicePort()});
       this.restAgent.stop();
     }

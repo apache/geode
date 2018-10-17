@@ -28,7 +28,7 @@ buildscript {
 }
 
 dependencies {
-    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
+  compile('com.google.protobuf:protobuf-java:' + project.'protobuf-java.version')
 }
 
 protobuf {

@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 
@@ -244,6 +245,9 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Publish some entries
     publishEntries(0, 1);
 
+    // Wait until queue count is 0 on server1VM
+    waitUntilQueueContainsRequiredNumberOfEvents(this.server1VM, 0);
+
     // Verify the durable client received the updates
     this.checkListenerEvents(1, 1, -1, this.durableClientVM);
 
@@ -257,21 +261,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     publishEntries(1, 1);
 
     // Verify the durable client's queue contains the entries
-    this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
-      public void run2() throws CacheException {
-
-        Awaitility.waitAtMost(60 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
-            .pollInterval(1, SECONDS).until(() -> {
-              CacheClientProxy proxy = getClientProxy();
-              if (proxy == null) {
-                return false;
-              }
-              // Verify the queue size
-              int sz = proxy.getQueueSize();
-              return 1 == sz;
-            });
-      }
-    });
+    waitUntilQueueContainsRequiredNumberOfEvents(this.server1VM, 1);
 
     // Verify that disconnected client does not receive any events.
     this.verifyListenerUpdatesDisconnected(1);
@@ -550,6 +540,24 @@ public class DurableClientTestCase extends DurableClientTestBase {
     this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
+  private void waitUntilQueueContainsRequiredNumberOfEvents(final VM vm,
+      final int requiredEntryCount) {
+    vm.invoke(new CacheSerializableRunnable("Verify durable client") {
+      public void run2() throws CacheException {
+
+        Awaitility.waitAtMost(60 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
+            .pollInterval(1, SECONDS).until(() -> {
+              CacheClientProxy proxy = getClientProxy();
+              if (proxy == null) {
+                return false;
+              }
+              // Verify the queue size
+              int sz = proxy.getQueueSize();
+              return requiredEntryCount == sz;
+            });
+      }
+    });
+  }
 
   private void durableFailoverAfterReconnect(int redundancyLevel) {
     // Start server 1
