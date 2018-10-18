@@ -59,6 +59,7 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
   integrationTestRuntime(files(war.destinationDir))
   integrationTestRuntime('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'

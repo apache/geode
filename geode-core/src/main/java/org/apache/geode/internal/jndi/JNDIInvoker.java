@@ -15,12 +15,12 @@
 package org.apache.geode.internal.jndi;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.naming.Binding;
 import javax.naming.Context;
@@ -29,8 +29,11 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
+import javax.sql.DataSource;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
@@ -44,6 +47,7 @@ import org.apache.geode.internal.datasource.DataSourceFactory;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * <p>
@@ -65,6 +69,8 @@ import org.apache.geode.internal.jta.UserTransactionImpl;
  *
  */
 public class JNDIInvoker {
+
+  private static final Logger logger = LogService.getLogger();
 
   // private static boolean DEBUG = false;
   /**
@@ -103,7 +109,7 @@ public class JNDIInvoker {
    * List of DataSource bound to the context, used for cleaning gracefully closing datasource and
    * associated threads.
    */
-  private static List dataSourceList = new ArrayList();
+  private static final ConcurrentMap<String, Object> dataSourceMap = new ConcurrentHashMap<>();
 
   /**
    * If this system property is set to true, GemFire will not try to lookup for an existing JTA
@@ -208,16 +214,17 @@ public class JNDIInvoker {
         // ok to ignore, rebind will be tried later
       }
     }
-    int len = dataSourceList.size();
-    for (int i = 0; i < len; i++) {
-      if (dataSourceList.get(i) instanceof AbstractDataSource)
-        ((AbstractDataSource) dataSourceList.get(i)).clearUp();
-      else if (dataSourceList.get(i) instanceof ClientConnectionFactoryWrapper) {
-        ((ClientConnectionFactoryWrapper) dataSourceList.get(i)).clearUp();
-      }
-    }
-    dataSourceList.clear();
+    dataSourceMap.values().stream().forEach(JNDIInvoker::closeDataSource);
+    dataSourceMap.clear();
     IGNORE_JTA = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
+  }
+
+  private static void closeDataSource(Object dataSource) {
+    if (dataSource instanceof AbstractDataSource) {
+      ((AbstractDataSource) dataSource).clearUp();
+    } else if (dataSource instanceof ClientConnectionFactoryWrapper) {
+      ((ClientConnectionFactoryWrapper) dataSource).clearUp();
+    }
   }
 
   /*
@@ -321,31 +328,31 @@ public class JNDIInvoker {
     String value = (String) map.get("type");
     String jndiName = "";
     LogWriter writer = TransactionUtils.getLogWriter();
-    Object ds = null;
+    DataSource ds = null;
     try {
       jndiName = (String) map.get("jndi-name");
       if (value.equals("PooledDataSource")) {
         ds = DataSourceFactory.getPooledDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds);
-        dataSourceList.add(ds);
+        dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("XAPooledDataSource")) {
         ds = DataSourceFactory.getTranxDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds);
-        dataSourceList.add(ds);
+        dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("SimpleDataSource")) {
         ds = DataSourceFactory.getSimpleDataSource(map);
         ctx.rebind("java:/" + jndiName, ds);
-        dataSourceList.add(ds);
+        dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("ManagedDataSource")) {
         ClientConnectionFactoryWrapper ds1 = DataSourceFactory.getManagedDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds1.getClientConnFactory());
-        dataSourceList.add(ds1);
+        dataSourceMap.put(jndiName, ds1);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else {
@@ -370,15 +377,8 @@ public class JNDIInvoker {
 
   public static void unMapDatasource(String jndiName) throws NamingException {
     ctx.unbind("java:/" + jndiName);
-    for (Iterator it = dataSourceList.iterator(); it.hasNext();) {
-      Object obj = it.next();
-      if (obj instanceof AbstractDataSource) {
-        ((AbstractDataSource) obj).clearUp();
-      } else if (obj instanceof ClientConnectionFactoryWrapper) {
-        ((ClientConnectionFactoryWrapper) obj).clearUp();
-      }
-      it.remove();
-    }
+    Object removedDataSource = dataSourceMap.remove(jndiName);
+    closeDataSource(removedDataSource);
   }
 
   /**
@@ -398,7 +398,7 @@ public class JNDIInvoker {
   }
 
   public static int getNoOfAvailableDataSources() {
-    return dataSourceList.size();
+    return dataSourceMap.size();
   }
 
   public static Map<String, String> getBindingNamesRecursively(Context ctx) throws Exception {

@@ -36,6 +36,7 @@ dependencies {
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
   compile(group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version')
 
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')

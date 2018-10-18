@@ -135,6 +135,8 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+
+
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -163,6 +165,8 @@ dependencies {
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
+
   uiTestCompile(project(':geode-core'))
   uiTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
