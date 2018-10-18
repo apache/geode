@@ -40,8 +40,7 @@ public class ExportLogsFunctionIntegrationTest {
   private File serverWorkingDir;
 
   @Rule
-  public ServerStarterRule serverStarterRule =
-      new ServerStarterRule().withWorkingDir().withAutoStart();
+  public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
 
   @Before
   public void setup() throws Exception {

@@ -55,7 +55,7 @@ public class LogExporterIntegrationTest {
   private Properties properties;
 
   @Rule
-  public ServerStarterRule server = new ServerStarterRule().withWorkingDir();
+  public ServerStarterRule server = new ServerStarterRule();
 
   @Before
   public void before() throws Exception {
