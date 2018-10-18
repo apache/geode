@@ -148,9 +148,8 @@ public class TCPClientSSLIntegrationTest {
 
     assertThatExceptionOfType(LocatorCancelException.class)
         .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
-        .withCause(
-            new SSLHandshakeException("java.security.cert.CertificateException: No name matching "
-                + localhost.getHostName() + " found"));
+        .withCauseInstanceOf(SSLHandshakeException.class)
+        .withStackTraceContaining("No name matching " + localhost.getHostName() + " found");
   }
 
   @Test
@@ -166,9 +165,9 @@ public class TCPClientSSLIntegrationTest {
 
     assertThatExceptionOfType(LocatorCancelException.class)
         .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
-        .withCause(new SSLHandshakeException(
-            "java.security.cert.CertificateException: No subject alternative DNS name matching "
-                + localhost.getHostName() + " found."));
+        .withCauseInstanceOf(SSLHandshakeException.class)
+        .withStackTraceContaining("No subject alternative DNS name matching "
+            + localhost.getHostName() + " found.");
   }
 
   private static class FakeTcpServer extends TcpServer {
