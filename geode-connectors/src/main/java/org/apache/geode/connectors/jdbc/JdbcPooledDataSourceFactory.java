@@ -16,9 +16,6 @@
  */
 package org.apache.geode.connectors.jdbc;
 
-import static com.google.common.base.CaseFormat.LOWER_CAMEL;
-import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
-
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -74,7 +71,21 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
   }
 
   private String convertToCamelCase(String name) {
-    return LOWER_HYPHEN.to(LOWER_CAMEL, name);
+    StringBuilder nameBuilder = new StringBuilder(name.length());
+    boolean capitalizeNextChar = false;
+    for (char c : name.toCharArray()) {
+      if (c == '-') {
+        capitalizeNextChar = true;
+        continue;
+      }
+      if (capitalizeNextChar) {
+        nameBuilder.append(Character.toUpperCase(c));
+      } else {
+        nameBuilder.append(c);
+      }
+      capitalizeNextChar = false;
+    }
+    return nameBuilder.toString();
   }
 
 }
