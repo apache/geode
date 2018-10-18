@@ -273,6 +273,53 @@ jobs:
       - name: ((!pipeline-prefix))metrics
         team: ((!concourse-team))
         config_file: geode-metrics-pipeline/ci/pipelines/metrics.yml
+
+- name: set-metrics-pipeline
+  serial: true
+  public: ((!public-pipelines))
+  plan:
+  - get: geode-metrics-pipeline
+    trigger: true
+  - task: create-geode-pipeline-yml
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: ((!docker-username))
+          password: ((!docker-password))
+          tag: latest
+          repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
+      inputs:
+      - name: geode-metrics-pipeline
+      outputs:
+      - name: results
+      params:
+        OUTPUT_DIRECTORY: results
+        GEODE_BRANCH: ((geode-build-branch))
+        GEODE_FORK: ((geode-fork))
+        GEODE_REPO_NAME: ((geode-repo-name))
+        REPOSITORY_PUBLIC: {{ repository.public }}
+        ARTIFACT_BUCKET: ((artifact-bucket))
+        UPSTREAM_FORK: {{ repository.upstream_fork }}
+        PIPELINE_PREFIX: ((pipeline-prefix))
+        SANITIZED_GEODE_BRANCH: ((sanitized-geode-build-branch))
+        SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
+        GCP_PROJECT: ((gcp-project))
+        PUBLIC_PIPELINES: ((public-pipelines))
+      run:
+        path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
+  - put: concourse
+    params:
+      pipelines:
+      - name: ((!pipeline-prefix))main
+        team: ((!concourse-team))
+        config_file: results/generated-pipeline.yml
+        vars_files:
+        - results/pipeline-vars.yml
+
+
+
 {% endif %}
 
 - name: set-reaper-pipeline
