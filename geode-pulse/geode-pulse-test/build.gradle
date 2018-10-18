@@ -19,7 +19,7 @@
 dependencies {
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   compileOnly(project(':geode-pulse'))
 

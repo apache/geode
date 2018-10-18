@@ -20,7 +20,7 @@ dependencies {
   //compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
 
   compile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   compile(project(':geode-json'))
 

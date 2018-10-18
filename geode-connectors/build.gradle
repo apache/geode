@@ -28,13 +28,13 @@ dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-dunit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   acceptanceTestCompile(project(':geode-dunit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
 
   compile(group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version')

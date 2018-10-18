@@ -26,7 +26,7 @@ dependencies {
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
 
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   testCompile(project(':geode-lucene:geode-lucene-test'))
   testCompile('org.apache.lucene:lucene-test-framework:' + project.'lucene.version')
@@ -34,7 +34,7 @@ dependencies {
 
 
   integrationTestCompile(project(':geode-dunit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-lucene:geode-lucene-test'))
   integrationTestCompile('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
@@ -51,7 +51,7 @@ dependencies {
 
 
   performanceTestCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   performanceTestCompile(project(':geode-lucene:geode-lucene-test'))
 }

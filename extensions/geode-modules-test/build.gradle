@@ -27,7 +27,7 @@ dependencies {
     exclude group: 'org.apache.tomcat'
   }
   compile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   compile('org.httpunit:httpunit:' + project.'httpunit.version') {
     // this version of httpunit contains very outdated xercesImpl

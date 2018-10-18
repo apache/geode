@@ -260,7 +260,7 @@ dependencies {
 
 
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   testCompile(project(':geode-concurrency-test'))
   testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
@@ -314,7 +314,7 @@ dependencies {
 
 
   performanceTestCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
 
   // Distributed Tests

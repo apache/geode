@@ -42,12 +42,12 @@ dependencies {
   
   testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   // have to use output since we exclude the dependent classes from jar :(
   testCompile(project(path: ':geode-core', configuration: 'classesOutput'))
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
   testCompile('org.springframework:spring-webmvc:' + project.'springframework.version') {
@@ -57,7 +57,7 @@ dependencies {
 
 
   integrationTestCompile(project(':geode-dunit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
 
   integrationTestRuntime(files(war.destinationDir))

@@ -67,14 +67,14 @@ dependencies {
 
 
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   testCompile(project(':geode-core'))
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
 
 
   integrationTestCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
@@ -82,7 +82,7 @@ dependencies {
 
 
   uiTestCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   uiTestCompile(project(':geode-json'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))

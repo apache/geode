@@ -30,6 +30,6 @@ dependencies {
   integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
   // Only needed for category Flaky by Gradle
   integrationTestRuntime(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
 }

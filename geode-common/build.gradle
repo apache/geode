@@ -17,6 +17,6 @@
 
 dependencies {
   testCompile(project(':geode-junit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
 }

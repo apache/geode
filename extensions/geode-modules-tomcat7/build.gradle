@@ -33,7 +33,7 @@ dependencies {
   compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version')
 
   integrationTestCompile(project(':geode-dunit')) {
-    module exclude: 'geode-core'
+    exclude module: 'geode-core'
   }
   integrationTestCompile(project(':extensions:geode-modules-test'))
 
