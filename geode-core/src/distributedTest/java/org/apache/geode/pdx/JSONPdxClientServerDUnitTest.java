@@ -194,7 +194,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     PdxInstance pi = (PdxInstance) result;
     String json = JSONFormatter.toJSON(pi);
 
-    JSONFormatterJUnitTest.verifyJsonWithJavaObject(json, testObject);
+    JSONFormatVerifyUtility.verifyJsonWithJavaObject(json, testObject);
 
     // TestCase-2 : Validate Java-->JSON-->PdxInstance --> Java Mapping
     TestObjectForJSONFormatter actualTestObject = new TestObjectForJSONFormatter();

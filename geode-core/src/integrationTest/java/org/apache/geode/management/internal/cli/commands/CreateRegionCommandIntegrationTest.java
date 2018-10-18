@@ -249,8 +249,8 @@ public class CreateRegionCommandIntegrationTest {
   public void invalidCompressor() throws Exception {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --type=REPLICATE --compressor=java.lang.String").statusIsError()
-        .containsOutput(
-            "java.lang.String cannot be cast to org.apache.geode.compression.Compressor");
+        .containsOutput("java.lang.String cannot be cast to ")
+        .containsOutput("org.apache.geode.compression.Compressor");
   }
 
   @Test
