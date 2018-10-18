@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.util.Properties;
 
 import javax.naming.Context;
+import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
@@ -66,12 +67,12 @@ public class DataSourceFactoryJUnitTest {
   @Test
   public void testGetPooledDataSource() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds =
-        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
+    DataSource ds =
+        (DataSource) ctx.lookup("java:/PooledDataSource");
     Connection conn = ds.getConnection();
     if (conn == null)
       fail(
-          "DataSourceFactoryJUnitTest-testGetPooledDataSource() Error in creating the GemFireConnPooledDataSource");
+          "DataSourceFactoryJUnitTest-testGetPooledDataSource() Error in creating the PooledDataSource");
   }
 
   @Test
