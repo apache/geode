@@ -73,10 +73,8 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     final byte isReExecute;
     Set<Object> filter = null;
     byte hasResult = 0;
-    int removedNodesSize = 0;
     Set<Object> removedNodesSet = null;
-    int filterSize = 0, partNumber = 0;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    int partNumber = 0;
     byte functionState = 0;
     int functionTimeout = ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
     try {
@@ -99,12 +97,8 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       function = clientMessage.getPart(2).getStringOrObject();
       args = clientMessage.getPart(3).getObject();
       Part part = clientMessage.getPart(4);
-      if (part != null) {
-        Object obj = part.getObject();
-        if (obj instanceof MemberMappedArgument) {
-          memberMappedArg = (MemberMappedArgument) obj;
-        }
-      }
+      memberMappedArg = extractMemberMappedArgument(part);
+
       byte[] flags = clientMessage.getPart(5).getSerializedForm();
       if (serverConnection.getClientVersion().ordinal() > Version.GFE_81.ordinal()) {
         isBucketsAsFilter = (flags[0] & ExecuteFunctionHelper.BUCKETS_AS_FILTER_MASK) != 0;
@@ -113,26 +107,14 @@ public class ExecuteRegionFunction66 extends BaseCommand {
         isReExecute = flags[0];
         isBucketsAsFilter = false;
       }
-      filterSize = clientMessage.getPart(6).getInt();
-      if (filterSize != 0) {
-        filter = new HashSet<Object>();
-        partNumber = 7;
-        for (int i = 0; i < filterSize; i++) {
-          filter.add(clientMessage.getPart(partNumber + i).getStringOrObject());
-        }
-      }
 
+      int filterSize = clientMessage.getPart(6).getInt();
+      filter = populateFilters(clientMessage, filterSize);
       partNumber = 7 + filterSize;
-      removedNodesSize = clientMessage.getPart(partNumber).getInt();
 
-      if (removedNodesSize != 0) {
-        removedNodesSet = new HashSet<Object>();
-        partNumber = partNumber + 1;
-
-        for (int i = 0; i < removedNodesSize; i++) {
-          removedNodesSet.add(clientMessage.getPart(partNumber + i).getStringOrObject());
-        }
-      }
+      int removedNodesSize = clientMessage.getPart(partNumber).getInt();
+      removedNodesSet =
+          populateRemovedNodes(clientMessage, removedNodesSize, partNumber);
 
     } catch (ClassNotFoundException exception) {
       logger.warn(String.format("Exception on server while executing function : %s",
@@ -147,22 +129,13 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       return;
     }
     if (function == null || regionName == null) {
-      String message = null;
-      if (function == null) {
-        message =
-            String.format("The input %s for the execute function request is null",
-                "function");
-      }
-      if (regionName == null) {
-        message =
-            String.format("The input %s for the execute function request is null",
-                "region");
-      }
+      String message = generateNullArgumentMessage(regionName, function);
       logger.warn("{}: {}", serverConnection.getName(), message);
       sendError(hasResult, clientMessage, message, serverConnection);
       return;
     }
 
+    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     Region region = crHelper.getRegion(regionName);
     if (region == null) {
       String message =
@@ -180,28 +153,10 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     try {
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
-        if (functionObject == null) {
-          String message =
-              String.format("The function, %s, has not been registered",
-                  function);
-          logger.warn("{}: {}", serverConnection.getName(), message);
-          sendError(hasResult, clientMessage, message, serverConnection);
+        if (!validateFunctionObject(clientMessage, serverConnection, function, hasResult,
+            functionState,
+            functionObject)) {
           return;
-        } else {
-          byte functionStateOnServerSide = AbstractExecution.getFunctionState(functionObject.isHA(),
-              functionObject.hasResult(), functionObject.optimizeForWrite());
-          if (logger.isDebugEnabled()) {
-            logger.debug("Function State on server side: {} on client: {}",
-                functionStateOnServerSide, functionState);
-          }
-          if (functionStateOnServerSide != functionState) {
-            String message =
-                String.format("Function attributes at client and server don't match: %s",
-                    function);
-            logger.warn("{}: {}", serverConnection.getName(), message);
-            sendError(hasResult, clientMessage, message, serverConnection);
-            return;
-          }
         }
       } else {
         functionObject = (Function) function;
@@ -209,32 +164,26 @@ public class ExecuteRegionFunction66 extends BaseCommand {
 
       // check if the caller is authorized to do this operation on server
       functionObject.getRequiredPermissions(regionName).forEach(securityService::authorize);
-      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-      final String functionName = functionObject.getId();
-      final String regionPath = region.getFullPath();
-      ExecuteFunctionOperationContext executeContext = null;
-      if (authzRequest != null) {
-        executeContext = authzRequest.executeFunctionAuthorize(functionName, regionPath, filter,
-            args, functionObject.optimizeForWrite());
-      }
+      ExecuteFunctionOperationContext executeContext =
+          getAuthorizedExecuteFunctionOperationContext(args, filter,
+              functionObject.optimizeForWrite(), serverConnection.getAuthzRequest(),
+              functionObject.getId(), region.getFullPath());
 
-      // Construct execution
-      AbstractExecution execution = (AbstractExecution) FunctionService.onRegion(region);
+
       ChunkedMessage m = serverConnection.getFunctionResponseMessage();
       m.setTransactionId(clientMessage.getTransactionId());
       resultSender =
           new ServerToClientFunctionResultSender65(m, MessageType.EXECUTE_REGION_FUNCTION_RESULT,
               serverConnection, functionObject, executeContext);
 
+      AbstractExecution execution =
+          createExecution(args, memberMappedArg, isBucketsAsFilter, filter,
+              removedNodesSet,
+              region, resultSender);
       if (execution instanceof PartitionedRegionFunctionExecutor) {
         if ((hasResult == 1) && filter != null && filter.size() == 1) {
           ServerConnection.executeFunctionOnLocalNodeOnly((byte) 1);
         }
-        execution = new PartitionedRegionFunctionExecutor((PartitionedRegion) region, filter, args,
-            memberMappedArg, resultSender, removedNodesSet, isBucketsAsFilter);
-      } else {
-        execution = new DistributedRegionFunctionExecutor((DistributedRegion) region, filter, args,
-            memberMappedArg, resultSender);
       }
       if (isReExecute == 1) {
         execution = execution.setIsReExecute();
@@ -248,18 +197,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       if (hasResult == 1) {
         executeFunctionWithResult(function, functionState, functionObject, execution);
       } else {
-        if (function instanceof String) {
-          switch (functionState) {
-            case AbstractExecution.NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function);
-              break;
-            case AbstractExecution.NO_HA_NO_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function);
-              break;
-          }
-        } else {
-          execution.execute(functionObject);
-        }
+        executeFunctionNoResult(function, functionState, functionObject, execution);
         writeReply(clientMessage, serverConnection);
       }
     } catch (IOException ioe) {
@@ -273,31 +211,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       Object cause = fe.getCause();
       if (cause instanceof FunctionInvocationTargetException
           || cause instanceof QueryInvocationTargetException) {
-        if (cause instanceof InternalFunctionInvocationTargetException) {
-          // Fix for #44709: User should not be aware of
-          // InternalFunctionInvocationTargetException. No instance of
-          // InternalFunctionInvocationTargetException is giving useful
-          // information to user to take any corrective action hence logging
-          // this at fine level logging
-          // 1> When bucket is moved
-          // 2> Incase of HA FucntionInvocationTargetException thrown. Since
-          // it is HA, fucntion will be reexecuted on right node
-          // 3> Multiple target nodes found for single hop operation
-          // 4> in case of HA member departed
-          if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Exception on server while executing function: %s",
-                new Object[] {function}),
-                fe);
-          }
-        } else if (functionObject.isHA()) {
-          logger.warn("Exception on server while executing function : {}",
-              function + " :" + message);
-        } else {
-          logger.warn(String.format("Exception on server while executing function : %s",
-              function),
-              fe);
-        }
-
+        logFunctionExceptionCause(function, functionObject, fe, message, cause);
         resultSender.setException(fe);
       } else {
         if (setLastResultReceived(resultSender)) {
@@ -307,7 +221,6 @@ public class ExecuteRegionFunction66 extends BaseCommand {
           sendException(hasResult, clientMessage, message, serverConnection, fe);
         }
       }
-
     } catch (Exception e) {
       if (setLastResultReceived(resultSender)) {
         logger.warn(String.format("Exception on server while executing function : %s",
@@ -322,8 +235,164 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     }
   }
 
+  void logFunctionExceptionCause(Object function, Function<?> functionObject,
+      FunctionException fe, String message, Object cause) {
+    if (cause instanceof InternalFunctionInvocationTargetException) {
+      // Fix for #44709: User should not be aware of
+      // InternalFunctionInvocationTargetException. No instance of
+      // InternalFunctionInvocationTargetException is giving useful
+      // information to user to take any corrective action hence logging
+      // this at fine level logging
+      // 1> When bucket is moved
+      // 2> Incase of HA FucntionInvocationTargetException thrown. Since
+      // it is HA, fucntion will be reexecuted on right node
+      // 3> Multiple target nodes found for single hop operation
+      // 4> in case of HA member departed
+      if (logger.isDebugEnabled()) {
+        logger.debug(String.format("Exception on server while executing function: %s",
+            new Object[] {function}),
+            fe);
+      }
+    } else if (functionObject.isHA()) {
+      logger.warn("Exception on server while executing function : {}",
+          function + " :" + message);
+    } else {
+      logger.warn(String.format("Exception on server while executing function : %s",
+          function),
+          fe);
+    }
+  }
+
+  AbstractExecution createExecution(Object args, MemberMappedArgument memberMappedArg,
+      boolean isBucketsAsFilter, Set<Object> filter,
+      Set<Object> removedNodesSet, Region region,
+      ServerToClientFunctionResultSender resultSender) {
+
+    AbstractExecution execution = (AbstractExecution) FunctionService.onRegion(region);
+    if (execution instanceof PartitionedRegionFunctionExecutor) {
+      execution = new PartitionedRegionFunctionExecutor((PartitionedRegion) region, filter, args,
+          memberMappedArg, resultSender, removedNodesSet, isBucketsAsFilter);
+    } else {
+      execution = new DistributedRegionFunctionExecutor((DistributedRegion) region, filter, args,
+          memberMappedArg, resultSender);
+    }
+    return execution;
+  }
+
+  boolean validateFunctionObject(Message clientMessage, ServerConnection serverConnection,
+      Object function, byte hasResult, byte functionState,
+      Function<?> functionObject) throws IOException {
+    if (functionObject == null) {
+      String message =
+          String.format("The function, %s, has not been registered",
+              function);
+      logger.warn("{}: {}", serverConnection.getName(), message);
+      sendError(hasResult, clientMessage, message, serverConnection);
+      return false;
+    } else {
+      byte functionStateOnServerSide = AbstractExecution.getFunctionState(functionObject.isHA(),
+          functionObject.hasResult(), functionObject.optimizeForWrite());
+      if (logger.isDebugEnabled()) {
+        logger.debug("Function State on server side: {} on client: {}",
+            functionStateOnServerSide, functionState);
+      }
+      if (functionStateOnServerSide != functionState) {
+        String message =
+            String.format("Function attributes at client and server don't match: %s",
+                function);
+        logger.warn("{}: {}", serverConnection.getName(), message);
+        sendError(hasResult, clientMessage, message, serverConnection);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  String generateNullArgumentMessage(String regionName, Object function) {
+    String message = null;
+    if (regionName == null) {
+      message =
+          String.format("The input region for the execute function request is null");
+    } else if (function == null) {
+      message =
+          String.format("The input function for the execute function request is null");
+    }
+
+    return message;
+  }
+
+  MemberMappedArgument extractMemberMappedArgument(Part part)
+      throws IOException, ClassNotFoundException {
+    MemberMappedArgument memberMappedArg = null;
+    if (part != null) {
+      Object obj = part.getObject();
+      if (obj instanceof MemberMappedArgument) {
+        memberMappedArg = (MemberMappedArgument) obj;
+      }
+    }
+    return memberMappedArg;
+  }
+
+  Set<Object> populateRemovedNodes(Message clientMessage, int removedNodesSize, int partNumber)
+      throws IOException, ClassNotFoundException {
+    Set<Object> removedNodesSet = null;
+    if (removedNodesSize != 0) {
+      removedNodesSet = new HashSet<Object>();
+      partNumber = partNumber + 1;
+
+      for (int i = 0; i < removedNodesSize; i++) {
+        removedNodesSet.add(clientMessage.getPart(partNumber + i).getStringOrObject());
+      }
+    }
+    return removedNodesSet;
+  }
+
+  Set<Object> populateFilters(Message clientMessage, int filterSize)
+      throws IOException, ClassNotFoundException {
+    Set<Object> filter = null;
+    int partNumber;
+    if (filterSize != 0) {
+      filter = new HashSet<Object>();
+      partNumber = 7;
+      for (int i = 0; i < filterSize; i++) {
+        filter.add(clientMessage.getPart(partNumber + i).getStringOrObject());
+      }
+    }
+    return filter;
+  }
+
+  ExecuteFunctionOperationContext getAuthorizedExecuteFunctionOperationContext(Object args,
+      Set<Object> filter,
+      boolean optimizedForWrite,
+      AuthorizeRequest authzRequest,
+      String functionName,
+      String regionPath) {
+    ExecuteFunctionOperationContext executeContext = null;
+    if (authzRequest != null) {
+      executeContext = authzRequest.executeFunctionAuthorize(functionName, regionPath, filter,
+          args, optimizedForWrite);
+    }
+    return executeContext;
+  }
+
+  void executeFunctionNoResult(Object function, byte functionState,
+      Function<?> functionObject, AbstractExecution execution) {
+    if (function instanceof String) {
+      switch (functionState) {
+        case AbstractExecution.NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE:
+          execution.execute((String) function);
+          break;
+        case AbstractExecution.NO_HA_NO_HASRESULT_OPTIMIZEFORWRITE:
+          execution.execute((String) function);
+          break;
+      }
+    } else {
+      execution.execute(functionObject);
+    }
+  }
+
   void executeFunctionWithResult(Object function, byte functionState,
-                                         Function<?> functionObject, AbstractExecution execution) {
+      Function<?> functionObject, AbstractExecution execution) {
     if (function instanceof String) {
       switch (functionState) {
         case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
