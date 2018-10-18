@@ -14,7 +14,11 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import static java.lang.Math.toIntExact;
+
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
@@ -50,7 +54,7 @@ public class QueryMonitor implements Runnable {
 
   private final long maxQueryExecutionTime;
 
-  private static final ConcurrentLinkedQueue queryThreads = new ConcurrentLinkedQueue();
+  private static final DelayQueue<QueryExpiration> queryExpirations = new DelayQueue<>();
 
   private Thread monitoringThread;
 
@@ -85,16 +89,14 @@ public class QueryMonitor implements Runnable {
       query.setCanceled(new QueryExecutionLowMemoryException(reason));
       throw new QueryExecutionLowMemoryException(reason);
     }
-    QueryThreadTask queryTask = new QueryThreadTask(queryThread, query, queryCancelled.get());
-    synchronized (queryThreads) {
-      queryThreads.add(queryTask);
-      queryThreads.notifyAll();
-    }
+    QueryExpiration queryTask = new QueryExpiration(queryThread, query, queryCancelled.get(),
+        maxQueryExecutionTime);
+    queryExpirations.add(queryTask);
 
     if (logger.isDebugEnabled()) {
       logger.debug(
           "Adding thread to QueryMonitor. QueryMonitor size is:{}, Thread (id): {} query: {} thread is : {}",
-          queryThreads.size(), queryThread.getId(), query.getQueryString(), queryThread);
+          queryExpirations.size(), queryThread.getId(), query.getQueryString(), queryThread);
     }
 
   }
@@ -110,14 +112,12 @@ public class QueryMonitor implements Runnable {
     synchronized (queryCompleted) {
       queryCancelled.get().getAndSet(Boolean.FALSE);
       query.setQueryCompletedForMonitoring(true);
-      // Remove the query task from the queue.
-      queryThreads.remove(new QueryThreadTask(queryThread, null, null));
     }
 
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Removed thread from QueryMonitor. QueryMonitor size is:{}, Thread ID is: {}  thread is : {}",
-          queryThreads.size(), queryThread.getId(), queryThread);
+          "Query completed before expiration. QueryMonitor size is:{}, Thread ID is: {}  thread is : {}",
+          queryExpirations.size(), queryThread.getId(), queryThread);
     }
 
     if (testException != null) {
@@ -161,51 +161,26 @@ public class QueryMonitor implements Runnable {
     // if the query monitor is stopped before run has been called, we should not run
     synchronized (this.stopped) {
       if (this.stopped.get()) {
-        queryThreads.clear();
+        queryExpirations.clear();
         return;
       }
       this.monitoringThread = Thread.currentThread();
     }
     try {
-      QueryThreadTask queryTask;
-      long sleepTime;
       while (true) {
-        // Get the first query task from the queue. This query will have the shortest
-        // remaining time that needs to canceled first.
-        queryTask = (QueryThreadTask) queryThreads.peek();
-        if (queryTask == null) {
-          synchronized (queryThreads) {
-            queryThreads.wait();
-          }
-          continue;
-        }
+        final QueryExpiration queryExpiration = queryExpirations.take();
 
-        long executionTime = System.currentTimeMillis() - queryTask.StartTime;
-        // Check if the sleepTime is greater than the remaining query execution time.
-        if (executionTime < this.maxQueryExecutionTime) {
-          sleepTime = this.maxQueryExecutionTime - executionTime;
-          // Its been noted that the sleep is not guaranteed to wait for the specified
-          // time (as stated in Suns doc too), it depends on the OSs thread scheduling
-          // behavior, hence thread may sleep for longer than the specified time.
-          // Specifying shorter time also hasn't worked.
-          Thread.sleep(sleepTime);
-          continue;
-        }
-        // Query execution has taken more than the max time, Set queryCancelled flag
-        // to true.
-        boolean[] queryCompleted = queryTask.query.getQueryCompletedForMonitoring();
+        boolean[] queryCompleted = queryExpiration.query.getQueryCompletedForMonitoring();
         synchronized (queryCompleted) {
-          // check if query is already completed
           if (!queryCompleted[0]) {
-            queryTask.query.setCanceled(new QueryExecutionTimeoutException(String
-                .format("Query execution cancelled after exceeding max execution time %sms.",
-                    this.maxQueryExecutionTime)));
-            queryTask.queryCancelled.set(Boolean.TRUE);
-            // remove the query threads from monitoring queue
-            queryThreads.poll();
-            logger.info(String.format(
-                "%s is set as canceled after %s milliseconds", queryTask.toString(),
-                executionTime));
+            final String cancellationMessage =
+                String.format("Query execution cancelled after exceeding max execution time %sms.",
+                    queryExpiration.getMaxQueryExecutionTime());
+            queryExpiration.query
+                .setCanceled(new QueryExecutionTimeoutException(cancellationMessage));
+            queryExpiration.queryCancelled.set(Boolean.TRUE);
+            logger.info(String.format("%s Query expiration details: %s", cancellationMessage,
+                queryExpiration.toString()));
           }
         }
       }
@@ -214,7 +189,7 @@ public class QueryMonitor implements Runnable {
         logger.debug("Query Monitoring thread got interrupted.");
       }
     } finally {
-      queryThreads.clear();
+      queryExpirations.clear();
     }
   }
 
@@ -237,44 +212,42 @@ public class QueryMonitor implements Runnable {
   }
 
   public void cancelAllQueriesDueToMemory() {
-    synchronized (queryThreads) {
-      QueryThreadTask queryTask = (QueryThreadTask) queryThreads.poll();
-      while (queryTask != null) {
-        cancelQueryDueToLowMemory(queryTask, LOW_MEMORY_USED_BYTES);
-        queryTask = (QueryThreadTask) queryThreads.poll();
-      }
-      queryThreads.clear();
-      queryThreads.notifyAll();
+    for (final QueryExpiration queryExpiration : queryExpirations) {
+      cancelQueryDueToLowMemory(queryExpiration, LOW_MEMORY_USED_BYTES);
     }
+    queryExpirations.clear();
   }
 
-  private void cancelQueryDueToLowMemory(QueryThreadTask queryTask, long memoryThreshold) {
-    boolean[] queryCompleted = queryTask.query.getQueryCompletedForMonitoring();
+  private void cancelQueryDueToLowMemory(QueryExpiration queryExpiration, long memoryThreshold) {
+    boolean[] queryCompleted = queryExpiration.query.getQueryCompletedForMonitoring();
     synchronized (queryCompleted) {
       if (!queryCompleted[0]) {
         // cancel if query is not completed
-        String reason = String.format(
+        String cancellationReason = String.format(
             "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
             memoryThreshold);
-        queryTask.query.setCanceled(
-            new QueryExecutionLowMemoryException(reason));
-        queryTask.queryCancelled.set(Boolean.TRUE);
+        queryExpiration.query.setCanceled(
+            new QueryExecutionLowMemoryException(cancellationReason));
+        queryExpiration.queryCancelled.set(Boolean.TRUE);
       }
     }
   }
 
   /** FOR TEST PURPOSE */
   public static int getQueryMonitorThreadCount() {
-    return queryThreads.size();
+    return queryExpirations.size();
   }
 
   /**
-   * Query Monitoring task, placed in the queue.
+   * Wrapper to track expiration of queries inside the DelayQueue
    */
-  private static class QueryThreadTask {
+  private static class QueryExpiration implements Delayed {
 
     // package-private to avoid synthetic accessor
-    final long StartTime;
+    final long startTime;
+
+    // package-private to avoid synthetic accessor
+    final long expiredTime;
 
     // package-private to avoid synthetic accessor
     final Thread queryThread;
@@ -285,39 +258,40 @@ public class QueryMonitor implements Runnable {
     // package-private to avoid synthetic accessor
     final AtomicBoolean queryCancelled;
 
-    QueryThreadTask(Thread queryThread, DefaultQuery query, AtomicBoolean queryCancelled) {
-      this.StartTime = System.currentTimeMillis();
+    QueryExpiration(final Thread queryThread, final DefaultQuery query,
+        final AtomicBoolean queryCancelled,
+        final long maxQueryExecutionTime) {
+      startTime = System.currentTimeMillis();
+      expiredTime = startTime + maxQueryExecutionTime;
       this.queryThread = queryThread;
       this.query = query;
       this.queryCancelled = queryCancelled;
     }
 
-    @Override
-    public int hashCode() {
-      assert this.queryThread != null;
-      return this.queryThread.hashCode();
-    }
-
-    /**
-     * The query task in the queue is identified by the thread. To remove the task in the queue
-     * using the thread reference.
-     */
-    @Override
-    public boolean equals(Object other) {
-      if (!(other instanceof QueryThreadTask)) {
-        return false;
-      }
-      QueryThreadTask o = (QueryThreadTask) other;
-      return this.queryThread.equals(o.queryThread);
+    public long getMaxQueryExecutionTime() {
+      return expiredTime - startTime;
     }
 
     @Override
     public String toString() {
-      return new StringBuilder().append("QueryThreadTask[StartTime:").append(this.StartTime)
-          .append(", queryThread:").append(this.queryThread).append(", threadId:")
+      return new StringBuilder().append("QueryExpiration[startTime:").append(this.startTime)
+          .append(", expiredTime:").append(expiredTime).append(", queryThread:")
+          .append(this.queryThread).append(", threadId:")
           .append(this.queryThread.getId()).append(", query:").append(this.query.getQueryString())
           .append(", queryCancelled:").append(this.queryCancelled).append(']')
           .toString();
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+      final long diff = expiredTime - System.currentTimeMillis();
+      return unit.convert(diff, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed o) {
+      return toIntExact(
+          this.expiredTime - ((QueryExpiration) o).expiredTime);
     }
   }
 }
