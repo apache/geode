@@ -2073,7 +2073,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (tagTime == VersionTag.ILLEGAL_VERSION_TIMESTAMP) {
       return true; // no timestamp received from other system - just apply it
     }
-    if (tagDsid == stampDsid || stampDsid == -1) {
+    if ((tagDsid == stampDsid && tagTime > stampTime) || stampDsid == -1) {
       return true;
     }
     GatewayConflictResolver resolver = event.getRegion().getCache().getGatewayConflictResolver();
