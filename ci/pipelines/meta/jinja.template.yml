@@ -295,11 +295,11 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
       run:
-        path: geode-pipeline/ci/pipelines/geode-build/deploy_metrics_pipeline.sh
+        path: geode-pipeline/ci/pipelines/metrics/deploy_metrics_pipeline.sh
   - put: concourse
     params:
       pipelines:
-      - name: ((!pipeline-prefix))main
+      - name: ((!pipeline-prefix))metrics
         team: ((!concourse-team))
         config_file: results/generated-pipeline.yml
         vars_files:
