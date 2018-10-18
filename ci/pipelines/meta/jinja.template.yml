@@ -294,6 +294,7 @@ jobs:
         SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        CONCOURSE_URL: ((concourse-url))
       run:
         path: geode-metrics-pipeline/ci/pipelines/metrics/deploy_metrics_pipeline.sh
   - put: concourse
