@@ -60,6 +60,7 @@ upstream-fork: ${UPSTREAM_FORK}
 pipeline-prefix: "${PIPELINE_PREFIX}"
 public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
+concourse-url: ${CONCOURSE_URL}
 YML
 
 
