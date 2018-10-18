@@ -30,7 +30,7 @@ public interface PooledDataSourceFactory {
    * Create and return a data source configured with the given properties.
    * <p>
    * If you desire to have the data source release its resources when the cache is closed
-   * or the jndi-binding is removed, then also implement {@AutoCloseable}.
+   * or the jndi-binding is removed, then also implement {@link AutoCloseable}.
    *
    * @param poolProperties properties to use to initialize the pool part of the data source
    *        The poolProperties names can be any of the following: connection-url, user-name,
