@@ -60,8 +60,12 @@ public class ClientCacheRule extends SerializableExternalResource {
 
   @Override
   public void after() {
-    if (cache != null) {
-      cache.close();
+    try {
+      if (cache != null) {
+        cache.close();
+      }
+    } catch (Exception ignored) {
+      // ignored
     }
     // this will clean up the SocketCreators created in this VM so that it won't contaminate
     // future tests
