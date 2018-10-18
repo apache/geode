@@ -38,7 +38,7 @@ dependencies {
     exclude module: 'android-json'
   }
 
-  compile('org.bouncycastle:bcpkix-jdk15on:' + project.'bounty-castle.version')
+  compile('org.bouncycastle:bcpkix-jdk15on:' + project.'bouncycastle.version')
 
   runtimeOnly(project(':geode-old-versions'))
 }
