@@ -39,7 +39,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.datasource.AbstractDataSource;
 import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
@@ -106,8 +105,7 @@ public class JNDIInvoker {
    */
   private static final String WS_FACTORY_CLASS_4 = "com.ibm.ejs.jts.jta.JTSXA";
   /**
-   * List of DataSource bound to the context, used for cleaning gracefully closing datasource and
-   * associated threads.
+   * Maps data source name to the data source instance itself.
    */
   private static final ConcurrentMap<String, Object> dataSourceMap = new ConcurrentHashMap<>();
 
@@ -228,10 +226,6 @@ public class JNDIInvoker {
           logger.debug("Exception closing DataSource", e);
         }
       }
-    } else if (dataSource instanceof AbstractDataSource) {
-      ((AbstractDataSource) dataSource).clearUp();
-    } else if (dataSource instanceof ClientConnectionFactoryWrapper) {
-      ((ClientConnectionFactoryWrapper) dataSource).clearUp();
     }
   }
 
@@ -392,7 +386,7 @@ public class JNDIInvoker {
   public static DataSource getDataSource(String name) {
     Object result = dataSourceMap.get(name);
     if (result instanceof DataSource) {
-      return (DataSource)result;
+      return (DataSource) result;
     } else {
       return null;
     }

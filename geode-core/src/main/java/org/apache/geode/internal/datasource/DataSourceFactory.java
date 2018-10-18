@@ -42,6 +42,7 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.datasource.PooledDataSourceFactory;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.PasswordUtil;
@@ -156,11 +157,9 @@ public class DataSourceFactory {
     try {
       Properties poolProperties = createPoolProperties(configMap);
       Properties dataSourceProperties = createDataSourceProperties(props);
-      Class cl = ClassPathLoader.getLatest().forName(connpoolClassName);
-      Object obj = cl.newInstance();
-      Method createDataSourceMethod =
-          cl.getMethod("createDataSource", Properties.class, Properties.class);
-      return (DataSource) createDataSourceMethod.invoke(obj, poolProperties, dataSourceProperties);
+      Class<?> cl = ClassPathLoader.getLatest().forName(connpoolClassName);
+      PooledDataSourceFactory factory = (PooledDataSourceFactory) cl.newInstance();
+      return factory.createDataSource(poolProperties, dataSourceProperties);
     } catch (Exception ex) {
       String exception =
           String.format(
