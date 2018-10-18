@@ -267,7 +267,7 @@ jobs:
   plan:
   - get: geode-metrics-pipeline
     trigger: true
-  - task: create-geode-pipeline-yml
+  - task: create-metrics-pipeline-yml
     config:
       platform: linux
       image_resource:
