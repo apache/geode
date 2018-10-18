@@ -82,6 +82,12 @@ public class CacheConnectionJUnitTest {
   private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
 
+  /*
+   * This file was generated with the following command:
+   * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
+   * -keystore default.keystore -keypass password -storepass password \
+   * -ext san=ip:127.0.0.1 -storetype jks
+   */
   private final String DEFAULT_STORE = "default.keystore";
   private final String SSL_PROTOCOLS = "any";
   private final String SSL_CIPHERS = "any";
