@@ -95,7 +95,7 @@ resources:
     {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
-    - ci/pipelines/metrics.yml
+    - ci/pipelines/metrics/*
 {% endif %}
 
 jobs:
