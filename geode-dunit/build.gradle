@@ -19,7 +19,9 @@ dependencies {
   compile(project(':geode-core'))
   //compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  compile(project(':geode-junit'))
+  compile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   compile(project(':geode-json'))
 
   compile('com.jayway.jsonpath:json-path:' + project.'json-path.version')

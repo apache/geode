@@ -19,9 +19,13 @@ dependencies {
   compile(project(':geode-protobuf-messages'))
   compileOnly(project(':geode-core'))
   testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   testCompile(project(':geode-protobuf:geode-protobuf-test'))
-  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':geode-protobuf:geode-protobuf-test'))
   distributedTestCompile(project(':geode-protobuf:geode-protobuf-test'))
 

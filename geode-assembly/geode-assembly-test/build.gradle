@@ -20,6 +20,7 @@ dependencies {
   compileOnly(project(':extensions:geode-modules-test'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-pulse'))
+
   compileOnly('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
   compileOnly('commons-io:commons-io:' + project.'commons-io.version')
   compileOnly('junit:junit:' + project.'junit.version')
