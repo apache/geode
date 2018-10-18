@@ -295,7 +295,7 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
       run:
-        path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
+        path: geode-pipeline/ci/pipelines/geode-build/deploy_metrics_pipeline.sh
   - put: concourse
     params:
       pipelines:
