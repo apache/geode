@@ -60,7 +60,7 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase
     final String goldenString =
         "Begin " + name() + ".main" + "\n" + "Press Enter to continue." + "\n" + "\n"
             + expectedProblemLines()[this.problemLine] + "\n" + "End " + name() + ".main" + "\n";
-    debug(goldenString, "GOLDEN");
+    GoldenTestCase.debug(goldenString, "GOLDEN");
 
     final ProcessWrapper process = createProcessWrapper(new ProcessWrapper.Builder(), getClass());
     process.execute(createProperties());

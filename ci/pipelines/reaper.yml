@@ -23,11 +23,11 @@ resource_types:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
+    repository: gcr.io/((gcp-project))/((!docker-image-prefix))gce-instances-resource
     tag: latest
 
 resources:
-- name: stopable-instance
+- name: stoppable-instance
   type: gce-instances
   source:
     filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
@@ -40,7 +40,7 @@ resources:
 jobs:
 - name: stop-instance
   plan:
-  - get: stopable-instance
+  - get: stoppable-instance
     version: every
     trigger: true
   - task: stop-instances
@@ -52,13 +52,13 @@ jobs:
           repository: google/cloud-sdk
           tag: alpine
       inputs:
-      - name: stopable-instance
+      - name: stoppable-instance
       run:
         path: /bin/sh
         args:
         - -ec
         - |
-          gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
+          gcloud compute instances stop $(cat stoppable-instance/selfLink) --quiet
 
 - name: delete-instance
   plan:

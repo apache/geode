@@ -27,6 +27,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.ServerSocketChannel;
 import java.security.GeneralSecurityException;
@@ -66,6 +67,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLProtocolException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
@@ -988,9 +990,23 @@ public class SocketCreator {
               ex);
           throw ex;
         }
-        // else ignore
+      }
+      // Pre jkd11, startHandshake is throwing SocketTimeoutException.
+      // in jdk 11 it is throwing SSLProtocolException with a cause of SocketTimeoutException.
+      // this is to keep the exception consistent across jdk
+      catch (SSLProtocolException ex) {
+        if (ex.getCause() instanceof SocketTimeoutException) {
+          throw (SocketTimeoutException) ex.getCause();
+        } else {
+          throw ex;
+        }
       } finally {
-        socket.setSoTimeout(oldTimeout);
+        try {
+          socket.setSoTimeout(oldTimeout);
+        }
+        // ignore
+        catch (SocketException e) {
+        }
       }
     }
   }
@@ -1063,6 +1079,16 @@ public class SocketCreator {
         if (logger.isDebugEnabled()) {
           logger.debug("SSL Connection from peer []",
               ((X509Certificate) peer[0]).getSubjectDN());
+        }
+      }
+      // Pre jkd11, startHandshake is throwing SocketTimeoutException.
+      // in jdk 11 it is throwing SSLProtocolException with a cause of SocketTimeoutException.
+      // this is to keep the exception consistent across jdk
+      catch (SSLProtocolException ex) {
+        if (ex.getCause() instanceof SocketTimeoutException) {
+          throw (SocketTimeoutException) ex.getCause();
+        } else {
+          throw ex;
         }
       } catch (SSLHandshakeException ex) {
         logger

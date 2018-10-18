@@ -13,14 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM alpine:3.7
+FROM alpine:latest
 
+COPY --from=google/cloud-sdk:alpine /google-cloud-sdk /google-cloud-sdk
+ENV PATH /google-cloud-sdk/bin:$PATH
 RUN apk --no-cache add \
       bash \
       curl \
       jq \
       python3 \
-  && curl -L -o /usr/local/bin/fly "https://concourse.apachegeode-ci.info/api/v1/cli?arch=amd64&platform=linux" \
   && pip3 install --upgrade pip \
-  && pip3 install Jinja2 pyYAML \
-  && chmod +x /usr/local/bin/* \
+  && pip3 install Jinja2 pyYAML

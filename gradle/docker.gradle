@@ -20,7 +20,7 @@
  * The container used must hava JAVA_HOME set in it's environment and must
  * have 'java' defined on the path. For example, the relevant Dockerfile
  * content could be:
- * 
+ *
  *   ENV JAVA_HOME=/opt/jdk1.8.0_u101
  *   ENV PATH=$PATH:$JAVA_HOME/bin
  *
@@ -117,6 +117,17 @@ def dockerConfig = {
       def workdir = new File(cmd.getWorkingDir() + matcher[0][1])
       workdir.mkdirs()
       cmd.withWorkingDir(workdir.toString())
+
+      // copy the classpath file to the working dir
+      def classPathFileIndex = cmdList.findIndexOf { it =~ /^@.*gradle-worker-classpath.*txt$/ }
+      if (classPathFileIndex > 0) {
+        def dst = new File(workdir, "gradle-worker-classpath.txt")
+        if (!dst.exists()) {
+          def src = new File(cmdList[classPathFileIndex].substring(1))
+          dst.write(src.text)
+        }
+        cmdList[classPathFileIndex] = '@'+dst.toString()
+      }
 
       //println cmd
     }

@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -263,6 +264,15 @@ public class ProcessManager {
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
+    if (SystemUtils.isJavaVersionAtLeast(900)) {
+      // needed for client stats gathering, see VMStats50 class, it's using class inspection
+      // to call getProcessCpuTime method
+      cmds.add("--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED");
+      // needed for server side code
+      cmds.add("--add-opens=java.xml/jdk.xml.internal=ALL-UNNAMED");
+      cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
+      cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
+    }
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);

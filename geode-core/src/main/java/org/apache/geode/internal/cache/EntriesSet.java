@@ -235,7 +235,7 @@ public class EntriesSet extends AbstractSet {
 
   @Override
   public Object[] toArray() {
-    return toArray(null);
+    return toArray((Object[]) null);
   }
 
   @Override
