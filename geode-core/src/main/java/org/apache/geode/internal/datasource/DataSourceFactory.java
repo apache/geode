@@ -53,29 +53,6 @@ public class DataSourceFactory {
   /** Creates a new instance of DataSourceFactory */
   public DataSourceFactory() {}
 
-  public static DataSource getHikariDataSource(Map configMap, List<ConfigProperty> props)
-      throws DataSourceCreateException {
-    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
-    if (configs.getURL() == null) {
-      logger.error("DataSourceFactory::getHikariDataSource:URL String to Database is null");
-      throw new DataSourceCreateException(
-          "DataSourceFactory::getHikariDataSource:URL String to Database is null");
-    }
-    try {
-      return new HikariJdbcDataSource(configs, props);
-    } catch (Exception ex) {
-      logger.error(String.format(
-          "DataSourceFactory::getHikariDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
-          ex.getLocalizedMessage()),
-          ex);
-      throw new DataSourceCreateException(
-          String.format(
-              "DataSourceFactory::getHikariDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
-              ex.getLocalizedMessage()),
-          ex);
-    }
-  }
-
   /**
    * This function returns the Basic datasource without any pooling.
    *
