@@ -74,7 +74,7 @@ fi
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
   # Template and output share a directory with this script, but variables are shared in the parent directory.
-  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} || exit 1
+  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} ${REPOSITORY_PUBLIC} || exit 1
 popd 2>&1 > /dev/null
 
 cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml

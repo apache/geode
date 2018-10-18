@@ -30,7 +30,7 @@ dependencies {
   testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
 
   integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   integrationTestCompile(project(':extensions:geode-modules-test'))
 

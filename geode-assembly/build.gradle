@@ -133,14 +133,16 @@ dependencies {
 
   testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
+
+
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   integrationTestCompile(project(':geode-pulse'))
   integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
@@ -161,11 +163,13 @@ dependencies {
 
   acceptanceTestCompile(project(':geode-core'))
   acceptanceTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
+
+
   uiTestCompile(project(':geode-core'))
   uiTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   uiTestCompile(project(':geode-pulse'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
@@ -180,7 +184,7 @@ dependencies {
 
   upgradeTestCompile(project(':geode-core'))
   upgradeTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 

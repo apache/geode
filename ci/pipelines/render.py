@@ -26,7 +26,7 @@ import jinja2.exceptions
 import os
 import subprocess
 
-def main(template_dir_name, geode_fork, geode_branch, upstream_fork):
+def main(template_dir_name, geode_fork, geode_branch, upstream_fork, repository_public):
 
     script_dir_ = os.path.dirname(os.path.abspath(__file__))
     shared_dir_ = os.path.join(script_dir_, 'shared')
@@ -48,6 +48,7 @@ def main(template_dir_name, geode_fork, geode_branch, upstream_fork):
     variables['repository']['branch'] = geode_branch
     variables['repository']['fork'] = geode_fork
     variables['repository']['upstream_fork'] = upstream_fork
+    variables['repository']['public'] = repository_public
 
     # Use the one-true-way to truncate fork and branches, trimming the Python bytestream characters from the front and
     # back. If this is too ugly, then convert the BASH functions into python files, and call that Python from the
@@ -79,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument("geode_fork", help="Name of the git fork")
     parser.add_argument("geode_branch", help="Branch against which pull-requests are made")
     parser.add_argument("upstream_fork", help="Name of the upstream into which this fork would merge")
+    parser.add_argument("repository_public", help="Is repository public?")
     # parser.add_argument("variables", help="Jinja variables file.")
     # parser.add_argument("output", help="Output target.")
     parser.add_argument("--debug", help="It's debug.  If you have to ask, you'll never know.", action="store_true")
@@ -90,5 +92,5 @@ if __name__ == '__main__':
 
     logging.debug(f"cwd: {os.getcwd()}")
 
-    main(_args.template_dir_name, _args.geode_fork, _args.geode_branch, _args.upstream_fork)
+    main(_args.template_dir_name, _args.geode_fork, _args.geode_branch, _args.upstream_fork, _args.repository_public)
 

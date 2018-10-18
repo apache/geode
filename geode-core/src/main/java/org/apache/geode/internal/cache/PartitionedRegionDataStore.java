@@ -1230,40 +1230,32 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return UPDATE_ACCESS_TIME_ON_INTEREST && this.keysOfInterest.containsKey(event.getKey());
   }
 
-
-
   protected void updateMemoryStats(final long memoryDelta) {
-    // Update stats
     this.partitionedRegion.getPrStats().incBytesInUse(memoryDelta);
-
     final long locBytes = this.bytesInUse.addAndGet(memoryDelta);
 
-    if (!this.partitionedRegion.isEntryEvictionPossible()) {
-      String logStr = null;
-      // only check for exceeding local max memory if we're not evicting entries.
-      // TODO, investigate precision issues with cast to long
-      if (!this.exceededLocalMaxMemoryLimit) { // previously OK
-        if (locBytes > this.maximumLocalBytes) { // not OK now
-          this.exceededLocalMaxMemoryLimit = true;
-          logStr =
-              "Partitioned Region %s has exceeded local maximum memory configuration %s Mb, current size is %s Mb";
-        }
-      } else {
-        if (locBytes <= this.maximumLocalBytes) {
-          this.exceededLocalMaxMemoryLimit = false;
-          logStr =
-              "Partitioned Region %s is at or below local maximum memory configuration %s Mb, current size is %s Mb";
-        }
+    // only check for exceeding local max memory if we're not evicting entries.
+    if (this.partitionedRegion.isEntryEvictionPossible()) {
+      return;
+    }
+
+    if (this.exceededLocalMaxMemoryLimit) { // previously over limit
+      if (locBytes <= this.maximumLocalBytes) { // not over limit now
+        this.exceededLocalMaxMemoryLimit = false;
+        logger.info(
+            "Partitioned Region {} is at or below local maximum memory configuration {} Mb, current size is {} Mb",
+            this.partitionedRegion.getFullPath(),
+            this.partitionedRegion.getLocalMaxMemory(),
+            locBytes / PartitionedRegionHelper.BYTES_PER_MB);
       }
-      if (logStr != null) {
-        Object[] logArgs = new Object[] {this.partitionedRegion.getFullPath(), logStr,
-            Long.valueOf(this.partitionedRegion.getLocalMaxMemory()),
-            Long.valueOf(locBytes / PartitionedRegionHelper.BYTES_PER_MB)};
-        if (this.exceededLocalMaxMemoryLimit) {
-          logger.warn(String.format(logStr, logArgs));
-        } else {
-          logger.info(String.format(logStr, logArgs));
-        }
+    } else { // previously not over limit
+      if (locBytes > this.maximumLocalBytes) { // over limit now
+        this.exceededLocalMaxMemoryLimit = true;
+        logger.warn(
+            "Partitioned Region {} has exceeded local maximum memory configuration {} Mb, current size is {} Mb",
+            this.partitionedRegion.getFullPath(),
+            this.partitionedRegion.getLocalMaxMemory(),
+            locBytes / PartitionedRegionHelper.BYTES_PER_MB);
       }
     }
   }

@@ -20,12 +20,12 @@ dependencies {
   compile(project(':geode-protobuf-messages'))
   testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   testCompile(project(':geode-protobuf'))
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   integrationTestCompile(project(':geode-protobuf'))
 

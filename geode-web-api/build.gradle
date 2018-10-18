@@ -62,7 +62,7 @@ dependencies {
 
 
   testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   testCompile(project(':geode-core'))
   testCompile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
@@ -71,10 +71,10 @@ dependencies {
   integrationTestCompile('org.springframework.security:spring-security-test:' + project.'spring-security.version')
 
   integrationTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
   integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
+    module exclude: 'geode-core'
   }
 }
 

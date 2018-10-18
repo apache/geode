@@ -15,12 +15,15 @@
 # limitations under the License.
 #
 
+{% from 'shared/shared_jinja.yml' import github_access with context %}
+
 ---
+
 resources:
 - name: build-concourse-dockerfile
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/docker/*
@@ -41,7 +44,7 @@ resources:
 - name: google-geode-builder
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/google-geode-builder
@@ -49,7 +52,7 @@ resources:
 - name: google-windows-geode-builder
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/google-windows-geode-builder
@@ -64,7 +67,7 @@ resources:
 - name: alpine-tools-dockerfile
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/alpine-tools/*
@@ -79,7 +82,7 @@ resources:
 - name: test-container-dockerfile
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/test-container/*
@@ -94,7 +97,7 @@ resources:
 - name: concourse-metadata-resource-dockerfile
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/resource-types/concourse-metadata-resource/*
@@ -109,7 +112,7 @@ resources:
 - name: metric-tools-dockerfile
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/metric-tools/*
@@ -124,7 +127,7 @@ resources:
 - name: gce-instances-resource-dockerfile
   type: git
   source:
-    uri: https://github.com/((geode-fork))/geode.git
+    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/resource-types/gce-instances-resource/*
