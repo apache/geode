@@ -20,8 +20,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import java.net.URL;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
@@ -43,24 +43,24 @@ import org.apache.geode.test.junit.rules.VMProvider;
 @Category({JDBCConnectorTest.class})
 public class CreatePooledJndiBindingDUnitTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
+  private final URL COMPOSE_RESOURCE_PATH =
       MySqlJdbcAsyncWriterIntegrationTest.class.getResource("mysql.yml");
 
-  @ClassRule
-  public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
+  @Rule
+  public DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
       .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database("test").build();
 
-  private static MemberVM locator, server1, server2;
+  private MemberVM locator, server1, server2;
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
 
-  @BeforeClass
-  public static void before() throws Exception {
+  @Before
+  public void before() throws Exception {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, "group1", locator.getPort());
