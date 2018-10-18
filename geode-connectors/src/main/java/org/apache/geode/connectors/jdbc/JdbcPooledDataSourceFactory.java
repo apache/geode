@@ -61,11 +61,11 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
         hikariValue = String.valueOf(Integer.valueOf(hikariValue) * MILLIS_PER_SECOND);
       }
       result.setProperty(hikariName, hikariValue);
-      // TODO: we are setting initializationFailTimeout to -1
-      // to prevent a failure of create jndi-binding when the
-      // database is not running. This causes the hikari pool
-      // to keep attempting to connect in the background.
     }
+    // TODO: we are setting initializationFailTimeout to -1
+    // to prevent a failure of create jndi-binding when the
+    // database is not running. This causes the hikari pool
+    // to keep attempting to connect in the background.
     result.setProperty("initializationFailTimeout", "-1");
     return result;
   }
