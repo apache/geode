@@ -48,14 +48,10 @@ class RepeatTest extends Test {
   protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
     def oldExecutor = super.createTestExecuter()
 
-    def workerProcessFactory = getProcessBuilderFactory()
-
     //Use the previously set worker process factory. If the test is
     //being run using the parallel docker plugin, this will be a docker
     //process factory
-    if(oldExecutor instanceof DefaultTestExecuter) {
-      workerProcessFactory = oldExecutor.workerFactory
-    }
+    def workerProcessFactory = oldExecutor.workerFactory
 
     return new OverriddenTestExecutor(workerProcessFactory, getActorFactory(),
         getModuleRegistry(),

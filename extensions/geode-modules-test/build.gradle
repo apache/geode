@@ -16,7 +16,7 @@
  */
 
 dependencies {
-  compileOnly ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
+  compileOnly('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
     exclude module: 'annotations-api'
     exclude module: 'coyote'
     exclude module: 'tribes'
@@ -26,8 +26,8 @@ dependencies {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
-  compile project(':geode-junit')
-  compile ('org.httpunit:httpunit:' + project.'httpunit.version') {
+  compile(project(':geode-junit'))
+  compile('org.httpunit:httpunit:' + project.'httpunit.version') {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }

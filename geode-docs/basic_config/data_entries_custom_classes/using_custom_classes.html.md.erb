@@ -49,3 +49,10 @@ The region uses hashing on keys. If you define a custom class to use as a key, f
 -   `equals`
 -   `hashCode`. The default `hashCode` inherited from `Object` uses identity, which is different in every system member. In partitioned regions, hashing based on identity puts data in the wrong place. For details, see the Java API documentation for `java.lang.Object`.
 
+Do not call `hashCode()` on an `enum` type data member
+within the key's custom `hashCode()` implementation.
+The `enum` `hashCode()` may not be overridden,
+and its hash is based upon an address.
+Therefore, an enumerated type's `hashCode()` return value can be different
+on each server, violating the restriction that `hashCode()` must return
+the same value on every server that hosts the region.

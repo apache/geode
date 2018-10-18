@@ -30,7 +30,7 @@ resources:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))((!docker-image-name))
     tag: latest
     username: ((!docker-username))
 - name: geode
@@ -63,11 +63,13 @@ resource_types:
   type: docker-image
   source:
     repository: jtarchie/pr
+# TODO : Is pipeline_prefix here correct?  is apachegeode-ci?  this bucket maybe doesn't exist?
+# Also see build jinja
 - name: concourse-metadata-resource
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}concourse-metadata-resource
+    repository: gcr.io/apachegeode-ci/((pipeline-prefix))concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 jobs:
@@ -102,7 +104,7 @@ jobs:
         platform: linux
         params:
           MAINTENANCE_VERSION: {{repository.branch}}
-          PUBLIC_BUCKET: ((!public-bucket))
+          ARTIFACT_BUCKET: ((artifact-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
         run:
           path: geode-ci/ci/scripts/build.sh
@@ -162,6 +164,8 @@ jobs:
               CPUS: {{test.CPUS}}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
+              UPSTREAM_FORK: ((upstream-fork))
+              GCP_PROJECT: ((gcp-project))
               RAM: {{test.RAM}}
             run:
               path: geode-ci/ci/scripts/start_instance.sh
@@ -195,7 +199,7 @@ jobs:
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
           PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
-          PUBLIC_BUCKET: ((!public-bucket))
+          ARTIFACT_BUCKET: ((artifact-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
         run:
           {%- if test.name=="StressNew" %}
@@ -240,7 +244,7 @@ jobs:
               ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{test.GRADLE_TASK}}
               MAINTENANCE_VERSION: {{repository.branch}}
-              PUBLIC_BUCKET: ((!public-bucket))
+              ARTIFACT_BUCKET: ((artifact-bucket))
               SERVICE_ACCOUNT: ((!concourse-gcp-account))
             run:
               path: geode-ci/ci/scripts/archive_results.sh

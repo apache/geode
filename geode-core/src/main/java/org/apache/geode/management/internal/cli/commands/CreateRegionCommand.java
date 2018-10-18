@@ -387,7 +387,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
         if (!specifiedGatewaySenders.isEmpty()) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
-              gatewaySenderIds));
+              (String[]) gatewaySenderIds));
         }
       }
     }
@@ -429,7 +429,8 @@ public class CreateRegionCommand extends InternalGfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       } else {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID, groups));
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
+                (String[]) groups));
       }
     }
 
