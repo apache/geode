@@ -267,19 +267,6 @@ jobs:
   plan:
   - get: geode-metrics-pipeline
     trigger: true
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((!pipeline-prefix))metrics
-        team: ((!concourse-team))
-        config_file: geode-metrics-pipeline/ci/pipelines/metrics.yml
-
-- name: set-metrics-pipeline
-  serial: true
-  public: ((!public-pipelines))
-  plan:
-  - get: geode-metrics-pipeline
-    trigger: true
   - task: create-geode-pipeline-yml
     config:
       platform: linux
