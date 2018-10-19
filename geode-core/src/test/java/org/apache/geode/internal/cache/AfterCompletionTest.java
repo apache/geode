@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.atLeastOnce;
@@ -21,9 +22,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -118,13 +116,13 @@ public class AfterCompletionTest {
   private void startDoOp() {
     doOpThread = new Thread(() -> afterCompletion.doOp(txState, cancelCriterion));
     doOpThread.start();
-    Awaitility.await().atMost(5, TimeUnit.MINUTES)
+    await()
         .untilAsserted(() -> verify(cancelCriterion, atLeastOnce()).checkCancelInProgress(null));
 
   }
 
   private void verifyDoOpFinished() {
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> !doOpThread.isAlive());
+    await().until(() -> !doOpThread.isAlive());
   }
 
 }

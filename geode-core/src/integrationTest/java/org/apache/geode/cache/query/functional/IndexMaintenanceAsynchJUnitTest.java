@@ -19,6 +19,8 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.query.CacheUtils.getQueryService;
+import static org.apache.geode.cache.query.internal.QueryObserverHolder.setInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -40,9 +42,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
@@ -113,14 +114,14 @@ public class IndexMaintenanceAsynchJUnitTest {
           return "index updates never became 8";
         }
       };
-      Wait.waitForCriterion(ev, 5000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       // queryString= "SELECT DISTINCT * FROM /portfolios p, p.positions.values pos where
       // pos.secId='IBM'";
       queryString = "SELECT DISTINCT * FROM /portfolios where status = 'active'";
-      query = CacheUtils.getQueryService().newQuery(queryString);
+      query = getQueryService().newQuery(queryString);
       QueryObserverImpl observer = new QueryObserverImpl();
-      QueryObserverHolder.setInstance(observer);
+      setInstance(observer);
 
       result = query.execute();
       if (!observer.isIndexesUsed) {

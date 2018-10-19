@@ -15,14 +15,13 @@
 
 package org.apache.geode.management;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -62,7 +61,7 @@ public class FederatingManagerIntegrationTest {
       manager.addMember(mockMember);
     }
 
-    Awaitility.waitAtMost(1, TimeUnit.SECONDS)
+    await()
         .until(() -> serverRule.getCache().getAllRegions().size() > 1);
     assertThat(manager.getAndResetLatestException()).isNull();
   }

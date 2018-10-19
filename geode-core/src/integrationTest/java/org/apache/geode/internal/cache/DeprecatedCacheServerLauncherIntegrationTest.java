@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.GEODE_NAMESPACE;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.LATEST_SCHEMA_LOCATION;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
@@ -190,7 +189,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     execAndValidate(".*The CacheServer has stopped\\.", "stop",
         "-dir=" + this.directory.getAbsolutePath());
 
-    await().atMost(2, MINUTES)
+    await()
         .untilAsserted(() -> assertThat(cacheServerDotSerFile).doesNotExist());
   }
 
@@ -225,17 +224,17 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     // now, we will forcefully kill the CacheServer process
     invokeFailSafe();
 
-    await().atMost(2, MINUTES)
+    await()
         .untilAsserted(() -> assertThat(this.processWrapper.getProcess().isAlive()).isFalse());
 
-    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(isProcessAlive(pid)).isFalse());
+    await().untilAsserted(() -> assertThat(isProcessAlive(pid)).isFalse());
 
     File dotCacheServerDotSerFile = new File(this.directory, ".cacheserver.ser");
 
     // assert that the .cacheserver.ser file remains...
     assertThat(dotCacheServerDotSerFile).exists();
 
-    await().atMost(2, MINUTES)
+    await()
         .until(() -> execAndWaitForOutputToMatch("CacheServer pid: " + pid + " status: stopped",
             "status", "-dir=" + this.directory.getName()));
 
@@ -265,8 +264,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
         "-classpath=" + getManifestJarFromClasspath(), "-rebalance");
 
-    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
-    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
+    await().untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
+    await().untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
 
@@ -290,8 +289,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
         "-classpath=" + getManifestJarFromClasspath(), "-rebalance");
 
-    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
-    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
+    await().untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
+    await().untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
 

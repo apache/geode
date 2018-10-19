@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getHostName;
@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -193,7 +192,7 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
   }
 
   private void awaitProxyIsPaused() {
-    Awaitility.await().atMost(60, SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
       Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
 
@@ -221,13 +220,13 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
   }
 
   private void awaitCreates(int expectedCreates) {
-    Awaitility.await().atMost(60, SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       verify(spyCacheListener, times(expectedCreates)).afterCreate(any());
     });
   }
 
   private void verifyStats() {
-    Awaitility.await().atMost(60, SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
       CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
       // TODO: consider verifying ccp.getQueueSize()

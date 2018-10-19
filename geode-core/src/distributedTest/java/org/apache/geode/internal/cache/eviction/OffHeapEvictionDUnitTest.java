@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static java.lang.Math.abs;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -30,12 +31,12 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.EvictionTest;
 
@@ -107,7 +108,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
           public boolean done() {
             // we have a primary
             final long currentEvictions = region.getTotalEvictions();
-            if (Math.abs(currentEvictions - noOfExpectedEvictions) <= 1) { // Margin of error is 1
+            if (abs(currentEvictions - noOfExpectedEvictions) <= 1) { // Margin of error is 1
               return true;
             } else if (currentEvictions > noOfExpectedEvictions) {
               fail(description());
@@ -120,7 +121,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
                 + region.getTotalEvictions();
           }
         };
-        Wait.waitForCriterion(wc, 60000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
       }
     });
   }

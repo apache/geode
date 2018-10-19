@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.getProperties;
+import static java.util.Map.Entry;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -25,7 +28,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -53,13 +55,13 @@ import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.HeapLRUController;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -134,17 +136,17 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
 
             try {
               setEvictionPercentage(heapPercentage);
-              final Properties sp = System.getProperties();
+              final Properties sp = getProperties();
               final int expectedInvocations = 10;
               final int maximumWaitSeconds = 60; // seconds
               final int pollWaitMillis = evictorInterval * 2;
-              assertTrue(pollWaitMillis < (TimeUnit.SECONDS.toMillis(maximumWaitSeconds) * 4));
+              assertTrue(pollWaitMillis < (SECONDS.toMillis(maximumWaitSeconds) * 4));
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
               for (final Iterator i =
                   ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i
                       .hasNext();) {
-                final Map.Entry entry = (Map.Entry) i.next();
+                final Entry entry = (Entry) i.next();
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
                   continue;
@@ -170,7 +172,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                   return excuse;
                 }
               };
-              Wait.waitForCriterion(wc, 60000, 1000, true);
+              GeodeAwaitility.await().untilAsserted(wc);
 
               int entriesEvicted = 0;
 
@@ -267,18 +269,18 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         new SerializableCallable("Assert bucket attributes and eviction") {
           public Object call() throws Exception {
             try {
-              final Properties sp = System.getProperties();
+              final Properties sp = getProperties();
               final int expectedInvocations = 10;
               final int maximumWaitSeconds = 60; // seconds
               final int pollWaitMillis = evictorInterval * 2;
-              assertTrue(pollWaitMillis < (TimeUnit.SECONDS.toMillis(maximumWaitSeconds) * 4));
+              assertTrue(pollWaitMillis < (SECONDS.toMillis(maximumWaitSeconds) * 4));
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
 
               long entriesEvicted = 0;
               for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
                   .hasNext();) {
-                final Map.Entry entry = (Map.Entry) i.next();
+                final Entry entry = (Entry) i.next();
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
@@ -305,7 +307,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                   return excuse;
                 }
               };
-              Wait.waitForCriterion(wc, 60000, 1000, true);
+              GeodeAwaitility.await().untilAsserted(wc);
 
               entriesEvicted = pr.getTotalEvictions();
               return new Long(entriesEvicted);

@@ -17,13 +17,12 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.lang.Math.abs;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -320,7 +319,7 @@ public class RebalanceCommandDUnitTest {
   }
 
   private static void waitForManagerMBean() {
-    Awaitility.waitAtMost(120, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       final ManagementService service =
           ManagementService.getManagementService(ClusterStartupRule.getCache());
       final DistributedRegionMXBean bean =

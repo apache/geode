@@ -73,6 +73,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -1378,7 +1379,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
             return excuse;
           }
         };
-        Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
 
         CertifiableTestCacheListener ctl =
             (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
@@ -1857,7 +1858,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
             return excuse;
           }
         };
-        Wait.waitForCriterion(wc, 30 * 1000, 250, true);
+        GeodeAwaitility.await().untilAsserted(wc);
 
         Region region = getRootRegion().getSubregion(regions[0]);
         assertNotNull(region);

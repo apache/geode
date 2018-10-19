@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -107,13 +107,13 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
 
     member2.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
     });
 
     member1.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
 
       ExpiryTask.permitExpiration();

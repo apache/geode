@@ -18,17 +18,15 @@ package org.apache.geode.distributed.internal.locks;
 import static java.lang.Thread.currentThread;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.DistributedLockService.getServiceNamed;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.awaitility.Awaitility.await;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -138,14 +136,14 @@ public class DLockServiceCharacterizationTests {
 
     // otherThread should be waiting for lock.
 
-    await("other thread is waiting on this lock").atMost(3, TimeUnit.SECONDS)
+    await("other thread is waiting on this lock")
         .until(() -> key1.getUsageCount() == 2);
     assertThat(key1.getRecursion()).isEqualTo(0);
     assertThat(key1.getThread()).isEqualTo(currentThread());
 
     dLockService.unlock("key1");
 
-    await("other thread has acquired this lock").atMost(3, TimeUnit.SECONDS)
+    await("other thread has acquired this lock")
         .until(() -> key1.getThread() == otherThread);
 
     assertThat(key1.getRecursion()).isEqualTo(0);
@@ -242,21 +240,21 @@ public class DLockServiceCharacterizationTests {
         lockAcquired.set(true);
       })).isNull();
 
-      Awaitility.await().atMost(5, TimeUnit.MINUTES).until(serviceDestroyed::get);
+      await().until(serviceDestroyed::get);
       service.unlock(lockName);
       return null;
     };
 
     // start a new thread to wait for lock
     Callable<Void> getBlocked = () -> {
-      Awaitility.await("wait for lock to be acquired").atMost(5, TimeUnit.MINUTES).until(
+      await("wait for lock to be acquired").until(
           lockAcquired::get);
       service.lock(lockName, -1, -1);
       return null;
     };
 
     Callable<Void> destroyLockService = () -> {
-      Awaitility.await("lock acquired; we don't want to break that").atMost(25, TimeUnit.SECONDS)
+      await("lock acquired; we don't want to break that")
           .until(lockAcquired::get);
       DistributedLockService.destroy(serviceName);
       serviceDestroyed.set(true);

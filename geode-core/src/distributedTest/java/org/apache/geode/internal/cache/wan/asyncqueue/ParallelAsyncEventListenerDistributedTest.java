@@ -21,12 +21,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.File;
 import java.io.IOException;
@@ -778,7 +777,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     assertThat(vm0.invoke(() -> getBucketMovingAsyncEventListener().isMoved())).isTrue();
 
-    vm1.invoke(() -> await().atMost(TWO_MINUTES)
+    vm1.invoke(() -> await()
         .untilAsserted(() -> assertThat(getBucketMovingAsyncEventListener().isMoved()).isTrue()));
   }
 
@@ -1149,12 +1148,12 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     AsyncEventQueueStats asyncEventQueueStats = asyncEventQueue.getStatistics();
     assertThat(asyncEventQueueStats).isNotNull();
 
-    await().atMost(TWO_MINUTES)
+    await()
         .untilAsserted(
             () -> assertThat(asyncEventQueueStats.getEventQueueSize()).isEqualTo(queueSize));
 
     if (asyncEventQueue.isParallel()) {
-      await().atMost(TWO_MINUTES)
+      await()
           .untilAsserted(() -> assertThat(asyncEventQueueStats.getSecondaryEventQueueSize())
               .isEqualTo(secondaryQueueSize));
 
@@ -1210,12 +1209,12 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   private void validateSpyAsyncEventListenerEventsMap(int expectedSize) {
     Map eventsMap = (Map<?, ?>) getSpyAsyncEventListener().getEventsMap();
-    await().atMost(TWO_MINUTES).untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
+    await().untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
   }
 
   private void waitForAsyncQueueToEmpty() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).until(() -> areRegionQueuesEmpty(gatewaySender));
+    await().until(() -> areRegionQueuesEmpty(gatewaySender));
   }
 
   private void waitForDispatcherToPause() {
@@ -1225,7 +1224,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   private void waitForParallelAsyncEventQueueSize(int expectedRegionQueueSize) {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
 
-    await().atMost(TWO_MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       Set<RegionQueue> regionQueues = gatewaySender.getQueues();
       assertThat(regionQueues).isNotEmpty().hasSize(1);
 
@@ -1235,7 +1234,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForPrimaryToMove() {
-    await().atMost(TWO_MINUTES).until(() -> getPrimaryMovingAsyncEventListener().isMoved());
+    await().until(() -> getPrimaryMovingAsyncEventListener().isMoved());
   }
 
   private InternalGatewaySender getInternalGatewaySender() {

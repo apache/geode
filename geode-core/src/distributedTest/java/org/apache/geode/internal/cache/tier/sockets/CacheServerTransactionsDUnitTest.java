@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.lang.Thread.yield;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -45,9 +47,9 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -436,10 +438,10 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     try {
-      LogWriterUtils.getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
+      getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return r1.getEntry(k1).getValue().equals(client_k1);
         }
 
@@ -447,11 +449,11 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       ev = new WaitCriterion() {
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return r1.getEntry(k2).getValue().equals(client_k2);
         }
 
@@ -459,7 +461,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } catch (Exception e) {
       fail("Exception in trying to get due to " + e);
     }
@@ -536,13 +538,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     try {
-      LogWriterUtils.getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
+      getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
       // wait until
       // condition is
       // met
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return r1.getEntry(k1).getValue().equals(k1);
         }
 
@@ -550,11 +552,11 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       ev = new WaitCriterion() {
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return r1.getEntry(k2).getValue().equals(k2);
         }
 
@@ -562,7 +564,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } catch (Exception e) {
       fail("Exception in trying to get due to " + e);
     }
@@ -575,7 +577,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     try {
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return r1.getEntry(k1).getValue().equals(server1_k1);
         }
 
@@ -584,11 +586,11 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
               + r1.getEntry(k1).getValue();
         }
       };
-      Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       ev = new WaitCriterion() {
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return r1.getEntry(k2).getValue().equals(server1_k2);
         }
 
@@ -596,7 +598,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } catch (Exception e) {
       fail("Exception in trying to get due to " + e);
     }

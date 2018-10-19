@@ -14,9 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -29,7 +29,7 @@ public class ShowLogCommandOverHttpDistributedTest extends ShowLogCommandDistrib
   @Override
   public void before() throws Exception {
     gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
-    Awaitility.await().atMost(2, TimeUnit.MINUTES)
+    await()
         .until(ShowLogCommandDistributedTestBase::allMembersAreConnected);
   }
 }

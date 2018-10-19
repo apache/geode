@@ -21,10 +21,10 @@ import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
@@ -2375,7 +2375,7 @@ public class DiskRegionJUnitTest {
 
   private void awaitFuture(AtomicReference<Future<Void>> voidFuture)
       throws InterruptedException, ExecutionException, TimeoutException {
-    await().atMost(5, MINUTES).until(() -> voidFuture.get() != null);
+    await().until(() -> voidFuture.get() != null);
     awaitFuture(voidFuture.get());
   }
 
@@ -2518,8 +2518,8 @@ public class DiskRegionJUnitTest {
   }
 
   private void verifyClosedDueToDiskAccessException(Region<?, ?> region) {
-    await().atMost(5, MINUTES).until(() -> getDiskStore(region).isClosed());
-    await().atMost(5, MINUTES).until(() -> cache.isClosed());
+    await().until(() -> getDiskStore(region).isClosed());
+    await().until(() -> cache.isClosed());
     Throwable thrown = catchThrowable(() -> cache.createRegionFactory().create(regionName));
     assertThat(thrown).isInstanceOf(CacheClosedException.class)
         .hasCauseInstanceOf(DiskAccessException.class);

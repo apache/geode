@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.ha.HAConflationDUnitTest.LOCK;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -40,10 +41,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -251,7 +252,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         WaitCriterion w = new WaitCriterion() {
           public boolean done() {
-            synchronized (HAConflationDUnitTest.LOCK) {
+            synchronized (LOCK) {
 
               if (!lastKeyArrived) {
                 try {
@@ -269,7 +270,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
           }
         };
 
-        Wait.waitForCriterion(w, 3 * 60 * 1000, interval, true);
+        GeodeAwaitility.await().untilAsserted(w);
       }
     };
     return checkEvents;

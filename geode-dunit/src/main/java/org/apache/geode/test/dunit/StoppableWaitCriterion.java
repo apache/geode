@@ -14,12 +14,14 @@
  */
 package org.apache.geode.test.dunit;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+
 /**
  * Defines an asynchronous criterion with an optional method to fail early before timeout.
  *
  * Extracted from DistributedTestCase.
  *
- * @deprecated Use {@link org.awaitility.Awaitility} instead.
+ * @deprecated Use {@link GeodeAwaitility} instead.
  */
 public interface StoppableWaitCriterion extends WaitCriterion {
 

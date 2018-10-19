@@ -1272,11 +1272,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
   }
 
-  // For testing purposes only!
-  void setIsRunningForTest() {
-    this.running.set(true);
-  }
-
   private ServerState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(ExceptionUtils.getFullStackTrace(cause) + errorMessage);
     return new ServerState(this, Status.NOT_RESPONDING, errorMessage);

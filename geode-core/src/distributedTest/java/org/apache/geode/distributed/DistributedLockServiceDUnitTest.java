@@ -16,6 +16,12 @@ package org.apache.geode.distributed;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.Long.MAX_VALUE;
+import static java.lang.System.out;
+import static java.lang.Thread.sleep;
+import static org.apache.geode.distributed.DistributedLockService.getServiceNamed;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.ThreadUtils.dumpAllStacks;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -30,14 +36,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -57,6 +61,7 @@ import org.apache.geode.distributed.internal.locks.RemoteThread;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -195,7 +200,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DLockService localService =
             (DLockService) DistributedLockService.getServiceNamed(serviceName);
 
-        Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        await()
             .untilAsserted(() -> assertThat(localService.getStats().getLockWaitsInProgress())
                 .isEqualTo(vmThreads[vmId]));
       });
@@ -329,7 +334,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vmList.remove(originalGrantorVM);
 
-    Awaitility.await("vm0 leave has been processed").atMost(20, TimeUnit.SECONDS)
+    await("vm0 leave has been processed")
         .until(() -> vmList.parallelStream()
             .noneMatch(vm -> vm.invoke(() -> InternalDistributedSystem
                 .getAnyInstance()
@@ -1456,20 +1461,20 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     final String name = getUniqueName();
     distributedCreateService(2, name, true);
-    final DistributedLockService service = DistributedLockService.getServiceNamed(name);
+    final DistributedLockService service = getServiceNamed(name);
 
     // Get lock from other VM. Since same thread needs to lock and unlock,
     // invoke asynchronously, get lock, wait to be notified, then unlock.
-    VM vm1 = VM.getVM(1);
+    VM vm1 = getVM(1);
     vm1.invokeAsync(new SerializableRunnable("Lock & unlock in vm1") {
       public void run() {
-        DistributedLockService service2 = DistributedLockService.getServiceNamed(name);
+        DistributedLockService service2 = getServiceNamed(name);
         assertThat(service2.lock("lock", -1, -1)).isTrue();
         synchronized (monitor) {
           try {
             monitor.wait();
           } catch (InterruptedException ex) {
-            System.out.println("Unexpected InterruptedException");
+            out.println("Unexpected InterruptedException");
             fail("interrupted");
           }
         }
@@ -1477,7 +1482,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       }
     });
     // Let vm1's thread get the lock and go into wait()
-    Thread.sleep(100);
+    sleep(100);
 
     Thread thread = new Thread(new Runnable() {
       public void run() {
@@ -1491,7 +1496,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread.start();
 
     // Let thread start, make sure it's blocked in suspendLocking
-    Thread.sleep(100);
+    sleep(100);
     assertThat(getGot() || getDone())
         .withFailMessage("Before release, got: " + getGot() + ", done: " + getDone()).isFalse();
 
@@ -1513,9 +1518,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     if (!getGot() || !getDone()) {
-      ThreadUtils.dumpAllStacks();
+      dumpAllStacks();
     }
     assertThat(getGot() && getDone())
         .withFailMessage("After release, got: " + getGot() + ", done: " + getDone()).isTrue();

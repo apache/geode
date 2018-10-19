@@ -14,12 +14,14 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -44,10 +46,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.awaitility.Awaitility;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -101,13 +100,13 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -502,7 +501,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static void waitForAsyncEventQueueSize(String senderId, int numQueueEntries,
       boolean localSize) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> checkAsyncEventQueueSize(senderId, numQueueEntries, localSize));
   }
 
@@ -729,12 +728,12 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       }
     }
     final AsyncEventQueueStats statistics = ((AsyncEventQueueImpl) queue).getStatistics();
-    Awaitility.await().atMost(120, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals("Expected queue entries: " + queueSize + " but actual entries: "
                 + statistics.getEventQueueSize(), queueSize, statistics.getEventQueueSize()));
     if (isParallel) {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         assertEquals(
             "Expected events in the secondary queue is " + secondaryQueueSize + ", but actual is "
                 + statistics.getSecondaryEventQueueSize(),
@@ -853,7 +852,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return "Expected sender primary state to be true but is false";
       }
     };
-    Wait.waitForCriterion(wc, 10000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private static GatewaySender getGatewaySenderById(Set<GatewaySender> senders, String senderId) {
@@ -926,19 +925,6 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     } finally {
       exln.remove();
     }
-  }
-
-  public static void pauseWaitCriteria(final long millisec) {
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return "Expected to wait for " + millisec + " millisec.";
-      }
-    };
-    Wait.waitForCriterion(wc, millisec, 500, false);
   }
 
   public static int createReceiver(int locPort) {
@@ -1089,7 +1075,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
 
-      final Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      final Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
@@ -1104,7 +1090,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
               + r.keySet().size() + " present region keyset " + r.keySet();
         }
       };
-      Wait.waitForCriterion(wc, 240000, 500, true);
+      GeodeAwaitility.await().untilAsserted(wc);
     } finally {
       exp.remove();
       exp1.remove();
@@ -1192,7 +1178,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size();
       }
     };
-    Wait.waitForCriterion(wc, 60000, 500, true); // TODO:Yogs
+    GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
   }
 
   public static void validateAsyncEventForOperationDetail(String asyncQueueId,
@@ -1221,7 +1207,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size();
       }
     };
-    Wait.waitForCriterion(wc, 60000, 500, true); // TODO:Yogs
+    GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
     Collection values = eventsMap.values();
     Iterator itr = values.iterator();
     while (itr.hasNext()) {
@@ -1257,7 +1243,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size();
       }
     };
-    Wait.waitForCriterion(wc, 60000, 500, true); // TODO:Yogs
+    GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
 
     Iterator<AsyncEvent> itr = eventsMap.values().iterator();
     while (itr.hasNext()) {
@@ -1294,7 +1280,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           return "Expected queue size to be : " + 0 + " but actual entries: " + size;
         }
       };
-      Wait.waitForCriterion(wc, 60000, 500, true);
+      GeodeAwaitility.await().untilAsserted(wc);
 
     } else {
       WaitCriterion wc = new WaitCriterion() {
@@ -1319,7 +1305,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           return "Expected queue size to be : " + 0 + " but actual entries: " + size;
         }
       };
-      Wait.waitForCriterion(wc, 60000, 500, true);
+      GeodeAwaitility.await().untilAsserted(wc);
     }
   }
 

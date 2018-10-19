@@ -14,8 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
@@ -29,7 +28,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -436,7 +434,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   private void putAndWaitForSuccess(VM vm, final String regionName, final Serializable key,
       final Serializable value) {
-    Awaitility.await().atMost(MAX_WAIT, MILLISECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertThatCode(() -> putInVM(vm, regionName, key, value)).doesNotThrowAnyException();
     });
   }
@@ -464,7 +462,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       for (int i = 0; i < expectedPorts.length; i++) {
         expectedEndpointPorts.add(new Integer(expectedPorts[i]));
       }
-      Awaitility.await().atMost(5, SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         List<ServerLocation> endpoints;
         HashSet actualEndpointPorts;
         endpoints = pool.getCurrentServers();
@@ -528,7 +526,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     vm.invoke("wait for join", () -> {
       MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
       try {
-        Awaitility.await().atMost(10, SECONDS).until(() -> listener.getJoins() > 0);
+        await().until(() -> listener.getJoins() > 0);
       } catch (ConditionTimeoutException e) {
         // do nothing here - caller will perform validations
       }
@@ -539,7 +537,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     vm.invoke("wait for crash", () -> {
       MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
       try {
-        Awaitility.await().atMost(10, SECONDS).until(() -> listener.getCrashes() > 0);
+        await().until(() -> listener.getCrashes() > 0);
       } catch (ConditionTimeoutException e) {
         // do nothing here - caller will perform validations
       }
@@ -550,7 +548,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     vm.invoke("wait for departure", () -> {
       MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
       try {
-        Awaitility.await().atMost(10, SECONDS).until(() -> listener.getDepartures() > 0);
+        await().until(() -> listener.getDepartures() > 0);
       } catch (ConditionTimeoutException e) {
         // do nothing here - caller will perform validations
       }

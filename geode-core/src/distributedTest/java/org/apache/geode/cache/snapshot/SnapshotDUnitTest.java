@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -25,12 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -227,7 +226,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
             CountingAsyncEventListener aeqListener =
                 (CountingAsyncEventListener) aeq.getAsyncEventListener();
             if (aeq.isPrimary()) {
-              Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+              await()
                   .until(() -> aeqListener.getEvents() == NUM_ENTRIES);
               numAeqEvents = aeqListener.getEvents();
             }

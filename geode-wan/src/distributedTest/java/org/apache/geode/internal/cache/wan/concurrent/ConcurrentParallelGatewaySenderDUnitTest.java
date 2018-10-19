@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.net.SocketException;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -599,7 +598,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     AsyncInvocation inv1 =
         vm7.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
 
-    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
+    vm2.invoke(() -> await()
         .untilAsserted(() -> assertEquals(
             "Failure in waiting for at least 10 events to be received by the receiver", true,
             (getRegionSize(getTestMethodName() + "_PR") > 10))));
@@ -611,7 +610,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     AsyncInvocation inv3 =
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
-    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
+    vm2.invoke(() -> await()
         .untilAsserted(() -> assertEquals(
             "Failure in waiting for additional 20 events to be received by the receiver ", true,
             getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));

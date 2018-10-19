@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -40,7 +41,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -241,8 +241,7 @@ public class TXManagerImplTest {
 
         latch.countDown();
 
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> tx1.getLock().hasQueuedThreads());
 
         txMgr.removeHostedTXState(txid);
@@ -325,8 +324,7 @@ public class TXManagerImplTest {
 
         TXStateProxy existingTx = masqueradeToRollback();
         latch.countDown();
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> tx1.getLock().hasQueuedThreads());
 
         rollbackTransaction(existingTx);

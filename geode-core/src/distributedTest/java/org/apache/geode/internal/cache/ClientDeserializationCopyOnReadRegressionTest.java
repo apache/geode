@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -252,7 +253,7 @@ public class ClientDeserializationCopyOnReadRegressionTest extends ClientServerT
             return "region queue never became empty";
           }
         };
-        Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
 
         // Capture the current processed message count to know
         // when the next message has been serialized
@@ -276,7 +277,7 @@ public class ClientDeserializationCopyOnReadRegressionTest extends ClientServerT
             return null;
           }
         };
-        Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
 
         // assert one serialization to send value to interested client
         // more than one implies copy-on-read behavior (bad)

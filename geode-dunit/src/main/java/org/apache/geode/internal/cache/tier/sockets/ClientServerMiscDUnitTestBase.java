@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -33,9 +34,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -636,23 +635,22 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     populateCache();
     server1.invoke(() -> ClientServerMiscDUnitTestBase.put());
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region1.getEntry(k1).getValue();
       return k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region1.getEntry(k2).getValue();
       return k2.equals(val);
     });
 
-
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region2.getEntry(k1).getValue();
       return k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region2.getEntry(k2).getValue();
       return k2.equals(val);
     });
@@ -859,7 +857,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(prRegion);
     pool = p;
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       try {
         conn = pool.acquireConnection();
         return conn != null;
@@ -1102,7 +1100,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       final CacheClientNotifier ccn = cacheServer.getAcceptor().getCacheClientNotifier();
 
       assertNotNull(ccn);
-      Awaitility.await().atMost(40, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> ccn.getClientProxies().size() == 0);
     } catch (Exception ex) {
       System.out.println("The size of the client proxies != 0");
@@ -1135,7 +1133,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
     assertNotNull(ccn);
 
-    Awaitility.await().atMost(40, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+    await()
         .until(() -> ccn.getClientProxies().size() == 1);
   }
 
@@ -1200,23 +1198,23 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
     // no interest registered in region1 - it should hold client values, which are
     // the same as the keys
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r1.getEntry(k1).getValue();
       return k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r1.getEntry(k2).getValue();
       return k2.equals(val);
     });
 
     // interest was registered in region2 - it should contain server values
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r2.getEntry(k1).getValue();
       return server_k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r2.getEntry(k2).getValue();
       return server_k2.equals(val);
     });
@@ -1238,16 +1236,16 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       assertNotNull(r1);
       assertNotNull(r2);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r1.getEntry(k1).getValue() == null);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r1.getEntry(k2).getValue() == null);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r2.getEntry(k1).getValue() == null);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r2.getEntry(k2).getValue() == null);
 
     } catch (Exception ex) {
@@ -1261,10 +1259,10 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       final Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       assertNotNull(r2);
 
-      Awaitility.waitAtMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> server_k1.equals(r2.getEntry(k1).getValue()));
 
-      Awaitility.waitAtMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> server_k2.equals(r2.getEntry(k2).getValue()));
 
       // assertIndexDetailsEquals(server_k2, r2.getEntry(k2).getValue());

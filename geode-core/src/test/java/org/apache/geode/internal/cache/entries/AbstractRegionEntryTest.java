@@ -35,13 +35,18 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.OffHeapMemoryStats;
@@ -113,13 +118,116 @@ public class AbstractRegionEntryTest {
     }
   }
 
+  @Test(expected = ConcurrentCacheModificationException.class)
+  public void gatewayEventsFromSameDSShouldThrowCMEIfMisordered() {
+    // create 2 gateway events with the same dsid, but different timestamp
+    // apply them in misorder, it should throw CME
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    String value = "value";
+    AbstractRegionEntry re = new TestableRegionEntry(lr, value);
+    InternalDistributedMember member1 = mock(InternalDistributedMember.class);
+
+    EntryEventImpl entryEvent1 = new EntryEventImpl();
+    entryEvent1.setRegion(lr);
+    when(lr.getCache()).thenReturn(cache);
+    when(cache.getGatewayConflictResolver()).thenReturn(null);
+
+    VersionTag tag1 = VersionTag.create(member1);
+    tag1.setVersionTimeStamp(1);
+    tag1.setDistributedSystemId(2);
+    tag1.setIsGatewayTag(true);
+
+    VersionTag tag2 = VersionTag.create(member1);
+    tag2.setVersionTimeStamp(2);
+    tag2.setDistributedSystemId(2);
+    tag2.setIsGatewayTag(true);
+
+    ((TestableRegionEntry) re).setVersions(tag2);
+    assertEquals(tag2.getVersionTimeStamp(),
+        re.getVersionStamp().asVersionTag().getVersionTimeStamp());
+
+    // apply tag1 with smaller timestamp should throw CME
+    entryEvent1.setVersionTag(tag1);
+    re.processVersionTag(entryEvent1);
+  }
+
+  @Test
+  public void gatewayEventsFromSameDSShouldCompareTimestamp() {
+    // create 2 gateway events with the same dsid, but different timestamp
+    // apply them in correct order, it should pass
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    String value = "value";
+    AbstractRegionEntry re = new TestableRegionEntry(lr, value);
+    InternalDistributedMember member1 = mock(InternalDistributedMember.class);
+
+    EntryEventImpl entryEvent1 = new EntryEventImpl();
+    entryEvent1.setRegion(lr);
+    when(lr.getCache()).thenReturn(cache);
+    when(cache.getGatewayConflictResolver()).thenReturn(null);
+
+    VersionTag tag1 = VersionTag.create(member1);
+    tag1.setVersionTimeStamp(1);
+    tag1.setDistributedSystemId(2);
+    tag1.setIsGatewayTag(true);
+
+    VersionTag tag2 = VersionTag.create(member1);
+    tag2.setVersionTimeStamp(2);
+    tag2.setDistributedSystemId(2);
+    tag2.setIsGatewayTag(true);
+
+    ((TestableRegionEntry) re).setVersions(tag1);
+    assertEquals(tag1.getVersionTimeStamp(),
+        re.getVersionStamp().asVersionTag().getVersionTimeStamp());
+
+    // apply tag2 should be accepted
+    entryEvent1.setVersionTag(tag2);
+    re.processVersionTag(entryEvent1);
+  }
+
   public static class TestableRegionEntry extends AbstractRegionEntry
-      implements OffHeapRegionEntry {
+      implements OffHeapRegionEntry, VersionStamp {
 
     private Object value;
+    private VersionTag tag;
+    private long timeStamp = 0;
 
     protected TestableRegionEntry(RegionEntryContext context, Object value) {
       super(context, value);
+    }
+
+    @Override
+    public void setVersionTimeStamp(long timeStamp) {
+      this.timeStamp = timeStamp;
+    }
+
+    @Override
+    public void setVersions(VersionTag tag) {
+      this.tag = tag;
+      this.timeStamp = tag.getVersionTimeStamp();
+    }
+
+    @Override
+    public void setMemberID(VersionSource memberID) {
+
+    }
+
+    @Override
+    public VersionTag asVersionTag() {
+      return tag;
+    }
+
+    @Override
+    public void processVersionTag(InternalRegion region, VersionTag tag, boolean isTombstoneFromGII,
+        boolean hasDelta, VersionSource versionSource,
+        InternalDistributedMember sender, boolean checkConflicts) {
+
+    }
+
+    @Override
+    public VersionStamp getVersionStamp() {
+      return this;
     }
 
     @Override
@@ -185,6 +293,41 @@ public class AbstractRegionEntryTest {
     @Override
     public boolean setAddress(long expectedAddr, long newAddr) {
       return false;
+    }
+
+    @Override
+    public int getEntryVersion() {
+      return 0;
+    }
+
+    @Override
+    public long getRegionVersion() {
+      return 0;
+    }
+
+    @Override
+    public long getVersionTimeStamp() {
+      return this.timeStamp;
+    }
+
+    @Override
+    public VersionSource getMemberID() {
+      return null;
+    }
+
+    @Override
+    public int getDistributedSystemId() {
+      return 2;
+    }
+
+    @Override
+    public short getRegionVersionHighBytes() {
+      return 0;
+    }
+
+    @Override
+    public int getRegionVersionLowBytes() {
+      return 0;
     }
   }
 }

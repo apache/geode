@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static java.lang.Math.abs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -52,13 +53,13 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -115,7 +116,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
         WaitCriterion wc = new WaitCriterion() {
           public boolean done() {
             final long currentEvictions = region.getTotalEvictions();
-            if (Math.abs(currentEvictions - noOfExpectedEvictions) <= 1) { // Margin of error is 1
+            if (abs(currentEvictions - noOfExpectedEvictions) <= 1) { // Margin of error is 1
               return true;
             } else if (currentEvictions > noOfExpectedEvictions) {
               fail(description());
@@ -128,7 +129,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
                 + region.getTotalEvictions();
           }
         };
-        Wait.waitForCriterion(wc, 60000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
       }
     });
   }

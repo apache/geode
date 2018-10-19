@@ -34,12 +34,12 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -329,7 +329,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitForReceivedMessages(final VM vm, final long expected) {
-    Wait.waitForCriterion(new WaitCriterion() {
+    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
       @Override
       public boolean done() {
@@ -340,7 +340,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
       public String description() {
         return "Expected " + expected + " but got " + getReceivedMessages(vm);
       }
-    }, 2000, 100, true);
+    });
   }
 
   private long getReceivedMessages(VM vm) {

@@ -20,6 +20,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -43,10 +44,10 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -166,7 +167,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         } catch (Exception ex) {
           throw new RuntimeException("exception putting entries", ex);
         }
-        LogWriterUtils.getLogWriter()
+        getLogWriter()
             .info("****************paperRegion.get(afterCreate)***************"
                 + paperRegion.get("afterCreate"));
 
@@ -186,7 +187,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
             return "Waiting for event";
           }
         };
-        Wait.waitForCriterion(ev, 3000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       }
     });
 

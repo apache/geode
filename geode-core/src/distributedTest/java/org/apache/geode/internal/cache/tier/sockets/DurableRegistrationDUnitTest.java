@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -740,7 +741,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 15 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   protected static int getNumberOfClientProxies() {

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.internal.cache.CacheObserverHolder.setInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -24,7 +27,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Ignore;
@@ -70,6 +72,7 @@ import org.apache.geode.internal.cache.Token.Tombstone;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -774,7 +777,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     try {
       final CountDownLatch krfCreated = new CountDownLatch(1);
       final AtomicBoolean oplogSwitched = new AtomicBoolean(false);
-      CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      setInstance(new CacheObserverAdapter() {
 
 
         @Override
@@ -787,7 +790,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
         public void afterWritingBytes() {
           if (oplogSwitched.get()) {
             try {
-              if (!krfCreated.await(3000, TimeUnit.SECONDS)) {
+              if (!krfCreated.await(3000, SECONDS)) {
                 fail("KRF was not created in 30 seconds!");
               }
             } catch (InterruptedException e) {
@@ -818,7 +821,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
         while (krfCreated.getCount() > 0) {
           i++;
           region.put("key" + (i % 3), i);
-          Thread.sleep(2);
+          sleep(2);
         }
       } catch (CacheClosedException | DiskAccessException expected) {
         // do nothing
@@ -826,7 +829,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
       // Wait for the region to be destroyed. The region won't be destroyed
       // until the async flusher thread ends up switching oplogs
-      Wait.waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
         @Override
         public boolean done() {
@@ -837,7 +840,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
         public String description() {
           return "Region was not destroyed : " + region.isDestroyed();
         }
-      }, 3000 * 1000, 100, true);
+      });
       closeCache();
     } finally {
       ex.remove();

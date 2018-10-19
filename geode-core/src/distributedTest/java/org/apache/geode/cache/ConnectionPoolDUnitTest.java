@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -66,6 +67,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -445,7 +447,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool);
       }
     };
-    Wait.waitForCriterion(ev, 2 * 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals("expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool),
         true, balanced(pool, expectedConsPerServer));
   }
@@ -487,7 +489,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals("unexpected denylistedServers=" + pool.getDenylistedServers(), 0,
         pool.getDenylistedServers().size());
   }
@@ -510,7 +512,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(ev, 5 * 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   /**
@@ -1380,7 +1382,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return null;
             }
           };
-          Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
 
           // make sure no replacements are happening.
           // since we have 2 threads and 2 cnxs and 1 server
@@ -1434,7 +1436,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return excuse;
             }
           };
-          Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+          GeodeAwaitility.await().untilAsserted(wc);
 
           assertTrue(stats.getLoadConditioningConnect() > baselineLifetimeConnect);
           assertTrue(stats.getLoadConditioningDisconnect() > baselineLifetimeDisconnect);
@@ -3257,7 +3259,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for entry " + key + " on region " + r;
       }
     };
-    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static Region waitForSubRegion(final Region r, final String subRegName) {
@@ -3272,7 +3274,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for subregion " + subRegName;
       }
     };
-    Wait.waitForCriterion(ev, MAXWAIT, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     Region result = r.getSubregion(subRegName);
     return result;
   }
@@ -3517,7 +3519,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                   return null;
                 }
               };
-              Wait.waitForCriterion(ev, 62 * 1000, 200, true);
+              GeodeAwaitility.await().untilAsserted(ev);
               assertEquals("HealthMonitor Client Register/UnRegister mismatch.",
                   ccnStats.getClientRegisterRequests(), ccnStats.getClientUnRegisterRequests());
             }
@@ -4401,7 +4403,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return null;
               }
             };
-            Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             assertNotNull(pool.getPrimary());
             assertTrue("backups=" + pool.getRedundants() + " expected=" + 1,
                 pool.getRedundants().size() >= 1);
@@ -4433,7 +4435,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       srv1.invoke(new CacheSerializableRunnable("Validate Server1 update") {
         public void run2() throws CacheException {
-          CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+          CacheClientNotifier ccn = getInstance();
           final CacheClientNotifierStats ccnStats = ccn.getStats();
           final int eventCount = ccnStats.getEvents();
           Region r = getRootRegion(name);
@@ -4456,7 +4458,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return "waiting for ccnStat";
             }
           };
-          Wait.waitForCriterion(ev, maxTime, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
           // Set prox = ccn.getClientProxies();
           // assertIndexDetailsEquals(1, prox.size());
           // for (Iterator cpi = prox.iterator(); cpi.hasNext(); ) {
@@ -5707,7 +5709,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for region to be size 3";
               }
             };
-            Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             // assertIndexDetailsEquals(3, region.size());
             assertTrue(region.containsKey("k1"));
             assertTrue(region.containsKey("k2"));
@@ -5825,7 +5827,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for region to be size 3";
               }
             };
-            Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             // assertIndexDetailsEquals(3, region.size());
             assertTrue(region.containsKey("k1"));
             assertTrue(region.containsKey("k2"));

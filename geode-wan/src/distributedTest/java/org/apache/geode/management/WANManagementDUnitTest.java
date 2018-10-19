@@ -14,12 +14,10 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -251,7 +249,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     String regionPath = "/" + regionName;
     managing.invoke(() -> {
       ManagementService service = WANTestBase.getManagementService();
-      Awaitility.await().atMost(5, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertNotNull(service.getDistributedRegionMXBean(regionPath)));
 
       DistributedRegionMXBean bean = service.getDistributedRegionMXBean(regionPath);

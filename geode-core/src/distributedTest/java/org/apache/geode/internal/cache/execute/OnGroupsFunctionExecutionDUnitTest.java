@@ -14,8 +14,17 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.cache.CacheFactory.getAnyInstance;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.internal.cache.execute.InternalFunctionService.onServer;
+import static org.apache.geode.internal.cache.execute.InternalFunctionService.onServers;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Host.getLocator;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -49,13 +58,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
@@ -1226,13 +1235,13 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
   public void testNoAckGroupsFunction() {
     // Workaround for #52005. This is a product bug
     // that should be fixed
-    IgnoredException.addIgnoredException("Cannot return any result");
-    Host host = Host.getHost(0);
+    addIgnoredException("Cannot return any result");
+    Host host = getHost(0);
     final VM server0 = host.getVM(0);
     final VM server1 = host.getVM(1);
     final VM server2 = host.getVM(2);
     VM client = host.getVM(3);
-    VM locator = Host.getLocator();
+    VM locator = getLocator();
     final String regionName = getName();
 
     initVM(server0, "mg,g0", regionName, true);
@@ -1246,20 +1255,20 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getAnyInstance();
           c.close();
         } catch (CacheClosedException cce) {
         }
         disconnectFromDS();
-        LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
+        getLogWriter().fine("SWAP:creating client cache");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");
-        Execution e = InternalFunctionService.onServers(c, "g0");
+        Execution e = onServers(c, "g0");
         e.execute(new OnGroupsNoAckFunction());
         return null;
       }
@@ -1278,7 +1287,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         return "OnGroupsNoAck invocation count mismatch";
       }
     };
-    Wait.waitForCriterion(wc, 30000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     resetInvocationCount(server0);
     resetInvocationCount(server1);
@@ -1288,13 +1297,13 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         ClientCache c = ClientCacheFactory.getAnyInstance();
-        Execution e = InternalFunctionService.onServer(c, "g1");
+        Execution e = onServer(c, "g1");
         e.execute(new OnGroupsNoAckFunction());
         return null;
       }
     });
     // pause here to verify that we do not get more than 1 invocation
-    Wait.pause(5000);
+    pause(5000);
     WaitCriterion wc2 = new WaitCriterion() {
       @Override
       public boolean done() {
@@ -1309,7 +1318,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         return "OnGroupsNoAck invocation count mismatch";
       }
     };
-    Wait.waitForCriterion(wc2, 30000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc2);
     resetInvocationCount(server0);
     resetInvocationCount(server1);
     resetInvocationCount(server2);

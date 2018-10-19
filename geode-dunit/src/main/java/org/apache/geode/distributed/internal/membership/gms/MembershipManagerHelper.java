@@ -14,9 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.distributed.DistributedMember;
@@ -26,7 +25,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -119,7 +118,7 @@ public class MembershipManagerHelper {
         return "Waited over " + timeout + " ms for " + member + " to depart, but it didn't";
       }
     };
-    Wait.waitForCriterion(ev, timeout, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static void crashDistributedSystem(final DistributedSystem msys) {
@@ -131,7 +130,7 @@ public class MembershipManagerHelper {
     MembershipManagerHelper.playDead(msys);
     mgr.forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
-    Awaitility.await().pollInterval(1, TimeUnit.SECONDS).until(() -> !msys.isConnected());
+    await().until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
 

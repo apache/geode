@@ -14,6 +14,12 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.junit.Assert.fail;
+
+import org.awaitility.core.ThrowingRunnable;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+
 /**
  * Defines an asynchronous criterion to wait for by invoking a method in {@link Wait}.
  *
@@ -23,17 +29,24 @@ package org.apache.geode.test.dunit;
  * <p>
  * See javadocs on {@link Wait} for examples and guidelines for converting to Awaitility.
  *
- * @deprecated Use {@link org.awaitility.Awaitility} instead.
+ * @deprecated Use {@link GeodeAwaitility} instead.
  *
  * @see Wait
- * @see org.awaitility.Awaitility
+ * @see GeodeAwaitility
  * @see org.awaitility.Duration
  * @see org.awaitility.core.ConditionFactory
  */
-public interface WaitCriterion {
+public interface WaitCriterion extends ThrowingRunnable {
 
   public boolean done();
 
   public String description();
+
+  default void run() {
+    if (!done()) {
+      fail(description());
+    }
+
+  }
 
 }

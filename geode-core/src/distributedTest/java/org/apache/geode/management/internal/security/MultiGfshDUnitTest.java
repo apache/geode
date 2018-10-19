@@ -14,13 +14,12 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +70,7 @@ public class MultiGfshDUnitTest {
         GfshCommandRule gfsh = new GfshCommandRule();
         gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
 
-        Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
+        await();
         gfsh.close();
       }
     });

@@ -16,13 +16,12 @@ package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -86,7 +85,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
 
     // wait until the region bean is visible
     locatorVM.invoke(() -> {
-      Awaitility.await().pollInterval(500, TimeUnit.MICROSECONDS).atMost(2, TimeUnit.MINUTES)
+      await()
           .until(() -> {
             Cache cache = CacheFactory.getAnyInstance();
             Object bean = ManagementService.getManagementService(cache)

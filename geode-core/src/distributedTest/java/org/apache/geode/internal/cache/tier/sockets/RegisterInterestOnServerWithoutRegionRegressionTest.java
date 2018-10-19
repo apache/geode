@@ -14,15 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.Serializable;
@@ -151,6 +150,6 @@ public class RegisterInterestOnServerWithoutRegionRegressionTest implements Seri
     PoolImpl pool = (PoolImpl) PoolManager.getAll().get(uniqueName);
     assertThat(pool).isNotNull();
 
-    await().atMost(2, MINUTES).until(() -> pool.getConnectedServerCount() == expectedServerCount);
+    await().until(() -> pool.getConnectedServerCount() == expectedServerCount);
   }
 }

@@ -19,6 +19,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.InitialImageOperation.slowImageSleeps;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -35,6 +36,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -42,7 +44,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -103,7 +104,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     region.clear();
     assertEquals(0, region.size());
   }
@@ -159,14 +160,14 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
         public void run2() throws CacheException {
           WaitCriterion ev = new WaitCriterion() {
             public boolean done() {
-              return InitialImageOperation.slowImageSleeps >= 20;
+              return slowImageSleeps >= 20;
             }
 
             public String description() {
               return null;
             }
           };
-          Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
         }
       });
       // now that the gii has received some entries do the clear

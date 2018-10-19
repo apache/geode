@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -51,12 +52,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -213,7 +214,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
         String poolName = r.getAttributes().getPoolName();
         assertNotNull(poolName);
-        final PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
+        final PoolImpl pool = (PoolImpl) find(poolName);
         assertNotNull(pool);
         WaitCriterion ev = new WaitCriterion() {
           public boolean done() {
@@ -224,7 +225,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
             return null;
           }
         };
-        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       }
     });
 
@@ -237,7 +238,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
         Region r = cache.getRegion(REGION_NAME);
         String poolName = r.getAttributes().getPoolName();
         assertNotNull(poolName);
-        final PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
+        final PoolImpl pool = (PoolImpl) find(poolName);
         assertNotNull(pool);
         WaitCriterion ev = new WaitCriterion() {
           public boolean done() {
@@ -248,7 +249,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
             return null;
           }
         };
-        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       }
     });
 
@@ -400,7 +401,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
         return "waiting for destroy event for " + key;
       }
     };
-    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     ccl.destroys.remove(key);
   }
 

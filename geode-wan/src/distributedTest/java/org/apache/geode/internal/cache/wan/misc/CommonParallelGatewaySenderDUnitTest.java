@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.fail;
 
 import java.util.Set;
@@ -29,11 +30,11 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -421,7 +422,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
         WaitCriterion wc = new WaitCriterion() {
           public boolean done() {
             if (bucket.keySet().size() == 0) {
-              LogWriterUtils.getLogWriter().info("Bucket " + bucket.getId() + " is empty");
+              getLogWriter().info("Bucket " + bucket.getId() + " is empty");
               return true;
             }
             return false;
@@ -434,7 +435,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
                 + bucket.keySet();
           }
         };
-        Wait.waitForCriterion(wc, 180000, 50, true);
+        GeodeAwaitility.await().untilAsserted(wc);
 
       } // for loop ends
     }
