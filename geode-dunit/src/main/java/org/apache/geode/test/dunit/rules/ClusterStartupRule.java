@@ -381,7 +381,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   public static void stopElementInsideVM() {
     if (memberStarter != null) {
-      memberStarter.setCleanWorkingDir(false);
       memberStarter.after();
       memberStarter = null;
     }

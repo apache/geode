@@ -31,7 +31,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -195,20 +194,24 @@ public class GMSLocatorRecoveryJUnitTest {
   }
 
   @Test
-  public void testViewFileNotFound() throws Exception {
+  public void testViewFileFoundWhenUserDirModified() throws Exception {
     NetView view = new NetView();
     populateStateFile(this.tempStateFile, GMSLocator.LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL,
         view);
-    assertTrue(this.tempStateFile.exists());
 
-    File dir = new File("testViewFileFoundWhenUserDirModified");
-    dir.mkdir();
-    File viewFileInNewDirectory = new File(dir, tempStateFile.getName());
-
-    assertFalse(viewFileInNewDirectory.exists());
-    File locatorViewFile = locator.setViewFile(viewFileInNewDirectory);
-    assertFalse(locator.recoverFromFile(locatorViewFile));
-    FileUtils.deleteQuietly(dir);
+    String userDir = System.getProperty("user.dir");
+    try {
+      File dir = new File("testViewFileFoundWhenUserDirModified");
+      dir.mkdir();
+      System.setProperty("user.dir", dir.getAbsolutePath());
+      File viewFileInNewDirectory = new File(tempStateFile.getName());
+      // GEODE-4180 - file in parent dir still seen with relative path
+      assertTrue(viewFileInNewDirectory.exists());
+      File locatorViewFile = locator.setViewFile(viewFileInNewDirectory);
+      assertFalse(locator.recoverFromFile(locatorViewFile));
+    } finally {
+      System.setProperty("user.dir", userDir);
+    }
   }
 
 
