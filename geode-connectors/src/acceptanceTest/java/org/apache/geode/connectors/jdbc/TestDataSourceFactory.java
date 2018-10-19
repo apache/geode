@@ -24,6 +24,7 @@ import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 
 public class TestDataSourceFactory implements DataSourceFactory {
   private final String url;
+  private HikariDataSource dataSource;
 
   public TestDataSourceFactory(String url) {
     this.url = url;
@@ -31,8 +32,16 @@ public class TestDataSourceFactory implements DataSourceFactory {
 
   @Override
   public DataSource getDataSource(String dataSourceName) {
-    HikariDataSource dataSource = new HikariDataSource();
-    dataSource.setJdbcUrl(url);
+    if (dataSource == null) {
+      dataSource = new HikariDataSource();
+      dataSource.setJdbcUrl(url);
+    }
     return dataSource;
+  }
+
+  public void close() {
+    if (dataSource != null) {
+      dataSource.close();
+    }
   }
 }

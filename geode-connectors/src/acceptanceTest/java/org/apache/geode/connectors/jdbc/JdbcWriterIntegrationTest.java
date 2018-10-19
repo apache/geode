@@ -54,6 +54,8 @@ public abstract class JdbcWriterIntegrationTest {
   private PdxInstance pdx2;
   private Employee employee1;
   private Employee employee2;
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
 
   @Before
   public void setUp() throws Exception {
@@ -96,6 +98,7 @@ public abstract class JdbcWriterIntegrationTest {
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   @Test
@@ -228,7 +231,7 @@ public abstract class JdbcWriterIntegrationTest {
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService(getConnectionUrl()),
-        new TestDataSourceFactory(getConnectionUrl()));
+        testDataSourceFactory);
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

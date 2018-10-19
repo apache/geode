@@ -54,6 +54,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   private PdxInstance pdxEmployee2;
   private Employee employee1;
   private Employee employee2;
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
 
   @Before
   public void setup() throws Exception {
@@ -91,6 +93,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   public abstract Connection getConnection() throws SQLException;
@@ -244,7 +247,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService(getConnectionUrl()),
-        new TestDataSourceFactory(getConnectionUrl()));
+        testDataSourceFactory);
   }
 
 }

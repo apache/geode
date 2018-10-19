@@ -57,6 +57,9 @@ public abstract class JdbcLoaderIntegrationTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
+
   @Before
   public void setUp() throws Exception {
     System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
@@ -97,6 +100,7 @@ public abstract class JdbcLoaderIntegrationTest {
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   @Test
@@ -178,7 +182,7 @@ public abstract class JdbcLoaderIntegrationTest {
     return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
             primaryKeyInValue, getConnectionUrl()),
-        new TestDataSourceFactory(getConnectionUrl()));
+        testDataSourceFactory);
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
