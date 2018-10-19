@@ -485,7 +485,15 @@ public class VM implements Serializable {
       if (force) {
         processHolder.killForcibly();
       } else {
-        SerializableRunnableIF runnable = () -> new Thread(() -> System.exit(0)).start();
+        SerializableRunnableIF runnable = () -> new Thread(() -> {
+          try {
+            // sleep before exit so that the rmi call is returned
+            Thread.sleep(100);
+            System.exit(0);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }).start();
         executeMethodOnObject(runnable, "run", new Object[0]);
       }
       processHolder.waitFor();
