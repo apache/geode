@@ -62,11 +62,6 @@ public class DataSourceFactory {
    */
   public static DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
-    if (configs.getJDBCDriver() == null) {
-      logger.error("DataSourceFactory::getSimpleDataSource:JDBC Driver is not available");
-      throw new DataSourceCreateException(
-          "DataSourceFactory::getSimpleDataSource:JDBC Driver is not available");
-    }
     if (configs.getURL() == null) {
       logger.error("DataSourceFactory::getSimpleDataSource:URL String to Database is null");
       throw new DataSourceCreateException(
