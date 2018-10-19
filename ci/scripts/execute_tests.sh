@@ -93,6 +93,6 @@ GRADLE_ARGS=" \
     ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS}"
 
-EXEC_COMMAND="bash -c 'echo Building with: $SEP ${JAVA_BUILD_PATH}/bin/java -version $SEP echo Testing with: $SEP ${JAVA_TEST_PATH}/bin/java -version $SEP cd geode $SEP sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.bak gradlew $SEP GRADLE_JVM=${JAVA_BUILD_PATH} ./gradlew ${GRADLE_ARGS}'"
+EXEC_COMMAND="bash -c 'echo Building with: $SEP ${JAVA_BUILD_PATH}/bin/java -version $SEP echo Testing with: $SEP ${JAVA_TEST_PATH}/bin/java -version $SEP cd geode $SEP sed -e 's/JAVA_HOME/GRADLE_JVM/g' < gradlew > gradlewStrict $SEP chmod +x gradlewStrict $SEP GRADLE_JVM=${JAVA_BUILD_PATH} ./gradlewStrict ${GRADLE_ARGS}'"
 echo "${EXEC_COMMAND}"
 ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
