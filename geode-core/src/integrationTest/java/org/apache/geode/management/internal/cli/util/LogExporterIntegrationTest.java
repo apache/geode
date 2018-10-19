@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,6 +62,12 @@ public class LogExporterIntegrationTest {
   @Before
   public void before() throws Exception {
     properties = new Properties();
+    // make sure the server's working dir has no log files or stats file to begin with, since in
+    // some tests we are asserting on the # of log files and stats files created by the server
+    File workingDir = server.getWorkingDir();
+    Arrays.stream(workingDir.listFiles())
+        .filter(f -> (f.getName().endsWith(".log") || f.getName().endsWith(".gfs")))
+        .forEach(FileUtils::deleteQuietly);
   }
 
   @Test
