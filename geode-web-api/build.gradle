@@ -18,25 +18,9 @@
 apply plugin: 'war'
 
 dependencies {
-  compile('io.springfox:springfox-core:' + project.'springfox.version')
-  compile('io.springfox:springfox-spring-web:' + project.'springfox.version')
-  compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
-  compile('io.springfox:springfox-spi:' + project.'springfox.version')
-  compile('org.springframework:spring-core:' + project.'springframework.version')
-  compile('io.swagger:swagger-annotations:1.5.20')
-  compile('com.google.guava:guava:' + project.'guava.version')
-  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compile('org.springframework:spring-context:' + project.'springframework.version')
-  integrationTestCompile('com.jayway.jsonpath:json-path:' + project.'json-path.version')
-  integrationTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
-  integrationTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
 
-  compile(project(':geode-json'))
-  compile(project(':geode-core'))
- 
+  compileOnly(project(':geode-core'))
+
   compileOnly('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 
   compile('commons-lang:commons-lang:' + project.'commons-lang.version')
