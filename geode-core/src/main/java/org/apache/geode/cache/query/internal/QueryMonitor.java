@@ -54,11 +54,11 @@ public class QueryMonitor implements Runnable {
 
   private final long maxQueryExecutionTime;
 
-  private static final DelayQueue<QueryExpiration> queryExpirations = new DelayQueue<>();
+  private final DelayQueue<QueryExpiration> queryExpirations;
 
   private Thread monitoringThread;
 
-  private final AtomicBoolean stopped = new AtomicBoolean(Boolean.FALSE);
+  private final AtomicBoolean stopped;
 
   // Variables for cancelling queries due to low memory
   private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
@@ -68,6 +68,8 @@ public class QueryMonitor implements Runnable {
   public QueryMonitor(InternalCache cache, long maxQueryExecutionTime) {
     this.cache = cache;
     this.maxQueryExecutionTime = maxQueryExecutionTime;
+    queryExpirations = new DelayQueue<>();
+    stopped = new AtomicBoolean(Boolean.FALSE);
   }
 
   /**
@@ -95,7 +97,7 @@ public class QueryMonitor implements Runnable {
 
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Adding thread to QueryMonitor. QueryMonitor size is:{}, Thread (id): {} query: {} thread is : {}",
+          "Adding thread to QueryMonitor. QueryMonitor size is: {}, Thread (id): {}, Query: {}, Thread is : {}",
           queryExpirations.size(), queryThread.getId(), query.getQueryString(), queryThread);
     }
 
@@ -112,11 +114,13 @@ public class QueryMonitor implements Runnable {
     synchronized (queryCompleted) {
       queryCancelled.get().getAndSet(Boolean.FALSE);
       query.setQueryCompletedForMonitoring(true);
+      // Remove the query expiration from the queue.
+      queryExpirations.remove(new QueryExpiration(queryThread));
     }
 
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Query completed before expiration. QueryMonitor size is:{}, Thread ID is: {}  thread is : {}",
+          "Query completed before expiration. QueryMonitor size is: {}, Thread ID is: {},  Thread is: {}",
           queryExpirations.size(), queryThread.getId(), queryThread);
     }
 
@@ -188,6 +192,9 @@ public class QueryMonitor implements Runnable {
       if (logger.isDebugEnabled()) {
         logger.debug("Query Monitoring thread got interrupted.");
       }
+      // Since we cannot propagate this exception to the caller, we need to reset
+      // the interrupt status to true so that the caller can detect and handle it.
+      monitoringThread.interrupt();
     } finally {
       queryExpirations.clear();
     }
@@ -234,7 +241,7 @@ public class QueryMonitor implements Runnable {
   }
 
   /** FOR TEST PURPOSE */
-  public static int getQueryMonitorThreadCount() {
+  public int getQueryCount() {
     return queryExpirations.size();
   }
 
@@ -268,6 +275,13 @@ public class QueryMonitor implements Runnable {
       this.queryCancelled = queryCancelled;
     }
 
+    /**
+     * Use only for searching in queue (or removing an internal entry from the queue)
+     */
+    QueryExpiration(final Thread queryThread) {
+      this(queryThread, null, null, 0);
+    }
+
     public long getMaxQueryExecutionTime() {
       return expiredTime - startTime;
     }
@@ -282,12 +296,40 @@ public class QueryMonitor implements Runnable {
           .toString();
     }
 
+    /**
+     * Even though we know this won't be called by DelayQueue, we include it here because
+     * Java dogma dictates every equals() must have a hashCode()
+     */
+    @Override
+    public int hashCode() {
+      assert this.queryThread != null;
+      return this.queryThread.hashCode();
+    }
+
+    /**
+     * The query task in the queue is identified by the thread.
+     *
+     * Called O(N) times during DelayQueue.remove()
+     */
+    @Override
+    public boolean equals(Object other) {
+      if (!(other instanceof QueryExpiration)) {
+        return false;
+      }
+      QueryExpiration o = (QueryExpiration) other;
+      return this.queryThread.equals(o.queryThread);
+    }
+
     @Override
     public long getDelay(TimeUnit unit) {
       final long diff = expiredTime - System.currentTimeMillis();
       return unit.convert(diff, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Called O(log N) times during DelayQueue.remove() and .add()
+     * to rearrange the heap (in getDelay() order)
+     */
     @Override
     public int compareTo(Delayed o) {
       return toIntExact(

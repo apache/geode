@@ -42,7 +42,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -241,6 +240,11 @@ public class QueryMonitorDUnitTest {
 
   @Test
   public void testCqExecuteDoesNotGetAffectedByTimeout() throws Exception {
+    // uninstall the test hook installed in @Before
+    VMProvider.invokeInEveryMember(() -> {
+      DefaultQuery.testHook = null;
+    }, server1, server2);
+
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=REPLICATE")
         .statusIsSuccess();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/exampleRegion", 2);
@@ -417,9 +421,6 @@ public class QueryMonitorDUnitTest {
      */
     public void doTestHook(int spot, DefaultQuery query) {
       if (spot != 6) {
-        return;
-      }
-      if (query.isCqQuery() || QueryMonitor.getQueryMonitorThreadCount() == 0) {
         return;
       }
 

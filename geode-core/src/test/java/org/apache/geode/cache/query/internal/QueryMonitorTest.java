@@ -74,7 +74,7 @@ public class QueryMonitorTest {
       // make sure the isCancelled flag in Query is set correctly
       await().until(() -> query.isCanceled());
     }
-    await().until(() -> monitor.getQueryMonitorThreadCount() == 0);
+    await().until(() -> monitor.getQueryCount() == 0);
     // make sure all thread died
     for (Thread thread : threads) {
       await().until(() -> !thread.isAlive());
@@ -86,7 +86,7 @@ public class QueryMonitorTest {
     DefaultQuery query = mock(DefaultQuery.class);
     when(query.isCqQuery()).thenReturn(true);
     monitor.monitorQueryThread(mock(Thread.class), query);
-    assertThat(monitor.getQueryMonitorThreadCount()).isEqualTo(0);
+    assertThat(monitor.getQueryCount()).isEqualTo(0);
   }
 
   private Thread createQueryExecutionThread(int i) {
