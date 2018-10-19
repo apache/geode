@@ -30,13 +30,13 @@ public class TestConfigService {
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
   public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     return getTestConfigService(createMockCache(), null, false, connectionUrl);
   }
 
   public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
       String pdxClassName, boolean primaryKeyInValue, String connectionUrl)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
     service.init(cache);

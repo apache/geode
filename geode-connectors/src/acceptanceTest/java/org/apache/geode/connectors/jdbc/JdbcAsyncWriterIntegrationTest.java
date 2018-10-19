@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
@@ -226,7 +225,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     jdbcWriter = new JdbcAsyncWriter(createSqlHandler(), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
@@ -244,7 +243,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private SqlHandler createSqlHandler()
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService(getConnectionUrl()),
         testDataSourceFactory);
