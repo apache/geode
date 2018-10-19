@@ -259,7 +259,9 @@ dependencies {
   jcaCompile(sourceSets.main.output)
 
 
-  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   testCompile(project(':geode-concurrency-test'))
   testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
   testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
@@ -311,7 +313,9 @@ dependencies {
   }
 
 
-  performanceTestCompile(project(':geode-junit'))
+  performanceTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 
   // Distributed Tests
   distributedTestCompile(sourceSets.test.output)            // To be removed by GEODE-5803

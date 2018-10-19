@@ -32,7 +32,9 @@ dependencies {
   }
   compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version')
 
-  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':extensions:geode-modules-test'))
 
   integrationTestRuntime('javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version')
