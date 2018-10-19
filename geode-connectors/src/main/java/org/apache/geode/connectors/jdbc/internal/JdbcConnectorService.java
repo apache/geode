@@ -23,18 +23,6 @@ import org.apache.geode.internal.cache.CacheService;
 @Experimental
 public interface JdbcConnectorService extends CacheService {
 
-  void createConnectionConfig(ConnectorService.Connection config)
-      throws ConnectionConfigExistsException;
-
-  void replaceConnectionConfig(ConnectorService.Connection config)
-      throws ConnectionConfigNotFoundException;
-
-  void destroyConnectionConfig(String connectionName);
-
-  ConnectorService.Connection getConnectionConfig(String connectionName);
-
-  Set<ConnectorService.Connection> getConnectionConfigs();
-
   void createRegionMapping(ConnectorService.RegionMapping mapping)
       throws RegionMappingExistsException;
 
