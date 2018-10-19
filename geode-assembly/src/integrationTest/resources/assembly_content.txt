@@ -709,10 +709,15 @@ javadoc/org/apache/geode/compression/package-tree.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcAsyncWriter.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcConnectorException.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcLoader.html
+javadoc/org/apache/geode/connectors/jdbc/JdbcPooledDataSourceFactory.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcWriter.html
 javadoc/org/apache/geode/connectors/jdbc/package-frame.html
 javadoc/org/apache/geode/connectors/jdbc/package-summary.html
 javadoc/org/apache/geode/connectors/jdbc/package-tree.html
+javadoc/org/apache/geode/datasource/PooledDataSourceFactory.html
+javadoc/org/apache/geode/datasource/package-frame.html
+javadoc/org/apache/geode/datasource/package-summary.html
+javadoc/org/apache/geode/datasource/package-tree.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.ServiceState.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.Status.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.html
