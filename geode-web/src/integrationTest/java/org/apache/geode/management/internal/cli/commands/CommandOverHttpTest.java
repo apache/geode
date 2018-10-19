@@ -39,7 +39,7 @@ public class CommandOverHttpTest {
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withLogFile().withJMXManager()
+      new ServerStarterRule().withWorkingDir().withLogFile().withJMXManager()
           .withHttpService()
           .withAutoStart();
 

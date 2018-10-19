@@ -35,21 +35,7 @@ for cmd in Jinja2 PyYAML; do
 done
 
 if [ -z $(command -v gcloud) ]; then
-  echo "Install gcloud (try brew cask install google-cloud-sdk, or see https://cloud.google.com/sdk/docs/downloads-interactive#mac)"
-  exit 1
-fi
-
-forks=$(git remote -v | sed -e 's/.*github.com://' -e 's#/.*##' | sort -u)
-if [ ! -z $1 ] ; then
-  for f in forks; do
-    [ "$f" == "$1" ] && GEODE_FORK=$1
-  done
-fi
-if [ -z "$GEODE_FORK" ] ; then
-  echo "Usage (choose the one that corresponds to your fork):"
-  for fork in $forks; do
-    echo "  $0 $fork"
-  done
+  echo "Install gcloud"
   exit 1
 fi
 
@@ -63,6 +49,7 @@ fi
 set -e
 set -x
 
+GEODE_FORK=${1:-"apache"}
 GEODE_REPO_NAME=${2:-"geode"}
 UPSTREAM_FORK=${3:-"apache"}
 CONCOURSE_HOST=${4:-"concourse.apachegeode-ci.info"}
@@ -136,7 +123,7 @@ fi
 function jobStatus {
   PIPELINE=$1
   JOB=$2
-  fly jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused";else if($4!="n/a")print $4; else print $3}'
+  fly jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused"; else print $3}'
 }
 
 function triggerJob {
@@ -167,21 +154,25 @@ function awaitJob {
     status=$(jobStatus ${PIPELINE} ${JOB})
   done
   echo $status
-  [ "$status" = "succeeded" ] || return 1
 }
 
 function driveToGreen {
   PIPELINE=$1
+  [ "$2" = "--to" ] && FINAL_ONLY=true || FINAL_ONLY=false
+  [ "$2" = "--to" ] && shift
   JOB=$2
   status=$(jobStatus ${PIPELINE} ${JOB})
   if [ "paused" = "$status" ] ; then
     unpauseJob ${PIPELINE} ${JOB}
     status=$(jobStatus ${PIPELINE} ${JOB})
   fi
-  if [ "aborted" = "$status" ] || [ "failed" = "$status" ] || [ "errored" = "$status" ] ; then
-    triggerJob ${PIPELINE} ${JOB}
+  if [ "n/a" = "$status" ] ; then
+    [ "$FINAL_ONLY" = "true" ] || triggerJob ${PIPELINE} ${JOB}
     awaitJob ${PIPELINE} ${JOB}
-  elif [ "n/a" = "$status" ] || [ "started" = "$status" ] ; then
+  elif [ "failed" = "$status" ] ; then
+    echo "Unexpected ${PIPELINE} pipeline status: ${JOB} $status"
+    exit 1
+  elif [ "started" = "$status" ] ; then
     awaitJob ${PIPELINE} ${JOB}
   elif [ "succeeded" = "$status" ] ; then
     echo "${JOB} $status"
@@ -193,14 +184,12 @@ function driveToGreen {
 }
 
 set -e
-set +x
 
 unpausePipeline ${META_PIPELINE}
 driveToGreen $META_PIPELINE build-meta-mini-docker-image
 driveToGreen $META_PIPELINE set-images-pipeline
 unpausePipeline ${PIPELINE_PREFIX}images
-driveToGreen ${PIPELINE_PREFIX}images build-google-geode-builder
-driveToGreen ${PIPELINE_PREFIX}images build-google-windows-geode-builder
+driveToGreen ${PIPELINE_PREFIX}images --to build-google-geode-builder
 driveToGreen $META_PIPELINE set-pipeline
 unpausePipeline ${PIPELINE_PREFIX}main
-echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
+echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX%-}"

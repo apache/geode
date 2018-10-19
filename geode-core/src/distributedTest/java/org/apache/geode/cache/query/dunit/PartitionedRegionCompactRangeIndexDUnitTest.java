@@ -40,6 +40,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -57,6 +58,9 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   MemberVM server1;
   MemberVM server2;
   MemberVM server3;
+  VM vm1;
+  VM vm2;
+  VM vm3;
 
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();
@@ -73,6 +77,9 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     server1 = this.clusterStartupRule.startServerVM(1, props, this.locator.getPort());
     server2 = this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
     server3 = this.clusterStartupRule.startServerVM(3, props, this.locator.getPort());
+    vm1 = server1.getVM();
+    vm2 = server2.getVM();
+    vm3 = server3.getVM();
 
     // Adding due to known race condition for creation of partitioned indexes via cache.xml
     IgnoredException.addIgnoredException("IndexNameConflictException");
@@ -88,20 +95,20 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
 
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
-    server2.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
+    vm2.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
     clusterStartupRule.stop(2, false);
 
     // update entries
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
     clusterStartupRule.stop(1, false);
     server1 = this.clusterStartupRule.startServerVM(1, props, this.locator.getPort());
     server2 = this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
 
-    server3.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
-    server2.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
-    server1.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
+    vm3.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
+    vm2.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
+    vm1.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
   }
 
   @Test
@@ -112,14 +119,14 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
     // update entries
     IntStream.range(0, numEntries).forEach(i -> {
       entries.put("key-" + i, new Portfolio(i));
     });
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -135,15 +142,15 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
@@ -158,14 +165,14 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
     // update entries
     IntStream.range(0, numEntries).forEach(i -> {
       entries.put("key-" + i, new Portfolio(i));
     });
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -181,15 +188,15 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
@@ -204,7 +211,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
 
@@ -212,7 +219,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> {
       entries.put("key-" + i, new Portfolio(i));
     });
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -228,15 +235,15 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
@@ -250,11 +257,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
 
-    server3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
+    vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -270,15 +277,15 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
@@ -292,11 +299,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
 
-    server3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
+    vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -312,13 +319,13 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyIndexKeysAreEmpty();
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyIndexKeysAreEmpty();
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyIndexKeysAreEmpty();
     });
   }
@@ -330,10 +337,10 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
-    server3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
+    vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -349,15 +356,15 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
@@ -370,11 +377,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
-    server3.invoke(() -> populateRegion(regionName, entries));
+    vm3.invoke(() -> populateRegion(regionName, entries));
 
     clusterStartupRule.stop(2, false);
 
-    server3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
+    vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
     clusterStartupRule.stop(1, false);
     clusterStartupRule.stop(3, false);
 
@@ -390,13 +397,13 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
+    vm3.invoke(() -> {
       verifyIndexKeysAreEmpty();
     });
-    server2.invoke(() -> {
+    vm2.invoke(() -> {
       verifyIndexKeysAreEmpty();
     });
-    server1.invoke(() -> {
+    vm1.invoke(() -> {
       verifyIndexKeysAreEmpty();
     });
   }

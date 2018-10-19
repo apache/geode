@@ -39,12 +39,10 @@ public abstract class VMProvider {
 
   public void stop(boolean cleanWorkingDir) {
     getVM().invoke(() -> {
-      // this did not clean up the files
       ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
 
-    // clean up all the files under the working dir if asked to do so
     if (cleanWorkingDir) {
       Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
     }
