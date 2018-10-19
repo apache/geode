@@ -18,6 +18,12 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
+  compile(project(':geode-core'))
+  compile('javax.servlet:servlet-api:2.4')
+  compile('mx4j:mx4j:' + project.'mx4j.version')
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  integrationTestCompile('org.httpunit:httpunit:' + project.'httpunit.version')
+  integrationTestCompile('junit:junit:' + project.'junit.version')
   compile(project(':extensions:geode-modules')) {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'

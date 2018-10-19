@@ -19,20 +19,32 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   compile(project(':geode-core'))
-  compile('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
+  integrationTestCompile(project(':extensions:geode-modules-test')) {
+    exclude module: 'geode-modules'
+  }
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compile('javax.servlet:servlet-api:2.4')
+  compile('mx4j:mx4j:' + project.'mx4j.version')
   compile('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
     exclude module: 'annotations-api'
     exclude module: 'coyote'
     exclude module: 'tribes'
   }
+  compile('org.apache.tomcat:catalina:' + project.'tomcat6.version')
   compile('org.apache.tomcat:juli:' + project.'tomcat6.version')
+  compile('org.apache.tomcat:servlet-api:' + project.'tomcat6.version')
+  compile('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
 
   testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
 
-  integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestCompile(project(':extensions:geode-modules-test'))
+  integrationTestCompile('junit:junit:' + project.'junit.version')
 
   integrationTestRuntime('org.apache.tomcat:coyote:' + project.'tomcat6.version')
   integrationTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
