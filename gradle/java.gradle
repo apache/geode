@@ -47,6 +47,9 @@ subprojects {
       }
       javac.options.incremental = true
       javac.options.fork = true
+      if (project.hasProperty('compileJVM') && !compileJVM.trim().isEmpty()) {
+        javac.options.forkOptions.executable = compileJVM + "/bin/javac"
+      }
     }
   })
 
