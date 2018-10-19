@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Before;
 
@@ -146,10 +144,6 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
     }
   }
 
-  protected ConditionFactory await() {
-    return Awaitility.await().atMost(10, MINUTES);
-  }
-
   protected static String[] createCommandLine(final Class<?> clazz) {
     List<String> commandLine = new ArrayList<>();
 
@@ -168,7 +162,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   }
 
   protected void waitUntilProcessStops(final long timeout, final TimeUnit unit) {
-    Awaitility.await().atMost(timeout, unit)
+    await()
         .untilAsserted(() -> assertThat(isProcessAlive(process)).isFalse());
   }
 

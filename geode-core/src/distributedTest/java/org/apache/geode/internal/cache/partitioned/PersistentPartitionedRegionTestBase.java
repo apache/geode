@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.commons.io.FileUtils.listFiles;
 import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
+import static org.apache.geode.cache.partition.PartitionRegionHelper.getPartitionRegionInfo;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +40,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -51,10 +51,10 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceO
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -220,7 +220,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
       Cache cache = getCache();
       final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
 
-      Wait.waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         @Override
         public boolean done() {
           return expectedBuckets.equals(getActualBuckets());
@@ -235,7 +235,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
         Set<Integer> getActualBuckets() {
           return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
         }
-      }, 30 * 1000, 100, true);
+      });
     });
   }
 
@@ -272,7 +272,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
       PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
       PartitionedRegionDataStore dataStore = region.getDataStore();
 
-      Wait.waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         @Override
         public boolean done() {
           Set<Integer> vm2Buckets = dataStore.getAllLocalBucketIds();
@@ -284,7 +284,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
           return "expected to recover " + lostBuckets + " buckets, now have "
               + dataStore.getAllLocalBucketIds();
         }
-      }, MAX_WAIT, 100, true);
+      });
     });
   }
 
@@ -293,20 +293,20 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
     vm.invoke("waitForRedundancyRecovery", () -> {
       Region region = getCache().getRegion(regionName);
 
-      Wait.waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         @Override
         public boolean done() {
-          PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(region);
+          PartitionRegionInfo info = getPartitionRegionInfo(region);
           return info.getActualRedundantCopies() == expectedRedundancy;
         }
 
         @Override
         public String description() {
-          PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(region);
+          PartitionRegionInfo info = getPartitionRegionInfo(region);
           return "Did not reach expected redundancy " + expectedRedundancy + " redundancy info = "
               + info.getActualRedundantCopies();
         }
-      }, 30 * 1000, 100, true);
+      });
     });
   }
 

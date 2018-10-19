@@ -18,6 +18,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -32,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -75,6 +77,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -255,7 +258,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         // Set the expiration time on the client entry.
         r.get(key);
 
-        Awaitility.await("waiting for object to expire").atMost(30, SECONDS).until(() -> {
+        await("waiting for object to expire").until(() -> {
           return expirationTimeMillis[0] != null;
         });
 
@@ -356,7 +359,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       vm1.invoke(() -> {
         PRTombstoneMessageObserver mo =
             (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
-        Awaitility.await().atMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           return mo.tsMessageProcessed >= 1;
         });
         assertTrue("Tombstone GC message is not expected.", mo.thName.contains(
@@ -407,7 +410,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         PRTombstoneMessageObserver mo =
             (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
         // Should receive tombstone message for each bucket.
-        Awaitility.await().atMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           return mo.prTsMessageProcessed >= 2;
         });
         assertEquals("Tombstone GC message is expected.", 2, mo.prTsMessageProcessed);
@@ -906,9 +909,9 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
           @Override
           public boolean done() {
-            LogWriterUtils.getLogWriter()
+            getLogWriter()
                 .info("tombstone count = " + TestRegion.getTombstoneCount());
-            LogWriterUtils.getLogWriter().info("region size = " + TestRegion.size());
+            getLogWriter().info("region size = " + TestRegion.size());
             return TestRegion.getTombstoneCount() == 0 && TestRegion.size() == 0;
           }
 
@@ -917,7 +920,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
             return "waiting for garbage collection to occur";
           }
         };
-        Wait.waitForCriterion(wc, 60000, 2000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -933,7 +936,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
           @Override
           public boolean done() {
-            CacheClientNotifier singleton = CacheClientNotifier.getInstance();
+            CacheClientNotifier singleton = getInstance();
             Collection<CacheClientProxy> proxies = singleton.getClientProxies();
             // boolean first = firstTime;
             // firstTime = false;
@@ -944,7 +947,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
                   // if (first) {
                   // ((LocalRegion)proxy.getHARegion()).dumpBackingMap();
                   // }
-                  LogWriterUtils.getLogWriter()
+                  getLogWriter()
                       .info("queue size (" + size + ") is still > 0 for " + proxy.getProxyID());
                   return false;
                 }
@@ -953,7 +956,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
             // also ensure that server regions have been cleaned up
             int regionEntryCount = TestRegion.getRegionMap().size();
             if (regionEntryCount > 0) {
-              LogWriterUtils.getLogWriter()
+              getLogWriter()
                   .info("TestRegion has unexpected entries - all should have been GC'd but we have "
                       + regionEntryCount);
               TestRegion.dumpBackingMap();
@@ -967,7 +970,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
             return "waiting for queue removal messages to clear client queues";
           }
         };
-        Wait.waitForCriterion(wc, 60000, 2000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });

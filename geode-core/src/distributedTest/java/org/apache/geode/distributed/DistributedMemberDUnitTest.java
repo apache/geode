@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -35,9 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -222,7 +221,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           Role myRole = (Role) myRoles.iterator().next();
           assertTrue(vmRoles[vm].equals(myRole.getName()));
 
-          Awaitility.await().atMost(10, TimeUnit.SECONDS)
+          await()
               .until(() -> dm.getOtherNormalDistributionManagerIds().size() == 3);
           Set<InternalDistributedMember> members = dm.getOtherNormalDistributionManagerIds();
 
@@ -347,7 +346,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
           assertEquals(Arrays.asList("" + vm, makeOddEvenString(vm)), myGroups);
 
-          Awaitility.await().atMost(10, TimeUnit.SECONDS)
+          await()
               .until(() -> dm.getOtherNormalDistributionManagerIds().size() == 3);
           Set<InternalDistributedMember> members = dm.getOtherNormalDistributionManagerIds();
 

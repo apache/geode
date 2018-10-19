@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
@@ -67,6 +68,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -349,13 +351,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           // The delay is so that both parent and child regions will be created on another member
           // and the PR root config
           // will have an entry for the parent region.
-          try {
-            await().pollDelay(50, TimeUnit.MILLISECONDS).atMost(100, TimeUnit.MILLISECONDS)
-                .until(() -> {
-                  return false;
-                });
-          } catch (Exception e) {
-          }
+          Thread.sleep(100);
           try {
             // Skip creation of first region - expect region2 creation to fail
             // createPR(PR_REGION_NAME, true);
@@ -395,7 +391,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // Let this thread continue running long enough for the missing region to be logged a
             // couple times.
             // Child regions do not get created by this thread.
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verify(mockAppender, times(numExpectedLogMessages))
                   .append(loggingEventCaptor.capture());
             });
@@ -437,14 +433,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             createPR(getPartitionedRegionName(), true);
             // Delay creation of second (i.e child) region to see missing colocated region log
             // message (logInterval/2 < delay < logInterval)
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verify(mockAppender, times(1)).append(loggingEventCaptor.capture());
             });
             logEvents = loggingEventCaptor.getAllValues();
             createPR("region2", getPartitionedRegionName(), true);
             // Another delay before exiting the thread to make sure that missing region logging
             // doesn't continue after missing region is created (delay > logInterval)
-            await().atMost(logInterval * 2, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verifyNoMoreInteractions(mockAppender);
             });
             fail("Unexpected missing colocated region log message");
@@ -494,7 +490,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // delay between starting generations of child regions until the expected missing
             // colocation messages are logged
             int n = (generation - 1) * generation / 2;
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
             });
             // check for log messages
@@ -557,7 +553,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // delay between starting generations of child regions until the expected missing
             // colocation messages are logged
             int n = regionNum - 1;
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
             });
             // check for expected number of log messages
@@ -620,7 +616,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // couple times.
             // Grandchild region does not get created by this thread. (1.5*logInterval < delay <
             // 2*logInterval)
-            await().atMost((int) (1.75 * logInterval), TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verify(mockAppender, times(numExpectedLogMessages))
                   .append(loggingEventCaptor.capture());
             });
@@ -840,6 +836,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that missing colocated child persistent PRs are logged as warning
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testMissingColocatedChildPRDueToDelayedStart() throws Throwable {
     int loggerTestInterval = 4000; // millis
     Host host = Host.getHost(0);
@@ -885,6 +882,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that missing colocated child persistent PRs are logged as warning
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testMissingColocatedChildPR() throws Throwable {
     int loggerTestInterval = 4000; // millis
     Host host = Host.getHost(0);
@@ -986,6 +984,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * appear in the warning.
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testMultipleColocatedChildPRsMissingWithSequencedStart() throws Throwable {
     int loggerTestInterval = 4000; // millis
     int numChildPRs = 2;
@@ -1041,6 +1040,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testHierarchyOfColocatedChildPRsMissing() throws Throwable {
     int loggerTestInterval = 4000; // millis
     int numChildGenerations = 2;
@@ -1096,6 +1096,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
    */
   @Test
+  @Ignore("GEODE-5872: Test is losing assertions")
   public void testHierarchyOfColocatedChildPRsMissingGrandchild() throws Throwable {
     int loggerTestInterval = 4000; // millis
     int numChildGenerations = 3;
@@ -1224,7 +1225,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             String colocatedWithRegionName = (String) regionInfo[1];
 
             // delay between starting generations of child regions and verify expected logging
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            await().untilAsserted(() -> {
               verify(mockAppender, times(nExpectedLogs)).append(loggingEventCaptor.capture());
             });
 
@@ -2086,7 +2087,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       vm0.invoke(new SerializableCallable() {
 
         public Object call() throws Exception {
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
             public boolean done() {
               InternalDistributedSystem ds = basicGetSystem();
               return ds == null || !ds.isConnected();
@@ -2095,7 +2096,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             public String description() {
               return "DS did not disconnect";
             }
-          }, MAX_WAIT, 100, true);
+          });
 
           return null;
         }

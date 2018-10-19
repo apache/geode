@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx;
 
+import static org.apache.geode.cache.InterestResultPolicy.KEYS_VALUES;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -37,12 +38,12 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -260,7 +261,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
   protected void checkClientValue(final Region<Object, Object> region) {
     // Because register interest is asynchronous, we need to wait for the value to arrive.
-    Wait.waitForCriterion(new WaitCriterion() {
+    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
       public boolean done() {
         return region.get("A") != null;
@@ -269,11 +270,11 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
       public String description() {
         return "Client region never received value for key A";
       }
-    }, 30000, 100, true);
+    });
     assertEquals(TestSerializable.class, region.get("A").getClass());
 
     // do a register interest which will download the value
-    region.registerInterest("B", InterestResultPolicy.KEYS_VALUES);
+    region.registerInterest("B", KEYS_VALUES);
     assertEquals(TestSerializable.class, region.get("B").getClass());
   }
 

@@ -14,8 +14,15 @@
  */
 package org.apache.geode.cache.management;
 
+import static java.lang.Integer.valueOf;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.cache.Scope.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.PartitionedRegionHelper.getHashKey;
+import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredMemoryPoolMXBean;
+import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolMaxMemory;
+import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolStatistics;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -90,6 +97,7 @@ import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -101,7 +109,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -303,7 +310,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return dr.getAtomicThresholdInfo().getMembersThatReachedThreshold().size() == 0;
           }
         };
-        Wait.waitForCriterion(wc, 30000, 10, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -695,8 +702,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             boolean keyFoundOnSickMember = false;
             boolean caughtException = false;
             for (int i = 0; i < 20; i++) {
-              Integer key = Integer.valueOf(i);
-              int hKey = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+              Integer key = valueOf(i);
+              int hKey = getHashKey(pr, null, key, null, null);
               Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
               if (owners.contains(server1Id)) {
                 keyFoundOnSickMember = true;
@@ -720,7 +727,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return keyFoundOnSickMember && caughtException;
           }
         };
-        Wait.waitForCriterion(wc, 30000, 10, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -774,7 +781,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return done;
           }
         };
-        Wait.waitForCriterion(wc, 30000, 10, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -1610,7 +1617,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             throw new IllegalStateException("Unknown memory state");
         }
         if (useWaitCriterion) {
-          Wait.waitForCriterion(wc, 30000, 10, true);
+          GeodeAwaitility.await().untilAsserted(wc);
         }
         return null;
       }
@@ -1631,7 +1638,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             return numberOfProfiles == ra.adviseGeneric().size();
           }
         };
-        Wait.waitForCriterion(wc, 30000, 10, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -1753,7 +1760,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // fix: found race condition here...
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        Statistics si = HeapMemoryMonitor.getTenuredPoolStatistics(internalSystem);
+        Statistics si = getTenuredPoolStatistics(internalSystem);
         if (si != null) {
           sampler.addLocalStatListener(l, si, "currentUsedMemory");
           return true;
@@ -1762,17 +1769,17 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       }
 
       public String description() {
-        String tenuredPoolName = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getName();
+        String tenuredPoolName = getTenuredMemoryPoolMXBean().getName();
         return "Waiting for " + tenuredPoolName + " statistics to be added to create listener for";
       }
     };
-    Wait.waitForCriterion(wc, 5000, 10, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     assertTrue("expected at least one stat listener, found " + sampler.getLocalListeners().size(),
         sampler.getLocalListeners().size() > 0);
-    long maxTenuredMemory = HeapMemoryMonitor.getTenuredPoolMaxMemory();
+    long maxTenuredMemory = getTenuredPoolMaxMemory();
     AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
+    factory.setScope(LOCAL);
     Region r = createRegion(getUniqueName() + "region", factory.create());
     // keep putting objects (of size 1% of maxTenuredMemory) and wait for stat callback
     // if we don't get a callback after 75 attempts, throw exception
@@ -1784,7 +1791,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       }
       byte[] value = new byte[(int) (maxTenuredMemory * 0.01)];
       r.put("key-" + count, value);
-      if (latch.await(50, TimeUnit.MILLISECONDS)) {
+      if (latch.await(50, MILLISECONDS)) {
         break;
       } else {
         continue;

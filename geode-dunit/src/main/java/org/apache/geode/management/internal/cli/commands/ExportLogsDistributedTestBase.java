@@ -38,12 +38,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -185,7 +183,7 @@ public class ExportLogsDistributedTestBase {
     // wait for atleast 1 second to reduce flakiness on windows
     // on windows the flakiness is caused due to the cutoffTime
     // being same as the log message logged on server1.
-    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
+    Thread.sleep(1);
 
     String messageAfterCutoffTime =
         "[this message should not show up since it is after cutoffTime]";

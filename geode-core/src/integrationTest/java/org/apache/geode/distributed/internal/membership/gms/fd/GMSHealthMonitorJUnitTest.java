@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,12 +52,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.awaitility.Awaitility;
 import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
@@ -219,8 +218,7 @@ public class GMSHealthMonitorJUnitTest {
     installAView();
     InternalDistributedMember initialNeighbor = mockMembers.get(myAddressIndex + 1);
 
-    Awaitility.await("wait for new neighbor")
-        .atMost((2 * memberTimeout) + 1500, TimeUnit.MILLISECONDS)
+    await("wait for new neighbor")
         .until(() -> gmsHealthMonitor.getNextNeighbor() != initialNeighbor);
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
 
@@ -246,8 +244,7 @@ public class GMSHealthMonitorJUnitTest {
     System.out.println("next neighbor is " + neighbor + "\nmy address is "
         + mockMembers.get(myAddressIndex) + "\nview is " + joinLeave.getView());
     assertEquals(mockMembers.get(myAddressIndex + 1), neighbor);
-    Awaitility.await("wait for new neighbor")
-        .atMost((2 * memberTimeout) + 1500, TimeUnit.MILLISECONDS)
+    await("wait for new neighbor")
         .until(() -> gmsHealthMonitor.getNextNeighbor() != neighbor);
     long endTime = System.currentTimeMillis();
 
@@ -266,10 +263,9 @@ public class GMSHealthMonitorJUnitTest {
 
     // when the view is installed we start a heartbeat timeout. After
     // that expires we request a heartbeat
-    Awaitility.await().atMost(3 * memberTimeout + 100, TimeUnit.MILLISECONDS)
-        .until(() -> (gmsHealthMonitor.isSuspectMember(mockMembers.get(myAddressIndex + 1))) &&
-            (gmsHealthMonitor.getStats().getHeartbeatRequestsSent() > 0) &&
-            (gmsHealthMonitor.getStats().getSuspectsSent() > 0));
+    await().until(() -> (gmsHealthMonitor.isSuspectMember(mockMembers.get(myAddressIndex + 1))) &&
+        (gmsHealthMonitor.getStats().getHeartbeatRequestsSent() > 0) &&
+        (gmsHealthMonitor.getStats().getSuspectsSent() > 0));
 
     System.out.println("testSuspectMembersCalledThroughMemberCheckThread ending");
   }
@@ -305,8 +301,7 @@ public class GMSHealthMonitorJUnitTest {
     installAView();
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
 
-    Awaitility.await().atMost(3 * memberTimeout, TimeUnit.MILLISECONDS)
-        .until(() -> gmsHealthMonitor.isSuspectMember(neighbor));
+    await().until(() -> gmsHealthMonitor.isSuspectMember(neighbor));
     long endTime = System.currentTimeMillis();
 
     // member-timeout is 1000 ms
@@ -323,10 +318,8 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
 
-    Awaitility.await()
-        .atMost(GMSHealthMonitor.MEMBER_SUSPECT_COLLECTION_INTERVAL + 1000, TimeUnit.MILLISECONDS)
-        .untilAsserted(
-            () -> verify(messenger, atLeastOnce()).send(any(SuspectMembersMessage.class)));
+    await().untilAsserted(
+        () -> verify(messenger, atLeastOnce()).send(any(SuspectMembersMessage.class)));
 
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsSent() > 0);
   }
@@ -369,11 +362,10 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.processMessage(sm);
 
-    Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).untilAsserted(() -> {
-          verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
-              any(String.class));
-        });
+    await("waiting for remove(member) to be invoked").untilAsserted(() -> {
+      verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
+          any(String.class));
+    });
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 
@@ -404,8 +396,8 @@ public class GMSHealthMonitorJUnitTest {
     long preProcess = System.currentTimeMillis();
     gmsHealthMonitor.processMessage(sm);
 
-    Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).untilAsserted(
+    await("waiting for remove(member) to be invoked")
+        .untilAsserted(
             () -> verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
                 any(String.class)));
     long postRemove = System.currentTimeMillis();
@@ -440,10 +432,9 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.processMessage(sm);
 
-    Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).untilAsserted(
-            () -> verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
-                any(String.class)));
+    await("waiting for remove(member) to be invoked").untilAsserted(
+        () -> verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
+            any(String.class)));
 
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
@@ -631,7 +622,7 @@ public class GMSHealthMonitorJUnitTest {
     installAView();
 
     gmsHealthMonitor.stop();
-    Awaitility.await().until(() -> gmsHealthMonitor.isShutdown());
+    await().until(() -> gmsHealthMonitor.isShutdown());
 
   }
 

@@ -22,7 +22,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 public class GMSJoinLeaveTestHelper {
@@ -54,7 +54,7 @@ public class GMSJoinLeaveTestHelper {
         return "Distributed system is null";
       }
     };
-    Wait.waitForCriterion(waitCriterion, 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(waitCriterion);
   }
 
   private static GMSJoinLeave getGmsJoinLeave() {

@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.logging;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -90,7 +89,7 @@ public class LocatorLogFileIntegrationTest {
 
     InternalDistributedSystem system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     // assertThat logFile is not empty
     try (FileInputStream fis = new FileInputStream(logFile)) {

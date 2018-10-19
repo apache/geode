@@ -73,7 +73,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
@@ -1315,36 +1314,14 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void closeCache() {
     long startTime = System.currentTimeMillis();
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 3000, 200, false);
+    Wait.pause(3000);
     long endTime = System.currentTimeMillis();
     region.getCache().getLogger().fine("Time wait for Cache Close = " + (endTime - startTime));
     cache.close();
   }
 
   public static void startServerHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 2000, 500, false);
+    Wait.pause(2000);
     Collection bridgeServers = cache.getCacheServers();
     LogWriterUtils.getLogWriter()
         .info("Start Server Bridge Servers list : " + bridgeServers.size());
@@ -1359,18 +1336,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   }
 
   public static void stopServerHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 1000, 200, false);
+    Wait.pause(1000);
     try {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
@@ -1383,18 +1349,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   }
 
   public static void closeCacheHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 1000, 200, false);
+    Wait.pause(1000);
     if (cache != null && !cache.isClosed()) {
       try {
         Iterator iter = cache.getCacheServers().iterator();
@@ -1412,18 +1367,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void disconnect() {
     long startTime = System.currentTimeMillis();
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 2000, 200, false);
+    Wait.pause(2000);
     long endTime = System.currentTimeMillis();
     region.getCache().getLogger().fine("Time wait for Disconnecting = " + (endTime - startTime));
     cache.getDistributedSystem().disconnect();

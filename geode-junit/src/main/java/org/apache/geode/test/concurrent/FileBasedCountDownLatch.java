@@ -21,11 +21,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Charsets;
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * This is an implementation of CountDownLatch that can be serialized and used across multiple DUnit
@@ -70,7 +70,7 @@ public class FileBasedCountDownLatch implements Serializable {
   }
 
   public void await() throws IOException {
-    Awaitility.await().atMost(10, TimeUnit.MINUTES).until(this::currentValue, is(equalTo(0)));
+    GeodeAwaitility.await().until(this::currentValue, is(equalTo(0)));
   }
 
   protected int currentValue() throws IOException {

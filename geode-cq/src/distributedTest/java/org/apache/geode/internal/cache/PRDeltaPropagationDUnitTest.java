@@ -66,10 +66,10 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -1067,7 +1067,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    Wait.waitForCriterion(wc, 10 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private boolean verifyQueryUpdateExecuted() {

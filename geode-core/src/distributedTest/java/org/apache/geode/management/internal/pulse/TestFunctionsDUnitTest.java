@@ -14,13 +14,12 @@
  */
 package org.apache.geode.management.internal.pulse;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
@@ -72,15 +71,14 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
 
   private static Integer getNumOfRunningFunction() {
 
-    Awaitility.waitAtMost(1, TimeUnit.MINUTES)
-        .pollInterval(500, TimeUnit.MILLISECONDS).until(() -> {
-          final ManagementService service = getManagementService();
-          final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-          if (bean != null) {
-            return bean.getNumRunningFunctions() > 0;
-          }
-          return false;
-        });
+    await().until(() -> {
+      final ManagementService service = getManagementService();
+      final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
+      if (bean != null) {
+        return bean.getNumRunningFunctions() > 0;
+      }
+      return false;
+    });
 
     final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);

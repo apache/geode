@@ -14,10 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.lang.Thread.yield;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF;
+import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -48,12 +51,12 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -307,17 +310,17 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     final int create2 = 1;
     int update2 = 4;
 
-    if (conflation.equals(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON)) {
+    if (conflation.equals(CLIENT_CONFLATION_PROP_VALUE_ON)) {
       // override
       update2 = 1;
-    } else if (conflation.equals(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF)) {
+    } else if (conflation.equals(CLIENT_CONFLATION_PROP_VALUE_OFF)) {
       // override
       update1 = 4;
     }
 
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterCreate1 == create1;
       }
 
@@ -325,12 +328,12 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     final int u1 = update1;
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterUpdate1 == u1;
       }
 
@@ -338,11 +341,11 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterCreate2 == create2;
       }
 
@@ -350,12 +353,12 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     final int u2 = update2;
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterUpdate2 == u2;
       }
 
@@ -363,7 +366,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   /**

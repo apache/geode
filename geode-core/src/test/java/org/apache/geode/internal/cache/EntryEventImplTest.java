@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,7 +29,6 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -538,7 +538,7 @@ public class EntryEventImplTest {
       e.release();
     });
     doRelease.start(); // release thread will be stuck until releaseCountDown changes
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.isWaitingOnRelease()));
     assertEquals(true, e.offHeapOk);
@@ -575,7 +575,7 @@ public class EntryEventImplTest {
     });
     doSOVgetDeserializedValue.start();
 
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true,
             e.isAboutToCallGetNewValue() && e.isAboutToCallGetOldValue()
@@ -611,7 +611,7 @@ public class EntryEventImplTest {
     doRelease.join();
     assertEquals(false, e.offHeapOk);
     // which should allow getNewValue to complete
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfGetNewValue()));
     doGetNewValue.join();
@@ -620,7 +620,7 @@ public class EntryEventImplTest {
       fail("unexpected success of getNewValue. It returned " + e.getCachedNewValue());
     }
     // which should allow getOldValue to complete
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfGetOldValue()));
     doGetOldValue.join();
@@ -628,7 +628,7 @@ public class EntryEventImplTest {
       fail("unexpected success of getOldValue. It returned " + e.getCachedOldValue());
     }
     // which should allow doSNVgetSerializedValue to complete
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfSerializedNew()));
     doSNVgetSerializedValue.join();
@@ -637,7 +637,7 @@ public class EntryEventImplTest {
           + e.getTestCachedSerializedNew());
     }
     // which should allow doSNVgetDeserializedValue to complete
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfDeserializedNew()));
     doSNVgetDeserializedValue.join();
@@ -646,7 +646,7 @@ public class EntryEventImplTest {
           + e.getCachedDeserializedNew());
     }
     // which should allow doSOVgetSerializedValue to complete
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfSerializedOld()));
     doSOVgetSerializedValue.join();
@@ -655,7 +655,7 @@ public class EntryEventImplTest {
           + e.getCachedSerializedOld());
     }
     // which should allow doSOVgetDeserializedValue to complete
-    Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
+    await()
         .timeout(15, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfDeserializedOld()));
     doSOVgetDeserializedValue.join();

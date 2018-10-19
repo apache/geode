@@ -22,8 +22,8 @@ import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
@@ -83,7 +83,7 @@ public class RegionExpirationIntegrationTest {
     region.getAttributesMutator()
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
-    await().atMost(30, SECONDS).until(() -> region.isDestroyed());
+    await().until(() -> region.isDestroyed());
     assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos))
         .isGreaterThanOrEqualTo(secondTtlSeconds);
   }
@@ -102,7 +102,7 @@ public class RegionExpirationIntegrationTest {
     region.getAttributesMutator()
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
-    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.isDestroyed()).isTrue());
+    await().untilAsserted(() -> assertThat(region.isDestroyed()).isTrue());
     assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos)).isLessThan(firstTtlSeconds);
   }
 

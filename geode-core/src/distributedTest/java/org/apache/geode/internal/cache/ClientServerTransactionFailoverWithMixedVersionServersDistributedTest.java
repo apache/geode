@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +31,7 @@ import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -358,7 +357,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
       region = cacheRule.getCache().getRegion(regionName);
     }
     int numOfEntries = numOfOperations * numOfTransactions;
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertThat(region.size()).isEqualTo(numOfEntries));
     for (int i = 1; i <= numOfEntries; i++) {
       LogService.getLogger().info("region get key {} value {} ", i, region.get(i));
@@ -414,14 +413,14 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
 
   private void verifyTransactionAreStarted(int numOfTransactions) {
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertThat(txManager.hostedTransactionsInProgressForTest())
             .isEqualTo(numOfTransactions));
   }
 
   private void verifyTransactionAreExpired() {
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertThat(txManager.hostedTransactionsInProgressForTest()).isEqualTo(0));
   }

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -71,8 +72,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -98,17 +97,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     @Override
     public Object call() throws Exception {
       final TXManagerImpl mgr = getGemfireCache().getTxManager();
-      Wait.waitForCriterion(new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return mgr.hostedTransactionsInProgressForTest() == 0;
-        }
-
-        @Override
-        public String description() {
-          return "";
-        }
-      }, 30 * 1000, 500, true/* throwOnTimeout */);
+      await().untilAsserted(() -> assertEquals(0, mgr.hostedTransactionsInProgressForTest()));
       return null;
     }
   };

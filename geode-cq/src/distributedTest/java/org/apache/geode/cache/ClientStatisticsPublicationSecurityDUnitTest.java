@@ -16,13 +16,12 @@ package org.apache.geode.cache;
 
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -118,7 +117,7 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
       String... expectedPoolStatKeys) {
     final int serverPort = server.getPort();
     server.invoke(() -> {
-      Awaitility.waitAtMost(1, TimeUnit.MINUTES).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         Cache cache = ClusterStartupRule.getCache();
         SystemManagementService service =
             (SystemManagementService) ManagementService.getExistingManagementService(cache);

@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.Entry;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -23,10 +27,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -150,32 +153,32 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testRefreshEntriesFromPrimaryWhenDSMDetectsServerLive() throws Exception {
-    IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
+    addIgnoredException(ServerConnectivityException.class.getName());
 
-    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
-    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    PORT1 = ((Integer) server1.invoke(() -> createServerCache())).intValue();
+    server1.invoke(() -> createEntriesK1andK2());
     createClientPoolCacheConnectionToSingleServer(this.getName(),
-        NetworkUtils.getServerHostName(server1.getHost()));
+        getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
-    server1.invoke(() -> HAInterestTestCase.stopServer());
+    server1.invoke(() -> stopServer());
     verifyDeadAndLiveServers(1, 0);
-    server1.invoke(() -> HAInterestTestCase.putK1andK2());
-    server1.invoke(() -> HAInterestTestCase.startServer());
+    server1.invoke(() -> putK1andK2());
+    server1.invoke(() -> startServer());
     verifyDeadAndLiveServers(0, 1);
-    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    final Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     // Verify for interest registration after cache-server is started.
-    server1.invoke(() -> HAInterestTestCase.verifyInterestRegistration());
+    server1.invoke(() -> verifyInterestRegistration());
 
     WaitCriterion wc = new WaitCriterion() {
       private String excuse;
 
       @Override
       public boolean done() {
-        Region.Entry e1;
-        Region.Entry e2;
+        Entry e1;
+        Entry e2;
 
         try {
           e1 = r1.getEntry(k1);
@@ -213,7 +216,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   /**
@@ -261,24 +264,24 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testBug35945() throws Exception {
-    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
-    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    PORT1 = ((Integer) server1.invoke(() -> createServerCache())).intValue();
+    server1.invoke(() -> createEntriesK1andK2());
     createClientPoolCacheConnectionToSingleServer(this.getName(),
-        NetworkUtils.getServerHostName(server1.getHost()));
+        getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
-    server1.invoke(() -> HAInterestTestCase.stopServer());
+    server1.invoke(() -> stopServer());
     verifyDeadAndLiveServers(1, 0);
     // put on stopped server
-    server1.invoke(() -> HAInterestTestCase.putK1andK2());
+    server1.invoke(() -> putK1andK2());
     // spawn a thread to put on server , which will acquire a lock on entry
     setClientServerObserverForBeforeInterestRecovery();
-    server1.invoke(() -> HAInterestTestCase.startServer());
+    server1.invoke(() -> startServer());
     verifyDeadAndLiveServers(0, 1);
     waitForBeforeInterestRecoveryCallBack();
     // verify updated value of k1 as a refreshEntriesFromServer
-    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    final Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
 
     WaitCriterion wc = new WaitCriterion() {
@@ -286,8 +289,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
 
       @Override
       public boolean done() {
-        Region.Entry e1 = r1.getEntry(k1);
-        Region.Entry e2 = r1.getEntry(k2);
+        Entry e1 = r1.getEntry(k1);
+        Entry e2 = r1.getEntry(k2);
         Object v1 = null;
         if (e1 != null) {
           try {
@@ -320,7 +323,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   /**
@@ -329,31 +332,31 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testInterestRecoveryFailure() throws Exception {
-    IgnoredException.addIgnoredException("Server unreachable");
+    addIgnoredException("Server unreachable");
 
-    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
-    server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
-    PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
-    server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
+    PORT1 = ((Integer) server1.invoke(() -> createServerCache())).intValue();
+    server1.invoke(() -> createEntriesK1andK2());
+    PORT2 = ((Integer) server2.invoke(() -> createServerCache())).intValue();
+    server2.invoke(() -> createEntriesK1andK2());
     createClientPoolCacheWithSmallRetryInterval(this.getName(),
-        NetworkUtils.getServerHostName(server1.getHost()));
+        getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
     VM backup = getBackupVM();
     VM primary = getPrimaryVM();
 
-    backup.invoke(() -> HAInterestTestCase.stopServer());
-    primary.invoke(() -> HAInterestTestCase.stopServer());
+    backup.invoke(() -> stopServer());
+    primary.invoke(() -> stopServer());
     verifyDeadAndLiveServers(2, 0);
 
-    primary.invoke(() -> HAInterestTestCase.putK1andK2());
+    primary.invoke(() -> putK1andK2());
     setClientServerObserverForBeforeInterestRecoveryFailure();
-    primary.invoke(() -> HAInterestTestCase.startServer());
+    primary.invoke(() -> startServer());
     waitForBeforeInterestRecoveryCallBack();
     if (exceptionOccurred) {
       fail("The DSM could not ensure that server 1 is started & serevr 2 is stopped");
     }
-    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    final Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
 
     WaitCriterion wc = new WaitCriterion() {
@@ -361,8 +364,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
 
       @Override
       public boolean done() {
-        Region.Entry e1 = r1.getEntry(k1);
-        Region.Entry e2 = r1.getEntry(k2);
+        Entry e1 = r1.getEntry(k1);
+        Entry e2 = r1.getEntry(k2);
         if (e1 == null) {
           excuse = "Entry for k1 still null";
           return false;
@@ -387,6 +390,6 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, TIMEOUT_MILLIS, INTERVAL_MILLIS, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 }

@@ -15,12 +15,10 @@
 
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.IOException;
 import java.util.List;
@@ -223,7 +221,7 @@ public class JMXMBeanReconnectDUnitTest {
 
   private void waitForMBeanFederationFrom(int numMemberMBeans, MemberVM member) {
     String memberName = "server-" + member.getVM().getId();
-    waitAtMost(10, SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       List<ObjectName> beans = getFederatedGemfireBeansFrom(locator1);
       List<ObjectName> beanList =
           beans.stream().filter(b -> b.toString().contains(memberName)).sorted().collect(toList());
@@ -276,7 +274,7 @@ public class JMXMBeanReconnectDUnitTest {
   }
 
   private void waitForLocatorsToAgreeOnMembership() {
-    waitAtMost(1, MINUTES)
+    await()
         .until(
             () -> {
               int locator1BeanCount =

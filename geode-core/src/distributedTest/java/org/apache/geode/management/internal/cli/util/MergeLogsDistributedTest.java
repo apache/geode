@@ -25,10 +25,8 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,16 +64,16 @@ public class MergeLogsDistributedTest {
     // Especially on Windows, wait for time to pass otherwise all log messages may appear in the
     // same millisecond.
     locator.invoke(() -> LogService.getLogger().info(MESSAGE_1));
-    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
+    Thread.sleep(1);
     server.invoke(() -> LogService.getLogger().info(MESSAGE_2));
-    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
+    Thread.sleep(1);
     server2.invoke(() -> LogService.getLogger().info(MESSAGE_3));
-    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
+    Thread.sleep(1);
 
     locator.invoke(() -> LogService.getLogger().info(MESSAGE_4));
-    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
+    Thread.sleep(1);
     server.invoke(() -> LogService.getLogger().info(MESSAGE_5));
-    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
+    Thread.sleep(1);
     server2.invoke(() -> LogService.getLogger().info(MESSAGE_6));
   }
 

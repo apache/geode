@@ -21,9 +21,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Level;
@@ -112,7 +111,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertThat(logFile).exists();
       assertThat(securityLogFile).exists();
     });
@@ -200,7 +199,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
     Logger geodeLogger = LogService.getLogger();
@@ -489,7 +488,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
     Logger geodeLogger = LogService.getLogger();
@@ -636,7 +635,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
     Logger geodeLogger = LogService.getLogger();
@@ -784,7 +783,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertThat(logFile).exists();
       assertThat(securityLogFile).exists();
     });
@@ -837,7 +836,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertThat(logFile).exists();
       assertThat(securityLogFile).exists();
     });
@@ -945,7 +944,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(CONFIG);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
@@ -1036,7 +1035,7 @@ public class DistributedSystemLogFileIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger logWriter = (LogWriterLogger) system.getLogWriter();
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();

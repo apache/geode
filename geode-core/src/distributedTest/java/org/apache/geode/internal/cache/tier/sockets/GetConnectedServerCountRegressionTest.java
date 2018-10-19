@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 
@@ -119,7 +118,7 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
   }
 
   private void awaitConnectedServerCount(final int expectedServerCount) {
-    await().atMost(3, MINUTES)
+    await()
         .until(() -> findPool(uniqueName).getConnectedServerCount() == expectedServerCount);
   }
 

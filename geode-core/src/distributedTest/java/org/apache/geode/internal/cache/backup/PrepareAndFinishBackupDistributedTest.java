@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.backup;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -207,7 +207,7 @@ public class PrepareAndFinishBackupDistributedTest {
 
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     Future<Void> future = CompletableFuture.runAsync(function);
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertThat(backupLock.getQueueLength()).isGreaterThanOrEqualTo(0));
 
     new FinishBackupStep(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())

@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.management.MXBeanAwaitility.await;
 import static org.apache.geode.management.cli.Result.Status.ERROR;
 import static org.apache.geode.management.cli.Result.Status.OK;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
@@ -35,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -60,6 +58,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -183,7 +182,7 @@ public class StopLocatorCommandDUnitTest {
   }
 
   private void waitForCommandToSucceed(String command) {
-    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+    GeodeAwaitility.await().untilAsserted(() -> {
       CommandResult result = gfsh.executeCommand(command);
       assertThat(result.getStatus()).isEqualTo(OK);
     });
@@ -260,7 +259,7 @@ public class StopLocatorCommandDUnitTest {
       final MBeanServerConnection connection = conn.getMBeanServerConnection();
       assertThat(connection).isInstanceOf(MBeanServerConnection.class);
 
-      await().untilAsserted(() -> {
+      GeodeAwaitility.await().untilAsserted(() -> {
         final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
         assertThat(objectNames).isNotNull().isNotEmpty().hasSize(1);
       });

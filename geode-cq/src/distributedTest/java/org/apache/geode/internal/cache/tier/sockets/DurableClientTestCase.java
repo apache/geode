@@ -16,13 +16,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Properties;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -89,7 +88,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
           Boolean.TRUE, jp));
 
       this.durableClientVM.invoke(() -> {
-        Awaitility.waitAtMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+        await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
             .pollInterval(100, MILLISECONDS)
             .until(CacheServerTestUtil::getCache, notNullValue());
       });
@@ -180,7 +179,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
       assertThat(proxy).isNotNull();
       assertThat(proxy._socket).isNotNull();
 
-      Awaitility.waitAtMost(60, SECONDS)
+      await()
           .untilAsserted(() -> assertThat(proxy._socket.isClosed()).isTrue());
     });
 
@@ -545,16 +544,15 @@ public class DurableClientTestCase extends DurableClientTestBase {
     vm.invoke(new CacheSerializableRunnable("Verify durable client") {
       public void run2() throws CacheException {
 
-        Awaitility.waitAtMost(60 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
-            .pollInterval(1, SECONDS).until(() -> {
-              CacheClientProxy proxy = getClientProxy();
-              if (proxy == null) {
-                return false;
-              }
-              // Verify the queue size
-              int sz = proxy.getQueueSize();
-              return requiredEntryCount == sz;
-            });
+        await().until(() -> {
+          CacheClientProxy proxy = getClientProxy();
+          if (proxy == null) {
+            return false;
+          }
+          // Verify the queue size
+          int sz = proxy.getQueueSize();
+          return requiredEntryCount == sz;
+        });
       }
     });
   }

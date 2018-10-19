@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.document.Document;
-import org.awaitility.Awaitility;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -220,7 +220,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     populateRegion(region);
     // Wait for expiration to destroy region entries. The region should be
     // left with zero entries.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+    GeodeAwaitility.await().untilAsserted(() -> {
       assertEquals(0, region.size());
     });
 
@@ -343,7 +343,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
   }
 
   private void await(ThrowingRunnable runnable) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(runnable);
+    GeodeAwaitility.await().untilAsserted(runnable);
   }
 
   private static final class TestCacheLoader implements CacheLoader<String, TestObject> {
