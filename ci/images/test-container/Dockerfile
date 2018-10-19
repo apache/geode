@@ -46,6 +46,10 @@ RUN  apt-get update \
   && apt-get install -y --no-install-recommends \
     openjdk-8-jdk \
     openjdk-11-jdk \
+  && curl https://download.java.net/java/early_access/jdk12/15/GPL/openjdk-12-ea+15_linux-x64_bin.tar.gz > java12.tgz \
+  && tar xfvz java12.tgz -C /usr/lib/jvm \
+  && rm java12.tgz \
+  && mv /usr/lib/jvm/jdk-12 /usr/lib/jvm/java-12-openjdk-amd64 \
   && rm -rf /etc/alternatives \
   && mv /etc/keep-alternatives /etc/alternatives \
   && apt-get clean \
