@@ -52,6 +52,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
   static final String CONNECTION_POOLED_DATASOURCE_CLASS__HELP =
       "This is the fully qualified name of the connection pool implementation to hold XA datasource connections.";
   static final String CONNECTION_URL = "connection-url";
+  static final String URL = "url";
   static final String CONNECTION_URL__HELP =
       "This is the JDBC driver connection URL string, for example, jdbc:hsqldb:hsql://localhost:1701.";
   static final String IDLE_TIMEOUT_SECONDS = "idle-timeout-seconds";
@@ -104,7 +105,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
           help = BLOCKING_TIMEOUT_SECONDS__HELP) Integer blockingTimeout,
       @CliOption(key = CONNECTION_POOLED_DATASOURCE_CLASS,
           help = CONNECTION_POOLED_DATASOURCE_CLASS__HELP) String connectionPooledDatasource,
-      @CliOption(key = CONNECTION_URL, mandatory = true,
+      @CliOption(key = {URL, CONNECTION_URL}, mandatory = true,
           help = CONNECTION_URL__HELP) String connectionUrl,
       @CliOption(key = IDLE_TIMEOUT_SECONDS, help = IDLE_TIMEOUT_SECONDS__HELP) Integer idleTimeout,
       @CliOption(key = INIT_POOL_SIZE, help = INIT_POOL_SIZE__HELP) Integer initPoolSize,
@@ -119,7 +120,8 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
       @CliOption(key = TRANSACTION_TYPE, help = TRANSACTION_TYPE__HELP) String transactionType,
-      @CliOption(key = TYPE, mandatory = true, help = TYPE__HELP) DATASOURCE_TYPE type,
+      @CliOption(key = TYPE, unspecifiedDefaultValue = "SIMPLE",
+          help = TYPE__HELP) DATASOURCE_TYPE type,
       @CliOption(key = XA_DATASOURCE_CLASS, help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,

@@ -608,8 +608,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void createJdbcConnection() {
     final String commandStr =
-        "create jndi-binding --type=POOLED --name=" + CONNECTION_NAME + " --connection-url="
-            + connectionUrl;
+        "create jndi-binding --type=POOLED --name=" + CONNECTION_NAME + " --url=" + connectionUrl;
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

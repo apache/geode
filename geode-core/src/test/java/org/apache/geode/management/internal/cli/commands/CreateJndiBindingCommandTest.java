@@ -110,6 +110,17 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
+  public void verifyJdbcTypeDefaultsToSimple() {
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --connection-url=url")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void verifyUrlAllowedAsAliasForConnectionUrl() {
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --url=url").statusIsSuccess();
+  }
+
+  @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
     InternalConfigurationPersistenceService clusterConfigService =
