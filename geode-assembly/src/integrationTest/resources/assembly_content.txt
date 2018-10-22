@@ -905,6 +905,7 @@ javadoc/org/apache/geode/modules/session/catalina/CommitSessionValve.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession7.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession8.html
+javadoc/org/apache/geode/modules/session/catalina/DeltaSession9.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSessionFacade.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSessionInterface.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSessionManager.html
@@ -916,6 +917,7 @@ javadoc/org/apache/geode/modules/session/catalina/SessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat6DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat7DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat8DeltaSessionManager.html
+javadoc/org/apache/geode/modules/session/catalina/Tomcat9DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/callback/LocalSessionCacheLoader.html
 javadoc/org/apache/geode/modules/session/catalina/callback/LocalSessionCacheWriter.html
 javadoc/org/apache/geode/modules/session/catalina/callback/SessionExpirationCacheListener.html
