@@ -77,16 +77,6 @@ public class CleanUpJUnitTest {
     }
   }
 
-  /*
-   * @Test public void testExpiration() { try { Context ctx = cache.getJNDIContext();
-   * GemFireConnPooledDataSource ds = (GemFireConnPooledDataSource) ctx
-   * .lookup("java:/PooledDataSource"); GemFireConnectionPoolManager provider =
-   * (GemFireConnectionPoolManager) ds .getConnectionProvider(); ConnectionPoolCacheImpl poolCache =
-   * (ConnectionPoolCacheImpl) provider .getConnectionPoolCache(); PooledConnection conn =
-   * poolCache.getPooledConnectionFromPool(); poolCache.returnPooledConnectionToPool(conn);
-   * Thread.sleep(poolCache.expirationTime * 2); if (!(poolCache.availableCache.isEmpty())) {
-   * fail("Clean-up on expiration not done"); } } catch (Exception e) { e.printStackTrace(); } }
-   */
   @Test
   public void testBlockingTimeOut() {
     try {

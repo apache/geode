@@ -1811,12 +1811,7 @@ public class CacheClientProxy implements ClientSession {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("CacheClientProxy[")
-        // .append("client proxy id=")
         .append(this.proxyID)
-        // .append("; client host name=")
-        // .append(this._socket.getInetAddress().getCanonicalHostName())
-        // .append("; client host address=")
-        // .append(this._remoteHostAddress)
         .append("; port=").append(this._socket.getPort()).append("; primary=").append(isPrimary)
         .append("; version=").append(clientVersion).append("]");
     return buffer.toString();
@@ -1825,12 +1820,7 @@ public class CacheClientProxy implements ClientSession {
   public String getState() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("CacheClientProxy[")
-        // .append("client proxy id=")
         .append(this.proxyID)
-        // .append("; client host name=")
-        // .append(this._socket.getInetAddress().getCanonicalHostName())
-        // .append("; client host address=")
-        // .append(this._remoteHostAddress)
         .append("; port=").append(this._socket.getPort()).append("; primary=").append(isPrimary)
         .append("; version=").append(clientVersion).append("; paused=").append(isPaused())
         .append("; alive=").append(isAlive()).append("; connected=").append(isConnected())
@@ -1844,15 +1834,8 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public boolean isPrimary() {
-    // boolean primary = this._messageDispatcher.isAlive()
-    // || this._messageDispatcher._messageQueue.isPrimary();
     boolean primary = this.isPrimary;
-    // System.out.println(this + ": DISPATCHER IS ALIVE: " + this._messageDispatcher.isAlive());
-    // System.out.println(this + ": DISPATCHER QUEUE IS PRIMARY: " +
-    // this._messageDispatcher._messageQueue.isPrimary());
-    // System.out.println(this + ": IS PRIMARY: " + primary);
     return primary;
-    // return this.isPrimary ;
   }
 
   protected boolean basicIsPrimary() {
@@ -1863,12 +1846,6 @@ public class CacheClientProxy implements ClientSession {
     this.isPrimary = isPrimary;
   }
 
-  // private static int nextId = 0;
-  // protected static int getNextId() {
-  // synchronized (CacheClientProxy.class) {
-  // return ++nextId;
-  // }
-  // }
   /*
    * Return this client's HA region queue
    *
