@@ -613,7 +613,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         isOffHeap()));
 
     // wait until regions have all been created
-    waitForRegionToBeReadyOnServers(regionName, 6, vm2, vm3, vm4, vm5, vm6, vm7);
+    waitForRegionToBeReadyOnServers(regionName, vm2, vm3, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
         true, 6, OrderPolicy.KEY));
@@ -663,24 +663,24 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
   }
 
-  private void waitForRegionToBeReadyOnServers(String regionName, int expectedNumRegions,
-      VM... vms) {
-    int numRegionsReady = 0;
+  private void waitForRegionToBeReadyOnServers(String regionName, VM... vms) {
+    int numVmsReady = 0;
+    int expectedVmsWithRegion = vms.length;
 
     for (VM vm : vms) {
       try {
         vm.invoke(() -> await().untilAsserted(() -> {
           assertThat(cache.getRegion(Region.SEPARATOR + regionName)).isNotNull();
         }));
-        numRegionsReady += 1;
+        numVmsReady += 1;
       } catch (Exception e) {
         // eat the exception and keep checking
       }
     }
-    if (numRegionsReady != expectedNumRegions) {
+    if (numVmsReady != expectedVmsWithRegion) {
       throw new IllegalStateException(
           "Test regions were not created within a reasonable amount of time. "
-              + (expectedNumRegions - numRegionsReady)
+              + (expectedVmsWithRegion - numVmsReady)
               + " region(s) were not created in time.");
     }
   }
