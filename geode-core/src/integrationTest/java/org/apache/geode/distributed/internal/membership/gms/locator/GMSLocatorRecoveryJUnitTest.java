@@ -61,6 +61,7 @@ public class GMSLocatorRecoveryJUnitTest {
 
   private File tempStateFile;
   private GMSLocator locator;
+  private File dir;
 
   @Before
   public void setUp() throws Exception {
@@ -70,13 +71,16 @@ public class GMSLocatorRecoveryJUnitTest {
     }
     this.locator = new GMSLocator(null, null, false, false, new LocatorStats(), "");
     locator.setViewFile(tempStateFile);
-    // System.out.println("temp state file: " + tempStateFile);
   }
 
   @After
   public void tearDown() throws Exception {
     if (this.tempStateFile.exists()) {
       this.tempStateFile.delete();
+    }
+
+    if (dir != null) {
+      FileUtils.deleteQuietly(dir);
     }
   }
 
@@ -201,14 +205,13 @@ public class GMSLocatorRecoveryJUnitTest {
         view);
     assertTrue(this.tempStateFile.exists());
 
-    File dir = new File("testViewFileFoundWhenUserDirModified");
+    dir = new File("testViewFileFoundWhenUserDirModified");
     dir.mkdir();
     File viewFileInNewDirectory = new File(dir, tempStateFile.getName());
 
     assertFalse(viewFileInNewDirectory.exists());
     File locatorViewFile = locator.setViewFile(viewFileInNewDirectory);
     assertFalse(locator.recoverFromFile(locatorViewFile));
-    FileUtils.deleteQuietly(dir);
   }
 
 

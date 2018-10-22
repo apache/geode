@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -53,51 +54,51 @@ public class ClassPathLoaderDeployTest {
         new File("JarDeployerDUnitFunction.v1.jar");
 
     // Write out a JAR files.
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("package jddunit.parent;");
-    stringBuffer.append("public class JarDeployerDUnitParent {");
-    stringBuffer.append("public String getValueParent() {");
-    stringBuffer.append("return \"PARENT\";}}");
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("package jddunit.parent;");
+    stringBuilder.append("public class JarDeployerDUnitParent {");
+    stringBuilder.append("public String getValueParent() {");
+    stringBuilder.append("return \"PARENT\";}}");
 
     byte[] jarBytes = classBuilder.createJarFromClassContent(
-        "jddunit/parent/JarDeployerDUnitParent", stringBuffer.toString());
+        "jddunit/parent/JarDeployerDUnitParent", stringBuilder.toString());
     FileOutputStream outStream = new FileOutputStream(parentJarFile);
     outStream.write(jarBytes);
     outStream.close();
 
-    stringBuffer = new StringBuffer();
-    stringBuffer.append("package jddunit.uses;");
-    stringBuffer.append("public class JarDeployerDUnitUses {");
-    stringBuffer.append("public String getValueUses() {");
-    stringBuffer.append("return \"USES\";}}");
+    stringBuilder = new StringBuilder();
+    stringBuilder.append("package jddunit.uses;");
+    stringBuilder.append("public class JarDeployerDUnitUses {");
+    stringBuilder.append("public String getValueUses() {");
+    stringBuilder.append("return \"USES\";}}");
 
     jarBytes = classBuilder.createJarFromClassContent("jddunit/uses/JarDeployerDUnitUses",
-        stringBuffer.toString());
+        stringBuilder.toString());
     outStream = new FileOutputStream(usesJarFile);
     outStream.write(jarBytes);
     outStream.close();
 
-    stringBuffer = new StringBuffer();
-    stringBuffer.append("package jddunit.function;");
-    stringBuffer.append("import jddunit.parent.JarDeployerDUnitParent;");
-    stringBuffer.append("import jddunit.uses.JarDeployerDUnitUses;");
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
-    stringBuffer.append(
+    stringBuilder = new StringBuilder();
+    stringBuilder.append("package jddunit.function;");
+    stringBuilder.append("import jddunit.parent.JarDeployerDUnitParent;");
+    stringBuilder.append("import jddunit.uses.JarDeployerDUnitUses;");
+    stringBuilder.append("import org.apache.geode.cache.execute.Function;");
+    stringBuilder.append("import org.apache.geode.cache.execute.FunctionContext;");
+    stringBuilder.append(
         "public class JarDeployerDUnitFunction  extends JarDeployerDUnitParent implements Function {");
-    stringBuffer.append("private JarDeployerDUnitUses uses = new JarDeployerDUnitUses();");
-    stringBuffer.append("public boolean hasResult() {return true;}");
-    stringBuffer.append(
+    stringBuilder.append("private JarDeployerDUnitUses uses = new JarDeployerDUnitUses();");
+    stringBuilder.append("public boolean hasResult() {return true;}");
+    stringBuilder.append(
         "public void execute(FunctionContext context) {context.getResultSender().lastResult(getValueParent() + \":\" + uses.getValueUses());}");
-    stringBuffer.append("public String getId() {return \"JarDeployerDUnitFunction\";}");
-    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
-    stringBuffer.append("public boolean isHA() {return false;}}");
+    stringBuilder.append("public String getId() {return \"JarDeployerDUnitFunction\";}");
+    stringBuilder.append("public boolean optimizeForWrite() {return false;}");
+    stringBuilder.append("public boolean isHA() {return false;}}");
 
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.addToClassPath(parentJarFile.getAbsolutePath());
     functionClassBuilder.addToClassPath(usesJarFile.getAbsolutePath());
     jarBytes = functionClassBuilder.createJarFromClassContent(
-        "jddunit/function/JarDeployerDUnitFunction", stringBuffer.toString());
+        "jddunit/function/JarDeployerDUnitFunction", stringBuilder.toString());
     outStream = new FileOutputStream(functionJarFile);
     outStream.write(jarBytes);
     outStream.close();
@@ -108,7 +109,6 @@ public class ClassPathLoaderDeployTest {
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
     Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
     ResultCollector resultCollector = execution.execute("JarDeployerDUnitFunction");
-    @SuppressWarnings("unchecked")
     List<String> result = (List<String>) resultCollector.getResult();
     assertEquals("PARENT:USES", result.get(0));
   }
@@ -120,7 +120,7 @@ public class ClassPathLoaderDeployTest {
 
     server.startServer();
 
-    GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
+    GemFireCache gemFireCache = server.getCache();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion1);
