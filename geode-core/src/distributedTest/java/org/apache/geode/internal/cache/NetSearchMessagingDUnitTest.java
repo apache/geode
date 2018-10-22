@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
@@ -33,8 +36,8 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -45,6 +48,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 
 public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
+  private static final AtomicBoolean listenerHasFinished = new AtomicBoolean();
 
   @Test
   public void testOneMessageWithReplicates() {
@@ -205,8 +209,9 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Make sure that even if we start out by net searching replicates, we'll fall back to net
-   * searching normal members.
+   * The system prefers net searching replicates. If a replicate fails after it responds to a query
+   * message and before it returns a value, the system should fall back to net searching normal
+   * members.
    */
   @Test
   public void testNetSearchFailoverFromReplicate() {
@@ -216,91 +221,64 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    // Install a listener to kill this member
-    // when we get the netsearch request
-    vm0.invoke(new SerializableRunnable("Install listener") {
-
-      public void run() {
-        DistributionMessageObserver ob = new DistributionMessageObserver() {
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof NetSearchRequestMessage) {
-              disconnectFromDS();
-            }
-          }
-        };
-        DistributionMessageObserver.setInstance(ob);
-      }
-    });
+    installListenerToDisconnectOnNetSearchRequest(vm0);
 
     createReplicate(vm0);
     createNormal(vm1);
     createNormal(vm2);
     createEmpty(vm3);
 
-    // Test with a real value value
     put(vm3, "a", "b");
-
-    long vm0Count = getReceivedMessages(vm0);
-    long vm1Count = getReceivedMessages(vm1);
-    long vm2Count = getReceivedMessages(vm2);
-    long vm3Count = getReceivedMessages(vm3);
 
     assertEquals("b", get(vm3, "a"));
 
-    // Make sure we were disconnected in vm0
-    vm0.invoke(new SerializableRunnable("check disconnected") {
+    vm0.invoke(() -> await("system to shut down")
+        .untilAsserted(
+            () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNull()));
 
-      public void run() {
-        assertNull(GemFireCacheImpl.getInstance());
-      }
-    });
+    waitForListenerToFinish(vm0);
   }
 
+  /**
+   * When a replicate fails after responding to a query message, the net search should fail over to
+   * the next replicate that responded.
+   */
   @Test
   public void testNetSearchFailoverFromOneReplicateToAnother() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
 
-    // Install a listener to kill this member
-    // when we get the netsearch request
-    vm0.invoke(new SerializableRunnable("Install listener") {
-
-      public void run() {
-        DistributionMessageObserver ob = new DistributionMessageObserver() {
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof NetSearchRequestMessage) {
-              disconnectFromDS();
-            }
-          }
-        };
-        DistributionMessageObserver.setInstance(ob);
-      }
-    });
+    installListenerToDisconnectOnNetSearchRequest(vm0);
 
     createReplicate(vm0);
     createReplicate(vm1);
-    createEmpty(vm3);
+    createEmpty(vm2);
 
-    // Test with a real value value
-    put(vm3, "a", "b");
+    put(vm2, "a", "b");
 
     boolean disconnected = false;
     while (!disconnected) {
-      assertEquals("b", get(vm3, "a"));
+      // get() causes vm2 to send a query message to all replicated members. All members with that
+      // key reply. vm2 then sends a net search request to the first one that replies. If that
+      // fails, it sends a net search request to the next one that replied. And so on.
+      //
+      // Because we can't be sure which member will respond first to each query, we repeat the loop
+      // until vm0 is the first responder. vm0 will then disconnect when it receives the net search
+      // request, forcing failover to another vm (in this case vm1). If we got the correct answer
+      // AND the system is disconnected, then failover occurred.
+      assertEquals("b", get(vm2, "a"));
 
       // Make sure we were disconnected in vm0
       disconnected = (Boolean) vm0.invoke(new SerializableCallable("check disconnected") {
-
         public Object call() {
-          return GemFireCacheImpl.getInstance() == null;
+          return InternalDistributedSystem.getConnectedInstance() == null;
         }
       });
     }
+
+    waitForListenerToFinish(vm0);
   }
 
   private Object put(VM vm, final String key, final String value) {
@@ -329,7 +307,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitForReceivedMessages(final VM vm, final long expected) {
-    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+    await().untilAsserted(new WaitCriterion() {
 
       @Override
       public boolean done() {
@@ -419,4 +397,32 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
   }
 
+  private void installListenerToDisconnectOnNetSearchRequest(VM vm) {
+    vm.invoke(new SerializableRunnable("Install listener") {
+      public void run() {
+        listenerHasFinished.set(false);
+        DistributionMessageObserver ob = new DistributionMessageObserver() {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
+            if (message instanceof NetSearchRequestMessage) {
+              DistributionMessageObserver.setInstance(null);
+              disconnectFromDS();
+              listenerHasFinished.set(true);
+            }
+          }
+        };
+        DistributionMessageObserver.setInstance(ob);
+      }
+    });
+  }
+
+  private void waitForListenerToFinish(VM vm) {
+    vm.invoke("wait for listener to finish", () -> {
+      assertThat(DistributionMessageObserver.getInstance())
+          .withFailMessage("listener was not invoked")
+          .isNull();
+      await("listener to finish")
+          .untilAsserted(() -> assertThat(listenerHasFinished).isTrue());
+    });
+  }
 }

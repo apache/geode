@@ -88,29 +88,11 @@ public class MemberStarterRuleTest {
   }
 
   @Test
-  public void workingDirNotCreatedByDefault() throws Exception {
+  public void workingDirIsUserDir() throws Exception {
     String userDir = System.getProperty("user.dir");
     locator = new LocatorStarterRule();
     locator.before();
-    assertThat(System.getProperty("user.dir")).isSameAs(userDir);
-    assertThat(locator.getWorkingDir()).isNull();
-  }
-
-  @Test
-  public void logFileDoesNotCreatesWorkingDir() throws Exception {
-    locator = new LocatorStarterRule().withLogFile();
-    locator.before();
-
-    assertThat(locator.getName()).isNotNull();
-    assertThat(locator.getWorkingDir()).isNull();
-  }
-
-  @Test
-  public void workDirCreatesWorkDir() throws Exception {
-    locator = new LocatorStarterRule().withWorkingDir();
-    locator.before();
-
-    assertThat(locator.getWorkingDir()).isNotNull();
+    assertThat(locator.getWorkingDir().getAbsolutePath()).isEqualTo(userDir);
   }
 
   @Test
