@@ -119,6 +119,8 @@ public class JNDIInvoker {
   private static Boolean IGNORE_JTA =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
 
+  private static final DataSourceFactory dataSourceFactory = new DataSourceFactory();
+
   /**
    * Bind the transaction resources. Bind UserTransaction and TransactionManager.
    * <p>
@@ -325,6 +327,11 @@ public class JNDIInvoker {
    * @param map contains Datasource configuration properties.
    */
   public static void mapDatasource(Map map, List<ConfigProperty> props) {
+    mapDatasource(map, props, dataSourceFactory);
+  }
+
+  static void mapDatasource(Map map, List<ConfigProperty> props,
+      DataSourceFactory dataSourceFactory) {
     String value = (String) map.get("type");
     String jndiName = "";
     LogWriter writer = TransactionUtils.getLogWriter();
@@ -332,25 +339,25 @@ public class JNDIInvoker {
     try {
       jndiName = (String) map.get("jndi-name");
       if (value.equals("PooledDataSource")) {
-        ds = DataSourceFactory.getPooledDataSource(map, props);
+        ds = dataSourceFactory.getPooledDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds);
         dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("XAPooledDataSource")) {
-        ds = DataSourceFactory.getTranxDataSource(map, props);
+        ds = dataSourceFactory.getTranxDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds);
         dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("SimpleDataSource")) {
-        ds = DataSourceFactory.getSimpleDataSource(map);
+        ds = dataSourceFactory.getSimpleDataSource(map);
         ctx.rebind("java:/" + jndiName, ds);
         dataSourceMap.put(jndiName, ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("ManagedDataSource")) {
-        ClientConnectionFactoryWrapper ds1 = DataSourceFactory.getManagedDataSource(map, props);
+        ClientConnectionFactoryWrapper ds1 = dataSourceFactory.getManagedDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds1.getClientConnFactory());
         dataSourceMap.put(jndiName, ds1);
         if (writer.fineEnabled())

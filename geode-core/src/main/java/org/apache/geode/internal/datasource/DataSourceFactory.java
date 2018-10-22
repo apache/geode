@@ -59,7 +59,7 @@ public class DataSourceFactory {
    * @param configMap a map containing configurations required for datasource.
    * @return ??
    */
-  public static DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
+  public DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     if (configs.getJDBCDriver() == null) {
       logger.error("DataSourceFactory::getSimpleDataSource:JDBC Driver is not available");
@@ -92,7 +92,7 @@ public class DataSourceFactory {
    *
    * @return javax.sql.DataSource
    */
-  public static ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
+  public ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
       List<ConfigProperty> props) throws DataSourceCreateException {
     Object cf = null;
     ManagedConnectionFactory mcf = null;
@@ -146,7 +146,7 @@ public class DataSourceFactory {
    * @param configMap a map containing configurations required for datasource.
    * @return ???
    */
-  public static DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
+  public DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String connpoolClassName = configs.getConnectionPoolDSClass();
@@ -181,7 +181,7 @@ public class DataSourceFactory {
    * @param configMap a map containing configurations required for datasource.
    * @return ???
    */
-  public static DataSource getTranxDataSource(Map configMap, List<ConfigProperty> props)
+  public DataSource getTranxDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String xaClassName = configs.getXADSClass();
@@ -220,7 +220,7 @@ public class DataSourceFactory {
    *
    * @param configMap a map containing configurations required for datasource.
    */
-  private static ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
+  private ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
     ConfiguredDataSourceProperties configs = new ConfiguredDataSourceProperties();
     Iterator entries = configMap.entrySet().iterator();
     while (entries.hasNext()) {
@@ -313,7 +313,7 @@ public class DataSourceFactory {
    * @param c class of the object
    * @param cpdsObj The object
    */
-  private static void invokeAllMethods(Class c, Object cpdsObj, List props)
+  private void invokeAllMethods(Class c, Object cpdsObj, List props)
       throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
     String key = null;
     String value = null;
