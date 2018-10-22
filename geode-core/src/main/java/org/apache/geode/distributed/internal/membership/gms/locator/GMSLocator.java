@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -132,11 +133,9 @@ public class GMSLocator implements Locator, NetLocator {
     return false;
   }
 
-  /**
-   * Test hook - set the persistent view file
-   */
+  @TestingOnly
   public File setViewFile(File file) {
-    this.viewFile = new File(file.getAbsolutePath()); // GEODE-4180, use absolute paths
+    this.viewFile = file.getAbsoluteFile();
     return this.viewFile;
   }
 
@@ -144,8 +143,7 @@ public class GMSLocator implements Locator, NetLocator {
   public void init(TcpServer server) throws InternalGemFireException {
     if (this.viewFile == null) {
       // GEODE-4180, use absolute paths
-      this.viewFile =
-          new File(new File("locator" + server.getPort() + "view.dat").getAbsolutePath());
+      this.viewFile = new File("locator" + server.getPort() + "view.dat").getAbsoluteFile();
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
