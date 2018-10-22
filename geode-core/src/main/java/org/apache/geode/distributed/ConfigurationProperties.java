@@ -1333,7 +1333,7 @@ public interface ConfigurationProperties {
    * (TCP). This range is given as two numbers separated by a minus sign. Minimum 3 values in range
    * are required to successfully startup.
    * <p>
-   * <U>Default</U>: 1024-65535
+   * <U>Default</U>: 41000-61000
    */
   String MEMBERSHIP_PORT_RANGE = "membership-port-range";
   /**

@@ -52,6 +52,6 @@ public class StartLocatorAcceptanceTest {
         .of("start locator --name=locator1 --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager")
         .execute(gfshRule);
     assertThat(execution.getOutputText())
-        .contains("Security Manager is enabled - unable to auto-connect.");
+        .contains("Unable to auto-connect (Security Manager may be enabled)");
   }
 }
