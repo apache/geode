@@ -135,11 +135,11 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // reset all flags
-    DeltaTestImpl.resetDeltaInvokationCounters();
-    server.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
-    server2.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
-    client.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
-    client2.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
+    DeltaTestImpl.resetDeltaInvocationCounters();
+    server.invoke(() -> DeltaTestImpl.resetDeltaInvocationCounters());
+    server2.invoke(() -> DeltaTestImpl.resetDeltaInvocationCounters());
+    client.invoke(() -> DeltaTestImpl.resetDeltaInvocationCounters());
+    client2.invoke(() -> DeltaTestImpl.resetDeltaInvocationCounters());
     // close the clients first
     client.invoke(() -> ClientToServerDeltaDUnitTest.closeCache());
     client2.invoke(() -> ClientToServerDeltaDUnitTest.closeCache());
@@ -901,8 +901,8 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyDeltaReceived() {
     assertTrue(
-        "Expected 1 fromDelta() invokation but was " + DeltaTestImpl.getFromDeltaInvokations(),
-        DeltaTestImpl.getFromDeltaInvokations() == 1);
+        "Expected 1 fromDelta() invokation but was " + DeltaTestImpl.getFromDeltaInvocations(),
+        DeltaTestImpl.getFromDeltaInvocations() == 1);
   }
 
   public static void verifyDeltaSent(Integer deltas) {
@@ -918,15 +918,15 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
   public static void checkFromdeltaCounter() {
     assertTrue(
         "FromDelta counters do not match, expected: " + (NO_PUT_OPERATION - 1) + ", actual: "
-            + DeltaTestImpl.getFromDeltaInvokations(),
-        DeltaTestImpl.getFromDeltaInvokations() >= (NO_PUT_OPERATION - 1));
+            + DeltaTestImpl.getFromDeltaInvocations(),
+        DeltaTestImpl.getFromDeltaInvocations() >= (NO_PUT_OPERATION - 1));
   }
 
   public static void checkTodeltaCounter(Integer count) {
     assertTrue(
         "ToDelta counters do not match, expected: " + count.intValue() + ", actual: "
-            + DeltaTestImpl.getToDeltaInvokations(),
-        DeltaTestImpl.getToDeltaInvokations() >= count.intValue());
+            + DeltaTestImpl.getToDeltaInvocations(),
+        DeltaTestImpl.getToDeltaInvocations() >= count.intValue());
   }
 
   public static void checkDeltaFeatureNotUsed() {
@@ -961,7 +961,7 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
   public static void checkForDelta() {
     assertTrue("Delta sent to EMPTY data policy region",
-        DeltaTestImpl.getFromDeltaInvokations() == 0);
+        DeltaTestImpl.getFromDeltaInvocations() == 0);
   }
 
   public static void waitForLastKey() {

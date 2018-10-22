@@ -115,7 +115,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     client1 = getHost(0).getVM(2);
     dataStore3 = getHost(0).getVM(3);
 
-    DeltaTestImpl.resetDeltaInvokationCounters();
+    DeltaTestImpl.resetDeltaInvocationCounters();
     dataStore1.invoke(() -> resetAll());
     dataStore2.invoke(() -> resetAll());
     dataStore3.invoke(() -> resetAll());
@@ -125,7 +125,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   public void tearDown() throws Exception {
     disconnectAllFromDS();
     Invoke.invokeInEveryVM(() -> {
-      DeltaTestImpl.resetDeltaInvokationCounters();
+      DeltaTestImpl.resetDeltaInvocationCounters();
       isFailed = false;
       isBadToDelta = false;
       isBadFromDelta = false;
@@ -690,18 +690,18 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   private void checkToDeltaCounter(int count) {
     assertTrue(
         "ToDelta counters do not match, expected: " + count + ", actual: "
-            + DeltaTestImpl.getToDeltaInvokations(),
-        DeltaTestImpl.getToDeltaInvokations() == count);
-    DeltaTestImpl.resetDeltaInvokationCounters();
+            + DeltaTestImpl.getToDeltaInvocations(),
+        DeltaTestImpl.getToDeltaInvocations() == count);
+    DeltaTestImpl.resetDeltaInvocationCounters();
   }
 
   // check and reset delta counters
   private void fromDeltaCounter(int count) {
     assertTrue(
         "FromDelta counters do not match, expected: " + count + ", but actual: "
-            + DeltaTestImpl.getFromDeltaInvokations(),
-        DeltaTestImpl.getFromDeltaInvokations() == count);
-    DeltaTestImpl.resetDeltaInvokationCounters();
+            + DeltaTestImpl.getFromDeltaInvocations(),
+        DeltaTestImpl.getFromDeltaInvocations() == count);
+    DeltaTestImpl.resetDeltaInvocationCounters();
   }
 
   private void checkIsFailed() {
@@ -1097,7 +1097,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   }
 
   private void resetAll() {
-    DeltaTestImpl.resetDeltaInvokationCounters();
+    DeltaTestImpl.resetDeltaInvocationCounters();
     ConflationDUnitTestHelper.unsetIsSlowStart();
   }
 

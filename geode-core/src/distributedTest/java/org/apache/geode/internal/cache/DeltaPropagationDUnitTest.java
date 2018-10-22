@@ -14,26 +14,23 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -60,19 +57,16 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
@@ -83,23 +77,21 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private final Compressor compressor = SnappyCompressor.getDefaultInstance();
 
-  protected static Cache cache = null;
+  private static Cache cache = null;
 
-  protected VM vm0 = null;
+  private VM vm0 = null;
 
-  protected VM vm1 = null;
+  private VM vm1 = null;
 
-  protected VM vm2 = null;
+  private VM vm2 = null;
 
-  protected VM vm3 = null;
+  private VM vm3 = null;
 
   private int PORT1;
 
   private int PORT2;
 
   private static final String regionName = DeltaPropagationDUnitTest.class.getSimpleName();
-
-  private static LogWriter logger = null;
 
   private static final int EVENTS_SIZE = 6;
 
@@ -115,13 +107,13 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private static int numOfDestroys;
 
-  private static DeltaTestImpl[] deltaPut = new DeltaTestImpl[EVENTS_SIZE];
+  private static final DeltaTestImpl[] deltaPut = new DeltaTestImpl[EVENTS_SIZE];
 
   private boolean areListenerResultsValid = true;
 
   private boolean closeCache = false;
 
-  private StringBuffer listenerError = new StringBuffer("");
+  private StringBuffer listenerError = new StringBuffer();
 
   private static final String DELTA_KEY = "DELTA_KEY";
 
@@ -149,13 +141,15 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String DESTROY = "DESTROY";
 
+  private static final Logger logger = LogService.getLogger();
+
   @Override
-  public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
+  public final void postSetUp() {
+
+    vm0 = VM.getVM(0);
+    vm1 = VM.getVM(1);
+    vm2 = VM.getVM(2);
+    vm3 = VM.getVM(3);
 
     vm0.invoke(this::resetAll);
     vm1.invoke(this::resetAll);
@@ -165,17 +159,17 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Override
-  public final void preTearDown() throws Exception {
+  public final void preTearDown() {
     closeCache();
-    vm2.invoke((SerializableCallableIF) this::closeCache);
-    vm3.invoke((SerializableCallableIF) this::closeCache);
+    vm2.invoke(() -> closeCache);
+    vm3.invoke(() -> closeCache);
 
     // Unset the isSlowStartForTesting flag
     vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     // then close the servers
-    vm0.invoke((SerializableRunnableIF) this::closeCache);
-    vm1.invoke((SerializableRunnableIF) this::closeCache);
+    vm0.invoke(() -> closeCache);
+    vm1.invoke(() -> closeCache);
     disconnectAllFromDS();
   }
 
@@ -198,15 +192,17 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == toDeltas);
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
+    assertThat(toDeltas).
+        describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas).
+        isEqualTo(EVENTS_SIZE - 1);
+    assertThat(toDeltas).
+        describedAs((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas).
+        isEqualTo(fromDeltas);
 
     verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(areListenerResultsValid).describedAs(listenerError.toString()).isTrue();
   }
 
   @Test
@@ -223,16 +219,19 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == toDeltas);
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
+    assertThat(toDeltas).
+        describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas).
+        isEqualTo(EVENTS_SIZE - 1);
+    assertThat(toDeltas).
+        describedAs((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas).
+        isEqualTo(fromDeltas);
 
     verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(areListenerResultsValid).describedAs(listenerError.toString()).isTrue();
   }
+
 
   @Test
   public void testS2CFailureInToDeltaMethod() throws Exception {
@@ -248,21 +247,24 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
     long toDeltafailures = vm0.invoke(DeltaTestImpl::getToDeltaFailures);
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1 - 1/*
-                                    * This is because the one failed in toDelta will be sent as full
-                                    * value. So client will not see it as 'delta'.
-                                    */) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == (EVENTS_SIZE - 1 - 1));
-    assertTrue(1 + " deltas were to be failed while extracting but were " + toDeltafailures,
-        toDeltafailures == 1);
+    assertThat(toDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas)
+        .isEqualTo((EVENTS_SIZE - 1));
+    /*
+     * EVENTS_SIZE - 1 - 1: This is because the one failed in toDelta will be sent as full
+     * value. So client will not see it as 'delta'.
+     */
+    assertThat(fromDeltas).describedAs((EVENTS_SIZE - 1 - 1) + " deltas were to be received but were " + fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
+
+    assertThat(1)
+        .describedAs(1 + " deltas were to be failed while extracting but were " + toDeltafailures)
+        .isEqualTo(toDeltafailures);
 
     verifyData(2, EVENTS_SIZE - 1 - 1 /* Full value no more sent if toDelta() fails */);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(areListenerResultsValid).describedAs(listenerError.toString()).isTrue();
   }
 
   @Test
@@ -279,18 +281,21 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
     long fromDeltafailures = DeltaTestImpl.getFromDeltaFailures();
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == toDeltas);
-    assertTrue(1 + " deltas were to be failed while applying but were " + fromDeltafailures,
-        fromDeltafailures == 1);
+    assertThat(toDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas)
+        .isEqualTo((EVENTS_SIZE - 1));
+    assertThat(fromDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas)
+        .isEqualTo(toDeltas);
+    assertThat(1)
+        .describedAs(1 + " deltas were to be failed while applying but were " + fromDeltafailures)
+        .isEqualTo(fromDeltafailures);
 
     verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(areListenerResultsValid).describedAs(listenerError.toString()).isTrue();
   }
 
   @Test
@@ -315,16 +320,18 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == (EVENTS_SIZE - 1));
+    assertThat(toDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas)
+        .isEqualTo((EVENTS_SIZE - 1));
+    assertThat(fromDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas)
+        .isEqualTo((EVENTS_SIZE - 1));
 
     verifyData(3, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(areListenerResultsValid).describedAs(listenerError.toString()).isTrue();
   }
 
   @Test
@@ -349,14 +356,15 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue(
-        (EVENTS_SIZE - 1 - 1/* destroyed */) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == (EVENTS_SIZE - 1 - 1));
+    assertThat(toDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas)
+        .isEqualTo((EVENTS_SIZE - 1));
+    assertThat(fromDeltas).describedAs(
+        (EVENTS_SIZE - 1 - 1/* destroyed */) + " deltas were to be received but were " + fromDeltas)
+        .isEqualTo((EVENTS_SIZE - 1 - 1));
 
     verifyData(4, EVENTS_SIZE - 2);
   }
@@ -377,16 +385,17 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltas = DeltaTestImpl.getFromDeltaInvocations();
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1 - 1/* invalidated */) + " deltas were to be received but were "
-        + fromDeltas, fromDeltas == (EVENTS_SIZE - 1 - 1));
+    assertThat(toDeltas)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas)
+        .isEqualTo((EVENTS_SIZE - 1));
+    assertThat(fromDeltas).describedAs ((EVENTS_SIZE - 1 - 1/* invalidated */) + " deltas were to be received but were "
+        + fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
 
     verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(areListenerResultsValid).describedAs(listenerError.toString()).isTrue();
   }
 
   @Test
@@ -404,7 +413,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     waitForLastKey();
 
     // TODO: (Amogh) get CCPStats and assert 0 deltas sent.
-    assertEquals(0, DeltaTestImpl.getFromDeltaInvokations().longValue());
+    assertThat(DeltaTestImpl.getFromDeltaInvocations().longValue()).isEqualTo(0);
   }
 
   @Test
@@ -429,10 +438,10 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     vm3.invoke(this::waitForLastKey);
 
     // TODO: (Amogh) use CCPStats.
-    assertEquals("Delta Propagation feature used.", 0,
-        DeltaTestImpl.getFromDeltaInvokations().longValue());
-    long fromDeltaInvocations = vm3.invoke(DeltaTestImpl::getFromDeltaInvokations);
-    assertEquals((EVENTS_SIZE - 1), fromDeltaInvocations);
+    assertThat(0).describedAs("Delta Propagation feature used.")
+        .isEqualTo(DeltaTestImpl.getFromDeltaInvocations().longValue());
+    long fromDeltaInvocations = vm3.invoke(DeltaTestImpl::getFromDeltaInvocations);
+    assertThat(fromDeltaInvocations).isEqualTo(EVENTS_SIZE - 1);
   }
 
   @Test
@@ -445,8 +454,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(this::createDeltas);
     waitForLastKey();
 
-    assertEquals(0l, ((Long) vm0.invoke(DeltaTestImpl::getToDeltaInvokations)).longValue());
-    assertTrue("Delta Propagation feature used.", DeltaTestImpl.getFromDeltaInvokations() == 0);
+    assertThat(vm0.invoke(DeltaTestImpl::getToDeltaInvocations).longValue()).isEqualTo(0L);
+    assertThat(0).describedAs("Delta Propagation feature used.")
+        .isEqualTo((long) DeltaTestImpl.getFromDeltaInvocations());
   }
 
   /**
@@ -470,8 +480,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     createClientCache(PORT1, -1, "0", NO_LISTENER);
 
-    Region r = cache.getRegion("/" + regionName);
-    assertNotNull(r);
+    Region<String, Object> r = cache.getRegion("/" + regionName);
+    assertThat(r).isNotNull();
 
     r.create(DELTA_KEY, deltaPut[0]);
 
@@ -488,9 +498,12 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     // Assert that vm0 distributed val as full value to vm1.
     vm1.invoke(() -> assertValue(regionName, DELTA_KEY, val));
 
-    assertTrue("Delta Propagation feature used.", !vm0.invoke(DeltaTestImpl::deltaFeatureUsed));
-    assertTrue("Delta Propagation feature used.", !vm1.invoke(DeltaTestImpl::deltaFeatureUsed));
-    assertTrue("Delta Propagation feature NOT used.", DeltaTestImpl.deltaFeatureUsed());
+    assertThat(!vm0.invoke(DeltaTestImpl::deltaFeatureUsed))
+        .describedAs("Delta Propagation feature used.").isTrue();
+    assertThat(!vm1.invoke(DeltaTestImpl::deltaFeatureUsed))
+        .describedAs("Delta Propagation feature used.").isTrue();
+    assertThat(DeltaTestImpl.deltaFeatureUsed()).describedAs("Delta Propagation feature NOT used.")
+        .isTrue();
   }
 
   @Test
@@ -501,17 +514,17 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     vm0.invoke((SerializableRunnableIF) this::closeCache);
 
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1));
-    PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY, 1));
+    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
+    PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
 
     vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
     vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
     createClientCache(PORT2, -1, "0", CLIENT_LISTENER);
 
-    Region r = cache.getRegion("/" + regionName);
-    assertNotNull(r);
-    r.registerInterest("ALL_KEYS");
+    Region<String, Object> r = cache.getRegion("/" + regionName);
+    assertThat(r).isNotNull();
+    r.registerInterestForAllKeys();
 
     vm0.invoke(this::createAndUpdateDeltas);
     vm1.invoke(() -> confirmEviction(PORT2));
@@ -520,19 +533,22 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     waitForLastKey();
 
-    long toDeltasOnServer1 = (Long) vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltasOnServer2 = (Long) vm1.invoke(DeltaTestImpl::getFromDeltaInvokations);
-    long toDeltasOnServer2 = (Long) vm1.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
+    long toDeltasOnServer1 = vm0.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltasOnServer2 = vm1.invoke(DeltaTestImpl::getFromDeltaInvocations);
+    long toDeltasOnServer2 = vm1.invoke(DeltaTestImpl::getToDeltaInvocations);
+    long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvocations();
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltasOnServer1,
-        toDeltasOnServer1 == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnServer2,
-        fromDeltasOnServer2 == (EVENTS_SIZE - 1));
-    assertTrue("0 toDelta() were to be invoked but were " + toDeltasOnServer2,
-        toDeltasOnServer2 == 0);
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient,
-        fromDeltasOnClient == (EVENTS_SIZE - 1));
+    assertThat(toDeltasOnServer1)
+        .describedAs((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltasOnServer1)
+        .isEqualTo((EVENTS_SIZE - 1));
+    assertThat(fromDeltasOnServer2).describedAs(
+        (EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnServer2)
+        .isEqualTo((EVENTS_SIZE - 1));
+    assertThat(0).describedAs("0 toDelta() were to be invoked but were " + toDeltasOnServer2)
+        .isEqualTo(toDeltasOnServer2);
+    assertThat(fromDeltasOnClient).describedAs(
+        (EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient)
+        .isEqualTo((EVENTS_SIZE - 1));
   }
 
   @Test
@@ -545,11 +561,11 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke((SerializableRunnableIF) this::closeCache);
 
     PORT1 =
-        vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1, NO_LISTENER));
+        vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, NO_LISTENER));
     PORT2 =
-        vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1, NO_LISTENER));
+        vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, NO_LISTENER));
     int port3 =
-        vm2.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1, NO_LISTENER));
+        vm2.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, NO_LISTENER));
 
     // Do puts after slowing the dispatcher.
     try {
@@ -557,14 +573,16 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
       vm2.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
-      createClientCache(new int[] {PORT1, PORT2, port3}, "1",
+      createClientCache(new int[]{PORT1, PORT2, port3}, "1",
           DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT, CLIENT_LISTENER, null, null);
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-      r.registerInterest("ALL_KEYS");
+      Region<String, Object> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
+      r.registerInterestForAllKeys();
+
+
+      assertThat(PoolManager.getAll().values().stream().findFirst().isPresent()).isTrue();
 
       Pool testPool = PoolManager.getAll().values().stream().findFirst().get();
-
       VM primary = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0
           : ((((PoolImpl) testPool).getPrimaryPort() == PORT2) ? vm1 : vm2);
 
@@ -584,13 +602,13 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       primary.invoke((SerializableRunnableIF) this::closeCache);
       Thread.sleep(5000);
 
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-          .info("waiting for client to receive last_key");
+      logger.info("waiting for client to receive last_key");
       waitForLastKey();
 
-      long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
-      assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient,
-          fromDeltasOnClient == (EVENTS_SIZE - 1));
+      long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvocations();
+      assertThat(fromDeltasOnClient).describedAs(
+          (EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient)
+          .isEqualTo((EVENTS_SIZE - 1));
     } finally {
       vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
       vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
@@ -602,7 +620,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   public void testBug40165ClientReconnects() throws Exception {
     PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
 
-    /**
+    /*
      * 1. Create a cache server with slow dispatcher 2. Start a durable client with a custom cache
      * listener which shuts itself down as soon as it receives a marker message. 3. Do some puts on
      * the server region 4. Let the dispatcher start dispatching 5. Verify that durable client is
@@ -624,7 +642,6 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       String durableClientId = getName() + "_client";
       PoolFactory pf = PoolManager.createFactory();
       pf.addServer("localhost", PORT1).setSubscriptionEnabled(true).setSubscriptionAckInterval(1);
-      ((PoolFactoryImpl) pf).getPoolAttributes();
 
       Properties properties = new Properties();
       properties.setProperty(MCAST_PORT, "0");
@@ -642,8 +659,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
       // Step 5
-      // verifyDurableClientDisconnected();
-      Thread.sleep(5000);
+      Thread.sleep(6000);
 
       // Step 6
       createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), regionName, properties,
@@ -653,9 +669,10 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       waitForLastKey();
 
       // Step 8
-      long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
-      assertTrue("No deltas were to be received but received: " + fromDeltasOnClient,
-          fromDeltasOnClient < 1);
+      long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvocations();
+      assertThat(fromDeltasOnClient < 1)
+          .describedAs("No deltas were to be received but received: " + fromDeltasOnClient)
+          .isTrue();
     } finally {
       // Step 4
       vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
@@ -667,7 +684,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   public void testBug40165ClientFailsOver() throws Exception {
     PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
 
-    /**
+    /*
      * 1. Create two cache servers with slow dispatcher 2. Start a durable client with a custom
      * cache listener 3. Do some puts on the server region 4. Let the dispatcher start dispatching
      * 5. Wait till the durable client receives marker from its primary. 6. Kill the primary server,
@@ -691,7 +708,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       PoolFactory pf = PoolManager.createFactory();
       pf.addServer("localhost", PORT1).addServer("localhost", PORT2).setSubscriptionEnabled(true)
           .setSubscriptionAckInterval(1).setSubscriptionRedundancy(2);
-      ((PoolFactoryImpl) pf).getPoolAttributes();
+//      ((PoolFactoryImpl) pf).getPoolAttributes();
 
       Properties properties = new Properties();
       properties.setProperty(MCAST_PORT, "0");
@@ -711,6 +728,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     }
 
     // Step 5
+    assertThat(PoolManager.getAll().values().stream().findFirst().isPresent()).isTrue();
     Pool testPool = PoolManager.getAll().values().stream().findFirst().get();
     VM pVM = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0 : vm1;
     while (!markerReceived) {
@@ -725,92 +743,60 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     waitForLastKey();
 
     // Step 8
-    long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
-    assertTrue("Atleast 99 deltas were to be received but received: " + fromDeltasOnClient,
-        fromDeltasOnClient >= 99);
+    long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvocations();
+    assertThat(fromDeltasOnClient >= 99)
+        .describedAs("Atleast 99 deltas were to be received but received: " + fromDeltasOnClient)
+        .isTrue();
   }
 
-  public void doLocalOp(String op, String rName, String key) {
+  private void doLocalOp(String op, String rName, String key) {
     try {
-      Region r = cache.getRegion("/" + rName);
-      assertNotNull(r);
+      Region<String,Object> r = cache.getRegion("/" + rName);
+      assertThat(r).isNotNull();
       if (INVALIDATE.equals(op)) {
         r.localInvalidate(key);
       } else if (DESTROY.equals(op)) {
         r.localDestroy(key);
       }
     } catch (Exception e) {
-      org.apache.geode.test.dunit.Assert.fail("failed in doLocalOp()", e);
+      Assertions.fail("failed in doLocalOp()", e);
     }
   }
 
-  public void assertOp(String op, Integer num) {
+  private void assertOp(String op, Integer num) {
     final int expected = num;
-    WaitCriterion wc = null;
+
     if (INVALIDATE.equals(op)) {
-      wc = new WaitCriterion() {
-        public boolean done() {
-          return numOfInvalidates == expected;
-        }
+      GeodeAwaitility.await("numOfInvalidates was expected to be " + expected + " but is " + numOfInvalidates)
+          .until(() -> numOfInvalidates == expected);
 
-        public String description() {
-          return "numOfInvalidates was expected to be " + expected + " but is " + numOfInvalidates;
-        }
-      };
     } else if (DESTROY.equals(op)) {
-      wc = new WaitCriterion() {
-        public boolean done() {
-          return numOfInvalidates == expected;
-        }
-
-        public String description() {
-          return "numOfDestroys was expected to be " + expected + " but is " + numOfDestroys;
-        }
-      };
+      GeodeAwaitility.await("numOfDestroys was expected to be " + expected + " but is " + numOfDestroys)
+          .until(() -> numOfInvalidates == expected);
     }
-    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private void assertValue(String rName, String key, Object expected) {
     try {
-      Region r = cache.getRegion("/" + rName);
-      assertNotNull(r);
-      Object value = r.getEntry(key).getValue();
-      assertTrue("Value against " + key + " is " + value + ". It should be " + expected,
-          expected.equals(value));
+      Region<String, Object> r = cache.getRegion("/" + DeltaPropagationDUnitTest.regionName);
+      assertThat(r).isNotNull();
+      Object value = r.getEntry(DeltaPropagationDUnitTest.DELTA_KEY).getValue();
+      assertThat(value).describedAs("Value against " + DeltaPropagationDUnitTest.DELTA_KEY + " is " + value
+              + ". It should be " + expected).isEqualTo(expected);
     } catch (Exception e) {
-      org.apache.geode.test.dunit.Assert.fail("failed in assertValue()", e);
+      Assertions.fail("failed in assertValue()", e);
     }
   }
 
   private void confirmEviction(Integer port) {
-    final EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
-        SEPARATOR + generateNameForClientMsgsRegion(port))).entries)
+    final EvictionController cc = ((LocalRegion) cache.getRegion(
+        Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries
             .getEvictionController();
-
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return cc.getCounters().getEvictions() > 0;
-      }
-
-      public String description() {
-        return "HA Overflow did not occure.";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+    GeodeAwaitility.await("HA Overflow did not occur.").until(() -> cc.getCounters().getEvictions() > 0);
   }
 
   private void waitForLastKey() {
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return isLastKeyReceived();
-      }
-
-      public String description() {
-        return "Last key NOT received.";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+    GeodeAwaitility.await("Last key NOT received.").until(this::isLastKeyReceived);
   }
 
   private void prepareDeltas() {
@@ -904,8 +890,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private void doPuts(Integer num) {
     try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      Region<String, Object> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
 
       for (int i = 0; i < num; i++) {
         DeltaTestImpl val = new DeltaTestImpl();
@@ -914,7 +900,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       }
       r.put(LAST_KEY, "");
     } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createDelta()", ex);
+      Assertions.fail("failed in createDelta()", ex);
     }
   }
 
@@ -925,84 +911,83 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private void createDelta() {
     try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      Region<String, DeltaTestImpl> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
 
       r.create(DELTA_KEY, deltaPut[0]);
     } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createDelta()", ex);
+      Assertions.fail("failed in createDelta()", ex);
     }
   }
 
   private void updateDelta() {
     try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      Region<String, Object> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
 
       for (int i = 1; i < EVENTS_SIZE; i++) {
         try {
           r.put(DELTA_KEY, deltaPut[i]);
         } catch (InvalidDeltaException ide) {
-          assertTrue("InvalidDeltaException not expected for deltaPut[" + i + "]",
-              deltaPut[i].getIntVar() == DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
+          assertThat(deltaPut[i].getIntVar()).describedAs("InvalidDeltaException not expected for deltaPut[" + i + "]").isEqualTo(DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
         }
       }
       r.put(LAST_KEY, "");
     } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in updateDelta()", ex);
+      Assertions.fail("failed in updateDelta()", ex);
     }
   }
 
   private void createDeltas() {
     try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      Region<String, Object> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
 
       for (int i = 0; i < 100; i++) {
         r.create(DELTA_KEY + i, new DeltaTestImpl());
       }
       r.create(LAST_KEY, "");
     } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createDeltas()", ex);
+      Assertions.fail("failed in createDeltas()", ex);
     }
   }
 
   private void createAnEntry() {
     try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      Region<String, Object> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
 
       r.create("KEY-A", "I push the delta out to disk :)");
     } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createAnEntry()", ex);
+      Assertions.fail("failed in createAnEntry()", ex);
     }
   }
 
   private void invalidateDelta() {
     try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      Region<String, Object> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
 
       r.invalidate(DELTA_KEY);
     } catch (Exception ex) {
-      fail("failed in invalidateDelta()" + ex.getMessage());
+      Assertions.fail("failed in invalidateDelta()" + ex.getMessage());
     }
   }
 
   private void verifyOverflowOccurred(long evictions, int regionsize) {
-    EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(regionName)).entries)
+    EvictionController cc = ((LocalRegion) cache.getRegion(regionName)).entries
         .getEvictionController();
-    Assert.assertTrue(cc.getCounters().getEvictions() == evictions,
-        "Number of evictions expected to be " + evictions + " but was "
-            + cc.getCounters().getEvictions());
+    assertThat(cc.getCounters().getEvictions() == evictions)
+        .describedAs("Number of evictions expected to be " + evictions + " but was "
+            + cc.getCounters().getEvictions()).isTrue();
     int rSize = ((LocalRegion) cache.getRegion(regionName)).getRegionMap().size();
-    Assert.assertTrue(rSize == regionsize,
-        "Region size expected to be " + regionsize + " but was " + rSize);
+    assertThat(rSize == regionsize)
+        .describedAs("Region size expected to be " + regionsize + " but was " + rSize).isTrue();
   }
 
   private void verifyData(int creates, int updates) {
-    assertEquals(creates, numOfCreates);
-    assertEquals(updates, numOfUpdates);
+    assertThat(numOfCreates).isEqualTo(creates);
+    assertThat(numOfUpdates).isEqualTo(updates);
   }
 
   private Integer createServerCache(String ePolicy) throws Exception {
@@ -1022,7 +1007,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       Boolean conflate, Compressor compressor) throws Exception {
     ConnectionTable.threadWantsSharedResources();
     createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, Object> factory = new AttributesFactory<>();
     factory.setEnableSubscriptionConflation(conflate);
     if (listenerCode != 0) {
       factory.addCacheListener(getCacheListener(listenerCode));
@@ -1034,17 +1019,15 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       factory.setScope(Scope.DISTRIBUTED_NO_ACK);
       factory.setDataPolicy(DataPolicy.NORMAL);
       factory.setConcurrencyChecksEnabled(false);
-      RegionAttributes attrs = factory.create();
-      Region r = cache.createRegion(regionName, attrs);
-      logger = cache.getLogger();
+      RegionAttributes<String, Object> attrs = factory.create();
+      Region<String, Object> r = cache.createRegion(regionName, attrs);
       r.create(DELTA_KEY, deltaPut[0]);
     } else {
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.setConcurrencyChecksEnabled(false);
-      RegionAttributes attrs = factory.create();
+      RegionAttributes<String, Object> attrs = factory.create();
       cache.createRegion(regionName, attrs);
-      logger = cache.getLogger();
     }
 
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -1055,7 +1038,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       File overflowDirectory = new File("bsi_overflow_" + port);
       overflowDirectory.mkdir();
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      File[] dirs1 = new File[] {overflowDirectory};
+      File[] dirs1 = new File[]{overflowDirectory};
 
       server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
       server1.getClientSubscriptionConfig().setCapacity(cap);
@@ -1067,8 +1050,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     return server1.getPort();
   }
 
-  private CacheListener getCacheListener(Integer code) {
-    CacheListener listener = null;
+  private <K, V> CacheListener<K,V> getCacheListener(Integer code) {
+    CacheListener<K,V> listener = null;
     switch (code) {
       case 0:
         break;
@@ -1076,14 +1059,14 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         // listener = new CacheListenerAdapter() {};
         break;
       case CLIENT_LISTENER:
-        listener = new CacheListenerAdapter() {
+        listener = new CacheListenerAdapter<K,V>() {
           public void afterCreate(EntryEvent event) {
             numOfCreates++;
-            logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
+            logger.debug("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
             if (DELTA_KEY.equals(event.getKey()) && !deltaPut[0].equals(event.getNewValue())) {
               areListenerResultsValid = false;
-              listenerError.append("Create event:\n |-> sent: " + deltaPut[0] + "\n |-> rcvd: "
-                  + event.getNewValue() + "\n");
+              listenerError.append("Create event:\n |-> sent: ").append(deltaPut[0])
+                  .append("\n |-> rcvd: ").append(event.getNewValue()).append("\n");
             } else if (LAST_KEY.equals(event.getKey())) {
               lastKeyReceived = true;
             }
@@ -1091,7 +1074,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
           public void afterUpdate(EntryEvent event) {
             numOfUpdates++;
-            logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
+            logger.debug("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
                 + ", numOfUpdates: " + numOfUpdates);
             if (!deltaPut[numOfUpdates].equals(event.getNewValue())) {
               areListenerResultsValid = false;
@@ -1102,14 +1085,14 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         };
         break;
       case CLIENT_LISTENER_2:
-        listener = new CacheListenerAdapter() {
+        listener = new CacheListenerAdapter<K,V>() {
           public void afterCreate(EntryEvent event) {
             numOfCreates++;
-            logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
+            logger.debug("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
             if (DELTA_KEY.equals(event.getKey()) && !deltaPut[0].equals(event.getNewValue())) {
               areListenerResultsValid = false;
-              listenerError.append("Create event:\n |-> sent: " + deltaPut[0] + "\n |-> rcvd: "
-                  + event.getNewValue() + "\n");
+              listenerError.append("Create event:\n |-> sent: ").append(deltaPut[0])
+                  .append("\n |-> rcvd: ").append(event.getNewValue()).append("\n");
             } else if (LAST_KEY.equals(event.getKey())) {
               lastKeyReceived = true;
             }
@@ -1117,7 +1100,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
           public void afterUpdate(EntryEvent event) {
             int tmp = ++numOfUpdates;
-            logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
+            logger.debug("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
                 + ", numOfUpdates: " + numOfUpdates);
             // Hack to ignore illegal delta put
             tmp = (tmp >= 3) ? ++tmp : tmp;
@@ -1130,10 +1113,10 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         };
         break;
       case C2S2S_SERVER_LISTENER:
-        listener = new CacheListenerAdapter() {
+        listener = new CacheListenerAdapter<K,V>() {
           public void afterCreate(EntryEvent event) {
             numOfCreates++;
-            logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
+            logger.debug("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
             if (LAST_KEY.equals(event.getKey())) {
               lastKeyReceived = true;
             }
@@ -1141,25 +1124,25 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
           public void afterUpdate(EntryEvent event) {
             numOfUpdates++;
-            logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
+            logger.debug("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
                 + ", numOfUpdates: " + numOfUpdates);
           }
 
           public void afterInvalidate(EntryEvent event) {
             numOfInvalidates++;
-            logger.fine("Invalidate Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
+            logger.debug("Invalidate Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
                 + ", numOfInvalidates: " + numOfInvalidates);
           }
 
           public void afterDestroy(EntryEvent event) {
             numOfDestroys++;
-            logger.fine("Destroy Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
+            logger.debug("Destroy Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
                 + ", numOfDestroys: " + numOfDestroys);
           }
         };
         break;
       case LAST_KEY_LISTENER:
-        listener = new CacheListenerAdapter() {
+        listener = new CacheListenerAdapter<K,V>() {
           public void afterCreate(EntryEvent event) {
             if (LAST_KEY.equals(event.getKey())) {
               lastKeyReceived = true;
@@ -1168,33 +1151,33 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         };
         break;
       case DURABLE_CLIENT_LISTENER:
-        listener = new CacheListenerAdapter() {
+        listener = new CacheListenerAdapter<K,V>() {
           public void afterRegionLive(RegionEvent event) {
-            logger.fine("Marker received");
+            logger.debug("Marker received");
             if (Operation.MARKER == event.getOperation()) {
               markerReceived = true;
               if (closeCache) {
-                logger.fine("Closing the durable client cache...");
-                closeCache(true); // keepAlive
+                logger.debug("Closing the durable client cache...");
+                closeCache(); // keepAlive
               }
             }
           }
 
           public void afterCreate(EntryEvent event) {
-            logger.fine("CREATE received");
+            logger.debug("CREATE received");
             if (LAST_KEY.equals(event.getKey())) {
-              logger.fine("LAST KEY received");
+              logger.debug("LAST KEY received");
               lastKeyReceived = true;
             }
           }
 
           public void afterUpdate(EntryEvent event) {
-            assertNotNull(event.getNewValue());
+            assertThat(event.getNewValue()).isNotNull();
           }
         };
         break;
       default:
-        fail("Invalid listener code");
+        Assertions.fail("Invalid listener code");
         break;
     }
     return listener;
@@ -1227,13 +1210,13 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   private void createClientCache(Integer port1, Integer port2, String rLevel, String conflate,
       Integer listener, EvictionAttributes evictAttrs, ExpirationAttributes expAttrs)
       throws Exception {
-    int[] ports = null;
+    int[] ports;
     if (port2 != -1) {
       ports = new int[] {port1, port2};
     } else {
       ports = new int[] {port1};
     }
-    assertTrue("No server ports provided", ports != null);
+    assertThat(ports).describedAs("No server ports provided").isNotNull();
     createClientCache(ports, rLevel, conflate, listener, evictAttrs, expAttrs);
   }
 
@@ -1246,7 +1229,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     props.setProperty(CONFLATE_EVENTS, conflate);
     createCache(props);
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, Object> factory = new AttributesFactory<>();
     ClientServerTestCase.configureConnectionPool(factory, "localhost", ports, true,
         Integer.parseInt(rLevel), 2, null, 1000, 250, false, -2);
 
@@ -1270,23 +1253,23 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       if (!dir.exists()) {
         dir.mkdir();
       }
-      File[] dir1 = new File[] {dir};
+      File[] dir1 = new File[]{dir};
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
       factory.setDiskStoreName(dsf.setDiskDirs(dir1).create("client_overflow_ds").getName());
     }
     factory.setConcurrencyChecksEnabled(false);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<String, Object> attrs = factory.create();
     cache.createRegion(regionName, attrs);
-    logger = cache.getLogger();
+
   }
 
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
     ds = getSystem(props);
-    assertNotNull(ds);
+    assertThat(ds).isNotNull();
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
   }
 
   private void createDurableCacheClient(Pool poolAttr, String regionName, Properties dsProperties,
@@ -1295,43 +1278,33 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     PoolFactoryImpl poolFactory = (PoolFactoryImpl) PoolManager.createFactory();
     poolFactory.init(poolAttr);
     PoolImpl pool = (PoolImpl) poolFactory.create("DeltaPropagationDUnitTest");
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setConcurrencyChecksEnabled(false);
     factory.setPoolName(pool.getName());
     if (listenerCode != 0) {
       factory.addCacheListener(getCacheListener(listenerCode));
     }
-    RegionAttributes attrs = factory.create();
-    Region r = cache.createRegion(regionName, attrs);
-    r.registerInterest("ALL_KEYS");
+    RegionAttributes<String, Object> attrs = factory.create();
+    Region<String, Object> r = cache.createRegion(regionName, attrs);
+    r.registerInterestForAllKeys();
     cache.readyForEvents();
-    logger = cache.getLogger();
     closeCache = close;
   }
 
   private void registerInterestListAll() {
     try {
       Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-      r.registerInterest("ALL_KEYS");
+      assertThat(r).isNotNull();
+      r.registerInterestForAllKeys();
     } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in registerInterestListAll", ex);
+      Assertions.fail("failed in registerInterestListAll", ex);
     }
   }
 
-  private Object closeCache() {
+  private void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
-      cache.getDistributedSystem().disconnect();
-      return null;
-    }
-    return null;
-  }
-
-  private void closeCache(boolean keepalive) {
-    if (cache != null && !cache.isClosed()) {
-      cache.close(keepalive);
       cache.getDistributedSystem().disconnect();
     }
   }
@@ -1341,11 +1314,11 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void resetAll() {
-    DeltaTestImpl.resetDeltaInvokationCounters();
+    DeltaTestImpl.resetDeltaInvocationCounters();
     numOfCreates = numOfUpdates = numOfInvalidates = numOfDestroys = 0;
     lastKeyReceived = false;
     markerReceived = false;
     areListenerResultsValid = true;
-    listenerError = new StringBuffer("");
+    listenerError = new StringBuffer();
   }
 }

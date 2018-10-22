@@ -43,8 +43,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
    */
   public static final String ERRONEOUS_STRING_FOR_FROM_DELTA = "ERRONEOUS_STRING";
   public static final int ERRONEOUS_INT_FOR_TO_DELTA = -101;
-  private static long fromDeltaInvokations;
-  private static long toDeltaInvokations;
+  private static long fromDeltaInvocations;
+  private static long toDeltaInvocations;
   private static long toDeltaFailure;
   private static long fromDeltaFailure;
   private static long timesConstructed = 0;
@@ -156,18 +156,18 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   /*****************************************************************************
    * Below methods are not part of standard Delta implementation but are used for testing purpose.
    */
-  public static void resetDeltaInvokationCounters() {
+  public static void resetDeltaInvocationCounters() {
     resetToDeltaCounter();
     resetFromDeltaCounter();
     resetFailureCounter();
   }
 
   public static void resetToDeltaCounter() {
-    toDeltaInvokations = 0;
+    toDeltaInvocations = 0;
   }
 
   public static void resetFromDeltaCounter() {
-    fromDeltaInvokations = 0;
+    fromDeltaInvocations = 0;
   }
 
   public static void resetFailureCounter() {
@@ -176,23 +176,23 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   }
 
   public static Boolean deltaFeatureUsed() {
-    return (toDeltaInvokations > 0) || (fromDeltaInvokations > 0);
+    return (toDeltaInvocations > 0) || (fromDeltaInvocations > 0);
   }
 
   public static Boolean toDeltaFeatureUsed() {
-    return (toDeltaInvokations > 0);
+    return (toDeltaInvocations > 0);
   }
 
-  public static Long getFromDeltaInvokations() {
-    return fromDeltaInvokations;
+  public static Long getFromDeltaInvocations() {
+    return fromDeltaInvocations;
   }
 
-  public static Long getToDeltaInvokations() {
-    return toDeltaInvokations;
+  public static Long getToDeltaInvocations() {
+    return toDeltaInvocations;
   }
 
   public static Boolean fromDeltaFeatureUsed() {
-    return (fromDeltaInvokations > 0);
+    return (fromDeltaInvocations > 0);
   }
 
   public static Boolean isFromDeltaFailure() {
@@ -258,7 +258,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   @Override
   public void fromDelta(DataInput in) throws IOException {
     try {
-      fromDeltaInvokations++;
+      fromDeltaInvocations++;
       boolean tempHasDelta = false;
       byte tempDeltaBits = this.deltaBits;
       byte[] tempByteArr = this.byteArr;
@@ -318,7 +318,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
-      toDeltaInvokations++;
+      toDeltaInvocations++;
       DataSerializer.writeByte(this.deltaBits, out);
 
       if (deltaBits != 0) {

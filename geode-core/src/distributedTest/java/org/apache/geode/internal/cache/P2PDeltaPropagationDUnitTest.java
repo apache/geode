@@ -521,8 +521,8 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         deltas == 2);
     assertTrue(
         "Expected 2 deltas to be processed at receiver but were "
-            + DeltaTestImpl.getFromDeltaInvokations() + " (implementation counter)",
-        DeltaTestImpl.getFromDeltaInvokations() == 2);
+            + DeltaTestImpl.getFromDeltaInvocations() + " (implementation counter)",
+        DeltaTestImpl.getFromDeltaInvocations() == 2);
     assertTrue("Expected " + updates + " updates but found " + numOfUpdates,
         numOfUpdates == updates);
     DeltaTestImpl val = (DeltaTestImpl) region.getEntry("KEY").getValue();
@@ -540,7 +540,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         + " (statistics)", deltas > 0);
     assertFalse(
         "Expected no deltas to be processed at receiver but processed were "
-            + DeltaTestImpl.getFromDeltaInvokations() + " (implementation counter)",
+            + DeltaTestImpl.getFromDeltaInvocations() + " (implementation counter)",
         DeltaTestImpl.fromDeltaFeatureUsed());
     assertTrue("Expected " + updates + " updates but found " + numOfUpdates,
         numOfUpdates == updates);
@@ -552,7 +552,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void resetFlags() {
-    DeltaTestImpl.resetDeltaInvokationCounters();
+    DeltaTestImpl.resetDeltaInvocationCounters();
     numOfUpdates = 0;
     hasDeltaBytes = 0;
     check = false;
