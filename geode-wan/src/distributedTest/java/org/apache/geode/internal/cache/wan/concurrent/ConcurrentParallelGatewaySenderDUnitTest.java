@@ -647,10 +647,10 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
     AsyncInvocation killsSenderFromVM5 = vm5.invokeAsync(() -> WANTestBase.killSender());
 
-    putsToVM7.join();
-    killsSenderFromVM4.join();
-    putsToVM6.join();
-    killsSenderFromVM5.join();
+    putsToVM7.get();
+    killsSenderFromVM4.get();
+    putsToVM6.get();
+    killsSenderFromVM5.get();
 
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000));
     vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000));
