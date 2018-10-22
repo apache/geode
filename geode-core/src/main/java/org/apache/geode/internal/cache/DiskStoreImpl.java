@@ -2833,7 +2833,7 @@ public class DiskStoreImpl implements DiskStore {
       long compactionStart = getStats().startCompaction();
       long start = System.nanoTime();
       try {
-        for (int i = 0; i < oplogs.length && keepCompactorRunning() ; i++) {
+        for (int i = 0; i < oplogs.length && keepCompactorRunning(); i++) {
           totalCount += oplogs[i].compact(this);
         }
 
