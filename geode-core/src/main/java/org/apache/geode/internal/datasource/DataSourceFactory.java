@@ -168,7 +168,7 @@ public class DataSourceFactory {
     }
   }
 
-  private static Properties createPoolProperties(Map<String, String> configMap) {
+  static Properties createPoolProperties(Map<String, String> configMap) {
     Properties result = new Properties();
     if (configMap != null) {
       for (Map.Entry<String, String> entry : configMap.entrySet()) {
