@@ -19,10 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.naming.NamingException;
+
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -33,7 +36,8 @@ public class CreateJndiBindingFunction extends CliFunction<JndiBindingsType.Jndi
       "Initiated jndi binding \"{0}\" on \"{1}\". See server logs to verify.";
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<JndiBindingsType.JndiBinding> context) {
+  public CliFunctionResult executeFunction(FunctionContext<JndiBindingsType.JndiBinding> context)
+      throws DataSourceCreateException, NamingException {
     ResultSender<Object> resultSender = context.getResultSender();
     JndiBindingsType.JndiBinding configuration = context.getArguments();
     JNDIInvoker.mapDatasource(getParamsAsMap(configuration),

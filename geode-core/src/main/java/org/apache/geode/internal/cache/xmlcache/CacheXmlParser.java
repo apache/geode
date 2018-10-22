@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import javax.naming.NamingException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -113,6 +114,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -3028,9 +3030,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endTransactionWriter();
       } else if (qName.equals(JNDI_BINDINGS)) {
       } else if (qName.equals(JNDI_BINDING)) {
-        // Asif Pop the BindingCreation object
         BindingCreation bc = (BindingCreation) this.stack.pop();
-        JNDIInvoker.mapDatasource(bc.getGFSpecificMap(), bc.getVendorSpecificList());
+        Map map = bc.getGFSpecificMap();
+        try {
+          JNDIInvoker.mapDatasource(map, bc.getVendorSpecificList());
+        } catch (NamingException | DataSourceCreateException ex) {
+          if (logger.isWarnEnabled()) {
+            logger.warn("jndi-binding creation of {} failed with: {}", map.get("jndi-name"), ex);
+          }
+        }
       } else if (qName.equals(CONFIG_PROPERTY_BINDING)) {
       } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
         String name = null;
