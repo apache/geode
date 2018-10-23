@@ -106,7 +106,7 @@ jobs:
       params:
         JAVA_BUILD_VERSION: {{ java_build_version.version }}
         GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
-        {{ common_test_params(examples_test) | indent(6) }}
+        {{ common_test_params(examples_test) | indent(8) }}
       run:
         path: geode-ci/ci/scripts/execute_build_examples.sh
       inputs:
