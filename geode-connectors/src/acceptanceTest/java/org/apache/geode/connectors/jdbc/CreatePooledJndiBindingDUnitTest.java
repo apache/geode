@@ -18,8 +18,6 @@ package org.apache.geode.connectors.jdbc;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import java.net.URL;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,20 +33,11 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
-import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category({JDBCConnectorTest.class})
 public class CreatePooledJndiBindingDUnitTest {
-
-  private final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcAsyncWriterIntegrationTest.class.getResource("mysql.yml");
-
-  @Rule
-  public DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database("test").build();
 
   private MemberVM locator, server1, server2;
 
@@ -76,7 +65,7 @@ public class CreatePooledJndiBindingDUnitTest {
 
     // create the binding
     gfsh.executeAndAssertThat(
-        "create jndi-binding --name=jndi1 --username=myuser --password=mypass --type=POOLED --connection-url=\"jdbc:mysql://127.0.0.1:32782/test\"")
+        "create jndi-binding --name=jndi1 --username=myuser --password=mypass --type=POOLED --connection-url=\"jdbc:derby:newDB;create=true\" --conn-pooled-datasource-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated
@@ -106,7 +95,7 @@ public class CreatePooledJndiBindingDUnitTest {
 
     // verify datasource exists
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1), server1, server2);
 
     // bounce server1
     server1.stop(false);
