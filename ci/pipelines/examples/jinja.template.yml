@@ -40,6 +40,9 @@ resource_types:
   source:
     repository: nulldriver/maven-resource
     tag: latest
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
+  source: {}
 
 resources:
 - name: geode-examples
