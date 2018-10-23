@@ -19,7 +19,6 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   distributedTestCompile('junit:junit:' + project.'junit.version')
-  compile('javax.servlet:servlet-api:2.4')
   compile('mx4j:mx4j:' + project.'mx4j.version')
   distributedTestCompile('org.httpunit:httpunit:' + project.'httpunit.version')
   distributedTestCompile('org.apache.tomcat:tomcat-jaspic-api:' + project.'tomcat8.version')

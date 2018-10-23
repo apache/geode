@@ -27,7 +27,6 @@ dependencies {
 
   compile('commons-io:commons-io:' + project.'commons-io.version')
   compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
-  compile('javax.servlet:servlet-api:2.4')
   compile('junit:junit:' + project.'junit.version')
   compile('org.httpunit:httpunit:' + project.'httpunit.version') {
     // this version of httpunit contains very outdated xercesImpl
