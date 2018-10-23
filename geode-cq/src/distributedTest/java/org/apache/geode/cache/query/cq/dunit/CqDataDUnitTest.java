@@ -14,14 +14,14 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 
 import java.util.HashSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,11 +33,11 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.cache.query.internal.cq.CqQueryImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
@@ -957,22 +957,15 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This test was created to test executeWithInitialResults being called multiple times.
-   * Previously, the queueEvents would be overwritten and we would lose data. This test will execute
-   * the method twice. The first time, the first execution will block it's own child thread (TC1).
-   * The second execution will block until TC1 is completed (based on how executeWithInitialResults
-   * is implemented) A third thread will be awaken and release the latch in the testhook for TC1 to
-   * complete.
+   * Previously, the queueEvents would be overwritten and we would lose data.
    *
    */
   @Test
-  @Ignore("GEODE-5863 - The test fails with an Awaitility timeout after increasing the timeout. It previously ignored the timeout")
   public void testMultipleExecuteWithInitialResults() throws Exception {
-    final int numObjects = 200;
     final int totalObjects = 500;
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(1);
-    client.invoke(setTestHook());
     final String cqName = "testMultiExecuteWithInitialResults";
 
     // initialize server and retreive host and port values
@@ -986,185 +979,48 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     // create CQ.
     cqDUnitTest.createCQ(client, cqName, cqDUnitTest.cqs[0]);
 
-    // initialize Region.
-    server.invoke(new CacheSerializableRunnable("Update Region") {
+    // Call executeWithInitialResults on the CQ once, to start enqueueing events
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cq1 = cqService.getCq(cqName);
+      CqResults<Object> cqResults = cq1.executeWithInitialResults();
+    });
+
+    // Do updates in an asynchronous thread, populating the queue
+    AsyncInvocation updates = server.invokeAsync(new CacheSerializableRunnable("Update Region") {
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
-        for (int i = 1; i <= numObjects; i++) {
+        for (int i = 1; i < totalObjects; i++) {
           Portfolio p = new Portfolio(i);
-          region.put("" + i, p);
+          region.put(i, p);
         }
       }
     });
 
-    // Keep updating region (async invocation).
-    server.invokeAsync(new CacheSerializableRunnable("Update Region") {
-      public void run2() throws CacheException {
-        // Wait to give client a chance to register the cq
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
-        for (int i = numObjects + 1; i <= totalObjects; i++) {
-          Portfolio p = new Portfolio(i);
-          region.put("" + i, p);
-        }
-      }
+    // Assert that a second executeWithInitialResults call will fail
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cq1 = cqService.getCq(cqName);
+      assertThatThrownBy(() -> cq1.executeWithInitialResults())
+          .isInstanceOf(IllegalStateException.class);
     });
 
-    // the thread that validates all results and executes first
-    AsyncInvocation processCqs =
-        client.invokeAsync(new CacheSerializableRunnable("Execute CQ first") {
-          public void run2() throws CacheException {
-            SelectResults cqResults = null;
-            QueryService cqService = getCache().getQueryService();
-            // Get CqQuery object.
-            CqQuery cq1 = cqService.getCq(cqName);
-            if (cq1 == null) {
-              fail("Failed to get CQ " + cqName);
-            }
-            try {
-              cqResults = cq1.executeWithInitialResults();
+    // Wait for updates to finish
+    updates.get();
 
-            } catch (Exception e) {
-              AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-              err.initCause(e);
-              throw err;
-            }
+    // Verify that the second call to executeWithInitialResults did not prevent all updates from
+    // being received
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cq1 = cqService.getCq(cqName);
 
-            CqQueryTestListener cqListener =
-                (CqQueryTestListener) cq1.getCqAttributes().getCqListener();
-            // Wait for the last key to arrive.
-            cqListener.waitForCreated("" + totalObjects);
-            // Check if the events from CqListener are in order.
-            int oldId = 0;
-            for (Object cqEvent : cqListener.events.toArray()) {
-              int newId = new Integer(cqEvent.toString()).intValue();
-              if (oldId > newId) {
-                fail("Queued events for CQ Listener during execution with "
-                    + "Initial results is not in the order in which they are created.");
-              }
-              oldId = newId;
-            }
+      CqQueryTestListener cqListener =
+          (CqQueryTestListener) cq1.getCqAttributes().getCqListener();
+      // Wait for the last key to arrive.
+      cqListener.waitForCreated(totalObjects - 1);
 
-            // Check if all the IDs are present as part of Select Results and CQ
-            // Events.
-            HashSet ids = new HashSet(cqListener.events);
-            for (Object o : cqResults.asList()) {
-              Struct s = (Struct) o;
-              ids.add(s.get("key"));
-            }
-
-            HashSet missingIds = new HashSet();
-            String key = "";
-            for (int i = 1; i <= totalObjects; i++) {
-              key = "" + i;
-              if (!(ids.contains(key))) {
-                missingIds.add(key);
-              }
-            }
-
-            if (!missingIds.isEmpty()) {
-              fail("Missing Keys in either ResultSet or the Cq Event list. "
-                  + " Missing keys : [size : " + missingIds.size() + "]" + missingIds
-                  + " Ids in ResultSet and CQ Events :" + ids);
-            }
-          }
-        });
-
-    // the second call to executeWithInitialResults. Goes to sleep hopefully
-    // long enough
-    // for the first call to executeWithInitialResults first
-    client.invokeAsync(new CacheSerializableRunnable("Execute CQ second") {
-      public void run2() throws CacheException {
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-        QueryService cqService = getCache().getQueryService();
-        // Get CqQuery object.
-        CqQuery cq1 = cqService.getCq(cqName);
-        if (cq1 == null) {
-          fail("Failed to get CQ " + cqName);
-        }
-        try {
-          cq1.executeWithInitialResults();
-        } catch (IllegalStateException e) {
-          // we expect an error due to the cq having already being in run state
-        } catch (Exception e) {
-          AssertionError err = new AssertionError("test hook lock interrupted" + cqName);
-          err.initCause(e);
-          throw err;
-        }
-      }
+      assertThat(cqListener.events.stream().toArray())
+          .containsExactly(IntStream.range(1, totalObjects).boxed().toArray());
     });
-
-    // thread that unlatches the test hook, sleeping long enough for both
-    // the other two threads to execute first
-    client.invokeAsync(new CacheSerializableRunnable("Release latch") {
-      public void run2() throws CacheException {
-        // we wait to release the testHook and hope the other two threads have
-        // had a chance to invoke executeWithInitialResults
-        try {
-          Thread.sleep(5000);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          AssertionError err = new AssertionError("test hook lock interrupted" + cqName);
-          err.initCause(e);
-          throw err;
-        }
-        CqQueryImpl.testHook.ready();
-      }
-    });
-
-    // wait for 60 seconds for test to complete
-    processCqs.get(1, TimeUnit.MINUTES);
-
-    // Close.
-    cqDUnitTest.closeClient(client);
-    cqDUnitTest.closeServer(server);
   }
-
-  public CacheSerializableRunnable setTestHook() {
-    SerializableRunnable sr = new CacheSerializableRunnable("TestHook") {
-      public void run2() {
-        class CqQueryTestHook implements CqQueryImpl.TestHook {
-
-          CountDownLatch latch = new CountDownLatch(1);
-
-          public void pauseUntilReady() {
-            try {
-              latch.await();
-            } catch (Exception e) {
-              e.printStackTrace();
-              Thread.currentThread().interrupt();
-            }
-          }
-
-          public void ready() {
-            latch.countDown();
-          }
-
-          @Override
-          public int numQueuedEvents() {
-            // TODO Auto-generated method stub
-            return 0;
-          }
-
-          @Override
-          public void setEventCount(int count) {
-            // TODO Auto-generated method stub
-
-          }
-
-        };
-        CqQueryImpl.testHook = new CqQueryTestHook();
-      }
-    };
-    return (CacheSerializableRunnable) sr;
-  }
-
 }
