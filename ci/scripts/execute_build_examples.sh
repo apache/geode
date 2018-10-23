@@ -51,4 +51,4 @@ GRADLE_COMMAND="./gradlew \
     clean runAll"
 
 echo "${GRADLE_COMMAND}"
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode-examples && ${SET_JAVA_HOME} && ${GRADLE_COMMAND}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ${GRADLE_COMMAND}"

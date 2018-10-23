@@ -80,6 +80,7 @@ jobs:
   - aggregate:
     - get: geode-examples
       trigger: true
+      path: geode
     - get: 24h
       trigger: true
     - do:
@@ -105,7 +106,7 @@ jobs:
         path: geode-ci/ci/scripts/rsync_code_up.sh
       inputs:
       - name: geode-ci
-      - name: geode-examples
+      - name: geode
       - name: instance-data
     timeout: 5m
   - task: build
@@ -118,7 +119,7 @@ jobs:
         path: geode-ci/ci/scripts/execute_build_examples.sh
       inputs:
       - name: geode-ci
-      - name: geode-examples
+      - name: geode
       - name: instance-data
       outputs:
       - name: results
