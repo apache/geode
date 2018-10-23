@@ -25,17 +25,10 @@ RAM: {{ test.RAM }}
 {%- endmacro %}
 
 {% macro common_test_params(test) -%}
-  {%- if test.CALL_STACK_TIMEOUT -%}
-CALL_STACK_TIMEOUT: {{ test.CALL_STACK_TIMEOUT }}
-  {%- endif %}
   {%- if test.GRADLE_TASK_OPTIONS -%}
 GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
   {%- endif %}
-DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
 MAINTENANCE_VERSION: ((geode-build-branch ))
-PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
-PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
-ARTIFACT_BUCKET: ((!artifact-bucket))
 SERVICE_ACCOUNT: ((!concourse-gcp-account))
 {%- endmacro %}
 
@@ -110,7 +103,7 @@ jobs:
     params:
       JAVA_BUILD_VERSION: {{ java_build_version.version }}
       GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
-      {{ common_test_params(examples_test) | indent(8) }}
+      {{ common_test_params(examples_test) | indent(6) }}
     run:
       path: geode-ci/ci/scripts/execute_build_examples.sh
     inputs:
