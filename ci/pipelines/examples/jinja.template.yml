@@ -99,28 +99,38 @@ jobs:
           - name: instance-data
         timeout: 15m
         attempts: 10
-  - task: rsync_code_up
-    {{ alpine_tools_config()|indent(4) }}
-      run:
-        path: geode-ci/ci/scripts/rsync_code_up.sh
-      inputs:
-      - name: geode-ci
-      - name: geode-examples
-        path: geode
-      - name: instance-data
-    timeout: 5m
-  - task: build
-    {{ alpine_tools_config()|indent(4) }}
-      params:
-        JAVA_BUILD_VERSION: {{ java_build_version.version }}
-        GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
-        {{ common_test_params(examples_test) | indent(8) }}
-      run:
-        path: geode-ci/ci/scripts/execute_build_examples.sh
-      inputs:
-      - name: geode-ci
-      - name: geode-examples
-        path: geode
-      - name: instance-data
-      outputs:
-      - name: results
+      - task: rsync_code_up
+        {{ alpine_tools_config()|indent(8) }}
+          run:
+            path: geode-ci/ci/scripts/rsync_code_up.sh
+          inputs:
+          - name: geode-ci
+          - name: geode-examples
+            path: geode
+          - name: instance-data
+        timeout: 5m
+      - task: build
+        {{ alpine_tools_config()|indent(8) }}
+          params:
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
+            GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
+            {{ common_test_params(examples_test) | indent(8) }}
+          run:
+            path: geode-ci/ci/scripts/execute_build_examples.sh
+          inputs:
+          - name: geode-ci
+          - name: geode-examples
+            path: geode
+          - name: instance-data
+          outputs:
+          - name: results
+    ensure:
+      do:
+      - task: stop_instance
+        {{ alpine_tools_config()|indent(8) }}
+        run:
+          path: geode-ci/ci/scripts/stop_instance.sh
+        inputs:
+        - name: geode-ci
+        - name: instance-data
+        timeout: 1h
