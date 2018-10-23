@@ -2073,8 +2073,16 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (tagTime == VersionTag.ILLEGAL_VERSION_TIMESTAMP) {
       return true; // no timestamp received from other system - just apply it
     }
-    if ((tagDsid == stampDsid && tagTime > stampTime) || stampDsid == -1) {
+    // According to GatewayConflictResolver's java doc, it will only be used on tag with different
+    // distributed system id than stamp's
+    if (stampDsid == -1) {
       return true;
+    } else if (tagDsid == stampDsid) {
+      if (tagTime >= stampTime) {
+        return true;
+      } else {
+        throw new ConcurrentCacheModificationException("conflicting WAN event detected");
+      }
     }
     GatewayConflictResolver resolver = event.getRegion().getCache().getGatewayConflictResolver();
     if (resolver != null) {
