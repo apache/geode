@@ -128,9 +128,9 @@ jobs:
       do:
       - task: stop_instance
         {{ alpine_tools_config()|indent(8) }}
-        run:
-          path: geode-ci/ci/scripts/stop_instance.sh
-        inputs:
-        - name: geode-ci
-        - name: instance-data
+          run:
+            path: geode-ci/ci/scripts/stop_instance.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
         timeout: 1h
