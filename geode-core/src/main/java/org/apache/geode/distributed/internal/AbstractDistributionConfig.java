@@ -566,8 +566,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = MEMBERSHIP_PORT_RANGE)
   protected int[] checkMembershipPortRange(int[] value) {
-    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[0], DEFAULT_MEMBERSHIP_PORT_RANGE[0], value[1]);
-    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[1], value[0], DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
+    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[0], 1024, value[1]);
+    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[1], value[0], 65535);
 
     // Minimum 3 ports are required to start a Gemfire data node,
     // One for each, UDP, FD_SOCk protocols and Cache Server.
