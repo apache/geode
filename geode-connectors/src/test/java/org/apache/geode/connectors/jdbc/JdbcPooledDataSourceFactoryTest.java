@@ -79,14 +79,6 @@ public class JdbcPooledDataSourceFactoryTest {
   }
 
   @Test
-  public void validateThatTnitializationFailTimeoutSetToMinusOne() throws Exception {
-    Properties poolProperties = new Properties();
-    Properties hikariProperties = instance.convertToHikari(poolProperties);
-
-    assertThat(hikariProperties.getProperty("initializationFailTimeout")).isEqualTo("-1");
-  }
-
-  @Test
   public void validateThatHyphensConvertedToCamelCase() throws Exception {
     Properties poolProperties = new Properties();
     poolProperties.setProperty("foo-bar-zoo", "value");
@@ -96,7 +88,7 @@ public class JdbcPooledDataSourceFactoryTest {
     Properties hikariProperties = instance.convertToHikari(poolProperties);
 
     assertThat(hikariProperties.stringPropertyNames()).containsExactlyInAnyOrder("foo", "Bar",
-        "zoo", "fooBarZoo", "initializationFailTimeout");
+        "zoo", "fooBarZoo");
   }
 
 }
