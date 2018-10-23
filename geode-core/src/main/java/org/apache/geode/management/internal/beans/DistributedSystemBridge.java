@@ -614,7 +614,9 @@ public class DistributedSystemBridge {
     if (bean != null) {
       return bean;
     } else {
-      throw new Exception(String.format("{0} is an invalid member name or Id", member));
+      throw new Exception(
+          String.format("%s is an invalid member name or Id. Current members are %s", member,
+              mapOfMembers.keySet()));
     }
   }
 
@@ -1058,6 +1060,7 @@ public class DistributedSystemBridge {
     ObjectName receiverName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
     GatewayReceiverMXBean bean =
         service.getMBeanInstance(receiverName, GatewayReceiverMXBean.class);
+
     if (bean != null) {
       return receiverName;
     } else {
