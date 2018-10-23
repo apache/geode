@@ -21,11 +21,18 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.Context;
+import javax.sql.DataSource;
 
 import org.junit.Test;
 
@@ -48,5 +55,46 @@ public class JNDIInvokerTest {
         catchThrowable(() -> JNDIInvoker.mapDatasource(inputs, null, dataSourceFactory, context));
 
     assertThat(thrown).isSameAs(exception);
+  }
+
+  @Test
+  public void mapDataSourceWithGetConnectionExceptionThrowsDataSourceCreateException()
+      throws Exception {
+    Map<String, String> inputs = new HashMap<>();
+    Context context = mock(Context.class);
+    DataSource dataSource = mock(DataSource.class);
+    SQLException exception = mock(SQLException.class);
+    doThrow(exception).when(dataSource).getConnection();
+    DataSourceFactory dataSourceFactory = mock(DataSourceFactory.class);
+    when(dataSourceFactory.getSimpleDataSource(any())).thenReturn(dataSource);
+    inputs.put("type", "SimpleDataSource");
+    String jndiName = "myJndiBinding";
+    inputs.put("jndi-name", jndiName);
+
+    Throwable thrown =
+        catchThrowable(() -> JNDIInvoker.mapDatasource(inputs, null, dataSourceFactory, context));
+
+    assertThat(thrown).isInstanceOf(DataSourceCreateException.class)
+        .hasMessage("Failed to connect to \"" + jndiName + "\". See log for details");
+    verify(context, never()).rebind((String) any(), any());
+  }
+
+  @Test
+  public void mapDataSourceWithGetConnectionSuccessClosesConnectionAndRebinds() throws Exception {
+    Map<String, String> inputs = new HashMap<>();
+    Context context = mock(Context.class);
+    DataSource dataSource = mock(DataSource.class);
+    Connection connection = mock(Connection.class);
+    when(dataSource.getConnection()).thenReturn(connection);
+    DataSourceFactory dataSourceFactory = mock(DataSourceFactory.class);
+    when(dataSourceFactory.getSimpleDataSource(any())).thenReturn(dataSource);
+    inputs.put("type", "SimpleDataSource");
+    String jndiName = "myJndiBinding";
+    inputs.put("jndi-name", jndiName);
+
+    JNDIInvoker.mapDatasource(inputs, null, dataSourceFactory, context);
+
+    verify(connection).close();
+    verify(context).rebind((String) any(), same(dataSource));
   }
 }
