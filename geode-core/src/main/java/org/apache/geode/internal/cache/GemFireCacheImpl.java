@@ -863,7 +863,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         // We only support management on members of a distributed system
         // Should do this: if (!getSystem().isLoner()) {
         // but it causes quickstart.CqClientTest to hang
-        this.resourceEventsListener = new ManagementListener();
+        this.resourceEventsListener = new ManagementListener(this.system);
         this.system.addResourceListener(this.resourceEventsListener);
         if (this.system.isLoner()) {
           this.system.getInternalLogWriter()
