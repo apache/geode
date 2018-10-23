@@ -79,17 +79,17 @@ jobs:
       - put: concourse-metadata-resource
       - task: start_instance
         {{ alpine_tools_config()|indent(8) }}
-        params:
-          {{ common_instance_params(examples_test) | indent(10) }}
-          GEODE_BRANCH: {{repository.branch}}
-          GEODE_FORK: {{repository.fork}}
-        run:
-          path: geode-ci/ci/scripts/start_instance.sh
-        inputs:
-        - name: concourse-metadata-resource
-        - name: geode-ci
-        outputs:
-        - name: instance-data
+          params:
+            {{ common_instance_params(examples_test) | indent(12) }}
+            GEODE_BRANCH: {{repository.branch}}
+            GEODE_FORK: {{repository.fork}}
+          run:
+            path: geode-ci/ci/scripts/start_instance.sh
+          inputs:
+          - name: concourse-metadata-resource
+          - name: geode-ci
+          outputs:
+          - name: instance-data
         timeout: 15m
         attempts: 10
   - task: rsync_code_up
