@@ -17,6 +17,27 @@
 
 {% from 'shared/shared_jinja.yml' import github_access with context %}
 
+{% macro common_instance_params(test) -%}
+GCP_PROJECT: ((gcp-project))
+CPUS: {{ test.CPUS }}
+RAM: {{ test.RAM }}
+{%- endmacro %}
+
+{% macro common_test_params(test) -%}
+  {%- if test.CALL_STACK_TIMEOUT -%}
+CALL_STACK_TIMEOUT: {{ test.CALL_STACK_TIMEOUT }}
+  {%- endif %}
+  {%- if test.GRADLE_TASK_OPTIONS -%}
+GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
+  {%- endif %}
+DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
+MAINTENANCE_VERSION: ((geode-build-branch ))
+PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
+PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
+ARTIFACT_BUCKET: ((!artifact-bucket))
+SERVICE_ACCOUNT: ((!concourse-gcp-account))
+{%- endmacro %}
+
 ---
 
 resource_types:
@@ -42,45 +63,58 @@ resources:
     paths:
     - ci/pipelines/geode-build/*
     - ci/scripts/*
-- name: docker-geode-build-image
-  type: docker-image
-  source:
-    username: ((!docker-username))
-    password: ((!docker-password))
-    repository: gcr.io/((gcp-project))/((!docker-image-prefix))((!docker-image-name))
-    tag: latest
 - name: 24h
   type: time
   source: {interval: 24h}
 
 jobs:
-- name: TestExamples
-  serial: true
+- name: {{examples_test.name}}
   public: true
+  serial: true
   plan:
+  - get: geode-ci
   - aggregate:
-    - get: geode-ci
     - get: geode-examples
       trigger: true
     - get: 24h
       trigger: true
-    - get: docker-geode-build-image
-      params:
-        rootfs: true
-  - task: testexamples
-    image: docker-geode-build-image
-    privileged: true
-    timeout: 7h
-    config:
-      inputs:
-      - name: geode-ci
-      - name: geode-examples
-      - name: docker-geode-build-image
-      platform: linux
-      params:
-        MAINTENANCE_VERSION: {{repository.branch}}
-        SERVICE_ACCOUNT: ((!concourse-gcp-account))
-        ARTIFACT_BUCKET: ((artifact-bucket))
-      run:
-        args:
-        path: geode-ci/ci/scripts/build-examples.sh
+    - do:
+      - put: concourse-metadata-resource
+      - task: start_instance
+        {{ alpine_tools_config()|indent(8) }}
+        params:
+          {{ common_instance_params(examples_test) | indent(12) }}
+          GEODE_BRANCH: {{repository.branch}}
+          GEODE_FORK: {{repository.fork}}
+        run:
+          path: geode-ci/ci/scripts/start_instance.sh
+        inputs:
+        - name: concourse-metadata-resource
+        - name: geode-ci
+        outputs:
+        - name: instance-data
+        timeout: 15m
+        attempts: 10
+  - task: rsync_code_up
+    {{ alpine_tools_config()|indent(4) }}
+    run:
+      path: geode-ci/ci/scripts/rsync_code_up.sh
+    inputs:
+    - name: geode-ci
+    - name: geode-examples
+    - name: instance-data
+    timeout: 5m
+  - task: build
+    {{ alpine_tools_config()|indent(4) }}
+    params:
+      JAVA_BUILD_VERSION: {{ java_build_version.version }}
+      GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
+      {{ common_test_params(examples_test) | indent(8) }}
+    run:
+      path: geode-ci/ci/scripts/execute_build_examples.sh
+    inputs:
+    - name: geode-ci
+    - name: geode-examples
+    - name: instance-data
+    outputs:
+    - name: results
