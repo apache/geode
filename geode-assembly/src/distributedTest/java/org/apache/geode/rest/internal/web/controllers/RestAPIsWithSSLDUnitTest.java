@@ -45,6 +45,7 @@ import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -368,6 +369,15 @@ public class RestAPIsWithSSLDUnitTest {
     validateConnection(props);
   }
 
+  private List<String> getRSACiphers() throws Exception {
+    SSLContext ssl = SSLContext.getInstance("TLSv1.2");
+
+    ssl.init(null, null, new java.security.SecureRandom());
+    String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
+
+    return Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).collect(Collectors.toList());
+  }
+
   @Test
   public void testSSLWithCipherSuite() throws Exception {
     System.setProperty("javax.net.debug", "ssl,handshake");
@@ -380,16 +390,9 @@ public class RestAPIsWithSSLDUnitTest {
     props.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
-    SSLContext ssl = SSLContext.getInstance("TLSv1.2");
-
-    ssl.init(null, null, new java.security.SecureRandom());
-    String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
-
     // This is the safest in terms of support across various JDK releases
-    String rsaCipher = Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).findFirst().get();
-    System.out.println("cipher: " + rsaCipher);
-
-    props.setProperty(SSL_CIPHERS, rsaCipher);
+    List<String> rsaCiphers = getRSACiphers();
+    props.setProperty(SSL_CIPHERS, rsaCiphers.get(0));
 
     startClusterWithSSL(props);
     validateConnection(props);
@@ -407,15 +410,9 @@ public class RestAPIsWithSSLDUnitTest {
     props.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
-    SSLContext ssl = SSLContext.getInstance("TLSv1.2");
-
-    ssl.init(null, null, new java.security.SecureRandom());
-    String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
-
     // This is the safest in terms of support across various JDK releases
-    String rsaCiphers =
-        Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).collect(Collectors.joining(","));
-    props.setProperty(SSL_CIPHERS, rsaCiphers);
+    List<String> rsaCiphers = getRSACiphers();
+    props.setProperty(SSL_CIPHERS, rsaCiphers.get(0) + "," + rsaCiphers.get(1));
 
     startClusterWithSSL(props);
     validateConnection(props);
@@ -431,14 +428,9 @@ public class RestAPIsWithSSLDUnitTest {
     props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
 
-    SSLContext ssl = SSLContext.getInstance("TLSv1.2");
-
-    ssl.init(null, null, new java.security.SecureRandom());
-    String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
-
-    String rsaCiphers =
-        Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).collect(Collectors.joining(","));
-    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, rsaCiphers);
+    // This is the safest in terms of support across various JDK releases
+    List<String> rsaCiphers = getRSACiphers();
+    props.setProperty(SSL_CIPHERS, rsaCiphers.get(0) + "," + rsaCiphers.get(1));
 
     startClusterWithSSL(props);
     validateConnection(props);
