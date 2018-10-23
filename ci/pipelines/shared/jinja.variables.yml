@@ -30,6 +30,18 @@ build_test:
   # It's consumption is more like a "TEST_RESULTS_DESTINATIONS_DIRECTORY_STUB_THING.
   GRADLE_TASK: build
   execute_test_timeout: 10m
+examples_test:
+  name: "TestExamples"
+  CPUS: "8"
+  RAM: "16"
+  ARTIFACT_SLUG: examples
+  CALL_STACK_TIMEOUT: "1800"
+  PARALLEL_DUNIT: "false"
+  DUNIT_PARALLEL_FORKS: "4"
+  # Actual gradle task is "clean runAll" but is hard-coded in execute_build_examples.sh
+  # It's consumption is more like a "TEST_RESULTS_DESTINATIONS_DIRECTORY_STUB_THING.
+  GRADLE_TASK: runAll
+  execute_test_timeout: 30m
 
 publish_artifacts:
   name: "PublishArtifacts"
