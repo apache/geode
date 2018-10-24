@@ -18,8 +18,6 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -41,20 +39,6 @@ public class AbstractJdbcCallbackTest {
     sqlHandler = mock(SqlHandler.class);
     jdbcCallback = new AbstractJdbcCallback(sqlHandler, cache) {};
   }
-
-  @Test
-  public void closesSqlHandler() {
-    jdbcCallback.close();
-    verify(sqlHandler, times(1)).close();
-  }
-
-  @Test
-  public void closeDoesNothingIfSqlHandlerNull() {
-    jdbcCallback = new AbstractJdbcCallback(null, cache) {};
-    jdbcCallback.close();
-    verify(sqlHandler, times(0)).close();
-  }
-
 
   @Test
   public void returnsCorrectSqlHander() {

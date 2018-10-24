@@ -34,7 +34,7 @@ import org.apache.geode.internal.logging.LogService;
  * <jndi-binding>tag. Those parameters which are specified as attributes of <property>tag are not
  * stored.
  */
-public abstract class AbstractDataSource implements Serializable, DataSource {
+public abstract class AbstractDataSource implements Serializable, DataSource, AutoCloseable {
 
   private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
 
@@ -205,7 +205,8 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
     }
   }
 
-  public void clearUp() {
+  @Override
+  public void close() {
     isActive = false;
   }
 }

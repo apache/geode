@@ -79,6 +79,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static String modifyFile(String str) throws IOException {
+    System.out.println("DEBUG input=" + str);
     String search = "<jndi-binding type=\"XAPooledDataSource\"";
     String last_search = "</jndi-binding>";
     String newDB = "newDB_" + OSProcess.getId();

@@ -22,7 +22,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 
 /**
- * Generates fake JdbcConnectorService with Connections and RegionMappings for tests.
+ * Generates fake JdbcConnectorService for tests.
  */
 public class TestConfigService {
   private static final String REGION_TABLE_NAME = "employees";
@@ -30,17 +30,16 @@ public class TestConfigService {
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
   public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     return getTestConfigService(createMockCache(), null, false, connectionUrl);
   }
 
   public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
       String pdxClassName, boolean primaryKeyInValue, String connectionUrl)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
     service.init(cache);
-    service.createConnectionConfig(createConnectionConfig(connectionUrl));
     service.createRegionMapping(createRegionMapping(pdxClassName, primaryKeyInValue));
     return service;
   }
@@ -55,10 +54,5 @@ public class TestConfigService {
       boolean primaryKeyInValue) {
     return new ConnectorService.RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
         CONNECTION_CONFIG_NAME, primaryKeyInValue);
-  }
-
-  private static ConnectorService.Connection createConnectionConfig(String connectionUrl) {
-    return new ConnectorService.Connection(CONNECTION_CONFIG_NAME, connectionUrl, null, null,
-        (String[]) null);
   }
 }

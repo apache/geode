@@ -247,7 +247,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
-              "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jdbc-connection'");
+              "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jndi-binding'");
     });
   }
 
@@ -607,7 +607,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void createJdbcConnection() {
     final String commandStr =
-        "create jdbc-connection --name=" + CONNECTION_NAME + " --url=" + connectionUrl;
+        "create jndi-binding --type=POOLED --name=" + CONNECTION_NAME + " --url=" + connectionUrl;
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

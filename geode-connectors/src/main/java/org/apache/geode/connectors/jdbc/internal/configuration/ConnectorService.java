@@ -14,17 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal.configuration;
 
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PARAMS_DELIMITER;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,19 +53,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="connection" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;simpleContent>
- *               &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
- *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="url" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="user" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="password" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="parameters" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/extension>
- *             &lt;/simpleContent>
- *           &lt;/complexType>
- *         &lt;/element>
  *         &lt;element name="region-mapping" maxOccurs="unbounded" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
@@ -106,47 +89,16 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 @Experimental
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {"connection", "regionMapping"})
+@XmlType(name = "", propOrder = {"regionMapping"})
 @XmlRootElement(name = "connector-service", namespace = "http://geode.apache.org/schema/jdbc")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
 public class ConnectorService implements CacheElement {
-  @XmlElement(namespace = "http://geode.apache.org/schema/jdbc")
-  protected List<ConnectorService.Connection> connection;
   @XmlElement(name = "region-mapping", namespace = "http://geode.apache.org/schema/jdbc")
   protected List<ConnectorService.RegionMapping> regionMapping;
   @XmlAttribute(name = "name")
   protected String name;
 
-  /**
-   * Gets the value of the connection property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the connection property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getConnection().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link ConnectorService.Connection }
-   *
-   *
-   */
-  public List<ConnectorService.Connection> getConnection() {
-    if (connection == null) {
-      connection = new ArrayList<ConnectorService.Connection>();
-    }
-    return this.connection;
-  }
 
   /**
    * Gets the value of the regionMapping property.
@@ -209,235 +161,6 @@ public class ConnectorService implements CacheElement {
     return getName();
   }
 
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;simpleContent>
-   *     &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
-   *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="url" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="user" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="password" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="parameters" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/extension>
-   *   &lt;/simpleContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class Connection implements CacheElement {
-    @XmlAttribute(name = "name")
-    protected String name;
-    @XmlAttribute(name = "url")
-    protected String url;
-    @XmlAttribute(name = "user")
-    protected String user;
-    @XmlAttribute(name = "password")
-    protected String password;
-    @XmlAttribute(name = "parameters")
-    protected String parameters;
-
-    @XmlTransient
-    protected Map<String, String> parameterMap = new HashMap<>();
-
-    public Connection() {};
-
-    public Connection(String name, String url, String user, String password, String parameters) {
-      this.name = name;
-      this.url = url;
-      this.user = user;
-      this.password = password;
-      setParameters(parameters);
-    }
-
-    public Connection(String name, String url, String user, String password, String[] parameters) {
-      this.name = name;
-      this.url = url;
-      this.user = user;
-      this.password = password;
-      setParameters(parameters);
-    }
-
-    /**
-     * Gets the value of the name property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getName() {
-      return name;
-    }
-
-    /**
-     * Sets the value of the name property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setName(String value) {
-      this.name = value;
-    }
-
-    /**
-     * Gets the value of the url property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getUrl() {
-      return url;
-    }
-
-    /**
-     * Sets the value of the url property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setUrl(String value) {
-      this.url = value;
-    }
-
-    /**
-     * Gets the value of the user property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getUser() {
-      return user;
-    }
-
-    /**
-     * Sets the value of the user property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setUser(String value) {
-      this.user = value;
-    }
-
-    /**
-     * Gets the value of the password property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getPassword() {
-      return password;
-    }
-
-    /**
-     * Sets the value of the password property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setPassword(String value) {
-      this.password = value;
-    }
-
-    /**
-     * Gets the value of the parameters property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getParameters() {
-      return parameters;
-    }
-
-    /**
-     * Sets the value of the parameters property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setParameters(String value) {
-      if (value == null) {
-        return;
-      }
-      this.setParameters(value.split(","));
-    }
-
-    public void setParameters(String[] params) {
-      if (params == null) {
-        return;
-      }
-
-      Arrays.stream(params).forEach(s -> {
-        if (!s.isEmpty()) {
-          String[] keyValuePair = s.split(PARAMS_DELIMITER);
-          validateParam(keyValuePair, s);
-          parameterMap.put(keyValuePair[0], keyValuePair[1]);
-        }
-      });
-      this.parameters = Arrays.stream(params).collect(Collectors.joining(","));
-    }
-
-    public void setParameters(Map<String, String> parameterMap) {
-      if (parameterMap == null) {
-        return;
-      }
-
-      this.parameterMap = parameterMap;
-      this.parameters = parameterMap.keySet().stream().map(k -> k + ":" + parameterMap.get(k))
-          .collect(Collectors.joining(","));
-    }
-
-    public Map<String, String> getParameterMap() {
-      if (this.parameters != null && !this.parameters.isEmpty()) {
-        String[] params = this.parameters.split(",");
-        Arrays.stream(params).forEach(s -> {
-          String[] keyValuePair = s.split(PARAMS_DELIMITER);
-          parameterMap.put(keyValuePair[0], keyValuePair[1]);
-        });
-      }
-      return this.parameterMap;
-    }
-
-    private void validateParam(String[] paramKeyValue, String param) {
-      // paramKeyValue is produced by split which will never give us
-      // an empty second element
-      if ((paramKeyValue.length != 2) || paramKeyValue[0].isEmpty()) {
-        throw new IllegalArgumentException("Parameter '" + param
-            + "' is not of the form 'parameterName" + PARAMS_DELIMITER + "value'");
-      }
-    }
-
-    public Properties getConnectionProperties() {
-      Properties properties = new Properties();
-      if (parameterMap != null) {
-        properties.putAll(parameterMap);
-      }
-      return properties;
-    }
-
-    @Override
-    public String getId() {
-      return getName();
-    }
-  }
 
 
   /**

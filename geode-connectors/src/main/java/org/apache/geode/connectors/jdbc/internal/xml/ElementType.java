@@ -41,38 +41,6 @@ public enum ElementType {
       stack.pop();
     }
   },
-  CONNECTION("connection") {
-    @Override
-    void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof JdbcServiceConfiguration)) {
-        throw new CacheXmlException(
-            "jdbc <connection> elements must occur within <connector-service> elements");
-      }
-      ConnectorService.Connection connection = new ConnectorService.Connection();
-      connection.setName(attributes.getValue(JdbcConnectorServiceXmlParser.NAME));
-      connection.setUrl(attributes.getValue(JdbcConnectorServiceXmlParser.URL));
-      connection.setUser(attributes.getValue(JdbcConnectorServiceXmlParser.USER));
-      connection.setPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD));
-      connection.setParameters(parseParameters(attributes));
-      stack.push(connection);
-    }
-
-    private String[] parseParameters(Attributes attributes) {
-      String[] result = null;
-      String value = attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS);
-      if (value != null) {
-        result = value.split(",");
-      }
-      return result;
-    }
-
-    @Override
-    void endElement(Stack<Object> stack) {
-      ConnectorService.Connection config = (ConnectorService.Connection) stack.pop();
-      JdbcServiceConfiguration connectorService = (JdbcServiceConfiguration) stack.peek();
-      connectorService.addConnectionConfig(config);
-    }
-  },
   REGION_MAPPING("region-mapping") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
