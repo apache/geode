@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -26,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
@@ -95,12 +95,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private final AtomicLong tailKey = new AtomicLong();
 
-  /**
-   * The current key used to do put into the region. Once put is complete, then the {@link #tailKey}
-   * is reconciled with this value.
-   */
-  private long currentKey;
-
   private final Deque<Long> peekedIds = new LinkedBlockingDeque<Long>();
 
   /**
@@ -143,6 +137,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private boolean isDiskSynchronous;
 
+  /**
+   * The writeLock of this concurrent lock is used to protect access to the queue.
+   * It is implemented as a fair lock to ensure FIFO ordering of queueing attempts.
+   * Otherwise threads can be unfairly delayed.
+   */
+  private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
   /**
    * The <code>Map</code> mapping the regionName->key to the queue key. This index allows fast
@@ -186,7 +186,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     this.regionName = regionName;
     this.headKey = -1;
     this.tailKey.set(-1);
-    this.currentKey = -1;
     this.indexes = new HashMap<String, Map<Object, Long>>();
     this.enableConflation = abstractSender.isBatchConflationEnabled();
     this.diskStoreName = abstractSender.getDiskStoreName();
@@ -227,17 +226,23 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     getRegion().localDestroyRegion();
   }
 
-  public synchronized boolean put(Object event) throws CacheException {
-    GatewaySenderEventImpl eventImpl = (GatewaySenderEventImpl) event;
-    final Region r = eventImpl.getRegion();
-    final boolean isPDXRegion =
-        (r instanceof DistributedRegion && r.getName().equals(PeerTypeRegistration.REGION_NAME));
-    final boolean isWbcl = this.regionName.startsWith(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
-    if (!(isPDXRegion && isWbcl)) {
-      putAndGetKey(event);
-      return true;
+  public boolean put(Object event) throws CacheException {
+    lock.writeLock().lock();
+    try {
+      GatewaySenderEventImpl eventImpl = (GatewaySenderEventImpl) event;
+      final Region r = eventImpl.getRegion();
+      final boolean isPDXRegion =
+          (r instanceof DistributedRegion && r.getName().equals(PeerTypeRegistration.REGION_NAME));
+      final boolean isWbcl =
+          this.regionName.startsWith(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
+      if (!(isPDXRegion && isWbcl)) {
+        putAndGetKey(event);
+        return true;
+      }
+      return false;
+    } finally {
+      lock.writeLock().unlock();
     }
-    return false;
   }
 
   private long putAndGetKey(Object object) throws CacheException {
@@ -261,98 +266,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return key.longValue();
   }
 
-  private long putAndGetKeyNoSync(Object object) throws CacheException {
-    // don't sync on whole put; callers will do the puts in parallel but
-    // will wait later for previous tailKey put to complete after its own
-    // put is done
-
-    Long key;
-    synchronized (this) {
-      initializeKeys();
-      // Get and increment the current key
-      // Go for full sync in case of wrapover
-      long ckey = this.currentKey;
-      if (logger.isTraceEnabled()) {
-        logger.trace("{}: Determined current key: {}", this, ckey);
-      }
-      key = Long.valueOf(ckey);
-      this.currentKey = inc(ckey);
-    }
-
-    try {
-      // Put the object into the region at that key
-      this.region.put(key, (AsyncEvent) object);
-
-      if (logger.isDebugEnabled()) {
-        logger.debug("{}: Inserted {} -> {}", this, key, object);
-      }
-    } finally {
-
-      final Object sync = this.pendingPuts;
-      synchronized (sync) {
-        // Increment the tail key
-        // It is important that we increment the tail
-        // key after putting in the region, this is the
-        // signal that a new object is available.
-
-        while (true) {
-          if (key.longValue() == this.tailKey.get()) {
-            // this is the next thread, so increment tail and signal all other
-            // waiting threads if required
-            incrementTailKey();
-            // check pendingPuts
-            boolean notifyWaiters = false;
-            if (this.pendingPuts.size() > 0) {
-              Iterator<Long> itr = this.pendingPuts.iterator();
-              while (itr.hasNext()) {
-                Long k = itr.next();
-                if (k.longValue() == this.tailKey.get()) {
-                  incrementTailKey();
-                  // removed something from pending queue, so notify any waiters
-                  if (!notifyWaiters) {
-                    notifyWaiters = (this.pendingPuts.size() >= this.maxPendingPuts);
-                  }
-                  itr.remove();
-                } else {
-                  break;
-                }
-              }
-            }
-            if (notifyWaiters) {
-              sync.notifyAll();
-            }
-            break;
-          } else if (this.pendingPuts.size() < this.maxPendingPuts) {
-            this.pendingPuts.add(key);
-            break;
-          } else {
-            // wait for the queue size to go down
-            boolean interrupted = Thread.interrupted();
-            Throwable t = null;
-            try {
-              sync.wait(5);
-            } catch (InterruptedException ie) {
-              t = ie;
-              interrupted = true;
-            } finally {
-              if (interrupted) {
-                Thread.currentThread().interrupt();
-              }
-              ((LocalRegion) this.region).getCancelCriterion().checkCancelInProgress(t);
-            }
-          }
-        }
-      }
-    }
-
-    if (object instanceof Conflatable) {
-      removeOldEntry((Conflatable) object, key);
-    }
-
-    return key.longValue();
-  }
-
-  public synchronized AsyncEvent take() throws CacheException {
+  public AsyncEvent take() throws CacheException {
     // Unsupported since we have no callers.
     // If we do want to support it then each caller needs
     // to call freeOffHeapResources and the returned GatewaySenderEventImpl
@@ -370,42 +284,49 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * This method removes the last entry. However, it will only let the user remove entries that they
    * have peeked. If the entry was not peeked, this method will silently return.
    */
-  public synchronized void remove() throws CacheException {
-    if (this.peekedIds.isEmpty()) {
-      return;
-    }
-    Long key = this.peekedIds.remove();
+  public void remove() throws CacheException {
+    lock.writeLock().lock();
     try {
-      // Increment the head key
-      updateHeadKey(key.longValue());
-      removeIndex(key);
-      // Remove the entry at that key with a callback arg signifying it is
-      // a WAN queue so that AbstractRegionEntry.destroy can get the value
-      // even if it has been evicted to disk. In the normal case, the
-      // AbstractRegionEntry.destroy only gets the value in the VM.
-      this.region.localDestroy(key, WAN_QUEUE_TOKEN);
-      this.stats.decQueueSize();
+      if (this.peekedIds.isEmpty()) {
+        return;
+      }
+      Long key = this.peekedIds.remove();
+      try {
+        // Increment the head key
+        updateHeadKey(key.longValue());
+        removeIndex(key);
+        // Remove the entry at that key with a callback arg signifying it is
+        // a WAN queue so that AbstractRegionEntry.destroy can get the value
+        // even if it has been evicted to disk. In the normal case, the
+        // AbstractRegionEntry.destroy only gets the value in the VM.
+        this.region.localDestroy(key, WAN_QUEUE_TOKEN);
+        this.stats.decQueueSize();
 
-    } catch (EntryNotFoundException ok) {
-      // this is acceptable because the conflation can remove entries
-      // out from underneath us.
+      } catch (EntryNotFoundException ok) {
+        // this is acceptable because the conflation can remove entries
+        // out from underneath us.
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.",
+              this, key);
+        }
+      }
+
+      boolean wasEmpty = this.lastDispatchedKey == this.lastDestroyedKey;
+      this.lastDispatchedKey = key;
+      if (wasEmpty) {
+        synchronized (this) {
+          notifyAll();
+        }
+      }
+
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.",
-            this, key);
+            "{}: Destroyed entry at key {} setting the lastDispatched Key to {}. The last destroyed entry was {}",
+            this, key, this.lastDispatchedKey, this.lastDestroyedKey);
       }
-    }
-
-    boolean wasEmpty = this.lastDispatchedKey == this.lastDestroyedKey;
-    this.lastDispatchedKey = key;
-    if (wasEmpty) {
-      notifyAll();
-    }
-
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "{}: Destroyed entry at key {} setting the lastDispatched Key to {}. The last destroyed entry was {}",
-          this, key, this.lastDispatchedKey, this.lastDestroyedKey);
+    } finally {
+      lock.writeLock().unlock();
     }
   }
 
@@ -539,7 +460,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       Object key = object.getKeyToConflate();
       Long previousIndex;
 
-      synchronized (this) {
+      lock.writeLock().lock();
+      try {
         Map<Object, Long> latestIndexesForRegion = this.indexes.get(rName);
         if (latestIndexesForRegion == null) {
           latestIndexesForRegion = new HashMap<Object, Long>();
@@ -547,6 +469,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
 
         previousIndex = latestIndexesForRegion.put(key, tailKey);
+      } finally {
+        lock.writeLock().unlock();
       }
 
       if (isDebugEnabled) {
@@ -626,7 +550,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return (AsyncEvent) o;
   }
 
-  // No need to synchronize because it is called from a synchronized method
+  /*
+   * this must be invoked with lock.writeLock() held
+   */
   private void removeIndex(Long qkey) {
     // Determine whether conflation is enabled for this queue and object
     if (this.enableConflation) {
@@ -813,7 +739,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (tailKey.get() != -1) {
       return;
     }
-    synchronized (this) {
+    lock.writeLock().lock();
+    try {
       long largestKey = -1;
       long largestKeyLessThanHalfMax = -1;
       long smallestKey = -1;
@@ -861,6 +788,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         logger.debug("{}: Initialized tail key to: {}, head key to: {}", this, this.tailKey,
             this.headKey);
       }
+    } finally {
+      lock.writeLock().unlock();
     }
   }
 
@@ -1098,7 +1027,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             }
 
             long temp;
-            synchronized (SerialGatewaySenderQueue.this) {
+            lock.writeLock().lock();
+            try {
               temp = lastDispatchedKey;
               boolean wasEmpty = temp == lastDestroyedKey;
               while (lastDispatchedKey == lastDestroyedKey) {
@@ -1107,6 +1037,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               }
               if (wasEmpty)
                 continue;
+            } finally {
+              lock.writeLock().unlock();
             }
             // release not needed since disallowOffHeapValues called
             EntryEventImpl event = EntryEventImpl.create((LocalRegion) region, Operation.DESTROY,
