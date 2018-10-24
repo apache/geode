@@ -325,7 +325,7 @@ def get_builds_summary_sheet(url, team, pipeline, job, max_fetch_count, authoriz
     build_params = {'limit': max_fetch_count}
     build_response = session.get(builds_url, cookies=authorization_cookie, params=build_params)
     if build_response.status_code != 200:
-        raise IOError(f"Initial build summary query returned status code {build_response.status_code}.")
+        raise IOError(f"Initial build summary query to {builds_url} returned status code {build_response.status_code}.")
     return build_response.json()
 
 
