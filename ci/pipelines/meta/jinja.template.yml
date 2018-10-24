@@ -175,6 +175,8 @@ jobs:
         SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        GRADLE_GLOBAL_ARGS: ((gradle-global-args))
+        MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
       run:
         path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
   - put: concourse
@@ -263,6 +265,7 @@ jobs:
         PIPELINE_PREFIX: ((pipeline-prefix))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        GRADLE_GLOBAL_ARGS: ((gradle-global-args))
       run:
         path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
   - put: concourse

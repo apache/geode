@@ -100,6 +100,9 @@ rat {
     // other text files
     '**/log4j*.xml',
 
+    // local configuration files that are ignored by git
+    'ci/pipelines/meta/meta.properties.local',
+
     // modules
     'extensions/**/log4j.properties',
     'extensions/**/tomcat-users.xml',
