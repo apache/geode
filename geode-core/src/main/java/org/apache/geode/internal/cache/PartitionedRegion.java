@@ -7079,7 +7079,7 @@ public class PartitionedRegion extends LocalRegion
       boolean callbackEvents) {
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Destoying parallel queue region for senders: {}",
+      logger.debug("Destroying parallel queue region for senders: {}",
           this.getParallelGatewaySenderIds());
     }
 
