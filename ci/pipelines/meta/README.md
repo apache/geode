@@ -6,39 +6,57 @@ number of deployment scenarios it handles.
 ##### Prerequisites
 You must be logged into the appropriate Google Cloud Platform project for this to work.
  
-## Deploying to Production
-If you run `deploy_meta.sh` with no arguments, its default behavior is to deploy to the [production
+### Deployment Configuration
+In this directory is a file called `meta.properties`. This file contains variables that change
+how Geode is deployed. These values should be overriden by creating a file called 
+`meta.properties.local` and changing value definitions in that file. Note that 
+`meta.properties.local` is ignored by git because those types of changes are solely related to
+a specific deployment scenario.
+
+## Configuration Variables
+
+### UPSTREAM_FORK
+The UPSTREAM_FORK value indicates the GitHub user that hosts the master repository for Geode. Its
+default is `apache`, which results in a repository URL of `https://github.com/apache/geode.git`.
+
+### GEODE_FORK
+The GEODE_FORK value indicates the github username that hosts the repository under test. For
+example, if the GitHub user `molly` wishes to deploy a pipeline testing Geode from her fork, she
+would set this value to `molly`. This results in the repository URL 
+`https://github.com/molly/geode.git`.
+
+### GEODE_REPO_NAME
+The GEODE_REPO_NAME value indicates the name of the repository under test. This defaults to `geode`.
+
+### CONCOURSE_HOST
+The CONCOURSE_HOST value indicates the hostname of the concourse infrastructure you wish to deploy
+the Geode CI pipeline to. The default value is `concourse.apachegeode-ci.info`. You might wish to 
+change this value if you are hosting your own CI infrastructure for Geode.
+
+### ARTIFACT_BUCKET
+The ARTIFACT_BUCKET value indicates the Google Cloud Storage bucket name in which Concourse will 
+store build artifacts and test results. The default value is `files.apachegeode-ci.info`.
+
+### PUBLIC
+The PUBLIC value indicates whether the deployed pipeline should be public or not. The default value
+is `true`, though in certain situations this is overridden, such as a production deployment.
+
+### REPOSITORY_PUBLIC
+The REPOSITORY_PUBLIC value indicates whether the repository under test is public or not. The
+default value is `true`. If this value is set to false, the pipeline will expect credentials to
+be available in the vault deployment associated with the concourse deployment.
+
+### GRADLE_GLOBAL_ARGS
+The GRADLE_GLOBAL_ARGS value is for passing a set of arguments to gradle wherever it is invoked in
+CI. The default value is an empty string.
+
+## Deploying
+Once you have made your configuration choices, simply run `deploy_meta.sh` with no arguments.
+its default behavior is to deploy to the [production
 environment](https://concourse.apachegeode-ci.info). It will autodetect your branch and deploy the 
 appropriate pipeline. This will assume the branch is present in the
 [upstream repository](https://github.com/apache/geode). The resulting meta pipeline will be named
 `apache-<branch>-meta`.
 
-## Deploying from your fork to Geode Concourse
-If you wish to deploy the meta pipeline using your fork as the source, you must specify your github
-username as the first argument: `./deploy_meta.sh <github username>`. The resulting meta pipeline
-will be named `<github username>-<branch>-meta`. The default value for this argument is `apache`.
-
-## Specifying a different repository
-If your repository is named something other than `geode`, you must specify it as a second argument:
-`./deploy_meta.sh apache geode-testing`. There are no optional arguments, so if you need
-to provide an argument beyond the first, you must manually specify earlier arguments even if
-you are using default values.
-
-## Specifying a different upstream
-If your upstream repository owner is not `apache` (you forked a fork) then you must specify it as the third argument:
-`./deploy_meta.sh <github username> geode-testing not-apache`.
-
-## Specifying a different concourse infrastructure
-If you would like to deploy the pipeline to a concourse infrastructure other than
-`concourse.apachegeode-ci.info`, you must provide its hostname as the fourth argument:
-`./deploy_meta.sh apache geode apache concourse.mydomain.com`
-
-## Specifying the GCS bucket for artifact and test result storage
-If you would like to use a bucket other than `files.apachegeode-ci.info` for storing test results
-and artifacts, you must specify it as the fifth argument:
-`./deploy_meta.sh apache geode apache concourse.apachegeode-ci.info <my-gcs-bucket-name>`
-
-## Changing whether the created pipelines are public or not
-If the upstream and fork names do not match, the pipeline will not be made public. Otherwise
-the pipelines will be public by default, but can be overridden with the fifth argument:
-`./deploy_meta.sh apache geode apache concourse.apachegeode-ci.info files.apachegeode-ci.info false`
+If you change the configuration to use your own fork of Geode, the resulting meta pipeline will be
+named `<your GitHub username>-<branch>-meta`.

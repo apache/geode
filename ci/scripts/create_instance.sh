@@ -65,9 +65,6 @@ fi
 ZONE=us-central1-f
 
 INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${WINDOWS_PREFIX}${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-${SANITIZED_BUILD_PIPELINE_NAME}-${SANITIZED_BUILD_JOB_NAME}-${SANITIZED_BUILD_NAME}")"
-gcloud compute instances delete ${INSTANCE_NAME} \
-  --zone=${ZONE} \
-  --quiet || true
 
 MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
