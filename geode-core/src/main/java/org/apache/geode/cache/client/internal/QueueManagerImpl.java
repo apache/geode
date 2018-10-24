@@ -566,6 +566,8 @@ public class QueueManagerImpl implements QueueManager {
         lock.notifyAll();
       }
       cqsDisconnected();
+      throw new NoSubscriptionServersAvailableException(
+          "Could not initialize a primary queue on startup. No queue servers available.");
     } else {
       cqsConnected();
     }
