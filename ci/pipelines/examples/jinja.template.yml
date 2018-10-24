@@ -83,7 +83,7 @@ jobs:
     - get: 24h
       trigger: true
     - do:
-      - put: concourse-metadata-resource
+      - get: concourse-metadata-resource
       - task: start_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
