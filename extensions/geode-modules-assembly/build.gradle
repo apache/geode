@@ -48,6 +48,7 @@ def configureTcServerAssembly = {
     from getJarArtifact(':extensions:geode-modules')
     from getJarArtifact(':extensions:geode-modules-tomcat7')
     from getJarArtifact(':extensions:geode-modules-tomcat8')
+    from getJarArtifact(':extensions:geode-modules-tomcat9')
     from configurations.slf4jDeps
   }
   into('geode-cs/bin') {
@@ -81,6 +82,7 @@ def configureTcServerAssembly = {
     from getJarArtifact(':extensions:geode-modules')
     from getJarArtifact(':extensions:geode-modules-tomcat7')
     from getJarArtifact(':extensions:geode-modules-tomcat8')
+    from getJarArtifact(':extensions:geode-modules-tomcat9')
     from configurations.slf4jDeps
   }
   into('geode-p2p/bin') {
@@ -128,6 +130,12 @@ def configureTcServer30Assembly = {
     }
   }
 
+  into('geode-cs-tomcat-9/conf') {
+    from('release/tcserver/geode-cs-tomcat-9') {
+      include 'context-fragment.xml'
+    }
+  }
+
   into('geode-p2p-tomcat-8/conf') {
     from('release/tcserver/geode-p2p-tomcat-8') {
       include 'context-fragment.xml'
@@ -139,11 +147,18 @@ def configureTcServer30Assembly = {
       include 'context-fragment.xml'
     }
   }
+
+  into('geode-p2p-tomcat-9/conf') {
+    from('release/tcserver/geode-p2p-tomcat-9') {
+      include 'context-fragment.xml'
+    }
+  }
 }
 
 task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar',
                                        ':extensions:geode-modules-tomcat7:jar',
-                                       ':extensions:geode-modules-tomcat8:jar']) {
+                                       ':extensions:geode-modules-tomcat8:jar',
+                                       ':extensions:geode-modules-tomcat9:jar']) {
   baseName = moduleBaseName
   classifier = "Tomcat"
 
@@ -152,6 +167,7 @@ task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar',
     from getJarArtifact(':extensions:geode-modules')
     from getJarArtifact(':extensions:geode-modules-tomcat7')
     from getJarArtifact(':extensions:geode-modules-tomcat8')
+    from getJarArtifact(':extensions:geode-modules-tomcat9')
     from configurations.slf4jDeps
   }
   into('bin') {
@@ -170,7 +186,8 @@ task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar',
 task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar',
                                           ':extensions:geode-modules-session-internal:jar',
                                           ':extensions:geode-modules-tomcat7:jar',
-                                          ':extensions:geode-modules-tomcat8:jar']) {
+                                          ':extensions:geode-modules-tomcat8:jar',
+                                          ':extensions:geode-modules-tomcat9:jar']) {
   baseName = moduleBaseName
   classifier = "AppServer"
 
@@ -205,13 +222,15 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
 
 task distTcServer(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
                                          ':extensions:geode-modules-tomcat7:assemble',
-                                         ':extensions:geode-modules-tomcat8:assemble'] ) {
+                                         ':extensions:geode-modules-tomcat8:assemble',
+                                         ':extensions:geode-modules-tomcat9:assemble'] ) {
   configure(configureTcServerAssembly)
 }
 
 task distTcServer30(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
                                            ':extensions:geode-modules-tomcat7:assemble',
-                                           ':extensions:geode-modules-tomcat8:assemble']) {
+                                           ':extensions:geode-modules-tomcat8:assemble',
+                                           ':extensions:geode-modules-tomcat9:assemble']) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }

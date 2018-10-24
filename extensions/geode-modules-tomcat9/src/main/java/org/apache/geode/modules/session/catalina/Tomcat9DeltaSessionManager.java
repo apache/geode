@@ -14,20 +14,15 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.io.IOException;
+
+import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.LifecycleSupport;
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.Pipeline;
+import org.apache.catalina.session.StandardSession;
 
-/**
- * @deprecated Tomcat 6 has reached its end of life and support for Tomcat 6 will be removed
- *             from a future Geode release.
- */
-public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
-
-  /**
-   * The <code>LifecycleSupport</code> for this component.
-   */
-  protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+public class Tomcat9DeltaSessionManager extends DeltaSessionManager {
 
   /**
    * Prepare for the beginning of active use of the public methods of this component. This method
@@ -38,19 +33,16 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
    *         from being used
    */
   @Override
-  public void start() throws LifecycleException {
+  public void startInternal() throws LifecycleException {
+    super.startInternal();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
     if (this.started.get()) {
       return;
     }
-    this.lifecycle.fireLifecycleEvent(START_EVENT, null);
-    try {
-      init();
-    } catch (Throwable t) {
-      getLogger().error(t.getMessage(), t);
-    }
+
+    fireLifecycleEvent(START_EVENT, null);
 
     // Register our various valves
     registerJvmRouteBinderValve();
@@ -62,10 +54,19 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
     // Initialize the appropriate session cache interface
     initializeSessionCache();
 
+    try {
+      load();
+    } catch (ClassNotFoundException e) {
+      throw new LifecycleException("Exception starting manager", e);
+    } catch (IOException e) {
+      throw new LifecycleException("Exception starting manager", e);
+    }
+
     // Create the timer and schedule tasks
     scheduleTimerTasks();
 
     this.started.set(true);
+    this.setState(LifecycleState.STARTING);
   }
 
   /**
@@ -75,23 +76,25 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
    * @throws LifecycleException if this component detects a fatal error that needs to be reported
    */
   @Override
-  public void stop() throws LifecycleException {
+  public void stopInternal() throws LifecycleException {
+    super.stopInternal();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Stopping");
     }
+
+    try {
+      unload();
+    } catch (IOException e) {
+      getLogger().error("Unable to unload sessions", e);
+    }
+
     this.started.set(false);
-    this.lifecycle.fireLifecycleEvent(STOP_EVENT, null);
+    fireLifecycleEvent(STOP_EVENT, null);
 
     // StandardManager expires all Sessions here.
     // All Sessions are not known by this Manager.
 
-    // Require a new random number generator if we are restarted
-    this.random = null;
-
-    // Remove from RMI registry
-    if (this.initialized) {
-      destroy();
-    }
+    super.destroyInternal();
 
     // Clear any sessions to be touched
     getSessionsToTouch().clear();
@@ -105,34 +108,33 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
     if (isCommitValveEnabled()) {
       unregisterCommitSessionValve();
     }
+
+    this.setState(LifecycleState.STOPPING);
+
   }
 
-  /**
-   * Add a lifecycle event listener to this component.
-   *
-   * @param listener The listener to add
-   */
   @Override
-  public void addLifecycleListener(LifecycleListener listener) {
-    this.lifecycle.addLifecycleListener(listener);
+  public int getMaxInactiveInterval() {
+    return getContext().getSessionTimeout();
   }
 
-  /**
-   * Get the lifecycle listeners associated with this lifecycle. If this Lifecycle has no listeners
-   * registered, a zero-length array is returned.
-   */
   @Override
-  public LifecycleListener[] findLifecycleListeners() {
-    return this.lifecycle.findLifecycleListeners();
+  protected Pipeline getPipeline() {
+    return getTheContext().getPipeline();
   }
 
-  /**
-   * Remove a lifecycle event listener from this component.
-   *
-   * @param listener The listener to remove
-   */
   @Override
-  public void removeLifecycleListener(LifecycleListener listener) {
-    this.lifecycle.removeLifecycleListener(listener);
+  public Context getTheContext() {
+    return getContext();
+  }
+
+  @Override
+  public void setMaxInactiveInterval(final int interval) {
+    getContext().setSessionTimeout(interval);
+  }
+
+  @Override
+  protected StandardSession getNewSession() {
+    return new DeltaSession9(this);
   }
 }
