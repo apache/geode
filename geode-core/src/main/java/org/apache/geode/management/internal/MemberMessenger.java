@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal;
 
 import java.util.Set;
@@ -27,43 +26,77 @@ import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 
 /**
- * This class will act as a messenger from manager to members for various operations.
- *
- * To start with its is designed to Manager start stop details, change alert level.
- *
- *
- *
+ * Handles messaging from manager to members for various operations. It sends two types of messages:
+ * {@link ManagerStartupMessage} and {@link AlertLevelChangeMessage}
  */
 public class MemberMessenger {
 
-  private MBeanJMXAdapter jmxAdapter;
-  private ManagementResourceRepo repo;
-  private InternalDistributedSystem system;
+  private final MBeanJMXAdapter jmxAdapter;
+  private final InternalDistributedSystem system;
 
-  public MemberMessenger(MBeanJMXAdapter jmxAdapter, ManagementResourceRepo repo,
-      InternalDistributedSystem system) {
+  MemberMessenger(MBeanJMXAdapter jmxAdapter, InternalDistributedSystem system) {
     this.jmxAdapter = jmxAdapter;
-    this.repo = repo;
     this.system = system;
-
   }
 
-  public void sendManagerInfo(DistributedMember receiver) {
-
+  /**
+   * <pre>
+   * Code path 1:  {@link FederatingManager#startManager()} ->
+   *               {@link FederatingManager#startManagingActivity()} ->
+   *               {@link FederatingManager.GIITask#call()} ->
+   *               {@code sendManagerInfo}
+   * Recipient(s): {@link DistributionManager#getOtherDistributionManagerIds()}
+   * When:         starting the manager
+   * </pre>
+   *
+   * <p>
+   *
+   * <pre>
+   * Code path 2:  {@link FederatingManager#addMember(DistributedMember)} ->
+   *               {@link FederatingManager.GIITask#call()} ->
+   *               {@code sendManagerInfo}
+   * Recipient(s): one new member from membership listener
+   * When:         new member joins
+   * </pre>
+   *
+   * <p>
+   * This path does <b>NOT</b> process {@link ManagerStartupMessage} locally so we do not add an
+   * AlertListener for local Alerts.
+   */
+  void sendManagerInfo(DistributedMember receiver) {
     String levelName = jmxAdapter.getDistributedSystemMXBean().getAlertLevel();
     int alertCode = LogLevel.getLogWriterLevel(levelName);
+
     ManagerStartupMessage msg = ManagerStartupMessage.create(alertCode);
     msg.setRecipient((InternalDistributedMember) receiver);
-    sendAsync(msg);
 
+    sendAsync(msg);
   }
 
-  public void broadcastManagerInfo() {
+  /**
+   * <pre>
+   * Code path:    {@link FederatingManager#startManager()} ->
+   *               {@code sendManagerInfo}
+   * Recipient(s): {@link DistributionManager#getAllOtherMembers()}
+   * When:         starting the manager
+   * </pre>
+   *
+   * <p>
+   * This call seems to be redundant with {@link #sendManagerInfo(DistributedMember)} except that
+   * here we do not switch context to another thread and we also register a local AlertListener.
+   *
+   * <p>
+   * After sending to remote members, this call processes the {@link ManagerStartupMessage} locally
+   * which would add an AlertListener for local Alerts. But local Alerts don't seem to work
+   * (GEODE-5923).
+   */
+  void broadcastManagerInfo() {
     Set<InternalDistributedMember> otherMemberSet =
         system.getDistributionManager().getAllOtherMembers();
 
     String levelName = jmxAdapter.getDistributedSystemMXBean().getAlertLevel();
     int alertCode = LogLevel.getLogWriterLevel(levelName);
+
     ManagerStartupMessage msg = ManagerStartupMessage.create(alertCode);
     if (otherMemberSet != null && otherMemberSet.size() > 0) {
       msg.setRecipients(otherMemberSet);
@@ -75,14 +108,15 @@ public class MemberMessenger {
     if (dm instanceof ClusterDistributionManager) {
       msg.process((ClusterDistributionManager) system.getDistributionManager());
     }
-
-
   }
 
   /**
-   * Sends a message and does not wait for a response
+   * Sends a message and does not wait for a response.
+   *
+   * <p>
+   * Actually, it's the message implementation that determines if it's sync or async, not this call.
    */
-  void sendAsync(DistributionMessage msg) {
+  private void sendAsync(DistributionMessage msg) {
     if (system != null) {
       system.getDistributionManager().putOutgoing(msg);
     }

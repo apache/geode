@@ -23,28 +23,33 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 
+/**
+ * Sent by JMX manager to all other members to notify them that it has started.
+ */
 public class ManagerStartupMessage extends PooledDistributionMessage {
-  // instance variables
-  int alertLevel;
 
-  public static ManagerStartupMessage create(int level) {
-    ManagerStartupMessage m = new ManagerStartupMessage();
-    m.setLevel(level);
-    return m;
+  private int alertLevel;
+
+  public static ManagerStartupMessage create(int alertLevel) {
+    return new ManagerStartupMessage(alertLevel);
   }
 
-  public void setLevel(int alertLevel) {
+  public ManagerStartupMessage() {
+    // required for DataSerializableFixedID
+  }
+
+  private ManagerStartupMessage(int alertLevel) {
     this.alertLevel = alertLevel;
   }
 
   @Override
   public void process(ClusterDistributionManager dm) {
-
-    if (this.alertLevel != Alert.OFF) {
-      AlertAppender.getInstance().addAlertListener(this.getSender(), this.alertLevel);
+    if (alertLevel != Alert.OFF) {
+      AlertAppender.getInstance().addAlertListener(getSender(), alertLevel);
     }
   }
 
+  @Override
   public int getDSFID() {
     return MANAGER_STARTUP_MESSAGE;
   }
@@ -52,19 +57,17 @@ public class ManagerStartupMessage extends PooledDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeInt(this.alertLevel);
+    out.writeInt(alertLevel);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.alertLevel = in.readInt();
+    alertLevel = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "ManagerStartupMessage from " + this.getSender() + " level=" + alertLevel;
+    return "ManagerStartupMessage from " + getSender() + " alertLevel=" + alertLevel;
   }
-
-
 }
