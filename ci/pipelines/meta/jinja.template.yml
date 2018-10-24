@@ -89,6 +89,7 @@ resources:
     - ci/pipelines/pull-request/*
     - ci/pipelines/shared/*
     - ci/pipelines/render.py
+{% endif %}
 - name: geode-metrics-pipeline
   type: git
   source:
@@ -96,7 +97,6 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/metrics/*
-{% endif %}
 
 jobs:
 - name: set-images-pipeline
@@ -277,6 +277,7 @@ jobs:
         vars_files:
         - results/pipeline-vars.yml
 
+{% endif %}
 
 - name: set-metrics-pipeline
   serial: true
@@ -325,7 +326,6 @@ jobs:
 
 
 
-{% endif %}
 
 - name: set-reaper-pipeline
   serial: true
