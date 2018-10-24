@@ -54,6 +54,8 @@ public class DataSourceFactory {
   private static final String DEFAULT_CONNECTION_POOL_DS_CLASS =
       "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
 
+  private static final String POOL_PREFIX = "pool.";
+
   /** Creates a new instance of DataSourceFactory */
   public DataSourceFactory() {}
 
@@ -150,7 +152,7 @@ public class DataSourceFactory {
       connpoolClassName = DEFAULT_CONNECTION_POOL_DS_CLASS;
     }
     try {
-      Properties poolProperties = createPoolProperties(configMap);
+      Properties poolProperties = createPoolProperties(configMap, props);
       Properties dataSourceProperties = createDataSourceProperties(props);
       Class<?> cl = ClassPathLoader.getLatest().forName(connpoolClassName);
       PooledDataSourceFactory factory = (PooledDataSourceFactory) cl.newInstance();
@@ -168,8 +170,17 @@ public class DataSourceFactory {
     }
   }
 
-  static Properties createPoolProperties(Map<String, String> configMap) {
+  static Properties createPoolProperties(Map<String, String> configMap,
+      List<ConfigProperty> props) {
     Properties result = new Properties();
+    if (props != null) {
+      for (ConfigProperty prop : props) {
+        if (prop.getName().toLowerCase().startsWith(POOL_PREFIX)) {
+          String poolName = prop.getName().substring(POOL_PREFIX.length());
+          result.setProperty(poolName, prop.getValue());
+        }
+      }
+    }
     if (configMap != null) {
       for (Map.Entry<String, String> entry : configMap.entrySet()) {
         if (entry.getValue() == null || entry.getValue().equals("")) {
@@ -199,10 +210,13 @@ public class DataSourceFactory {
     return result;
   }
 
-  private static Properties createDataSourceProperties(List<ConfigProperty> props) {
+  static Properties createDataSourceProperties(List<ConfigProperty> props) {
     Properties result = new Properties();
     if (props != null) {
       for (ConfigProperty prop : props) {
+        if (prop.getName().toLowerCase().startsWith(POOL_PREFIX)) {
+          continue;
+        }
         result.setProperty(prop.getName(), prop.getValue());
       }
     }
