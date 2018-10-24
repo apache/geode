@@ -192,12 +192,6 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       }
     }
 
-    /*
-     * @Override public boolean isEmpty() { boolean isEmpty = true; for (SelectResults<E> result :
-     * this.sortedResults) { isEmpty = result.isEmpty(); if (!isEmpty) { break; } } return isEmpty;
-     * }
-     */
-
     @Override
     public Iterator<E> iterator() {
       Iterator<E> iter = new CumulativeCollectionIterator();

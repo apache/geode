@@ -417,24 +417,6 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     checkPRRecoveredFromDisk(vm1, "region", 0, true);
   }
 
-  /*
-   * @Test public void testStopNonPersistRegions() throws Throwable { Host host = Host.getHost(0);
-   * VM vm0 = host.getVM(0); VM vm1 = host.getVM(1); VM vm2 = host.getVM(2); createRegion(vm0,
-   * "region", null, true, 1); createRegion(vm1, "region", "disk", true, 1);
-   *
-   * createData(vm0, 0, 1, "a", "region");
-   *
-   * shutDownAllMembers(vm2, 2);
-   *
-   * // restart vms, and let vm0 to do GII from vm0 createRegion(vm1, "region", "disk", true, 1);
-   * createRegion(vm0, "region", null, true, 1);
-   *
-   * checkData(vm0, 0, 1, "a", "region"); checkData(vm1, 0, 1, "a", "region");
-   *
-   * checkPRRecoveredFromDisk(vm1, "region", 0, true); checkPRRecoveredFromDisk(vm0, "region", 0,
-   * false); }
-   */
-
   @Test
   public void testMultiPRDR() throws Throwable {
     Host host = Host.getHost(0);

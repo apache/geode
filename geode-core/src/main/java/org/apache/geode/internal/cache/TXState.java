@@ -472,10 +472,7 @@ public class TXState implements TXStateInterface {
          * (applyChanges) 2. Ask for advice on who to send to (buildMessage) 3. Send out to other
          * members.
          *
-         * If this is done out of order, we will have problems with GII, split brain, and HA. See
-         * bug #41187
-         *
-         * @gregp
+         * If this is done out of order, we will have problems with GII, split brain, and HA.
          */
 
         attachFilterProfileInformation(entries);
