@@ -26,6 +26,7 @@ dependencies {
     ext.optional = true
   }
   integrationTestCompile('junit:junit:' + project.'junit.version')
+  uiTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
   integrationTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
   integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
