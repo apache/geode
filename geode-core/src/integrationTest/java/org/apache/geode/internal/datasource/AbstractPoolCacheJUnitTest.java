@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.Context;
-import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
@@ -81,68 +80,6 @@ public class AbstractPoolCacheJUnitTest {
           "DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
   }
 
-  /**
-   * Test of returnPooledConnectionToPool method, of class
-   * org.apache.geode.internal.datasource.AbstractPoolCache.
-   */
-  @Test
-  public void testReturnPooledConnectionToPool() throws Exception {
-    Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds =
-        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
-    GemFireConnectionPoolManager provider =
-        (GemFireConnectionPoolManager) ds.getConnectionProvider();
-    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
-    PooledConnection conn = (PooledConnection) poolCache.getPooledConnectionFromPool();
-    if (poolCache.availableCache.containsKey(conn))
-      fail("connection not removed from available cache list");
-    if (!poolCache.activeCache.containsKey(conn))
-      fail("connection not put in active connection list");
-    provider.returnConnection(conn);
-    if (!poolCache.availableCache.containsKey(conn))
-      fail("connection not returned to pool");
-    if (poolCache.activeCache.containsKey(conn))
-      fail("connection not returned to active list");
-  }
-
-  /**
-   * Test of validateConnection method, of class
-   * org.apache.geode.internal.datasource.AbstractPoolCache.
-   */
-  @Test
-  public void testValidateConnection() throws Exception {
-    Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds =
-        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
-    GemFireConnectionPoolManager provider =
-        (GemFireConnectionPoolManager) ds.getConnectionProvider();
-    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
-    PooledConnection poolConn = (PooledConnection) poolCache.getPooledConnectionFromPool();
-    Connection conn = poolConn.getConnection();
-    if (!ds.validateConnection(conn))
-      fail("validate connection failed");
-    conn.close();
-    if (ds.validateConnection(conn))
-      fail("validate connection failed");
-  }
-
-  /**
-   * Test of getPooledConnectionFromPool method, of class
-   * org.apache.geode.internal.datasource.AbstractPoolCache.
-   */
-  @Test
-  public void testGetPooledConnectionFromPool() throws Exception {
-    Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds =
-        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
-    GemFireConnectionPoolManager provider =
-        (GemFireConnectionPoolManager) ds.getConnectionProvider();
-    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
-    PooledConnection poolConn = (PooledConnection) poolCache.getPooledConnectionFromPool();
-    if (poolConn == null)
-      fail("getPooledConnectionFromPool failed to get a connection from pool");
-  }
-
   @Test
   public void testCleanUp() throws Exception {
     cache.close();
@@ -172,13 +109,13 @@ public class AbstractPoolCacheJUnitTest {
     props.add(new ConfigProperty("databaseName", "newDB", "java.lang.String"));
 
     GemFireBasicDataSource gbds =
-        (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(map);
+        (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(map);
     map.put("xa-datasource-class", "org.apache.derby.jdbc.EmbeddedXADataSource");
 
     map.put("connection-url", "jdbc:derby:newDB;create=true");
 
     GemFireTransactionDataSource gtds =
-        (GemFireTransactionDataSource) DataSourceFactory.getTranxDataSource(map, props);
+        (GemFireTransactionDataSource) new DataSourceFactory().getTranxDataSource(map, props);
 
     XAConnection xaconn = (XAConnection) gtds.provider.borrowConnection();
     try {

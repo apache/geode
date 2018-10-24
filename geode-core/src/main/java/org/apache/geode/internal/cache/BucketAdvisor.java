@@ -131,9 +131,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * A read/write lock to prevent making this bucket not primary while a write is in progress on the
    * bucket.
    */
-  private final ReadWriteLock primaryMoveLock = new ReentrantReadWriteLock();
-  private final Lock activeWriteLock = primaryMoveLock.readLock();
-  private final Lock activePrimaryMoveLock = primaryMoveLock.writeLock();
+  private final ReadWriteLock primaryMoveReadWriteLock = new ReentrantReadWriteLock();
+  private final Lock primaryMoveReadLock = primaryMoveReadWriteLock.readLock();
+  private final Lock primaryMoveWriteLock = primaryMoveReadWriteLock.writeLock();
 
   /**
    * The advisor for the bucket region that we are colocated with, if this region is a colocated
@@ -221,8 +221,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @return the lock for in-progress write operations
    */
-  public Lock getActiveWriteLock() {
-    return this.activeWriteLock;
+  public Lock getPrimaryMoveReadLock() {
+    return primaryMoveReadLock;
   }
 
   /**
@@ -231,9 +231,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @return the lock for in-progress write operations
    */
-  Lock getParentActiveWriteLock() {
-    if (this.parentAdvisor != null) {
-      return this.parentAdvisor.getActiveWriteLock();
+  Lock getParentPrimaryMoveReadLock() {
+    if (parentAdvisor != null) {
+      return parentAdvisor.getPrimaryMoveReadLock();
     }
     return null;
   }
@@ -245,9 +245,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   public void tryLockIfPrimary() {
     if (isPrimary()) {
       try {
-        this.activePrimaryMoveLock.lock();
+        this.primaryMoveWriteLock.lock();
       } finally {
-        this.activePrimaryMoveLock.unlock();
+        this.primaryMoveWriteLock.unlock();
       }
     }
   }
@@ -260,7 +260,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   public boolean deposePrimary() {
     if (isPrimary()) {
-      this.activePrimaryMoveLock.lock();
+      this.primaryMoveWriteLock.lock();
       boolean needToSendProfileUpdate = false;
       try {
         removePrimary(getDistributionManager().getId());
@@ -274,7 +274,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
         }
       } finally {
-        this.activePrimaryMoveLock.unlock();
+        this.primaryMoveWriteLock.unlock();
         if (needToSendProfileUpdate) {
           sendProfileUpdate();
         }
@@ -1161,7 +1161,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // from occurring until all members know that
     // this member is now the primary.
     boolean shouldInvokeListeners = false;
-    activePrimaryMoveLock.lock();
+    primaryMoveWriteLock.lock();
     try {
       synchronized (this) {
         if (isHosting() && (isVolunteering() || isBecomingPrimary())) {
@@ -1210,7 +1210,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           releasePrimaryLock();
         }
       } finally {
-        activePrimaryMoveLock.unlock();
+        primaryMoveWriteLock.unlock();
       }
     }
   }
@@ -1305,7 +1305,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               "BucketAdvisor.acquirePrimaryRecursivelyForColocated: about to take lock for bucket: {} of PR: {} with isHosting={}",
               getBucket().getId(), childPR.getFullPath(), childBA.isHosting());
         }
-        childBA.activePrimaryMoveLock.lock();
+        childBA.primaryMoveWriteLock.lock();
         try {
           if (childBA.isHosting()) {
             if (isPrimary()) {
@@ -1325,7 +1325,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             childBA.acquirePrimaryRecursivelyForColocated();
           }
         } finally {
-          childBA.activePrimaryMoveLock.unlock();
+          childBA.primaryMoveWriteLock.unlock();
         }
       }
     }
@@ -1341,7 +1341,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             Bucket b = regionAdvisor.getBucket(i++);
             if (b != null) {
               BucketAdvisor ba = b.getBucketAdvisor();
-              ba.activePrimaryMoveLock.lock();
+              ba.primaryMoveWriteLock.lock();
               try {
                 if (ba.isHosting()) {
                   if (!ba.isPrimary()) {
@@ -1350,7 +1350,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                   }
                 }
               } finally {
-                ba.activePrimaryMoveLock.unlock();
+                ba.primaryMoveWriteLock.unlock();
               }
             }
           }
@@ -2525,11 +2525,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         while (continueVolunteering()) {
           // Fix for 41865 - We can't send out profiles while holding the
           // sync on this advisor, because that will cause a deadlock.
-          // Holding the activePrimaryMoveLock here instead prevents any
+          // Holding the primaryMoveWriteLock here instead prevents any
           // operations from being performed on this primary until the child regions
           // are synced up. It also prevents a depose from happening until then.
           BucketAdvisor parentBA = parentAdvisor;
-          BucketAdvisor.this.activePrimaryMoveLock.lock();
+          BucketAdvisor.this.primaryMoveWriteLock.lock();
           try {
             boolean acquiredLock = false;
             getAdvisee().getCancelCriterion().checkCancelInProgress(null);
@@ -2595,7 +2595,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               return;
             }
           } finally {
-            BucketAdvisor.this.activePrimaryMoveLock.unlock();
+            BucketAdvisor.this.primaryMoveWriteLock.unlock();
           }
           // else: acquiredPrimaryLock released thePrimaryLock
 

@@ -5767,7 +5767,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         DistTXState.internalBeforeNonTXBasicPut.run();
       }
 
-      return this.entries.basicPut(event, lastModified, ifNew, false, null, false, false);
+      return getRegionMap().basicPut(event, lastModified, ifNew, false, null, false, false);
     }
   }
 

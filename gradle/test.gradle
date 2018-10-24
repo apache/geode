@@ -168,27 +168,38 @@ subprojects {
   }
 
   task repeatDistributedTest(type: RepeatTest) {
+    dependsOn {distributedTest.taskDependencies}
     classpath = project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
   }
 
   task repeatIntegrationTest(type: RepeatTest) {
+    dependsOn {integrationTest.taskDependencies}
     classpath = project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
   }
 
   task repeatAcceptanceTest(type: RepeatTest) {
+    dependsOn {acceptanceTest.taskDependencies}
     classpath = project.sourceSets.acceptanceTest.runtimeClasspath
     testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
   }
 
   task repeatUpgradeTest(type: RepeatTest) {
+    dependsOn {upgradeTest.taskDependencies}
     classpath = project.sourceSets.upgradeTest.runtimeClasspath
     testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
   }
 
   task repeatUnitTest(type: RepeatTest) {
+    dependsOn {test.taskDependencies}
     // default classpath works for this one.
+  }
+
+  configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+    if (project.hasProperty('excludeTest')) {
+      exclude project.getProperty('excludeTest').split(',')
+    }
   }
 
   configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {

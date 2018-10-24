@@ -80,7 +80,7 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
       return 1;
     }
     int result = Long.signum(mostSig - tagID.mostSig);
-    if (result != 0) {
+    if (result == 0) {
       result = Long.signum(leastSig - tagID.leastSig);
     }
     return result;

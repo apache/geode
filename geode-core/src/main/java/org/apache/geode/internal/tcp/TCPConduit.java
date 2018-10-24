@@ -161,7 +161,8 @@ public class TCPConduit implements Runnable {
    */
   private int port;
 
-  private int[] tcpPortRange = new int[] {1024, 65535};
+  private int[] tcpPortRange = new int[] {DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0],
+      DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]};
 
   /**
    * The java groups address that this conduit is associated with
