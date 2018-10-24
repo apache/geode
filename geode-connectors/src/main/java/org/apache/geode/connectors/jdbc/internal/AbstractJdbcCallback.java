@@ -34,9 +34,6 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     this.cache = cache;
   }
 
-  @Override
-  public void close() {}
-
   protected SqlHandler getSqlHandler() {
     return sqlHandler;
   }

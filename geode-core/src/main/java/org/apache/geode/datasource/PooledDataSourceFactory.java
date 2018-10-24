@@ -34,10 +34,8 @@ public interface PooledDataSourceFactory {
    *
    * @param poolProperties properties to use to initialize the pool part of the data source
    *        The poolProperties names can be any of the following: connection-url, user-name,
-   *        password,
-   *        jdbc-driver-class, max-pool-size, init-pool-size, idle-timeout-seconds,
-   *        login-timeout-seconds,
-   *        or blocking-timeout-seconds.
+   *        password, jdbc-driver-class, max-pool-size, init-pool-size, idle-timeout-seconds,
+   *        login-timeout-seconds, or blocking-timeout-seconds.
    *
    * @param dataSourceProperties properties to use to initialize the data source the pool will use
    *        to create connections

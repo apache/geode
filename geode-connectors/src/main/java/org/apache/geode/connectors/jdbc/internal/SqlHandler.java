@@ -53,10 +53,6 @@ public class SqlHandler {
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-  public interface DataSourceFactory {
-    public DataSource getDataSource(String dataSourceName);
-  }
-
   Connection getConnection(String connectionName) throws SQLException {
     return getDataSource(connectionName).getConnection();
   }
@@ -260,4 +256,7 @@ public class SqlHandler {
     return result;
   }
 
+  public interface DataSourceFactory {
+    public DataSource getDataSource(String dataSourceName);
+  }
 }

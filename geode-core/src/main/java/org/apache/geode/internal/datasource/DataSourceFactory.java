@@ -51,6 +51,9 @@ public class DataSourceFactory {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final String DEFAULT_CONNECTION_POOL_DS_CLASS =
+      "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
+
   /** Creates a new instance of DataSourceFactory */
   public DataSourceFactory() {}
 
@@ -135,9 +138,6 @@ public class DataSourceFactory {
     }
     return new ClientConnectionFactoryWrapper(cf, cm);
   }
-
-  private static final String DEFAULT_CONNECTION_POOL_DS_CLASS =
-      "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
 
   /**
    * This function returns the datasource with connection pooling.

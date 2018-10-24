@@ -80,10 +80,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private void closeDB() throws Exception {
-    if (statement == null) {
-      if (connection != null) {
-        statement = connection.createStatement();
-      }
+    if (statement == null && connection != null) {
+      statement = connection.createStatement();
     }
     if (statement != null) {
       statement.execute("Drop table " + REGION_TABLE_NAME);
