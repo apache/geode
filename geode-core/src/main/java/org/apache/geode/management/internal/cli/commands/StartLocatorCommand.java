@@ -51,7 +51,6 @@ import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
-import org.apache.geode.management.internal.cli.util.CauseFinder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.cli.util.HostUtils;
@@ -392,10 +391,6 @@ public class StartLocatorCommand extends InternalGfshCommand {
 
         connectSuccess = true;
         responseFailureMessage = null;
-      } catch (IllegalStateException unexpected) {
-        if (CauseFinder.indexOfCause(unexpected, ClassCastException.class, false) != -1) {
-          responseFailureMessage = "The Locator might require SSL Configuration.";
-        }
       } catch (SecurityException ignore) {
         getGfsh().logToFile(ignore.getMessage(), ignore);
         jmxManagerAuthEnabled = true;

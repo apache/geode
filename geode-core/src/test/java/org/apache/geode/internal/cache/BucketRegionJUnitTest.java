@@ -41,8 +41,8 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     PartitionedRegion pr = mock(PartitionedRegion.class);
     BucketAdvisor ba = mock(BucketAdvisor.class);
     ReadWriteLock primaryMoveLock = new ReentrantReadWriteLock();
-    Lock activeWriteLock = primaryMoveLock.readLock();
-    when(ba.getActiveWriteLock()).thenReturn(activeWriteLock);
+    Lock primaryMoveReadLock = primaryMoveLock.readLock();
+    when(ba.getPrimaryMoveReadLock()).thenReturn(primaryMoveReadLock);
     when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
     when(ba.isPrimary()).thenReturn(true);
 

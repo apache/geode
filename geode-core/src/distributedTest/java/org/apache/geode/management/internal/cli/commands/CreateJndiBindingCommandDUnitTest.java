@@ -64,7 +64,7 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // create the binding
     gfsh.executeAndAssertThat(
-        "create jndi-binding --name=jndi1 --username=myuser --password=mypass --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
+        "create jndi-binding --name=jndi1 --username=myuser --password=mypass --type=SIMPLE --connection-url=\"jdbc:derby:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated

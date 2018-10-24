@@ -93,7 +93,7 @@ public class ConnectionPoolingJUnitTest {
   @Test
   public void testConnectionPoolFunctions() throws Exception {
     Context ctx = cache.getJNDIContext();
-    ds = (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
+    ds = (DataSource) ctx.lookup("java:/PooledDataSource");
     PoolClient_1 clientA = new PoolClient_1();
     ThreadA = new Thread(clientA, "ThreadA");
     PoolClient_2 clientB = new PoolClient_2();

@@ -709,10 +709,15 @@ javadoc/org/apache/geode/compression/package-tree.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcAsyncWriter.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcConnectorException.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcLoader.html
+javadoc/org/apache/geode/connectors/jdbc/JdbcPooledDataSourceFactory.html
 javadoc/org/apache/geode/connectors/jdbc/JdbcWriter.html
 javadoc/org/apache/geode/connectors/jdbc/package-frame.html
 javadoc/org/apache/geode/connectors/jdbc/package-summary.html
 javadoc/org/apache/geode/connectors/jdbc/package-tree.html
+javadoc/org/apache/geode/datasource/PooledDataSourceFactory.html
+javadoc/org/apache/geode/datasource/package-frame.html
+javadoc/org/apache/geode/datasource/package-summary.html
+javadoc/org/apache/geode/datasource/package-tree.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.ServiceState.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.Status.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.html
@@ -905,6 +910,7 @@ javadoc/org/apache/geode/modules/session/catalina/CommitSessionValve.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession7.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession8.html
+javadoc/org/apache/geode/modules/session/catalina/DeltaSession9.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSessionFacade.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSessionInterface.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSessionManager.html
@@ -916,6 +922,7 @@ javadoc/org/apache/geode/modules/session/catalina/SessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat6DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat7DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat8DeltaSessionManager.html
+javadoc/org/apache/geode/modules/session/catalina/Tomcat9DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/callback/LocalSessionCacheLoader.html
 javadoc/org/apache/geode/modules/session/catalina/callback/LocalSessionCacheWriter.html
 javadoc/org/apache/geode/modules/session/catalina/callback/SessionExpirationCacheListener.html

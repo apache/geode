@@ -51,8 +51,6 @@ public class JdbcClusterConfigDistributedTest {
   @Test
   public void recreateCacheFromClusterConfig() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create jdbc-connection --name=connection --url=url")
-        .statusIsSuccess();
     gfsh.executeAndAssertThat(
         "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-class-name=myPdxClass --value-contains-primary-key --field-mapping=field1:column1,field2:column2")
         .statusIsSuccess();
@@ -69,7 +67,6 @@ public class JdbcClusterConfigDistributedTest {
     server.invoke(() -> {
       JdbcConnectorService service =
           ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
-      assertThat(service.getConnectionConfig("connection")).isNotNull();
       validateRegionMapping(service.getMappingForRegion("regionName"));
     });
   }

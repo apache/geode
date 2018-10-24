@@ -31,8 +31,6 @@ public class JdbcServiceConfigurationTest {
 
   private InternalCache cache;
   private JdbcConnectorService service;
-  private ConnectorService.Connection connection1;
-  private ConnectorService.Connection connection2;
   private ConnectorService.RegionMapping mapping1;
   private ConnectorService.RegionMapping mapping2;
 
@@ -40,8 +38,6 @@ public class JdbcServiceConfigurationTest {
 
   @Before
   public void setUp() throws Exception {
-    connection1 = mock(ConnectorService.Connection.class);
-    connection2 = mock(ConnectorService.Connection.class);
     mapping1 = mock(ConnectorService.RegionMapping.class);
     mapping2 = mock(ConnectorService.RegionMapping.class);
     service = mock(JdbcConnectorService.class);
@@ -57,17 +53,6 @@ public class JdbcServiceConfigurationTest {
     configuration.onCreate(cache, cache);
 
     verifyZeroInteractions(service);
-  }
-
-  @Test
-  public void onCreateWithConnections() throws Exception {
-    configuration.addConnectionConfig(connection1);
-    configuration.addConnectionConfig(connection2);
-
-    configuration.onCreate(cache, cache);
-
-    verify(service, times(1)).createConnectionConfig(connection1);
-    verify(service, times(1)).createConnectionConfig(connection2);
   }
 
   @Test

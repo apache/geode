@@ -1055,7 +1055,8 @@ public class SocketCreator {
         sslSocket.setSSLParameters(sslParameters);
       } else {
         logger.warn("Your SSL configuration disables hostname validation. "
-            + "Future releases will mandate hostname validation.");
+            + "Future releases of Apache GEODE will mandate hostname validation. "
+            + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();

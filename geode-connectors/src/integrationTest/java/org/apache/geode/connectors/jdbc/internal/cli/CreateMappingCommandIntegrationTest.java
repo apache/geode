@@ -96,8 +96,6 @@ public class CreateMappingCommandIntegrationTest {
         keyInValue, fieldMappings);
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
 
-    ConnectorService.Connection connectionConfig = service.getConnectionConfig(regionName);
-
     IgnoredException ignoredException =
         IgnoredException.addIgnoredException(RegionMappingExistsException.class.getName());
 
@@ -110,8 +108,6 @@ public class CreateMappingCommandIntegrationTest {
     }
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
-
-    assertThat(service.getConnectionConfig(regionName)).isSameAs(connectionConfig);
   }
 
   @Test
