@@ -17,8 +17,18 @@
 
 
 dependencies {
-  compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-junit')) {
+  compile('org.awaitility:awaitility:' + project.'awaitility.version')
+  compile('junit:junit:' + project.'junit.version')
+  compile('org.eclipse.jetty:jetty-server:' + project.'jetty.version')
+  compile('commons-io:commons-io:' + project.'commons-io.version')
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('mx4j:mx4j:' + project.'mx4j.version')
+  compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
+    ext.optional = true
+  }
+
+  compile(project(':geode-core'))
+  compile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   compileOnly(project(':geode-pulse'))
