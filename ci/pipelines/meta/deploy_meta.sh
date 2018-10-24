@@ -35,7 +35,7 @@ for cmd in Jinja2 PyYAML; do
 done
 
 if [ -z $(command -v gcloud) ]; then
-  echo "Install gcloud"
+  echo "Install gcloud (try brew cask install google-cloud-sdk, or see https://cloud.google.com/sdk/docs/downloads-interactive#mac)"
   exit 1
 fi
 
@@ -105,25 +105,12 @@ if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
   exit 1
 fi
 
-if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
-  echo "Disabling unnecessary jobs for forks."
-  for job in set set-images set-reaper; do
-    (set -x ; fly -t ${FLY_TARGET} pause-job -j ${META_PIPELINE}/${job}-pipeline)
-  done
-else
-  echo "Disabling unnecessary jobs for release branches."
-  echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
-  for job in set set-pr set-images set-reaper set-metrics set-examples; do
-    (set -x ; fly -t ${FLY_TARGET} pause-job -j ${META_PIPELINE}/${job}-pipeline)
-  done
-fi
-
 # bootstrap all precursors of the actual Build job
 
 function jobStatus {
   PIPELINE=$1
   JOB=$2
-  fly jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused"; else print $3}'
+  fly jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused";else if($4!="n/a")print $4; else print $3}'
 }
 
 function triggerJob {
@@ -132,10 +119,41 @@ function triggerJob {
   (set -x ; fly trigger-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
+function pauseJob {
+  PIPELINE=$1
+  JOB=$2
+  (set -x ; fly pause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+}
+
+function pauseJobs {
+  PIPELINE=$1
+  shift
+  for JOB; do
+    pauseJob $PIPELINE $JOB
+  done
+}
+
+function pauseNewJobs {
+  PIPELINE=$1
+  shift
+  for JOB; do
+    STATUS="$(jobStatus $PIPELINE $JOB)"
+    [[ "$STATUS" == "n/a" ]] && pauseJob $PIPELINE $JOB
+  done
+}
+
 function unpauseJob {
   PIPELINE=$1
   JOB=$2
   (set -x ; fly unpause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+}
+
+function unpauseJobs {
+  PIPELINE=$1
+  shift
+  for JOB; do
+    unpauseJob $PIPELINE $JOB
+  done
 }
 
 function unpausePipeline {
@@ -154,25 +172,21 @@ function awaitJob {
     status=$(jobStatus ${PIPELINE} ${JOB})
   done
   echo $status
+  [ "$status" = "succeeded" ] || return 1
 }
 
 function driveToGreen {
   PIPELINE=$1
-  [ "$2" = "--to" ] && FINAL_ONLY=true || FINAL_ONLY=false
-  [ "$2" = "--to" ] && shift
   JOB=$2
   status=$(jobStatus ${PIPELINE} ${JOB})
   if [ "paused" = "$status" ] ; then
     unpauseJob ${PIPELINE} ${JOB}
     status=$(jobStatus ${PIPELINE} ${JOB})
   fi
-  if [ "n/a" = "$status" ] ; then
-    [ "$FINAL_ONLY" = "true" ] || triggerJob ${PIPELINE} ${JOB}
+  if [ "aborted" = "$status" ] || [ "failed" = "$status" ] || [ "errored" = "$status" ] ; then
+    triggerJob ${PIPELINE} ${JOB}
     awaitJob ${PIPELINE} ${JOB}
-  elif [ "failed" = "$status" ] ; then
-    echo "Unexpected ${PIPELINE} pipeline status: ${JOB} $status"
-    exit 1
-  elif [ "started" = "$status" ] ; then
+  elif [ "n/a" = "$status" ] || [ "started" = "$status" ] ; then
     awaitJob ${PIPELINE} ${JOB}
   elif [ "succeeded" = "$status" ] ; then
     echo "${JOB} $status"
@@ -184,12 +198,30 @@ function driveToGreen {
 }
 
 set -e
+set +x
+
+if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
+  echo "Disabling unnecessary jobs for forks."
+  pauseJobs ${META_PIPELINE} set-images set-reaper
+elif [[ "$GEODE_FORK" == "apache" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
+  echo "Disabling optional jobs for develop"
+  pauseNewJobs set-pr set-images set-metrics set-examples
+else
+  echo "Disabling unnecessary jobs for release branches."
+  echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
+  pauseJobs set-pr set-images set-reaper set-metrics set-examples
+fi
 
 unpausePipeline ${META_PIPELINE}
 driveToGreen $META_PIPELINE build-meta-mini-docker-image
 driveToGreen $META_PIPELINE set-images-pipeline
 unpausePipeline ${PIPELINE_PREFIX}images
-driveToGreen ${PIPELINE_PREFIX}images --to build-google-geode-builder
+driveToGreen ${PIPELINE_PREFIX}images build-google-geode-builder
+driveToGreen ${PIPELINE_PREFIX}images build-google-windows-geode-builder
 driveToGreen $META_PIPELINE set-pipeline
 unpausePipeline ${PIPELINE_PREFIX}main
-echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX%-}"
+echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
+
+if [[ "$GEODE_FORK" == "apache" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
+  unpauseJobs set-pr set-metrics set-examples
+fi

@@ -168,31 +168,31 @@ subprojects {
   }
 
   task repeatDistributedTest(type: RepeatTest) {
-    dependsOn {distributedTest.getTaskDependencies()}
+    dependsOn {distributedTest.taskDependencies}
     classpath = project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
   }
 
   task repeatIntegrationTest(type: RepeatTest) {
-    dependsOn {integrationTest.getTaskDependencies()}
+    dependsOn {integrationTest.taskDependencies}
     classpath = project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
   }
 
   task repeatAcceptanceTest(type: RepeatTest) {
-    dependsOn {acceptanceTest.getTaskDependencies()}
+    dependsOn {acceptanceTest.taskDependencies}
     classpath = project.sourceSets.acceptanceTest.runtimeClasspath
     testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
   }
 
   task repeatUpgradeTest(type: RepeatTest) {
-    dependsOn {upgradeTest.getTaskDependencies()}
+    dependsOn {upgradeTest.taskDependencies}
     classpath = project.sourceSets.upgradeTest.runtimeClasspath
     testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
   }
 
   task repeatUnitTest(type: RepeatTest) {
-    dependsOn {test.getTaskDependencies()}
+    dependsOn {test.taskDependencies}
     // default classpath works for this one.
   }
 
@@ -270,6 +270,16 @@ subprojects {
       }
     }
   })
+
+  acceptanceTest {
+    // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
+    // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
+    // See also environment configuration for parallel testing in docker.gradle
+    if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+      environment "JAVA_HOME", "${project.testJVM}"
+    }
+  }
+
 
   // Make precheckin task run all validation tests for checking in code.
   task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {

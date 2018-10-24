@@ -44,7 +44,7 @@ public class ManagementAdapterTest {
 
   @Rule
   public ServerStarterRule serverRule =
-      new ServerStarterRule().withWorkingDir().withLogFile().withAutoStart();
+      new ServerStarterRule().withLogFile().withAutoStart();
 
   @Rule
   public ConcurrencyRule concurrencyRule = new ConcurrencyRule();

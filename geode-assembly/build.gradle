@@ -132,12 +132,18 @@ dependencies {
 
 
   testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 
 
   integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-junit'))
-  integrationTestCompile(project(':geode-dunit'))
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':geode-pulse'))
   integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
   integrationTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
@@ -156,11 +162,15 @@ dependencies {
 
 
   acceptanceTestCompile(project(':geode-core'))
-  acceptanceTestCompile(project(':geode-dunit'))
+  acceptanceTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
 
 
   uiTestCompile(project(':geode-core'))
-  uiTestCompile(project(':geode-dunit'))
+  uiTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   uiTestCompile(project(':geode-pulse'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
   uiTestCompile(project(':geode-assembly:geode-assembly-test'))
@@ -173,7 +183,9 @@ dependencies {
 
 
   upgradeTestCompile(project(':geode-core'))
-  upgradeTestCompile(project(':geode-dunit'))
+  upgradeTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 
   upgradeTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')

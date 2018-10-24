@@ -72,14 +72,19 @@ case $ARTIFACT_SLUG in
   windows*)
     JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
     JAVA_TEST_PATH=C:/java${JAVA_TEST_VERSION}
+    SEP=";"
     ;;
   *)
     JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
     JAVA_TEST_PATH=/usr/lib/jvm/java-${JAVA_TEST_VERSION}-openjdk-amd64
+    SEP="&&"
     ;;
 esac
 
-GRADLE_ARGS="-PtestJVM=${JAVA_TEST_PATH} \
+GRADLE_ARGS=" \
+    -PcompileJVM=${JAVA_BUILD_PATH} \
+    -PcompileJVMVer=${JAVA_BUILD_VERSION} \
+    -PtestJVM=${JAVA_TEST_PATH} \
     -PtestJVMVer=${JAVA_TEST_VERSION} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
@@ -88,14 +93,6 @@ GRADLE_ARGS="-PtestJVM=${JAVA_TEST_PATH} \
     ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS}"
 
-case $ARTIFACT_SLUG in
-  windows*)
-    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; echo Building with:; "'"'"${JAVA_BUILD_PATH}\bin\java.exe"'"'" -version; echo Testing with:; "'"'"${JAVA_TEST_PATH}\bin\java.exe"'"'" -version; cd geode; ./gradlew ${GRADLE_ARGS}'"
-    ;;
-  *)
-    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && echo Building with: && ${JAVA_BUILD_PATH}/bin/java -version && echo Testing with: && ${JAVA_TEST_PATH}/bin/java -version && cd geode && ./gradlew ${GRADLE_ARGS}'"
-    ;;
-esac
-
+EXEC_COMMAND="bash -c 'echo Building with: $SEP ${JAVA_BUILD_PATH}/bin/java -version $SEP echo Testing with: $SEP ${JAVA_TEST_PATH}/bin/java -version $SEP cd geode $SEP cp gradlew gradlewStrict $SEP sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.bak gradlewStrict $SEP GRADLE_JVM=${JAVA_BUILD_PATH} ./gradlewStrict ${GRADLE_ARGS}'"
 echo "${EXEC_COMMAND}"
 ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"

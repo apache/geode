@@ -29,12 +29,26 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-INSTANCE_NAME="$(cat instance-data/instance-name)"
-ZONE="$(cat instance-data/zone)"
+if [[ -z "${GRADLE_TASK}" ]]; then
+  echo "GRADLE_TASK must be set. exiting..."
+  exit 1
+fi
 
+ROOT_DIR=$(pwd)
+BUILD_DATE=$(date +%s)
 
-echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
+DEFAULT_GRADLE_TASK_OPTIONS="--console=plain --no-daemon"
 
-gcloud compute instances delete ${INSTANCE_NAME} \
-  --zone=${ZONE} \
-  --quiet
+SSHKEY_FILE="instance-data/sshkey"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
+
+INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
+
+SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64"
+
+GRADLE_COMMAND="./gradlew \
+    ${DEFAULT_GRADLE_TASK_OPTIONS} \
+    clean runAll"
+
+echo "${GRADLE_COMMAND}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ${GRADLE_COMMAND}"
