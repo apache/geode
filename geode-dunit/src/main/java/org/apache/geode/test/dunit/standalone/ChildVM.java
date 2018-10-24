@@ -18,6 +18,7 @@ import java.rmi.Naming;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
@@ -58,6 +59,7 @@ public class ChildVM {
       Naming.rebind(name, dunitVM);
       JUnit4DistributedTestCase.initializeBlackboard();
       holder.signalVMReady();
+      AvailablePortHelper.initializeUniquePortRange(vmNum + 2); // hacky, locator is -2
       // This loop is here so this VM will die even if the master is mean killed.
       while (!stopMainLoop) {
         holder.ping();
