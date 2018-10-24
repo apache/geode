@@ -292,7 +292,7 @@ public class DUnitLauncher {
             .getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
-        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%hexTid] %message%n%throwable%n",
+        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n",
         null, null, null, Charset.defaultCharset(), true, false, "", "");
 
     final FileAppender fileAppender = FileAppender.createAppender(suspectFilename, "true", "false",
