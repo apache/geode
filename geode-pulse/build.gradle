@@ -17,6 +17,23 @@
 apply plugin: 'war'
 
 dependencies {
+  compile('org.springframework.security:spring-security-core:' + project.'spring-security.version')
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compile('mx4j:mx4j:' + project.'mx4j.version') {
+    ext.optional = true 
+  }
+  compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
+    ext.optional = true
+  }
+  integrationTestCompile('junit:junit:' + project.'junit.version')
+  integrationTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
+  integrationTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
+  integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
+  uiTestCompile('org.apache.httpcomponents:httpcore:' + project.'httpcore.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')
+  uiTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  uiTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-support:' + project.'selenium.version')
   compile('org.springframework:spring-beans:' + project.'springframework.version')
 
   // Needed to fully use log4j instead of commons-logging.
