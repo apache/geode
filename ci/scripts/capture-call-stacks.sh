@@ -68,15 +68,16 @@ for (( h=0; h<${COUNT}; h++)); do
             echo "Got past processes."
             for ((j=0; j<${#processes[@]}; j++ )); do
                   echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                      docker exec ${containers[i]} jstack -l ${processes[j]} >> ${logfile}
+                      docker exec ${containers[i]} /bin/bash -c '[ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack; $JSTACK -l '"${processes[j]}" >> ${logfile}
             done
         done
     else
         mapfile -t processes < <(jps | cut -d ' ' -f 1)
         echo "Got past processes."
+        [ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack
         for ((j=0; j<${#processes[@]}; j++ )); do
               echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                  jstack -l ${processes[j]} >> ${logfile}
+                  $JSTACK -l ${processes[j]} >> ${logfile}
         done
 
     fi
