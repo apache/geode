@@ -285,6 +285,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   public static final String DEFAULT_POOL_NAME = "DEFAULT";
 
+
+  /**
+   * The number of threads that the QueryMonitor will use to mark queries as cancelled
+   * (see QueryMonitor class for reasons why a query might be cancelled).
+   * That processing is very efficient, so we don't foresee needing to raise this above 1.
+   */
+  private static final int QueryMonitorThreadPoolSize = 1;
+
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
    * (the default) then the size of the entry value is unchanged by a delta application. Not a final
@@ -4458,7 +4466,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             maxTime = FIVE_HOURS;
           }
 
-          this.queryMonitor = new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1), this, maxTime);
+          this.queryMonitor =
+              new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
+                  QueryMonitorThreadPoolSize), this, maxTime);
           if (logger.isDebugEnabled()) {
             logger.debug("QueryMonitor thread started.");
           }

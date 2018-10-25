@@ -389,7 +389,7 @@ public class QueryUtils {
       int len = itrsForFields.length;
       for (Object anIndividualResultSet : individualResultSet) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
         if (len == 1) {
           // this means we have a ResultSet
           itrsForFields[0].setCurrent(anIndividualResultSet);
@@ -493,7 +493,7 @@ public class QueryUtils {
     }
     for (int j = 0; j < resultSize; ++j) {
       // Check if query execution on this thread is canceled.
-      QueryMonitor.isQueryExecutionCanceled();
+      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
 
       if (setIndexFieldValuesInRespectiveIterators(values[level][j], indexFieldToItrsMapping[level],
           icdeh[level])) {
@@ -691,7 +691,7 @@ public class QueryUtils {
         // creates tuple
         while (itr.hasNext()) {
           // Check if query execution on this thread is canceled.
-          QueryMonitor.isQueryExecutionCanceled();
+          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
 
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
         }
@@ -738,7 +738,7 @@ public class QueryUtils {
       }
       for (Object aC : c) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
 
         currentLevel.setCurrent(aC);
         doNestedIterationsForIndex(expansionItrs.hasNext(), resultSet, finalItrs, expansionItrs,

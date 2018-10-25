@@ -274,7 +274,7 @@ public class DefaultQuery implements Query {
         // Add current thread to be monitored by QueryMonitor.
         // In case of partitioned region it will be added before the query execution
         // starts on the Local Buckets.
-        queryMonitor.monitorQueryThread(Thread.currentThread(), this);
+        queryMonitor.monitorQueryThread(this);
       }
 
       context.setCqQueryContext(this.isCqQuery);
@@ -325,7 +325,7 @@ public class DefaultQuery implements Query {
     } finally {
       this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
-        queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
+        queryMonitor.stopMonitoringQueryThread(this);
       }
       this.endTrace(indexObserver, startTime, result);
     }
@@ -400,7 +400,7 @@ public class DefaultQuery implements Query {
     // QueryMonitor Service.
     if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
       // Add current thread to be monitored by QueryMonitor.
-      queryMonitor.monitorQueryThread(Thread.currentThread(), this);
+      queryMonitor.monitorQueryThread(this);
     }
 
     Object result = null;
@@ -408,7 +408,7 @@ public class DefaultQuery implements Query {
       result = executeUsingContext(context);
     } finally {
       if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
-        queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
+        queryMonitor.stopMonitoringQueryThread(this);
       }
 
       int resultSize = 0;

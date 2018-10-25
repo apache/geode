@@ -111,7 +111,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query
-    VMProvider.invokeInEveryMember(() -> exuteQuery(), client3, client4);
+    VMProvider.invokeInEveryMember(() -> executeQuery(), client3, client4);
   }
 
   @Test
@@ -127,7 +127,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from client3
-    client3.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
   }
 
   @Test
@@ -145,8 +145,8 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
     server2.invoke(() -> populateRegion(100, 200));
 
-    client3.invoke(() -> exuteQuery());
-    client4.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
+    client4.invoke(() -> executeQuery());
   }
 
   @Test
@@ -158,7 +158,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from one server
-    server1.invoke(() -> exuteQuery());
+    server1.invoke(() -> executeQuery());
 
     // Create index and Perform cache op. Bug#44307
     server1.invoke(() -> {
@@ -182,8 +182,8 @@ public class QueryMonitorDUnitTest {
     server2.invoke(() -> populateRegion(200, 300));
 
     // execute the query from one server
-    server1.invoke(() -> exuteQuery());
-    server2.invoke(() -> exuteQuery());
+    server1.invoke(() -> executeQuery());
+    server2.invoke(() -> executeQuery());
   }
 
   @Test
@@ -205,8 +205,8 @@ public class QueryMonitorDUnitTest {
     client4 = cluster.startClientVM(4, ccf -> {
       configureClientCacheFactory(ccf, server2Port);
     });
-    client3.invoke(() -> exuteQuery());
-    client4.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
+    client4.invoke(() -> executeQuery());
   }
 
   @Test
@@ -234,8 +234,8 @@ public class QueryMonitorDUnitTest {
     client3 = cluster.startClientVM(3, true, server1Port);
     client4 = cluster.startClientVM(4, true, server2Port);
 
-    client3.invoke(() -> exuteQuery());
-    client4.invoke(() -> exuteQuery());
+    client3.invoke(() -> executeQuery());
+    client4.invoke(() -> executeQuery());
   }
 
   @Test
@@ -350,7 +350,7 @@ public class QueryMonitorDUnitTest {
     }
   }
 
-  private static void exuteQuery() {
+  private static void executeQuery() {
     QueryService queryService;
     if (ClusterStartupRule.getClientCache() == null) {
       queryService = ClusterStartupRule.getCache().getQueryService();

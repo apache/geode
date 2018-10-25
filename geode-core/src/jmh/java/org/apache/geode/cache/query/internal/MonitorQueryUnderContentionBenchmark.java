@@ -136,8 +136,8 @@ public class MonitorQueryUnderContentionBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
   public void monitorQuery() {
-    monitor.monitorQueryThread(thread, query);
-    monitor.stopMonitoringQueryThread(thread, query);
+    monitor.monitorQueryThread(query);
+    monitor.stopMonitoringQueryThread(query);
   }
 
   private ScheduledFuture<?> generateLoad(final ScheduledExecutorService executorService,
@@ -163,9 +163,9 @@ public class MonitorQueryUnderContentionBenchmark {
     executorService.schedule(() -> {
       final Thread thread = mock(Thread.class);
       final DefaultQuery query = createDefaultQuery();
-      monitor.monitorQueryThread(thread, query);
+      monitor.monitorQueryThread(query);
       executorService.schedule(() -> {
-        monitor.stopMonitoringQueryThread(thread, query);
+        monitor.stopMonitoringQueryThread(query);
       },
           gaussianLong(completeDelayRangeMillis),
           TimeUnit.MILLISECONDS);

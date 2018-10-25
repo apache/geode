@@ -1736,7 +1736,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     void addValuesToCollection(Collection result, int limit, ExecutionContext context) {
       for (final Object o : this.map.entrySet()) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
         if (this.verifyLimit(result, limit, context)) {
           return;
         }
@@ -1800,7 +1800,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
       for (Object o : this.map.entrySet()) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
         Entry e = (Entry) o;
         Object value = e.getValue();
         // Key is a RegionEntry here.

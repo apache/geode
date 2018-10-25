@@ -179,7 +179,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     Object coll;
 
     // Check if query execution on this thread is Canceled.
-    // QueryMonitor.isQueryExecutionCanceled();
+    // QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
 
     context.currentScope().setLimit(stopAtIter);
     try {

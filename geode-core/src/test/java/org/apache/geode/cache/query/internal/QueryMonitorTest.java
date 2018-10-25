@@ -14,32 +14,21 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.mockito.Matchers.any;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -76,7 +65,7 @@ public class QueryMonitorTest {
     DefaultQuery query = mock(DefaultQuery.class);
     doReturn(Optional.empty()).when(query).getExpirationTask();
     when(query.getQueryCompletedForMonitoring()).thenReturn(new boolean[] {true});
-    monitor.stopMonitoringQueryThread(Thread.currentThread(), query);
+    monitor.stopMonitoringQueryThread(query);
     monitor.setLowMemory(false, 100);
   }
 
@@ -84,41 +73,34 @@ public class QueryMonitorTest {
   public void monitorQueryThreadCqQueryIsNotMonitored() {
     DefaultQuery query = mock(DefaultQuery.class);
     when(query.isCqQuery()).thenReturn(true);
-    monitor.monitorQueryThread(mock(Thread.class), query);
+    monitor.monitorQueryThread(query);
 
-    //Verify that the expiration task was not scheduled for the CQ query
-    Mockito.verify(scheduledThreadPoolExecutor, never()).schedule(captor.capture(), anyLong(), isA(TimeUnit.class));
+    // Verify that the expiration task was not scheduled for the CQ query
+    Mockito.verify(scheduledThreadPoolExecutor, never()).schedule(captor.capture(), anyLong(),
+        isA(TimeUnit.class));
   }
 
   @Test
   public void monitorQueryThreadLowMemoryExceptionThrown() {
     DefaultQuery query = mock(DefaultQuery.class);
-    Thread queryThread = mock(Thread.class);
     monitor.setLowMemory(true, 100);
-    assertThatThrownBy(() -> monitor.monitorQueryThread(queryThread, query))
+
+    assertThatThrownBy(() -> monitor.monitorQueryThread(query))
         .isExactlyInstanceOf(QueryExecutionLowMemoryException.class);
   }
 
   @Test
   public void monitorQueryThreadExpirationTaskScheduled() {
     DefaultQuery query = mock(DefaultQuery.class);
-    doReturn(new boolean[]{false}).when(query).getQueryCompletedForMonitoring();
-    Thread queryThread = mock(Thread.class);
-    monitor.monitorQueryThread(queryThread, query);
-    Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(), isA(TimeUnit.class));
-    captor.getValue().run();
-    Mockito.verify(query, times(1)).setCanceled(isA(QueryExecutionTimeoutException.class));
-    assertThatThrownBy(() -> QueryMonitor.isQueryExecutionCanceled()).isExactlyInstanceOf(QueryExecutionCanceledException.class);
-  }
+    doReturn(new boolean[] {false}).when(query).getQueryCompletedForMonitoring();
 
-  private Thread createQueryExecutionThread(int i) {
-    Thread thread = new Thread(() -> {
-      // make sure the threadlocal variable is updated
-      await()
-          .untilAsserted(() -> assertThatCode(() -> QueryMonitor.isQueryExecutionCanceled())
-              .doesNotThrowAnyException());
-    });
-    thread.setName("query" + i);
-    return thread;
+    monitor.monitorQueryThread(query);
+    Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
+        isA(TimeUnit.class));
+    captor.getValue().run();
+
+    Mockito.verify(query, times(1)).setCanceled(isA(QueryExecutionTimeoutException.class));
+    assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled())
+        .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }
 }

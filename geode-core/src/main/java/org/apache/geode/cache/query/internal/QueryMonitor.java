@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal;
 
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +62,8 @@ public class QueryMonitor {
 
   private static volatile long LOW_MEMORY_USED_BYTES = 0;
 
-  public QueryMonitor(ScheduledThreadPoolExecutor executor, InternalCache cache, long defaultMaxQueryExecutionTime) {
+  public QueryMonitor(ScheduledThreadPoolExecutor executor, InternalCache cache,
+      long defaultMaxQueryExecutionTime) {
     this.cache = cache;
     this.defaultMaxQueryExecutionTime = defaultMaxQueryExecutionTime;
 
@@ -74,18 +74,23 @@ public class QueryMonitor {
   /**
    * Add query to be monitored.
    *
-   * @param queryThread Thread executing the query.
+   * Must not be called from a thread that is not the query thread,
+   * because this class uses a ThreadLocal on the query thread!
+   *
    * @param query Query.
    */
-  public void monitorQueryThread(final Thread queryThread, final DefaultQuery query) {
-    monitorQueryThread(queryThread, query, defaultMaxQueryExecutionTime);
+  public void monitorQueryThread(final DefaultQuery query) {
+    monitorQueryThread(query, defaultMaxQueryExecutionTime);
   }
 
   /**
    * Each query can have a different maxQueryExecution time. Make this method public to
    * expose that feature to callers.
+   *
+   * Must not be called from a thread that is not the query thread,
+   * because this class uses a ThreadLocal on the query thread!
    */
-  private void monitorQueryThread(final Thread queryThread, final DefaultQuery query,
+  private void monitorQueryThread(final DefaultQuery query,
       final long maxQueryExecutionTime) {
 
     // cq query is not monitored
@@ -104,6 +109,7 @@ public class QueryMonitor {
     query.setExpirationTask(scheduleExpirationTask(query, maxQueryExecutionTime));
 
     if (logger.isDebugEnabled()) {
+      final Thread queryThread = Thread.currentThread();
       logger.debug(
           "Adding thread to QueryMonitor. QueryMonitor size is: {}, Thread (id): {}, Query: {}, Thread is : {}",
           executor.getQueue().size(), queryThread.getId(), query.getQueryString(),
@@ -113,8 +119,11 @@ public class QueryMonitor {
 
   /**
    * Stops monitoring the query. Removes the passed thread from QueryMonitor queue.
+   *
+   * Must not be called from a thread that is not the query thread,
+   * because this class uses a ThreadLocal on the query thread!
    */
-  public void stopMonitoringQueryThread(Thread queryThread, DefaultQuery query) {
+  public void stopMonitoringQueryThread(final DefaultQuery query) {
     final boolean[] queryCompleted = query.getQueryCompletedForMonitoring();
 
     synchronized (queryCompleted) {
@@ -124,6 +133,7 @@ public class QueryMonitor {
     }
 
     if (logger.isDebugEnabled()) {
+      final Thread queryThread = Thread.currentThread();
       logger.debug(
           "Query completed before expiration. QueryMonitor size is: {}, Thread ID is: {},  Thread is: {}",
           executor.getQueue().size(), queryThread.getId(), queryThread);
@@ -138,7 +148,7 @@ public class QueryMonitor {
    * The max query execution time is set using the system property
    * gemfire.Cache.MAX_QUERY_EXECUTION_TIME
    */
-  public static void isQueryExecutionCanceled() {
+  public static void throwExceptionIfQueryOnCurrentThreadIsCancelled() {
     if (queryCancelled.get() != null && queryCancelled.get().get()) {
       throw new QueryExecutionCanceledException();
     }
@@ -197,7 +207,7 @@ public class QueryMonitor {
   private ScheduledFuture<?> scheduleExpirationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
-    // make thread local queryCancelled, available to closure
+    // make ThreadLocal queryCancelled, available to closure
     final AtomicBoolean querysThreadLocalQueryCancelled = queryCancelled.get();
 
     return executor.schedule(() -> {
