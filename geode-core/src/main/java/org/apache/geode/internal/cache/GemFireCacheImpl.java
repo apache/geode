@@ -210,7 +210,6 @@ import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
@@ -4458,8 +4457,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
 
           this.queryMonitor = new QueryMonitor(this, maxTime);
-          Thread qmThread = new LoggingThread("QueryMonitor Thread", this.queryMonitor);
-          qmThread.start();
           if (logger.isDebugEnabled()) {
             logger.debug("QueryMonitor thread started.");
           }

@@ -22,7 +22,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.cache.CacheRuntimeException;
@@ -75,6 +77,8 @@ public class DefaultQuery implements Query {
   private final LongAdder totalExecutionTime = new LongAdder();
 
   private final QueryStatistics stats;
+
+  private Optional<ScheduledFuture> expirationTask;
 
   private boolean traceOn = false;
 
@@ -159,6 +163,13 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
+  public Optional<ScheduledFuture> getExpirationTask() {
+    return expirationTask;
+  }
+
+  public void setExpirationTask(ScheduledFuture expirationTask) {
+    this.expirationTask = Optional.of(expirationTask);
+  }
 
   /**
    * Should be constructed from DefaultQueryService
@@ -181,6 +192,7 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
+    this.expirationTask = Optional.empty();
   }
 
   /**

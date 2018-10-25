@@ -17,11 +17,13 @@ package org.apache.geode.cache.query.internal;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -45,15 +47,13 @@ public class QueryMonitorTest {
   public static void setUp() {
     cache = mock(InternalCache.class);
     monitor = new QueryMonitor(cache, max_execution_time);
-    Thread monitorThread = new Thread(() -> monitor.run(), "query monitor thread");
-    monitorThread.setDaemon(true);
-    monitorThread.start();
   }
 
   @AfterClass
   public static void afterClass() {
     // cleanup the thread local of the queryCancelled status
     DefaultQuery query = mock(DefaultQuery.class);
+    doReturn(Optional.empty()).when(query).getExpirationTask();
     when(query.getQueryCompletedForMonitoring()).thenReturn(new boolean[] {true});
     monitor.stopMonitoringQueryThread(Thread.currentThread(), query);
   }
