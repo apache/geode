@@ -158,6 +158,18 @@ public class InternalDistributedSystem extends DistributedSystem
       new AtomicReference<CreationStackGenerator>(DEFAULT_CREATION_STACK_GENERATOR);
 
   /**
+   * A value of Boolean.TRUE will identify a thread being used to execute
+   * disconnectListeners. {@link #addDisconnectListener} will not throw ShutdownException if the
+   * value is Boolean.TRUE.
+   */
+  final ThreadLocal<Boolean> isDisconnectThread = new ThreadLocal() {
+    @Override
+    public Boolean initialValue() {
+      return Boolean.FALSE;
+    }
+  };
+
+  /**
    * The distribution manager that is used to communicate with the distributed system.
    */
   protected DistributionManager dm;
@@ -1054,7 +1066,7 @@ public class InternalDistributedSystem extends DistributedSystem
     Runnable r = new Runnable() {
       public void run() {
         try {
-          disconnectListenerThread.set(Boolean.TRUE);
+          isDisconnectThread.set(Boolean.TRUE);
           dc.onDisconnect(InternalDistributedSystem.this);
         } catch (CancelException e) {
           if (logger.isDebugEnabled()) {
@@ -1095,11 +1107,12 @@ public class InternalDistributedSystem extends DistributedSystem
 
   }
 
-  public boolean isDisconnectListenerThread() {
-    Boolean disconnectListenerThreadBoolean = (Boolean) this.disconnectListenerThread.get();
+  public boolean isDisconnectThread() {
+    return this.isDisconnectThread.get();
+  }
 
-    return disconnectListenerThreadBoolean != null
-        && disconnectListenerThreadBoolean.booleanValue();
+  public void setIsDisconnectThread() {
+    this.isDisconnectThread.set(Boolean.TRUE);
   }
 
   /**
@@ -1343,8 +1356,8 @@ public class InternalDistributedSystem extends DistributedSystem
           // the distributed system close.
           InternalCache currentCache = getCache();
           if (currentCache != null && !currentCache.isClosed()) {
-            disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
-                                                        // closing the cache
+            isDisconnectThread.set(Boolean.TRUE); // bug #42663 - this must be set while
+                                                  // closing the cache
             try {
               currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
             } catch (VirtualMachineError e) {
@@ -1358,7 +1371,7 @@ public class InternalDistributedSystem extends DistributedSystem
                   "Exception trying to close cache",
                   e);
             } finally {
-              disconnectListenerThread.set(Boolean.FALSE);
+              isDisconnectThread.set(Boolean.FALSE);
             }
           }
 
@@ -2198,10 +2211,9 @@ public class InternalDistributedSystem extends DistributedSystem
     synchronized (this.listeners) {
       this.listeners.add(listener);
 
-      Boolean disconnectListenerThreadBoolean = (Boolean) disconnectListenerThread.get();
+      boolean disconnectThreadBoolean = isDisconnectThread.get();
 
-      if (disconnectListenerThreadBoolean == null
-          || !disconnectListenerThreadBoolean.booleanValue()) {
+      if (!disconnectThreadBoolean) {
         // Don't add disconnect listener after messaging has been disabled.
         // Do this test _after_ adding the listener to narrow the window.
         // It's possible to miss it still and never invoke the listener, but
@@ -2217,13 +2229,6 @@ public class InternalDistributedSystem extends DistributedSystem
       }
     } // synchronized
   }
-
-  /**
-   * A non-null value of Boolean.TRUE will identify a thread being used to execute
-   * disconnectListeners. {@link #addDisconnectListener} will not throw ShutdownException if the
-   * value is Boolean.TRUE.
-   */
-  final ThreadLocal disconnectListenerThread = new ThreadLocal();
 
   /**
    * Removes a <code>DisconnectListener</code> from the list of listeners that will be notified when

@@ -200,7 +200,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  private void assignStartingBucketAdvisor() {
+  private void assignStartingBucketAdvisorIfFixedPartitioned() {
+    if (startingBucketAdvisor != null) {
+      // already assigned
+      return;
+    }
     if (this.pRegion.isFixedPartitionedRegion()) {
       List<FixedPartitionAttributesImpl> fpas = this.pRegion.getFixedPartitionAttributesImpl();
       if (fpas != null) {
@@ -1852,24 +1856,14 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     if (parentAdvisor != null) {
       return;
     }
-    if (startingBucketAdvisor == null) {
-      assignStartingBucketAdvisor();
-      if (startingBucketAdvisor != null) {
-        return;
-      }
-    } else {
+    assignStartingBucketAdvisorIfFixedPartitioned();
+    if (startingBucketAdvisor != null) {
       return;
     }
-    // TODO fix this method to not release any locks if the
-    // redundancy is zero, since no locks are grabbed.
     try {
       DistributedMemberLock thePrimaryLock = getPrimaryLock(false);
       if (thePrimaryLock != null) {
         thePrimaryLock.unlock();
-      } else {
-        // InternalDistributedSystem.isDisconnecting probably prevented us from
-        // creating the DLS... hope there's a thread closing this advisor but
-        // it's probably not safe to assert that it already happened
       }
     } catch (LockNotHeldException e) {
       Assert.assertTrue(!isHosting(), "Got LockNotHeldException for Bucket = " + this);
@@ -2537,7 +2531,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             // accordingly
             if (parentBA != null) {
               // Fix for 44350 - we don't want to get a primary move lock on
-              // the advisor, becuase that might deadlock with a user thread.
+              // the advisor, because that might deadlock with a user thread.
               // However, since all depose/elect operations on the parent bucket
               // cascade to the child bucket and get the child bucket move lock,
               // if should be safe to check this without the lock here.
@@ -2548,9 +2542,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               }
             } else {
               // we're not colocated, need to get the dlock
-              if (startingBucketAdvisor == null) {
-                assignStartingBucketAdvisor();
-              }
+              assignStartingBucketAdvisorIfFixedPartitioned();
               if (startingBucketAdvisor != null) {
                 Assert.assertHoldsLock(this, false);
                 synchronized (startingBucketAdvisor) {

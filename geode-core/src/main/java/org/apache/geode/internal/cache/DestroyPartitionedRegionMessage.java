@@ -152,7 +152,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       if (DistributionAdvisor.isNewerSerialNumber(oldSerial, this.prSerial)) {
         ok = false;
         if (logger.isDebugEnabled()) {
-          logger.debug("Not removing region {}l serial requested = {}; actual is {}", r.getName(),
+          logger.debug("Not removing region {} serial requested = {}; actual is {}", r.getName(),
               this.prSerial, r.getSerialNumber());
         }
       }
