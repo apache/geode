@@ -28,9 +28,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * ResultSender needs ResultCollector in which to add results one by one. In case of localExecution
@@ -126,7 +124,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       // making sure that we send all the local results first
       // before sending this exception to client
       bme = new BucketMovedException(
-          LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE.toLocalizedString());
+          "Bucket migrated to another node. Please retry.");
       if (function.isHA()) {
         throw bme;
       }
@@ -139,8 +137,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   public void lastResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     // this could be done before doing end result
     // so that client receives all the results before
@@ -331,8 +329,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   public void sendResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     if (this.serverSender != null) {
       logger.debug(
@@ -382,9 +380,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       this.serverSender.setException(exception);
     } else {
       ((LocalResultCollector) this.rc).setException(exception);
-      logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.PartitionedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE),
+      logger.info("Unexpected exception during function execution on local node Partitioned Region",
           exception);
     }
     this.rc.endResults();

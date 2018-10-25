@@ -22,10 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -44,26 +41,15 @@ import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 public class SingleHopClientExecutor {
 
   private static final Logger logger = LogService.getLogger();
 
-  static final ExecutorService execService = Executors.newCachedThreadPool(new ThreadFactory() {
-    AtomicInteger threadNum = new AtomicInteger();
-
-    public Thread newThread(final Runnable r) {
-      Thread result =
-          new Thread(LoggingThreadGroup.createThreadGroup("FunctionExecutionThreadGroup", logger),
-              r, "Function Execution Thread-" + threadNum.incrementAndGet());
-      result.setDaemon(true);
-      return result;
-    }
-  });
+  static final ExecutorService execService =
+      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 
   static void submitAll(List callableTasks) {
     if (callableTasks != null && !callableTasks.isEmpty()) {
@@ -153,8 +139,7 @@ public class SingleHopClientExecutor {
                 } else {
                   functionExecutionException =
                       new FunctionInvocationTargetException(new BucketMovedException(
-                          LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE
-                              .toLocalizedString()));
+                          "Bucket migrated to another node. Please retry."));
                 }
               }
             } else if (ee.getCause() instanceof FunctionException) {
@@ -235,7 +220,6 @@ public class SingleHopClientExecutor {
         Iterator futureItr = futures.iterator();
         Iterator taskItr = callableTasks.iterator();
         RuntimeException rte = null;
-        final boolean isDebugEnabled = logger.isDebugEnabled();
         while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
           Future fut = (Future) futureItr.next();
           SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
@@ -329,9 +313,10 @@ public class SingleHopClientExecutor {
               Object value = entry.getValue();
               if (!entry.isKeyNotOnServer()) {
                 if (value instanceof Throwable) {
-                  logger.warn(LocalizedMessage.create(
-                      LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-                      new Object[] {value, key}), (Throwable) value);
+                  logger.warn(String.format(
+                      "%s: Caught the following exception attempting to get value for key=%s",
+                      new Object[] {value, key}),
+                      (Throwable) value);
                 }
               }
             }

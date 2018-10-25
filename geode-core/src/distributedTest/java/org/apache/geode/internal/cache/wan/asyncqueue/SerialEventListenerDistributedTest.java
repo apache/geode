@@ -18,11 +18,10 @@ package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +53,7 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -66,7 +65,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 public class SerialEventListenerDistributedTest implements Serializable {
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -298,7 +297,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
   private void validateThrowingAsyncEventListenerEventsMap(int expectedSize) {
     Map<?, AsyncEvent<?, ?>> eventsMap = getThrowingAsyncEventListener().getEventsMap();
 
-    await().atMost(TWO_MINUTES).until(() -> assertThat(eventsMap).hasSize(expectedSize));
+    await().untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
 
     for (AsyncEvent<?, ?> event : eventsMap.values()) {
       assertThat(event.getPossibleDuplicate()).isTrue();
@@ -306,8 +305,8 @@ public class SerialEventListenerDistributedTest implements Serializable {
   }
 
   private void validateThrowingAsyncEventListenerExceptionThrown() {
-    await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
+    await()
+        .untilAsserted(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
   }
 
   private void waitForDispatcherToPause() {

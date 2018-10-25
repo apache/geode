@@ -20,28 +20,43 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.MessageFormat;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class FileResultModel {
+  public static int FILE_TYPE_BINARY = 0;
+  public static int FILE_TYPE_TEXT = 1;
 
   private String filename;
   private int type;
-  private String message;
   private byte[] data;
   private int length;
 
   public FileResultModel() {}
 
-  public FileResultModel(String fileName, byte[] data, int fileType, String message) {
+  public FileResultModel(String fileName, String content) {
     this.filename = fileName;
-    this.data = data;
+    this.data = content.getBytes();
+    this.length = data.length;
+    this.type = FILE_TYPE_TEXT;
+  }
+
+  public FileResultModel(File file, int fileType) {
+    if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
+      throw new IllegalArgumentException("Unsupported file type is specified.");
+    }
+
+    this.filename = file.getName();
+    try {
+      this.data = FileUtils.readFileToByteArray(file);
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to read file: " + file.getAbsolutePath(), e);
+    }
     this.length = data.length;
     this.type = fileType;
-    this.message = message;
   }
 
   public String getFilename() {
@@ -60,14 +75,6 @@ public class FileResultModel {
     this.type = type;
   }
 
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
-  }
-
   public byte[] getData() {
     return data;
   }
@@ -84,79 +91,45 @@ public class FileResultModel {
     this.length = length;
   }
 
-  public void writeFile(String directory) throws IOException {
-    String options = "(y/N)";
+  /**
+   * at this point, the dir should already exist and is confirmed as a directory
+   * filename in this instance should be file name only. no path in the file name
+   *
+   * @param directory the directory where to write the content of byte[] to with the filename
+   * @return the message you would like to return to the user.
+   */
+  public String saveFile(File directory) throws IOException {
+    String options = "(Y/N)";
+    File file = new File(directory, filename).getAbsoluteFile();
 
-    File fileToDumpData = new File(filename);
-    if (!fileToDumpData.isAbsolute()) {
-      if (directory == null || directory.isEmpty()) {
-        directory = System.getProperty("user.dir", ".");
-      }
-      fileToDumpData = new File(directory, filename);
-    }
-
-    File parentDirectory = fileToDumpData.getParentFile();
-    if (parentDirectory != null) {
-      parentDirectory.mkdirs();
-    }
     Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (fileToDumpData.exists()) {
-      String fileExistsMessage =
-          CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__FILE_WITH_NAME_0_EXISTS_IN_1,
-              filename, fileToDumpData.getParent(), options);
+    if (file.exists()) {
+      String fileExistsMessage = String.format("File with name \"$s\" already exists in \"$s\".",
+          filename, directory.getAbsolutePath());
       if (gfsh != null && !gfsh.isQuietMode()) {
-        fileExistsMessage = fileExistsMessage + " Overwrite? " + options + " : ";
+        fileExistsMessage += " Overwrite? " + options + " : ";
         String interaction = gfsh.interact(fileExistsMessage);
         if (!"y".equalsIgnoreCase(interaction.trim())) {
           // do not save file & continue
-          return;
+          return "User aborted. Did not overwrite " + file.getAbsolutePath();
         }
       } else {
-        throw new IOException(fileExistsMessage);
+        return fileExistsMessage;
       }
-    } else if (!parentDirectory.exists()) {
-      handleCondition(CliStrings.format(
-          CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_DIRECTORY_OF_0_DOES_NOT_EXIST,
-          fileToDumpData.getAbsolutePath()));
-      return;
-    } else if (!parentDirectory.canWrite()) {
-      handleCondition(CliStrings.format(
-          CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_DIRECTORY_OF_0_IS_NOT_WRITABLE,
-          fileToDumpData.getAbsolutePath()));
-      return;
-    } else if (!parentDirectory.isDirectory()) {
-      handleCondition(
-          CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_OF_0_IS_NOT_DIRECTORY,
-              fileToDumpData.getAbsolutePath()));
-      return;
     }
     if (type == ResultData.FILE_TYPE_TEXT) {
-      FileWriter fw = new FileWriter(fileToDumpData);
+      FileWriter fw = new FileWriter(file);
       BufferedWriter bw = new BufferedWriter(fw);
       bw.write(new String(data));
       bw.flush();
       fw.flush();
       fw.close();
     } else if (type == ResultData.FILE_TYPE_BINARY) {
-      FileOutputStream fos = new FileOutputStream(fileToDumpData);
+      FileOutputStream fos = new FileOutputStream(file);
       fos.write(data);
       fos.flush();
       fos.close();
     }
-    if (message != null && !message.isEmpty()) {
-      if (gfsh != null) {
-        Gfsh.println(MessageFormat.format(message, fileToDumpData.getAbsolutePath()));
-      }
-    }
-  }
-
-  private void handleCondition(String message) throws IOException {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    // null check required in GfshVM too to avoid test issues
-    if (gfsh != null && !gfsh.isQuietMode()) {
-      gfsh.logWarning(message, null);
-    } else {
-      throw new IOException(message);
-    }
+    return "File saved to " + file.getAbsolutePath();
   }
 }

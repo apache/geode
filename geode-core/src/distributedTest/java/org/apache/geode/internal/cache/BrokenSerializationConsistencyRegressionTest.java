@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,7 +28,6 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,8 +40,7 @@ import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings("serial")
 public class BrokenSerializationConsistencyRegressionTest implements Serializable {
@@ -60,8 +57,8 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
   private transient PdxValue pdxValue;
   private transient byte[] bytesValue;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -111,9 +108,8 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
   @Test
   public void failureToDataSerializeFailsToPropagate() {
     Region<String, DataSerializable> region = cacheRule.getCache().getRegion(REGION_NAME);
-    catchException(region).put(KEY, valueFailsToSerialize);
+    Throwable caughtException = catchThrowable(() -> region.put(KEY, valueFailsToSerialize));
 
-    Exception caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(ToDataException.class);
     assertThat(caughtException.getCause()).isInstanceOf(IOException.class)
         .hasMessage("FailsToSerialize");
@@ -133,9 +129,8 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
     txManager.begin();
     region2.put(KEY, stringValue);
     region.put(KEY, valueFailsToSerialize);
-    catchException(txManager).commit();
+    Throwable caughtException = catchThrowable(() -> txManager.commit());
 
-    Exception caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(ToDataException.class);
     assertThat(caughtException.getCause()).isInstanceOf(IOException.class)
         .hasMessage("FailsToSerialize");
@@ -153,9 +148,8 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
   @Test
   public void failureToPdxSerializeFails() {
     Region<String, PdxSerializable> region = cacheRule.getCache().getRegion(REGION_NAME);
-    catchException(region).put(KEY, pdxValueFailsToSerialize);
+    Throwable caughtException = catchThrowable(() -> region.put(KEY, pdxValueFailsToSerialize));
 
-    Exception caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(ToDataException.class);
     assertThat(caughtException.getCause()).isInstanceOf(UncheckedIOException.class);
     assertThat(caughtException.getCause().getCause()).isInstanceOf(IOException.class)

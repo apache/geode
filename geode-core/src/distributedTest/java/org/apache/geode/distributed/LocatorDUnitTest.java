@@ -36,6 +36,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,7 +54,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -224,7 +224,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         DistributedLockService serviceNamed =
             DistributedLockService.getServiceNamed("test service");
         serviceNamed.lock("foo3", 0, 0);
-        Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+        await()
             .until(() -> serviceNamed.isLockGrantor());
         assertTrue(serviceNamed.isLockGrantor());
       });
@@ -482,7 +482,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     } finally {
       loc1.invoke("stop locator", () -> stopLocator());
       // loc2 should die from inability to connect.
-      loc2.invoke(() -> Awaitility.await("locator2 dies").atMost(15, TimeUnit.SECONDS)
+      loc2.invoke(() -> await("locator2 dies")
           .until(() -> Locator.getLocator() == null));
     }
   }
@@ -532,7 +532,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           () -> expectSystemToContainThisManyMembers(1));
     } finally {
       // loc2 should die from inability to connect.
-      loc2.invoke(() -> Awaitility.await("locator2 dies").atMost(30, TimeUnit.SECONDS)
+      loc2.invoke(() -> await("locator2 dies")
           .until(() -> Locator.getLocator() == null));
       loc1.invoke("expectSystemToContainThisManyMembers",
           () -> expectSystemToContainThisManyMembers(1));
@@ -701,7 +701,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private void assertLeadMember(final DistributedMember member, final DistributedSystem sys,
       long timeout) {
-    Awaitility.waitAtMost(timeout, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> {
           DistributedMember lead = MembershipManagerHelper.getLeadMember(sys);
           if (member != null) {
@@ -820,7 +820,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
           .info("waiting for my distributed system to disconnect due to partition detection");
 
-      Awaitility.waitAtMost(24000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> {
             return !sys.isConnected();
           });
@@ -928,8 +928,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       // crash the lead vm. Should be okay
       vm1.invoke(crashSystem);
 
-      Awaitility.waitAtMost(4 * 2000, TimeUnit.MILLISECONDS)
-          .pollInterval(200, TimeUnit.MILLISECONDS).until(() -> isSystemConnected());
+      await().until(() -> isSystemConnected());
 
       assertTrue("Distributed system should not have disconnected", isSystemConnected());
 
@@ -1203,7 +1202,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         loc.stop();
       });
 
-      Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> sys.isConnected());
 
       assertTrue("Distributed system should not have disconnected", sys.isConnected());
@@ -1218,14 +1217,15 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       // locator notice the failure and continue to run
       vm1.invoke(() -> disconnectDistributedSystem());
 
-      Awaitility.waitAtMost(10, TimeUnit.SECONDS).pollInterval(1000, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       assertTrue("Distributed system should not have disconnected",
           vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
-      assertEquals(sys.getDistributedMember(), MembershipManagerHelper.getCoordinator(sys));
-      assertEquals(mem2, MembershipManagerHelper.getLeadMember(sys));
+      await().untilAsserted(() -> assertEquals(sys.getDistributedMember(),
+          MembershipManagerHelper.getCoordinator(sys)));
+      await().untilAsserted(() -> assertEquals(mem2, MembershipManagerHelper.getLeadMember(sys)));
 
     } finally {
       vm2.invoke(() -> disconnectDistributedSystem());
@@ -1337,7 +1337,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       // now ensure that one of the remaining members became the coordinator
 
-      Awaitility.waitAtMost(15000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
@@ -1421,7 +1421,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm0.invoke(() -> stopLocator());
 
       // now ensure that one of the remaining members became the coordinator
-      Awaitility.waitAtMost(15000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
@@ -1438,7 +1438,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       final DistributedMember tempCoord = newCoord;
 
-      Awaitility.waitAtMost(5000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       system.disconnect();
@@ -1529,7 +1529,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         addDSProps(props);
         system = (InternalDistributedSystem) DistributedSystem.connect(props);
 
-        Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+        await()
             .until(() -> system.getDM().getViewMembers().size() >= 3);
 
         // three applications plus
@@ -1603,7 +1603,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       system = (InternalDistributedSystem) DistributedSystem.connect(dsProps);
 
-      Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> system.getDM().getViewMembers().size() == 6);
 
       // three applications plus
@@ -1613,7 +1613,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm1.invoke(() -> stopLocator());
       vm2.invoke(() -> stopLocator());
 
-      Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
 
       final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
@@ -1629,7 +1629,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm1.invoke(() -> startLocatorAsync(new Object[] {port2, dsProps}));
       vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
 
-      Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+      await()
           .until(() -> !GMSJoinLeaveTestHelper.getCurrentCoordinator().equals(currentCoordinator)
               && system.getDM().getAllHostedLocators().size() == 2);
 
@@ -1705,7 +1705,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm4.invoke(() -> {
         DistributedSystem.connect(dsProps);
 
-        Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+        await()
             .until(() -> InternalDistributedSystem.getConnectedInstance().getDM().getViewMembers()
                 .size() == 5);
         return true;
@@ -1717,8 +1717,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
         public void run() {
-          Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS)
-              .pollInterval(200, TimeUnit.MILLISECONDS)
+          await()
               .until(() -> InternalDistributedSystem.getConnectedInstance() == null);
         }
       };
@@ -1768,7 +1767,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void waitUntilLocatorBecomesCoordinator() {
-    Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(1000, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> GMSJoinLeaveTestHelper.getCurrentCoordinator()
             .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
   }

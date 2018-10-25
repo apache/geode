@@ -108,7 +108,7 @@ public class SharedLibrary {
           // If our heap is > 32G (64G on java 8) then assume large oops. Otherwise assume
           // compressed oops.
           long SMALL_OOP_BOUNDARY = 32L;
-          if (SystemUtils.isJavaVersionAtLeast("1.8")) {
+          if (org.apache.commons.lang.SystemUtils.isJavaVersionAtLeast(1.8f)) {
             SMALL_OOP_BOUNDARY = 64L;
           }
           if (Runtime.getRuntime().maxMemory() > (SMALL_OOP_BOUNDARY * 1024 * 1024 * 1024)) {

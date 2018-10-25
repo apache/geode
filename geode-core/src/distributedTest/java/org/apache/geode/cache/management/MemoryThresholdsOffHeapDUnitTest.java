@@ -76,7 +76,6 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -100,14 +99,12 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
 @Category({OffHeapTest.class})
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
-  final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD
-      .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
+  final String expectedEx = "Member: .*? above .*? critical threshold";
   final String addExpectedExString =
       "<ExpectedException action=add>" + this.expectedEx + "</ExpectedException>";
   final String removeExpectedExString =
       "<ExpectedException action=remove>" + this.expectedEx + "</ExpectedException>";
-  final String expectedBelow = LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD
-      .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
+  final String expectedBelow = "Member: .*? below .*? critical threshold";
   final String addExpectedBelow =
       "<ExpectedException action=add>" + this.expectedBelow + "</ExpectedException>";
   final String removeExpectedBelow =
@@ -291,14 +288,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void setUsageAboveCriticalThreshold(final VM vm, final String regionName) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().fine(addExpectedExString);
         Region region = getRootRegion().getSubregion(regionName);
         if (!region.containsKey("oh1")) {
           region.put("oh5", new byte[954204]);
         } else {
           region.put("oh5", new byte[122880]);
         }
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().fine(removeExpectedExString);
         return null;
       }
     });
@@ -307,13 +304,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void setUsageAboveEvictionThreshold(final VM vm, final String regionName) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().fine(addExpectedBelow);
         Region region = getRootRegion().getSubregion(regionName);
         region.put("oh1", new byte[245760]);
         region.put("oh2", new byte[184320]);
         region.put("oh3", new byte[33488]);
         region.put("oh4", new byte[378160]);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -322,14 +319,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void setUsageBelowEviction(final VM vm, final String regionName) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().fine(addExpectedBelow);
         Region region = getRootRegion().getSubregion(regionName);
         region.remove("oh1");
         region.remove("oh2");
         region.remove("oh3");
         region.remove("oh4");
         region.remove("oh5");
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -494,7 +491,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
           public boolean done() {
             DistributedRegion dr = (DistributedRegion) getRootRegion().getSubregion(regionName);
-            return dr.getMemoryThresholdReachedMembers().size() == 0;
+            return dr.getAtomicThresholdInfo().getMembersThatReachedThreshold().size() == 0;
           }
         };
         Wait.waitForCriterion(wc, 10000, 10, true);
@@ -602,7 +599,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               }
 
               public boolean done() {
-                return r.memoryThresholdReached.get();
+                return r.isMemoryThresholdReached();
               }
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -618,7 +615,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               }
 
               public boolean done() {
-                return !r.memoryThresholdReached.get();
+                return !r.isMemoryThresholdReached();
               }
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -670,7 +667,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return r.memoryThresholdReached.get();
+            return r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -686,7 +683,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return !r.memoryThresholdReached.get();
+            return !r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -724,16 +721,16 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   private SerializableRunnable addExpectedException = new SerializableRunnable("addExpectedEx") {
     public void run() {
-      getCache().getLoggerI18n().fine(addExpectedExString);
-      getCache().getLoggerI18n().fine(addExpectedBelow);
+      getCache().getLogger().fine(addExpectedExString);
+      getCache().getLogger().fine(addExpectedBelow);
     };
   };
 
   private SerializableRunnable removeExpectedException =
       new SerializableRunnable("removeExpectedException") {
         public void run() {
-          getCache().getLoggerI18n().fine(removeExpectedExString);
-          getCache().getLoggerI18n().fine(removeExpectedBelow);
+          getCache().getLogger().fine(removeExpectedExString);
+          getCache().getLogger().fine(removeExpectedBelow);
         };
       };
 
@@ -1225,17 +1222,17 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         r.getAll(createRanges(10, 12));
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
 
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().fine(addExpectedExString);
         r.put("oh1", new byte[838860]);
         r.put("oh3", new byte[157287]);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().fine(removeExpectedExString);
         WaitCriterion wc = new WaitCriterion() {
           public String description() {
             return "expected region " + r + " to set memoryThresholdReached";
           }
 
           public boolean done() {
-            return r.memoryThresholdReached.get();
+            return r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -1249,16 +1246,16 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         r.getAll(createRanges(13, 15));
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
 
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().fine(addExpectedBelow);
         r.destroy("oh3");
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().fine(removeExpectedBelow);
         wc = new WaitCriterion() {
           public String description() {
             return "expected region " + r + " to unset memoryThresholdReached";
           }
 
           public boolean done() {
-            return !r.memoryThresholdReached.get();
+            return !r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -1449,7 +1446,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isNormal());
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().fine(addExpectedExString);
         final LocalRegion r = (LocalRegion) getRootRegion().getSubregion(regionName);
         final long bytesUsedAfterSmallKey;
         {
@@ -1514,17 +1511,17 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             @Override
             public String description() {
               return "Expected to go critical: isCritical=" + ohm.getState().isCritical()
-                  + " memoryThresholdReached=" + r.memoryThresholdReached.get();
+                  + " memoryThresholdReached=" + r.isMemoryThresholdReached();
             }
 
             @Override
             public boolean done() {
-              return ohm.getState().isCritical() && r.memoryThresholdReached.get();
+              return ohm.getState().isCritical() && r.isMemoryThresholdReached();
             }
           };
         }
         Wait.waitForCriterion(wc, 30000, 9, true);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().fine(removeExpectedExString);
         return bytesUsedAfterSmallKey;
       }
     });

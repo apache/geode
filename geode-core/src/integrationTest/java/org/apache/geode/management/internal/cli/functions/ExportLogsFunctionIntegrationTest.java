@@ -13,14 +13,11 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.cli.functions;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -34,15 +31,16 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({GfshTest.class})
+@Category({GfshTest.class, LoggingTest.class})
 public class ExportLogsFunctionIntegrationTest {
 
-  @Rule
-  public ServerStarterRule serverStarterRule =
-      new ServerStarterRule().withWorkingDir().withAutoStart();
   private File serverWorkingDir;
+
+  @Rule
+  public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
 
   @Before
   public void setup() throws Exception {
@@ -65,21 +63,6 @@ public class ExportLogsFunctionIntegrationTest {
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isEmpty();
   }
 
-  public static void verifyExportLogsFunctionDoesNotBlowUp(Cache cache) throws Throwable {
-    ExportLogsFunction.Args args =
-        new ExportLogsFunction.Args(null, null, "info", false, false, false);
-
-    CapturingResultSender resultSender = new CapturingResultSender();
-
-    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
-
-    new ExportLogsFunction().execute(context);
-
-    if (resultSender.getThrowable() != null) {
-      throw resultSender.getThrowable();
-    }
-  }
-
   @Test
   public void createOrGetExistingExportLogsRegionDoesNotBlowUp() throws Exception {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -88,8 +71,7 @@ public class ExportLogsFunctionIntegrationTest {
   }
 
   @Test
-  public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember()
-      throws IOException, ClassNotFoundException {
+  public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember() throws Exception {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
@@ -98,26 +80,37 @@ public class ExportLogsFunctionIntegrationTest {
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNull();
   }
 
+  private static void verifyExportLogsFunctionDoesNotBlowUp(Cache cache) throws Throwable {
+    ExportLogsFunction.Args args =
+        new ExportLogsFunction.Args(null, null, "info", false, false, false);
+    CapturingResultSender resultSender = new CapturingResultSender();
+    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
+    new ExportLogsFunction().execute(context);
+    if (resultSender.getThrowable() != null) {
+      throw resultSender.getThrowable();
+    }
+  }
+
   private static class CapturingResultSender implements ResultSender {
-    private Throwable t;
+    private Throwable throwable;
 
     public Throwable getThrowable() {
-      return t;
+      return throwable;
     }
 
     @Override
     public void sendResult(Object oneResult) {
-
+      // nothing
     }
 
     @Override
     public void lastResult(Object lastResult) {
-
+      // nothing
     }
 
     @Override
     public void sendException(Throwable t) {
-      this.t = t;
+      throwable = t;
     }
   }
 }

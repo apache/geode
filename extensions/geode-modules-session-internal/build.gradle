@@ -16,8 +16,13 @@
  */
 
 dependencies {
-  compile project(':extensions/geode-modules')
-  compile project(':geode-core')
+  compile(project(':extensions:geode-modules'))
+  compile(project(':geode-core'))
+
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compile('mx4j:mx4j:' + project.'mx4j.version')
+  compile('org.apache.tomcat:servlet-api:' + project.'tomcat6.version')
+  compile('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
 }
 
 jar {

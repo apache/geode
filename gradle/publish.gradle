@@ -16,26 +16,67 @@
  */
 
 subprojects {
-  apply plugin: 'com.bmuschko.nexus'
-  
-  extraArchive {
-    sources = true
-    javadoc = true
-    tests = false
-  }
-  
-  nexus {
-    sign = Boolean.parseBoolean(nexusSignArchives)
-    repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
-    snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
-  }
 
-  
-  modifyPom {
-    withXml {
-      def elem = asElement()
-      def hdr = elem.getOwnerDocument().createComment(
-  '''
+  apply plugin: 'maven-publish'
+  apply plugin: 'signing'
+
+  publishing {
+    publications {
+      maven(MavenPublication) {
+        from components.java
+
+        afterEvaluate {
+          // uses the tasks created by nexus for sources and javadoc
+          if (!getTasksByName('sourcesJar', false).isEmpty()) {
+            artifact sourcesJar
+          }
+          if (!getTasksByName('javadocJar', false).isEmpty()) {
+            artifact javadocJar
+          }
+
+          pom {
+            name = 'Apache Geode'
+            description = 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+            url = 'http://geode.apache.org'
+
+            scm {
+              url = 'https://github.com/apache/geode'
+              connection = 'scm:git:https://github.com:apache/geode.git'
+              developerConnection = 'scm:git:https://github.com:apache/geode.git'
+            }
+
+            licenses {
+              license {
+                name = 'The Apache Software License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+              }
+            }
+
+            withXml {
+              //This black magic checks to see if a dependency has the flag ext.optional=true
+              //set on it, and if so marks the dependency as optional in the maven pom
+              def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
+              def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
+              def runtimeOnlyDeps = project.configurations.runtimeOnly.dependencies.collectEntries { [it.name, it] }
+              depMap.putAll(runtimeDeps)
+              depMap.putAll(runtimeOnlyDeps)
+              asNode().dependencies.dependency.findAll {
+                def dep = depMap.get(it.artifactId.text())
+                return dep?.hasProperty('optional') && dep.optional
+              }.each {
+                if (it.optional) {
+                  it.optional.value = 'true'
+                } else {
+                  it.appendNode('optional', 'true')
+                }
+              }
+            }
+          }
+          pom {
+            withXml {
+              def elem = asElement()
+              def hdr = elem.ownerDocument().createComment(
+                      '''
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -51,82 +92,117 @@ subprojects {
   See the License for the specific language governing permissions and
   limitations under the License.
   ''')
-
-      elem.insertBefore(hdr, elem.getFirstChild())
-
-  
-      //This black magic checks to see if a dependency has the flag ext.optional=true
-      //set on it, and if so marks the dependency as optional in the maven pom
-      def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
-      def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
-      depMap.putAll(runtimeDeps)
-      asNode().dependencies.dependency.findAll {
-        def dep = depMap.get(it.artifactId.text())
-        return dep?.hasProperty('optional') && dep.optional
-      }.each {
-        if (it.optional) {
-            it.optional.value = 'true'
+              elem.insertBefore(hdr, elem.firstChild)
+            }
+          }
+        }
+      }
+    }
+    repositories {
+      maven {
+        if (project.hasProperty("mavenRepository")) {
+          url = project.mavenRepository
         } else {
-            it.appendNode('optional', 'true')
+          if (project.isReleaseVersion) {
+            url = "https://repository.apache.org/service/local/staging/deploy/maven2"
+          } else {
+            // If testing from a non-GCE instance, then the shell needs service-account creds
+            // following the instructions at https://cloud.google.com/docs/authentication/production
+            if (project.hasProperty("mavenSnapshotBucket")) {
+              url = "gcs://$project.mavenSnapshotBucket/snapshots"
+            } else {
+              url = "gcs://maven.apachegeode-ci.info/snapshots"
+            }
+          }
         }
-      }
-    }
-
-    project {
-      name 'Apache Geode'
-      description 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
-      url 'http://geode.apache.org'
-  
-      scm {
-        url 'https://github.com/apache/geode'
-        connection 'scm:git:https://github.com:apache/geode.git'
-        developerConnection 'scm:git:https://github.com:apache/geode.git'
-      }
-  
-      licenses {
-        license {
-          name 'The Apache Software License, Version 2.0'
-          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-        }
-      }
-  
-      repositories {
-        repository {
-          id 'libs-release'
-          name 'Spring Maven libs-release Repository'
-          url 'http://repo.spring.io/libs-release'
-        }
-      }
-    }
-  }
-  
-  // The nexus plugin reads authentication from ~/.gradle/gradle.properties but the
-  // jenkins server stores publishing credentials in ~/.m2/settings.xml (maven).
-  // We match on the expected snapshot repository id.
-  afterEvaluate {
-    if (!isReleaseVersion && System.env.USER == 'jenkins') {
-      def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
-      if (settingsXml.exists()) {
-        def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
-          server.id.text() == 'apache.snapshots.https'
-        }
-
-        if (snapshotCreds != null) {
-          tasks.uploadArchives.doFirst {
-            repositories.withType(MavenDeployer).each { repo ->
-              repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
-              repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+        if (! url.toString().startsWith("gcs:")) {
+          credentials {
+            if (project.hasProperty("mavenUsername")) {
+              username = project.mavenUsername
+            }
+            if (project.hasProperty("mavenPassword")) {
+              password = project.mavenPassword
             }
           }
         }
       }
     }
   }
-}
+
+  signing {
+    required({project.isReleaseVersion})
+    sign publishing.publications.maven
+  }
+
+  task install(dependsOn: publishToMavenLocal) {}
+
+  task('checkPom') {
+    dependsOn('generatePomFileForMavenPublication')
+    description 'Checks the generated POM against an expected POM for dependency changes.'
+
+    doLast {
+      if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+        def expectedPomFile = sourceSets.test.resources.getSourceDirectories().first().toURI().resolve("expected-pom.xml")
+        if (null == expectedPomFile) {
+          throw new RuntimeException("expected-pom.xml not found.")
+        }
+        def expectedPom = new XmlParser().parse(expectedPomFile.toString())
+        def expectedDependencies = new TreeSet()
+        expectedPom.dependencies.dependency.each() {
+          expectedDependencies.add(it as String)
+        }
+
+        def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+        def actualPom = new XmlParser().parse(actualPomFile)
+        def actualDependencies = new TreeSet()
+        actualPom.dependencies.dependency.each() {
+          actualDependencies.add(it as String)
+        }
+
+        if (actualDependencies != expectedDependencies) {
+          def newDependencies = new TreeSet(actualDependencies)
+          newDependencies.removeAll(expectedDependencies)
+          def removedDependencies = new TreeSet(expectedDependencies)
+          removedDependencies.removeAll(actualDependencies)
+
+          def message =
+              "The ".concat(project.name).concat(" pom-default.xml has changed. Verify dependencies.")
+                  .concat("\nWhen changes have been approved, copy :\n")
+                  .concat(" cp ").concat(actualPomFile as String)
+                  .concat(" ").concat(expectedPomFile as String)
+                  .concat("\nRemoved Dependencies\n--------------\n")
+                  .concat(String.join("\n", removedDependencies.each { dep -> dep.toString() }))
+                  .concat("\n\nNew Dependencies\n--------------\n")
+                  .concat(String.join("\n", newDependencies.each { dep -> dep.toString() }))
+                  .concat("\n\n")
+
+
+          throw new RuntimeException(message)
+        }
+      }
+    }
+
+  }
+  check.dependsOn('checkPom')
+
+  task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy) {
+    description 'After having verified changes with checkPom, this task will perform the copy.'
+
+    def expectedPomDir = sourceSets.test.resources.getSourceDirectories().first().toURI()
+    def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+    if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+      from actualPomFile
+      into expectedPomDir
+      rename '.*.xml', "expected-pom.xml"
+
+    }
+  }
+} // subprojects
+
 
 //Prompt the user for a password to sign archives or upload artifacts, if requested
-gradle.taskGraph.whenReady { taskGraph ->
-  if (project.hasProperty('askpass')) {
+if (project.hasProperty('askpass')) {
+  gradle.taskGraph.whenReady { taskGraph ->
     if(taskGraph.allTasks.any {it instanceof Sign}) {
       if(!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
         println "You must configure your signing.keyId and signing.secretKeyRingFile"
@@ -137,22 +213,25 @@ gradle.taskGraph.whenReady { taskGraph ->
 
       if(!project.hasProperty('signing.password')) {
         def password = PasswordDialog.askPassword("Please enter your password to unlock your gpg keyring for signing artifacts")
-        
+
         subprojects { ext."signing.password" = password }
       }
     }
 
-    if(taskGraph.allTasks.any {it.name == 'uploadArchives'}) {
-      if(!project.hasProperty('nexusUsername')) {
-        println "You must configure your nexusUsername in ~/.gradle/gradle.properties in order to uploadArchives\n"
+    if(taskGraph.allTasks.any {it instanceof PublishToMavenRepository}) {
+      if(!project.hasProperty('mavenUsername')) {
+        println "You must configure your mavenUsername in ~/.gradle/gradle.properties in order to publish\n"
         println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
-        throw new GradleException("nexusUsername is missing")
+        throw new GradleException("mavenUsername is missing")
       }
+      if(!project.hasProperty('mavenPassword')) {
+        def getPassword = PasswordDialog.askPassword("Please enter your apache password to publish to Apache Maven")
 
-      if(!project.hasProperty('nexusPassword')) {
-        def password = PasswordDialog.askPassword("Please enter your apache password to uploadArchives to nexus")
-        
-        subprojects { ext."nexusPassword" = password }
+        taskGraph.allTasks.each {
+          if(it instanceof PublishToMavenRepository) {
+            (it as PublishToMavenRepository).repository.credentials.password = getPassword
+          }
+        }
       }
     }
   }

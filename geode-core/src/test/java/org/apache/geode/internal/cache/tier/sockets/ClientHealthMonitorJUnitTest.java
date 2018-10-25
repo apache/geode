@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,8 +58,8 @@ public class ClientHealthMonitorJUnitTest {
     clientHealthMonitor.receivedPing(mockId);
     clientHealthMonitor.testUseCustomHeartbeatCheck((a, b, c) -> true); // Fail all heartbeats
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(mockConnection).handleTermination(true));
+    await()
+        .untilAsserted(() -> verify(mockConnection).handleTermination(true));
   }
 
   class HeartbeatOverride implements ClientHealthMonitor.HeartbeatTimeoutCheck {
@@ -85,7 +83,7 @@ public class ClientHealthMonitorJUnitTest {
     HeartbeatOverride heartbeater = new HeartbeatOverride();
     clientHealthMonitor.testUseCustomHeartbeatCheck(heartbeater);
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> heartbeater.numHeartbeats >= 5);
+    await().until(() -> heartbeater.numHeartbeats >= 5);
 
     // Check that we never tried to terminate the connection
     verify(mockConnection, times(0)).handleTermination(true);

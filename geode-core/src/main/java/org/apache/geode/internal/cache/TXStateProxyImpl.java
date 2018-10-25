@@ -41,10 +41,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class TXStateProxyImpl implements TXStateProxy {
   private static final Logger logger = LogService.getLogger();
@@ -132,9 +130,9 @@ public class TXStateProxyImpl implements TXStateProxy {
               new ClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
           if (r.getScope().isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.TXStateProxyImpl_Distributed_Region_In_Client_TX,
-                  r.getFullPath()));
+              logger.warn(
+                  "Distributed region {} is being used in a client-initiated transaction.  The transaction will only affect servers and this client.  To keep from seeing this message use 'local' scope in client regions used in transactions.",
+                  r.getFullPath());
             }
           }
         } else {
@@ -201,8 +199,8 @@ public class TXStateProxyImpl implements TXStateProxy {
   public void precommit()
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("precommit"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "precommit"));
   }
 
   @Override
@@ -222,8 +220,8 @@ public class TXStateProxyImpl implements TXStateProxy {
   private TransactionException getTransactionException(KeyInfo keyInfo, GemFireException e) {
     if (isRealDealLocal() && !buckets.isEmpty() && !buckets.containsKey(keyInfo.getBucketId())) {
       TransactionException ex = new TransactionDataNotColocatedException(
-          LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(keyInfo.getKey()));
+          String.format("Key %s is not colocated with transaction",
+              keyInfo.getKey()));
       ex.initCause(e.getCause());
       return ex;
     }
@@ -231,8 +229,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     while (ex != null) {
       if (ex instanceof PrimaryBucketException) {
         return new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
       }
       ex = ex.getCause();
     }
@@ -671,20 +668,19 @@ public class TXStateProxyImpl implements TXStateProxy {
   @Override
   public void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_DESTROY_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "destroyRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_INVALIDATE_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString());
+        "invalidateRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "clear() is not supported while in a transaction");
   }
 
   @Override

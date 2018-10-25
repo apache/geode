@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -24,10 +23,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +36,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,7 +56,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.Authenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -95,8 +92,8 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
   private int londonReceiverPort;
   private int newYorkReceiverPort;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -154,12 +151,12 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
     londonServerVM.invoke(() -> {
       GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
-      await().atMost(1, MINUTES).until(() -> assertThat(isRunning(sender)).isTrue());
+      await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
     });
 
     newYorkServerVM.invoke(() -> {
       GatewaySender sender = cacheRule.getCache().getGatewaySender(londonName);
-      await().atMost(1, MINUTES).until(() -> assertThat(isRunning(sender)).isTrue());
+      await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
     });
 
     newYorkServerVM.invoke(() -> {
@@ -176,7 +173,8 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     newYorkServerVM.invoke(() -> {
       Region<Integer, Integer> region = cacheRule.getCache().getRegion(REGION_NAME);
       assertThat(region).isNotNull();
-      waitAtMost(1, MINUTES).until(() -> assertThat(region.isEmpty()).isFalse());
+      await()
+          .untilAsserted(() -> assertThat(region.isEmpty()).isFalse());
     });
 
     newYorkLocatorVM.invoke(() -> {
@@ -327,11 +325,6 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
       }
       return new TestPrincipal(userName);
     }
-
-    @Override
-    public void close() {
-      // nothing
-    }
   }
 
   public static class TestPeerAuthInitialize implements AuthInitialize {
@@ -371,11 +364,6 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
       return newProps;
     }
-
-    @Override
-    public void close() {
-      // nothing
-    }
   }
 
   public static class TestClientOrReceiverAuthenticator implements Authenticator {
@@ -409,11 +397,6 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
         throw new AuthenticationFailedException(msg);
       }
       return new TestPrincipal(userName);
-    }
-
-    @Override
-    public void close() {
-      // nothing
     }
   }
 }

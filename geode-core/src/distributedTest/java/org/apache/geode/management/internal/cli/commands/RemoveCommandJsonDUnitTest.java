@@ -14,15 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,7 +71,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
 
     gfsh.connectAndVerify(locator);
 
-    Awaitility.await().atMost(2, TimeUnit.MINUTES).until(() -> locator.getVM()
+    await().until(() -> locator.getVM()
         .invoke((SerializableCallableIF<Boolean>) this::regionMBeansAreInitialized));
   }
 

@@ -15,7 +15,6 @@
 package org.apache.geode.distributed;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static javax.management.MBeanServerInvocationHandler.newProxyInstance;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.OSMetrics;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Integration tests for querying of {@link MemberMXBean} as used in MBeanProcessController to
@@ -209,7 +209,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   }
 
   private void waitForMemberMXBean(final MBeanServer mbeanServer, final ObjectName pattern) {
-    await().atMost(2, MINUTES)
-        .until(() -> assertThat(mbeanServer.queryNames(pattern, null)).isNotEmpty());
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mbeanServer.queryNames(pattern, null)).isNotEmpty());
   }
 }

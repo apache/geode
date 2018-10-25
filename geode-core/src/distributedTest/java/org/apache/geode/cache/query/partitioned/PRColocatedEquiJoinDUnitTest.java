@@ -60,7 +60,6 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -772,8 +771,9 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
       } catch (UnsupportedOperationException e) {
         if (!e.getMessage().equalsIgnoreCase(
-            LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_REGION_1
-                .toLocalizedString(name, "/" + coloName))) {
+            String.format(
+                "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
+                name, "/" + coloName))) {
           throw e;
         }
       }
@@ -824,53 +824,6 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
     // querying the VM for data and comparing the result with query result of local region.
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAndRRQueryAndCompareResults(name,
-        coloName, localName, coloLocalName));
-  }
-
-  @Test
-  public void testRRPRLocalQueryingWithHetroIndexes() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    setCacheInVMs(vm0);
-
-    // Creating PR's on the participating VM's
-    // Creating DataStore node on the VM0.
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(coloName, redundancy,
-        NewPortfolio.class));
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(coloName, "IdIndex1",
-        "r2.id", "/" + coloName + " r2", null));
-
-    // Creating Colocated Region DataStore node on the VM0.
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForLocalRegionCreation(name,
-        Portfolio.class));
-
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(name, "IdIndex2",
-        "r1.ID", "/" + name + " r1, r1.positions.values pos1", null));
-
-    // Creating local region on vm0 to compare the results of query.
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForLocalRegionCreation(localName,
-        Portfolio.class));
-
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForLocalRegionCreation(coloLocalName,
-        NewPortfolio.class));
-
-    // Generating portfolio object array to be populated across the PR's & Local Regions
-    Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
-    NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
-
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(localName, portfolio, cnt,
-        cntDest));
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(coloLocalName, newPortfolio,
-        cnt, cntDest));
-
-    // Putting the data into the PR's created
-    vm0.invoke(
-        prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(coloName, newPortfolio, cnt,
-        cntDest));
-
-    // querying the VM for data and comparing the result with query result of local region.
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRAndPRQueryAndCompareResults(name,
         coloName, localName, coloLocalName));
   }
 

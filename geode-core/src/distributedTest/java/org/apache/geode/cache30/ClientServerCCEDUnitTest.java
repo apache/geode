@@ -18,6 +18,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -32,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,6 +47,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
@@ -63,13 +66,18 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionMap;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -250,7 +258,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         // Set the expiration time on the client entry.
         r.get(key);
 
-        Awaitility.await("waiting for object to expire").atMost(30, SECONDS).until(() -> {
+        await("waiting for object to expire").until(() -> {
           return expirationTimeMillis[0] != null;
         });
 
@@ -351,11 +359,11 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       vm1.invoke(() -> {
         PRTombstoneMessageObserver mo =
             (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
-        Awaitility.await().atMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           return mo.tsMessageProcessed >= 1;
         });
         assertTrue("Tombstone GC message is not expected.", mo.thName.contains(
-            LocalizedStrings.DistributionManager_POOLED_MESSAGE_PROCESSOR.toLocalizedString()));
+            "Pooled Message Processor "));
       });
 
     } finally {
@@ -402,7 +410,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         PRTombstoneMessageObserver mo =
             (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
         // Should receive tombstone message for each bucket.
-        Awaitility.await().atMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           return mo.prTsMessageProcessed >= 2;
         });
         assertEquals("Tombstone GC message is expected.", 2, mo.prTsMessageProcessed);
@@ -567,6 +575,69 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  public void testClientInvalidateAfterDestroyLeavesInvalidEntryRR() throws Exception {
+    clientInvalidateAfterDestroyLeavesInvalidEntryTest(getUniqueName(), true);
+  }
+
+  @Test
+  public void testClientInvalidateAfterDestroyLeavesInvalidEntryPR() throws Exception {
+    clientInvalidateAfterDestroyLeavesInvalidEntryTest(getUniqueName(), false);
+  }
+
+  private void clientInvalidateAfterDestroyLeavesInvalidEntryTest(String uniqueName,
+      boolean useReplicateRegion) {
+    Host host = Host.getHost(0);
+    VM serverVM = host.getVM(0);
+    VM clientVM = host.getVM(1);
+    final String name = uniqueName + "Region";
+
+
+    int port = createServerRegion(serverVM, name, useReplicateRegion);
+
+    createClientRegion(clientVM, name, port, true, ClientRegionShortcut.CACHING_PROXY, false);
+    final String key = "Object0";
+
+    // use the client cache to create and destroy an entry
+    clientVM.invoke(() -> {
+      TestRegion.put(key, "some value"); // v1
+      TestRegion.destroy(key); // v2
+      RegionMap map = TestRegion.getRegionMap();
+      AbstractRegionEntry regionEntry = (AbstractRegionEntry) map.getEntry(key);
+      assertEquals(Token.TOMBSTONE, regionEntry.getValueAsToken());
+    });
+
+    // use the server cache to recreate the entry, but don't let the client cache know about it
+    serverVM.invoke(() -> {
+      TestRegion.put(key, "new value"); // v3 - not known by client cache
+    });
+
+    // now invalidate the entry in the client cache and show that it holds an INVALID entry
+    clientVM.invoke(() -> {
+      RegionMap map = TestRegion.getRegionMap();
+      AbstractRegionEntry regionEntry = (AbstractRegionEntry) map.getEntry(key);
+
+      EntryEventImpl invalidateEvent = new EntryEventImpl();
+      invalidateEvent.setRegion(TestRegion);
+      invalidateEvent.setKeyInfo(new KeyInfo(key, Token.INVALID, null));
+      invalidateEvent.setOperation(Operation.INVALIDATE);
+      invalidateEvent.setEventId(new EventID(TestRegion.getCache().getDistributedSystem()));
+
+      // invoke invalidate() with forceNewEntry=true to have it create an INVALID entry
+      map.invalidate(invalidateEvent, true, true, false);
+
+      assertEquals(Token.INVALID, regionEntry.getValueAsToken());
+      System.out.println("entry=" + regionEntry);
+      assertEquals(4, regionEntry.getVersionStamp().getEntryVersion());
+    });
+
+    serverVM.invoke(() -> {
+      assertTrue(TestRegion.containsKey(key));
+      assertNull(TestRegion.get(key));
+    });
+
+  }
+
+  @Test
   public void testClientCacheListenerDoesNotSeeTombstones() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -606,9 +677,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   private void unregisterInterest(VM vm) {
     vm.invoke(new SerializableRunnable("unregister interest in all keys") {
       public void run() {
-        // TestRegion.dumpBackingMap();
         TestRegion.unregisterInterestRegex(".*");
-        // TestRegion.dumpBackingMap();
       }
     });
   }
@@ -840,9 +909,9 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
           @Override
           public boolean done() {
-            LogWriterUtils.getLogWriter()
+            getLogWriter()
                 .info("tombstone count = " + TestRegion.getTombstoneCount());
-            LogWriterUtils.getLogWriter().info("region size = " + TestRegion.size());
+            getLogWriter().info("region size = " + TestRegion.size());
             return TestRegion.getTombstoneCount() == 0 && TestRegion.size() == 0;
           }
 
@@ -851,7 +920,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
             return "waiting for garbage collection to occur";
           }
         };
-        Wait.waitForCriterion(wc, 60000, 2000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -867,7 +936,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
           @Override
           public boolean done() {
-            CacheClientNotifier singleton = CacheClientNotifier.getInstance();
+            CacheClientNotifier singleton = getInstance();
             Collection<CacheClientProxy> proxies = singleton.getClientProxies();
             // boolean first = firstTime;
             // firstTime = false;
@@ -878,7 +947,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
                   // if (first) {
                   // ((LocalRegion)proxy.getHARegion()).dumpBackingMap();
                   // }
-                  LogWriterUtils.getLogWriter()
+                  getLogWriter()
                       .info("queue size (" + size + ") is still > 0 for " + proxy.getProxyID());
                   return false;
                 }
@@ -887,7 +956,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
             // also ensure that server regions have been cleaned up
             int regionEntryCount = TestRegion.getRegionMap().size();
             if (regionEntryCount > 0) {
-              LogWriterUtils.getLogWriter()
+              getLogWriter()
                   .info("TestRegion has unexpected entries - all should have been GC'd but we have "
                       + regionEntryCount);
               TestRegion.dumpBackingMap();
@@ -901,7 +970,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
             return "waiting for queue removal messages to clear client queues";
           }
         };
-        Wait.waitForCriterion(wc, 60000, 2000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -940,6 +1009,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
           af.setPartitionAttributes(
               (new PartitionAttributesFactory()).setTotalNumBuckets(2).create());
         }
+        af.setConcurrencyChecksEnabled(true);
         TestRegion = (LocalRegion) createRootRegion(regionName, af.create());
 
         CacheServer server = getCache().addCacheServer();

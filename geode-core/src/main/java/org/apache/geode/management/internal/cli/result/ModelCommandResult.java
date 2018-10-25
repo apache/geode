@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.result;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,7 +31,6 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -81,9 +82,11 @@ public class ModelCommandResult implements CommandResult {
     commandOutputIndex = 0;
   }
 
+  // ModelCommandResult should not handle saving files. File saving should be done by each
+  // command's postExecutor in the ResultModel
   @Override
   public boolean hasIncomingFiles() {
-    return result.getFiles().size() > 0;
+    return false;
   }
 
   @Override
@@ -92,11 +95,7 @@ public class ModelCommandResult implements CommandResult {
   }
 
   @Override
-  public void saveIncomingFiles(String directory) throws IOException {
-    for (FileResultModel file : result.getFiles().values()) {
-      file.writeFile(directory);
-    }
-  }
+  public void saveIncomingFiles(String directory) throws IOException {}
 
   @Override
   public boolean hasNextLine() {
@@ -234,7 +233,10 @@ public class ModelCommandResult implements CommandResult {
 
     addSpacedRowInTable(resultTable, result.getHeader());
 
+    int index = 0;
+    int sectionSize = result.getContent().size();
     for (AbstractResultModel section : result.getContent().values()) {
+      index++;
       if (section instanceof DataResultModel) {
         buildData(resultTable, (DataResultModel) section);
       } else if (section instanceof TabularResultModel) {
@@ -244,6 +246,10 @@ public class ModelCommandResult implements CommandResult {
       } else {
         throw new IllegalArgumentException(
             "Unable to process output for " + section.getClass().getName());
+      }
+      // only add the spacer in between the sections.
+      if (index < sectionSize) {
+        addSpacedRowInTable(resultTable, LINE_SEPARATOR);
       }
     }
 
@@ -340,6 +346,10 @@ public class ModelCommandResult implements CommandResult {
       InfoResultModel model) {
     TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
 
+    addRowInRowGroup(rowGroup, model.getHeader());
+
     model.getContent().forEach(c -> rowGroup.newRow().newLeftCol(c));
+
+    addRowInRowGroup(rowGroup, model.getFooter());
   }
 }

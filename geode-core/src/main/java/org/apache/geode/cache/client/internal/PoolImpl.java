@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,7 +53,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
@@ -62,10 +60,9 @@ import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
@@ -223,15 +220,13 @@ public class PoolImpl implements InternalPool {
     this.dsys = distributedSystem;
     if (this.dsys == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PoolImpl_DISTRIBUTED_SYSTEM_MUST_BE_CREATED_BEFORE_CREATING_POOL
-              .toLocalizedString());
+          "Distributed System must be created before creating pool");
     }
     this.cache = cache;
     this.securityLogWriter = this.dsys.getSecurityInternalLogWriter();
     if (!this.dsys.getConfig().getStatisticSamplingEnabled() && this.statisticInterval > 0) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PoolImpl_STATISTIC_SAMPLING_MUST_BE_ENABLED_FOR_SAMPLING_RATE_OF_0_TO_TAKE_AFFECT,
-          this.statisticInterval));
+      logger.info("statistic-sampling must be enabled for sampling rate of {} to take affect",
+          this.statisticInterval);
     }
     this.cancelCriterion = new Stopper();
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE")) {
@@ -320,21 +315,8 @@ public class PoolImpl implements InternalPool {
     }
 
     final String timerName = "poolTimer-" + getName() + "-";
-    backgroundProcessor = new ScheduledThreadPoolExecutorWithKeepAlive(BACKGROUND_TASK_POOL_SIZE,
-        BACKGROUND_TASK_POOL_KEEP_ALIVE, TimeUnit.MILLISECONDS, new ThreadFactory() {
-          AtomicInteger threadNum = new AtomicInteger();
-
-          public Thread newThread(final Runnable r) {
-            Thread result = new Thread(r, timerName + threadNum.incrementAndGet());
-            result.setDaemon(true);
-            return result;
-          }
-        }, this.threadMonitoring);
-    ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
-        .setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-    ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
-        .setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-
+    backgroundProcessor = LoggingExecutors.newScheduledThreadPool(timerName,
+        BACKGROUND_TASK_POOL_SIZE, BACKGROUND_TASK_POOL_KEEP_ALIVE, threadMonitoring);
     source.start(this);
     connectionFactory.start(backgroundProcessor);
     endpointManager.addListener(new InstantiatorRecoveryListener(backgroundProcessor, this));
@@ -361,9 +343,8 @@ public class PoolImpl implements InternalPool {
           statisticInterval, TimeUnit.MILLISECONDS);
     }
     // LOG: changed from config to info
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.PoolImpl_POOL_0_STARTED_WITH_MULTIUSER_SECURE_MODE_ENABLED_1,
-        new Object[] {this.name, this.multiuserSecureModeEnabled}));
+    logger.info("Pool {} started with multiuser-authentication={}",
+        new Object[] {this.name, this.multiuserSecureModeEnabled});
   }
 
   /**
@@ -520,8 +501,7 @@ public class PoolImpl implements InternalPool {
               cache = dsys.getCache();
               if (cache == null) {
                 throw new IllegalStateException(
-                    LocalizedStrings.PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL
-                        .toLocalizedString());
+                    "Cache must be created before creating pool");
               }
             }
             if (!cache.isClosed() && this.getPoolOrCacheCancelInProgress() == null) {
@@ -566,8 +546,8 @@ public class PoolImpl implements InternalPool {
       cnt = getAttachCount();
       if (cnt > 0) {
         throw new IllegalStateException(
-            LocalizedStrings.PoolImpl_POOL_COULD_NOT_BE_DESTROYED_BECAUSE_IT_IS_STILL_IN_USE_BY_0_REGIONS
-                .toLocalizedString(cnt));
+            String.format("Pool could not be destroyed because it is still in use by %s regions",
+                cnt));
       }
     }
     if (this.pm.unregister(this)) {
@@ -584,23 +564,19 @@ public class PoolImpl implements InternalPool {
       this.destroyed = true;
       this.keepAlive = keepAlive;
       // LOG: changed from config to info
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.PoolImpl_DESTROYING_CONNECTION_POOL_0, name));
+      logger.info("Destroying connection pool {}", name);
 
       try {
         if (backgroundProcessor != null) {
           backgroundProcessor.shutdown();
           if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.PoolImpl_TIMEOUT_WAITING_FOR_BACKGROUND_TASKS_TO_COMPLETE));
+            logger.warn("Timeout waiting for background tasks to complete.");
           }
         }
       } catch (RuntimeException e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_BACKGROUNDPROCESSOR), e);
+        logger.error("Error encountered while stopping backgroundProcessor.", e);
       } catch (InterruptedException e) {
-        logger.error(LocalizedMessage
-            .create(LocalizedStrings.PoolImpl_INTERRUPTED_WHILE_STOPPING_BACKGROUNDPROCESSOR), e);
+        logger.error("Interrupted while stopping backgroundProcessor", e);
       }
 
       try {
@@ -608,8 +584,7 @@ public class PoolImpl implements InternalPool {
           this.source.stop();
         }
       } catch (RuntimeException e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_CONNECTION_SOURCE), e);
+        logger.error("Error encountered while stopping connection source.", e);
       }
 
       try {
@@ -618,8 +593,7 @@ public class PoolImpl implements InternalPool {
         }
       } catch (RuntimeException e) {
         logger.error(
-            LocalizedMessage.create(
-                LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_SUBSCRIPTION_MANAGER),
+            "Error encountered while stopping subscription manager",
             e);
       }
 
@@ -628,15 +602,13 @@ public class PoolImpl implements InternalPool {
           manager.close(keepAlive);
         }
       } catch (RuntimeException e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_CONNECTION_MANAGER), e);
+        logger.error("Error encountered while stopping connection manager.", e);
       }
 
       try {
         endpointManager.close();
       } catch (RuntimeException e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.PoolImpl_ERROR_ENCOUNTERED_WHILE_STOPPING_ENDPOINT_MANAGER), e);
+        logger.error("Error encountered while stopping endpoint manager", e);
       }
 
       try {
@@ -644,8 +616,7 @@ public class PoolImpl implements InternalPool {
           this.stats.close();
         }
       } catch (RuntimeException e) {
-        logger.error(
-            LocalizedMessage.create(LocalizedStrings.PoolImpl_ERROR_WHILE_CLOSING_STATISTICS), e);
+        logger.error("Error while closing statistics", e);
       }
     }
   }
@@ -675,89 +646,89 @@ public class PoolImpl implements InternalPool {
   public void sameAs(Object obj) {
     if (!(obj instanceof PoolImpl)) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl__0_IS_NOT_THE_SAME_AS_1_BECAUSE_IT_SHOULD_HAVE_BEEN_A_POOLIMPL
-              .toLocalizedString(new Object[] {this, obj}));
+          String.format("%s is not the same as %s because it should have been a PoolImpl",
+              new Object[] {this, obj}));
     }
     PoolImpl other = (PoolImpl) obj;
     if (!getName().equals(other.getName())) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_ARE_DIFFERENT.toLocalizedString("names"));
+          String.format("Pool %s are different", "names"));
     }
     if (getSocketConnectTimeout() != other.getSocketConnectTimeout()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("socketConnectimeout"));
+          String.format("Pool %s is different", "socketConnectimeout"));
     }
     if (getFreeConnectionTimeout() != other.getFreeConnectionTimeout()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("connectionTimeout"));
+          String.format("Pool %s is different", "connectionTimeout"));
     }
     if (getLoadConditioningInterval() != other.getLoadConditioningInterval()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("connectionLifetime"));
+          String.format("Pool %s is different", "connectionLifetime"));
     }
     if (getSocketBufferSize() != other.getSocketBufferSize()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("socketBufferSize"));
+          String.format("Pool %s is different", "socketBufferSize"));
     }
     if (getThreadLocalConnections() != other.getThreadLocalConnections()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("threadLocalConnections"));
+          String.format("Pool %s is different", "threadLocalConnections"));
     }
     if (getReadTimeout() != other.getReadTimeout()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("readTimeout"));
+          String.format("Pool %s is different", "readTimeout"));
     }
     if (getMinConnections() != other.getMinConnections()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("MinConnections"));
+          String.format("Pool %s is different", "MinConnections"));
     }
     if (getMaxConnections() != other.getMaxConnections()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("MaxConnections"));
+          String.format("Pool %s is different", "MaxConnections"));
     }
     if (getRetryAttempts() != other.getRetryAttempts()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("RetryAttempts"));
+          String.format("Pool %s is different", "RetryAttempts"));
     }
     if (getIdleTimeout() != other.getIdleTimeout()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("IdleTimeout"));
+          String.format("Pool %s is different", "IdleTimeout"));
     }
     if (getPingInterval() != other.getPingInterval()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("PingInterval"));
+          String.format("Pool %s is different", "PingInterval"));
     }
     if (getStatisticInterval() != other.getStatisticInterval()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("StatisticInterval"));
+          String.format("Pool %s is different", "StatisticInterval"));
     }
     if (getSubscriptionAckInterval() != other.getSubscriptionAckInterval()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("subscriptionAckInterval"));
+          String.format("Pool %s is different", "subscriptionAckInterval"));
     }
     if (getSubscriptionEnabled() != other.getSubscriptionEnabled()) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("subscriptionEnabled"));
+          String.format("Pool %s is different", "subscriptionEnabled"));
     }
     if (getSubscriptionMessageTrackingTimeout() != other.getSubscriptionMessageTrackingTimeout()) {
-      throw new RuntimeException(LocalizedStrings.PoolImpl_0_IS_DIFFERENT
-          .toLocalizedString("subscriptionMessageTrackingTimeout"));
+      throw new RuntimeException(String.format("Pool %s is different",
+          "subscriptionMessageTrackingTimeout"));
     }
     if (getSubscriptionRedundancy() != other.getSubscriptionRedundancy()) {
-      throw new RuntimeException(LocalizedStrings.PoolImpl_0_IS_DIFFERENT
-          .toLocalizedString("subscriptionRedundancyLevel"));
+      throw new RuntimeException(String.format("Pool %s is different",
+          "subscriptionRedundancyLevel"));
     }
     if (!getServerGroup().equals(other.getServerGroup())) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_IS_DIFFERENT.toLocalizedString("serverGroup"));
+          String.format("Pool %s is different", "serverGroup"));
     }
     if (!getLocators().equals(other.getLocators())) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_ARE_DIFFERENT.toLocalizedString("locators"));
+          String.format("Pool %s are different", "locators"));
     }
     if (!getServers().equals(other.getServers())) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_ARE_DIFFERENT.toLocalizedString("servers"));
+          String.format("Pool %s are different", "servers"));
     }
     // ignore startDisabled
   }
@@ -930,10 +901,10 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Test hook that returns an unnmodifiable list of the current blacklisted servers
+   * Test hook that returns an unnmodifiable list of the current denylisted servers
    */
-  public Set getBlacklistedServers() {
-    return connectionFactory.getBlackList().getBadServers();
+  public Set getDenylistedServers() {
+    return connectionFactory.getDenyList().getBadServers();
   }
 
   /**
@@ -1344,8 +1315,7 @@ public class PoolImpl implements InternalPool {
           logger.debug("Pool task <{}> cancelled", this);
         }
       } catch (Throwable t) {
-        logger.error(LocalizedMessage
-            .create(LocalizedStrings.PoolImpl_UNEXPECTED_ERROR_IN_POOL_TASK_0, this), t);
+        logger.error(String.format("Unexpected error in pool task <%s>", this), t);
       }
 
     }
@@ -1439,8 +1409,7 @@ public class PoolImpl implements InternalPool {
       cache = dsys.getCache();
       if (cache == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL
-                .toLocalizedString());
+            "Cache must be created before creating pool");
       }
     }
     ProxyCache proxy = new ProxyCache(props, cache, this);
@@ -1466,8 +1435,7 @@ public class PoolImpl implements InternalPool {
         cache = dsys.getCache();
         if (cache == null) {
           throw new IllegalStateException(
-              LocalizedStrings.PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL
-                  .toLocalizedString());
+              "Cache must be created before creating pool");
         }
       }
       if (cacheCriterion == null || cacheCriterion != cache.getCancelCriterion()) {
@@ -1495,8 +1463,7 @@ public class PoolImpl implements InternalPool {
           cache = dsys.getCache();
           if (cache == null) {
             throw new IllegalStateException(
-                LocalizedStrings.PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL
-                    .toLocalizedString());
+                "Cache must be created before creating pool");
           }
         }
         if (cacheCriterion == null) {
@@ -1549,7 +1516,7 @@ public class PoolImpl implements InternalPool {
       UserAttributes userAttributes = UserAttributes.userAttributes.get();
       if (userAttributes == null) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.MultiUserSecurityEnabled_USE_POOL_API.toLocalizedString());
+            "Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
       }
       if (serverLocation != null) {
         if (!userAttributes.getServerToId().containsKey(serverLocation)) {
@@ -1594,7 +1561,7 @@ public class PoolImpl implements InternalPool {
         }
       } else {
         throw new UnsupportedOperationException(
-            LocalizedStrings.MultiUserSecurityEnabled_USE_POOL_API.toLocalizedString());
+            "Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
       }
     }
   }
@@ -1606,13 +1573,11 @@ public class PoolImpl implements InternalPool {
   public int getPendingEventCount() {
     if (!isDurableClient() || this.queueManager == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_GETPENDINGEVENTCOUNT
-              .toLocalizedString());
+          "Only durable clients should call getPendingEventCount()");
     }
     if (this.readyForEventsCalled) {
       throw new IllegalStateException(
-          LocalizedStrings.PoolManagerImpl_GETPENDINGEVENTCOUNT_SHOULD_BE_CALLED_BEFORE_INVOKING_READYFOREVENTS
-              .toLocalizedString());
+          "getPendingEventCount() should be called before invoking readyForEvents().");
     }
     return this.primaryQueueSize.get();
   }

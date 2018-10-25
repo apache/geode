@@ -17,12 +17,12 @@ package org.apache.geode.internal.cache.partitioned;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
@@ -45,13 +45,12 @@ import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-
 @SuppressWarnings("serial")
 public class PRDiskConflictWithColocationDistributedTest implements Serializable {
 
@@ -61,7 +60,7 @@ public class PRDiskConflictWithColocationDistributedTest implements Serializable
   private VM vm0;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -117,7 +116,7 @@ public class PRDiskConflictWithColocationDistributedTest implements Serializable
     // Cache should have closed due to ConflictingPersistentDataException
     createColocatedPRWithObserver(1);
 
-    await().atMost(2, MINUTES).until(() -> basicGetCache().isClosed());
+    await().until(() -> basicGetCache().isClosed());
 
     Throwable throwable =
         catchThrowable(() -> basicGetCache().getCancelCriterion().checkCancelInProgress(null));

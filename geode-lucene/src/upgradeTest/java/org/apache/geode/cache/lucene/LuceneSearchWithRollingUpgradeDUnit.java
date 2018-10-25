@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
@@ -32,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -357,17 +357,12 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   }
 
   private void waitForRegionToHaveExpectedSize(String regionName, int expectedRegionSize) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-      try {
-        Object region =
-            cache.getClass().getMethod("getRegion", String.class).invoke(cache, regionName);
-        int regionSize = (int) region.getClass().getMethod("size").invoke(region);
-        assertEquals("Region size not as expected after 60 seconds", expectedRegionSize,
-            regionSize);
-      } catch (Exception e) {
-        throw new RuntimeException();
-      }
-
+    await().untilAsserted(() -> {
+      Object region =
+          cache.getClass().getMethod("getRegion", String.class).invoke(cache, regionName);
+      int regionSize = (int) region.getClass().getMethod("size").invoke(region);
+      assertEquals("Region size not as expected after 60 seconds", expectedRegionSize,
+          regionSize);
     });
   }
 

@@ -359,7 +359,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // currently for pings we prefer to queue clientToServer cnx so that we will
       // not create a pooled cnx when all we have is queue cnxs.
       if (this.queueManager != null) {
-        // see if our QueueManager has a connection to this guy that we can send
+        // see if our QueueManager has a connection to this server that we can send
         // the ping on.
         Endpoint ep = (Endpoint) this.endpointManager.getEndpointMap().get(server);
         if (ep != null) {

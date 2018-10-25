@@ -17,12 +17,11 @@
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -74,7 +73,7 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -95,11 +94,11 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
 
   @Parameters(name = "dispatcherThreadCount={0}")
   public static Iterable<Integer> dispatcherThreadCounts() {
-    return Arrays.asList(1, 3); // used to include 3, 5 as well
+    return Arrays.asList(1, 3);
   }
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -366,7 +365,7 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
 
   private void waitForAsyncQueueToEmpty() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).until(() -> assertRegionQueuesAreEmpty(gatewaySender));
+    await().untilAsserted(() -> assertRegionQueuesAreEmpty(gatewaySender));
   }
 
   private StringGatewayEventSubstitutionFilter getMyGatewayEventSubstitutionFilter() {

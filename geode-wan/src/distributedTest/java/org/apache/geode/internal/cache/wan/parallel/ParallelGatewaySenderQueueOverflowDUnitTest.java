@@ -16,15 +16,14 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -103,7 +102,7 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
 
     // considering a memory limit of 40 MB, maximum of 40 events can be in memory. Rest should be on
     // disk.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
       long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
       long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));

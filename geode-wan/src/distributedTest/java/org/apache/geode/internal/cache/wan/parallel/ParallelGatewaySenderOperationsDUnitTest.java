@@ -14,37 +14,64 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.apache.geode.distributed.internal.DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME;
 import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import util.TestException;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
  */
-@Category({WanTest.class})
+@Category(WanTest.class)
 @SuppressWarnings("serial")
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
+
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -569,15 +596,13 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> doPuts(getTestMethodName() + "_PR", 1000));
 
     // try destroying on couple of nodes
-    catchException(vm4).invoke(() -> destroySender("ln"));
+    Throwable caughtException = catchThrowable(() -> vm4.invoke(() -> destroySender("ln")));
 
-    Exception caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(RMIException.class);
     assertThat(caughtException.getCause()).isInstanceOf(GatewaySenderException.class);
 
-    catchException(vm5).invoke(() -> destroySender("ln"));
+    caughtException = catchThrowable(() -> vm5.invoke(() -> destroySender("ln")));
 
-    caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(RMIException.class);
     assertThat(caughtException.getCause()).isInstanceOf(GatewaySenderException.class);
 
@@ -650,6 +675,117 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
       assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);
     });
+  }
+
+  @Test
+  public void testParallelGatewaySenderConcurrentPutClearNoOffheapOrphans()
+      throws Exception {
+    MemberVM locator = clusterStartupRule.startLocatorVM(1, new Properties());
+    Properties properties = new Properties();
+    properties.put(OFF_HEAP_MEMORY_SIZE_NAME, "100");
+    MemberVM server = clusterStartupRule.startServerVM(2, properties, locator.getPort());
+    final String regionName = "portfolios";
+    final String gatewaySenderId = "ln";
+
+    server.invoke(() -> {
+      IgnoredException ie = addIgnoredException("could not get remote locator");
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender =
+          cache.createGatewaySenderFactory().setParallel(true).create(gatewaySenderId, 1);
+      Region userRegion = cache.createRegionFactory(RegionShortcut.PARTITION).setOffHeap(true)
+          .addGatewaySenderId("ln").create(regionName);
+      PartitionedRegion shadowRegion = (PartitionedRegion) ((AbstractGatewaySender) sender)
+          .getEventProcessor().getQueue().getRegion();
+      CacheWriter mockCacheWriter = mock(CacheWriter.class);
+      CountDownLatch cacheWriterLatch = new CountDownLatch(1);
+      CountDownLatch shadowRegionClearLatch = new CountDownLatch(1);
+
+      doAnswer(invocation -> {
+        // The cache writer is invoked between when the region entry is created with value of
+        // Token.REMOVED_PHASE_1 and when it is replaced with the actual GatewaySenderEvent.
+        // We use this hook to trigger the clear logic when the token is still in the
+        // region entry.
+        cacheWriterLatch.countDown();
+        // Wait until the clear is complete before putting the actual GatewaySenderEvent in the
+        // region entry.
+        shadowRegionClearLatch.await();
+        return null;
+      }).when(mockCacheWriter).beforeCreate(any());
+
+      shadowRegion.setCacheWriter(mockCacheWriter);
+
+      ExecutorService service = Executors.newFixedThreadPool(2);
+
+      List<Callable<Object>> callables = new ArrayList<>();
+
+      // In one thread, we are going to put some test data in the user region,
+      // which will eventually put the GatewaySenderEvent into the shadow region
+      callables.add(Executors.callable(() -> {
+        try {
+          userRegion.put("testKey", "testValue");
+        } catch (Exception ex) {
+          throw new RuntimeException(ex);
+        }
+      }));
+
+      // In another thread, we are clear the shadow region's buckets. If the region entry is a
+      // Token.REMOVED_PHASE_1 at this time, a leak is possible. We can guarantee that the
+      // Token.REMOVED_PHASE_1 is present by using the mocked cache writer defined
+      // above.
+      callables.add(Executors.callable(() -> {
+        try {
+          OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+            @Override
+            public void run() {
+              // Wait for the cache writer to be invoked to release this countdown latch.
+              // This guarantees that the region entry will contain a Token.REMOVED_PHASE_1.
+              try {
+                cacheWriterLatch.await();
+              } catch (InterruptedException e) {
+                throw new TestException(
+                    "Thread was interrupted while waiting for mocked cache writer to be invoked");
+              }
+
+              clearShadowBucketRegions(shadowRegion);
+
+              // Signal to the cache writer that the clear is complete and the put can continue.
+              shadowRegionClearLatch.countDown();
+            }
+          });
+        } catch (Exception ex) {
+          throw new RuntimeException(ex);
+        }
+      }));
+
+      List<Future<Object>> futures = service.invokeAll(callables, 10, TimeUnit.SECONDS);
+
+      for (Future<Object> future : futures) {
+        try {
+          future.get();
+        } catch (Exception ex) {
+          throw new TestException(
+              "Exception thrown while executing put and clear concurrently",
+              ex);
+        }
+      }
+
+      userRegion.close();
+
+      await("Waiting for off-heap to be freed").until(
+          () -> 0 == ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
+    });
+  }
+
+  private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
+    PartitionedRegionDataStore.BucketVisitor bucketVisitor =
+        new PartitionedRegionDataStore.BucketVisitor() {
+          @Override
+          public void visit(Integer bucketId, Region r) {
+            ((BucketRegion) r).clearEntries(null);
+          }
+        };
+
+    shadowRegion.getDataStore().visitBuckets(bucketVisitor);
   }
 
   private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort,

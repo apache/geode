@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="FATAL" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j">
   <Properties>
-    <Property name="geode-pattern">[%level{FATAL=severe,ERROR=error,WARN=warning,INFO=info,DEBUG=fine,TRACE=finest} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%tid] %message%n%throwable%n</Property>
+    <Property name="geode-pattern">[%level{FATAL=severe,ERROR=error,WARN=warning,INFO=info,DEBUG=fine,TRACE=finest} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
   </Properties>
   <Appenders>
     <Console name="STDOUT" target="SYSTEM_OUT">

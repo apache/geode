@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class provides a way for a {@link CancellationMessage} to find its prey. An
@@ -66,7 +65,7 @@ public class CancellationRegistry {
     public Key(InternalDistributedMember console, int msgId) {
       if (console == null) {
         throw new NullPointerException(
-            LocalizedStrings.CancellationRegistry_NULL_CONSOLE.toLocalizedString());
+            "Null Console!");
       }
 
       this.console = console;

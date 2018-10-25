@@ -14,15 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,7 +29,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -51,10 +49,10 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category({ClientSubscriptionTest.class})
+@Category(ClientSubscriptionTest.class)
 @SuppressWarnings("serial")
 public class RegisterInterestServerMetaDataDistributedTest implements Serializable {
 
@@ -70,8 +68,8 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   private VM server;
   private VM client;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Before
   public void setUp() throws Exception {
@@ -96,7 +94,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   }
 
   @Test
-  public void registerInterestSingleKeyCanBeInvokedMultipleTimes() throws Exception {
+  public void registerInterestSingleKeyCanBeInvokedMultipleTimes() {
     client.invoke(() -> registerKey(PROXY_REGION_NAME, 1));
     client.invoke(() -> registerKey(CACHING_PROXY_REGION_NAME, 1));
 
@@ -115,7 +113,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   }
 
   @Test
-  public void registerInterestRegexCanBeInvokedMultipleTimes() throws Exception {
+  public void registerInterestRegexCanBeInvokedMultipleTimes() {
     client.invoke(() -> registerRegex(PROXY_REGION_NAME, ".*"));
     client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME, ".*"));
 
@@ -134,7 +132,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   }
 
   @Test
-  public void registerInterestKeyListCanBeInvokedMultipleTimes() throws Exception {
+  public void registerInterestKeyListCanBeInvokedMultipleTimes() {
     client.invoke(() -> registerKeys(PROXY_REGION_NAME, 1, 2));
     client.invoke(() -> registerKeys(CACHING_PROXY_REGION_NAME, 1, 2));
 
@@ -159,13 +157,13 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     regionFactory.setDataPolicy(DataPolicy.REPLICATE);
     regionFactory.setScope(Scope.DISTRIBUTED_ACK);
 
-    regionFactory.<Integer, Object>create(PROXY_REGION_NAME);
-    regionFactory.<Integer, Object>create(CACHING_PROXY_REGION_NAME);
+    regionFactory.create(PROXY_REGION_NAME);
+    regionFactory.create(CACHING_PROXY_REGION_NAME);
 
-    CacheServer server = cache.addCacheServer();
-    server.setPort(getRandomAvailablePort(SOCKET));
-    server.start();
-    return server.getPort();
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
   }
 
   private void createClientCacheWithTwoRegions(final String host, final int port) {
@@ -226,7 +224,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
    * Register list of keys on given region
    */
   private void registerKeys(final String regionName, final int... keys) {
-    Region region = clientCache.getRegion(regionName);
+    Region<Object, ?> region = clientCache.getRegion(regionName);
 
     List<Integer> list = new ArrayList<>();
     for (int key : keys) {
@@ -242,16 +240,16 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   }
 
   private void awaitServerMetaDataToContainClient() {
-    await().atMost(30, SECONDS)
-        .until(() -> assertThat(
+    await()
+        .untilAsserted(() -> assertThat(
             getCacheServer().getAcceptor().getCacheClientNotifier().getClientProxies().size())
                 .isEqualTo(1));
 
     CacheClientProxy proxy = getClientProxy();
     assertThat(proxy).isNotNull();
 
-    await().atMost(30, SECONDS).until(() -> getClientProxy().isAlive() && getClientProxy()
-        .getRegionsWithEmptyDataPolicy().containsKey(Region.SEPARATOR + PROXY_REGION_NAME));
+    await().until(() -> getClientProxy().isAlive() && getClientProxy()
+        .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + PROXY_REGION_NAME));
   }
 
   private void validateServerMetaDataKnowsThatClientRegisteredInterest() {
@@ -261,12 +259,11 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
 
   private void validateServerMetaDataKnowsWhichClientRegionIsEmpty() {
     CacheClientProxy proxy = getClientProxy();
+    assertThat(proxy.getRegionsWithEmptyDataPolicy()).containsKey(SEPARATOR + PROXY_REGION_NAME);
     assertThat(proxy.getRegionsWithEmptyDataPolicy())
-        .containsKey(Region.SEPARATOR + PROXY_REGION_NAME);
-    assertThat(proxy.getRegionsWithEmptyDataPolicy())
-        .doesNotContainKey(Region.SEPARATOR + CACHING_PROXY_REGION_NAME);
+        .doesNotContainKey(SEPARATOR + CACHING_PROXY_REGION_NAME);
     assertThat(proxy.getRegionsWithEmptyDataPolicy()).hasSize(1);
-    assertThat(proxy.getRegionsWithEmptyDataPolicy())
-        .containsEntry(Region.SEPARATOR + PROXY_REGION_NAME, 0);
+    assertThat(proxy.getRegionsWithEmptyDataPolicy()).containsEntry(SEPARATOR + PROXY_REGION_NAME,
+        0);
   }
 }

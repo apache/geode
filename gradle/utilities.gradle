@@ -18,10 +18,6 @@ buildscript {
   repositories {
     maven { url "https://plugins.gradle.org/m2/" }
   }
-
-  dependencies {
-    classpath "org.ajoberstar:gradle-git:1.3.2"
-  }
 }
 
 allprojects {
@@ -41,47 +37,18 @@ allprojects {
     disableMavenPublishing = {
       // Use this closure when a project should not publish anything to maven.
       afterEvaluate {
-        install.enabled = false
-        uploadArchives.enabled = false
-      }
-    }
-    disableSigning = {
-      // Use this closure when a project should not publish anything to maven.
-      afterEvaluate {
-        signArchives.enabled = false
-      }
-    }
-
-    readScmInfo = {
-      try {
-        def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
-        try {
-          return [
-            'Source-Repository': git.branch.getCurrent().name,
-            'Source-Revision'  : git.head().id,
-            'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
-          ] as Properties
-        } finally {
-          git.close()
+        tasks.withType(PublishToMavenLocal) {
+          it.enabled = false
         }
-      } catch (IllegalArgumentException e) {
-        // if we're building from the source distribution, we don't have git so
-        // use cached info written during the assembly process
-        def buildInfo = file "$rootDir/.buildinfo"
-        if (buildInfo.exists()) {
-          def props = new Properties()
-          new FileInputStream(buildInfo).withStream { fis ->
-            props.load(fis)
-          }
-          return props
+        tasks.withType(PublishToMavenRepository) {
+          it.enabled = false
         }
-
-        logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
-        return [
-          'Source-Repository': 'UNKNOWN',
-          'Source-Revision'  : 'UNKNOWN',
-          'Source-Date'      : new Date().format('yyyy-MM-dd HH:mm:ss Z')
-        ] as Properties
+        tasks.withType(GenerateMavenPom) {
+          it.enabled = false
+        }
+        tasks.withType(Sign) {
+          it.enabled = false
+        }
       }
     }
   }

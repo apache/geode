@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -ex
 
 BASE_DIR=$(pwd)
 
@@ -30,17 +30,25 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 SSHKEY_FILE="instance-data/sshkey"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
 
-INSTANCE_NAME="$(cat instance-data/instance-name)"
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
-PROJECT="$(cat instance-data/project)"
-ZONE="$(cat instance-data/zone)"
-
-echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 OUTPUT_DIR=${BASE_DIR}/geode-results
 
-ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "cd geode && ./gradlew combineReports"
+case $ARTIFACT_SLUG in
+  windows*)
+    JAVA_BUILD_PATH=C:/java8
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; cd geode; ./gradlew --no-daemon combineReports'"
+    ;;
+  *)
+    JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && cd geode && ./gradlew --no-daemon combineReports'"
+    ;;
+esac
 
-time rsync -e "ssh -i ${SSHKEY_FILE}" -ah geode@${INSTANCE_IP_ADDRESS}:. ${OUTPUT_DIR}/.
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
+
+time rsync -e "ssh ${SSH_OPTIONS}" -ah geode@${INSTANCE_IP_ADDRESS}:geode ${OUTPUT_DIR}/
+
 set +x

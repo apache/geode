@@ -16,16 +16,14 @@ package org.apache.geode.internal.datasource;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * GemFireBasicDataSource extends AbstractDataSource. This is a datasource class which provides
@@ -106,10 +104,10 @@ public class GemFireBasicDataSource extends AbstractDataSource {
       }
       connection = driverObject.connect(url, props);
     } else {
-      StringId exception =
-          LocalizedStrings.GemFireBasicDataSource_GEMFIREBASICDATASOURCE_GETCONNECTION_URL_FOR_THE_DATASOURCE_NOT_AVAILABLE;
-      logger.info(LocalizedMessage.create(exception));
-      throw new SQLException(exception.toLocalizedString());
+      String exception =
+          "GemFireBasicDataSource::getConnection:Url for the DataSource not available";
+      logger.info(exception);
+      throw new SQLException(exception);
     }
     return connection;
   }
@@ -130,14 +128,27 @@ public class GemFireBasicDataSource extends AbstractDataSource {
 
   private void loadDriver() throws SQLException {
     try {
-      Class driverClass = ClassPathLoader.getLatest().forName(jdbcDriver);
-      driverObject = (Driver) driverClass.newInstance();
+      if (jdbcDriver != null && jdbcDriver.length() > 0) {
+        loadDriverUsingClassName();
+      } else {
+        loadDriverUsingURL();
+      }
     } catch (Exception ex) {
-      StringId msg =
-          LocalizedStrings.GemFireBasicDataSource_AN_EXCEPTION_WAS_CAUGHT_WHILE_TRYING_TO_LOAD_THE_DRIVER;
+      String msg =
+          "An Exception was caught while trying to load the driver. %s";
       String msgArg = ex.getLocalizedMessage();
-      logger.error(LocalizedMessage.create(msg, msgArg), ex);
-      throw new SQLException(msg.toLocalizedString(msgArg));
+      logger.error(String.format(msg, msgArg), ex);
+      throw new SQLException(String.format(msg, msgArg));
     }
+  }
+
+  private void loadDriverUsingURL() throws SQLException {
+    driverObject = DriverManager.getDriver(this.url);
+  }
+
+  private void loadDriverUsingClassName()
+      throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    Class<?> driverClass = ClassPathLoader.getLatest().forName(jdbcDriver);
+    driverObject = (Driver) driverClass.newInstance();
   }
 }

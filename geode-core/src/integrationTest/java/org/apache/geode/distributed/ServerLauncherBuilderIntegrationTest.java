@@ -14,13 +14,12 @@
  */
 package org.apache.geode.distributed;
 
-import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
-import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.DistributedSystem.PROPERTIES_FILE_PROPERTY;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.internal.cache.AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
 import java.io.File;
@@ -41,7 +40,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
@@ -51,13 +49,13 @@ public class ServerLauncherBuilderIntegrationTest {
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public final TestName testName = new TestName();
+  public TestName testName = new TestName();
 
   @Test
   public void buildWithMemberNameSetInGemFireProperties() {
@@ -77,10 +75,10 @@ public class ServerLauncherBuilderIntegrationTest {
     givenGemFirePropertiesFile(withoutMemberName());
 
     // when: no MemberName is specified
-    when(new Builder().setCommand(Command.START)).build();
+    Throwable thrown = catchThrowable(() -> new Builder().setCommand(Command.START).build());
 
     // then: throw IllegalStateException
-    then(caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(memberNameValidationErrorMessage());
   }
 
@@ -89,11 +87,12 @@ public class ServerLauncherBuilderIntegrationTest {
     // given: using LocatorLauncher in-process
 
     // when: setting WorkingDirectory to non-current directory
-    when(new Builder().setCommand(Command.START).setMemberName("memberOne")
-        .setWorkingDirectory(getWorkingDirectoryPath())).build();
+    Throwable thrown =
+        catchThrowable(() -> new Builder().setCommand(Command.START).setMemberName("memberOne")
+            .setWorkingDirectory(getWorkingDirectoryPath()).build());
 
     // then: throw IllegalStateException
-    then(caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(workingDirectoryOptionNotValidErrorMessage());
   }
 
@@ -220,10 +219,11 @@ public class ServerLauncherBuilderIntegrationTest {
     File nonDirectory = temporaryFolder.newFile();
 
     // when: setting WorkingDirectory to that file
-    when(new Builder()).setWorkingDirectory(nonDirectory.getCanonicalPath());
+    Throwable thrown =
+        catchThrowable(() -> new Builder().setWorkingDirectory(nonDirectory.getCanonicalPath()));
 
     // then: throw IllegalArgumentException
-    then(caughtException()).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException(nonDirectory.getCanonicalPath()));
   }
@@ -233,10 +233,11 @@ public class ServerLauncherBuilderIntegrationTest {
     // given:
 
     // when: setting WorkingDirectory to non-existing directory
-    when(new Builder()).setWorkingDirectory("/path/to/non_existing/directory");
+    Throwable thrown =
+        catchThrowable(() -> new Builder().setWorkingDirectory("/path/to/non_existing/directory"));
 
     // then: throw IllegalArgumentException
-    then(caughtException()).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException("/path/to/non_existing/directory"));
   }
@@ -255,18 +256,20 @@ public class ServerLauncherBuilderIntegrationTest {
   }
 
   private String memberNameValidationErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(
+        AbstractLauncher.MEMBER_NAME_ERROR_MESSAGE,
+        "Server", "Server");
   }
 
   private String workingDirectoryOptionNotValidErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(
+        AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+        "Server", "Server");
   }
 
   private String workingDirectoryNotFoundErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
+        "Server", "Server");
   }
 
   private File getWorkingDirectory() {

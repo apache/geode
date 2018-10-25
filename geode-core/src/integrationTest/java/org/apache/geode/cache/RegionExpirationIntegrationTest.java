@@ -22,8 +22,8 @@ import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
@@ -35,13 +35,24 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.InOrder;
 
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-/**
- * Extracted from {@link RegionExpirationDistributedTest}.
- */
+
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RegionExpirationIntegrationTest {
+
+  @Parameterized.Parameter(0)
+  public DataPolicy dataPolicy;
+
+  @Parameterized.Parameters(name = "{0}")
+  public static Object[] data() {
+    return new Object[] {DataPolicy.NORMAL, DataPolicy.EMPTY};
+  }
 
   private Cache cache;
   private String regionName;
@@ -66,12 +77,13 @@ public class RegionExpirationIntegrationTest {
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(firstTtlSeconds, DESTROY));
+    regionFactory.setDataPolicy(dataPolicy);
     Region<String, String> region = regionFactory.create(regionName);
 
     region.getAttributesMutator()
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
-    await().atMost(30, SECONDS).until(() -> region.isDestroyed());
+    await().until(() -> region.isDestroyed());
     assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos))
         .isGreaterThanOrEqualTo(secondTtlSeconds);
   }
@@ -84,12 +96,13 @@ public class RegionExpirationIntegrationTest {
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(firstTtlSeconds, DESTROY));
+    regionFactory.setDataPolicy(dataPolicy);
     Region<String, String> region = regionFactory.create(regionName);
 
     region.getAttributesMutator()
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.isDestroyed()).isTrue());
+    await().untilAsserted(() -> assertThat(region.isDestroyed()).isTrue());
     assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos)).isLessThan(firstTtlSeconds);
   }
 
@@ -101,6 +114,7 @@ public class RegionExpirationIntegrationTest {
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(ttlSeconds, DESTROY));
     regionFactory.setRegionIdleTimeout(new ExpirationAttributes(idleSeconds, INVALIDATE));
+    regionFactory.setDataPolicy(dataPolicy);
     regionFactory.addCacheListener(spyCacheListener);
     Region<String, String> region = regionFactory.create(regionName);
 

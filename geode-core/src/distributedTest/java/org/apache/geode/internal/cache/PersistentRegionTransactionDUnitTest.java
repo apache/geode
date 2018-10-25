@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import java.util.stream.IntStream;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -118,6 +117,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
         cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).create(REGIONNAME);
       }
       CacheServer cacheServer = cache.addCacheServer();
+      cacheServer.setPort(0);
       cacheServer.start();
       return cacheServer.getPort();
     });
@@ -146,8 +146,8 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
     putData(server);
     server.invoke(() -> {
       LocalRegion region = (LocalRegion) getCache().getRegion(REGIONNAME);
-      Awaitility.await().atMost(10, SECONDS)
-          .until(() -> assertThat(region.getValueInVM(KEY)).isNull());
+      await()
+          .untilAsserted(() -> assertThat(region.getValueInVM(KEY)).isNull());
       getCache().getCacheTransactionManager().begin();
       try {
         assertEquals(VALUE, region.get(KEY));

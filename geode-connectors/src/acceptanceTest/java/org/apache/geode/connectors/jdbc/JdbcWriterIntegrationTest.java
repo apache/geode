@@ -14,9 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,12 +32,10 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
-import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -56,9 +53,11 @@ public abstract class JdbcWriterIntegrationTest {
   private PdxInstance pdx2;
   private Employee employee1;
   private Employee employee2;
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
 
   @Before
-  public void setup() throws Exception {
+  public void setUp() throws Exception {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
@@ -87,14 +86,18 @@ public abstract class JdbcWriterIntegrationTest {
 
   private void closeDB() throws Exception {
     if (statement == null) {
-      statement = connection.createStatement();
+      if (connection != null) {
+        statement = connection.createStatement();
+      }
     }
-    statement.execute("Drop table " + REGION_TABLE_NAME);
-    statement.close();
-
+    if (statement != null) {
+      statement.execute("Drop table " + REGION_TABLE_NAME);
+      statement.close();
+    }
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   @Test
@@ -138,8 +141,8 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceFails() {
     Region nonPdxEmployees = this.employees;
-    catchException(nonPdxEmployees).put("1", "non pdx instance");
-    assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class);
+    Throwable thrown = catchThrowable(() -> nonPdxEmployees.put("1", "non pdx instance"));
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -207,7 +210,7 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   private Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     jdbcWriter = new JdbcWriter(createSqlHandler(), cache);
 
     RegionFactory<String, PdxInstance> regionFactory =
@@ -224,9 +227,10 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   private SqlHandler createSqlHandler()
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl()));
+      throws RegionMappingExistsException {
+    return new SqlHandler(new TableMetaDataManager(),
+        TestConfigService.getTestConfigService(getConnectionUrl()),
+        testDataSourceFactory);
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

@@ -30,18 +30,18 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.createIndex
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.getIndexQueue;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.pauseSender;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyIndexFinishFlushing;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -228,13 +228,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
       String defaultField, int size) throws Exception {
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName,
         queryString, defaultField);
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-      try {
-        assertEquals(size, query.findPages().size());
-      } catch (LuceneQueryException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    await().untilAsserted(() -> assertThat(query.findPages()).hasSize(size));
   }
 
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {

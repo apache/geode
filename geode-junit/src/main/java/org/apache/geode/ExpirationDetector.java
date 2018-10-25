@@ -14,8 +14,8 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.util.concurrent.TimeUnit;
 
@@ -73,7 +73,7 @@ public class ExpirationDetector implements ExpiryTaskListener {
   }
 
   public void awaitExecuted(long timeout, TimeUnit unit) {
-    await().atMost(timeout, unit).until(() -> executed);
+    await().until(() -> executed);
   }
 
   public boolean wasRescheduled() {

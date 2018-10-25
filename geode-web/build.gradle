@@ -18,57 +18,64 @@
 apply plugin: 'war'
 
 dependencies {
-  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  compileOnly project(path: ':geode-core', configuration: 'classesOutput')
+  compileOnly('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compileOnly(project(path: ':geode-core', configuration: 'classesOutput'))
 
-  runtime ('org.springframework:spring-aspects:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-aspects:' + project.'springframework.version') {
     exclude module: 'aspectjweaver'
     exclude module: 'aopalliance'
     exclude module: 'spring-core'
   }
-  runtime('org.springframework:spring-oxm:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-oxm:' + project.'springframework.version') {
     exclude module: 'commons-logging'
     exclude module: 'spring-beans'
     exclude module: 'spring-core'
   }
-  runtime('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
     exclude module: 'spring-core'
   }
-  runtime('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
+  runtimeOnly('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
-
-
-  testCompile project(':geode-core')
+  
+  testCompile(project(':geode-core'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   // have to use output since we exclude the dependent classes from jar :(
-  testCompile project(path: ':geode-core', configuration: 'classesOutput')
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  testCompile(project(path: ':geode-core', configuration: 'classesOutput'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  testCompile('org.springframework:spring-test:' + project.'springframework.version')
+  testCompile('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
   }
 
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
 
-  integrationTestRuntime files(war.destinationDir)
-  integrationTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  integrationTestRuntime(files(war.destinationDir))
+  integrationTestRuntime('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
   }
 
 
-  distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+  distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
-  distributedTestRuntime files(war.destinationDir)
-  distributedTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  distributedTestRuntime(files(war.destinationDir))
+  distributedTestRuntime('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
   }
 
-  upgradeTestCompile (project(":geode-dunit")) {
+  upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 }
@@ -89,6 +96,6 @@ integrationTest.dependsOn(war)
 war {
   dependsOn ':geode-core:webJar'
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
+  classpath configurations.runtimeClasspath
   classpath project(':geode-core').webJar.archivePath
 }

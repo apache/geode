@@ -14,22 +14,20 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.THREAD_ID_EXPIRY_TIME_PROPERTY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -55,7 +53,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #48879: Leaking ThreadIdentifiers and DispatchedAndCurrentEvents objects when client uses
  * many short lived threads
  */
-@Category({ClientSubscriptionTest.class})
+@Category(ClientSubscriptionTest.class)
 @SuppressWarnings("serial")
 public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
 
@@ -68,8 +66,8 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   private String regionName;
   private String hostName;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -99,7 +97,7 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   }
 
   @Test
-  public void testThreadIdentifiersExpiry() throws Exception {
+  public void testThreadIdentifiersExpiry() {
     int puts = 10;
 
     server1.invoke(() -> doPuts(puts));
@@ -171,7 +169,7 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   }
 
   private void awaitToVerifyStatsAfterExpiration(int numOfEvents) {
-    await().atMost(2, MINUTES).until(() -> {
+    await().untilAsserted(() -> {
       verifyStatsAfterExpiration(numOfEvents);
     });
   }

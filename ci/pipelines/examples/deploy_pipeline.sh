@@ -44,46 +44,35 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
+MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
+MY_ZONE=${MY_ZONE##*/}
+NETWORK_INTERFACE_INFO="$(gcloud compute instances describe ${MY_NAME} --zone ${MY_ZONE} --format="json(networkInterfaces)")"
+GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].network')
+GCP_NETWORK=${GCP_NETWORK##*/}
+GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
+GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
+ENV_ID=$(echo ${GCP_NETWORK} | awk -F- '{ print $1}')
+VERSION_BUCKET="concourse-${ENV_ID}-version"
 
-BIN_DIR=${OUTPUT_DIRECTORY}/bin
-TMP_DIR=${OUTPUT_DIRECTORY}/tmp
-mkdir -p ${BIN_DIR} ${TMP_DIR}
-curl -o ${BIN_DIR}/fly "https://concourse.apachegeode-ci.info/api/v1/cli?arch=amd64&platform=linux"
-chmod +x ${BIN_DIR}/fly
 
-PATH=${PATH}:${BIN_DIR}
-
-TARGET="geode"
-
-TEAM="staging"
-if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; then
-  TEAM="main"
-fi
-
-if [[ "${GEODE_FORK}" == "apache" ]]; then
-  PIPELINE_NAME=${SANITIZED_GEODE_BRANCH}
-  DOCKER_IMAGE_PREFIX=""
-else
-  PIPELINE_NAME="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
-  DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
-fi
-PIPELINE_NAME="${PIPELINE_NAME}-examples"
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
-  # Template and output share a directory with this script, but variables are shared in the parent directory.
-  python3 ../render.py jinja.template.yml ../shared/jinja.variables.yml generated-pipeline.yml || exit 1
-
-  fly login -t ${TARGET} \
-            -n ${TEAM} \
-            -c https://concourse.apachegeode-ci.info \
-            -u ${CONCOURSE_USERNAME} \
-            -p ${CONCOURSE_PASSWORD}
-
-  fly -t ${TARGET} set-pipeline \
-      --non-interactive \
-      --pipeline ${PIPELINE_NAME} \
-      --config generated-pipeline.yml \
-      --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-
+# Template and output share a directory with this script, but variables are shared in the parent directory.
+  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} ${REPOSITORY_PUBLIC} || exit 1
 popd 2>&1 > /dev/null
+cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
+
+grep -n . ${OUTPUT_DIRECTORY}/generated-pipeline.yml
+
+cat > ${OUTPUT_DIRECTORY}/pipeline-vars.yml <<YML
+geode-build-branch: ${GEODE_BRANCH}
+geode-fork: ${GEODE_FORK}
+geode-repo-name: ${GEODE_REPO_NAME}
+upstream-fork: ${UPSTREAM_FORK}
+pipeline-prefix: "${PIPELINE_PREFIX}"
+public-pipelines: ${PUBLIC_PIPELINES}
+gcp-project: ${GCP_PROJECT}
+version-bucket: ${VERSION_BUCKET}
+artifact-bucket: ${ARTIFACT_BUCKET}
+YML

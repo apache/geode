@@ -28,29 +28,33 @@ import org.apache.geode.test.dunit.VM;
 
 /**
  * JUnit Rule that provides a shared ErrorCollector in all DistributedTest VMs. In particular, this
- * is a useful way to add assertions to CacheListener callbacks which are then registered in
- * multiple DistributedTest VMs.
+ * is a useful way to add assertions to CacheListener methods or other callbacks which are then
+ * registered in multiple DistributedTest VMs.
  *
  * <p>
  * {@code SharedErrorCollector} can be used in DistributedTests as a {@code Rule}:
  *
  * <pre>
- * {@literal @}ClassRule
- * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ * {@literal @}Rule
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
  * public SharedErrorCollector errorCollector = new SharedErrorCollector();
  *
  * {@literal @}Test
- * public void everyVMFailsAssertion() {
- *   for (VM vm : Host.getHost(0).getAllVMs()) {
+ * public void everyVmFailsAssertion() {
+ *   for (VM vm : VM.getAllVMs()) {
  *     vm.invoke(() -> errorCollector.checkThat("Failure in VM-" + vm.getId(), false, is(true)));
  *   }
  * }
  * </pre>
+ *
+ * <p>
+ * For a more thorough example, please see
+ * {@code org.apache.geode.cache.ReplicateCacheListenerDistributedTest} in the tests of geode-core.
  */
-@SuppressWarnings({"serial", "unused"})
-public class SharedErrorCollector extends AbstractDistributedTestRule {
+@SuppressWarnings("serial,unused")
+public class SharedErrorCollector extends AbstractDistributedRule {
 
   private static volatile ProtectedErrorCollector errorCollector;
 
@@ -59,7 +63,7 @@ public class SharedErrorCollector extends AbstractDistributedTestRule {
   }
 
   @Override
-  protected void before() throws Throwable {
+  protected void before() {
     invoker().invokeInEveryVMAndController(() -> errorCollector = new ProtectedErrorCollector());
   }
 

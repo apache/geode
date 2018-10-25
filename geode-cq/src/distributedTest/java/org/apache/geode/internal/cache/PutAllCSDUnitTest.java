@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -37,9 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -86,7 +85,6 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -1472,8 +1470,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
           fail("Expect ServerOperationException caused by PutAllParitialResultException");
         } catch (ServerOperationException soe) {
           assertTrue(soe.getMessage()
-              .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                  .toLocalizedString(region.getFullPath())));
+              .contains(
+                  String.format("Region %s putAll at server applied partial keys due to exception.",
+                      region.getFullPath())));
           assertTrue(soe.getCause() instanceof RuntimeException);
         }
         assertEquals(numberOfEntries * 3 / 2, region.size());
@@ -1491,8 +1490,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
           doRemoveAll(regionName, title, numberOfEntries);
         } catch (ServerOperationException soe) {
           assertTrue(soe.getMessage()
-              .contains(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_At_Server_0
-                  .toLocalizedString(region.getFullPath())));
+              .contains(String.format(
+                  "Region %s removeAll at server applied partial keys due to exception.",
+                  region.getFullPath())));
           assertTrue(soe.getCause() instanceof RuntimeException);
         }
         Region.Entry re;
@@ -2029,8 +2029,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
           fail("Expect ServerOperationException caused by PutAllParitialResultException");
         } catch (ServerOperationException soe) {
           assertTrue(soe.getMessage()
-              .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                  .toLocalizedString(region.getFullPath())));
+              .contains(
+                  String.format("Region %s putAll at server applied partial keys due to exception.",
+                      region.getFullPath())));
           assertTrue(soe.getCause() instanceof RuntimeException);
           assertTrue(soe.getCause().getMessage()
               .contains("Triggered exception as planned, created 15 keys"));
@@ -2164,8 +2165,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
           fail("Expect ServerOperationException caused by PutAllParitialResultException");
         } catch (ServerOperationException soe) {
           assertTrue(soe.getMessage()
-              .contains(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_At_Server_0
-                  .toLocalizedString(region.getFullPath())));
+              .contains(String.format(
+                  "Region %s removeAll at server applied partial keys due to exception.",
+                  region.getFullPath())));
           assertTrue(soe.getCause() instanceof RuntimeException);
           assertTrue(soe.getCause().getMessage()
               .contains("Triggered exception as planned, destroyed 5 keys"));
@@ -2359,8 +2361,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
                 throw soe;
               }
               if (!soe.getMessage()
-                  .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                      .toLocalizedString(region.getFullPath()))) {
+                  .contains(String.format(
+                      "Region %s putAll at server applied partial keys due to exception.",
+                      region.getFullPath()))) {
                 throw soe;
               }
             }
@@ -2404,8 +2407,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
           fail("Expect ServerOperationException caused by PutAllParitialResultException");
         } catch (ServerOperationException soe) {
           assertTrue(soe.getMessage()
-              .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                  .toLocalizedString(region.getFullPath())));
+              .contains(
+                  String.format("Region %s putAll at server applied partial keys due to exception.",
+                      region.getFullPath())));
           assertTrue(soe.getCause() instanceof PartitionOfflineException);
         }
       }
@@ -2588,8 +2592,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
                 fail("Expect ServerOperationException caused by PutAllParitialResultException");
               } catch (ServerOperationException soe) {
                 assertTrue(soe.getMessage()
-                    .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                        .toLocalizedString(region.getFullPath())));
+                    .contains(String.format(
+                        "Region %s putAll at server applied partial keys due to exception.",
+                        region.getFullPath())));
               }
             }
           });
@@ -2623,8 +2628,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
             fail("Expect ServerOperationException caused by PutAllParitialResultException");
           } catch (ServerOperationException soe) {
             assertTrue(soe.getMessage()
-                .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                    .toLocalizedString(region.getFullPath())));
+                .contains(String.format(
+                    "Region %s putAll at server applied partial keys due to exception.",
+                    region.getFullPath())));
           }
         }
       });
@@ -2656,8 +2662,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
             fail("Expect ServerOperationException caused by PutAllParitialResultException");
           } catch (ServerOperationException soe) {
             assertTrue(soe.getMessage()
-                .contains(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
-                    .toLocalizedString(region.getFullPath())));
+                .contains(String.format(
+                    "Region %s putAll at server applied partial keys due to exception.",
+                    region.getFullPath())));
           }
         }
       });
@@ -2979,8 +2986,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
     });
 
     LogWriterUtils.getLogWriter().info("event counters before wait : " + myListener.sc);
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(numberOfEntries, myListener.sc.num_create_event));
+    await()
+        .untilAsserted(() -> assertEquals(numberOfEntries, myListener.sc.num_create_event));
     LogWriterUtils.getLogWriter().info("event counters after wait : " + myListener.sc);
     assertEquals(0, myListener.sc.num_update_event);
 

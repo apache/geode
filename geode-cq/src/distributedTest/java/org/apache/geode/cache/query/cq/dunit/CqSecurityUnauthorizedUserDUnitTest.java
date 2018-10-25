@@ -14,15 +14,14 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -132,8 +131,8 @@ public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
     putIntoRegion(specificUserClient, keys, values, regionName);
 
     superUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, cqListener.getNumEvent()));
+      await()
+          .untilAsserted(() -> assertEquals(1, cqListener.getNumEvent()));
     });
   }
 

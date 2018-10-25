@@ -18,21 +18,36 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
-  compile(project(':extensions/geode-modules')) {
+  distributedTestCompile('junit:junit:' + project.'junit.version')
+  compile('mx4j:mx4j:' + project.'mx4j.version')
+  distributedTestCompile('org.httpunit:httpunit:' + project.'httpunit.version')
+  distributedTestCompile('org.apache.tomcat:tomcat-jaspic-api:' + project.'tomcat8.version')
+  compile(project(':geode-core'))
+  compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
 
-  compile ('org.apache.tomcat:tomcat-catalina:' + project.'tomcat8.version') {
+  compile('org.apache.tomcat:tomcat-catalina:' + project.'tomcat8.version') {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile ('org.apache.tomcat:tomcat-coyote:' + project.'tomcat8.version') {
+  compile('org.apache.tomcat:tomcat-coyote:' + project.'tomcat8.version') {
     exclude module: 'tomcat-servlet-api'
   }
-  compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version'
-  compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
+  compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version')
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 
-  distributedTestCompile project(":extensions/geode-modules-test")
+  distributedTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':extensions:geode-modules-test'))
+
+  distributedTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
+  distributedTestRuntime('javax.annotation:javax.annotation-api:' + project.'javax-annotation.version')
 
   eclipse.classpath.file {
     whenMerged { classpath ->

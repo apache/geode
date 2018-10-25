@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -41,10 +42,10 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -411,9 +412,9 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
               + getOpName(MyRML.this.lastOp);
         }
       };
-      LogWriterUtils.getLogWriter().info(this.toString() + " waiting for Op " + getOpName(op)
+      getLogWriter().info(this.toString() + " waiting for Op " + getOpName(op)
           + " when lastOp was " + getOpName(this.lastOp));
-      Wait.waitForCriterion(ev, this.timeOut, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
       assertEquals(op, this.lastOp);
       return true;
     }

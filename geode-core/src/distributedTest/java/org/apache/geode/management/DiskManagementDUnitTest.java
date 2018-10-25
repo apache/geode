@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -26,8 +27,6 @@ import java.util.concurrent.TimeoutException;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +46,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -163,7 +163,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
     AsyncInvocation creatingPersistentRegionAsync = createPersistentRegionAsync(memberVM1);
 
-    memberVM1.invoke(() -> await().until(() -> {
+    memberVM1.invoke(() -> GeodeAwaitility.await().until(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) this.managementTestRule.getCache();
       PersistentMemberManager persistentMemberManager = cache.getPersistentMemberManager();
       Map<String, Set<PersistentMemberID>> regions = persistentMemberManager.getWaitingRegions();
@@ -388,8 +388,9 @@ public class DiskManagementDUnitTest implements Serializable {
   private MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getMemberMBeanName(member);
-    await()
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+    GeodeAwaitility.await()
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
 
@@ -398,7 +399,4 @@ public class DiskManagementDUnitTest implements Serializable {
     createPersistentRegionAsync.await(2, MINUTES);
   }
 
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
-  }
 }

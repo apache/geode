@@ -14,17 +14,22 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -37,18 +42,29 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@SuppressWarnings("serial")
 public class ClientServerTransactionFailoverDistributedTest implements Serializable {
+
+  private final int numOfOperationsInTransaction = 10;
+  private final int key1 = 1;
+  private final String originalValue = "originalValue";
+
   private String hostName;
   private String uniqueName;
   private String regionName;
@@ -58,15 +74,9 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   private VM server4;
   private int port1;
   private int port2;
-  private int port3;
-  private int port4;
-
-  private final int numOfOperationsInTransaction = 10;
-  private final int key1 = 1;
-  private final String originalValue = "originalValue";
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -112,8 +122,13 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   }
 
   private int createServerRegion(int totalNumBuckets, boolean isAccessor) throws Exception {
+    return createServerRegion(totalNumBuckets, isAccessor, 0);
+  }
+
+  private int createServerRegion(int totalNumBuckets, boolean isAccessor, int redundancy)
+      throws Exception {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
-    factory.setTotalNumBuckets(totalNumBuckets);
+    factory.setTotalNumBuckets(totalNumBuckets).setRedundantCopies(redundancy);
     if (isAccessor) {
       factory.setLocalMaxMemory(0);
     }
@@ -136,7 +151,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl pool;
     try {
-      pool = getPool(connectToFirstPort, ports);
+      pool = getPool(ports);
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
@@ -152,7 +167,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     }
   }
 
-  private PoolImpl getPool(boolean connectToFirstPort, int... ports) {
+  private PoolImpl getPool(int... ports) {
     PoolFactory factory = PoolManager.createFactory();
     for (int port : ports) {
       factory.addServer(hostName, port);
@@ -177,7 +192,8 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     return txManager.suspend();
   }
 
-  private void resumeTransaction(TransactionId txId, int numOfOperations) throws Exception {
+  private void resumeTransaction(TransactionId txId, int numOfOperations)
+      throws InterruptedException {
     Region region = clientCacheRule.getClientCache().getRegion(regionName);
     TXManagerImpl txManager =
         (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
@@ -288,7 +304,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   private void beginAndSuspendTransactions(int numOfTransactions, int numOfOperations,
       Thread[] threads,
       FutureTask<TransactionId>[] futureTasks, TransactionId[] txIds)
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+      throws InterruptedException, ExecutionException {
     for (int i = 0; i < numOfTransactions; i++) {
       FutureTask<TransactionId> futureTask =
           new FutureTask<>(() -> beginAndSuspendTransaction(numOfOperations));
@@ -304,17 +320,16 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   }
 
   private void setupClientAndServerForMultipleTransactions() {
-    port4 = server4.invoke(() -> createServerRegion(1, false));
+    int port4 = server4.invoke(() -> createServerRegion(1, false));
     server4.invoke(() -> doPut(key1, originalValue));
     port1 = server1.invoke(() -> createServerRegion(1, true));
     port2 = server2.invoke(() -> createServerRegion(1, true));
-    port3 = server3.invoke(() -> createServerRegion(1, true));
+    int port3 = server3.invoke(() -> createServerRegion(1, true));
     createClientRegion(false, port1, port2, port3, port4);
   }
 
   private void resumeTransactions(int numOfTransactions, int numOfOperations, Thread[] threads,
-      TransactionId[] txIds)
-      throws InterruptedException {
+      TransactionId[] txIds) {
     for (int i = 0; i < numOfTransactions; i++) {
       TransactionId txId = txIds[i];
       Thread thread = new Thread(() -> {
@@ -330,11 +345,118 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   }
 
   private void unregisterClientMultipleTimes(ClientProxyMembershipID clientProxyMembershipID)
-      throws Exception {
+      throws InterruptedException {
     int numOfUnregisterClients = 4;
     for (int i = 0; i < numOfUnregisterClients; i++) {
       getVM(i).invoke(() -> unregisterClient(clientProxyMembershipID));
       Thread.sleep(1000);
     }
+  }
+
+  @Test
+  public void txCommitGetsAppliedOnAllTheReplicasAfterHostIsShutDownAndIfOneOfTheNodeHasCommitted()
+      throws Exception {
+    getBlackboard().initBlackboard();
+    VM client = server4;
+
+    port1 = server1.invoke(() -> createServerRegion(1, false, 2));
+
+    server1.invoke(() -> {
+      Region region = cacheRule.getCache().getRegion(regionName);
+      region.put("Key-1", "Value-1");
+      region.put("Key-2", "Value-2");
+    });
+
+    port2 = server2.invoke(() -> createServerRegion(1, false, 2));
+
+    server3.invoke(() -> createServerRegion(1, false, 2));
+
+    client.invoke(() -> createClientRegion(true, port1, port2));
+
+    server1.invoke(() -> {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
+            @Override
+            public void beforeSendMessage(ClusterDistributionManager dm,
+                DistributionMessage message) {
+              if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
+                InternalDistributedMember m = message.getRecipients()[0];
+                message.resetRecipients();
+                message.setRecipient(m);
+              }
+            }
+          });
+    });
+
+    server2.invoke(() -> {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
+            @Override
+            public void beforeProcessMessage(ClusterDistributionManager dm,
+                DistributionMessage message) {
+              if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
+                getBlackboard().signalGate("bounce");
+              }
+            }
+          });
+    });
+
+    server3.invoke(() -> {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
+            @Override
+            public void beforeProcessMessage(ClusterDistributionManager dm,
+                DistributionMessage message) {
+              if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
+                getBlackboard().signalGate("bounce");
+              }
+            }
+          });
+    });
+
+    AsyncInvocation clientAsync = client.invokeAsync(() -> {
+      {
+        CacheTransactionManager transactionManager =
+            clientCacheRule.getClientCache().getCacheTransactionManager();
+        Region region = clientCacheRule.getClientCache().getRegion(regionName);
+        transactionManager.begin();
+        region.put("TxKey-1", "TxValue-1");
+        region.put("TxKey-2", "TxValue-2");
+        transactionManager.commit();
+      }
+    });
+
+    await().until(() -> getBlackboard().isGateSignaled("bounce"));
+    server1.invoke(() -> {
+      DistributionMessageObserver.setInstance(null);
+    });
+    server1.bounceForcibly();
+
+    clientAsync.join();
+
+    server2.invoke(() -> {
+      Region region = cacheRule.getCache().getRegion(regionName);
+      assertThat(region.get("TxKey-1")).isEqualTo("TxValue-1");
+      assertThat(region.get("TxKey-2")).isEqualTo("TxValue-2");
+    });
+
+    server3.invoke(() -> {
+      Region region = cacheRule.getCache().getRegion(regionName);
+      assertThat(region.get("TxKey-1")).isEqualTo("TxValue-1");
+      assertThat(region.get("TxKey-2")).isEqualTo("TxValue-2");
+    });
+
+    client.invoke(() -> {
+      Region region = clientCacheRule.getClientCache().getRegion(regionName);
+      assertThat(region.get("TxKey-1")).isEqualTo("TxValue-1");
+      assertThat(region.get("TxKey-2")).isEqualTo("TxValue-2");
+    });
+
+    server2.invoke(() -> {
+      DistributionMessageObserver.setInstance(null);
+    });
+    server3.invoke(() -> {
+      DistributionMessageObserver.setInstance(null);
+    });
   }
 }

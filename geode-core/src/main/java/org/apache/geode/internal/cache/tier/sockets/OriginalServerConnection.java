@@ -21,8 +21,6 @@ import java.net.Socket;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -58,9 +56,8 @@ public class OriginalServerConnection extends ServerConnection {
           endpointType, queueSize, this.communicationMode, this.principal);
     } catch (IOException ioe) {
       if (!crHelper.isShutdown() && !isTerminated()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ServerConnection_0_HANDSHAKE_ACCEPT_FAILED_ON_SOCKET_1_2,
-            new Object[] {this.name, this.theSocket, ioe}));
+        logger.warn("{}: Handshake accept failed on socket {}: {}",
+            this.name, this.theSocket, ioe);
       }
       cleanup();
       return false;
@@ -74,7 +71,7 @@ public class OriginalServerConnection extends ServerConnection {
       this.doHandshake = false;
     } else {
       this.resetTransientData();
-      doNormalMsg();
+      doNormalMessage();
     }
   }
 }

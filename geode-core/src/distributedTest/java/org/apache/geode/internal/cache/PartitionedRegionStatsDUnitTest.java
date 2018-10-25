@@ -15,10 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.util.concurrent.TimeoutException;
 
@@ -181,8 +180,8 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
       Cache cache = getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
       PartitionedRegionStats prStats = region.getPrStats();
-      await().atMost(30, SECONDS)
-          .until(() -> assertThat(prStats.getLowRedundancyBucketCount()).isEqualTo(0));
+      await()
+          .untilAsserted(() -> assertThat(prStats.getLowRedundancyBucketCount()).isEqualTo(0));
     });
 
     vm2.invoke(() -> validateEntryCount(regionName, 3));

@@ -14,11 +14,9 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -61,13 +59,13 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       locator1.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+          () -> await()
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
       locator2.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+          () -> await()
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 

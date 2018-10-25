@@ -55,7 +55,7 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -66,7 +66,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #41733: Hang in BucketAdvisor.waitForPrimaryMember
  */
-
 @SuppressWarnings("serial")
 public class BucketCreationCrashRegressionTest implements Serializable {
 
@@ -80,7 +79,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
   private VM locator;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -118,7 +117,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     DistributionMessageObserver.setInstance(null);
     invokeInEveryVM(() -> {
       DistributionMessageObserver.setInstance(null);
@@ -130,7 +129,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
    * we choose a primary
    */
   @Test
-  public void putShouldNotHangAfterBucketCrashesBeforePrimarySelection() throws Exception {
+  public void putShouldNotHangAfterBucketCrashesBeforePrimarySelection() {
     server1.invoke(
         () -> handleBeforeProcessMessage(ManageBucketReplyMessage.class, () -> crashServer()));
     server1.invoke(() -> createPartitionedRegion());
@@ -157,7 +156,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
    * the remote node.
    */
   @Test
-  public void putShouldNotHangAfterServerWithBucketCrashes() throws Exception {
+  public void putShouldNotHangAfterServerWithBucketCrashes() {
     server2.invoke(() -> handleBeforeProcessMessage(ManageBucketMessage.class,
         () -> server1.invoke(() -> crashServer())));
     server1.invoke(() -> createPartitionedRegion());

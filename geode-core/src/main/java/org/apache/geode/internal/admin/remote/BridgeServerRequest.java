@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.CacheInfo;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a VM that hosts a cache to perform an administrative operation on one
@@ -67,7 +66,7 @@ public class BridgeServerRequest extends AdminRequest {
     request.cacheId = cache.getId();
     request.operation = ADD_OPERATION;
     request.friendlyName =
-        LocalizedStrings.BridgeServerRequest_ADD_BRIDGE_SERVER.toLocalizedString();
+        "Add bridge server";
     request.bridgeInfo = null;
     return request;
   }
@@ -79,8 +78,8 @@ public class BridgeServerRequest extends AdminRequest {
     BridgeServerRequest request = new BridgeServerRequest();
     request.cacheId = cache.getId();
     request.operation = INFO_OPERATION;
-    request.friendlyName = LocalizedStrings.BridgeServerRequest_GET_INFO_ABOUT_BRIDGE_SERVER_0
-        .toLocalizedString(Integer.valueOf(id));
+    request.friendlyName = String.format("Get info about cache server %s",
+        Integer.valueOf(id));
     request.bridgeId = id;
     request.bridgeInfo = null;
     return request;
@@ -94,7 +93,7 @@ public class BridgeServerRequest extends AdminRequest {
     request.cacheId = cache.getId();
     request.operation = START_OPERATION;
     request.friendlyName =
-        LocalizedStrings.BridgeServerRequest_START_BRIDGE_SERVER_0.toLocalizedString(bridge);
+        String.format("Start cache server %s", bridge);
     request.bridgeInfo = bridge;
     return request;
   }
@@ -107,7 +106,7 @@ public class BridgeServerRequest extends AdminRequest {
     request.cacheId = cache.getId();
     request.operation = STOP_OPERATION;
     request.friendlyName =
-        LocalizedStrings.BridgeServerRequest_STOP_BRIDGE_SERVER_0.toLocalizedString(bridge);
+        String.format("Stop cache server %s", bridge);
     request.bridgeInfo = bridge;
     return request;
   }
@@ -118,13 +117,12 @@ public class BridgeServerRequest extends AdminRequest {
   private static String getOperationDescription(int op) {
     switch (op) {
       case ADD_OPERATION:
-        return LocalizedStrings.BridgeServerRequest_ADD_BRIDGE_SERVER.toLocalizedString();
+        return "Add bridge server";
       case INFO_OPERATION:
-        return LocalizedStrings.BridgeServerRequest_GET_INFO_ABOUT_BRIDGE_SERVER_0
-            .toLocalizedString();
+        return "Get info about cache server";
       default:
-        return LocalizedStrings.BridgeServerRequest_UNKNOWN_OPERATION_0
-            .toLocalizedString(Integer.valueOf(op));
+        return String.format("Unknown operation %s",
+            Integer.valueOf(op));
     }
   }
 

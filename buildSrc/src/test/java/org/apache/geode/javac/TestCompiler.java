@@ -23,8 +23,6 @@ import java.util.List;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
-import sun.tools.java.CompilerError;
-
 public class TestCompiler {
   public byte[] compile(String qualifiedClassName, String testSource) {
 
@@ -43,7 +41,7 @@ public class TestCompiler {
         compiler.getTask(null, fileManager, null, arguments, null, compilationUnits);
 
     if (!task.call()) {
-      throw new CompilerError("Compilation errors");
+      throw new CompilerException("Compilation errors");
     }
 
     return fileManager.getCompiled().iterator().next().getCompiledBinaries();

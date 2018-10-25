@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -67,7 +66,7 @@ public class ControlFileWatchdogIntegrationTest {
     // act: nothing
 
     // assert
-    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(watchdog.isAlive()).isFalse());
   }
 
   @Test
@@ -80,7 +79,7 @@ public class ControlFileWatchdogIntegrationTest {
     watchdog.start();
 
     // assert
-    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isTrue());
+    await().untilAsserted(() -> assertThat(watchdog.isAlive()).isTrue());
   }
 
   @Test
@@ -94,7 +93,7 @@ public class ControlFileWatchdogIntegrationTest {
     watchdog.stop();
 
     // assert
-    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(watchdog.isAlive()).isFalse());
   }
 
   @Test
@@ -143,7 +142,7 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
+    await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
   @Test
@@ -159,7 +158,7 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
+    await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
   @Test
@@ -203,8 +202,8 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
-    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
+    await().untilAsserted(() -> assertThat(watchdog.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
   @Test
@@ -220,8 +219,8 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isTrue());
-    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
+    await().untilAsserted(() -> assertThat(watchdog.isAlive()).isTrue());
+    await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
   @Test

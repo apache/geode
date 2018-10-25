@@ -36,43 +36,30 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 
-BIN_DIR=${OUTPUT_DIRECTORY}/bin
-TMP_DIR=${OUTPUT_DIRECTORY}/tmp
-mkdir -p ${BIN_DIR} ${TMP_DIR}
-curl -o ${BIN_DIR}/fly "https://concourse.apachegeode-ci.info/api/v1/cli?arch=amd64&platform=linux"
-chmod +x ${BIN_DIR}/fly
+echo "Sanitized Geode Fork = ${SANITIZED_GEODE_FORK}"
+echo "Sanitized Goede Branch = ${SANITIZED_GEODE_BRANCH}"
 
-PATH=${PATH}:${BIN_DIR}
 
-TARGET="geode"
+#echo "DEBUG INFO *****************************"
+#echo "Pipeline prefix = ${PIPELINE_PREFIX}"
+#echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"
 
-TEAM=${CONCOURSE_TEAM}
+pushd ${SCRIPTDIR} 2>&1 > /dev/null
+  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} ${REPOSITORY_PUBLIC} || exit 1
+popd 2>&1 > /dev/null
+cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
 
-if [[ "${GEODE_FORK}" == "apache" ]]; then
-  PIPELINE_PREFIX=""
-  DOCKER_IMAGE_PREFIX=""
-else
-  PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
-  DOCKER_IMAGE_PREFIX=${PIPELINE_PREFIX}
-fi
+grep -n . ${OUTPUT_DIRECTORY}/generated-pipeline.yml
 
-PIPELINE_NAME="${PIPELINE_PREFIX}images"
+cat > ${OUTPUT_DIRECTORY}/pipeline-vars.yml <<YML
+geode-build-branch: ${GEODE_BRANCH}
+geode-fork: ${GEODE_FORK}
+geode-repo-name: ${GEODE_REPO_NAME}
+upstream-fork: ${UPSTREAM_FORK}
+pipeline-prefix: "${PIPELINE_PREFIX}"
+public-pipelines: ${PUBLIC_PIPELINES}
+gcp-project: ${GCP_PROJECT}
+YML
 
-#if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; then
-#  TEAM="main"
-#fi
-
-fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
-set -x
-fly -t ${TARGET} set-pipeline \
-  --non-interactive \
-  --pipeline ${PIPELINE_NAME} \
-  --config geode-images-pipeline/ci/pipelines/images/images.yml \
-  --var concourse-team=${TEAM} \
-  --var geode-fork=${GEODE_FORK} \
-  --var geode-build-branch=${GEODE_BRANCH} \
-  --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-  --yaml-var public-pipelines=${PUBLIC_PIPELINES}
 

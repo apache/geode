@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -95,8 +96,8 @@ public class ProcessManager {
       pendingVMs++;
       ProcessHolder holder = new ProcessHolder(process);
       processes.put(vmNum, holder);
-      linkStreams(version, vmNum, holder, process.getErrorStream(), System.err);
-      linkStreams(version, vmNum, holder, process.getInputStream(), System.out);
+      linkStreams(version, vmNum, holder, holder.getErrorStream(), System.err);
+      linkStreams(version, vmNum, holder, holder.getInputStream(), System.out);
     } catch (RuntimeException | Error t) {
       t.printStackTrace();
       throw t;
@@ -141,7 +142,7 @@ public class ProcessManager {
       } else {
         holder.kill();
       }
-      holder.getProcess().waitFor();
+      holder.waitFor();
       System.out.println("Old process for vm_" + vmNum + " has exited");
       launchVM(version, vmNum, true);
     } catch (InterruptedException | IOException e) {
@@ -261,7 +262,17 @@ public class ProcessManager {
         + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
     cmds.add("-ea");
     cmds.add("-XX:MetaspaceSize=512m");
+    cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
+    if (SystemUtils.isJavaVersionAtLeast(900)) {
+      // needed for client stats gathering, see VMStats50 class, it's using class inspection
+      // to call getProcessCpuTime method
+      cmds.add("--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED");
+      // needed for server side code
+      cmds.add("--add-opens=java.xml/jdk.xml.internal=ALL-UNNAMED");
+      cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
+      cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
+    }
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);
@@ -325,37 +336,6 @@ public class ProcessManager {
     }
 
     return true;
-  }
-
-  public static class ProcessHolder {
-    private final Process process;
-    private volatile boolean killed = false;
-
-    public ProcessHolder(Process process) {
-      this.process = process;
-    }
-
-    public void kill() {
-      this.killed = true;
-      process.destroy();
-    }
-
-    public void killForcibly() {
-      this.killed = true;
-      process.destroyForcibly();
-    }
-
-    public Process getProcess() {
-      return process;
-    }
-
-    public boolean isKilled() {
-      return killed;
-    }
-
-    public boolean isAlive() {
-      return !killed && process.isAlive();
-    }
   }
 
   public RemoteDUnitVMIF getStub(int i)

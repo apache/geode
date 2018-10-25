@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -198,8 +197,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
         if (isBucketDestroyed()) {
           throw new ForceReattemptException("Bucket moved",
               new RegionDestroyedException(
-                  LocalizedStrings.PartitionedRegionDataStore_REGION_HAS_BEEN_DESTROYED
-                      .toLocalizedString(),
+                  "Region has been destroyed",
                   getPartitionedRegion().getFullPath()));
         }
       }
@@ -500,6 +498,18 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   public void addToFailedBatchRemovalMessageKeys(Object key) {
     failedBatchRemovalMessageKeys.add(key);
   }
+
+  public boolean isFailedBatchRemovalMessageKeysClearedFlag() {
+    return failedBatchRemovalMessageKeysClearedFlag;
+  }
+
+  public void setFailedBatchRemovalMessageKeysClearedFlag(
+      boolean failedBatchRemovalMessageKeysClearedFlag) {
+    this.failedBatchRemovalMessageKeysClearedFlag = failedBatchRemovalMessageKeysClearedFlag;
+  }
+
+  private boolean failedBatchRemovalMessageKeysClearedFlag = false;
+
 
   public ConcurrentHashSet<Object> getFailedBatchRemovalMessageKeys() {
     return this.failedBatchRemovalMessageKeys;

@@ -68,12 +68,12 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.MemoryThresholdInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * @version $Revision: 1.2 $
@@ -115,7 +115,7 @@ public class DefaultQueryService implements InternalQueryService {
   public DefaultQueryService(InternalCache cache) {
     if (cache == null)
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQueryService_CACHE_MUST_NOT_BE_NULL.toLocalizedString());
+          "cache must not be null");
     this.cache = cache;
     if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       // A no-op authorizer, allow method invocation
@@ -138,18 +138,17 @@ public class DefaultQueryService implements InternalQueryService {
    */
   public Query newQuery(String queryString) {
     if (QueryMonitor.isLowMemory()) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          QueryMonitor.getMemoryUsedDuringLowMemory());
       throw new QueryExecutionLowMemoryException(reason);
     }
     if (queryString == null)
       throw new QueryInvalidException(
-          LocalizedStrings.DefaultQueryService_THE_QUERY_STRING_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "The query string must not be null");
     if (queryString.length() == 0)
       throw new QueryInvalidException(
-          LocalizedStrings.DefaultQueryService_THE_QUERY_STRING_MUST_NOT_BE_EMPTY
-              .toLocalizedString());
+          "The query string must not be empty");
     ServerProxy serverProxy = pool == null ? null : new ServerProxy(pool);
     DefaultQuery query = new DefaultQuery(queryString, this.cache, serverProxy != null);
     query.setServerProxy(serverProxy);
@@ -223,27 +222,32 @@ public class DefaultQueryService implements InternalQueryService {
     // exist in memory
     // if(ra.getEvictionAttributes().getAction().isOverflowToDisk() ) {
     // throw new
-    // UnsupportedOperationException(LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0.toLocalizedString(regionPath));
+    // UnsupportedOperationException(String.format("The specified index conditions are not supported
+    // for regions which overflow to disk. The region involved is %s",regionPath));
     // }
     // if its a pr the create index on all of the local buckets.
-    if (((LocalRegion) region).memoryThresholdReached.get()
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      LocalRegion lr = (LocalRegion) region;
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_INDEX.toLocalizedString(region.getName()),
-          lr.getMemoryThresholdReachedMembers());
+    if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      InternalRegion internalRegion = (InternalRegion) region;
+      MemoryThresholdInfo info = internalRegion.getAtomicThresholdInfo();
+      if (info.isMemoryThresholdReached()) {
+        throw new LowMemoryException(
+            String.format(
+                "Cannot create index on region %s because the target member is running low on memory",
+                region.getName()),
+            info.getMembersThatReachedThreshold());
+      }
     }
     if (region instanceof PartitionedRegion) {
       try {
         parIndex = (PartitionedIndex) ((PartitionedRegion) region).createIndex(false, indexType,
             indexName, indexedExpression, fromClause, imports, loadEntries);
       } catch (ForceReattemptException ex) {
-        region.getCache().getLoggerI18n().info(
-            LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR,
+        region.getCache().getLogger().info(
+            "Exception while creating index on pr default query processor.",
             ex);
       } catch (IndexCreationException exx) {
-        region.getCache().getLoggerI18n().info(
-            LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR,
+        region.getCache().getLogger().info(
+            "Exception while creating index on pr default query processor.",
             exx);
       }
       return parIndex;
@@ -280,14 +284,15 @@ public class DefaultQueryService implements InternalQueryService {
       regionPath = ((CompiledRegion) cv).getRegionPath();
     } else {
       throw new RegionNotFoundException(
-          LocalizedStrings.DefaultQueryService_DEFAULTQUERYSERVICECREATEINDEXFIRST_ITERATOR_OF_INDEX_FROM_CLAUSE_DOES_NOT_EVALUATE_TO_A_REGION_PATH_THE_FROM_CLAUSE_USED_FOR_INDEX_CREATION_IS_0
-              .toLocalizedString(fromClause));
+          String.format(
+              "DefaultQueryService::createIndex:First Iterator of Index >From Clause does not evaluate to a Region Path. The from clause used for Index creation is  %s",
+              fromClause));
     }
     Region region = cache.getRegion(regionPath);
     if (region == null) {
       throw new RegionNotFoundException(
-          LocalizedStrings.DefaultQueryService_REGION_0_NOT_FOUND_FROM_1
-              .toLocalizedString(new Object[] {regionPath, fromClause}));
+          String.format("Region ' %s ' not found: from  %s",
+              new Object[] {regionPath, fromClause}));
     }
     return region;
   }
@@ -437,8 +442,7 @@ public class DefaultQueryService implements InternalQueryService {
       try {
         ((PartitionedRegion) region).removeIndex(index, false);
       } catch (ForceReattemptException ex) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.DefaultQueryService_EXCEPTION_REMOVING_INDEX___0), ex);
+        logger.info(String.format("Exception removing index :  %s", ex));
       }
       return;
     }
@@ -485,8 +489,7 @@ public class DefaultQueryService implements InternalQueryService {
         ((PartitionedRegion) region).removeIndexes(false);
       } catch (ForceReattemptException ex) {
         // will have to throw a proper exception relating to remove index.
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.DefaultQueryService_EXCEPTION_REMOVING_INDEX___0), ex);
+        logger.info(String.format("Exception removing index :  %s", ex));
       }
     }
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
@@ -584,7 +587,7 @@ public class DefaultQueryService implements InternalQueryService {
       throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
+          "cqName must not be null");
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false);
@@ -615,7 +618,7 @@ public class DefaultQueryService implements InternalQueryService {
       boolean isDurable) throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
+          "cqName must not be null");
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable);
@@ -911,20 +914,15 @@ public class DefaultQueryService implements InternalQueryService {
     try {
       indexes.addAll(((PartitionedRegion) region).createIndexes(false, icds));
     } catch (IndexCreationException e1) {
-      logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR),
+      logger.info("Exception while creating index on pr default query processor.",
           e1);
     } catch (CacheException e1) {
       logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR),
+          "Exception while creating index on pr default query processor.",
           e1);
       return true;
     } catch (ForceReattemptException e1) {
-      logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR),
+      logger.info("Exception while creating index on pr default query processor.",
           e1);
       return true;
     } catch (MultiIndexCreationException e) {

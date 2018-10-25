@@ -15,22 +15,15 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -39,9 +32,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
-import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.cache.execute.FunctionStats;
@@ -57,8 +47,7 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -71,15 +60,8 @@ public class ExecuteFunction66 extends BaseCommand {
 
   protected static volatile boolean ASYNC_TX_WARNING_ISSUED = false;
 
-  static final ExecutorService execService = Executors.newCachedThreadPool(new ThreadFactory() {
-    AtomicInteger threadNum = new AtomicInteger();
-
-    public Thread newThread(final Runnable r) {
-      Thread result = new Thread(r, "Function Execution Thread-" + threadNum.incrementAndGet());
-      result.setDaemon(true);
-      return result;
-    }
-  });
+  static final ExecutorService execService =
+      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 
   public static Command getCommand() {
     return singleton;
@@ -137,9 +119,9 @@ public class ExecuteFunction66 extends BaseCommand {
       allMembers = getAllMembers(clientMessage);
       ignoreFailedMembers = getIgnoreFailedMembers(clientMessage);
     } catch (ClassNotFoundException exception) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), exception);
+      logger.warn(String.format("Exception on server while executing function: %s",
+          function),
+          exception);
       if (hasResult == 1) {
         writeChunkedException(clientMessage, exception, serverConnection);
       } else {
@@ -151,10 +133,9 @@ public class ExecuteFunction66 extends BaseCommand {
 
     if (function == null) {
       final String message =
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString();
-      logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-          new Object[] {serverConnection.getName(), message}));
+          "The input function for the execute function request is null";
+      logger.warn("{} : {}",
+          new Object[] {serverConnection.getName(), message});
       sendError(hasResult, clientMessage, message, serverConnection);
       return;
     }
@@ -165,8 +146,9 @@ public class ExecuteFunction66 extends BaseCommand {
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
         if (functionObject == null) {
-          final String message = LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(function);
+          final String message =
+              String.format("Function named %s is not registered to FunctionService",
+                  function);
           logger.warn("{}: {}", serverConnection.getName(), message);
           sendError(hasResult, clientMessage, message, serverConnection);
           return;
@@ -179,8 +161,8 @@ public class ExecuteFunction66 extends BaseCommand {
           }
           if (functionStateOnServerSide != functionState) {
             String message =
-                LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER
-                    .toLocalizedString(function);
+                "Function attributes at client and server don't match for " +
+                    function;
             logger.warn("{}: {}", serverConnection.getName(), message);
             sendError(hasResult, clientMessage, message, serverConnection);
             return;
@@ -229,16 +211,9 @@ public class ExecuteFunction66 extends BaseCommand {
               context);
         }
 
-        HeapMemoryMonitor hmm =
-            ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
-        if (functionObject.optimizeForWrite() && cache != null && hmm.getState().isCritical()
-            && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-          Set<DistributedMember> sm = Collections.singleton((DistributedMember) cache.getMyId());
-          Exception e = new LowMemoryException(
-              LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                  .toLocalizedString(new Object[] {functionObject.getId(), sm}),
-              sm);
-
+        Exception e = cache.getInternalResourceManager().getHeapMonitor()
+            .createLowMemoryIfNeeded(functionObject, cache.getMyId());
+        if (e != null) {
           sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
           return;
         }
@@ -271,11 +246,11 @@ public class ExecuteFunction66 extends BaseCommand {
         handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
     } catch (IOException ioException) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), ioException);
+      logger.warn(String.format("Exception on server while executing function: %s",
+          function),
+          ioException);
       String message =
-          LocalizedStrings.ExecuteFunction_SERVER_COULD_NOT_SEND_THE_REPLY.toLocalizedString();
+          "Server could not send the reply";
       sendException(hasResult, clientMessage, message, serverConnection, ioException);
     } catch (InternalFunctionInvocationTargetException internalfunctionException) {
       // Fix for #44709: User should not be aware of
@@ -289,16 +264,16 @@ public class ExecuteFunction66 extends BaseCommand {
       // 3> Multiple target nodes found for single hop operation
       // 4> in case of HA member departed
       if (logger.isDebugEnabled()) {
-        logger.debug(LocalizedMessage.create(
-            LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-            new Object[] {function}), internalfunctionException);
+        logger.debug(String.format("Exception on server while executing function: %s",
+            new Object[] {function}),
+            internalfunctionException);
       }
       final String message = internalfunctionException.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, internalfunctionException);
     } catch (Exception e) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), e);
+      logger.warn(String.format("Exception on server while executing function: %s",
+          function),
+          e);
       final String message = e.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, e);
     }
@@ -330,11 +305,12 @@ public class ExecuteFunction66 extends BaseCommand {
 
     if (fn.hasResult()) {
       fn.execute(cx);
-      if (!((ServerToClientFunctionResultSender65) sender).isLastResultReceived()
+      if (sender.isOkayToSendResult()
+          && !((ServerToClientFunctionResultSender65) sender).isLastResultReceived()
           && fn.hasResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(fn.getId()));
+            String.format("The function, %s, did not send last result",
+                fn.getId()));
       }
     } else {
       /*
@@ -349,10 +325,10 @@ public class ExecuteFunction66 extends BaseCommand {
             if (txState != null) {
               cache = GemFireCacheImpl.getExisting("executing function");
               cache.getTxManager().masqueradeAs(txState);
-              if (cache.getLoggerI18n().warningEnabled() && !ASYNC_TX_WARNING_ISSUED) {
+              if (cache.getLogger().warningEnabled() && !ASYNC_TX_WARNING_ISSUED) {
                 ASYNC_TX_WARNING_ISSUED = true;
-                cache.getLoggerI18n().warning(
-                    LocalizedStrings.ExecuteFunction66_TRANSACTIONAL_FUNCTION_WITHOUT_RESULT);
+                cache.getLogger().warning(
+                    "Function invoked within transactional context, but hasResults() is false; ordering of transactional operations cannot be guaranteed.  This message is only issued once by a server.");
               }
             }
             fn.execute(cx);
@@ -367,20 +343,20 @@ public class ExecuteFunction66 extends BaseCommand {
             // 2> in case of HA member departed
             stats.endFunctionExecutionWithException(fn.hasResult());
             if (logger.isDebugEnabled()) {
-              logger.debug(LocalizedMessage.create(
-                  LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-                  new Object[] {fn}), internalfunctionException);
+              logger.debug(String.format("Exception on server while executing function: %s",
+                  new Object[] {fn}),
+                  internalfunctionException);
             }
           } catch (FunctionException functionException) {
             stats.endFunctionExecutionWithException(fn.hasResult());
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-                fn), functionException);
+            logger.warn(String.format("Exception on server while executing function: %s",
+                fn),
+                functionException);
           } catch (Exception exception) {
             stats.endFunctionExecutionWithException(fn.hasResult());
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-                fn), exception);
+            logger.warn(String.format("Exception on server while executing function: %s",
+                fn),
+                exception);
           } finally {
             if (txState != null && cache != null) {
               cache.getTxManager().unmasquerade(txState);

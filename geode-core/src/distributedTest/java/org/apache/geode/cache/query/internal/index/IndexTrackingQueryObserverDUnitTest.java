@@ -14,6 +14,10 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.query.internal.DefaultQuery.QUERY_VERBOSE;
+import static org.apache.geode.cache.query.internal.QueryObserverHolder.getInstance;
+import static org.apache.geode.cache.query.internal.QueryObserverHolder.hasObserver;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,13 +42,12 @@ import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
@@ -237,16 +240,16 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
       public void run() {
         // Query VERBOSE has to be true for the test
-        assertTrue(DefaultQuery.QUERY_VERBOSE);
+        assertTrue(QUERY_VERBOSE);
 
         // Get TestHook from observer.
-        QueryObserver observer = QueryObserverHolder.getInstance();
-        assertTrue(QueryObserverHolder.hasObserver());
+        QueryObserver observer = getInstance();
+        assertTrue(hasObserver());
 
         final IndexTrackingTestHook th =
             (IndexTrackingTestHook) ((IndexTrackingQueryObserver) observer).getTestHook();
 
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           public boolean done() {
             if (th.getRegionMap() != null) {
@@ -258,7 +261,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
           public String description() {
             return null;
           }
-        }, 60 * 1000, 200, true);
+        });
 
         IndexInfo regionMap = th.getRegionMap();
 
@@ -268,7 +271,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
           totalResults += i.intValue();
         }
 
-        LogWriterUtils.getLogWriter().fine("Index Info result size is " + totalResults);
+        getLogWriter().fine("Index Info result size is " + totalResults);
         assertEquals(results, totalResults);
       }
     };

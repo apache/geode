@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -ex
 
 BASE_DIR=$(pwd)
 
@@ -32,12 +32,8 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 REPODIR=$(cd geode; git rev-parse --show-toplevel)
 
 SSHKEY_FILE="instance-data/sshkey"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
 
-INSTANCE_NAME="$(cat instance-data/instance-name)"
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
-PROJECT="$(cat instance-data/project)"
-ZONE="$(cat instance-data/zone)"
 
-echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
-
-time rsync -e "ssh -i ${SSHKEY_FILE}" -ah ${REPODIR} geode@${INSTANCE_IP_ADDRESS}:.
+time rsync -e "ssh ${SSH_OPTIONS}" -ah ${REPODIR} geode@${INSTANCE_IP_ADDRESS}:.

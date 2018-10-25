@@ -16,6 +16,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -23,9 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -96,7 +95,7 @@ public class CacheConnectionTimeoutJUnitTest {
 
     socket = new Socket("localhost", cacheServerPort);
 
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    await().until(socket::isConnected);
     outputStream = socket.getOutputStream();
     MessageUtil.performAndVerifyHandshake(socket);
 

@@ -17,11 +17,11 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.PR_ROOT_REGION_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +51,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
  * will verify the functionality under distributed scenario.
  */
 @SuppressWarnings("serial")
-
 public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
 
   private VM vm0;
@@ -404,7 +403,7 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
     // wait for put
     Region region = cache.getRegion(regionName);
 
-    await().atMost(30, SECONDS).until(() -> region.getEntry("start") != null);
+    await().until(() -> region.getEntry("start") != null);
 
     for (int i = 0; i < count; ++i) {
       Region partitionedRegion = regionFactory.create(prPrefixName + i);

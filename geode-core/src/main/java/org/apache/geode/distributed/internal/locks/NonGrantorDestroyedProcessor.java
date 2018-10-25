@@ -51,7 +51,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
 
   /**
    *
-   * Send a message to grantor telling him that we've shutdown the named lock service for this
+   * Send a message to grantor telling it that we've shutdown the named lock service for this
    * member.
    * <p>
    * Caller should loop, getting the grantor, calling <code>send</code>, and checking

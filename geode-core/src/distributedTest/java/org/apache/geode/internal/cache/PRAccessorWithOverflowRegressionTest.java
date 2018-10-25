@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 
@@ -100,8 +99,8 @@ public class PRAccessorWithOverflowRegressionTest extends CacheTestCase {
     });
 
     // datastore should create diskstore
-    await().atMost(1, MINUTES)
-        .until(() -> assertThat(datastoreDiskDir.listFiles().length).isGreaterThan(0));
+    await()
+        .untilAsserted(() -> assertThat(datastoreDiskDir.listFiles().length).isGreaterThan(0));
 
     // accessor should not create a diskstore
     assertThat(accessorDiskDir.listFiles()).hasSize(0);

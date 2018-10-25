@@ -115,7 +115,7 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * The default membership-port-range.
    * <p>
-   * Actual value is <code>[1024,65535]</code>.
+   * Actual value is <code>[41000,61000]</code>.
    *
    * @since GemFire 6.5
    */
@@ -478,14 +478,14 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Returns the name of the log file to which informational messages are written.
    *
-   * @see org.apache.geode.i18n.LogWriterI18n
+   * @see org.apache.geode.LogWriter
    */
   String getLogFile();
 
   /**
    * Sets the name of the log file to which informational messages are written.
    *
-   * @see org.apache.geode.i18n.LogWriterI18n
+   * @see org.apache.geode.LogWriter
    */
   void setLogFile(String logFile);
 

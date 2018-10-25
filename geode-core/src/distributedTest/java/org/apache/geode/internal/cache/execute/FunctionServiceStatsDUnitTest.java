@@ -64,7 +64,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -1217,18 +1216,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
           // Wait Criterion is added to make sure that the function execution
           // happens on all nodes and all nodes get the FunctionException so that the stats will get
           // incremented,
-          WaitCriterion wc = new WaitCriterion() {
-            String excuse;
-
-            public boolean done() {
-              return false;
-            }
-
-            public String description() {
-              return excuse;
-            }
-          };
-          Wait.waitForCriterion(wc, 20000, 1000, false);
+          Wait.pause(2000);
           rc.getResult();
         } catch (Exception expected) {
           return Boolean.TRUE;

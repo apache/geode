@@ -16,12 +16,11 @@ package org.apache.geode.internal.cache;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -234,8 +233,8 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
         PartitionedRegionStats prs = partitionedRegion.getPrStats();
 
         // Wait for recovery
-        await().atMost(2, MINUTES)
-            .until(() -> assertThat(prs.getLowRedundancyBucketCount()).isEqualTo(0));
+        await()
+            .untilAsserted(() -> assertThat(prs.getLowRedundancyBucketCount()).isEqualTo(0));
       });
       return true;
     } else {

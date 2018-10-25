@@ -24,7 +24,6 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LocalResultCollectorImpl implements LocalResultCollector {
 
@@ -104,7 +103,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
   public Object getResult() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
+          "Function results already collected");
     }
     this.resultCollected = true;
     try {
@@ -142,7 +141,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     boolean resultReceived = false;
     if (this.resultCollected) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
+          "Function results already collected");
     }
     this.resultCollected = true;
     try {
@@ -153,8 +152,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     }
     if (!resultReceived) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_NOT_COLLECTED_IN_TIME_PROVIDED
-              .toLocalizedString());
+          "All results not received in time provided");
     }
     this.latch = new CountDownLatch(1);
     if (this.functionException != null && !this.execution.isIgnoreDepartedMembers()) {

@@ -28,14 +28,14 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * A data structure used to hold load information for a locator
@@ -74,20 +74,12 @@ public class LocatorLoadSnapshot {
    */
   private boolean rebalancing;
 
-  private final ScheduledThreadPoolExecutor estimateTimeoutProcessor =
-      new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-        public Thread newThread(final Runnable r) {
-          Thread result = new Thread(r, "loadEstimateTimeoutProcessor");
-          result.setDaemon(true);
-          return result;
-        }
-      });
-
+  private final ScheduledExecutorService estimateTimeoutProcessor =
+      LoggingExecutors.newScheduledThreadPool("loadEstimateTimeoutProcessor", 1, false);
 
   public LocatorLoadSnapshot() {
     connectionLoadMap.put(null, new HashMap());
     queueLoadMap.put(null, new HashMap());
-    this.estimateTimeoutProcessor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     String property = System.getProperty(LOAD_IMBALANCE_THRESHOLD_PROPERTY_NAME);
     if (property != null) {
       loadImbalanceThreshold = Float.parseFloat(property);
@@ -553,7 +545,7 @@ public class LocatorLoadSnapshot {
       LoadHolder nextLoadReference = loadEntry.getValue();
       float nextLoad = nextLoadReference.getLoad();
       if (nextLoad > currentLoad) {
-        // found a guy who has a higher load than us so...
+        // found a server who has a higher load than us
         return null;
       }
     }

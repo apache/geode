@@ -23,7 +23,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 
 public class GetFunctionAttribute extends BaseCommand {
@@ -39,15 +38,11 @@ public class GetFunctionAttribute extends BaseCommand {
       final SecurityService securityService, long start) throws IOException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
     String functionId = clientMessage.getPart(0).getString();
     if (functionId == null) {
       String message =
-          LocalizedStrings.GetFunctionAttribute_THE_INPUT_0_FOR_GET_FUNCTION_ATTRIBUTE_REQUEST_IS_NULL
-              .toLocalizedString("functionId");
+          String.format("The input %s for GetFunctionAttributes request is null",
+              "functionId");
       logger.warn("{}: {}", serverConnection.getName(), message);
       sendError(clientMessage, message, serverConnection);
       return;
@@ -57,8 +52,8 @@ public class GetFunctionAttribute extends BaseCommand {
     if (function == null) {
       String message = null;
       message =
-          LocalizedStrings.GetFunctionAttribute_THE_FUNCTION_IS_NOT_REGISTERED_FOR_FUNCTION_ID_0
-              .toLocalizedString(functionId);
+          String.format("The function is not registered for function id %s",
+              functionId);
       logger.warn("{}: {}", serverConnection.getName(), message);
       sendError(clientMessage, message, serverConnection);
       return;

@@ -14,12 +14,10 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.net.InetAddress;
 import java.util.Set;
@@ -86,7 +84,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     this.agent = GfManagerAgentFactory.getManagerAgent(
         new GfManagerAgentConfig(null, transport, getLogWriter(), Alert.SEVERE, this, null));
 
-    await().atMost(1, MINUTES).until(() -> assertThat(agent.isConnected()).isTrue());
+    await().untilAsserted(() -> assertThat(agent.isConnected()).isTrue());
   }
 
   @After
@@ -117,8 +115,8 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
   @Test
   public void testApplications() throws Exception {
-    await().atMost(1, MINUTES)
-        .until(() -> assertThat(agent.listApplications().length).isGreaterThanOrEqualTo(4));
+    await()
+        .untilAsserted(() -> assertThat(agent.listApplications().length).isGreaterThanOrEqualTo(4));
 
     ApplicationVM[] applications = agent.listApplications();
     for (int whichApplication = 0; whichApplication < applications.length; whichApplication++) {
@@ -224,8 +222,9 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
         Region rootRegion = root;
         subRegion.destroyRegion();
 
-        await().atMost(30, SECONDS)
-            .until(() -> assertThat(rootRegion.subregions(false)).hasSize(expectedSize));
+        await()
+            .untilAsserted(
+                () -> assertThat(rootRegion.subregions(false).size()).isEqualTo(expectedSize));
       }
     }
   }

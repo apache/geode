@@ -16,15 +16,14 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.awaitility.Awaitility;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -150,7 +149,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   }
 
   private static void waitUntilRegionMBeansAreRegistered() {
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       Set<DistributedMember> regionMembers = CliUtil.getRegionAssociatedMembers(REPLICATED_REGION,
           (InternalCache) CacheFactory.getAnyInstance(), true);
       assertThat(regionMembers).hasSize(2);

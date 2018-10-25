@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
@@ -199,16 +198,14 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
       DistributionManager distributionManager, final Version version) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean isOverflowedToDisk(InternalRegion region,
       DistributedRegion.DiskPosition diskPosition) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -235,15 +232,13 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   @Override
   public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public void setRecentlyUsed(RegionEntryContext context) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -254,22 +249,19 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   @Override
   public void txDidDestroy(long currentTime) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public void resetCounts() throws StatisticsDisabledException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public void removePhase1(InternalRegion region, boolean clear) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -281,36 +273,31 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   @Override
   public void setValue(RegionEntryContext context, Object value) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public Object getValue() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public Token getValueAsToken() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public Object getValueRetain(RegionEntryContext context, boolean decompress) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public Object getTransformedValue() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -321,24 +308,21 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   @Override
   public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean initialImagePut(InternalRegion region, long lastModified, Object newValue,
       boolean wasRecovered, boolean acceptedVersionTag) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean initialImageInit(InternalRegion region, long lastModified, Object newValue,
       boolean create, boolean wasRecovered, boolean acceptedVersionTag) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -347,36 +331,31 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
       boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean getValueWasResultOfSearch() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public void setValueResultOfSearch(boolean value) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public Object getSerializedValueOnDisk(InternalRegion region) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
 
@@ -488,15 +467,13 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   @Override
   public boolean isUpdateInProgress() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public void setUpdateInProgress(boolean underUpdate) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -507,43 +484,37 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   @Override
   public boolean isInvalid() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean isDestroyed() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public void setValueToNull() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean isInvalidOrRemoved() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean isDestroyedOrRemoved() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
   public boolean isDestroyedOrRemovedButNotTombstone() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -555,8 +526,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   public void setValueWithTombstoneCheck(Object value, EntryEvent event)
       throws RegionClearedException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override
@@ -573,8 +543,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   public void setValue(RegionEntryContext context, Object value, EntryEventImpl event)
       throws RegionClearedException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
-            .toLocalizedString());
+        "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }
 
   @Override

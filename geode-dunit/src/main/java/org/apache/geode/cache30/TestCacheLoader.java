@@ -27,14 +27,14 @@ import org.apache.geode.cache.LoaderHelper;
  *
  * @since GemFire 3.0
  */
-public abstract class TestCacheLoader extends TestCacheCallback implements CacheLoader {
+public abstract class TestCacheLoader<K, V> extends TestCacheCallback implements CacheLoader<K, V> {
 
-  public Object load(LoaderHelper helper) throws CacheLoaderException {
+  public V load(LoaderHelper<K, V> helper) throws CacheLoaderException {
 
     this.invoked = true;
     return load2(helper);
   }
 
-  public abstract Object load2(LoaderHelper helper) throws CacheLoaderException;
+  public abstract V load2(LoaderHelper<K, V> helper) throws CacheLoaderException;
 
 }

@@ -49,7 +49,6 @@ import org.apache.geode.cache.query.internal.CompiledIteratorDef;
 import org.apache.geode.cache.query.internal.CompiledPath;
 import org.apache.geode.cache.query.internal.CompiledSortCriterion;
 import org.apache.geode.cache.query.internal.CompiledValue;
-import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexInfo;
@@ -72,7 +71,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.StoredObject;
 
@@ -677,11 +675,8 @@ public class HashIndex extends AbstractIndex {
         ok = QueryUtils.applyCondition(iterOps, context);
       }
       if (ok) {
-        if (context != null && context.isCqQueryContext()) {
-          result.add(new CqEntry(re.getKey(), value));
-        } else {
-          applyProjection(projAttrib, context, result, value, intermediateResults, isIntersection);
-        }
+        applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
+            isIntersection, re.getKey());
         if (limit != -1 && result.size() == limit) {
           observer.limitAppliedAtIndexLevel(this, limit, result);
           return;
@@ -1167,7 +1162,7 @@ public class HashIndex extends AbstractIndex {
         QueryInvocationTargetException, IMQException {
       if (QueryMonitor.isLowMemory()) {
         throw new IMQException(
-            LocalizedStrings.IndexCreationMsg_CANCELED_DUE_TO_LOW_MEMORY.toLocalizedString());
+            "Index creation canceled due to low memory");
       }
 
       Object indexKey = null;

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -24,9 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
@@ -122,8 +121,7 @@ public class SearchLoadAndWriteProcessorTest {
 
     Thread t1 = new Thread(new Runnable() {
       public void run() {
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> processor.getSelectedNode() != null);
         departedMember = processor.getSelectedNode();
         // Simulate member departed event
@@ -134,8 +132,7 @@ public class SearchLoadAndWriteProcessorTest {
 
     Thread t2 = new Thread(new Runnable() {
       public void run() {
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> departedMember != null && processor.getSelectedNode() != null
                 && departedMember != processor.getSelectedNode());
 
@@ -148,8 +145,7 @@ public class SearchLoadAndWriteProcessorTest {
 
     Thread t3 = new Thread(new Runnable() {
       public void run() {
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> departedMember != null && processor.getSelectedNode() != null
                 && departedMember != processor.getSelectedNode());
         // Handle search result from a new member

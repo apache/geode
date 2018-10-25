@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -45,8 +46,6 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 
 /**
@@ -211,44 +210,22 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
       PartitionedRegion pr = (PartitionedRegion) testRegion;
       final BucketRegion bucket = pr.getDataStore().getLocalBucketById(0);
 
-      Wait.waitForCriterion(new WaitCriterion() {
-        String waitingFor = "primary is still in membership view: " + crashedMember;
-        boolean dumped = false;
-
-        @Override
-        public boolean done() {
-          if (testRegion.getCache().getDistributionManager().isCurrentMember(crashedMember)) {
-            return false;
-          }
-          if (!testRegion.containsKey("Object3")) {
-            waitingFor = "entry for Object3 not found";
-            return false;
-          }
-          RegionEntry re = bucket.getRegionMap().getEntry("Object5");
-          if (re == null) {
-            if (!dumped) {
-              dumped = true;
-              bucket.dumpBackingMap();
-            }
-            waitingFor = "entry for Object5 not found";
-            return false;
-          }
-          if (!re.isTombstone()) {
-            if (!dumped) {
-              dumped = true;
-              bucket.dumpBackingMap();
-            }
-            waitingFor = "Object5 is not a tombstone but should be: " + re;
-            return false;
-          }
-          return true;
+      await().until(() -> {
+        if (testRegion.getCache().getDistributionManager().isCurrentMember(crashedMember)) {
+          return false;
         }
-
-        @Override
-        public String description() {
-          return waitingFor;
+        if (!testRegion.containsKey("Object3")) {
+          return false;
         }
-      }, 30000, 5000, true);
+        RegionEntry re = bucket.getRegionMap().getEntry("Object5");
+        if (re == null) {
+          return false;
+        }
+        if (!re.isTombstone()) {
+          return false;
+        }
+        return true;
+      });
     });
   }
 

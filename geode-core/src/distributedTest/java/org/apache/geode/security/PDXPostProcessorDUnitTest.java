@@ -18,14 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -193,8 +192,8 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
     PDXPostProcessor pp =
         (PDXPostProcessor) this.server.getCache().getSecurityService().getPostProcessor();
-    Awaitility.await().atMost(2, TimeUnit.MINUTES)
-        .until(() -> assertThat(pp.getCount()).isEqualTo(2));
+    await()
+        .untilAsserted(() -> assertThat(pp.getCount()).isEqualTo(2));
   }
 
   @Test

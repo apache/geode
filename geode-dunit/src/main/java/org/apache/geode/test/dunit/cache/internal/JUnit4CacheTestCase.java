@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.cache.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -23,10 +24,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -223,7 +222,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
           && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+        await("waiting for cache to close")
             .until(gemFireCache::isClosed);
       }
       if (cache == null || cache.isClosed()) {
@@ -247,7 +246,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
           && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+        await("waiting for cache to close")
             .until(gemFireCache::isClosed);
       }
       if (cache == null || cache.isClosed()) {
@@ -389,17 +388,18 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   /**
    * Returns a region with the given name and attributes.
    */
-  public final Region createRegion(final String name, final RegionAttributes attributes)
+  public final <K, V> Region<K, V> createRegion(final String name,
+      final RegionAttributes<K, V> attributes)
       throws CacheException {
     return createRegion(name, "root", attributes);
   }
 
-  public final Region createRegion(final String name, final String rootName,
-      final RegionAttributes attributes) throws CacheException {
-    Region root = getRootRegion(rootName);
+  public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
+      final RegionAttributes<K, V> attributes) throws CacheException {
+    Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
       // don't put listeners on root region
-      AttributesFactory attributesFactory = new AttributesFactory(attributes);
+      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
       ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
 
       attributesFactory.setCacheLoader(null);
@@ -411,33 +411,34 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       attributesFactory.setRegionIdleTimeout(expiration);
       attributesFactory.setEntryIdleTimeout(expiration);
 
-      RegionAttributes rootAttrs = attributesFactory.create();
+      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
       root = createRootRegion(rootName, rootAttrs);
     }
 
     return root.createSubregion(name, attributes);
   }
 
-  public final Region getRootRegion() {
+  public final <K, V> Region<K, V> getRootRegion() {
     return getRootRegion("root");
   }
 
-  public final Region getRootRegion(final String rootName) {
+  public final <K, V> Region<K, V> getRootRegion(final String rootName) {
     return getCache().getRegion(rootName);
   }
 
-  protected final Region createRootRegion(final RegionAttributes attributes)
+  protected final <K, V> Region<K, V> createRootRegion(final RegionAttributes<K, V> attributes)
       throws RegionExistsException, TimeoutException {
     return createRootRegion("root", attributes);
   }
 
-  public final Region createRootRegion(final String rootName, final RegionAttributes attributes)
+  public final <K, V> Region<K, V> createRootRegion(final String rootName,
+      final RegionAttributes<K, V> attributes)
       throws RegionExistsException, TimeoutException {
     return getCache().createRegion(rootName, attributes);
   }
 
-  public final Region createExpiryRootRegion(final String rootName,
-      final RegionAttributes attributes) throws RegionExistsException, TimeoutException {
+  public final <K, V> Region<K, V> createExpiryRootRegion(final String rootName,
+      final RegionAttributes<K, V> attributes) throws RegionExistsException, TimeoutException {
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
       return createRootRegion(rootName, attributes);

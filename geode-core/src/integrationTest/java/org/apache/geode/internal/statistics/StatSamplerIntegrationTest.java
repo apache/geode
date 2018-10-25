@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -69,8 +67,8 @@ public class StatSamplerIntegrationTest {
 
   @Before
   public void setUp() {
-    this.statisticTypes = new HashMap<String, String>();
-    this.allStatistics = new HashMap<String, Map<String, Number>>();
+    this.statisticTypes = new HashMap<>();
+    this.allStatistics = new HashMap<>();
   }
 
   @After
@@ -135,7 +133,7 @@ public class StatSamplerIntegrationTest {
     st1_1.setDoubleSupplier("sampled_double", () -> 7.0);
     getOrCreateExpectedValueMap(st1_1).put("sampled_double", 7.0);
 
-    await("awaiting StatSampler readiness").atMost(30, SECONDS)
+    await("awaiting StatSampler readiness")
         .until(() -> hasSamplerStatsInstances(factory));
 
     Statistics[] samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
@@ -150,7 +148,7 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_counter_9", 9);
     incLong(st1_1, "long_gauge_11", 11);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -159,7 +157,7 @@ public class StatSamplerIntegrationTest {
     incInt(st1_1, "int_counter_5", 1);
     incInt(st1_1, "int_counter_6", 1);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -174,7 +172,7 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_gauge_11", 1);
     incLong(st1_1, "long_gauge_12", 1);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -189,7 +187,7 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_gauge_11", -1);
     incLong(st1_1, "long_gauge_12", 1);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -204,9 +202,9 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_gauge_11", 1);
     incLong(st1_1, "long_gauge_12", 1);
 
-    awaitStatSample(samplerStats);
-    awaitStatSample(samplerStats);
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_gauge_3", 3);
@@ -215,7 +213,7 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_counter_9", 9);
     incLong(st1_1, "long_gauge_11", 11);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -224,7 +222,7 @@ public class StatSamplerIntegrationTest {
     incInt(st1_1, "int_counter_5", 1);
     incInt(st1_1, "int_counter_6", 1);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -239,7 +237,7 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_gauge_11", 1);
     incLong(st1_1, "long_gauge_12", 1);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -254,7 +252,7 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_gauge_11", -1);
     incLong(st1_1, "long_gauge_12", 1);
 
-    awaitStatSample(samplerStats);
+    waitForStatSamplerToRun(samplerStats);
 
     incDouble(st1_1, "double_counter_1", 1);
     incDouble(st1_1, "double_counter_2", 1);
@@ -269,7 +267,13 @@ public class StatSamplerIntegrationTest {
     incLong(st1_1, "long_gauge_11", 1);
     incLong(st1_1, "long_gauge_12", 1);
 
-    awaitStatSample(samplerStats);
+    /*
+     * After updating all stats we should wait for the stat sampler to run at least twice. The
+     * first statSampler iteration may be running as the stats are being updated. The second
+     * statSampler iteration
+     * makes sure that all the stats we care about have been sampled and flush to the stat archive
+     */
+    waitForStatSamplerToRun(samplerStats, 2);
 
     factory.close();
 
@@ -278,8 +282,8 @@ public class StatSamplerIntegrationTest {
     final StatArchiveReader reader = new StatArchiveReader(new File[] {archiveFile}, null, false);
 
     List resources = reader.getResourceInstList();
-    for (Iterator iter = resources.iterator(); iter.hasNext();) {
-      StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
+    for (Object resource : resources) {
+      StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) resource;
       String resourceName = ri.getName();
       assertNotNull(resourceName);
 
@@ -317,10 +321,14 @@ public class StatSamplerIntegrationTest {
     return samplerStatsInstances != null && samplerStatsInstances.length > 0;
   }
 
-  private void awaitStatSample(final Statistics samplerStats) throws InterruptedException {
-    int startSampleCount = samplerStats.getInt("sampleCount");
-    await("awaiting stat sample").atMost(30, SECONDS)
-        .until(() -> samplerStats.getInt("sampleCount") > startSampleCount);
+  private void waitForStatSamplerToRun(final Statistics samplerStats, final int timesToRun) {
+    final int startSampleCount = samplerStats.getInt("sampleCount");
+    await("waiting for the StatSampler to run")
+        .until(() -> samplerStats.getInt("sampleCount") >= startSampleCount + timesToRun);
+  }
+
+  private void waitForStatSamplerToRun(final Statistics samplerStats) {
+    waitForStatSamplerToRun(samplerStats, 1);
   }
 
   private void incDouble(Statistics statistics, String stat, double value) {
@@ -344,12 +352,7 @@ public class StatSamplerIntegrationTest {
   }
 
   private Map<String, Number> getOrCreateExpectedValueMap(final Statistics statistics) {
-    Map<String, Number> statValues = this.allStatistics.get(statistics.getTextId());
-    if (statValues == null) {
-      statValues = new HashMap<String, Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
-    }
-    return statValues;
+    return this.allStatistics.computeIfAbsent(statistics.getTextId(), k -> new HashMap<>());
   }
 
   private void incLong(Statistics statistics, String stat, long value) {

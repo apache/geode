@@ -54,7 +54,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskBackupStatus;
@@ -79,7 +78,6 @@ import org.apache.geode.management.internal.DiskBackupStatusImpl;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.stats.GatewayReceiverClusterStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.GatewaySenderClusterStatsMonitor;
@@ -291,7 +289,7 @@ public class DistributedSystemBridge {
         logger.debug(e.getMessage());
       }
 
-      logger.info(LocalizedMessage.create(ManagementStrings.INSTANCE_NOT_FOUND, objectName));
+      logger.info("{} Instance Not Found in Platform MBean Server", objectName);
     }
   }
 
@@ -344,12 +342,12 @@ public class DistributedSystemBridge {
     try {
       mbeanServer.removeNotificationListener(objectName, distListener);
     } catch (ListenerNotFoundException e) {
-      logger.info(LocalizedMessage.create(ManagementStrings.LISTENER_NOT_FOUND_FOR_0, objectName));
+      logger.info("Listener Not Found For MBean : {}", objectName);
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
       }
     } catch (InstanceNotFoundException e) {
-      logger.info(LocalizedMessage.create(ManagementStrings.INSTANCE_NOT_FOUND, objectName));
+      logger.info("{} Instance Not Found in Platform MBean Server", objectName);
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
       }
@@ -616,7 +614,7 @@ public class DistributedSystemBridge {
     if (bean != null) {
       return bean;
     } else {
-      throw new Exception(ManagementStrings.INVALID_MEMBER_NAME_OR_ID.toLocalizedString(member));
+      throw new Exception(String.format("{0} is an invalid member name or Id", member));
     }
   }
 
@@ -965,7 +963,7 @@ public class DistributedSystemBridge {
     if (distrRegionMap.get(distributedRegionMBeanName) != null) {
       return distributedRegionMBeanName;
     } else {
-      throw new Exception(ManagementStrings.DISTRIBUTED_REGION_MBEAN_NOT_FOUND_IN_DS.toString());
+      throw new Exception("DistributedRegionMBean Not Found In Distributed System");
     }
   }
 
@@ -980,12 +978,9 @@ public class DistributedSystemBridge {
       RegionMXBean bean = service.getMBeanInstance(regionMBeanName, RegionMXBean.class);
       if (bean != null) {
         return regionMBeanName;
-      } else {
-        throw new Exception(ManagementStrings.REGION_MBEAN_NOT_FOUND_IN_DS.toString());
       }
-    } else {
-      throw new Exception(ManagementStrings.REGION_MBEAN_NOT_FOUND_IN_DS.toString());
     }
+    throw new Exception("RegionMBean Not Found In Distributed System");
   }
 
   public ObjectName[] fetchRegionObjectNames(ObjectName memberMBeanName) throws Exception {
@@ -1002,7 +997,7 @@ public class DistributedSystemBridge {
       ObjectName[] objNames = new ObjectName[list.size()];
       return list.toArray(objNames);
     } else {
-      throw new Exception(ManagementStrings.MEMBER_MBEAN_NOT_FOUND_IN_DS.toString());
+      throw new Exception("Member MBean Not Found In Distributed System");
     }
   }
 
@@ -1025,7 +1020,7 @@ public class DistributedSystemBridge {
       if (bean != null) {
         return serverName;
       } else {
-        throw new Exception(ManagementStrings.CACHE_SERVER_MBEAN_NOT_FOUND_IN_DS.toString());
+        throw new Exception("Cache Server MBean not Found in DS");
       }
     }
   }
@@ -1044,7 +1039,7 @@ public class DistributedSystemBridge {
     if (bean != null) {
       return diskStoreName;
     } else {
-      throw new Exception(ManagementStrings.DISK_STORE_MBEAN_NOT_FOUND_IN_DS.toString());
+      throw new Exception("Disk Store MBean not Found in DS");
     }
   }
 
@@ -1054,7 +1049,7 @@ public class DistributedSystemBridge {
       return service.getDistributedLockServiceMBeanName(lockServiceName);
     } else {
       throw new Exception(
-          ManagementStrings.DISTRIBUTED_LOCK_SERVICE_MBEAN_NOT_FOUND_IN_SYSTEM.toString());
+          "Distributed Lock Service MBean not Found in DS");
     }
   }
 
@@ -1072,7 +1067,7 @@ public class DistributedSystemBridge {
         return receiverName;
       } else {
         throw new Exception(
-            ManagementStrings.GATEWAY_RECEIVER_MBEAN_NOT_FOUND_IN_SYSTEM.toString());
+            "Gateway Receiver MBean not Found in DS");
       }
     }
   }
@@ -1091,7 +1086,7 @@ public class DistributedSystemBridge {
       if (bean != null) {
         return senderName;
       } else {
-        throw new Exception(ManagementStrings.GATEWAY_SENDER_MBEAN_NOT_FOUND_IN_SYSTEM.toString());
+        throw new Exception("Gateway Sender MBean not Found in DS");
       }
     }
   }
@@ -1109,7 +1104,7 @@ public class DistributedSystemBridge {
       if (bean != null) {
         return lockServiceName;
       } else {
-        throw new Exception(ManagementStrings.LOCK_SERVICE_MBEAN_NOT_FOUND_IN_SYSTEM.toString());
+        throw new Exception("Lock Service MBean not Found in DS");
       }
     }
   }

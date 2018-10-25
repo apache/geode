@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -22,9 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -901,17 +900,18 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         }
 
         Map matchedCqMap = cqService.getMatchingCqMap();
-        Awaitility.await().atMost(30, TimeUnit.SECONDS)
-            .until(() -> assertEquals("The number of matched cq is not as expected.", mapSize,
-                matchedCqMap.size()));
+        await()
+            .untilAsserted(
+                () -> assertEquals("The number of matched cq is not as expected.", mapSize,
+                    matchedCqMap.size()));
 
         if (query != null) {
           if (!matchedCqMap.containsKey(query)) {
             fail("Query not found in the matched cq map. Query:" + query);
           }
           Collection cqs = (Collection) matchedCqMap.get(query);
-          Awaitility.await().atMost(30, TimeUnit.SECONDS)
-              .until(() -> assertEquals(
+          await()
+              .untilAsserted(() -> assertEquals(
                   "Number of matched cqs are not equal to the expected matched cqs", numCqSize,
                   cqs.size()));
         }

@@ -16,6 +16,7 @@ package org.apache.geode.internal.offheap;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,9 +29,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 
@@ -54,6 +53,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -177,7 +177,7 @@ public abstract class OffHeapRegionBase {
           return "Waiting for disconnect to complete";
         }
       };
-      org.apache.geode.test.dunit.Wait.waitForCriterion(waitForDisconnect, 10 * 1000, 100, true);
+      GeodeAwaitility.await().untilAsserted(waitForDisconnect);
 
       assertTrue(gfc.isClosed());
     } finally {
@@ -230,8 +230,8 @@ public abstract class OffHeapRegionBase {
       gfc.setCopyOnRead(true);
       final MemoryAllocator ma = gfc.getOffHeapStore();
       assertNotNull(ma);
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertEquals(0, ma.getUsedMemory()));
+      await()
+          .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
       Compressor compressor = null;
       if (compressed) {
         compressor = SnappyCompressor.getDefaultInstance();
@@ -444,8 +444,8 @@ public abstract class OffHeapRegionBase {
       assertTrue(ma.getUsedMemory() > 0);
       try {
         r.clear();
-        Awaitility.await().atMost(60, TimeUnit.SECONDS)
-            .until(() -> assertEquals(0, ma.getUsedMemory()));
+        await()
+            .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
       } catch (UnsupportedOperationException ok) {
       }
 
@@ -457,8 +457,8 @@ public abstract class OffHeapRegionBase {
         r.put("key4", new Long(0xFF8000000L));
         assertEquals(4, r.size());
         r.close();
-        Awaitility.await().atMost(60, TimeUnit.SECONDS)
-            .until(() -> assertEquals(0, ma.getUsedMemory()));
+        await()
+            .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
         // simple test of recovery
         r = gfc.createRegionFactory(rs).setOffHeap(true).create(rName);
         assertEquals(4, r.size());
@@ -482,8 +482,8 @@ public abstract class OffHeapRegionBase {
       }
 
       r.destroyRegion();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertEquals(0, ma.getUsedMemory()));
+      await()
+          .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
     } finally {
       if (r != null && !r.isDestroyed()) {
         r.destroyRegion();

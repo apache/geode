@@ -28,7 +28,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
@@ -151,7 +150,7 @@ public class CacheServerHelper {
           count += 2;
           if (count > utflen) {
             throw new RuntimeException(
-                LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+                "UTF-8 Exception malformed input",
                 new UTFDataFormatException("malformed input: partial character at end"));
           }
           char2 = (int) bytearr[count - 1];
@@ -164,14 +163,14 @@ public class CacheServerHelper {
           count += 3;
           if (count > utflen) {
             throw new RuntimeException(
-                LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+                "UTF-8 Exception malformed input",
                 new UTFDataFormatException("malformed input: partial character at end"));
           }
           char2 = (int) bytearr[count - 2];
           char3 = (int) bytearr[count - 1];
           if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
             throw new RuntimeException(
-                LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+                "UTF-8 Exception malformed input",
                 new UTFDataFormatException("malformed input around byte " + (count - 1)));
           }
           chararr[chararr_count++] =
@@ -180,7 +179,7 @@ public class CacheServerHelper {
         default:
           /* 10xx xxxx, 1111 xxxx */
           throw new RuntimeException(
-              LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+              "UTF-8 Exception malformed input",
               new UTFDataFormatException("malformed input around byte " + count));
       }
     }

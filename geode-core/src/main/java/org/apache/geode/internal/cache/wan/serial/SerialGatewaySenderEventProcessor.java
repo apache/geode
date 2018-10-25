@@ -23,10 +23,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -55,10 +51,8 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
@@ -113,14 +107,12 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
       ThreadsMonitoring tMonitoring) {
-    super(LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + id, logger),
-        "Event Processor for GatewaySender_" + id, sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
 
     initializeMessageQueue(id);
-    setDaemon(true);
   }
 
   @Override
@@ -154,8 +146,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       // No need to set the interrupt bit, we're exiting the thread.
       if (!stopped()) {
         logger.fatal(
-            LocalizedMessage.create(
-                LocalizedStrings.GatewayImpl_AN_INTERRUPTEDEXCEPTION_OCCURRED_THE_THREAD_WILL_EXIT),
+            "An InterruptedException occurred. The thread will exit.",
             e);
       }
       shutdownListenerExecutor();
@@ -214,8 +205,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       }
 
       if (!sender.isPrimary()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.GatewayImpl_ABOUT_TO_PROCESS_THE_MESSAGE_QUEUE_BUT_NOT_THE_PRIMARY));
+        logger.warn("About to process the message queue but not the primary.");
       }
 
       // Sleep for a bit. The random is so that if several of these are
@@ -229,8 +219,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       processQueue();
     } catch (CancelException e) {
       if (!this.isStopped()) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.GatewayImpl_A_CANCELLATION_OCCURRED_STOPPING_THE_DISPATCHER));
+        logger.info("A cancellation occurred. Stopping the dispatcher.");
         setIsStopped(true);
       }
     } catch (VirtualMachineError err) {
@@ -245,8 +234,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_MESSAGE_DISPATCH_FAILED_DUE_TO_UNEXPECTED_EXCEPTION), e);
+      logger.fatal(
+          "Message dispatch failed due to unexpected exception..", e);
     }
   }
 
@@ -280,9 +269,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       this.unprocessedTokens = null;
 
       // Process the map of unprocessed events
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_GATEWAY_FAILOVER_INITIATED_PROCESSING_0_UNPROCESSED_EVENTS,
-          this.unprocessedEvents.size()));
+      logger.info("Gateway Failover Initiated: Processing {} unprocessed events.",
+          this.unprocessedEvents.size());
       GatewaySenderStats statistics = this.sender.getStatistics();
       if (!this.unprocessedEvents.isEmpty()) {
         // do a reap for bug 37603
@@ -338,15 +326,13 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
             } catch (IOException ex) {
               if (!stopped()) {
                 logger.warn(
-                    LocalizedMessage.create(
-                        LocalizedStrings.GatewayImpl_EVENT_DROPPED_DURING_FAILOVER_0, gatewayEvent),
+                    String.format("Event dropped during failover: %s", gatewayEvent),
                     ex);
               }
             } catch (CacheException ex) {
               if (!stopped()) {
                 logger.warn(
-                    LocalizedMessage.create(
-                        LocalizedStrings.GatewayImpl_EVENT_DROPPED_DURING_FAILOVER_0, gatewayEvent),
+                    String.format("Event dropped during failover: %s", gatewayEvent),
                     ex);
               }
             } finally {
@@ -362,9 +348,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
       // Iterate the entire queue and mark all events as possible
       // duplicate
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_0__MARKING__1__EVENTS_AS_POSSIBLE_DUPLICATES,
-          new Object[] {getSender(), Integer.valueOf(this.queue.size())}));
+      logger.info("{} : Marking  {}  events as possible duplicates",
+          getSender(), Integer.valueOf(this.queue.size()));
       Iterator it = this.queue.getRegion().values().iterator();
       while (it.hasNext() && !stopped()) {
         Object o = it.next();
@@ -384,9 +369,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (m != null) {
         for (EventWrapper ew : m.values()) {
           GatewaySenderEventImpl gatewayEvent = ew.event;
-          if (logger.isDebugEnabled()) {
-            logger.debug("releaseUnprocessedEvents:" + gatewayEvent);
-          }
           gatewayEvent.release();
         }
         this.unprocessedEvents = null;
@@ -431,14 +413,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         } else {
           // If it is not, create an uninitialized GatewayEventImpl and
           // put it into the map of unprocessed events.
-          // 2 Special cases:
-          // 1) UPDATE_VERSION_STAMP: only enqueue to primary
-          // 2) CME && !originRemote: only enqueue to primary
-          if (!(event.getOperation().equals(Operation.UPDATE_VERSION_STAMP)
-              || ((EntryEventImpl) event).isConcurrencyConflict() && !event.isOriginRemote())) {
-            senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP
-            handleSecondaryEvent(senderEvent);
-          }
+          senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP
+                                                                                              // ok
+          handleSecondaryEvent(senderEvent);
         }
       }
     }
@@ -511,10 +488,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     int queueSize = eventQueueSize();
     statistics.incQueueSize(1);
     if (!this.eventQueueSizeWarning && queueSize >= AbstractGatewaySender.QUEUE_SIZE_THRESHOLD) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_0_THE_EVENT_QUEUE_SIZE_HAS_REACHED_THE_THRESHOLD_1,
-          new Object[] {sender.getId(),
-              Integer.valueOf(AbstractGatewaySender.QUEUE_SIZE_THRESHOLD)}));
+      logger.warn("{}: The event queue has reached {} events. Processing will continue.",
+          sender.getId(),
+          Integer.valueOf(AbstractGatewaySender.QUEUE_SIZE_THRESHOLD));
       this.eventQueueSizeWarning = true;
     }
     return putDone;
@@ -525,8 +501,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (this.failoverCompleted) {
         return;
       }
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.GatewayImpl_0__WAITING_FOR_FAILOVER_COMPLETION, this));
+      logger.info("{} : Waiting for failover completion", this);
       try {
         while (!this.failoverCompleted) {
           this.failoverCompletedLock.wait();
@@ -534,9 +509,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         this.sender.getCache().getCancelCriterion().checkCancelInProgress(ex);
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GatewayImpl_0_DID_NOT_WAIT_FOR_FAILOVER_COMPLETION_DUE_TO_INTERRUPTION,
-            this));
+        logger.info("{}: did not wait for failover completion due to interruption.",
+            this);
       }
     }
   }
@@ -705,8 +679,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         try {
           gatewayEvent.initialize();
         } catch (Exception e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewayImpl_EVENT_FAILED_TO_BE_INITIALIZED_0, gatewayEvent), e);
+          logger.warn(
+              String.format("Event failed to be initialized: %s", gatewayEvent), e);
         }
         if (!sender.beforeEnqueue(gatewayEvent)) {
           statistics.incEventsFiltered();
@@ -736,9 +710,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
             // put old one back in
             this.unprocessedEvents.put(gatewayEvent.getEventId(), oldv);
             // already added by secondary (i.e. hub)
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GatewayImpl_0_THE_UNPROCESSED_EVENTS_MAP_ALREADY_CONTAINED_AN_EVENT_FROM_THE_HUB_1_SO_IGNORING_NEW_EVENT_2,
-                new Object[] {sender.getId(), v, gatewayEvent}));
+            logger.warn(
+                "{}: The secondary map already contained an event from hub {} so ignoring new event {}.",
+                sender.getId(), v, gatewayEvent);
           }
         }
       } else {
@@ -828,20 +802,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Initialize the Executor that handles listener events. Only used by non-primary gateway senders
    */
   private void initializeListenerExecutor() {
-    // Create the ThreadGroups
-    final ThreadGroup loggerGroup =
-        LoggingThreadGroup.createThreadGroup("Gateway Listener Group", logger);
-
-    // Create the Executor
-    ThreadFactory tf = new ThreadFactory() {
-      public Thread newThread(Runnable command) {
-        Thread thread = new Thread(loggerGroup, command, "Queued Gateway Listener Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
-    this.executor = new ThreadPoolExecutor(1, 1/* max unused */, 120, TimeUnit.SECONDS, q, tf);
+    this.executor =
+        LoggingExecutors.newFixedThreadPoolWithTimeout("Queued Gateway Listener Thread", 1, 120);
   }
 
   private void shutdownListenerExecutor() {

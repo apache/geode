@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.isPortAvailable;
@@ -37,8 +36,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.StringUtils;
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,6 +49,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.lang.AvailablePid;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 
 /**
@@ -101,7 +99,7 @@ public abstract class LauncherIntegrationTestCase {
   protected abstract ProcessType getProcessType();
 
   protected void assertDeletionOf(final File file) {
-    await().until(() -> assertThat(file).doesNotExist());
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
   protected void assertThatServerPortIsFree(final int serverPort) {
@@ -160,10 +158,6 @@ public abstract class LauncherIntegrationTestCase {
 
   protected void givenServerPortInUse(final int serverPort) {
     givenPortInUse(serverPort);
-  }
-
-  protected ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 
   protected InputListener createExpectedListener(final String name, final String expected,

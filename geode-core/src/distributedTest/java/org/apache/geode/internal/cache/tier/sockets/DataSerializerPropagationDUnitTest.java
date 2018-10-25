@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,9 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -162,8 +161,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
   }
 
   private static void verifyDataSerializers(final int numOfDataSerializers) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(
+    await()
+        .untilAsserted(() -> assertEquals(
             "serializers: " + Arrays.toString(InternalDataSerializer.getSerializers()),
             InternalDataSerializer.getSerializers().length, numOfDataSerializers));
   }
@@ -412,7 +411,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     registerDataSerializer(DSObject1.class);
 
     assertNotNull(eventId);
-    Awaitility.await("event propagates to client 2").until(() -> assertEquals(eventId,
+    await("event propagates to client 2").untilAsserted(() -> assertEquals(eventId,
         client2.invoke(DataSerializerPropagationDUnitTest::getObservedEventID)));
   }
 
@@ -658,7 +657,8 @@ class Bogus {
 
 
 /**
- * This data serializer can be created locally but remote guys who call the default constructor will
+ * This data serializer can be created locally but remote members who call the default constructor
+ * will
  * fail.
  */
 class DSObjectLocalOnly extends DataSerializer {

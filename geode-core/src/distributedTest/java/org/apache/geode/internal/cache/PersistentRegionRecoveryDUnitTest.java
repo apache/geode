@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,21 +41,22 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     implements Serializable {
 
-  // private String diskStoreName;
+  private static final Logger logger = LogService.getLogger();
+
   private String regionName;
 
   private VM vm0;
   private VM vm1;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -73,10 +74,8 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     regionName = getClass().getSimpleName() + "-" + testName.getMethodName();
   }
 
-  private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
-
   @Test
-  public void testRecoveryOfAsyncRegionAfterShutdownAfterGIIAndBeforeCrfWritten() throws Exception {
+  public void testRecoveryOfAsyncRegionAfterShutdownAfterGIIAndBeforeCrfWritten() {
     vm0.invoke(() -> createAsyncDiskRegion());
 
     vm0.invoke(() -> {
@@ -119,7 +118,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
   }
 
   @Test
-  public void testRecoveryOfAsyncRegionAfterShutdownAndBeforeCrfWritten() throws Exception {
+  public void testRecoveryOfAsyncRegionAfterShutdownAndBeforeCrfWritten() {
     vm0.invoke(() -> createAsyncDiskRegion());
 
     vm1.invoke(() -> createAsyncDiskRegion(true));
@@ -158,7 +157,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
   }
 
   @Test
-  public void testRecoveryOfAsyncRegionAfterShutdownUsingUntrustedRVV() throws Exception {
+  public void testRecoveryOfAsyncRegionAfterShutdownUsingUntrustedRVV() {
     vm0.invoke(() -> createAsyncDiskRegion());
 
     vm0.invoke(() -> {
@@ -227,7 +226,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
                   logger.info("##### Before vm0 is bounced.");
                   getBlackboard().signalGate("bounce");
                   // vm0.bounceForcibly();
-                  await().atMost(2, MINUTES).until(() -> cacheRule.getCache().isClosed());
+                  await().until(() -> cacheRule.getCache().isClosed());
                   logger.info("##### After vm0 is bounced.");
                 } else {
                   logger.info("#### Region path: " + rim.regionPath);
@@ -304,7 +303,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
                   logger.info("##### Before vm0 is bounced.");
                   getBlackboard().signalGate("bounce");
                   // vm0.bounceForcibly();
-                  await().atMost(2, MINUTES).until(() -> cacheRule.getCache().isClosed());
+                  await().until(() -> cacheRule.getCache().isClosed());
                   logger.info("##### After vm0 is bounced.");
                 } else {
                   logger.info("#### Region path: " + rim.regionPath);
@@ -355,8 +354,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
   }
 
   @Test
-  public void testRecoveryFromBackupOfAsyncRegionAfterShutdownAfterGIIAndBeforeCrfWritten()
-      throws Exception {
+  public void testRecoveryFromBackupOfAsyncRegionAfterShutdownAfterGIIAndBeforeCrfWritten() {
     vm0.invoke(() -> createDiskRegion(false, false, "regionToGetDiskStoreCreated"));
     vm1.invoke(() -> createDiskRegion(false, true, "regionToGetDiskStoreCreated"));
 

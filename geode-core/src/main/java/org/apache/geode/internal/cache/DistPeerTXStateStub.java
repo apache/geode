@@ -29,7 +29,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * DistPeerTXStateStub lives on the transaction coordinator for a distributed transaction </br>
@@ -271,15 +270,15 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   @Override
   public boolean getPreCommitResponse() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("getPreCommitResponse"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "getPreCommitResponse"));
   }
 
   @Override
   public boolean getRollbackResponse() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("getRollbackResponse"));
+        String.format("rollback() operation %s meant for Dist Tx is not supported",
+            "getRollbackResponse"));
   }
 
   @Override

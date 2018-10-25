@@ -67,9 +67,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 public class RegionAdvisor extends CacheDistributionAdvisor {
@@ -194,9 +192,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         this.preInitQueue = null; // prevent further additions to the queue
         this.preInitQueueMonitor.notifyAll();
         if (!finishedInitQueue && !getAdvisee().getCancelCriterion().isCancelInProgress()) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.RegionAdvisor_FAILED_TO_PROCESS_ALL_QUEUED_BUCKETPROFILES_FOR_0,
-              getAdvisee()));
+          logger.error("Failed to process all queued BucketProfiles for {}",
+              getAdvisee());
         }
       }
     }
@@ -474,7 +471,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     } else {
       ResourceAdvisor advisor = getPartitionedRegion().getCache().getResourceAdvisor();
-      boolean sick = advisor.adviseCritialMembers().contains(member);
+      boolean sick = advisor.adviseCriticalMembers().contains(member);
       if (logger.isDebugEnabled()) {
         logger.debug("updateBucketStatus:({}):member:{}:sick:{}",
             getPartitionedRegion().bucketStringForLogs(bucketId), member, sick);
@@ -506,8 +503,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         logger.debug("For bucket {} sick members are ",
             getPartitionedRegion().bucketStringForLogs(bucketId), sm);
       }
-      throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_PR_0_KEY_1_MEMBERS_2
-          .toLocalizedString(new Object[] {getPartitionedRegion().getFullPath(), key, sm}), sm);
+      throw new LowMemoryException(String.format(
+          "PartitionedRegion: %s cannot process operation on key %s because members %s are running low on memory",
+          new Object[] {getPartitionedRegion().getFullPath(), key, sm}), sm);
     }
   }
 
@@ -1822,7 +1820,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       logger.debug("RA: removing profile {}", profile);
     }
     if (getAdvisee() instanceof PartitionedRegion) {
-      ((PartitionedRegion) getAdvisee()).removeMemberFromCriticalList(profile.peerMemberId);
+      ((PartitionedRegion) getAdvisee()).removeCriticalMember(profile.peerMemberId);
     }
 
     if (this.buckets != null) {

@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.execute.Function;
@@ -57,8 +55,8 @@ public class RollingUpgradeVerifyXmlEntity extends RollingUpgrade2DUnitTestBase 
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+          () -> await()
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 

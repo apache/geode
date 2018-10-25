@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 
@@ -154,6 +153,6 @@ public class CleanupFailedInitWithDiskFilesRegressionTest extends CacheTestCase 
   }
 
   private void validateCleanupOfDiskFiles() {
-    await().atMost(1, MINUTES).until(() -> assertThat(server2Disk2.listFiles()).hasSize(0));
+    await().untilAsserted(() -> assertThat(server2Disk2.listFiles()).hasSize(0));
   }
 }

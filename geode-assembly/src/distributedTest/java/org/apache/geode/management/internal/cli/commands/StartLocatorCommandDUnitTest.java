@@ -27,40 +27,52 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 public class StartLocatorCommandDUnitTest {
+
   private static MemberVM locator;
   private static String locatorConnectionString;
+
+  private String memberName;
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @ClassRule
-  public static final ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @BeforeClass
   public static void before() {
@@ -68,6 +80,11 @@ public class StartLocatorCommandDUnitTest {
     locator = cluster.startLocatorVM(0, 0);
 
     locatorConnectionString = "localhost[" + locator.getPort() + "]";
+  }
+
+  @Before
+  public void setUp() {
+    memberName = testName.getMethodName();
   }
 
   @AfterClass
@@ -78,11 +95,10 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithConflictingPIDFile() throws Exception {
-    final String fileName = ProcessType.LOCATOR.getPidFileName();
-    final String memberName = "testWithConflictingPIDFile-locator";
+    String fileName = ProcessType.LOCATOR.getPidFileName();
 
     // create dir for pid file
-    File dir = tempFolder.newFolder();
+    File dir = temporaryFolder.newFolder();
 
     // create pid file
     File pidFile = new File(dir.getAbsolutePath(), fileName);
@@ -90,7 +106,7 @@ public class StartLocatorCommandDUnitTest {
 
     // write pid to pid file
     try (FileWriter fileWriter = new FileWriter(pidFile, false)) {
-      fileWriter.write(getPidOrOne().toString() + "\n");
+      fileWriter.write(ProcessUtils.identifyPid() + "\n");
       fileWriter.flush();
     }
 
@@ -104,9 +120,9 @@ public class StartLocatorCommandDUnitTest {
 
     CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    final String expectedError = "A PID file already exists and a Locator may be running in "
+    String expectedError = "A PID file already exists and a Locator may be running in "
         + pidFile.getParentFile().getCanonicalPath();
-    final String expectedCause = "Caused by: "
+    String expectedCause = "Caused by: "
         + "org.apache.geode.internal.process.FileAlreadyExistsException: Pid file already exists: "
         + pidFile.getCanonicalPath();
 
@@ -117,12 +133,12 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFirePropertiesFile() throws IOException {
-    final String missingPropertiesPath = "/path/to/missing/gemfire.properties";
-    final String memberName = "testWithMissingGemFirePropertiesFile-locator";
-    final String expectedError =
+    String missingPropertiesPath =
+        Paths.get("missing", "gemfire.properties").toAbsolutePath().toString();
+    String expectedError =
         MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingPropertiesPath);
 
-    File workingDir = tempFolder.newFolder();
+    File workingDir = temporaryFolder.newFolder();
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
@@ -137,12 +153,12 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFireSecurityPropertiesFile() throws IOException {
-    final String missingSecurityPropertiesPath = "/path/to/missing/gemfire-security.properties";
-    final String memberName = "testWithMissingGemFireSecurityPropertiesFile-locator";
-    final String expectedError = MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+    String missingSecurityPropertiesPath = Paths
+        .get("missing", "gemfire-security.properties").toAbsolutePath().toString();
+    String expectedError = MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
         "Security ", missingSecurityPropertiesPath);
 
-    File workingDir = tempFolder.newFolder();
+    File workingDir = temporaryFolder.newFolder();
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
@@ -158,22 +174,21 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithUnavailablePort() throws IOException {
-    final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithUnavailablePort-locator";
-    final String unexpectedMessage = "[" + locatorPort + "] as locator is currently online.";
-    final String expectedMessage = "java.net.BindException: Network is unreachable; port ("
+    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    String unexpectedMessage = "[" + locatorPort + "] as locator is currently online.";
+    String expectedMessage = "java.net.BindException: Network is unreachable; port ("
         + locatorPort + ") is not available on localhost.";
 
     try (Socket interferingProcess = new Socket()) {
       interferingProcess.bind(new InetSocketAddress(locatorPort));
 
-      File workingDir = tempFolder.newFolder();
+      File workingDir = temporaryFolder.newFolder();
 
       CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
           .addOption(START_LOCATOR__MEMBER_NAME, memberName)
           .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
           .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-          .addOption(START_LOCATOR__PORT, locatorPort.toString());
+          .addOption(START_LOCATOR__PORT, Integer.toString(locatorPort));
 
       CommandResult result = gfsh.executeCommand(command.getCommandString());
 
@@ -185,18 +200,17 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithAvailablePort() throws IOException {
-    final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String memberName = "testWithAvailablePort-locator";
-    final String expectedMessage =
+    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    String expectedMessage =
         "[" + locatorPort + "] as " + memberName + " is currently online.";
 
-    File workingDir = tempFolder.newFolder();
+    File workingDir = temporaryFolder.newFolder();
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-        .addOption(START_LOCATOR__PORT, locatorPort.toString());
+        .addOption(START_LOCATOR__PORT, String.valueOf(locatorPort));
 
     CommandResult result = gfsh.executeCommand(command.getCommandString());
 
@@ -206,11 +220,10 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithDefaultLocatorPort() throws IOException {
-    final String memberName = "testWithDefaultLocatorPort-locator";
-    final String unexpectedMessage = "[0] as " + memberName + " is currently online.";
-    final String expectedMessage = "\\[\\d+\\] as " + memberName + " is currently online.";
+    String unexpectedMessage = "[0] as " + memberName + " is currently online.";
+    String expectedMessage = "\\[\\d+\\] as " + memberName + " is currently online.";
 
-    File workingDir = tempFolder.newFolder();
+    File workingDir = temporaryFolder.newFolder();
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
@@ -223,128 +236,5 @@ public class StartLocatorCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(result.getMessageFromContent()).doesNotContain(unexpectedMessage);
     assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
-  }
-
-  @Test
-  public void testInMissingRelativeDirectoryWithoutCreatePermissions() {
-    // path to a missing dir that cannot be created due to insufficient permissions
-    final String missingDirPath = "/missing/path/to/start/in";
-    final String expectedMessage = "Could not create directory " + missingDirPath
-        + ". Please verify directory path or user permissions.";
-    final String memberName = "testInMissingRelativeDirectoryWithoutCreatePermissions-locator";
-
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, missingDirPath);
-
-    CommandResult result = gfsh.executeCommand(command.getCommandString());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
-  }
-
-  @Test
-  public void testInMissingRelativeDirectoryThatCanBeCreated() {
-    // path to a missing dir that can be created
-    final String missingDirPath = System.getProperty("user.dir") + "/missing/path/to/start/in";
-    final String memberName = "testInMissingRelativeDirectoryThatCanBeCreated-locator";
-    final String expectedMessage = "Locator in " + missingDirPath;
-
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, missingDirPath);
-
-    try {
-      CommandResult result = gfsh.executeCommand(command.getCommandString());
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).contains(expectedMessage);
-    } finally {
-      File toDelete = new File(missingDirPath);
-      deleteLocatorFiles(toDelete);
-    }
-  }
-
-  @Test
-  public void testWithRelativeDirectory() throws IOException {
-    final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final File dir = tempFolder.newFolder();
-    final String memberName = "testWithRelativeDirectory-locator";
-    final String expectedMessage =
-        "Locator in " + IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(dir);
-
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, dir.getAbsolutePath())
-        .addOption(START_LOCATOR__PORT, locatorPort.toString());
-
-    CommandResult result = gfsh.executeCommand(command.getCommandString());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
-  }
-
-  @Test
-  public void testWithCurrentDirectory() {
-    final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String expectedMessage = "Locator in " + System.getProperty("user.dir");
-    final String expectedVersionPattern = "Geode Version: \\d+\\.\\d+\\.\\d+";
-    final String memberName = "testWithCurrentDirectory-locator";
-
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__PORT, locatorPort.toString());
-
-    try {
-      CommandResult result = gfsh.executeCommand(command.getCommandString());
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).contains(expectedMessage);
-
-      // Verify GEODE-2138 (Geode commands do not contain GemFire in output)
-      assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
-          .doesNotContain("GemFire");
-      assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
-    } finally {
-      String pathToFile = System.getProperty("user.dir") + "/" + memberName;
-      File toDelete = new File(pathToFile);
-      deleteLocatorFiles(toDelete);
-    }
-  }
-
-  private void deleteLocatorFiles(File toDelete) {
-    File[] nestedToDelete = toDelete.listFiles();
-
-    if (nestedToDelete != null && nestedToDelete.length > 0) {
-      for (File file : nestedToDelete) {
-        deleteLocatorFiles(file);
-      }
-    }
-
-    toDelete.delete();
-  }
-
-  /**
-   * Attempts to determine the PID of the running process from the ManagementFactory's runtime MBean
-   *
-   * @return 1 if unable to determine the pid
-   * @return the PID if possible
-   */
-  private Integer getPidOrOne() {
-    Integer pid = 1;
-    String[] name = ManagementFactory.getRuntimeMXBean().getName().split("@");
-    if (name.length > 1) {
-      try {
-        pid = Integer.parseInt(name[0]);
-      } catch (NumberFormatException nex) {
-        // Ignored
-      }
-    }
-
-    return pid;
   }
 }

@@ -134,13 +134,6 @@ public interface DistributionManager extends ReplySender {
   InternalDistributedMember getId();
 
   /**
-   * Return true if no other distribution manager was in this group when he joined.
-   *
-   * @since GemFire 4.0
-   */
-  boolean isAdam();
-
-  /**
    * Returns the identity of the oldest DM in this group.
    *
    * Note that this method may return null (no valid elders exist).
@@ -169,11 +162,10 @@ public interface DistributionManager extends ReplySender {
    * if another thread already holds the try-lock.
    *
    * @param force if true then this DM must become the elder.
-   * @param useTryLock if true then a try-lock will be used
    * @throws IllegalStateException if elder try lock fails
    * @since GemFire 4.0
    */
-  ElderState getElderState(boolean force, boolean useTryLock);
+  ElderState getElderState(boolean force);
 
   /**
    * Returns the membership port of the underlying distribution manager used for communication.

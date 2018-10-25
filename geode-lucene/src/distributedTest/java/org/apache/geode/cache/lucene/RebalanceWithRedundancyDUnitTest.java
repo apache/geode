@@ -17,16 +17,15 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.doAfterN;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -98,7 +97,7 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
-        () -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
+        () -> await().until(basicGetCache()::isClosed));
   }
 
   @Test
@@ -115,7 +114,7 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
-        () -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
+        () -> await().until(basicGetCache()::isClosed));
   }
 
   @Test

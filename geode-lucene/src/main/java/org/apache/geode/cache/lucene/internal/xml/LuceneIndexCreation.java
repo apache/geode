@@ -35,7 +35,6 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class LuceneIndexCreation implements Extension<Region<?, ?>> {
@@ -102,8 +101,8 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
           getLuceneSerializer(), false, getFieldNames());
     } catch (LuceneIndexExistsException e) {
       logger
-          .info(LocalizedStrings.LuceneIndexCreation_IGNORING_DUPLICATE_INDEX_CREATION_0_ON_REGION_1
-              .toLocalizedString(e.getIndexName(), e.getRegionPath()));
+          .info(String.format("Ignoring duplicate index creation for Lucene index %s on region %s",
+              e.getIndexName(), e.getRegionPath()));
     }
   }
 

@@ -29,8 +29,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -85,12 +83,10 @@ public class ClearRegion extends BaseCommand {
 
     // Process the clear region request
     if (regionName == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ClearRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL,
-          serverConnection.getName()));
+      logger.warn("{}: The input region name for the clear region request is null",
+          serverConnection.getName());
       String errMessage =
-          LocalizedStrings.ClearRegion_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL
-              .toLocalizedString();
+          "The input region name for the clear region request is null";
 
       writeErrorResponse(clientMessage, MessageType.CLEAR_REGION_DATA_ERROR, errMessage,
           serverConnection);
@@ -100,8 +96,7 @@ public class ClearRegion extends BaseCommand {
 
     LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.ClearRegion_WAS_NOT_FOUND_DURING_CLEAR_REGION_REGUEST
-          .toLocalizedString();
+      String reason = "was not found during clear region request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

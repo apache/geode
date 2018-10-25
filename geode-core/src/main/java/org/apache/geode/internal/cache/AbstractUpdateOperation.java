@@ -38,7 +38,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -142,12 +141,6 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               }
               doUpdate = false;
             }
-            if (ev.isConcurrencyConflict()) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("basicUpdate failed with CME, not to retry:" + ev);
-              }
-              doUpdate = false;
-            }
           }
         } finally {
           if (isBucket) {
@@ -181,7 +174,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                   || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
                 overwriteDestroyed = true;
                 ev.makeCreate();
-                rgn.basicUpdate(ev, false /* ifNew */, false/* ifOld */, lastMod,
+                rgn.basicUpdate(ev, true /* ifNew */, false/* ifOld */, lastMod,
                     overwriteDestroyed);
                 rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
                 updated = true;
@@ -224,12 +217,10 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
       }
       return true;
     } catch (CacheWriterException e) {
-      throw new Error(LocalizedStrings.AbstractUpdateOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED
-          .toLocalizedString(), e);
+      throw new Error("CacheWriter should not be called", e);
     } catch (TimeoutException e) {
       throw new Error(
-          LocalizedStrings.AbstractUpdateOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-              .toLocalizedString(),
+          "DistributedLock should not be acquired",
           e);
     }
   }
@@ -313,7 +304,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
         }
 
         String msg =
-            LocalizedStrings.DistributedPutAllOperation_MISSING_VERSION.toLocalizedString(tag);
+            String.format("memberID cannot be null for persistent regions: %s", tag);
         RuntimeException ex = (sender.getVersionObject().compareTo(Version.GFE_80) < 0)
             ? new InternalGemFireException(msg) : new InvalidVersionException(msg);
         throw ex;

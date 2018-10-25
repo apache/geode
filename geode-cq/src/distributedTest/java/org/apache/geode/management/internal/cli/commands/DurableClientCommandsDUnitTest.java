@@ -18,11 +18,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -127,7 +126,7 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, CLIENT_NAME);
     String commandString = csb.toString();
 
-    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       gfsh.executeAndAssertThat(commandString).statusIsSuccess();
     });
 
@@ -204,7 +203,7 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, CLIENT_NAME);
     String commandString1 = csb.toString();
 
-    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       gfsh.executeAndAssertThat(commandString1).statusIsSuccess();
     });
 

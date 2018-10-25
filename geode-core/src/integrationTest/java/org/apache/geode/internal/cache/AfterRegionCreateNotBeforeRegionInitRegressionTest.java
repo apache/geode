@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,8 +69,8 @@ public class AfterRegionCreateNotBeforeRegionInitRegressionTest {
     Region region = cache.createRegion("testRegion", factory.create());
     region.createSubregion("testSubRegion", factory.create());
 
-    await().atMost(1, MINUTES)
-        .until(() -> assertThat(cacheListener.afterRegionCreateCount.get()).isEqualTo(2));
+    await()
+        .untilAsserted(() -> assertThat(cacheListener.afterRegionCreateCount.get()).isEqualTo(2));
   }
 
   private class TestCacheListener extends CacheListenerAdapter {

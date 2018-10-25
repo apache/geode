@@ -44,11 +44,9 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -77,6 +75,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMemb
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
@@ -263,11 +262,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
         long lastTS = currentTime - nextNeighborTS.getTime();
         if (lastTS + interval >= memberTimeoutInMillis) {
-          logger.trace("Checking member {} ", neighbour);
+          logger.debug("Checking member {} ", neighbour);
           // now do check request for this member;
           checkMember(neighbour);
         }
-        setNextNeighbor(currentView, null);
       }
     }
   }
@@ -412,7 +410,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     // we need to check this member
     checkExecutor.execute(() -> {
-      boolean pinged = false;
+      boolean pinged;
       try {
         pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
       } catch (CancelException e) {
@@ -420,9 +418,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
 
       if (!pinged) {
-        suspectedMemberIds.put(mbr, currentView);
         String reason = "Member isn't responding to heartbeat requests";
+        memberSuspected(localAddress, mbr, reason);
         initiateSuspicion(mbr, reason);
+        setNextNeighbor(currentView, null);
       } else {
         logger.trace("Setting next neighbor as member {} has responded.", mbr);
         memberUnsuspected(mbr);
@@ -455,7 +454,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       return true;
     }
     long startTime = System.currentTimeMillis();
-    logger.trace("Checking member {}", member);
+    logger.debug("Requesting heartbeat from {}", member);
     final HeartbeatRequestMessage hrm = constructHeartbeatRequestMessage(member);
     Response pingResp = null;
     if (waitForResponse) {
@@ -483,7 +482,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             if (isStopping) {
               return true;
             }
-            logger.trace("no heartbeat response received from {} and no recent activity", member);
+            logger.debug("no heartbeat response received from {} and no recent activity", member);
             return false;
           } else {
             logger.trace("received heartbeat from {}", member);
@@ -601,15 +600,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public void suspect(InternalDistributedMember mbr, String reason) {
     initiateSuspicion(mbr, reason);
-    // Background suspect-collecting thread is currently disabled - it takes too long
-    // synchronized (suspectRequests) {
-    // SuspectRequest sr = new SuspectRequest((InternalDistributedMember) mbr, reason);
-    // if (!suspectRequests.contains(sr)) {
-    // logger.info("Suspecting member {}. Reason= {}.", mbr, reason);
-    // suspectRequests.add(sr);
-    // suspectRequests.notify();
-    // }
-    // }
   }
 
   @Override
@@ -619,53 +609,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   public void start() {
-    scheduler = Executors.newScheduledThreadPool(1, r -> {
-      Thread th = new Thread(Services.getThreadGroup(), r, "Geode Failure Detection Scheduler");
-      th.setDaemon(true);
-      return th;
-    });
-
-    checkExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
-      final AtomicInteger threadIdx = new AtomicInteger();
-
-      @Override
-      public Thread newThread(Runnable r) {
-        int id = threadIdx.getAndIncrement();
-        Thread th =
-            new Thread(Services.getThreadGroup(), r, "Geode Failure Detection thread " + id);
-        th.setDaemon(true);
-        return th;
-      }
-    });
+    scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
+    checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
     long delay = memberTimeout / LOGICAL_INTERVAL;
     monitorFuture = scheduler.scheduleAtFixedRate(m, delay, delay, TimeUnit.MILLISECONDS);
-
-    // suspectRequestCollectorThread = this.new RequestCollector<SuspectRequest>("Geode Suspect
-    // Message Collector", Services.getThreadGroup(), suspectRequests,
-    // new Callback<SuspectRequest>() {
-    // @Override
-    // public void process(List<SuspectRequest> requests) {
-    // GMSHealthMonitor.this.sendSuspectRequest(requests);
-    //
-    // }
-    // }, MEMBER_SUSPECT_COLLECTION_INTERVAL);
-    // suspectRequestCollectorThread.setDaemon(true);
-    // suspectRequestCollectorThread.start()
-
-    serverSocketExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
-      final AtomicInteger threadIdx = new AtomicInteger();
-
-      @Override
-      public Thread newThread(Runnable r) {
-        int id = threadIdx.getAndIncrement();
-        Thread th =
-            new Thread(Services.getThreadGroup(), r, "Geode Failure Detection Server thread " + id);
-        th.setDaemon(true);
-        return th;
-      }
-    });
-
+    serverSocketExecutor =
+        LoggingExecutors.newCachedThreadPool("Geode Failure Detection Server thread ", true);
   }
 
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
@@ -832,12 +782,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         it.remove();
       }
     }
-    // for (InternalDistributedMember mbr: newView.getMembers()) {
-    // if (!memberVsLastMsgTS.containsKey(mbr)) {
-    // CustomTimeStamp customTS = new CustomTimeStamp(System.currentTimeMillis());
-    // memberVsLastMsgTS.put(mbr, customTS);
-    // }
-    // }
     currentView = newView;
     setNextNeighbor(newView, null);
   }
@@ -907,7 +851,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   }
 
-  /*** test method */
+  /** test method */
   public InternalDistributedMember getNextNeighbor() {
     return nextNeighbor;
   }
@@ -984,7 +928,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   public boolean isShutdown() {
     return scheduler.isShutdown() && checkExecutor.isShutdown()
-        && serverSocketExecutor.isShutdown() /* && !suspectRequestCollectorThread.isAlive() */;
+        && serverSocketExecutor.isShutdown();
   }
 
   /**
@@ -1003,7 +947,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public void memberSuspected(InternalDistributedMember initiator,
       InternalDistributedMember suspect, String reason) {
     synchronized (suspectRequestsInView) {
-      suspectedMemberIds.putIfAbsent(suspect, currentView);
+      suspectedMemberIds.put(suspect, currentView);
       Collection<SuspectRequest> requests = suspectRequestsInView.get(currentView);
       boolean found = false;
       if (requests == null) {
@@ -1190,37 +1134,46 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
     }
 
+    logger.debug("Processing suspect requests {}", suspectRequests);
     if (cv.getCoordinator().equals(localAddress)) {
-      for (SuspectRequest req : incomingRequest.getMembers()) {
-        logger.info("received suspect message from {} for {}: {}", sender, req.getSuspectMember(),
-            req.getReason());
-      }
+      // This process is the membership coordinator and should perform a final check
+      logSuspectRequests(incomingRequest, sender);
       checkIfAvailable(sender, suspectRequests, cv);
-    } // coordinator ends
-    else {
 
+    } else {
+      // Another process has raised suspicion - check to see if
+      // this process should become the membership coordinator if
+      // all current suspects are gone
       NetView check = new NetView(cv, cv.getViewId() + 1);
       ArrayList<SuspectRequest> membersToCheck = new ArrayList<>();
       synchronized (suspectRequestsInView) {
         recordSuspectRequests(suspectRequests, cv);
         Set<SuspectRequest> suspectsInView = suspectRequestsInView.get(cv);
+        logger.debug("Current suspects for view #{} are {}", cv.getViewId(), suspectsInView);
         for (final SuspectRequest sr : suspectsInView) {
           check.remove(sr.getSuspectMember());
           membersToCheck.add(sr);
         }
       }
+      logger.trace("Trial view with suspects removed is {}\nmy address is {}", check, localAddress);
 
       InternalDistributedMember coordinator = check.getCoordinator();
       if (coordinator != null && coordinator.equals(localAddress)) {
         // new coordinator
-        for (SuspectRequest req : incomingRequest.getMembers()) {
-          logger.info("received suspect message from {} for {}: {}", sender, req.getSuspectMember(),
-              req.getReason());
-        }
+        logSuspectRequests(incomingRequest, sender);
         checkIfAvailable(sender, membersToCheck, cv);
       }
     }
 
+  }
+
+  private void logSuspectRequests(SuspectMembersMessage incomingRequest,
+      InternalDistributedMember sender) {
+    for (SuspectRequest req : incomingRequest.getMembers()) {
+      String who = sender.equals(localAddress) ? "myself" : sender.toString();
+      logger.info("received suspect message from {} for {}: {}", who, req.getSuspectMember(),
+          req.getReason());
+    }
   }
 
   /***
@@ -1321,10 +1274,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       if (!pinged && !isStopping) {
         TimeStamp ts = memberTimeStamps.get(mbr);
         if (ts == null || ts.getTime() < startTime) {
-          logger.info("Final check failed - requesting removal of suspect member " + mbr);
+          logger.info("Final check failed for member {}", mbr);
           if (initiateRemoval) {
+            logger.info("Requesting removal of suspect member {}", mbr);
             services.getJoinLeave().remove(mbr, reason);
           }
+          // make sure it is still suspected
+          memberSuspected(localAddress, mbr, reason);
           failed = true;
         } else {
           logger.info(

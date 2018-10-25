@@ -16,15 +16,14 @@
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -217,7 +216,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,
       long bytesSent, int clientConnectionStarts, int clientConnectionTerminations) {
     Host.getLocator().invoke(() -> {
-      Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> {
+      await().untilAsserted(() -> {
         Statistics statistics = getStatistics();
         assertEquals(0, statistics.get("currentClientConnections"));
         assertEquals(messagesSent, statistics.get("messagesSent"));

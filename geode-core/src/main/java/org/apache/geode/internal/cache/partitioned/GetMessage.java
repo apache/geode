@@ -57,7 +57,6 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VersionTagHolder;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
@@ -141,7 +140,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     } else if (ORDER_PR_GETS) {
       return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     } else {
-      // Make this guy serial so that it will be processed in the p2p msg reader
+      // Make this executor serial so that it will be processed in the p2p msg reader
       // which gives it better performance.
       return ClusterDistributionManager.SERIAL_EXECUTOR;
     }
@@ -191,8 +190,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         } catch (DistributedSystemDisconnectedException sde) {
           sendReply(getSender(), this.processorId, dm,
               new ReplyException(new ForceReattemptException(
-                  LocalizedStrings.GetMessage_OPERATION_GOT_INTERRUPTED_DUE_TO_SHUTDOWN_IN_PROGRESS_ON_REMOTE_VM
-                      .toLocalizedString(),
+                  "Operation got interrupted due to shutdown in progress on remote VM.",
                   sde)),
               r, startTime);
           return false;
@@ -215,7 +213,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         return false;
       } else {
         throw new InternalGemFireError(
-            LocalizedStrings.GetMessage_GET_MESSAGE_SENT_TO_WRONG_MEMBER.toLocalizedString());
+            "Get message sent to wrong member");
       }
     } finally {
       OffHeapHelper.release(val);
@@ -289,7 +287,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -555,12 +553,11 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         return null;
       } catch (IOException e) {
         throw new ForceReattemptException(
-            LocalizedStrings.GetMessage_UNABLE_TO_DESERIALIZE_VALUE_IOEXCEPTION.toLocalizedString(),
+            "Unable to deserialize value (IOException)",
             e);
       } catch (ClassNotFoundException e) {
         throw new ForceReattemptException(
-            LocalizedStrings.GetMessage_UNABLE_TO_DESERIALIZE_VALUE_CLASSNOTFOUNDEXCEPTION
-                .toLocalizedString(),
+            "Unable to deserialize value (ClassNotFoundException)",
             e);
       }
     }
@@ -591,7 +588,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       }
       if (!this.returnValueReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.GetMessage_NO_RETURN_VALUE_RECEIVED.toLocalizedString());
+            "no return value received");
       }
       return getValue(preferCD);
     }

@@ -28,7 +28,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 import org.apache.geode.pdx.internal.PdxUnreadData;
@@ -162,7 +161,7 @@ public final class CopyHelper {
         if (o instanceof Cloneable) {
           try {
             // Note that Object.clone is protected so we need to use reflection
-            // to call clone even though this guy implements Cloneable
+            // to call clone even though this object implements Cloneable
             Class<?> c = o.getClass();
             // By convention, the user should make the clone method public.
             // But even if they don't, let's go ahead and use it.
@@ -184,7 +183,7 @@ public final class CopyHelper {
             if (cause instanceof CloneNotSupportedException) {
               // try using Serialization
             } else {
-              throw new CopyException(LocalizedStrings.CopyHelper_CLONE_FAILED.toLocalizedString(),
+              throw new CopyException("Clone failed.",
                   cause != null ? cause : ex);
             }
           }
@@ -275,11 +274,11 @@ public final class CopyHelper {
       return (T) DataSerializer.readObject(new DataInputStream(hdos.getInputStream()));
     } catch (ClassNotFoundException ex) {
       throw new CopyException(
-          LocalizedStrings.CopyHelper_COPY_FAILED_ON_INSTANCE_OF_0.toLocalizedString(o.getClass()),
+          String.format("Copy failed on instance of  %s", o.getClass()),
           ex);
     } catch (IOException ex) {
       throw new CopyException(
-          LocalizedStrings.CopyHelper_COPY_FAILED_ON_INSTANCE_OF_0.toLocalizedString(o.getClass()),
+          String.format("Copy failed on instance of  %s", o.getClass()),
           ex);
     }
 

@@ -15,12 +15,10 @@
 
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,7 +33,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -146,7 +143,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    locator1.forceDisconnect();
+    locator1.forceDisconnect(2000);
 
     List<ObjectName> intermediateLocator2GemfireBeans =
         getFederatedGemfireBeansFrom(locator2);
@@ -184,7 +181,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    server1.forceDisconnect();
+    server1.forceDisconnect(2000);
 
     List<ObjectName> intermediateLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);
@@ -224,13 +221,8 @@ public class JMXMBeanReconnectDUnitTest {
 
   private void waitForMBeanFederationFrom(int numMemberMBeans, MemberVM member) {
     String memberName = "server-" + member.getVM().getId();
-    Awaitility.waitAtMost(10, SECONDS).until(() -> {
-      List<ObjectName> beans = null;
-      try {
-        beans = getFederatedGemfireBeansFrom(locator1);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+    await().untilAsserted(() -> {
+      List<ObjectName> beans = getFederatedGemfireBeansFrom(locator1);
       List<ObjectName> beanList =
           beans.stream().filter(b -> b.toString().contains(memberName)).sorted().collect(toList());
       assertThat(beanList.size()).isEqualTo(numMemberMBeans);
@@ -282,7 +274,7 @@ public class JMXMBeanReconnectDUnitTest {
   }
 
   private void waitForLocatorsToAgreeOnMembership() {
-    waitAtMost(1, MINUTES)
+    await()
         .until(
             () -> {
               int locator1BeanCount =

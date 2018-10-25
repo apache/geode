@@ -33,10 +33,9 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.runners.TestRunner;
-
 
 @SuppressWarnings("serial")
 public class SharedErrorCollectorDistributedTest {
@@ -44,7 +43,7 @@ public class SharedErrorCollectorDistributedTest {
   static final String MESSAGE = "Failure message";
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Before
   public void setUp() {
@@ -58,7 +57,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void checkThatFailureInControllerIsReported() throws Exception {
+  public void checkThatFailureInControllerIsReported() {
     Result result = TestRunner.runTest(CheckThatFailsInController.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -69,7 +68,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void addErrorInControllerIsReported() throws Exception {
+  public void addErrorInControllerIsReported() {
     Result result = TestRunner.runTest(AddErrorInController.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -80,7 +79,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void checkThatFailureInDUnitVMIsReported() throws Exception {
+  public void checkThatFailureInDUnitVMIsReported() {
     Result result = TestRunner.runTest(CheckThatFailsInDUnitVM.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -91,7 +90,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void checkThatFailureInEveryDUnitVMIsReported() throws Exception {
+  public void checkThatFailureInEveryDUnitVMIsReported() {
     Result result = TestRunner.runTest(CheckThatFailsInEveryDUnitVM.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -105,7 +104,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void checkThatFailureInEveryDUnitVMAndControllerIsReported() throws Exception {
+  public void checkThatFailureInEveryDUnitVMAndControllerIsReported() {
     Result result = TestRunner.runTest(CheckThatFailsInEveryDUnitVMAndController.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -126,7 +125,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void checkThatFailureInMethodInDUnitVMIsReported() throws Exception {
+  public void checkThatFailureInMethodInDUnitVMIsReported() {
     Result result = TestRunner.runTest(CheckThatFailsInMethodInDUnitVM.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -137,7 +136,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void addErrorInDUnitVMIsReported() throws Exception {
+  public void addErrorInDUnitVMIsReported() {
     Result result = TestRunner.runTest(AddErrorInDUnitVM.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -148,7 +147,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void addErrorInEveryDUnitVMIsReported() throws Exception {
+  public void addErrorInEveryDUnitVMIsReported() {
     Result result = TestRunner.runTest(AddErrorInEveryDUnitVM.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -162,7 +161,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void addErrorInEveryDUnitVMAndControllerIsReported() throws Exception {
+  public void addErrorInEveryDUnitVMAndControllerIsReported() {
     Result result = TestRunner.runTest(AddErrorInEveryDUnitVMAndController.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -183,7 +182,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   @Test
-  public void addErrorInMethodInDUnitVMIsReported() throws Exception {
+  public void addErrorInMethodInDUnitVMIsReported() {
     Result result = TestRunner.runTest(AddErrorInMethodInDUnitVM.class);
 
     assertThat(result.wasSuccessful()).isFalse();
@@ -202,7 +201,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void assertionFailsInController() throws Exception {
+    public void assertionFailsInController() {
       errorCollector.checkThat(MESSAGE, false, is(true));
     }
   }
@@ -216,7 +215,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void exceptionInController() throws Exception {
+    public void exceptionInController() {
       errorCollector.addError(new NullPointerException(MESSAGE));
     }
   }
@@ -230,7 +229,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void assertionFailsInDUnitVM() throws Exception {
+    public void assertionFailsInDUnitVM() {
       getVM(0).invoke(() -> errorCollector.checkThat(MESSAGE, false, is(true)));
     }
   }
@@ -244,7 +243,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void assertionFailsInEveryDUnitVM() throws Exception {
+    public void assertionFailsInEveryDUnitVM() {
       for (VM vm : getAllVMs()) {
         vm.invoke(
             () -> errorCollector.checkThat(MESSAGE + " in VM-" + vm.getId(), false, is(true)));
@@ -261,7 +260,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void assertionFailsInEveryDUnitVM() throws Exception {
+    public void assertionFailsInEveryDUnitVM() {
       errorCollector.checkThat(MESSAGE + " in VM-CONTROLLER", false, is(true));
       for (VM vm : getAllVMs()) {
         vm.invoke(
@@ -279,7 +278,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void assertionFailsInDUnitVM() throws Exception {
+    public void assertionFailsInDUnitVM() {
       getVM(0).invoke(() -> checkThat());
     }
 
@@ -297,7 +296,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void exceptionInDUnitVM() throws Exception {
+    public void exceptionInDUnitVM() {
       getVM(0).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE)));
     }
   }
@@ -311,7 +310,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void exceptionInEveryDUnitVM() throws Exception {
+    public void exceptionInEveryDUnitVM() {
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> errorCollector
             .addError(new NullPointerException(MESSAGE + " in VM-" + vm.getId())));
@@ -328,7 +327,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void exceptionInEveryDUnitVM() throws Exception {
+    public void exceptionInEveryDUnitVM() {
       errorCollector.addError(new NullPointerException(MESSAGE + " in VM-CONTROLLER"));
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> errorCollector
@@ -346,7 +345,7 @@ public class SharedErrorCollectorDistributedTest {
     public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
     @Test
-    public void exceptionInDUnitVM() throws Exception {
+    public void exceptionInDUnitVM() {
       getVM(0).invoke(() -> addError());
     }
 

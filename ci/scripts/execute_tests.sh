@@ -36,20 +36,20 @@ fi
 
 REPODIR=$(cd geode; git rev-parse --show-toplevel)
 
-DEFAULT_GRADLE_TASK_OPTIONS="--parallel --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
+if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
+  PARALLEL_GRADLE="--parallel"
+else
+  PARALLEL_GRADLE=""
+fi
+DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
 
 
 SSHKEY_FILE="instance-data/sshkey"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60"
 
-INSTANCE_NAME="$(cat instance-data/instance-name)"
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
-PROJECT="$(cat instance-data/project)"
-ZONE="$(cat instance-data/zone)"
 
-
-echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
-
-scp -i ${SSHKEY_FILE} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRESS}:.
+scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRESS}:.
 
 
 
@@ -65,16 +65,35 @@ fi
 
 
 if [ -v CALL_STACK_TIMEOUT ]; then
-  ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
+  ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
 fi
 
-GRADLE_COMMAND="./gradlew \
+case $ARTIFACT_SLUG in
+  windows*)
+    JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
+    JAVA_TEST_PATH=C:/java${JAVA_TEST_VERSION}
+    SEP=";"
+    ;;
+  *)
+    JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
+    JAVA_TEST_PATH=/usr/lib/jvm/java-${JAVA_TEST_VERSION}-openjdk-amd64
+    SEP="&&"
+    ;;
+esac
+
+GRADLE_ARGS=" \
+    -PcompileJVM=${JAVA_BUILD_PATH} \
+    -PcompileJVMVer=${JAVA_BUILD_VERSION} \
+    -PtestJVM=${JAVA_TEST_PATH} \
+    -PtestJVMVer=${JAVA_TEST_VERSION} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_TASK} \
-    ${GRADLE_TASK_OPTIONS}"
+    ${GRADLE_TASK_OPTIONS} \
+    ${GRADLE_GLOBAL_ARGS}"
 
-echo "${GRADLE_COMMAND}"
-ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${GRADLE_COMMAND}"
+EXEC_COMMAND="bash -c 'echo Building with: $SEP ${JAVA_BUILD_PATH}/bin/java -version $SEP echo Testing with: $SEP ${JAVA_TEST_PATH}/bin/java -version $SEP cd geode $SEP cp gradlew gradlewStrict $SEP sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.bak gradlewStrict $SEP GRADLE_JVM=${JAVA_BUILD_PATH} ./gradlewStrict ${GRADLE_ARGS}'"
+echo "${EXEC_COMMAND}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"

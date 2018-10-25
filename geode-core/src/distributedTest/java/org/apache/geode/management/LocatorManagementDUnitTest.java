@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -23,8 +22,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.management.MXBeanAwaitility.awaitLocalLocatorMXBean;
 import static org.apache.geode.management.MXBeanAwaitility.awaitLocatorMXBeanProxy;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -222,7 +221,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     locatorVM.invoke("validateManagers", () -> {
       LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-      await().atMost(2, MINUTES).until(() -> assertThat(locatorMXBean.listManagers()).hasSize(1));
+      await()
+          .untilAsserted(() -> assertThat(locatorMXBean.listManagers()).hasSize(1));
     });
   }
 
@@ -231,8 +231,9 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     locatorVM.invoke("List Willing Managers", () -> {
       LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-      await().atMost(2, MINUTES).until(() -> assertThat(locatorMXBean.listPotentialManagers())
-          .hasSize(expectedNumberPotentialManagers));
+      await()
+          .untilAsserted(() -> assertThat(locatorMXBean.listPotentialManagers())
+              .hasSize(expectedNumberPotentialManagers));
     });
   }
 }

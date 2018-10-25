@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 
 /**
@@ -65,7 +64,7 @@ public class CancelStatListenerResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return LocalizedStrings.CancelStatListenerResponse_CANCELSTATLISTENERRESPONSE_FROM_0
-        .toLocalizedString(this.getRecipient());
+    return String.format("CancelStatListenerResponse from %s",
+        this.getRecipient());
   }
 }

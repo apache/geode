@@ -40,4 +40,8 @@ public class InfoResultModel extends AbstractResultModel {
     return this;
   }
 
+  public InfoResultModel removeLine(int index) {
+    messages.remove(index);
+    return this;
+  }
 }

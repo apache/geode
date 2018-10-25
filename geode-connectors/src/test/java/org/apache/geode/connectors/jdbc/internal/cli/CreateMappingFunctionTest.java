@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -32,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -102,11 +102,13 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void createRegionMappingThrowsIfMappingExists() throws Exception {
-    doThrow(ConnectionConfigExistsException.class).when(service)
+    doAnswer((m) -> {
+      throw new RegionMappingExistsException();
+    }).when(service)
         .createRegionMapping(eq(regionMapping));
 
     assertThatThrownBy(() -> function.createRegionMapping(service, regionMapping))
-        .isInstanceOf(ConnectionConfigExistsException.class);
+        .isInstanceOf(RegionMappingExistsException.class);
 
     verify(service, times(1)).createRegionMapping(regionMapping);
   }

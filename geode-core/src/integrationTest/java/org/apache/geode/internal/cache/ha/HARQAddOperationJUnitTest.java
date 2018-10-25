@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,10 +27,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -294,8 +293,8 @@ public class HARQAddOperationJUnitTest {
       // After the expiry of the data , AvaialbleIds size should be 0,
       // entry
       // removed from Region, LastDispatchedWrapperSet should have size 0.
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertEquals(0, regionqueue.getRegion().entrySet(false).size()));
+      await()
+          .untilAsserted(() -> assertEquals(0, regionqueue.getRegion().entrySet(false).size()));
       assertEquals(0, regionqueue.getAvailableIds().size());
       assertNull(regionqueue.getCurrentCounterSet(id1));
 

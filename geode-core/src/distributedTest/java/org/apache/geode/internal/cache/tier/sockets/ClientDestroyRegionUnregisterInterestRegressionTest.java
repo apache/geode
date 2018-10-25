@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -35,9 +37,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -47,7 +47,7 @@ import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -60,7 +60,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #36457: Region Destroy results in unregister interest propagation to server resulting in
  * server being falsely marked dead
  */
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class ClientDestroyRegionUnregisterInterestRegressionTest implements Serializable {
 
   private String uniqueName;
@@ -73,7 +73,7 @@ public class ClientDestroyRegionUnregisterInterestRegressionTest implements Seri
   private VM client2;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -119,10 +119,8 @@ public class ClientDestroyRegionUnregisterInterestRegressionTest implements Seri
 
     client1.invoke(() -> clientCacheRule.getClientCache().getRegion(regionName).destroyRegion());
 
-    client2.invoke(() -> {
-      verify(ClientServerObserverHolder.getInstance(), times(0))
-          .afterPrimaryIdentificationFromBackup(any());
-    });
+    client2.invoke(() -> verify(ClientServerObserverHolder.getInstance(), times(0))
+        .afterPrimaryIdentificationFromBackup(any()));
   }
 
   private void createClientCache(int port1, int port2) {
@@ -131,13 +129,13 @@ public class ClientDestroyRegionUnregisterInterestRegressionTest implements Seri
     Pool pool = PoolManager.createFactory().addServer(hostName, port1).addServer(hostName, port2)
         .setSubscriptionEnabled(true).setMinConnections(4).create(uniqueName);
 
-    ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
+    ClientRegionFactory<Object, ?> clientRegionFactory =
+        clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
+    clientRegionFactory.setPoolName(pool.getName());
 
-    Region region = crf.create(regionName);
+    Region<Object, ?> region = clientRegionFactory.create(regionName);
 
-    List listOfKeys = new ArrayList();
+    List<String> listOfKeys = new ArrayList<>();
     listOfKeys.add("key-1");
     listOfKeys.add("key-2");
     listOfKeys.add("key-3");
@@ -150,13 +148,12 @@ public class ClientDestroyRegionUnregisterInterestRegressionTest implements Seri
   private int createServerCache() throws IOException {
     cacheRule.createCache();
 
-    RegionFactory rf = cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
 
-    rf.create(regionName);
+    regionFactory.create(regionName);
 
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
-    cacheServer.setNotifyBySubscription(true);
     cacheServer.start();
     return cacheServer.getPort();
   }

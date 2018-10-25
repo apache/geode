@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,9 +22,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,11 +83,9 @@ public class ConcurrentRegionOperationIntegrationTest {
     assertThatExceptionOfType(RegionDestroyedException.class)
         .isThrownBy(() -> region.replace(1, "value", "newvalue"));
 
-    Awaitility.await().pollDelay(0, TimeUnit.MICROSECONDS)
-        .pollInterval(1, TimeUnit.MILLISECONDS)
-        .atMost(10, TimeUnit.SECONDS).until(() -> {
-          assertEquals(0, offHeapStore.getStats().getObjects());
-        });
+    await().untilAsserted(() -> {
+      assertEquals(0, offHeapStore.getStats().getObjects());
+    });
   }
 
   private Region<Integer, String> createRegion() {

@@ -14,9 +14,16 @@
  */
 package org.apache.geode.cache30;
 
+import static java.lang.Runtime.getRuntime;
+import static java.lang.System.currentTimeMillis;
+import static org.apache.geode.cache.DataPolicy.REPLICATE;
+import static org.apache.geode.cache.Scope.DISTRIBUTED_NO_ACK;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_DISTRIBUTION_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUEUE_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
+import static org.apache.geode.internal.tcp.Connection.FORCE_ASYNC_QUEUE;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,7 +52,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -176,7 +183,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               return "waiting for callback";
             }
           };
-          Wait.waitForCriterion(ev, 50 * 1000, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
           assertEquals(lcb, lastCallback);
         }
         if (lastValue == null) {
@@ -190,7 +197,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               return "waiting for key to become null";
             }
           };
-          Wait.waitForCriterion(ev, 50 * 1000, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
           assertEquals(null, r1.getEntry("key"));
         } else if (CHECK_INVALID.equals(lastValue)) {
           // should be invalid
@@ -209,7 +216,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for invalidate";
               }
             };
-            Wait.waitForCriterion(ev, 50 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
           }
         } else {
           {
@@ -240,7 +247,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void forceQueueFlush() {
-    Connection.FORCE_ASYNC_QUEUE = false;
+    FORCE_ASYNC_QUEUE = false;
     final DMStats stats = getSystem().getDistributionManager().getStats();
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
@@ -251,11 +258,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for async threads to disappear";
       }
     };
-    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   private void forceQueuing(final Region r) throws CacheException {
-    Connection.FORCE_ASYNC_QUEUE = true;
+    FORCE_ASYNC_QUEUE = true;
     final DMStats stats = getSystem().getDistributionManager().getStats();
     r.put("forcekey", "forcevalue");
 
@@ -269,7 +276,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         return "waiting for flushes to start";
       }
     };
-    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   /**
@@ -311,7 +318,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           dequeuedMsgs = stats.getAsyncDequeuedMsgs();
           curQueuedMsgs = queuedMsgs - dequeuedMsgs;
         }
-        LogWriterUtils.getLogWriter()
+        getLogWriter()
             .info("After " + count + " " + " puts slowrec mode kicked in by queuing " + queuedMsgs
                 + " for a total size of " + queueSize);
       } finally {
@@ -326,10 +333,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           return "Waiting for queues to empty";
         }
       };
-      final long start = System.currentTimeMillis();
-      Wait.waitForCriterion(ev, 30 * 1000, 200, true);
-      final long finish = System.currentTimeMillis();
-      LogWriterUtils.getLogWriter()
+      final long start = currentTimeMillis();
+      GeodeAwaitility.await().untilAsserted(ev);
+      final long finish = currentTimeMillis();
+      getLogWriter()
           .info("After " + (finish - start) + " ms async msgs where flushed. A total of "
               + stats.getAsyncDequeuedMsgs() + " were flushed. lastValue=" + lastValue);
 
@@ -682,7 +689,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           fail("should have exceeded max-queue-size by now");
         }
       }
-      LogWriterUtils.getLogWriter()
+      getLogWriter()
           .info("After " + count + " " + VALUE_SIZE
               + " byte puts slowrec mode kicked in but the queue filled when its size reached "
               + queueSize + " with " + queuedMsgs + " msgs");
@@ -697,7 +704,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           return "waiting for connection loss";
         }
       };
-      Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } finally {
       forceQueueFlush();
       getCache().getLogger().info(removeExpected);
@@ -754,11 +761,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           queuedMsgs = stats.getAsyncQueuedMsgs();
           queueSize = stats.getAsyncQueueSize();
         }
-        if (System.currentTimeMillis() > timeoutLimit) {
+        if (currentTimeMillis() > timeoutLimit) {
           fail("should have exceeded async-queue-timeout by now");
         }
       }
-      LogWriterUtils.getLogWriter()
+      getLogWriter()
           .info("After " + count + " " + VALUE_SIZE
               + " byte puts slowrec mode kicked in but the queue filled when its size reached "
               + queueSize + " with " + queuedMsgs + " msgs");
@@ -775,7 +782,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           return "waiting for departure";
         }
       };
-      Wait.waitForCriterion(ev, 2 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } finally {
       getCache().getLogger().info(removeExpected);
     }
@@ -1177,7 +1184,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
   private void doTestDisconnectCleanup() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_NO_ACK);
+    factory.setScope(DISTRIBUTED_NO_ACK);
     final Region r = createRootRegion("slowrec", factory.create());
     final DistributionManager dm = getSystem().getDistributionManager();
     final DMStats stats = dm.getStats();
@@ -1196,8 +1203,8 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         getSystem(p);
         AttributesFactory af = new AttributesFactory();
-        af.setScope(Scope.DISTRIBUTED_NO_ACK);
-        af.setDataPolicy(DataPolicy.REPLICATE);
+        af.setScope(DISTRIBUTED_NO_ACK);
+        af.setDataPolicy(REPLICATE);
 
         doTestDisconnectCleanup_Listener = new ControlListener();
         af.setCacheListener(doTestDisconnectCleanup_Listener);
@@ -1206,13 +1213,13 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     });
 
     // put vm0 cache listener into wait
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] about to put vm0 into wait");
+    getLogWriter().info("[testDisconnectCleanup] about to put vm0 into wait");
     int millisToWait = 1000 * 60 * 5; // 5 minutes
     r.put(KEY_WAIT, new Integer(millisToWait));
     r.put(KEY_DISCONNECT, KEY_DISCONNECT);
 
     // build up queue size
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] building up queue size...");
+    getLogWriter().info("[testDisconnectCleanup] building up queue size...");
     final Object key = "key";
     final int socketBufferSize = getSystem().getConfig().getSocketBufferSize();
     final int VALUE_SIZE = socketBufferSize * 3;
@@ -1220,29 +1227,29 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final byte[] value = new byte[VALUE_SIZE];
 
     int count = 0;
-    final long abortMillis = System.currentTimeMillis() + millisToWait;
+    final long abortMillis = currentTimeMillis() + millisToWait;
     while (stats.getAsyncQueuedMsgs() == initialQueuedMsgs) {
       count++;
       r.put(key, value);
-      assertFalse(System.currentTimeMillis() >= abortMillis);
+      assertFalse(currentTimeMillis() >= abortMillis);
     }
 
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] After " + count + " puts of size "
+    getLogWriter().info("[testDisconnectCleanup] After " + count + " puts of size "
         + VALUE_SIZE + " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
 
     while (stats.getAsyncQueuedMsgs() < 10 || stats.getAsyncQueueSize() < VALUE_SIZE * 10) {
       count++;
       r.put(key, value);
-      assertFalse(System.currentTimeMillis() >= abortMillis);
+      assertFalse(currentTimeMillis() >= abortMillis);
     }
     assertTrue(stats.getAsyncQueuedMsgs() >= 10);
 
     while (stats.getAsyncQueues() < 1) {
-      Wait.pause(100);
-      assertFalse(System.currentTimeMillis() >= abortMillis);
+      pause(100);
+      assertFalse(currentTimeMillis() >= abortMillis);
     }
 
-    LogWriterUtils.getLogWriter()
+    getLogWriter()
         .info("[testDisconnectCleanup] After " + count + " puts of size " + VALUE_SIZE
             + " queue size has reached " + stats.getAsyncQueueSize()
             + " bytes and number of queues is " + stats.getAsyncQueues() + ".");
@@ -1254,7 +1261,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     assertTrue(dm.getOtherDistributionManagerIds().size() > others.size());
 
     // send notify to vm0
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] wake up vm0");
+    getLogWriter().info("[testDisconnectCleanup] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
       public void run() {
         synchronized (doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
@@ -1264,7 +1271,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     });
 
     // make sure we lost a connection to vm0
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] wait for vm0 to disconnect");
+    getLogWriter().info("[testDisconnectCleanup] wait for vm0 to disconnect");
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return dm.getOtherDistributionManagerIds().size() <= others.size();
@@ -1274,17 +1281,17 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         return "waiting for disconnect";
       }
     };
-    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals(others, dm.getOtherDistributionManagerIds());
 
     // check free memory... perform wait loop with System.gc
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] wait for queue cleanup");
+    getLogWriter().info("[testDisconnectCleanup] wait for queue cleanup");
     ev = new WaitCriterion() {
       public boolean done() {
         if (stats.getAsyncQueues() <= initialQueues) {
           return true;
         }
-        Runtime.getRuntime().gc();
+        getRuntime().gc();
         return false;
       }
 
@@ -1292,7 +1299,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         return "waiting for queue cleanup";
       }
     };
-    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals(initialQueues, stats.getAsyncQueues());
   }
 

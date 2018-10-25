@@ -19,8 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.fail;
 
 import java.lang.management.ManagementFactory;
@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -853,8 +852,8 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * @param wait how long to wait for in millis.
    */
   private void waitForNotificationListenerOnVm(final VM vm, final long wait) {
-    vm.invoke(() -> await("Awaiting Notification Listener").atMost(wait, TimeUnit.MILLISECONDS)
-        .until(() -> assertThat(notificationListener.getNotificationSize() > 0).isTrue()));
+    vm.invoke(() -> await("Awaiting Notification Listener")
+        .untilAsserted(() -> assertThat(notificationListener.getNotificationSize() > 0).isTrue()));
   }
 
   /**

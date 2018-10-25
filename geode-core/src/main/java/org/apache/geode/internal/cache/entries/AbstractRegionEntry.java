@@ -71,10 +71,8 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
@@ -388,8 +386,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
             entry.setValue(hdos);
           } catch (IOException e) {
             throw new IllegalArgumentException(
-                LocalizedStrings.AbstractRegionEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                    .toLocalizedString(),
+                "An IOException was thrown while serializing.",
                 e);
           }
         }
@@ -413,8 +410,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
         entry.setSerialized(true);
       } catch (IOException e) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AbstractRegionEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                .toLocalizedString(),
+            "An IOException was thrown while serializing.",
             e);
       }
     }
@@ -637,23 +633,20 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   @Override
   public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
     throw new IllegalStateException(
-        LocalizedStrings.AbstractRegionEntry_CANNOT_GET_VALUE_ON_DISK_FOR_A_REGION_THAT_DOES_NOT_ACCESS_THE_DISK
-            .toLocalizedString());
+        "Cannot get value on disk for a region that does not access the disk.");
   }
 
   @Override
   public Object getSerializedValueOnDisk(final InternalRegion region)
       throws EntryNotFoundException {
     throw new IllegalStateException(
-        LocalizedStrings.AbstractRegionEntry_CANNOT_GET_VALUE_ON_DISK_FOR_A_REGION_THAT_DOES_NOT_ACCESS_THE_DISK
-            .toLocalizedString());
+        "Cannot get value on disk for a region that does not access the disk.");
   }
 
   @Override
   public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
     throw new IllegalStateException(
-        LocalizedStrings.AbstractRegionEntry_CANNOT_GET_VALUE_ON_DISK_FOR_A_REGION_THAT_DOES_NOT_ACCESS_THE_DISK
-            .toLocalizedString());
+        "Cannot get value on disk for a region that does not access the disk.");
     // TODO: if value is Token.REMOVED || Token.DESTROYED throw EntryNotFoundException
   }
 
@@ -739,8 +732,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
               newValueToWrite = Token.DESTROYED; // TODO: never used
               imageState.addDestroyedEntry(this.getKey());
               throw new RegionClearedException(
-                  LocalizedStrings.AbstractRegionEntry_DURING_THE_GII_PUT_OF_ENTRY_THE_REGION_GOT_CLEARED_SO_ABORTING_THE_OPERATION
-                      .toLocalizedString());
+                  "During the GII put of entry, the region got cleared so aborting the operation");
             }
           }
         }
@@ -828,8 +820,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       if (expectedOldValue != null) {
         if (!checkExpectedOldValue(expectedOldValue, curValue, region)) {
           throw new EntryNotFoundException(
-              LocalizedStrings.AbstractRegionEntry_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE
-                  .toLocalizedString());
+              "The current value was not equal to expected value.");
         }
       }
 
@@ -1344,7 +1335,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
           return prepareValueForCache(r, heapValue, event, isEntryUpdate);
         }
         if (soVal.hasRefCount()) {
-          // if the reused guy has a refcount then need to inc it
+          // if the reused StoredObject has a refcount then need to increment it
           if (!soVal.retain()) {
             throw new IllegalStateException("Could not use an off heap value because it was freed");
           }
@@ -2082,8 +2073,16 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (tagTime == VersionTag.ILLEGAL_VERSION_TIMESTAMP) {
       return true; // no timestamp received from other system - just apply it
     }
-    if (tagDsid == stampDsid || stampDsid == -1) {
+    // According to GatewayConflictResolver's java doc, it will only be used on tag with different
+    // distributed system id than stamp's
+    if (stampDsid == -1) {
       return true;
+    } else if (tagDsid == stampDsid) {
+      if (tagTime >= stampTime) {
+        return true;
+      } else {
+        throw new ConcurrentCacheModificationException("conflicting WAN event detected");
+      }
     }
     GatewayConflictResolver resolver = event.getRegion().getCache().getGatewayConflictResolver();
     if (resolver != null) {
@@ -2131,8 +2130,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.error(LocalizedMessage
-            .create(LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_IN_CONFLICTRESOLVER), t);
+        logger.error("Exception occurred in GatewayConflictResolver", t);
         thr = t;
       } finally {
         timestampedEvent.release();

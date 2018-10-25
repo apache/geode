@@ -25,7 +25,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 public class PRQueryTraceInfo implements DataSerializableFixedID {
@@ -76,11 +75,11 @@ public class PRQueryTraceInfo implements DataSerializableFixedID {
 
   public String createLogLine(DistributedMember me) {
     if (sender.equals(me)) {
-      return LocalizedStrings.PartitionedRegion_QUERY_TRACE_LOCAL_NODE_LOG.toLocalizedString(sender,
+      return String.format("Local %s took %sms and returned %s results; %s", sender,
           timeInMillis, numResults, indexesUsed);
     } else {
-      return LocalizedStrings.PartitionedRegion_QUERY_TRACE_REMOTE_NODE_LOG
-          .toLocalizedString(sender, timeInMillis, numResults, indexesUsed);
+      return String.format("Remote %s took %sms and returned %s results; %s",
+          sender, timeInMillis, numResults, indexesUsed);
     }
   }
 

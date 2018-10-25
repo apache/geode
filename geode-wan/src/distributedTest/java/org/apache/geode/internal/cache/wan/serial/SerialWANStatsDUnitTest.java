@@ -14,15 +14,14 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -375,8 +374,8 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR_1", numEntries));
 
     // like a latch to guarantee at least one exception returned
-    vm4.invoke(() -> Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> WANTestBase.verifyQueueSize("ln", 0)));
+    vm4.invoke(() -> await()
+        .untilAsserted(() -> WANTestBase.verifyQueueSize("ln", 0)));
 
     vm4.invoke(() -> WANTestBase.checkBatchStats("ln", true, true));
 

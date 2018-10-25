@@ -19,9 +19,9 @@
 <!DOCTYPE cache PUBLIC
   "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
   "http://www.gemstone.com/dtd/cache7_0.dtd">
-<cache lock-lease="120" lock-timeout="120" search-timeout="300">
+<cache lock-lease="120" lock-timeout="60" search-timeout="300">
 	<vm-root-region name="root">
-		<region-attributes scope="distributed-no-ack" mirror-type="none"  initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
+		<region-attributes scope="distributed-no-ack" data-policy="normal" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
 			<region-time-to-live>
 				<expiration-attributes timeout="0" action="invalidate"/>
 			</region-time-to-live>
@@ -77,7 +77,7 @@
 					  idle-timeout-seconds="20" 
 					  blocking-timeout-seconds="20" 
 					  login-timeout-seconds="30"
-					  conn-pooled-datasource-class="org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource"
+					  conn-pooled-datasource-class="org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory"
 					  xa-datasource-class="org.apache.derby.jdbc.EmbeddedXADataSource"	
 					  user-name="mitul" 
 					  password="83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a" 

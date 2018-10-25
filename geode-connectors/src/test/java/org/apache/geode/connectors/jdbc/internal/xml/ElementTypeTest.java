@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION_SERVICE;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.REGION_MAPPING;
@@ -69,7 +68,6 @@ public class ElementTypeTest {
   public void gettingElementTypeByNameReturnsCorrectType() {
     assertThat(ElementType.getTypeFromName(CONNECTION_SERVICE.getTypeName()))
         .isSameAs(CONNECTION_SERVICE);
-    assertThat(ElementType.getTypeFromName(CONNECTION.getTypeName())).isSameAs(CONNECTION);
     assertThat(ElementType.getTypeFromName(REGION_MAPPING.getTypeName())).isSameAs(REGION_MAPPING);
     assertThat(ElementType.getTypeFromName(FIELD_MAPPING.getTypeName())).isSameAs(FIELD_MAPPING);
   }
@@ -105,65 +103,6 @@ public class ElementTypeTest {
     CONNECTION_SERVICE.endElement(stack);
 
     assertThat(stack).isEmpty();
-  }
-
-  @Test
-  public void startElementConnectionThrowsWithoutJdbcServiceConfiguration() {
-    stack.push(new Object());
-
-    assertThatThrownBy(() -> CONNECTION.startElement(stack, attributes))
-        .isInstanceOf(CacheXmlException.class);
-  }
-
-  @Test
-  public void startElementConnection() {
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.NAME)).thenReturn("connectionName");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.URL)).thenReturn("url");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.USER)).thenReturn("username");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD)).thenReturn("secret");
-
-    CONNECTION.startElement(stack, attributes);
-
-    ConnectorService.Connection config = (ConnectorService.Connection) stack.pop();
-    assertThat(config.getName()).isEqualTo("connectionName");
-    assertThat(config.getUrl()).isEqualTo("url");
-    assertThat(config.getUser()).isEqualTo("username");
-    assertThat(config.getPassword()).isEqualTo("secret");
-    assertThat(config.getParameters()).isNull();
-  }
-
-  @Test
-  public void startElementConnectionWithParameters() {
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.NAME)).thenReturn("connectionName");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.URL)).thenReturn("url");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS))
-        .thenReturn("key1:value1,key2:value2");
-
-    CONNECTION.startElement(stack, attributes);
-
-    ConnectorService.Connection config = (ConnectorService.Connection) stack.pop();
-    assertThat(config.getName()).isEqualTo("connectionName");
-    assertThat(config.getUrl()).isEqualTo("url");
-    assertThat(config.getUser()).isNull();
-    assertThat(config.getPassword()).isNull();
-    assertThat(config.getParameters()).isEqualTo("key1:value1,key2:value2");
-  }
-
-  @Test
-  public void endElementConnection() {
-    ConnectorService.Connection connection = mock(ConnectorService.Connection.class);
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    stack.push(connection);
-
-    CONNECTION.endElement(stack);
-
-    assertThat(stack.size()).isEqualTo(1);
-    verify(serviceConfiguration, times(1)).addConnectionConfig(any());
   }
 
   @Test

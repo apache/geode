@@ -71,9 +71,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 
 public class IndexManager {
   private static final Logger logger = LogService.getLogger();
@@ -167,9 +166,7 @@ public class IndexManager {
         region.getAttributes().getEvictionAttributes().getAction().isOverflowToDisk();
     this.offHeap = region.getAttributes().getOffHeap();
     if (!indexMaintenanceSynchronous) {
-      final LoggingThreadGroup group =
-          LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
-      updater = new IndexUpdaterThread(group, this.INDEX_MAINTENANCE_BUFFER,
+      updater = new IndexUpdaterThread(this.INDEX_MAINTENANCE_BUFFER,
           "OqlIndexUpdater:" + region.getFullPath());
       updater.start();
     }
@@ -181,11 +178,15 @@ public class IndexManager {
    * aggressively. But the large hiccup will eventually be rolled off as time is always increasing
    * This is a fix for #47475
    *
-   * @param operationTime the last modified time from version tag
+   * @param lastModifiedTime the last modified time from version tag
    */
-  public static boolean setIndexBufferTime(long operationTime, long currentCacheTime) {
-    long timeDifference = currentCacheTime - operationTime;
-    return setNewLargestValue(SAFE_QUERY_TIME, currentCacheTime + timeDifference);
+  public static void setIndexBufferTime(long lastModifiedTime, long currentCacheTime) {
+    long oldValue = SAFE_QUERY_TIME.get();
+    long newValue = currentCacheTime + currentCacheTime - lastModifiedTime;
+    if (oldValue < newValue) {
+      // use compare and set in case the value has been changed since we got the old value
+      SAFE_QUERY_TIME.compareAndSet(oldValue, newValue);
+    }
   }
 
   /**
@@ -213,21 +214,9 @@ public class IndexManager {
    * Small amounts of false positives are ok as it will have a slight impact on performance
    */
   public static boolean needsRecalculation(long queryStartTime, long lastModifiedTime) {
-    return ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION
-        && queryStartTime <= SAFE_QUERY_TIME.get() - queryStartTime + lastModifiedTime;
-  }
-
-  private static boolean setNewLargestValue(AtomicLong value, long newValue) {
-    boolean done = false;
-    while (!done) {
-      long oldValue = value.get();
-      if (oldValue < newValue) {
-        return value.compareAndSet(oldValue, newValue);
-      } else {
-        done = true;
-      }
-    }
-    return false;
+    boolean needsRecalculate =
+        (queryStartTime <= (lastModifiedTime + (SAFE_QUERY_TIME.get() - queryStartTime)));
+    return ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION && needsRecalculate;
   }
 
   /** Test Hook */
@@ -270,7 +259,7 @@ public class IndexManager {
 
     if (QueryMonitor.isLowMemory()) {
       throw new IndexInvalidException(
-          LocalizedStrings.IndexCreationMsg_CANCELED_DUE_TO_LOW_MEMORY.toLocalizedString());
+          "Index creation canceled due to low memory");
     }
 
     boolean oldReadSerialized = this.cache.getPdxReadSerializedOverride();
@@ -286,8 +275,8 @@ public class IndexManager {
 
       if (getIndex(indexName) != null) {
         throw new IndexNameConflictException(
-            LocalizedStrings.IndexManager_INDEX_NAMED_0_ALREADY_EXISTS
-                .toLocalizedString(indexName));
+            String.format("Index named ' %s ' already exists.",
+                indexName));
       }
 
       IndexCreationHelper helper = null;
@@ -318,29 +307,30 @@ public class IndexManager {
         if (indexType == IndexType.HASH) {
           if (!isIndexMaintenanceTypeSynchronous()) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE
-                    .toLocalizedString());
+                "Hash index is currently not supported for regions with Asynchronous index maintenance.");
           }
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQueryService_HASH_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS
-                  .toLocalizedString());
+              "Hash Index is not supported with from clause having multiple iterators(collections).");
         }
         // Overflow is not supported with range index.
         if (isOverFlowRegion()) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0
-                  .toLocalizedString(region.getFullPath()));
+              String.format(
+                  "The specified index conditions are not supported for regions which overflow to disk. The region involved is  %s",
+                  region.getFullPath()));
         }
         // OffHeap is not supported with range index.
         if (isOffHeap()) {
           if (!isIndexMaintenanceTypeSynchronous()) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_ASYNC_MAINTENANCE_THE_REGION_IS_0
-                    .toLocalizedString(region.getFullPath()));
+                String.format(
+                    "Asynchronous index maintenance is currently not supported for off-heap regions. The off-heap region is %s",
+                    region.getFullPath()));
           }
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQueryService_OFF_HEAP_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_MULTIPLE_ITERATORS_THE_REGION_IS_0
-                  .toLocalizedString(region.getFullPath()));
+              String.format(
+                  "From clauses having multiple iterators(collections) are not supported for off-heap regions. The off-heap region is %s",
+                  region.getFullPath()));
         }
       }
 
@@ -388,11 +378,11 @@ public class IndexManager {
           // from this thread.
           if (getIndex(indexName) != null) {
             throw new IndexNameConflictException(
-                LocalizedStrings.IndexManager_INDEX_NAMED_0_ALREADY_EXISTS
-                    .toLocalizedString(indexName));
+                String.format("Index named ' %s ' already exists.",
+                    indexName));
           } else {
             throw new IndexExistsException(
-                LocalizedStrings.IndexManager_SIMILAR_INDEX_EXISTS.toLocalizedString());
+                "Similar Index Exists");
           }
         }
       } catch (InterruptedException ignored) {
@@ -826,8 +816,7 @@ public class IndexManager {
   public void removeIndex(Index index) {
     if (index.getRegion() != this.region) {
       throw new IllegalArgumentException(
-          LocalizedStrings.IndexManager_INDEX_DOES_NOT_BELONG_TO_THIS_INDEXMANAGER
-              .toLocalizedString());
+          "Index does not belong to this IndexManager");
     }
     // Asif: We will just remove the Index from the map. Since the
     // TreeMap is synchronized & the operation of adding a newly created
@@ -1143,7 +1132,7 @@ public class IndexManager {
         }
         default: {
           throw new IndexMaintenanceException(
-              LocalizedStrings.IndexManager_INVALID_ACTION.toLocalizedString());
+              "Invalid action");
         }
       }
     } finally {
@@ -1399,7 +1388,7 @@ public class IndexManager {
 
   ////////////////////// Inner Classes //////////////////////
 
-  public class IndexUpdaterThread extends Thread {
+  public class IndexUpdaterThread extends LoggingThread {
 
     private volatile boolean running = true;
 
@@ -1410,8 +1399,8 @@ public class IndexManager {
     /**
      * Creates instance of IndexUpdaterThread
      */
-    IndexUpdaterThread(ThreadGroup group, int updateThreshold, String threadName) {
-      super(group, threadName);
+    IndexUpdaterThread(int updateThreshold, String threadName) {
+      super(threadName);
       // Check if threshold is set.
       if (updateThreshold > 0) {
         // Create a bounded queue.
@@ -1420,7 +1409,6 @@ public class IndexManager {
         // Create non-bounded queue.
         pendingTasks = new LinkedBlockingQueue();
       }
-      this.setDaemon(true);
     }
 
     public void addTask(int action, RegionEntry entry, int opCode) {

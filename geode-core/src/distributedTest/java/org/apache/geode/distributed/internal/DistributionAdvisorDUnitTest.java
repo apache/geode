@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
@@ -26,10 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -118,17 +117,17 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
     thread.start();
 
     try {
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         verify(logger, atLeastOnce()).warn(isA(String.class), isA(Long.class));
       });
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         verify(logger, atLeastOnce()).fatal(isA(String.class), isA(Long.class));
       });
       advisor.endOperation(membershipVersion);
-      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         verify(logger, atLeastOnce()).info("Wait for current operations completed");
       });
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> !thread.isAlive());
+      await().until(() -> !thread.isAlive());
     } finally {
       if (thread.isAlive()) {
         advisor.endOperation(membershipVersion);

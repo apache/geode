@@ -16,5 +16,6 @@
  */
 
 dependencies {
-    compile project(':geode-core')
+  distributedTestCompile('junit:junit:' + project.'junit.version')
+  compile(project(':geode-core'))
 }

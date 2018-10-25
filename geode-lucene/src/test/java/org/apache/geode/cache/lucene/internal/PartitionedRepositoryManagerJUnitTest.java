@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -35,11 +36,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -298,15 +297,14 @@ public class PartitionedRepositoryManagerJUnitTest {
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
     when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
 
-    Awaitility.await().pollDelay(1, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-        .atMost(500, TimeUnit.SECONDS).until(() -> {
-          final Collection<IndexRepository> repositories = new HashSet<>();
-          try {
-            repositories.addAll(repoManager.getRepositories(ctx));
-          } catch (BucketNotFoundException | LuceneIndexCreationInProgressException e) {
-          }
-          return repositories.size() == 2;
-        });
+    await().until(() -> {
+      final Collection<IndexRepository> repositories = new HashSet<>();
+      try {
+        repositories.addAll(repoManager.getRepositories(ctx));
+      } catch (BucketNotFoundException | LuceneIndexCreationInProgressException e) {
+      }
+      return repositories.size() == 2;
+    });
 
     Iterator<IndexRepository> itr = repoManager.getRepositories(ctx).iterator();
     IndexRepositoryImpl repo0 = (IndexRepositoryImpl) itr.next();

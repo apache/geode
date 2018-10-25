@@ -16,17 +16,16 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -112,7 +111,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
         getCache().getResourceManager().setEvictionHeapPercentage(INITIAL_EVICTION_HEAP_PERCENTAGE);
         final PartitionedRegion partitionedRegion = (PartitionedRegion) getRootRegion(REGION_NAME);
         raiseFakeNotification();
-        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+        await().untilAsserted(() -> {
           assertTrue(partitionedRegion.getDiskRegionStats().getNumOverflowOnDisk() > 0);
         });
       } finally {

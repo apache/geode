@@ -14,16 +14,14 @@
  */
 package org.apache.geode.cache30;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.cache.EvictionAttributes.createLRUMemoryAttributes;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PROXY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 
@@ -41,7 +39,7 @@ import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -49,7 +47,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 3.2
  */
-
 public class DiskRegionDistributedTest implements Serializable {
 
   private String uniqueName;
@@ -61,16 +58,16 @@ public class DiskRegionDistributedTest implements Serializable {
   private VM vm3;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
 
-  /** DistributedDiskDirRule invokes before and after for SerializableTestName */
-  private SerializableTestName testName = new SerializableTestName();
+  @Rule
+  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule();
 
   @Rule
-  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule(testName);
+  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() {
@@ -118,7 +115,7 @@ public class DiskRegionDistributedTest implements Serializable {
       Region region = cacheRule.getCache().getRegion(uniqueName);
       EvictionCounters evictionCounters = getEvictionCounters(region);
 
-      await("waiting for evictions to exceed 6").atMost(1, MINUTES)
+      await("waiting for evictions to exceed 6")
           .until(() -> evictionCounters.getEvictions() > 6);
     });
 
@@ -209,7 +206,7 @@ public class DiskRegionDistributedTest implements Serializable {
     vm0.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(uniqueName);
 
-      await("value for key remains: " + key).atMost(30, SECONDS)
+      await("value for key remains: " + key)
           .until(() -> region.get(key) == null);
     });
 
@@ -223,7 +220,7 @@ public class DiskRegionDistributedTest implements Serializable {
     vm0.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(uniqueName);
 
-      await("verify update").atMost(30, SECONDS).until(() -> newValue.equals(region.get(key)));
+      await("verify update").until(() -> newValue.equals(region.get(key)));
     });
   }
 

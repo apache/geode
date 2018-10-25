@@ -1333,7 +1333,7 @@ public interface ConfigurationProperties {
    * (TCP). This range is given as two numbers separated by a minus sign. Minimum 3 values in range
    * are required to successfully startup.
    * <p>
-   * <U>Default</U>: 1024-65535
+   * <U>Default</U>: 41000-61000
    */
   String MEMBERSHIP_PORT_RANGE = "membership-port-range";
   /**
@@ -1929,6 +1929,38 @@ public interface ConfigurationProperties {
    * Geode 1.0
    */
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
+
+  /**
+   * The static String definition of the <i>"ssl-use-default-context"</i> property
+   * </p>
+   *
+   * <U>Description</U> When true, either uses the default context as returned by
+   * SSLContext.getInstance('Default') or uses the context as set by using
+   * SSLContext.setDefault(). If false, then specify the keystore and the truststore by setting
+   * ssl-keystore-* and ssl-truststore-* properties. If true, then
+   * ssl-endpoint-identification-enabled
+   * is set to true. This property does not enable SSL.
+   * </p>
+   *
+   * <U>Default</U>: "false"
+   * </p>
+   *
+   * <U>Since</U>: Geode 1.7
+   * </p>
+   */
+  String SSL_USE_DEFAULT_CONTEXT = "ssl-use-default-context";
+  /**
+   * The static String definition of the <i>"ssl-endpoint-identification-enabled"</i> property <a
+   * name="ssl-endpoint-identification-enabled"/a>
+   * </p>
+   * <U>Description</U>: If true, clients validate server hostname using server certificate during
+   * SSL handshake. It defaults to true when ssl-use-default-context is true or else false.
+   * </p>
+   * <U>Default</U>: code>"false"</code>
+   * </p>
+   * <U>Since</U>: Geode 1.7
+   */
+  String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-endpoint-identification-enabled";
   /**
    * The static String definition of the <i>"ssl-enabled-components"</i> property <a
    * name="ssl-enabled-components"/a>
@@ -1937,7 +1969,7 @@ public interface ConfigurationProperties {
    * the {@link #CLUSTER_SSL_PREFIX} properties. This property will determine which components will
    * use SSL for their communications.
    * </p>
-   * <U>Options</U>: "all","server","cluster","gateway","web","jmx","none" -- As described
+   * <U>Options</U>: "all","server","cluster","gateway","web","jmx","" -- As described
    * {@link org.apache.geode.security.SecurableCommunicationChannels} <U>Since</U>: Geode 1.0
    */
   String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";
@@ -2084,7 +2116,8 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"serializable-object-filter"</i> property
    *
-   * <U>Description</U>A user provided whitelist of objects that the system will allow to serialize.
+   * <U>Description</U>A user provided acceptlist of objects that the system will allow to
+   * serialize.
    *
    * <p>
    * See java.io.ObjectInputFilter.Config for details on the syntax for creating filters.

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
@@ -40,6 +39,7 @@ import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher}.
@@ -106,7 +106,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
   }
 
   protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
-    await().atMost(2, MINUTES).until(() -> assertThat(isLauncherOnline()).isTrue());
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(isLauncherOnline()).isTrue());
     return launcher;
   }
 

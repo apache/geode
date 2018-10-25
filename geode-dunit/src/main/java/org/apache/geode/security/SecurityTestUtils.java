@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -33,7 +34,6 @@ import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -95,7 +94,6 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.security.templates.UsernamePrincipal;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
@@ -598,31 +596,6 @@ public class SecurityTestUtils {
 
   protected static Cache getCache() {
     return cache;
-  }
-
-  protected static void waitForCondition(final Callable<Boolean> condition) {
-    waitForCondition(condition, 100, 120);
-  }
-
-  protected static void waitForCondition(final Callable<Boolean> condition, final int sleepMillis,
-      final int numTries) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        try {
-          return condition.call();
-        } catch (Exception e) {
-          fail("Unexpected exception", e);
-        }
-        return false; // NOTREACHED
-      }
-
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    waitForCriterion(ev, sleepMillis * numTries, 200, true);
   }
 
   protected static Object getLocalValue(final Region region, final Object key) {
@@ -1645,7 +1618,8 @@ public class SecurityTestUtils {
     for (int index = 0; index < num; ++index) {
       final String key = KEYS[index];
       final String expectedVal = vals[index];
-      waitForCondition(() -> expectedVal.equals(getLocalValue(region, key)), 1000, 30 / num);
+      await()
+          .until(() -> expectedVal.equals(getLocalValue(region, key)));
     }
 
     for (int index = 0; index < num; ++index) {

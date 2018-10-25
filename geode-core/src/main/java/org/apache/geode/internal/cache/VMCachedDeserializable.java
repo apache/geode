@@ -25,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -60,7 +59,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   public VMCachedDeserializable(byte[] serializedValue) {
     if (serializedValue == null)
       throw new NullPointerException(
-          LocalizedStrings.VMCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
+          "value must not be null");
     this.value = serializedValue;
     this.valueSize = CachedDeserializableFactory.getByteSize(serializedValue);
   }

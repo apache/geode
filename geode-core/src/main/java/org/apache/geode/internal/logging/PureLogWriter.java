@@ -14,17 +14,21 @@
  */
 package org.apache.geode.internal.logging;
 
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * Implementation of {@link org.apache.geode.i18n.LogWriterI18n} that will write to a local stream
+ * Implementation of {@link org.apache.geode.LogWriter} that will write to a local stream
  * and only use pure java features.
  */
 public class PureLogWriter extends LogWriterImpl {
@@ -35,61 +39,69 @@ public class PureLogWriter extends LogWriterImpl {
   /** If the log stream has been closed */
   private volatile boolean closed;
 
-  // Constructors
+  protected volatile int level;
+
+  private PrintWriter printWriter;
+  private long bytesLogged;
+
   /**
    * Creates a writer that logs to <code>System.out</code>.
    *
    * @param level only messages greater than or equal to this value will be logged.
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public PureLogWriter(int level) {
+  public PureLogWriter(final int level) {
     this(level, System.out);
   }
 
   /**
-   * Creates a writer that logs to <code>logWriter</code>.
+   * Creates a writer that logs to <code>printStream</code>.
    *
    * @param level only messages greater than or equal to this value will be logged.
-   * @param logWriter is the stream that message will be printed to.
+   * @param printStream is the stream that message will be printed to.
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public PureLogWriter(int level, PrintStream logWriter) {
-    this(level, new PrintWriter(logWriter, true), null);
+  public PureLogWriter(final int level, final PrintStream printStream) {
+    this(level, new PrintWriter(printStream, true), null);
   }
 
   /**
-   * Creates a writer that logs to <code>logWriter</code>.
+   * Creates a writer that logs to <code>printStream</code>.
    *
    * @param level only messages greater than or equal to this value will be logged.
-   * @param logWriter is the stream that message will be printed to.
+   * @param printStream is the stream that message will be printed to.
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public PureLogWriter(int level, PrintStream logWriter, String connectionName) {
-    this(level, new PrintWriter(logWriter, true), connectionName);
+  public PureLogWriter(final int level, final PrintStream printStream,
+      final String connectionName) {
+    this(level, new PrintWriter(printStream, true), connectionName);
   }
 
   /**
-   * Creates a writer that logs to <code>logWriter</code>.
+   * Creates a writer that logs to <code>printWriter</code>.
    *
    * @param level only messages greater than or equal to this value will be logged.
-   * @param logWriter is the stream that message will be printed to.
+   * @param printWriter is the stream that message will be printed to.
    * @param connectionName The name of the connection associated with this log writer
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public PureLogWriter(int level, PrintWriter logWriter, String connectionName) {
-    super();
-    this.setLevel(level);
-    this.logWriter = logWriter;
+  public PureLogWriter(final int level, final PrintWriter printWriter,
+      final String connectionName) {
+    setLevel(level);
+    this.printWriter = printWriter;
     this.connectionName = connectionName;
   }
 
-  // Special Instance Methods on this class only
   /**
    * Gets the writer's level.
    */
   @Override
   public int getLogWriterLevel() {
-    return this.level;
+    return level;
   }
 
   /**
@@ -97,21 +109,15 @@ public class PureLogWriter extends LogWriterImpl {
    *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public void setLevel(int newLevel) {
-    // if (newLevel < ALL_LEVEL || newLevel > NONE_LEVEL) {
-    // throw new
-    // IllegalArgumentException(LocalizedStrings.PureLogWriter_WRITER_LEVEL_0_WAS_NOT_IN_THE_RANGE_1_2.toLocalizedString(new
-    // Object[] {Integer.valueOf(newLevel), Integer.valueOf(ALL_LEVEL),
-    // Integer.valueOf(NONE_LEVEL)}));
-    // }
-    this.level = newLevel;
+  public void setLevel(final int level) {
+    this.level = level;
   }
 
-  public void setLogWriterLevel(int newLevel) {
-    setLevel(newLevel);
+  @Override
+  public void setLogWriterLevel(final int logWriterLevel) {
+    setLevel(logWriterLevel);
   }
 
-  // internal implementation methods
   protected String getThreadName() {
     return Thread.currentThread().getName();
   }
@@ -124,114 +130,118 @@ public class PureLogWriter extends LogWriterImpl {
   /**
    * Logs a message and an exception to the specified log destination.
    *
-   * @param msgLevel a string representation of the level
-   * @param msg the actual message to log
-   * @param ex the actual Exception to log
+   * @param messageLevel a string representation of the level
+   * @param message the actual message to log
+   * @param throwable the actual Exception to log
    */
   @Override
-  public void put(int msgLevel, String msg, Throwable ex) {
+  public void put(final int messageLevel, final String message, final Throwable throwable) {
     String exceptionText = null;
-    if (ex != null) {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      ex.printStackTrace(pw);
-      pw.close();
+    if (throwable != null) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      throwable.printStackTrace(printWriter);
+      printWriter.close();
       try {
-        sw.close();
+        stringWriter.close();
       } catch (IOException ignore) {
       }
-      exceptionText = sw.toString();
+      exceptionText = stringWriter.toString();
     }
-    put(msgLevel, new Date(), this.connectionName, getThreadName(), getThreadId(), msg,
+    put(messageLevel, new Date(), connectionName, getThreadName(), getThreadId(), message,
         exceptionText);
   }
 
   /**
    * Logs a message and an exception to the specified log destination.
    *
-   * @param msgLevel a string representation of the level
-   * @param msgId the actual message to log
-   * @param ex the actual Exception to log
+   * @param messageLevel a string representation of the level
+   * @param messageId the actual message to log
+   * @param throwable the actual Exception to log
    */
   @Override
-  public void put(int msgLevel, StringId msgId, Object[] params, Throwable ex) {
-    String msg = msgId.toLocalizedString(params);
-    put(msgLevel, msg, ex);
+  public void put(final int messageLevel, final StringId messageId, final Object[] parameters,
+      final Throwable throwable) {
+    String message = messageId.toLocalizedString(parameters);
+    put(messageLevel, message, throwable);
   }
 
-  protected String formatLogLine(int msgLevel, Date msgDate,
-      @SuppressWarnings("hiding") String connectionName, String threadName, long tid, String msg,
-      String exceptionText) {
-    java.io.StringWriter sw = new java.io.StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
+  private String formatLogLine(final int messageLevel, final Date messageDate,
+      final String connectionName, final String threadName, final long threadId,
+      final String message, final String exceptionText) {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter printWriter = new PrintWriter(stringWriter);
 
-    printHeader(pw, msgLevel, msgDate, connectionName, threadName, tid);
+    printHeader(printWriter, messageLevel, messageDate, connectionName, threadName, threadId);
 
-    if (msg != null) {
+    if (message != null) {
       try {
-        formatText(pw, msg, 40);
+        formatText(printWriter, message, 40);
       } catch (RuntimeException e) {
-        pw.println(msg);
-        pw.println(LocalizedStrings.PureLogWriter_IGNORING_EXCEPTION.toLocalizedString());
-        e.printStackTrace(pw);
+        printWriter.println(message);
+        printWriter.println("Ignoring exception: ");
+        e.printStackTrace(printWriter);
       }
     } else {
-      pw.println();
+      printWriter.println();
     }
     if (exceptionText != null) {
-      pw.print(exceptionText);
+      printWriter.print(exceptionText);
     }
-    pw.close();
+    printWriter.close();
     try {
-      sw.close();
-    } catch (java.io.IOException ignore) {
+      stringWriter.close();
+    } catch (IOException ignore) {
+      // ignored
     }
 
-    return sw.toString();
+    return stringWriter.toString();
   }
 
-  protected void printHeader(PrintWriter pw, int msgLevel, Date msgDate, String connectionName,
-      String threadName, long tid) {
-    pw.println();
-    pw.print('[');
-    pw.print(levelToString(msgLevel));
-    pw.print(' ');
-    pw.print(this.formatDate(msgDate));
+  private void printHeader(final PrintWriter printWriter, final int messageLevel,
+      final Date messageDate, final String connectionName, final String threadName,
+      final long threadId) {
+    printWriter.println();
+    printWriter.print('[');
+    printWriter.print(levelToString(messageLevel));
+    printWriter.print(' ');
+    printWriter.print(formatDate(messageDate));
     if (connectionName != null) {
-      pw.print(' ');
-      pw.print(connectionName);
+      printWriter.print(' ');
+      printWriter.print(connectionName);
     }
     if (threadName != null) {
-      pw.print(" <");
-      pw.print(threadName);
-      pw.print(">");
+      printWriter.print(" <");
+      printWriter.print(threadName);
+      printWriter.print(">");
     }
-    pw.print(" tid=0x");
-    pw.print(Long.toHexString(tid));
-    pw.print("] ");
+    printWriter.print(" tid=0x");
+    printWriter.print(Long.toHexString(threadId));
+    printWriter.print("] ");
   }
 
-  public String put(int msgLevel, Date msgDate, String connectionName, String threadName, long tid,
-      String msg, String exceptionText) {
-    String result =
-        formatLogLine(msgLevel, msgDate, connectionName, threadName, tid, msg, exceptionText);
-    writeFormattedMessage(result);
-    return result;
+  public String put(final int messageLevel, final Date messageDate, final String connectionName,
+      final String threadName, final long threadId, final String message,
+      final String exceptionText) {
+    String formattedLine = formatLogLine(messageLevel, messageDate, connectionName, threadName,
+        threadId, message, exceptionText);
+    writeFormattedMessage(formattedLine);
+    return formattedLine;
   }
 
-  public void writeFormattedMessage(String s) {
+  public void writeFormattedMessage(final String message) {
     synchronized (this) {
-      this.bytesLogged += s.length();
-      this.logWriter.print(s);
-      this.logWriter.flush();
+      bytesLogged += message.length();
+      printWriter.print(message);
+      printWriter.flush();
     }
   }
 
   /**
    * Returns the number of bytes written to the current log file.
    */
-  public long getBytesLogged() {
-    return this.bytesLogged;
+  long getBytesLogged() {
+    return bytesLogged;
   }
 
   /**
@@ -239,24 +249,37 @@ public class PureLogWriter extends LogWriterImpl {
    *
    * @return the previous target.
    */
-  public PrintWriter setTarget(PrintWriter logWriter) {
-    return setTarget(logWriter, 0L);
+  public PrintWriter setTarget(final PrintWriter printWriter) {
+    return setTarget(printWriter, 0L);
   }
 
-  public PrintWriter setTarget(PrintWriter logWriter, long targetLength) {
+  public PrintWriter setTarget(final File logFile) {
+    return setTarget(createFileOutputStream(logFile), 0L);
+  }
+
+  private PrintWriter createFileOutputStream(final File logFile) {
+    try {
+      return new PrintWriter(new FileOutputStream(logFile, true), true);
+    } catch (FileNotFoundException ex) {
+      String s = String.format("Could not open log file \"%s\".", logFile);
+      throw new GemFireIOException(s, ex);
+    }
+  }
+
+  public PrintWriter setTarget(final PrintWriter printWriter, final long targetLength) {
     synchronized (this) {
-      PrintWriter result = this.logWriter;
-      this.bytesLogged = targetLength;
-      this.logWriter = logWriter;
-      return result;
+      PrintWriter oldPrintWriter = this.printWriter;
+      bytesLogged = targetLength;
+      this.printWriter = printWriter;
+      return oldPrintWriter;
     }
   }
 
   public void close() {
-    this.closed = true;
+    closed = true;
     try {
-      if (this.logWriter != null) {
-        this.logWriter.close();
+      if (printWriter != null) {
+        printWriter.close();
       }
     } catch (Exception e) {
       // ignore , we are closing.
@@ -264,23 +287,14 @@ public class PureLogWriter extends LogWriterImpl {
   }
 
   public boolean isClosed() {
-    return this.closed;
+    return closed;
   }
 
   /**
    * Returns the name of the connection on whose behalf this log writer logs.
    */
+  @Override
   public String getConnectionName() {
-    return this.connectionName;
+    return connectionName;
   }
-
-  /** Get the underlying PrintWriter. */
-  public PrintWriter getPrintWriter() {
-    return this.logWriter;
-  }
-
-  // instance variables
-  protected volatile int level;
-  private long bytesLogged = 0;
-  private PrintWriter logWriter;
 }

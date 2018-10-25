@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,7 +51,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -63,13 +62,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * The test ensures that the EXPIRE_DESTROY events are propagated to the subscriber client and the
  * secondary server does process the QRMs for the EXPIRE_DESTROY events.
  */
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 @SuppressWarnings("serial")
 public class QueueRemovalMessageProcessingDistributedTest implements Serializable {
 
   private static final int TOTAL_NUM_BUCKETS = 4;
-
-  private static final AtomicInteger destroyedCount = new AtomicInteger();
+  private static final AtomicInteger DESTROYED_COUNT = new AtomicInteger();
 
   private String regionName;
   private String hostName;
@@ -83,7 +81,7 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
   private VM client2;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -113,24 +111,24 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
 
   @After
   public void tearDown() throws Exception {
-    destroyedCount.set(0);
+    DESTROYED_COUNT.set(0);
     invokeInEveryVM(() -> {
-      destroyedCount.set(0);
+      DESTROYED_COUNT.set(0);
     });
   }
 
   @Test
-  public void testQRMOfExpiredEventsProcessedSuccessfully() throws Exception {
+  public void testQRMOfExpiredEventsProcessedSuccessfully() {
     int putCount = 10;
-
-    // totalEvents = putCount * 2 [eviction-destroys] + 1 [marker message]
-    int totalEvents = putCount * 2 + 1;
 
     client2.invoke(() -> doPuts(putCount));
 
     identifyPrimaryServer();
 
-    client1.invoke(() -> await().atMost(1, MINUTES).until(() -> destroyedCount.get() == 10));
+    client1.invoke(() -> await().until(() -> DESTROYED_COUNT.get() == 10));
+
+    // totalEvents = putCount * 2 [eviction-destroys] + 1 [marker message]
+    int totalEvents = putCount * 2 + 1;
 
     primary.invoke(() -> verifyClientSubscriptionStatsOnPrimary(totalEvents));
     secondary.invoke(() -> verifyClientSubscriptionStatsOnSecondary(totalEvents));
@@ -139,22 +137,23 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
   private int createCacheServerWithPRDatastore() throws IOException {
     cacheRule.createCache();
 
-    PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(1);
-    paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setRedundantCopies(1);
+    partitionAttributesFactory.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
-    RegionFactory<String, String> rf =
+    RegionFactory<String, String> regionFactory =
         cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
-    rf.setConcurrencyChecksEnabled(false);
-    rf.setEntryTimeToLive(new ExpirationAttributes(3, ExpirationAction.DESTROY));
-    rf.setPartitionAttributes(paf.create());
+    regionFactory.setConcurrencyChecksEnabled(false);
+    regionFactory.setEntryTimeToLive(new ExpirationAttributes(3, ExpirationAction.DESTROY));
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
-    rf.create(regionName);
+    regionFactory.create(regionName);
 
-    CacheServer server = cacheRule.getCache().addCacheServer();
-    server.setPort(0);
-    server.start();
-    return server.getPort();
+    CacheServer cacheServer = cacheRule.getCache().addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
   }
 
   private void createClientCacheWithRI(int port1, int port2, String durableClientId) {
@@ -162,26 +161,26 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
     config.setProperty(DURABLE_CLIENT_ID, durableClientId);
     config.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
-    ClientCacheFactory ccf = new ClientCacheFactory(config);
-    ccf.addPoolServer(hostName, port1);
-    ccf.addPoolServer(hostName, port2);
-    ccf.setPoolSubscriptionAckInterval(50);
-    ccf.setPoolSubscriptionEnabled(true);
-    ccf.setPoolSubscriptionRedundancy(1);
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory(config);
+    clientCacheFactory.addPoolServer(hostName, port1);
+    clientCacheFactory.addPoolServer(hostName, port2);
+    clientCacheFactory.setPoolSubscriptionAckInterval(50);
+    clientCacheFactory.setPoolSubscriptionEnabled(true);
+    clientCacheFactory.setPoolSubscriptionRedundancy(1);
 
-    clientCacheRule.createClientCache(ccf);
+    clientCacheRule.createClientCache(clientCacheFactory);
 
-    ClientRegionFactory<String, String> crf = clientCacheRule.getClientCache()
+    ClientRegionFactory<String, String> clientRegionFactory = clientCacheRule.getClientCache()
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
 
-    crf.addCacheListener(new CacheListenerAdapter<String, String>() {
+    clientRegionFactory.addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
       public void afterDestroy(EntryEvent<String, String> event) {
-        destroyedCount.incrementAndGet();
+        DESTROYED_COUNT.incrementAndGet();
       }
     });
 
-    Region<String, String> region = crf.create(regionName);
+    Region<String, String> region = clientRegionFactory.create(regionName);
 
     region.registerInterest("ALL_KEYS", true);
     clientCacheRule.getClientCache().readyForEvents();
@@ -192,12 +191,12 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
     config.setProperty(DURABLE_CLIENT_ID, durableClientId);
     config.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
-    ClientCacheFactory ccf = new ClientCacheFactory(config);
-    ccf.setPoolSubscriptionAckInterval(50);
-    ccf.setPoolSubscriptionRedundancy(1);
-    ccf.addPoolServer(hostName, port);
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory(config);
+    clientCacheFactory.setPoolSubscriptionAckInterval(50);
+    clientCacheFactory.setPoolSubscriptionRedundancy(1);
+    clientCacheFactory.addPoolServer(hostName, port);
 
-    clientCacheRule.createClientCache(ccf);
+    clientCacheRule.createClientCache(clientCacheFactory);
 
     ClientRegionFactory<String, String> crf = clientCacheRule.getClientCache()
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -214,27 +213,24 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
   }
 
   private void verifyClientSubscriptionStatsOnPrimary(final int eventsCount) {
-    await().atMost(1, MINUTES).until(() -> allEventsHaveBeenDispatched(eventsCount));
+    await().until(() -> allEventsHaveBeenDispatched(eventsCount));
   }
 
   private boolean allEventsHaveBeenDispatched(final int eventsCount) {
     HARegionQueueStats stats = getCacheClientProxy().getHARegionQueue().getStatistics();
-
-    int numOfEvents = eventsCount;
     long dispatched = stats.getEventsDispatched();
-
-    return numOfEvents == dispatched;
+    return eventsCount == dispatched;
   }
 
   private void verifyClientSubscriptionStatsOnSecondary(final int eventsCount) {
-    await().atMost(1, MINUTES).until(() -> {
+    await().until(() -> {
       HARegionQueueStats stats = getCacheClientProxy().getHARegionQueue().getStatistics();
 
       int numOfEvents = eventsCount - 1; // No marker
 
       long qrmed = stats.getEventsRemovedByQrm();
 
-      return qrmed == numOfEvents || (qrmed + 1) == numOfEvents;
+      return qrmed == numOfEvents || qrmed + 1 == numOfEvents;
       // Why +1 above? Because sometimes(TODO: explain further) there may
       // not be any QRM sent to the secondary for the last event dispatched
       // at primary.

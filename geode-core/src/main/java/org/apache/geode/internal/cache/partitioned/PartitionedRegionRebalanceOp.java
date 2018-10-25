@@ -53,9 +53,7 @@ import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * This class performs a rebalance on a single partitioned region.
@@ -254,9 +252,7 @@ public class PartitionedRegionRebalanceOp {
         } catch (CancelException e) {
           // lock service has been destroyed
         } catch (Exception e) {
-          logger.error(
-              LocalizedMessage.create(
-                  LocalizedStrings.PartitionedRegionRebalanceOp_UNABLE_TO_RELEASE_RECOVERY_LOCK),
+          logger.error("Unable to release recovery lock",
               e);
         }
       }
@@ -267,15 +263,13 @@ public class PartitionedRegionRebalanceOp {
           InternalResourceManager.getResourceObserver().recoveryFinished(targetRegion);
         }
       } catch (Exception e) {
-        logger.error(LocalizedMessage
-            .create(LocalizedStrings.PartitionedRegionRebalanceOp_ERROR_IN_RESOURCE_OBSERVER), e);
+        logger.error("Error in resource observer", e);
       }
 
       try {
         leaderRegion.getRegionAdvisor().removeMembershipListener(listener);
       } catch (Exception e) {
-        logger.error(LocalizedMessage
-            .create(LocalizedStrings.PartitionedRegionRebalanceOp_ERROR_IN_RESOURCE_OBSERVER), e);
+        logger.error("Error in resource observer", e);
       }
     }
   }
@@ -392,8 +386,7 @@ public class PartitionedRegionRebalanceOp {
       try {
         InternalResourceManager.getResourceObserver().recoveryFinished(targetRegion);
       } catch (Exception e) {
-        logger.debug(LocalizedMessage
-            .create(LocalizedStrings.PartitionedRegionRebalanceOp_ERROR_IN_RESOURCE_OBSERVER), e);
+        logger.debug("Error in resource observer", e);
       }
     }
   }
@@ -454,7 +447,7 @@ public class PartitionedRegionRebalanceOp {
     int redundantCopies = leaderRegion.getRedundantCopies();
     int totalNumberOfBuckets = leaderRegion.getTotalNumberOfBuckets();
     Set<InternalDistributedMember> criticalMembers =
-        resourceManager.getResourceAdvisor().adviseCritialMembers();;
+        resourceManager.getResourceAdvisor().adviseCriticalMembers();;
     boolean removeOverRedundancy = true;
 
     debug("Building Model for rebalancing " + leaderRegion + ". redundantCopies=" + redundantCopies

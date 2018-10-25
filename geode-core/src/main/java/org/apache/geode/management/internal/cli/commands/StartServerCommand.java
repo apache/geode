@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -198,8 +199,40 @@ public class StartServerCommand extends InternalGfshCommand {
       }
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
+    workingDirectory = StartMemberUtils.resolveWorkingDir(
+        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
 
+    return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
+        criticalHeapPercentage, criticalOffHeapPercentage, workingDirectory, disableDefaultServer,
+        disableExitWhenOutOfMemory, enableTimeStatistics, evictionHeapPercentage,
+        evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
+        includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
+        logLevel, maxConnections, maxHeap, maxMessageCount, maxThreads, mcastBindAddress, mcastPort,
+        memcachedPort, memcachedProtocol, memcachedBindAddress, redisPort, redisBindAddress,
+        redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
+        gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
+        springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
+        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
+  }
+
+  Result doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
+      String cacheXmlPathname, String classpath, Float criticalHeapPercentage,
+      Float criticalOffHeapPercentage, String workingDirectory, Boolean disableDefaultServer,
+      Boolean disableExitWhenOutOfMemory, Boolean enableTimeStatistics,
+      Float evictionHeapPercentage, Float evictionOffHeapPercentage, Boolean force, String group,
+      String hostNameForClients, String jmxManagerHostnameForClients,
+      Boolean includeSystemClasspath, String initialHeap, String[] jvmArgsOpts, String locators,
+      Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
+      String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
+      Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
+      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisPassword,
+      Integer messageTimeToLive, String offHeapMemorySize, File gemfirePropertiesFile,
+      Boolean rebalance, File gemfireSecurityPropertiesFile, String serverBindAddress,
+      Integer serverPort, Integer socketBufferSize, String springXmlLocation,
+      String statisticsArchivePathname, Boolean requestSharedConfiguration, Boolean startRestApi,
+      String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
+      Boolean redirectOutput)
+      throws MalformedObjectNameException, IOException, InterruptedException {
     cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
 
     if (StringUtils.isNotBlank(cacheXmlPathname)) {
@@ -377,10 +410,8 @@ public class StartServerCommand extends InternalGfshCommand {
       } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
           && serverState.isStartingOrNotResponding());
     } finally {
-      stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop
-                                                                                                // will
-                                                                                                // close
-      // ErrorStream
+      stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS);
+      // stop will close ErrorStream
       getGfsh().getSignalHandler().unregisterListener(serverSignalListener);
     }
 
@@ -561,7 +592,7 @@ public class StartServerCommand extends InternalGfshCommand {
     }
   }
 
-  private void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
+  static void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
     if (SystemUtils.isHotSpotVM()) {
       if (SystemUtils.isWindows()) {
         // ProcessBuilder "on Windows" needs every word (space separated) to be

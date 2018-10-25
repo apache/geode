@@ -15,9 +15,8 @@
 package org.apache.geode.management.internal.beans;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -99,10 +98,10 @@ public class CacheServerBridgeClientMembershipRegressionTest {
       }
     });
 
-    await().atMost(10, SECONDS).until(() -> before.get());
+    await().until(() -> before.get());
 
     // if deadlocked, then this line will throw ConditionTimeoutException
-    await().atMost(10, SECONDS).until(() -> assertThat(after.get()).isTrue());
+    await().untilAsserted(() -> assertThat(after.get()).isTrue());
   }
 
   private void givenCacheFactoryIsSynchronized() {

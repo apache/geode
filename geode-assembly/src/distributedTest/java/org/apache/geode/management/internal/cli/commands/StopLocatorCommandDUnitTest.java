@@ -58,6 +58,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -154,25 +155,37 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__MEMBER, memberName)
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
 
-    assertThat(result.getStatus()).isEqualTo(OK);
+    // The new locator is not immediately available to be stopped because its mbean
+    // has to be propagated to the existing locator that gfsh is connected to. Wait
+    // for the stop to work
+    waitForCommandToSucceed(command);
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
   }
 
   @Test
   public void testWithMemberID() {
     int port = jmxPort; // this assignment is needed to pass a local var into the invocation below
+
     final String memberID = locator.invoke(() -> getMemberId(port));
 
     final String command = new CommandStringBuilder(STOP_LOCATOR)
         .addOption(STOP_LOCATOR__MEMBER, memberID)
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
+    // The new locator is not immediately available to be stopped because its mbean
+    // has to be propagated to the existing locator that gfsh is connected to. Wait
+    // for the stop to work
+    waitForCommandToSucceed(command);
 
-    assertThat(result.getStatus()).isEqualTo(OK);
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
+  }
+
+  private void waitForCommandToSucceed(String command) {
+    GeodeAwaitility.await().untilAsserted(() -> {
+      CommandResult result = gfsh.executeCommand(command);
+      assertThat(result.getStatus()).isEqualTo(OK);
+    });
   }
 
   @Test
@@ -246,9 +259,12 @@ public class StopLocatorCommandDUnitTest {
       final MBeanServerConnection connection = conn.getMBeanServerConnection();
       assertThat(connection).isInstanceOf(MBeanServerConnection.class);
 
-      final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
-      assertThat(objectNames).isNotNull().isNotEmpty().hasSize(1);
+      GeodeAwaitility.await().untilAsserted(() -> {
+        final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
+        assertThat(objectNames).isNotNull().isNotEmpty().hasSize(1);
+      });
 
+      final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
       final ObjectName objectName = objectNames.iterator().next();
       final Object memberId = connection.getAttribute(objectName, "Id");
 

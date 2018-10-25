@@ -40,7 +40,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -137,8 +136,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
         gfsh.executeAndAssertThat("destroy lucene index --name=index0 --region=region");
 
     // Assert command was successful and contains the correct rows and output
-    String expectedStatus = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
-        .toLocalizedString("index0", "/region");
+    String expectedStatus = String.format("Lucene index %s was not found in region %s",
+        "index0", "/region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -294,8 +293,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
         gfsh.executeAndAssertThat("destroy lucene index --region=region");
 
     // Assert command was successful and contains the correct rows and output
-    String expectedStatus = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
-        .toLocalizedString("/region");
+    String expectedStatus = String.format("No Lucene indexes were found in region %s",
+        "/region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members

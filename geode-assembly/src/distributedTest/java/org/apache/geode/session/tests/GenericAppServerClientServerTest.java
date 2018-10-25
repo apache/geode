@@ -14,15 +14,14 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpSession;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -95,7 +94,8 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
     serverVM.invoke(() -> {
       Cache cache = getCache();
       Region region = cache.getRegion("gemfire_modules_sessions");
-      Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> assertEquals(0, region.size()));
+      await()
+          .untilAsserted(() -> assertEquals(0, region.size()));
     });
     super.verifySessionIsRemoved(key);
   }

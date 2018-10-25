@@ -19,7 +19,7 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Catches and responds to JVM failure
@@ -120,29 +120,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
           ...
  * </pre>
  *
- * <h2>Create Logging ThreadGroups</h2> If you create any Thread, a best practice is to catch severe
- * errors and signal failure appropriately. One trick to do this is to create a ThreadGroup that
- * handles uncaught exceptions by overriding
- * {@link ThreadGroup#uncaughtException(Thread, Throwable)} and to declare your thread as a member
- * of that {@link ThreadGroup}. This also has a significant side-benefit in that most uncaught
- * exceptions can be detected:
- * <p>
- *
- * <pre>
-    ThreadGroup tg = new ThreadGroup("Worker Threads") {
-        public void uncaughtException(Thread t, Throwable e) {
-          // Do this *before* any object allocation in case of
-          // OutOfMemoryError (for instance)
-          if (e instanceof VirtualMachineError) {
-            SystemFailure.{@link #setFailure(Error) setFailure}((VirtualMachineError)e); // don't throw
-          }
-          String s = "Uncaught exception in thread " + t;
-          system.getLogWriter().severe(s, e);
-        }
-        Thread t = new Thread(myRunnable, tg, "My Thread");
-        t.start();
-      }; *
- * </pre>
  * <p>
  * <h2>Catches of Error and Throwable Should Check for Failure</h2> Keep in mind that peculiar or
  * flat-out<em>impossible</em> exceptions may ensue after a VirtualMachineError has been thrown
@@ -173,19 +150,17 @@ public final class SystemFailure {
    */
   static int SHUTDOWN_WAIT = 1000;
   /**
-   * Preallocated error messages\ LocalizedStrings may use memory (in the form of an iterator) so we
+   * Preallocated error messages may use memory (in the form of an iterator) so we
    * must get the translated messages in advance.
    **/
   static final String JVM_CORRUPTION =
-      LocalizedStrings.SystemFailure_JVM_CORRUPTION_HAS_BEEN_DETECTED.toLocalizedString();
+      "JVM corruption has been detected";
   static final String CALLING_SYSTEM_EXIT =
-      LocalizedStrings.SystemFailure_SINCE_THIS_IS_A_DEDICATED_CACHE_SERVER_AND_THE_JVM_HAS_BEEN_CORRUPTED_THIS_PROCESS_WILL_NOW_TERMINATE_PERMISSION_TO_CALL_SYSTEM_EXIT_INT_WAS_GIVEN_IN_THE_FOLLOWING_CONTEXT
-          .toLocalizedString();
+      "Since this is a dedicated cache server and the JVM has been corrupted, this process will now terminate. Permission to call System#exit(int) was given in the following context.";
   public static final String DISTRIBUTION_HALTED_MESSAGE =
-      LocalizedStrings.SystemFailure_DISTRIBUTION_HALTED_DUE_TO_JVM_CORRUPTION.toLocalizedString();
+      "Distribution halted due to JVM corruption";
   public static final String DISTRIBUTED_SYSTEM_DISCONNECTED_MESSAGE =
-      LocalizedStrings.SystemFailure_DISTRIBUTED_SYSTEM_DISCONNECTED_DUE_TO_JVM_CORRUPTION
-          .toLocalizedString();
+      "Distributed system disconnected due to JVM corruption";
 
   /**
    * the underlying failure
@@ -276,20 +251,6 @@ public final class SystemFailure {
   private static volatile boolean failureActionCompleted = false;
 
   /**
-   * This is a logging ThreadGroup, created only once.
-   */
-  private static final ThreadGroup tg;
-  static {
-    tg = new ThreadGroup("SystemFailure Watchdog Threads") {
-      @Override
-      public void uncaughtException(Thread t, Throwable e) {
-        System.err.println("Internal error in SystemFailure watchdog:" + e);
-        e.printStackTrace();
-      }
-    };
-  }
-
-  /**
    * This is the amount of time, in seconds, the watchdog periodically awakens to see if the system
    * has been corrupted.
    * <p>
@@ -343,8 +304,7 @@ public final class SystemFailure {
       if (watchDog != null && watchDog.isAlive()) {
         return;
       }
-      watchDog = new Thread(tg, SystemFailure::runWatchDog, "SystemFailure WatchDog");
-      watchDog.setDaemon(true);
+      watchDog = new LoggingThread("SystemFailure WatchDog", SystemFailure::runWatchDog);
       watchDog.start();
     }
   }
@@ -568,8 +528,7 @@ public final class SystemFailure {
       if (proctor != null && proctor.isAlive()) {
         return;
       }
-      proctor = new Thread(tg, SystemFailure::runProctor, "SystemFailure Proctor");
-      proctor.setDaemon(true);
+      proctor = new LoggingThread("SystemFailure Proctor", SystemFailure::runProctor);
       proctor.start();
     }
   }
@@ -616,8 +575,9 @@ public final class SystemFailure {
 
     // Allocate this error in advance, since it's too late once it's been detected!
     final OutOfMemoryError oome = new OutOfMemoryError(
-        LocalizedStrings.SystemFailure_0_MEMORY_HAS_REMAINED_CHRONICALLY_BELOW_1_BYTES_OUT_OF_A_MAXIMUM_OF_2_FOR_3_SEC
-            .toLocalizedString(new Object[] {PROCTOR_NAME, Long.valueOf(minimumMemoryThreshold),
+        String.format(
+            "%s : memory has remained chronically below  %s  bytes (out of a maximum of  %s ) for  %s  sec.",
+            new Object[] {PROCTOR_NAME, Long.valueOf(minimumMemoryThreshold),
                 Long.valueOf(maxMemory), Integer.valueOf(WATCHDOG_WAIT)}));
 
     logFine(PROCTOR_NAME,
@@ -886,8 +846,7 @@ public final class SystemFailure {
   public static void setFailure(Error failure) {
     if (failure == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemFailure_YOU_ARE_NOT_PERMITTED_TO_UNSET_A_SYSTEM_FAILURE
-              .toLocalizedString());
+          "You are not permitted to un-set a system failure.");
     }
     if (SystemFailureTestHook.errorIsExpected(failure)) {
       return;

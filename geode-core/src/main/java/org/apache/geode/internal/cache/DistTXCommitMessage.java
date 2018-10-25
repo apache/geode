@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -100,7 +99,7 @@ public class DistTXCommitMessage extends TXMessage {
            */
           if (!txStateProxy.isDistTx() || txStateProxy.isCreatedOnDistTxCoordinator()) {
             throw new UnsupportedOperationInTransactionException(
-                LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString(
+                String.format("Expected %s during a distributed transaction but got %s",
                     "DistTXStateProxyImplOnDatanode", txStateProxy.getClass().getSimpleName()));
           }
           if (logger.isDebugEnabled()) {

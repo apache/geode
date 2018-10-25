@@ -15,15 +15,14 @@
 package org.apache.geode.internal.cache.wan;
 
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -95,8 +94,8 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
     Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertNotNull(getMBeanProxy(member)));
+      await()
+          .untilAsserted(() -> assertNotNull(getMBeanProxy(member)));
     }
   }
 

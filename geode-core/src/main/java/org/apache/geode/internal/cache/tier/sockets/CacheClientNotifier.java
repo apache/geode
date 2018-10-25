@@ -103,10 +103,8 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.security.AccessControl;
@@ -259,9 +257,7 @@ public class CacheClientNotifier {
         String sInfo = " Client: " + sa.toString() + ".";
         uve = new UnsupportedVersionException(e.getMessage() + sInfo);
       }
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_CAUGHT_EXCEPTION_ATTEMPTING_TO_CLIENT),
+      logger.warn("CacheClientNotifier: Caught exception attempting to client: ",
           uve);
       writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), uve,
           clientVersion);
@@ -300,9 +296,9 @@ public class CacheClientNotifier {
     byte clientConflation;
     try {
       proxyID = ClientProxyMembershipID.readCanonicalized(dis);
-      if (getBlacklistedClient().contains(proxyID)) {
+      if (getDenylistedClient().contains(proxyID)) {
         writeException(dos, Handshake.REPLY_INVALID,
-            new Exception("This client is blacklisted by server"), clientVersion);
+            new Exception("This client is denylisted by server"), clientVersion);
         return;
       }
       proxy = getClientProxy(proxyID);
@@ -360,8 +356,9 @@ public class CacheClientNotifier {
           if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
             if (principal == null) {
               securityLogWriter.warning(
-                  LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_POST_PROCESS_AUTHORIZATION_CALLBACK_ENABLED_BUT_AUTHENTICATION_CALLBACK_0_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_1,
-                  new Object[] {SECURITY_CLIENT_AUTHENTICATOR, proxyID});
+                  String.format(
+                      "CacheClientNotifier: Post process authorization callback enabled but authentication callback (%s) returned with null credentials for proxyID: %s",
+                      new Object[] {SECURITY_CLIENT_AUTHENTICATOR, proxyID}));
             }
             Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
             authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
@@ -372,33 +369,34 @@ public class CacheClientNotifier {
       }
     } catch (ClassNotFoundException e) {
       throw new IOException(
-          LocalizedStrings.CacheClientNotifier_CLIENTPROXYMEMBERSHIPID_OBJECT_COULD_NOT_BE_CREATED_EXCEPTION_OCCURRED_WAS_0
-              .toLocalizedString(e));
+          String.format(
+              "ClientProxyMembershipID object could not be created. Exception occurred was %s",
+              e));
     } catch (AuthenticationRequiredException ex) {
       securityLogWriter.warning(
-          LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-          new Object[] {proxyID, ex});
+          String.format("An exception was thrown for client [%s]. %s",
+              new Object[] {proxyID, ex}));
       writeException(dos, Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED, ex, clientVersion);
       return;
     } catch (AuthenticationFailedException ex) {
       securityLogWriter.warning(
-          LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-          new Object[] {proxyID, ex});
+          String.format("An exception was thrown for client [%s]. %s",
+              new Object[] {proxyID, ex}));
       writeException(dos, Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, ex, clientVersion);
       return;
     } catch (CacheException e) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.CacheClientNotifier_0_REGISTERCLIENT_EXCEPTION_ENCOUNTERED_IN_REGISTRATION_1,
-          new Object[] {this, e}), e);
+      logger.warn(String.format("%s :registerClient: Exception encountered in registration %s",
+          new Object[] {this, e}),
+          e);
       IOException io = new IOException(
-          LocalizedStrings.CacheClientNotifier_EXCEPTION_OCCURRED_WHILE_TRYING_TO_REGISTER_INTEREST_DUE_TO_0
-              .toLocalizedString(e.getMessage()));
+          String.format("Exception occurred while trying to register interest due to :  %s",
+              e.getMessage()));
       io.initCause(e);
       throw io;
     } catch (Exception ex) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-          new Object[] {proxyID, ""}), ex);
+      logger.warn(String.format("An exception was thrown for client [%s]. %s",
+          new Object[] {proxyID, ""}),
+          ex);
       writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), ex,
           clientVersion);
       return;
@@ -499,8 +497,7 @@ public class CacheClientNotifier {
             }
           } else {
             unsuccessfulMsg =
-                LocalizedStrings.CacheClientNotifier_COULD_NOT_CONNECT_DUE_TO_CQ_BEING_DRAINED
-                    .toLocalizedString();
+                "CacheClientNotifier: Connection refused due to cq queue being drained from admin command, please wait...";
             logger.warn(unsuccessfulMsg);
             responseByte = Handshake.REPLY_REFUSED;
             if (CacheClientProxy.testHook != null) {
@@ -511,8 +508,9 @@ public class CacheClientNotifier {
           // The existing proxy is already running (which means that another
           // client is already using this durable id.
           unsuccessfulMsg =
-              LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_THE_REQUESTED_DURABLE_CLIENT_HAS_THE_SAME_IDENTIFIER__0__AS_AN_EXISTING_DURABLE_CLIENT__1__DUPLICATE_DURABLE_CLIENTS_ARE_NOT_ALLOWED
-                  .toLocalizedString(new Object[] {proxyId.getDurableId(), proxy});
+              String.format(
+                  "The requested durable client has the same identifier ( %s ) as an existing durable client ( %s ). Duplicate durable clients are not allowed.",
+                  new Object[] {proxyId.getDurableId(), proxy});
           logger.warn(unsuccessfulMsg);
           // Set the unsuccessful response byte.
           responseByte = Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT;
@@ -553,8 +551,9 @@ public class CacheClientNotifier {
       l_proxy = null;
       responseByte = Handshake.REPLY_REFUSED;
       unsuccessfulMsg =
-          LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_A_PREVIOUS_CONNECTION_ATTEMPT_FROM_THIS_CLIENT_IS_STILL_BEING_PROCESSED__0
-              .toLocalizedString(new Object[] {proxyId});
+          String.format(
+              "A previous connection attempt from this client is still being processed: %s",
+              new Object[] {proxyId});
       logger.warn(unsuccessfulMsg);
     }
 
@@ -602,9 +601,9 @@ public class CacheClientNotifier {
         logger.debug("CacheClientNotifier: Successfully registered {}", l_proxy);
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_UNSUCCESSFULLY_REGISTERED_CLIENT_WITH_IDENTIFIER__0,
-          new Object[] {proxyId, responseByte}));
+      logger.warn(
+          "CacheClientNotifier: Unsuccessfully registered client with identifier {} and response code {}",
+          new Object[] {proxyId, responseByte});
     }
     return l_proxy;
   }
@@ -754,9 +753,10 @@ public class CacheClientNotifier {
     try {
       clientMessage = initializeMessage(operation, event);
     } catch (Exception e) {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.CacheClientNotifier_CANNOT_NOTIFY_CLIENTS_TO_PERFORM_OPERATION_0_ON_EVENT_1,
-          new Object[] {operation, event}), e);
+      logger.fatal(String.format(
+          "CacheClientNotifier: Cannot notify clients to perform operation %s on event %s",
+          new Object[] {operation, event}),
+          e);
     }
     return clientMessage;
   }
@@ -993,7 +993,7 @@ public class CacheClientNotifier {
           }
           deadProxies.add(proxy);
         }
-        this.blackListSlowReceiver(proxy);
+        this.denyListSlowReceiver(proxy);
       }
     }
 
@@ -1045,15 +1045,14 @@ public class CacheClientNotifier {
     return result;
   }
 
-  private void blackListSlowReceiver(CacheClientProxy clientProxy) {
+  private void denyListSlowReceiver(CacheClientProxy clientProxy) {
     final CacheClientProxy proxy = clientProxy;
     if ((proxy.getHARegionQueue() != null && proxy.getHARegionQueue().isClientSlowReceiver())
-        && !blackListedClients.contains(proxy.getProxyID())) {
+        && !denyListedClients.contains(proxy.getProxyID())) {
       // log alert with client info.
-      logger.warn(
-          LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_CLIENT_0_IS_A_SLOW_RECEIVER,
-              new Object[] {proxy.getProxyID()}));
-      addToBlacklistedClient(proxy.getProxyID());
+      logger.warn("Client {} is a slow receiver.",
+          new Object[] {proxy.getProxyID()});
+      addToDenylistedClient(proxy.getProxyID());
       InternalDistributedSystem ids =
           (InternalDistributedSystem) this.getCache().getDistributedSystem();
       final DistributionManager dm = ids.getDistributionManager();
@@ -1065,8 +1064,8 @@ public class CacheClientNotifier {
                   .getCacheDistributionAdvisor();
           Set members = advisor.adviseCacheOp();
 
-          // Send client blacklist message
-          ClientBlacklistProcessor.sendBlacklistedClient(proxy.getProxyID(), dm, members);
+          // Send client denylist message
+          ClientDenylistProcessor.sendDenylistedClient(proxy.getProxyID(), dm, members);
 
           // close the proxy for slow receiver.
           proxy.close(false, false);
@@ -1077,11 +1076,11 @@ public class CacheClientNotifier {
             bo.afterQueueDestroyMessage();
           }
 
-          // send remove from blacklist.
-          RemoveClientFromBlacklistMessage rcm = new RemoveClientFromBlacklistMessage();
+          // send remove from denylist.
+          RemoveClientFromDenylistMessage rcm = new RemoveClientFromDenylistMessage();
           rcm.setProxyID(proxy.getProxyID());
           dm.putOutgoing(rcm);
-          blackListedClients.remove(proxy.getProxyID());
+          denyListedClients.remove(proxy.getProxyID());
         }
       });
     }
@@ -1098,8 +1097,8 @@ public class CacheClientNotifier {
       throws Exception {
     if (!supportsOperation(operation)) {
       throw new Exception(
-          LocalizedStrings.CacheClientNotifier_THE_CACHE_CLIENT_NOTIFIER_DOES_NOT_SUPPORT_OPERATIONS_OF_TYPE_0
-              .toLocalizedString(operation));
+          String.format("The cache client notifier does not support operations of type  %s",
+              operation));
     }
     // String regionName = event.getRegion().getFullPath();
     Object keyOfInterest = null;
@@ -1193,8 +1192,7 @@ public class CacheClientNotifier {
     if (proxy == null) {
       // client should see this and initiates failover
       throw new IOException(
-          LocalizedStrings.CacheClientNotifier_CACHECLIENTPROXY_FOR_THIS_CLIENT_IS_NO_LONGER_ON_THE_SERVER_SO_REGISTERINTEREST_OPERATION_IS_UNSUCCESSFUL
-              .toLocalizedString());
+          "CacheClientProxy for this client is no longer on the server , so registerInterest operation is unsuccessful");
     }
 
     boolean done = false;
@@ -1274,8 +1272,7 @@ public class CacheClientNotifier {
 
     if (proxy == null) {
       throw new IOException(
-          LocalizedStrings.CacheClientNotifier_CACHECLIENTPROXY_FOR_THIS_CLIENT_IS_NO_LONGER_ON_THE_SERVER_SO_REGISTERINTEREST_OPERATION_IS_UNSUCCESSFUL
-              .toLocalizedString());
+          "CacheClientProxy for this client is no longer on the server , so registerInterest operation is unsuccessful");
     }
 
     proxy.registerClientInterestList(regionName, keysOfInterest, isDurable,
@@ -1458,7 +1455,7 @@ public class CacheClientNotifier {
         }
       }
       this.clearCompiledQueries();
-      blackListedClients.clear();
+      denyListedClients.clear();
 
       // cancel the ping task
       this.clientPingTask.cancel();
@@ -1485,7 +1482,7 @@ public class CacheClientNotifier {
    * @param proxy The <code>CacheClientProxy</code> to add
    */
   protected void addClientProxy(CacheClientProxy proxy) throws IOException {
-    // this._logger.info(LocalizedStrings.DEBUG, "adding client proxy " + proxy);
+    // this._logger.info(String.format("%s", "adding client proxy " + proxy));
     getCache(); // ensure cache reference is up to date so firstclient state is correct
     this._clientProxies.put(proxy.getProxyID(), proxy);
     // Remove this proxy from the init proxy list.
@@ -1630,8 +1627,8 @@ public class CacheClientNotifier {
    * @param proxy The <code>CacheClientProxy</code> to remove
    */
   protected void removeClientProxy(CacheClientProxy proxy) {
-    // this._logger.info(LocalizedStrings.DEBUG, "removing client proxy " + proxy, new
-    // Exception("stack trace"));
+    // this._logger.info(String.format("%s", "removing client proxy " + proxy, new
+    // Exception("stack trace")));
     ClientProxyMembershipID client = proxy.getProxyID();
     this._clientProxies.remove(client);
     this._connectionListener.queueRemoved();
@@ -1672,9 +1669,8 @@ public class CacheClientNotifier {
         }
         cqService.closeClientCqs(proxy.getProxyID());
       } catch (CqException e1) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientNotifier_UNABLE_TO_CLOSE_CQS_FOR_THE_CLIENT__0,
-            proxy.getProxyID()));
+        logger.warn("Unable to close CQs for the client: {}",
+            proxy.getProxyID());
         if (isDebugEnabled) {
           e1.printStackTrace();
         }
@@ -1728,10 +1724,10 @@ public class CacheClientNotifier {
       // Remove the proxy if necessary. It might not be necessary to remove the
       // proxy if it is durable.
       if (keepProxy) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_KEEPING_PROXY_FOR_DURABLE_CLIENT_NAMED_0_FOR_1_SECONDS_2,
+        logger.info(
+            "CacheClientNotifier: Keeping proxy for durable client named {} for {} seconds {}.",
             new Object[] {proxy.getDurableId(), Integer.valueOf(proxy.getDurableTimeout()),
-                proxy}));
+                proxy});
       } else {
         closeAllClientCqs(proxy);
         if (isDebugEnabled) {
@@ -2209,18 +2205,18 @@ public class CacheClientNotifier {
     }
   }
 
-  private final Set blackListedClients = new CopyOnWriteArraySet();
+  private final Set denyListedClients = new CopyOnWriteArraySet();
 
-  public void addToBlacklistedClient(ClientProxyMembershipID proxyID) {
-    blackListedClients.add(proxyID);
+  public void addToDenylistedClient(ClientProxyMembershipID proxyID) {
+    denyListedClients.add(proxyID);
     // ensure that cache and distributed system state are current and open
     this.getCache();
-    new ScheduledThreadPoolExecutor(1).schedule(new ExpireBlackListTask(proxyID), 120,
+    new ScheduledThreadPoolExecutor(1).schedule(new ExpireDenyListTask(proxyID), 120,
         TimeUnit.SECONDS);
   }
 
-  public Set getBlacklistedClient() {
-    return blackListedClients;
+  public Set getDenylistedClient() {
+    return denyListedClients;
   }
 
   /**
@@ -2230,18 +2226,18 @@ public class CacheClientNotifier {
     this.cache = _cache;
   }
 
-  private class ExpireBlackListTask extends PoolTask {
+  private class ExpireDenyListTask extends PoolTask {
     private ClientProxyMembershipID proxyID;
 
-    public ExpireBlackListTask(ClientProxyMembershipID proxyID) {
+    public ExpireDenyListTask(ClientProxyMembershipID proxyID) {
       this.proxyID = proxyID;
     }
 
     @Override
     public void run2() {
-      if (blackListedClients.remove(proxyID)) {
+      if (denyListedClients.remove(proxyID)) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{} client is no longer blacklisted", proxyID);
+          logger.debug("{} client is no longer denylisted", proxyID);
         }
       }
     }

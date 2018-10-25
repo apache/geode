@@ -20,14 +20,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -122,7 +121,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
     vm3.invoke(() -> {
       Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_RR");
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> assertTrue(r.size() > 0));
+      await().untilAsserted(() -> assertTrue(r.size() > 0));
     });
     logger.info("Done successfully.");
   }
@@ -163,7 +162,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
     vm3.invoke(() -> {
       Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_RR");
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> assertTrue(r.size() > 0));
+      await().untilAsserted(() -> assertTrue(r.size() > 0));
 
     });
     logger.info("Done successfully.");
@@ -386,11 +385,11 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       Properties p = super.getCredentials(props, server, isPeer);
       if (val) {
         isDifferentServerInGetCredentialCall = true;
-        CacheFactory.getAnyInstance().getLoggerI18n().convertToLogWriter()
+        CacheFactory.getAnyInstance().getLogger()
             .config("setting  isDifferentServerInGetCredentialCall "
                 + isDifferentServerInGetCredentialCall);
       } else {
-        CacheFactory.getAnyInstance().getLoggerI18n().convertToLogWriter()
+        CacheFactory.getAnyInstance().getLogger()
             .config("setting22  isDifferentServerInGetCredentialCall "
                 + isDifferentServerInGetCredentialCall);
       }

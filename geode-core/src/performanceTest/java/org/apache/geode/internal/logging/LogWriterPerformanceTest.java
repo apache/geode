@@ -30,18 +30,19 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
 /**
  * Tests performance of logging when level is OFF.
  */
-@Category(PerformanceTest.class)
-@Ignore("Tests have no assertions")
+@Category({PerformanceTest.class, LoggingTest.class})
+@Ignore("TODO: repackage as jmh benchmark")
 public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
 
-  protected Properties createGemFireProperties() {
+  private Properties createGemFireProperties() {
     final Properties props = new Properties();
-    this.logFile = new File(this.configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
+    logFile = new File(configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
     final String logFilePath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
     props.setProperty(LOG_FILE, logFilePath);
     props.setProperty(LOG_LEVEL, "info");
@@ -63,8 +64,8 @@ public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
     // create configuration with log-file and log-level
     // this.configDirectory = new File(getUniqueName());
 
-    this.configDirectory.mkdir();
-    assertTrue(this.configDirectory.isDirectory() && this.configDirectory.canWrite());
+    configDirectory.mkdir();
+    assertTrue(configDirectory.isDirectory() && configDirectory.canWrite());
 
     // this.gemfireProperties = new File(this.configDirectory, "gemfire.properties");
     // writeProperties(props, this.gemfireProperties);

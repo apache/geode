@@ -36,6 +36,7 @@ task createGeodeClasspathsFile {
   addOldVersion('test140', '1.4.0', true)
   addOldVersion('test150', '1.5.0', true)
   addOldVersion('test160', '1.6.0', true)
+  addOldVersion('test170', '1.7.0', true)
 
   doLast {
     Properties versions = new Properties();
@@ -83,11 +84,11 @@ def addOldVersion(def source, def geodeVersion, def downloadInstall) {
     project.ext.installs.setProperty(source, "${buildDir}/apache-geode-${geodeVersion}")
 
     task("downloadAndUnzipFile${geodeVersion}") {
-      inputs.file {
+      inputs.files {
         configurations."${source}OldInstall"
       }
 
-      outputs.file("${buildDir}/apache-geode-${geodeVersion}")
+      outputs.dir("${buildDir}/apache-geode-${geodeVersion}")
       doLast {
         copy {
           from zipTree(configurations."${source}OldInstall".singleFile)

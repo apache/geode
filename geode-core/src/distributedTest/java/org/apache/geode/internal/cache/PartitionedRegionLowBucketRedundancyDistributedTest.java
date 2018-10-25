@@ -16,12 +16,11 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -197,12 +196,12 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
   private void waitForLowBucketRedundancyCount(int count) {
     PartitionedRegion region =
         (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(
+    await().untilAsserted(
         () -> assertThat(region.getPrStats().getLowRedundancyBucketCount()).isEqualTo(count));
   }
 
   private void waitForMembers(int count) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(
+    await().untilAsserted(
         () -> assertThat(ClusterStartupRule.getCache().getMembers().size()).isEqualTo(count));
   }
 }

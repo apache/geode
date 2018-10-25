@@ -38,9 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * The advisor associated with a {@link ResourceManager}. Allows knowledge of remote
@@ -122,9 +120,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
       } finally {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE,
-              new Object[] {p, toString()}), thr);
+          logger.info(String.format("This member caught exception processing profile %s %s",
+              new Object[] {p, toString()}),
+              thr);
         }
       }
     }
@@ -425,7 +423,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
    *
    * @return a mutable set of members in the critical state otherwise {@link Collections#EMPTY_SET}
    */
-  public Set<InternalDistributedMember> adviseCritialMembers() {
+  public Set<InternalDistributedMember> adviseCriticalMembers() {
     return adviseFilter(new Filter() {
       @Override
       public boolean include(Profile profile) {

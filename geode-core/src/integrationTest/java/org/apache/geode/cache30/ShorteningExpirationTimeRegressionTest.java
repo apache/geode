@@ -14,8 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -77,7 +76,7 @@ public class ShorteningExpirationTimeRegressionTest {
     region.put(KEY, "quickExpire");
 
     // make sure the entry is invalidated before LONG_WAIT_MS (timeout shortened)
-    await().atMost(LONG_WAIT_MS / 2, MILLISECONDS).until(() -> !region.containsValueForKey(KEY));
+    await().until(() -> !region.containsValueForKey(KEY));
   }
 
   @Test
@@ -94,7 +93,7 @@ public class ShorteningExpirationTimeRegressionTest {
     region.get(KEY);
 
     // make sure the entry is invalidated before LONG_WAIT_MS (timeout shortened)
-    await().atMost(LONG_WAIT_MS / 2, MILLISECONDS).until(() -> !region.containsValueForKey(KEY));
+    await().until(() -> !region.containsValueForKey(KEY));
   }
 
   private class CustomExpiryTestClass<K, V> implements CustomExpiry<K, V> {

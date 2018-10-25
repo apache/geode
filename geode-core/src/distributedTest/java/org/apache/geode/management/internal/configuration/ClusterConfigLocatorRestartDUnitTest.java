@@ -15,9 +15,10 @@
 
 package org.apache.geode.management.internal.configuration;
 
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
+
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -71,8 +72,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
     gfsh.connectAndVerify(locator0);
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
+    await()
+        .untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
             .tableHasColumnOnlyWithValues("Name", "locator-0", "server-1", "server-2", "server-3"));
   }
 
@@ -98,8 +99,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
     gfsh.connectAndVerify(locator1);
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
+    await()
+        .untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
             .tableHasColumnOnlyWithValues("Name", "locator-1", "server-2", "server-3", "server-4"));
   }
 
@@ -114,10 +115,10 @@ public class ClusterConfigLocatorRestartDUnitTest {
   private void waitForLocatorToReconnect(MemberVM locator) {
     // Ensure that disconnect/reconnect sequence starts otherwise in the next await we might end up
     // with the initial locator instead of a newly created one.
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+    await()
         .until(() -> locator.invoke(() -> TestDisconnectListener.disconnectCount > 0));
 
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> locator.invoke(() -> {
+    await().until(() -> locator.invoke(() -> {
       InternalLocator intLocator = InternalLocator.getLocator();
       return intLocator != null && intLocator.isSharedConfigurationRunning();
     }));

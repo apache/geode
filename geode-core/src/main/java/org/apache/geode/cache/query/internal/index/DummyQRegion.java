@@ -31,7 +31,6 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -234,7 +233,7 @@ public class DummyQRegion extends QRegion {
   @Override
   public Object[] toArray(Object[] obj) {
     throw new RuntimeException(
-        LocalizedStrings.DummyQRegion_NOT_YET_IMPLEMENTED.toLocalizedString());
+        "Not yet implemented");
   }
 
   @Override

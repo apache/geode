@@ -36,6 +36,7 @@ import org.junit.Before;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link ServerLauncher} as an application main in a
@@ -98,7 +99,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    await().until(() -> assertThat(process.isAlive()).isFalse());
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   protected void assertThatPidIsAlive(final int pid) {
@@ -195,7 +196,8 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   @Override
   protected ServerLauncher awaitStart(final ServerLauncher launcher) {
-    await().until(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
     assertThat(process.isAlive()).isTrue();
     return launcher;
   }

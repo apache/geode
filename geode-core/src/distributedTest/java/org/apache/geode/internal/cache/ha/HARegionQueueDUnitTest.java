@@ -14,11 +14,16 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static java.lang.Thread.yield;
+import static org.apache.geode.internal.cache.ha.HARegionQueue.NON_BLOCKING_HA_QUEUE;
+import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.ThreadUtils.join;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,9 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,11 +56,11 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -246,7 +249,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            Thread.yield(); // TODO is this necessary?
+            yield(); // TODO is this necessary?
             return hrq.size() == 0;
           }
 
@@ -255,7 +258,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
             return null;
           }
         };
-        Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       }
     });
 
@@ -338,7 +341,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       WaitCriterion ev = new WaitCriterion() {
         @Override
         public boolean done() {
-          Thread.yield(); // TODO is this necessary?
+          yield(); // TODO is this necessary?
           return region.get(new Long(0)) == null;
         }
 
@@ -347,7 +350,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       /*
        * if (region.get(new Long(0)) != null) { fail("Expected message to have been deleted but it
@@ -675,6 +678,9 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         new SerializableCallable("Check Ops Occurred") {
           @Override
           public Object call() throws CacheException {
+            if (opThreads == null) {
+              return false;
+            }
             for (int i = 0; i < opThreads.length; ++i) {
               if (((RunOp) opThreads[i]).getNumOpsPerformed() == 0) {
                 return false;
@@ -684,14 +690,14 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
           }
         };
 
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
+    await()
+        .untilAsserted(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
+    await()
+        .untilAsserted(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
+    await()
+        .untilAsserted(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
+    await()
+        .untilAsserted(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
 
     // In case of blocking HARegionQueue do some extra puts so that the
     // blocking threads
@@ -840,8 +846,8 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
                 return null;
               }
             };
-            Wait.waitForCriterion(ev, 30 * 1000, 200, true);
-            ThreadUtils.join(createQueuesThread, 300 * 1000);
+            GeodeAwaitility.await().untilAsserted(ev);
+            join(createQueuesThread, 300 * 1000);
           }
         };
 
@@ -948,8 +954,8 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     cache = test.createCache();
     HARegionQueueAttributes attrs = new HARegionQueueAttributes();
     attrs.setExpiryTime(1);
-    hrq = HARegionQueue.getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache, attrs,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+    hrq = getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache, attrs,
+        NON_BLOCKING_HA_QUEUE, false);
     // wait until we have a dead
     // server
     WaitCriterion ev = new WaitCriterion() {
@@ -963,7 +969,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     // assertIndexDetailsEquals(0, hrq.getAvailableIds().size());
   }
 

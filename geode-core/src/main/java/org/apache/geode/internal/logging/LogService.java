@@ -39,8 +39,9 @@ import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessa
 /**
  * Centralizes log configuration and initialization.
  */
-@SuppressWarnings("unused")
 public class LogService extends LogManager {
+
+  private static final Logger LOGGER = StatusLogger.getLogger();
 
   // This is highest point in the hierarchy for all Geode logging
   public static final String ROOT_LOGGER_NAME = "";
@@ -78,16 +79,11 @@ public class LogService extends LogManager {
   }
 
   private static void init() {
-    LoggerContext context = ((org.apache.logging.log4j.core.Logger) LogManager
-        .getLogger(BASE_LOGGER_NAME, GemFireParameterizedMessageFactory.INSTANCE)).getContext();
-    context.removePropertyChangeListener(propertyChangeListener);
-    context.addPropertyChangeListener(propertyChangeListener);
-    context.reconfigure(); // propertyChangeListener invokes configureFastLoggerDelegating
+    LoggerContext loggerContext = getLoggerContext(BASE_LOGGER_NAME);
+    loggerContext.removePropertyChangeListener(propertyChangeListener);
+    loggerContext.addPropertyChangeListener(propertyChangeListener);
+    loggerContext.reconfigure(); // propertyChangeListener invokes configureFastLoggerDelegating
     configureLoggers(false, false);
-  }
-
-  public static void initialize() {
-    new LogService();
   }
 
   public static void reconfigure() {
@@ -97,7 +93,7 @@ public class LogService extends LogManager {
   public static void configureLoggers(final boolean hasLogFile, final boolean hasSecurityLogFile) {
     Configurator.getOrCreateLoggerConfig(BASE_LOGGER_NAME, true, false);
     Configurator.getOrCreateLoggerConfig(MAIN_LOGGER_NAME, true, hasLogFile);
-    final boolean useMainLoggerForSecurity = !hasSecurityLogFile;
+    boolean useMainLoggerForSecurity = !hasSecurityLogFile;
     Configurator.getOrCreateLoggerConfig(SECURITY_LOGGER_NAME, useMainLoggerForSecurity,
         hasSecurityLogFile);
   }
@@ -111,19 +107,17 @@ public class LogService extends LogManager {
   }
 
   public static boolean isUsingGemFireDefaultConfig() {
-    final Configuration config =
-        ((org.apache.logging.log4j.core.Logger) LogManager.getLogger(ROOT_LOGGER_NAME,
-            GemFireParameterizedMessageFactory.INSTANCE)).getContext().getConfiguration();
+    Configuration configuration = getConfiguration();
 
-    final StrSubstitutor sub = config.getStrSubstitutor();
-    final StrLookup resolver = sub.getVariableResolver();
+    StrSubstitutor strSubstitutor = configuration.getStrSubstitutor();
+    StrLookup variableResolver = strSubstitutor.getVariableResolver();
 
-    final String value = resolver.lookup(GEMFIRE_DEFAULT_PROPERTY);
+    String value = variableResolver.lookup(GEMFIRE_DEFAULT_PROPERTY);
 
     return "true".equals(value);
   }
 
-  public static String getConfigInformation() {
+  public static String getConfigurationInfo() {
     return getConfiguration().getConfigurationSource().toString();
   }
 
@@ -172,7 +166,7 @@ public class LogService extends LogManager {
    *
    * @return The Level.
    *
-   * @throws java.lang.IllegalArgumentException if the Level int is not registered.
+   * @throws IllegalArgumentException if the Level int is not registered.
    */
   public static Level toLevel(final int intLevel) {
     for (Level level : Level.values()) {
@@ -196,20 +190,16 @@ public class LogService extends LogManager {
   }
 
   public static Configuration getConfiguration() {
-    final Configuration config =
-        ((org.apache.logging.log4j.core.Logger) LogManager.getLogger(ROOT_LOGGER_NAME,
-            GemFireParameterizedMessageFactory.INSTANCE)).getContext().getConfiguration();
-    return config;
+    return getRootLoggerContext().getConfiguration();
   }
 
   public static void configureFastLoggerDelegating() {
-    final Configuration config =
-        ((org.apache.logging.log4j.core.Logger) LogManager.getLogger(ROOT_LOGGER_NAME,
-            GemFireParameterizedMessageFactory.INSTANCE)).getContext().getConfiguration();
-
-    if (Configurator.hasContextWideFilter(config) || Configurator.hasAppenderFilter(config)
-        || Configurator.hasDebugOrLower(config) || Configurator.hasLoggerFilter(config)
-        || Configurator.hasAppenderRefFilter(config)) {
+    Configuration configuration = getConfiguration();
+    if (Configurator.hasContextWideFilter(configuration)
+        || Configurator.hasAppenderFilter(configuration)
+        || Configurator.hasDebugOrLower(configuration)
+        || Configurator.hasLoggerFilter(configuration)
+        || Configurator.hasAppenderRefFilter(configuration)) {
       FastLogger.setDelegating(true);
     } else {
       FastLogger.setDelegating(false);
@@ -232,8 +222,13 @@ public class LogService extends LogManager {
     Configurator.setLevel(MAIN_LOGGER_NAME, level);
   }
 
-  public static LoggerConfig getRootLoggerConfig() {
-    return Configurator.getLoggerConfig(LogManager.getRootLogger().getName());
+  private static LoggerContext getLoggerContext(final String name) {
+    return ((org.apache.logging.log4j.core.Logger) LogManager
+        .getLogger(name, GemFireParameterizedMessageFactory.INSTANCE)).getContext();
+  }
+
+  static LoggerContext getRootLoggerContext() {
+    return ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).getContext();
   }
 
   /**
@@ -242,13 +237,12 @@ public class LogService extends LogManager {
    * instance is stored in stdoutAppender so it can be restored later using restoreConsoleAppender.
    */
   public static synchronized void removeConsoleAppender() {
-    final AppenderContext appenderContext =
-        LogService.getAppenderContext(LogService.ROOT_LOGGER_NAME);
-    final LoggerConfig config = appenderContext.getLoggerConfig();
-    Appender stdout = config.getAppenders().get(STDOUT);
-    if (stdout != null) {
-      config.removeAppender(STDOUT);
-      stdoutAppender = stdout;
+    AppenderContext appenderContext = getAppenderContext(ROOT_LOGGER_NAME);
+    LoggerConfig loggerConfig = appenderContext.getLoggerConfig();
+    Appender stdoutAppender = loggerConfig.getAppenders().get(STDOUT);
+    if (stdoutAppender != null) {
+      loggerConfig.removeAppender(STDOUT);
+      LogService.stdoutAppender = stdoutAppender;
       appenderContext.getLoggerContext().updateLoggers();
     }
   }
@@ -262,12 +256,11 @@ public class LogService extends LogManager {
     if (stdoutAppender == null) {
       return;
     }
-    final AppenderContext appenderContext =
-        LogService.getAppenderContext(LogService.ROOT_LOGGER_NAME);
-    final LoggerConfig config = appenderContext.getLoggerConfig();
-    Appender stdout = config.getAppenders().get(STDOUT);
-    if (stdout == null) {
-      config.addAppender(stdoutAppender, Level.ALL, null);
+    AppenderContext appenderContext = getAppenderContext(ROOT_LOGGER_NAME);
+    LoggerConfig loggerConfig = appenderContext.getLoggerConfig();
+    Appender stdoutAppender = loggerConfig.getAppenders().get(STDOUT);
+    if (stdoutAppender == null) {
+      loggerConfig.addAppender(LogService.stdoutAppender, Level.ALL, null);
       appenderContext.getLoggerContext().updateLoggers();
     }
   }
@@ -275,10 +268,8 @@ public class LogService extends LogManager {
   private static class PropertyChangeListenerImpl implements PropertyChangeListener {
 
     @Override
-    @SuppressWarnings("synthetic-access")
     public void propertyChange(final PropertyChangeEvent evt) {
-      StatusLogger.getLogger().debug(
-          "LogService responding to a property change event. Property name is {}.",
+      LOGGER.debug("LogService responding to a property change event. Property name is {}.",
           evt.getPropertyName());
 
       if (evt.getPropertyName().equals(LoggerContext.PROPERTY_CONFIG)) {

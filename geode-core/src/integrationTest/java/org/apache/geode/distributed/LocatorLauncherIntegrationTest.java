@@ -14,13 +14,12 @@
  */
 package org.apache.geode.distributed;
 
-import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
-import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.DistributedSystem.PROPERTIES_FILE_PROPERTY;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.then;
 
@@ -40,7 +39,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Integration tests for using {@link LocatorLauncher} as an in-process API within an existing JVM.
@@ -50,16 +48,16 @@ public class LocatorLauncherIntegrationTest {
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public final TestName testName = new TestName();
+  public TestName testName = new TestName();
 
   @Test
-  public void buildWithMemberNameSetInGemFireProperties() throws Exception {
+  public void buildWithMemberNameSetInGemFireProperties() {
     // given: gemfire.properties with a name
     givenGemFirePropertiesFile(withMemberName());
 
@@ -71,29 +69,29 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void buildWithNoMemberNameThrowsIllegalStateException() throws Exception {
+  public void buildWithNoMemberNameThrowsIllegalStateException() {
     // given: gemfire.properties with no name
     givenGemFirePropertiesFile(withoutMemberName());
 
     // when: no MemberName is specified
-    when(new Builder().setCommand(Command.START)).build();
+    Throwable thrown = catchThrowable(() -> new Builder().setCommand(Command.START).build());
 
     // then: throw IllegalStateException
-    then(caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(memberNameValidationErrorMessage());
   }
 
   @Test
-  public void buildWithWorkingDirectoryNotEqualToCurrentDirectoryThrowsIllegalStateException()
-      throws Exception {
+  public void buildWithWorkingDirectoryNotEqualToCurrentDirectoryThrowsIllegalStateException() {
     // given: using LocatorLauncher in-process
 
     // when: setting WorkingDirectory to non-current directory
-    when(new Builder().setCommand(Command.START).setMemberName("memberOne")
-        .setWorkingDirectory(getWorkingDirectoryPath())).build();
+    Throwable thrown =
+        catchThrowable(() -> new Builder().setCommand(Command.START).setMemberName("memberOne")
+            .setWorkingDirectory(getWorkingDirectoryPath()).build());
 
     // then: throw IllegalStateException
-    then(caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(workingDirectoryOptionNotValidErrorMessage());
   }
 
@@ -121,7 +119,7 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void parseArgumentsParsesValuesSeparatedByEquals() throws Exception {
+  public void parseArgumentsParsesValuesSeparatedByEquals() {
     // given: a new builder
     Builder builder = new Builder();
 
@@ -143,7 +141,7 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void getWorkingDirectoryReturnsCurrentDirectoryByDefault() throws Exception {
+  public void getWorkingDirectoryReturnsCurrentDirectoryByDefault() {
     // given:
 
     // when: not setting WorkingDirectory
@@ -153,7 +151,7 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void setWorkingDirectoryToNullUsesCurrentDirectory() throws Exception {
+  public void setWorkingDirectoryToNullUsesCurrentDirectory() {
     // given: a new builder
     Builder builder = new Builder();
 
@@ -165,7 +163,7 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void setWorkingDirectoryToEmptyStringUsesCurrentDirectory() throws Exception {
+  public void setWorkingDirectoryToEmptyStringUsesCurrentDirectory() {
     // given: a new builder
     Builder builder = new Builder();
 
@@ -177,7 +175,7 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void setWorkingDirectoryToBlankStringUsesCurrentDirectory() throws Exception {
+  public void setWorkingDirectoryToBlankStringUsesCurrentDirectory() {
     // given: a new builder
     Builder builder = new Builder();
 
@@ -189,7 +187,7 @@ public class LocatorLauncherIntegrationTest {
   }
 
   @Test
-  public void setWorkingDirectoryToExistingDirectory() throws Exception {
+  public void setWorkingDirectoryToExistingDirectory() {
     // given: a new builder
     Builder builder = new Builder();
 
@@ -206,29 +204,31 @@ public class LocatorLauncherIntegrationTest {
     File nonDirectory = temporaryFolder.newFile();
 
     // when: setting WorkingDirectory to that file
-    when(new Builder()).setWorkingDirectory(nonDirectory.getCanonicalPath());
+    Throwable thrown =
+        catchThrowable(() -> new Builder().setWorkingDirectory(nonDirectory.getCanonicalPath()));
 
     // then: throw IllegalArgumentException
-    then(caughtException()).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException(nonDirectory.getCanonicalPath()));
   }
 
   @Test
-  public void setWorkingDirectoryToNonExistingDirectory() throws Exception {
+  public void setWorkingDirectoryToNonExistingDirectory() {
     // given:
 
     // when: setting WorkingDirectory to non-existing directory
-    when(new Builder()).setWorkingDirectory("/path/to/non_existing/directory");
+    Throwable thrown =
+        catchThrowable(() -> new Builder().setWorkingDirectory("/path/to/non_existing/directory"));
 
     // then: throw IllegalArgumentException
-    then(caughtException()).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException("/path/to/non_existing/directory"));
   }
 
   @Test
-  public void portCanBeOverriddenBySystemProperty() throws Exception {
+  public void portCanBeOverriddenBySystemProperty() {
     // given: overridden default port
     int overriddenPort = getRandomAvailableTCPPort();
     System.setProperty(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(overriddenPort));
@@ -241,18 +241,20 @@ public class LocatorLauncherIntegrationTest {
   }
 
   private String memberNameValidationErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-        .toLocalizedString("Locator");
+    return String.format(
+        AbstractLauncher.MEMBER_NAME_ERROR_MESSAGE,
+        "Locator", "Locator");
   }
 
   private String workingDirectoryOptionNotValidErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-        .toLocalizedString("Locator");
+    return String.format(
+        AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+        "Locator", "Locator");
   }
 
   private String workingDirectoryNotFoundErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Locator");
+    return String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
+        "Locator");
   }
 
   private File getWorkingDirectory() {

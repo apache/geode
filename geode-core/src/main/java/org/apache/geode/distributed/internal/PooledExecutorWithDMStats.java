@@ -25,7 +25,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -199,21 +198,20 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   }
 
   /**
-   * This guy does a put which will just wait until the queue has room.
+   * This handler does a put which will just wait until the queue has room.
    */
   public static class BlockHandler implements RejectedExecutionHandler {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException(
-            LocalizedStrings.PooledExecutorWithDMStats_EXECUTOR_HAS_BEEN_SHUTDOWN
-                .toLocalizedString());
+            "executor has been shutdown");
       } else {
         try {
           executor.getQueue().put(r);
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           RejectedExecutionException e = new RejectedExecutionException(
-              LocalizedStrings.PooledExecutorWithDMStats_INTERRUPTED.toLocalizedString());
+              "interrupted");
           e.initCause(ie);
           throw e;
         }
@@ -221,7 +219,8 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
     }
   }
   /**
-   * This guy fronts a synchronous queue, that is owned by the parent ThreadPoolExecutor, with a the
+   * This handler fronts a synchronous queue, that is owned by the parent ThreadPoolExecutor, with a
+   * the
    * client supplied BlockingQueue that supports storage (the buffer queue). A dedicated thread is
    * used to consume off the buffer queue and put into the synchronous queue.
    */
@@ -229,8 +228,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException(
-            LocalizedStrings.PooledExecutorWithDMStats_EXECUTOR_HAS_BEEN_SHUTDOWN
-                .toLocalizedString());
+            "executor has been shutdown");
       } else {
         try {
           PooledExecutorWithDMStats pool = (PooledExecutorWithDMStats) executor;
@@ -238,7 +236,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           RejectedExecutionException e = new RejectedExecutionException(
-              LocalizedStrings.PooledExecutorWithDMStats_INTERRUPTED.toLocalizedString());
+              "interrupted");
           e.initCause(ie);
           throw e;
         }

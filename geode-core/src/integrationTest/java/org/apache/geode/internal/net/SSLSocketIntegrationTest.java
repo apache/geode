@@ -20,8 +20,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -40,13 +40,11 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -169,7 +167,7 @@ public class SSLSocketIntegrationTest {
     output.flush();
 
     // this is the real assertion of this test
-    await().atMost(30, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       return !serverThread.isAlive();
     });
     assertNull(serverException);
@@ -184,7 +182,7 @@ public class SSLSocketIntegrationTest {
     int serverPort = this.serverSocket.getLocalPort();
     Socket socket = new Socket();
     socket.connect(new InetSocketAddress(localHost, serverPort));
-    await().atMost(5, TimeUnit.SECONDS).until(() -> assertFalse(serverThread.isAlive()));
+    await().untilAsserted(() -> assertFalse(serverThread.isAlive()));
     assertNotNull(serverException);
     throw serverException;
   }
@@ -227,7 +225,7 @@ public class SSLSocketIntegrationTest {
 
     int serverSocketPort = serverSocket.getLocalPort();
     try {
-      Awaitility.await("connect to server socket").atMost(30, TimeUnit.SECONDS).until(() -> {
+      await("connect to server socket").until(() -> {
         try {
           Socket clientSocket = socketCreator.connectForClient(
               SocketCreator.getLocalHost().getHostAddress(), serverSocketPort, 500);

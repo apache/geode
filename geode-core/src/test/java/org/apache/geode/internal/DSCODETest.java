@@ -15,13 +15,18 @@
 package org.apache.geode.internal;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.util.DscodeHelper;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
@@ -35,5 +40,18 @@ public class DSCODETest {
           previouslySeen.contains(integerValue));
       previouslySeen.add(integerValue);
     }
+  }
+
+  @Test
+  public void testGetEnumFromByte() {
+    Arrays.stream(DSCODE.values())
+        .filter(dscode -> dscode != DSCODE.RESERVED_FOR_FUTURE_USE && dscode != DSCODE.ILLEGAL)
+        .forEach(dscode -> {
+          try {
+            Assert.assertEquals(dscode, DscodeHelper.toDSCODE(dscode.toByte()));
+          } catch (IOException e) {
+            fail("No exception should have been caught, as the \"error\" codes are filtered out.");
+          }
+        });
   }
 }

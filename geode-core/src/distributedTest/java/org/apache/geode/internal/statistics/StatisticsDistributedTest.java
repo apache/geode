@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -25,7 +25,6 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -130,6 +129,10 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     }
     VM sub = getHost(0).getVM(NUM_PUBS);
 
+    for (VM pub : pubs) {
+      pub.invoke(() -> puts.set(0));
+    }
+
     String subArchive =
         this.directory.getAbsolutePath() + File.separator + getName() + "_sub" + ".gfs";
     String[] pubArchives = new String[NUM_PUBS];
@@ -154,7 +157,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         assertTrue(sampler.isAlive());
         assertEquals(new File(pubArchives[pubVM]), sampler.getArchiveFileName());
 
-        await("awaiting SampleCollector to exist").atMost(30, SECONDS)
+        await("awaiting SampleCollector to exist")
             .until(() -> sampler.getSampleCollector() != null);
 
         SampleCollector sampleCollector = sampler.getSampleCollector();
@@ -200,7 +203,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       assertTrue(sampler.isAlive());
       assertEquals(new File(subArchive), sampler.getArchiveFileName());
 
-      await("awaiting SampleCollector to exist").atMost(30, SECONDS)
+      await("awaiting SampleCollector to exist")
           .until(() -> sampler.getSampleCollector() != null);
 
       SampleCollector sampleCollector = sampler.getSampleCollector();
@@ -246,7 +249,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
               // assert that sub is in rml membership
               assertNotNull(rml);
 
-              await("awaiting Membership to contain subMember").atMost(30, SECONDS)
+              await("awaiting Membership to contain subMember")
                   .until(() -> rml.contains(subMember) && rml.size() == NUM_PUBS);
 
               // publish lots of puts cycling through the NUM_KEYS
@@ -263,7 +266,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
                   statistics.endPut(start);
                 }
 
-                // cycle through he keys in order and wrapping back around
+                // cycle through the keys in order and wrapping back around
               } else {
                 int key = 0;
                 for (int idx = 0; idx < MAX_PUTS; idx++) {
@@ -286,7 +289,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
               Statistics statSamplerStats = statsArray[0];
               int initialSampleCount = statSamplerStats.getInt(StatSamplerStats.SAMPLE_COUNT);
 
-              await("awaiting sampleCount >= 2").atMost(30, SECONDS).until(() -> statSamplerStats
+              await("awaiting sampleCount >= 2").until(() -> statSamplerStats
                   .getInt(StatSamplerStats.SAMPLE_COUNT) >= initialSampleCount + 2);
             });
       }
@@ -308,7 +311,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       Statistics statSamplerStats = statsArray[0];
       int initialSampleCount = statSamplerStats.getInt(StatSamplerStats.SAMPLE_COUNT);
 
-      await("awaiting sampleCount >= 2").atMost(30, SECONDS).until(
+      await("awaiting sampleCount >= 2").until(
           () -> statSamplerStats.getInt(StatSamplerStats.SAMPLE_COUNT) >= initialSampleCount + 2);
 
       // now post total updateEvents to static

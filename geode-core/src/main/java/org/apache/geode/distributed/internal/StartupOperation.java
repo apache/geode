@@ -24,9 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class StartupOperation {
   private static final Logger logger = LogService.getLogger();
@@ -82,7 +80,7 @@ public class StartupOperation {
       for (Iterator it = this.newlyDeparted.iterator(); it.hasNext();) {
         InternalDistributedMember id = (InternalDistributedMember) it.next();
         this.dm.handleManagerDeparture(id, false,
-            LocalizedStrings.StartupOperation_LEFT_THE_MEMBERSHIP_VIEW.toLocalizedString());
+            "left the membership view");
         proc.memberDeparted(this.dm, id, true);
       }
     }
@@ -105,14 +103,13 @@ public class StartupOperation {
               // Member slipped away and we didn't notice.
               it.remove();
               dm.handleManagerDeparture(um, true,
-                  LocalizedStrings.StartupOperation_DISAPPEARED_DURING_STARTUP_HANDSHAKE
-                      .toLocalizedString());
+                  "disappeared during startup handshake");
             } else if (dm.isCurrentMember(um)) {
-              // he must have connected back to us and now we just
-              // need to get his startup response
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.StartupOperation_MEMBERSHIP_RECEIVED_CONNECTION_FROM_0_BUT_RECEIVED_NO_STARTUP_RESPONSE_AFTER_1_MS,
-                  new Object[] {um, Long.valueOf(timeout)}));
+              // the member must have connected back to us and now we just
+              // need to get its startup response
+              logger.warn(
+                  "Membership: received connection from <{}> but received no startup response after {} ms.",
+                  new Object[] {um, timeout});
             }
           } // for
 
@@ -121,9 +118,9 @@ public class StartupOperation {
 
           // Re-examine list now that we have elided the startup problems....
           if (!unresponsive.isEmpty()) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.StartupOperation_MEMBERSHIP_STARTUP_TIMED_OUT_AFTER_WAITING_0_MILLISECONDS_FOR_RESPONSES_FROM_1,
-                new Object[] {Long.valueOf(timeout), unresponsive}));
+            logger.warn(
+                "Membership: startup timed out after waiting {} milliseconds for responses from {}",
+                new Object[] {Long.valueOf(timeout), unresponsive});
           }
         } // !isEmpty
       } // timedOut

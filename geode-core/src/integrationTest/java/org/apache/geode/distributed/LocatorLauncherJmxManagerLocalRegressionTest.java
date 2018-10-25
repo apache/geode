@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -25,11 +24,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Regression tests for stopping a JMX Manager process launched with {@link LocatorLauncher}.
@@ -44,10 +43,9 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
     extends LocatorLauncherIntegrationTestCase {
 
   /**
-   * Using Awaitility will increase total thread count by 2: ConditionAwaiter and
-   * ConditionAwaiter$ConditionPoller.
+   * Using Awaitility will increase total thread count by 1: ConditionAwaiter$ConditionPoller.
    */
-  private static final int AWAITILITY_USAGE_THREAD_COUNT = 2;
+  private static final int AWAITILITY_USAGE_THREAD_COUNT = 1;
 
   private Set<Thread> initialThreads;
   private int jmxManagerPort;
@@ -94,8 +92,9 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
   }
 
   private void assertThatThreadsStopped() {
-    Awaitility.await().atMost(30, SECONDS).until(
-        () -> assertThat(currentThreadCount()).isEqualTo(initialThreadCountPlusAwaitility()));
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(currentThreadCount())
+            .isLessThanOrEqualTo(initialThreadCountPlusAwaitility()));
   }
 
   private int currentThreadCount() {

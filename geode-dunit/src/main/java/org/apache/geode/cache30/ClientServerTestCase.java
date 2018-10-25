@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.fail;
@@ -37,8 +38,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
@@ -269,21 +268,8 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   }
 
   protected static DistributedMember getMemberId() {
-    WaitCriterion w = new WaitCriterion() {
-
-      public String description() {
-        return "client never finished connecting: " + getSystemStatic().getMemberId();
-      }
-
-      public boolean done() {
-        return getSystemStatic().getDistributedMember().getPort() > 0;
-      }
-
-    };
-    int waitMillis = 20000;
-    int interval = 100;
-    boolean throwException = true;
-    Wait.waitForCriterion(w, waitMillis, interval, throwException);
+    await("Waiting for client to connect " + getSystemStatic().getMemberId())
+        .until(() -> getSystemStatic().getDistributedMember().getPort() > 0);
     return getSystemStatic().getDistributedMember();
   }
 

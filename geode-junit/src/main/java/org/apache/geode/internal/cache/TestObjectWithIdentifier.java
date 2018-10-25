@@ -28,9 +28,6 @@ import org.apache.geode.internal.size.Sizeable;
 /**
  * Object used for the put() operation as key and object. The objectIdentifier is used to provide a
  * predetermined hashcode for the object.
- *
- * <p>
- * Extracted from {@link PartitionedRegionLocalMaxMemoryDUnitTest}.
  */
 public class TestObjectWithIdentifier implements DataSerializable, Sizeable {
 

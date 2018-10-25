@@ -1547,7 +1547,7 @@ public class CliStrings {
   public static final String HINT__MSG__SHELL_NOT_INITIALIZED =
       "Shell is not initialized properly. Please restart the shell. Check gfsh-<timestamp>.log for errors.";
   public static final String HINT__MSG__UNKNOWN_TOPIC =
-      "Unknown topic: {0}. Use " + HINT + "; to view the list of available topics.";
+      "Unknown topic: {0}. Use " + HINT + " to view the list of available topics.";
   public static final String HINT__MSG__TOPICS_AVAILABLE =
       "Hints are available for the following topics. Use \"" + HINT
           + " <topic-name>\" for a specific hint.";
@@ -1594,6 +1594,9 @@ public class CliStrings {
   public static final String IMPORT_DATA__INVOKE_CALLBACKS = "invoke-callbacks";
   public static final String IMPORT_DATA__INVOKE_CALLBACKS__HELP =
       "Whether callbacks should be invoked";
+
+  public static final String INTERCEPTOR_PASSWORD = "Password: ";
+  public static final String INTERCEPTOR_USERNAME = "Username: ";
 
   /* 'list async-event-queues' command */
   public static final String LIST_ASYNC_EVENT_QUEUES = "list async-event-queues";
@@ -2403,7 +2406,7 @@ public class CliStrings {
   public static final String START_LOCATOR__CONNECT__HELP =
       "When connect is set to false or when locator is started with a security manager using --J=-Dgemfire.security-manager option, Gfsh does not automatically connect to the locator which is started using this command.";
   public static final String START_LOCATOR__USE__0__TO__CONNECT_WITH_SECURITY =
-      "Security Manager is enabled - unable to auto-connect. Please use \"{0}\" to connect Gfsh to the locator.";
+      "Unable to auto-connect (Security Manager may be enabled). Please use \"{0}\" to connect Gfsh to the locator.";
   public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION =
       ENABLE_CLUSTER_CONFIGURATION;
   public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION__HELP =

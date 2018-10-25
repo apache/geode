@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -262,7 +261,7 @@ public class DLockToken {
     if (this.expiredLeases.containsKey(Thread.currentThread())) {
       this.expiredLeases.remove(Thread.currentThread());
       throw new LeaseExpiredException(
-          LocalizedStrings.DLockToken_THIS_THREADS_LEASE_EXPIRED_FOR_THIS_LOCK.toLocalizedString());
+          "This thread's lease expired for this lock");
     }
   }
 
@@ -501,7 +500,7 @@ public class DLockToken {
   private void checkDestroyed() {
     if (this.destroyed) {
       IllegalStateException e = new IllegalStateException(
-          LocalizedStrings.DLockToken_ATTEMPTING_TO_USE_DESTROYED_TOKEN_0.toLocalizedString(this));
+          String.format("Attempting to use destroyed token: %s", this));
       throw e;
     }
   }

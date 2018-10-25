@@ -47,7 +47,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -160,7 +159,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
    */
   Set adviseUpdate(final EntryEventImpl event) throws IllegalStateException {
     if (event.hasNewValue() || event.getOperation().isPutAll()) {
-      // only need to distribute it to guys that want all events or cache data
+      // only need to distribute it to members that want all events or cache data
       return adviseAllEventsOrCached(true/* fixes 41147 */);
     } else {
       // The new value is null so this is a create with a null value,
@@ -217,8 +216,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           badIds.append(", ");
       }
       throw new IllegalStateException(
-          LocalizedStrings.CacheDistributionAdvisor_ILLEGAL_REGION_CONFIGURATION_FOR_MEMBERS_0
-              .toLocalizedString(badIds.toString()));
+          String.format("Illegal Region Configuration for members:  %s",
+              badIds.toString()));
     }
   }
 
@@ -284,7 +283,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
 
   /*
-   * * Same as adviseGeneric but excludes guys in recover
+   * * Same as adviseGeneric but excludes if cache profile is in recovery
    */
   public Set adviseInvalidateRegion() {
     return adviseFilter(new Filter() {
@@ -1103,7 +1102,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       logger.debug("CDA: removing profile {}", profile);
     }
     if (getAdvisee() instanceof LocalRegion && profile != null) {
-      ((LocalRegion) getAdvisee()).removeMemberFromCriticalList(profile.getDistributedMember());
+      ((LocalRegion) getAdvisee()).removeCriticalMember(profile.getDistributedMember());
     }
   }
 

@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,9 +35,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
@@ -45,7 +44,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -56,7 +55,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #37210: HARegionQueueStats are never closed
  */
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class HARegionQueueStatsCloseRegressionTest implements Serializable {
 
   private String uniqueName;
@@ -69,7 +68,7 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
   private VM client;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -102,7 +101,7 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
    * dispatchedMessagesMap.
    */
   @Test
-  public void haRegionQueueClosesStatsWhenClientProxyIsClosed() throws Exception {
+  public void haRegionQueueClosesStatsWhenClientProxyIsClosed() {
     addIgnoredException(SocketException.class);
     addIgnoredException(IOException.class);
 
@@ -118,8 +117,8 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
   private int createServerCache() throws IOException {
     cacheRule.createCache();
 
-    RegionFactory rf = cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
-    rf.create(regionName);
+    RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+    regionFactory.create(regionName);
 
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setMaximumTimeBetweenPings(1000000);
@@ -137,11 +136,11 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
         .setThreadLocalConnections(true).setReadTimeout(10000).setSocketBufferSize(32768)
         .setMinConnections(3).setSubscriptionRedundancy(-1).create(uniqueName);
 
-    ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
+    ClientRegionFactory<Object, ?> clientRegionFactory =
+        clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
+    clientRegionFactory.setPoolName(pool.getName());
 
-    Region region = crf.create(regionName);
+    Region<Object, ?> region = clientRegionFactory.create(regionName);
     region.registerInterest("ALL_KEYS");
   }
 
@@ -177,8 +176,9 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
   }
 
   private void verifyDispatchedMessagesMapIsEmpty() {
-    await().atMost(1, MINUTES)
-        .until(() -> assertThat(HARegionQueue.getDispatchedMessagesMapForTesting()).isEmpty());
+    await()
+        .untilAsserted(
+            () -> assertThat(HARegionQueue.getDispatchedMessagesMapForTesting()).isEmpty());
   }
 
   private void doEntryOperations() {

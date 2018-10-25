@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -589,7 +589,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
       vm2.invoke(() -> {
         final Region region = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_PR");
-        Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> region.containsKey(KEY_0));
+        await().until(() -> region.containsKey(KEY_0));
 
       });
 
@@ -838,12 +838,13 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
 
   public static void verifyFilterInvocation(int invocation) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+    await().untilAsserted(
         () -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeEnqueueInvoked, invocation));
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeTransmitInvoked,
-            invocation));
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+    await()
+        .untilAsserted(
+            () -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeTransmitInvoked,
+                invocation));
+    await().untilAsserted(
         () -> assertEquals(((PDXGatewayEventFilter) eventFilter).afterAckInvoked, invocation));
   }
 

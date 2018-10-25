@@ -18,7 +18,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueStats;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.beans.stats.GatewaySenderOverflowMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
@@ -38,10 +37,9 @@ public class AsyncEventQueueMBeanBridge {
   public AsyncEventQueueMBeanBridge(AsyncEventQueue queue) {
     this.queueImpl = (AsyncEventQueueImpl) queue;
     this.monitor =
-        new MBeanStatsMonitor(ManagementStrings.ASYNC_EVENT_QUEUE_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("AsyncEventQueueMXBeanMonitor");
 
-    this.overflowMonitor = new GatewaySenderOverflowMonitor(
-        ManagementStrings.GATEWAY_SENDER_OVERFLOW_MONITOR.toLocalizedString());
+    this.overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
 
     addAsyncEventQueueStats(queueImpl.getStatistics());
 
@@ -50,7 +48,7 @@ public class AsyncEventQueueMBeanBridge {
 
   public AsyncEventQueueMBeanBridge() {
     this.monitor =
-        new MBeanStatsMonitor(ManagementStrings.ASYNC_EVENT_QUEUE_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("AsyncEventQueueMXBeanMonitor");
   }
 
   public void addAsyncEventQueueStats(AsyncEventQueueStats asyncEventQueueStats) {

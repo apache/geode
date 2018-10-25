@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,8 +23,6 @@ import java.io.Serializable;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -128,13 +126,7 @@ public class TestClientIdsDUnitTest implements Serializable {
   private void verifyClientIds(final DistributedMember serverMember, final int serverPort)
       throws Exception {
     CacheServerMXBean cacheServerMXBean = awaitCacheServerMXBean(serverMember, serverPort);
-    await().until(() -> {
-      try {
-        assertThat(cacheServerMXBean.getClientIds()).hasSize(2);
-      } catch (Exception e) {
-        throw new Error(e);
-      }
-    });
+    await().untilAsserted(() -> assertThat(cacheServerMXBean.getClientIds()).hasSize(2));
     assertThat(cacheServerMXBean.getClientIds()).hasSize(2); // TODO: write better assertions
   }
 
@@ -143,13 +135,9 @@ public class TestClientIdsDUnitTest implements Serializable {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getCacheServerMBeanName(port, serverMember);
 
-    await().until(
+    await().untilAsserted(
         () -> assertThat(service.getMBeanProxy(objectName, CacheServerMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, CacheServerMXBean.class);
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 }

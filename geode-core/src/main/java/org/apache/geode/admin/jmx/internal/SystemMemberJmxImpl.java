@@ -44,7 +44,6 @@ import org.apache.geode.internal.admin.ApplicationVM;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -151,8 +150,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
   @Deprecated
   public void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException {
     throw new OperationNotSupportedException(
-        LocalizedStrings.MANAGED_RESOURCE_REFRESH_INTERVAL_CANT_BE_SET_DIRECTLY
-            .toLocalizedString());
+        "RefreshInterval can not be set directly. Use DistributedSystemConfig.refreshInterval.");
   }
 
   /**

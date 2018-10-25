@@ -21,21 +21,18 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -46,18 +43,9 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 
 @Category({ClientServerTest.class})
 public class ServerConnectionIntegrationTest {
-
-  /**
-   * This test assumes Locale is in English. Before the test, change the locale of Locale and
-   * StringId to English and restore the original locale after the test.
-   */
-  @Rule
-  public final RestoreLocaleRule restoreLocale =
-      new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
 
   private AcceptorImpl acceptor;
   private Socket socket;
@@ -165,7 +153,7 @@ public class ServerConnectionIntegrationTest {
 
     private void setFakeRequest() {
       testMessage = new TestMessage();
-      setRequestMsg(testMessage);
+      setRequestMessage(testMessage);
     }
   }
 

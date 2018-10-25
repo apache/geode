@@ -14,14 +14,13 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_SEVERE_ALERT_THRESHOLD;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -31,13 +30,11 @@ import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
@@ -186,7 +183,6 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
         .isTrue();
 
     await("waiting for member to be removed")
-        .atMost((timeout / 3) + gracePeriod, TimeUnit.MILLISECONDS)
         .until(() -> !membershipManager.isSurpriseMember(member));
   }
 
@@ -286,14 +282,14 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     disconnectFromDS();
 
     vm1.invoke("wait for forced disconnect", () -> {
-      await("vm1's system should have been disconnected").atMost(1, MINUTES)
-          .until(() -> assertThat(basicGetSystem().isConnected()).isFalse());
+      await("vm1's system should have been disconnected")
+          .untilAsserted(() -> assertThat(basicGetSystem().isConnected()).isFalse());
 
-      await("vm1's cache is not closed").atMost(30, SECONDS)
-          .until(() -> assertThat(myCache.isClosed()).isTrue());
+      await("vm1's cache is not closed")
+          .untilAsserted(() -> assertThat(myCache.isClosed()).isTrue());
 
       await("vm1's listener should have received afterRegionDestroyed notification")
-          .atMost(30, SECONDS).until(() -> assertThat(regionDestroyedInvoked).isTrue());
+          .untilAsserted(() -> assertThat(regionDestroyedInvoked).isTrue());
     });
   }
 
@@ -345,7 +341,8 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     NetView newView = new NetView(view, view.getViewId() + 1);
     membershipManager.installView(newView);
 
-    await().atMost(30, SECONDS).until(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
+    await()
+        .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {

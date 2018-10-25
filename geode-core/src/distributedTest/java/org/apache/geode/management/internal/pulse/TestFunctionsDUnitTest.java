@@ -14,28 +14,52 @@
  */
 package org.apache.geode.management.internal.pulse;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * This is for testing running functions
  */
+
+
+class SimpleWaitFunction<T> implements Function<T> {
+  private static CountDownLatch countDownLatch;
+
+  public static void setLatch() {
+    countDownLatch = new CountDownLatch(1);
+  }
+
+  public static void clearLatch() {
+    countDownLatch.countDown();
+  }
+
+  @Override
+  public void execute(FunctionContext<T> context) {
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+}
+
 
 public class TestFunctionsDUnitTest extends ManagementTestBase {
 
@@ -45,64 +69,48 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     super();
   }
 
-  public static Integer getNumOfRunningFunction() {
+  private static Integer getNumOfRunningFunction() {
 
-    final WaitCriterion waitCriteria = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        final ManagementService service = getManagementService();
-        final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-        if (bean != null) {
-          if (bean.getNumRunningFunctions() > 0) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-        return false;
+    await().until(() -> {
+      final ManagementService service = getManagementService();
+      final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
+      if (bean != null) {
+        return bean.getNumRunningFunctions() > 0;
       }
+      return false;
+    });
 
-      @Override
-      public String description() {
-        return "wait for getNumOfRunningFunction to complete and get results";
-      }
-    };
-
-    Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
     final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
-    return Integer.valueOf(bean.getNumRunningFunctions());
+
+    return bean.getNumRunningFunctions();
   }
 
   @Test
-  public void testNumOfRunningFunctions() throws Exception {
+  public void testNumOfRunningFunctions() {
     initManagement(false);
     VM client = managedNodeList.get(2);
     client.invokeAsync(new SerializableRunnable() {
       public void run() {
         Cache cache = getCache();
-        Function function =
-            new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+        SimpleWaitFunction<Boolean> simpleWaitFunction = new SimpleWaitFunction();
+        simpleWaitFunction.setLatch();
         Execution execution =
             FunctionService.onMember(cache.getDistributedSystem().getDistributedMember());
-        for (int i = 0; i < 100; i++) {
-          execution.execute(function);
-        }
+        execution.setArguments(Boolean.TRUE).execute(simpleWaitFunction);
       }
     });
+
     Integer numOfRunningFunctions =
-        (Integer) managingNode.invoke(() -> TestFunctionsDUnitTest.getNumOfRunningFunction());
-    LogWriterUtils.getLogWriter()
-        .info("TestNumOfFunctions numOfRunningFunctions= " + numOfRunningFunctions);
-    assertTrue(numOfRunningFunctions > 0 ? true : false);
-  }
+        managingNode.invoke(TestFunctionsDUnitTest::getNumOfRunningFunction);
 
-  public void verifyStatistics() {
+    assertTrue(numOfRunningFunctions > 0);
 
-  }
-
-  public void invokeOperations() {
-
+    client.invoke(new SerializableRunnable() {
+      public void run() {
+        SimpleWaitFunction.clearLatch();
+      }
+    });
   }
 
 }

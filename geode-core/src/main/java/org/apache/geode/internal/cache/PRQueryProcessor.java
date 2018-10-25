@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -57,8 +56,8 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.PRQueryResultCollector;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * This class takes the responsibility of executing the query on a data store for the buckets
@@ -170,8 +169,8 @@ public class PRQueryProcessor {
 
           } catch (TimeoutException e) {
             throw new InternalGemFireException(
-                LocalizedStrings.PRQueryProcessor_TIMED_OUT_WHILE_EXECUTING_QUERY_TIME_EXCEEDED_0
-                    .toLocalizedString(BUCKET_QUERY_TIMEOUT),
+                String.format("Timed out while executing query, time exceeded  %s",
+                    BUCKET_QUERY_TIMEOUT),
                 e);
           } catch (ExecutionException ee) {
             Throwable cause = ee.getCause();
@@ -179,8 +178,7 @@ public class PRQueryProcessor {
               throw (QueryException) cause;
             } else {
               throw new InternalGemFireException(
-                  LocalizedStrings.PRQueryProcessor_GOT_UNEXPECTED_EXCEPTION_WHILE_EXECUTING_QUERY_ON_PARTITIONED_REGION_BUCKET
-                      .toLocalizedString(),
+                  "Got unexpected exception while executing query on partitioned region bucket",
                   cause);
             }
           }
@@ -461,7 +459,7 @@ public class PRQueryProcessor {
     static synchronized void initializeExecutorService() {
       if (execService == null || execService.isShutdown() || execService.isTerminated()) {
         int numThreads = (TEST_NUM_THREADS > 1 ? TEST_NUM_THREADS : NUM_THREADS);
-        execService = Executors.newFixedThreadPool(numThreads);
+        execService = LoggingExecutors.newFixedThreadPool("PRQueryProcessor", false, numThreads);
       }
     }
   }

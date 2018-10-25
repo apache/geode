@@ -41,7 +41,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -155,7 +155,7 @@ public class CacheServerMaxConnectionsJUnitTest {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals(MAX_CNXS, s.getInt("currentClientConnections"));
     assertEquals(1, s.getInt("currentClients"));
     this.system.getLogWriter().info(
@@ -193,7 +193,7 @@ public class CacheServerMaxConnectionsJUnitTest {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 3 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     this.system.getLogWriter().info("currentClients=" + s.getInt("currentClients")
         + " currentClientConnections=" + s.getInt("currentClientConnections"));
     assertEquals(0, s.getInt("currentClientConnections"));

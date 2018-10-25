@@ -27,7 +27,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /** Set view of entries */
 public class EntriesSet extends AbstractSet {
@@ -65,14 +64,16 @@ public class EntriesSet extends AbstractSet {
     if (this.myTX != null) {
       if (!myTX.isInProgress()) {
         throw new IllegalStateException(
-            LocalizedStrings.LocalRegion_REGION_COLLECTION_WAS_CREATED_WITH_TRANSACTION_0_THAT_IS_NO_LONGER_ACTIVE
-                .toLocalizedString(myTX.getTransactionId()));
+            String.format(
+                "Region collection was created with transaction %s that is no longer active.",
+                myTX.getTransactionId()));
       }
     } else {
       if (this.topRegion.isTX()) {
         throw new IllegalStateException(
-            LocalizedStrings.LocalRegion_NON_TRANSACTIONAL_REGION_COLLECTION_IS_BEING_USED_IN_A_TRANSACTION
-                .toLocalizedString(this.topRegion.getTXState().getTransactionId()));
+            String.format(
+                "The Region collection is not transactional but is being used in a transaction %s.",
+                this.topRegion.getTXState().getTransactionId()));
       }
     }
   }
@@ -120,8 +121,7 @@ public class EntriesSet extends AbstractSet {
 
     public void remove() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION
-              .toLocalizedString());
+          "This iterator does not support modification");
     }
 
     public boolean hasNext() {
@@ -235,7 +235,7 @@ public class EntriesSet extends AbstractSet {
 
   @Override
   public Object[] toArray() {
-    return toArray(null);
+    return toArray((Object[]) null);
   }
 
   @Override

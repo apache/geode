@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.PrintWriter;
@@ -23,10 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 import org.w3c.dom.Document;
@@ -154,8 +153,8 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
 
     // Wait for configuration configuration to be ready.
     locator.invoke(
-        () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-            .until(() -> assertThat(
+        () -> await()
+            .untilAsserted(() -> assertThat(
                 InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue()));
 
     // Add cluster configuration elements containing multiple receivers

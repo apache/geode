@@ -15,7 +15,6 @@
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
@@ -41,8 +40,6 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,6 +56,7 @@ import org.apache.geode.management.internal.NotificationHub.NotificationHubListe
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.MemberMBean;
 import org.apache.geode.management.internal.beans.SequenceNumber;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 
@@ -90,8 +88,7 @@ import org.apache.geode.test.dunit.VM;
  * <p>
  * TODO: break up the large tests into smaller tests
  */
-
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings("serial,unused")
 public class DistributedSystemDUnitTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
@@ -120,8 +117,8 @@ public class DistributedSystemDUnitTest implements Serializable {
   }
 
   @After
-  public void after() throws Exception {
-    resetAlertCounts(this.managerVM);
+  public void after() {
+    resetAlertCounts(managerVM);
 
     notifications = null;
     notificationListenerMap = null;
@@ -133,68 +130,68 @@ public class DistributedSystemDUnitTest implements Serializable {
    * Tests each and every operations that is defined on the MemberMXBean
    */
   @Test
-  public void testDistributedSystemAggregate() throws Exception {
-    this.managementTestRule.createManager(this.managerVM);
-    addNotificationListener(this.managerVM);
+  public void testDistributedSystemAggregate() {
+    managementTestRule.createManager(managerVM);
+    addNotificationListener(managerVM);
 
-    for (VM memberVM : this.memberVMs) {
-      this.managementTestRule.createMember(memberVM);
+    for (VM memberVM : memberVMs) {
+      managementTestRule.createMember(memberVM);
     }
 
-    verifyDistributedSystemMXBean(this.managerVM);
+    verifyDistributedSystemMXBean(managerVM);
   }
 
   /**
    * Tests each and every operations that is defined on the MemberMXBean
    */
   @Test
-  public void testAlertManagedNodeFirst() throws Exception {
-    for (VM memberVM : this.memberVMs) {
-      this.managementTestRule.createMember(memberVM);
+  public void testAlertManagedNodeFirst() {
+    for (VM memberVM : memberVMs) {
+      managementTestRule.createMember(memberVM);
       generateWarningAlert(memberVM);
       generateSevereAlert(memberVM);
     }
 
-    this.managementTestRule.createManager(this.managerVM);
-    addAlertListener(this.managerVM);
-    verifyAlertCount(this.managerVM, 0, 0);
+    managementTestRule.createManager(managerVM);
+    addAlertListener(managerVM);
+    verifyAlertCount(managerVM, 0, 0);
 
     DistributedMember managerDistributedMember =
-        this.managementTestRule.getDistributedMember(this.managerVM);
+        managementTestRule.getDistributedMember(managerVM);
 
     // Before we start we need to ensure that the initial (implicit) SEVERE alert has propagated
     // everywhere.
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       verifyAlertAppender(memberVM, managerDistributedMember, Alert.SEVERE);
     }
 
-    setAlertLevel(this.managerVM, AlertDetails.getAlertLevelAsString(Alert.WARNING));
+    setAlertLevel(managerVM, AlertDetails.getAlertLevelAsString(Alert.WARNING));
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       verifyAlertAppender(memberVM, managerDistributedMember, Alert.WARNING);
       generateWarningAlert(memberVM);
       generateSevereAlert(memberVM);
     }
 
-    verifyAlertCount(this.managerVM, 3, 3);
-    resetAlertCounts(this.managerVM);
+    verifyAlertCount(managerVM, 3, 3);
+    resetAlertCounts(managerVM);
 
-    setAlertLevel(this.managerVM, AlertDetails.getAlertLevelAsString(Alert.SEVERE));
+    setAlertLevel(managerVM, AlertDetails.getAlertLevelAsString(Alert.SEVERE));
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       verifyAlertAppender(memberVM, managerDistributedMember, Alert.SEVERE);
       generateWarningAlert(memberVM);
       generateSevereAlert(memberVM);
     }
 
-    verifyAlertCount(this.managerVM, 3, 0);
+    verifyAlertCount(managerVM, 3, 0);
   }
 
   /**
    * Tests each and every operations that is defined on the MemberMXBean
    */
   @Test
-  public void testShutdownAll() throws Exception {
+  public void testShutdownAll() {
     VM memberVM1 = getHost(0).getVM(0);
     VM memberVM2 = getHost(0).getVM(1);
     VM memberVM3 = getHost(0).getVM(2);
@@ -202,30 +199,30 @@ public class DistributedSystemDUnitTest implements Serializable {
     VM managerVM = getHost(0).getVM(3);
 
     // managerVM Node is created first
-    this.managementTestRule.createManager(managerVM);
+    managementTestRule.createManager(managerVM);
 
-    this.managementTestRule.createMember(memberVM1);
-    this.managementTestRule.createMember(memberVM2);
-    this.managementTestRule.createMember(memberVM3);
+    managementTestRule.createMember(memberVM1);
+    managementTestRule.createMember(memberVM2);
+    managementTestRule.createMember(memberVM3);
 
     shutDownAll(managerVM);
   }
 
   @Test
-  public void testNavigationAPIS() throws Exception {
-    this.managementTestRule.createManager(this.managerVM);
+  public void testNavigationAPIS() {
+    managementTestRule.createManager(managerVM);
 
-    for (VM memberVM : this.memberVMs) {
-      this.managementTestRule.createMember(memberVM);
+    for (VM memberVM : memberVMs) {
+      managementTestRule.createMember(memberVM);
     }
 
-    verifyFetchMemberObjectName(this.managerVM, this.memberVMs.length + 1);
+    verifyFetchMemberObjectName(managerVM, memberVMs.length + 1);
   }
 
   @Test
-  public void testNotificationHub() throws Exception {
-    this.managementTestRule.createMembers();
-    this.managementTestRule.createManagers();
+  public void testNotificationHub() {
+    managementTestRule.createMembers();
+    managementTestRule.createManagers();
 
     class NotificationHubTestListener implements NotificationListener {
 
@@ -236,11 +233,12 @@ public class DistributedSystemDUnitTest implements Serializable {
       }
     }
 
-    this.managerVM.invoke("addListenerToMemberMXBean", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+    managerVM.invoke("addListenerToMemberMXBean", () -> {
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(() -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
+      GeodeAwaitility.await().untilAsserted(
+          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
         NotificationHubTestListener listener = new NotificationHubTestListener();
@@ -251,16 +249,16 @@ public class DistributedSystemDUnitTest implements Serializable {
 
     // Check in all VMS
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       memberVM.invoke("checkNotificationHubListenerCount", () -> {
-        SystemManagementService service = this.managementTestRule.getSystemManagementService();
+        SystemManagementService service = managementTestRule.getSystemManagementService();
         NotificationHub notificationHub = service.getNotificationHub();
         Map<ObjectName, NotificationHubListener> listenerMap =
             notificationHub.getListenerObjectMap();
         assertThat(listenerMap.keySet()).hasSize(1);
 
         ObjectName memberMBeanName =
-            getMemberMBeanName(this.managementTestRule.getDistributedMember());
+            getMemberMBeanName(managementTestRule.getDistributedMember());
         NotificationHubListener listener = listenerMap.get(memberMBeanName);
 
         /*
@@ -272,7 +270,7 @@ public class DistributedSystemDUnitTest implements Serializable {
         // Raise some notifications
 
         NotificationBroadcasterSupport notifier = (MemberMBean) service.getMemberMXBean();
-        String memberSource = getMemberNameOrId(this.managementTestRule.getDistributedMember());
+        String memberSource = getMemberNameOrId(managementTestRule.getDistributedMember());
 
         // Only a dummy notification , no actual region is created
         Notification notification = new Notification(JMXNotificationType.REGION_CREATED,
@@ -282,8 +280,8 @@ public class DistributedSystemDUnitTest implements Serializable {
       });
     }
 
-    this.managerVM.invoke("checkNotificationsAndRemoveListeners", () -> {
-      await().until(() -> assertThat(notifications).hasSize(3));
+    managerVM.invoke("checkNotificationsAndRemoveListeners", () -> {
+      GeodeAwaitility.await().untilAsserted(() -> assertThat(notifications).hasSize(3));
 
       notifications.clear();
 
@@ -295,15 +293,15 @@ public class DistributedSystemDUnitTest implements Serializable {
 
     // Check in all VMS again
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       memberVM.invoke("checkNotificationHubListenerCountAgain", () -> {
-        SystemManagementService service = this.managementTestRule.getSystemManagementService();
+        SystemManagementService service = managementTestRule.getSystemManagementService();
         NotificationHub hub = service.getNotificationHub();
         Map<ObjectName, NotificationHubListener> listenerObjectMap = hub.getListenerObjectMap();
         assertThat(listenerObjectMap.keySet().size()).isEqualTo(1);
 
         ObjectName memberMBeanName =
-            getMemberMBeanName(this.managementTestRule.getDistributedMember());
+            getMemberMBeanName(managementTestRule.getDistributedMember());
         NotificationHubListener listener = listenerObjectMap.get(memberMBeanName);
 
         /*
@@ -314,11 +312,12 @@ public class DistributedSystemDUnitTest implements Serializable {
       });
     }
 
-    this.managerVM.invoke("removeListenerFromMemberMXBean", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+    managerVM.invoke("removeListenerFromMemberMXBean", () -> {
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(() -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
+      GeodeAwaitility.await().untilAsserted(
+          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
         NotificationHubTestListener listener = new NotificationHubTestListener();
@@ -333,9 +332,9 @@ public class DistributedSystemDUnitTest implements Serializable {
       }
     });
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       memberVM.invoke("verifyNotificationHubListenersWereRemoved", () -> {
-        SystemManagementService service = this.managementTestRule.getSystemManagementService();
+        SystemManagementService service = managementTestRule.getSystemManagementService();
         NotificationHub notificationHub = service.getNotificationHub();
         notificationHub.cleanUpListeners();
         assertThat(notificationHub.getListenerObjectMap()).isEmpty();
@@ -354,21 +353,21 @@ public class DistributedSystemDUnitTest implements Serializable {
    * Tests each and every operations that is defined on the MemberMXBean
    */
   @Test
-  public void testAlert() throws Exception {
-    this.managementTestRule.createManager(this.managerVM);
-    addAlertListener(this.managerVM);
-    resetAlertCounts(this.managerVM);
+  public void testAlert() {
+    managementTestRule.createManager(managerVM);
+    addAlertListener(managerVM);
+    resetAlertCounts(managerVM);
 
     DistributedMember managerDistributedMember =
-        this.managementTestRule.getDistributedMember(this.managerVM);
+        managementTestRule.getDistributedMember(managerVM);
 
-    generateWarningAlert(this.managerVM);
-    generateSevereAlert(this.managerVM);
-    verifyAlertCount(this.managerVM, 1, 0);
-    resetAlertCounts(this.managerVM);
+    generateWarningAlert(managerVM);
+    generateSevereAlert(managerVM);
+    verifyAlertCount(managerVM, 1, 0);
+    resetAlertCounts(managerVM);
 
-    for (VM memberVM : this.memberVMs) {
-      this.managementTestRule.createMember(memberVM);
+    for (VM memberVM : memberVMs) {
+      managementTestRule.createMember(memberVM);
 
       verifyAlertAppender(memberVM, managerDistributedMember, Alert.SEVERE);
 
@@ -376,35 +375,35 @@ public class DistributedSystemDUnitTest implements Serializable {
       generateSevereAlert(memberVM);
     }
 
-    verifyAlertCount(this.managerVM, 3, 0);
-    resetAlertCounts(this.managerVM);
-    setAlertLevel(this.managerVM, AlertDetails.getAlertLevelAsString(Alert.WARNING));
+    verifyAlertCount(managerVM, 3, 0);
+    resetAlertCounts(managerVM);
+    setAlertLevel(managerVM, AlertDetails.getAlertLevelAsString(Alert.WARNING));
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       verifyAlertAppender(memberVM, managerDistributedMember, Alert.WARNING);
       generateWarningAlert(memberVM);
       generateSevereAlert(memberVM);
     }
 
-    verifyAlertCount(this.managerVM, 3, 3);
+    verifyAlertCount(managerVM, 3, 3);
 
-    resetAlertCounts(this.managerVM);
+    resetAlertCounts(managerVM);
 
-    setAlertLevel(this.managerVM, AlertDetails.getAlertLevelAsString(Alert.OFF));
+    setAlertLevel(managerVM, AlertDetails.getAlertLevelAsString(Alert.OFF));
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       verifyAlertAppender(memberVM, managerDistributedMember, Alert.OFF);
       generateWarningAlert(memberVM);
       generateSevereAlert(memberVM);
     }
 
-    verifyAlertCount(this.managerVM, 0, 0);
+    verifyAlertCount(managerVM, 0, 0);
   }
 
   private void verifyAlertAppender(final VM memberVM, final DistributedMember member,
       final int alertLevel) {
     memberVM.invoke("verifyAlertAppender",
-        () -> await().until(
+        () -> GeodeAwaitility.await().untilAsserted(
             () -> assertThat(AlertAppender.getInstance().hasAlertListener(member, alertLevel))
                 .isTrue()));
   }
@@ -414,16 +413,16 @@ public class DistributedSystemDUnitTest implements Serializable {
     managerVM.invoke("verifyAlertCount", () -> {
       AlertNotificationListener listener = AlertNotificationListener.getInstance();
 
-      await().until(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(listener.getSevereAlertCount()).isEqualTo(expectedSevereAlertCount));
-      await().until(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(listener.getWarningAlertCount()).isEqualTo(expectedWarningAlertCount));
     });
   }
 
   private void setAlertLevel(final VM managerVM, final String alertLevel) {
     managerVM.invoke("setAlertLevel", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       distributedSystemMXBean.changeAlertLevel(alertLevel);
     });
@@ -470,12 +469,13 @@ public class DistributedSystemDUnitTest implements Serializable {
    */
   private void verifyDistributedSystemMXBean(final VM managerVM) {
     managerVM.invoke("verifyDistributedSystemMXBean", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
+      GeodeAwaitility.await()
+          .untilAsserted(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
 
-      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      Set<DistributedMember> otherMemberSet = managementTestRule.getOtherNormalMembers();
       for (DistributedMember member : otherMemberSet) {
         // TODO: create some assertions (this used to just print JVMMetrics and OSMetrics)
       }
@@ -484,7 +484,7 @@ public class DistributedSystemDUnitTest implements Serializable {
 
   private void addNotificationListener(final VM managerVM) {
     managerVM.invoke("addNotificationListener", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       assertThat(distributedSystemMXBean).isNotNull();
 
@@ -496,31 +496,28 @@ public class DistributedSystemDUnitTest implements Serializable {
 
   private void shutDownAll(final VM managerVM) {
     managerVM.invoke("shutDownAll", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       distributedSystemMXBean.shutDownAllMembers();
 
-      await().until(() -> assertThat(this.managementTestRule.getOtherNormalMembers()).hasSize(0));
+      GeodeAwaitility.await().untilAsserted(
+          () -> assertThat(managementTestRule.getOtherNormalMembers()).hasSize(0));
     });
   }
 
   private void verifyFetchMemberObjectName(final VM managerVM, final int memberCount) {
     managerVM.invoke("verifyFetchMemberObjectName", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(memberCount));
 
-      String memberId = this.managementTestRule.getDistributedMember().getId();
+      String memberId = managementTestRule.getDistributedMember().getId();
       ObjectName thisMemberName = getMemberMBeanName(memberId);
       ObjectName memberName = distributedSystemMXBean.fetchMemberObjectName(memberId);
       assertThat(memberName).isEqualTo(thisMemberName);
     });
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 
   private static class DistributedSystemNotificationListener implements NotificationListener {

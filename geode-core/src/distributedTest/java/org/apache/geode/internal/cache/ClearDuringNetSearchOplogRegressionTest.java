@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -158,7 +157,8 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
     // start getThread
     getter.start();
 
-    await().atMost(1, MINUTES).until(() -> verify(observer, times(1)).afterSettingDiskRef());
+    await()
+        .untilAsserted(() -> verify(observer, times(1)).afterSettingDiskRef());
 
     // This test appears to be testing a problem with the non-RVV
     // based clear. So we'll use that functionality here.

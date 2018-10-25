@@ -31,7 +31,6 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher.GatewayAck;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 @SuppressWarnings("unchecked")
@@ -270,8 +269,8 @@ public class GatewaySenderBatchOp {
             }
             break;
           default:
-            throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-                .toLocalizedString(Integer.valueOf(msg.getMessageType())));
+            throw new InternalGemFireError(String.format("Unknown message type %s",
+                Integer.valueOf(msg.getMessageType())));
         }
       } finally {
         msg.clear();

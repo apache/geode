@@ -45,7 +45,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected Region fileAndChunkRegion;
@@ -258,8 +257,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
           // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
           String fullRegionPath =
               regionPath.startsWith(Region.SEPARATOR) ? regionPath : Region.SEPARATOR + regionPath;
-          String indexNotFoundMessage = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
-              .toLocalizedString(indexName, fullRegionPath);
+          String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",
+              indexName, fullRegionPath);
           if (!cause.getLocalizedMessage().equals(indexNotFoundMessage)) {
             throw e;
           }

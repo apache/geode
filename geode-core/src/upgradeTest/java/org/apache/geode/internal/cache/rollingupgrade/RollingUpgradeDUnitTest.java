@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -24,10 +25,8 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -171,8 +170,8 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       locator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+          () -> await()
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -667,7 +666,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       stopCacheServers(cache);
       cache.close();
       long startTime = System.currentTimeMillis();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> cache.isClosed());
+      await().until(() -> cache.isClosed());
     }
   }
 

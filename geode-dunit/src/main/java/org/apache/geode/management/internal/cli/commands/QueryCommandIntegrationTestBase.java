@@ -158,9 +158,9 @@ public class QueryCommandIntegrationTestBase {
 
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
-    assertThat(lines.get(4)).isEqualTo("Result");
-    assertThat(lines.get(5)).isEqualTo("--------");
-    lines.subList(6, lines.size()).forEach(line -> assertThat(line).matches("value\\d+"));
+    assertThat(lines.get(7)).isEqualTo("Result");
+    assertThat(lines.get(8)).isEqualTo("--------");
+    lines.subList(9, lines.size()).forEach(line -> assertThat(line).matches("value\\d+"));
   }
 
   @Test
@@ -176,8 +176,8 @@ public class QueryCommandIntegrationTestBase {
     assertThat(outputFile).exists();
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
-    assertThat(lines.get(4)).containsPattern("name\\s+\\|\\s+address");
-    lines.subList(6, lines.size())
+    assertThat(lines.get(7)).containsPattern("name\\s+\\|\\s+address");
+    lines.subList(9, lines.size())
         .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
   }
 

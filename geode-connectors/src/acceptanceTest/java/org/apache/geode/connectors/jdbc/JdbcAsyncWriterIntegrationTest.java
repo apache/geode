@@ -15,15 +15,15 @@
 package org.apache.geode.connectors.jdbc;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,12 +31,10 @@ import org.junit.Test;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
-import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -54,6 +52,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   private PdxInstance pdxEmployee2;
   private Employee employee1;
   private Employee employee2;
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
 
   @Before
   public void setup() throws Exception {
@@ -79,15 +79,17 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private void closeDB() throws Exception {
-    if (statement == null) {
+    if (statement == null && connection != null) {
       statement = connection.createStatement();
     }
-    statement.execute("Drop table " + REGION_TABLE_NAME);
-    statement.close();
-
+    if (statement != null) {
+      statement.execute("Drop table " + REGION_TABLE_NAME);
+      statement.close();
+    }
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   public abstract Connection getConnection() throws SQLException;
@@ -207,8 +209,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
-  private void awaitUntil(final Runnable supplier) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(supplier);
+  private void awaitUntil(final ThrowingRunnable supplier) {
+    await().untilAsserted(supplier);
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)
@@ -220,7 +222,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     jdbcWriter = new JdbcAsyncWriter(createSqlHandler(), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
@@ -238,9 +240,10 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private SqlHandler createSqlHandler()
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl()));
+      throws RegionMappingExistsException {
+    return new SqlHandler(new TableMetaDataManager(),
+        TestConfigService.getTestConfigService(getConnectionUrl()),
+        testDataSourceFactory);
   }
 
 }

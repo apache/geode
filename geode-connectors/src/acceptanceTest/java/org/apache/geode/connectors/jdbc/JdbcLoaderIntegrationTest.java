@@ -33,12 +33,10 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
-import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
@@ -57,6 +55,9 @@ public abstract class JdbcLoaderIntegrationTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
 
   @Before
   public void setUp() throws Exception {
@@ -98,6 +99,7 @@ public abstract class JdbcLoaderIntegrationTest {
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   @Test
@@ -175,15 +177,16 @@ public abstract class JdbcLoaderIntegrationTest {
   }
 
   private SqlHandler createSqlHandler(String pdxClassName, boolean primaryKeyInValue)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
+      throws RegionMappingExistsException {
+    return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            primaryKeyInValue, getConnectionUrl()));
+            primaryKeyInValue, getConnectionUrl()),
+        testDataSourceFactory);
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
       boolean primaryKeyInValue)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     JdbcLoader<K, V> jdbcLoader =
         new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue), cache);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);

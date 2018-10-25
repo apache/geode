@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.configuration;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
@@ -22,9 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -220,7 +219,7 @@ public class WANClusterConfigurationDUnitTest {
   }
 
   private void waitTillAllGatewaySendersAreReady() {
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+    await().untilAsserted(() -> {
       CommandStringBuilder csb2 = new CommandStringBuilder(CliStrings.LIST_GATEWAY);
       CommandResult cmdResult = gfsh.executeCommand(csb2.toString());
       assertThat(cmdResult).isNotNull();

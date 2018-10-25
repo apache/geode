@@ -16,8 +16,6 @@ package org.apache.geode.cache;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PROXY;
-import static org.apache.geode.internal.i18n.LocalizedStrings.TXStateStub_LOCAL_DESTROY_NOT_ALLOWED_IN_TRANSACTION;
-import static org.apache.geode.internal.i18n.LocalizedStrings.TXStateStub_LOCAL_INVALIDATE_NOT_ALLOWED_IN_TRANSACTION;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,17 +30,15 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region.Entry;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 /**
  * Create and LocalDestroy/LocalInvalidate should create event with NewValue
@@ -66,8 +62,8 @@ public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {
 
   private VM otherVM;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -125,16 +121,16 @@ public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {
 
   private enum LocalOperation {
     LOCAL_DESTROY((region) -> region.localDestroy(KEY),
-        TXStateStub_LOCAL_DESTROY_NOT_ALLOWED_IN_TRANSACTION),
+        "localDestroy() is not allowed in a transaction"),
     LOCAL_INVALIDATE((region) -> region.localInvalidate(KEY),
-        TXStateStub_LOCAL_INVALIDATE_NOT_ALLOWED_IN_TRANSACTION);
+        "localInvalidate() is not allowed in a transaction");
 
     private final Consumer<Region<String, String>> strategy;
-    private final StringId stringId;
+    private final String message;
 
-    LocalOperation(final Consumer<Region<String, String>> strategy, final StringId stringId) {
+    LocalOperation(final Consumer<Region<String, String>> strategy, final String message) {
       this.strategy = strategy;
-      this.stringId = stringId;
+      this.message = message;
     }
 
     void invoke(final Region<String, String> region) {
@@ -142,7 +138,7 @@ public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {
     }
 
     String getMessage() {
-      return stringId.toLocalizedString();
+      return message;
     }
   }
 }

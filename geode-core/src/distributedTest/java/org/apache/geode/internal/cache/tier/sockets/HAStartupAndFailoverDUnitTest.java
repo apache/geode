@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.CacheFactory.getAnyInstance;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,9 +28,7 @@ import static org.junit.Assert.fail;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,12 +50,12 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -327,8 +327,8 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyDeadAndLiveServers(final int expectedDeadServers,
       final int expectedLiveServers) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(expectedLiveServers, pool.getConnectedServerCount()));
+    await()
+        .untilAsserted(() -> assertEquals(expectedLiveServers, pool.getConnectedServerCount()));
   }
 
   public static void setClientServerObserver() {
@@ -430,7 +430,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
           return excuse;
         }
       };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+      GeodeAwaitility.await().untilAsserted(wc);
 
       CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
       assertNotNull(bs);
@@ -448,7 +448,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
           return excuse;
         }
       };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+      GeodeAwaitility.await().untilAsserted(wc);
 
       Collection<CacheClientProxy> proxies = ccn.getClientProxies();
       Iterator<CacheClientProxy> iter_prox = proxies.iterator();
@@ -466,7 +466,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
             return excuse;
           }
         };
-        Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
       }
 
     } catch (Exception ex) {
@@ -476,7 +476,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyDispatcherIsNotAlive() {
     try {
-      Cache c = CacheFactory.getAnyInstance();
+      Cache c = getAnyInstance();
       // assertIndexDetailsEquals("More than one BridgeServer", 1,
       // c.getCacheServers().size());
       WaitCriterion wc = new WaitCriterion() {
@@ -490,7 +490,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
           return excuse;
         }
       };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+      GeodeAwaitility.await().untilAsserted(wc);
 
       CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
       assertNotNull(bs);
@@ -508,7 +508,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
           return excuse;
         }
       };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+      GeodeAwaitility.await().untilAsserted(wc);
 
       Iterator iter_prox = ccn.getClientProxies().iterator();
       if (iter_prox.hasNext()) {

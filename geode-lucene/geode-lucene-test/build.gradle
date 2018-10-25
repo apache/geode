@@ -17,11 +17,13 @@
 
 
 dependencies {
-  compileOnly project(':geode-lucene')
+  compile('org.apache.lucene:lucene-core:6.6.2')
+  compile(project(':geode-core'))
+  compileOnly(project(':geode-lucene'))
 
-  compile 'junit:junit:' + project.'junit.version'
-  compile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
-  compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+  compile('junit:junit:' + project.'junit.version')
+  compile('org.apache.lucene:lucene-test-framework:' + project.'lucene.version')
+  compile('org.mockito:mockito-core:' + project.'mockito-core.version')
 }
 
 disableMavenPublishing()

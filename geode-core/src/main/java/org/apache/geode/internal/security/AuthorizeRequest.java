@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.CloseCQOperationContext;
@@ -49,11 +50,9 @@ import org.apache.geode.cache.operations.StopCQOperationContext;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.cache.operations.ContainsKeyOperationContext;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -76,7 +75,7 @@ public class AuthorizeRequest {
 
   private ClientProxyMembershipID id;
 
-  private final LogWriterI18n logger;
+  private final LogWriter logger;
 
   public AuthorizeRequest(String authzFactoryName, DistributedMember dm, Principal principal,
       Cache cache) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
@@ -89,7 +88,7 @@ public class AuthorizeRequest {
       this.isPrincipalSerializable = false;
     }
 
-    this.logger = cache.getSecurityLoggerI18n();
+    this.logger = cache.getSecurityLogger();
     Method authzMethod = ClassLoadUtil.methodFromName(authzFactoryName);
     this.authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
     this.authzCallback.init(principal, dm, cache);
@@ -103,8 +102,8 @@ public class AuthorizeRequest {
     this.id = id;
     if (this.logger.infoEnabled()) {
       this.logger.info(
-          LocalizedStrings.AuthorizeRequest_AUTHORIZEREQUEST_CLIENT_0_IS_SETTING_AUTHORIZATION_CALLBACK_TO_1,
-          new Object[] {id, authzFactoryName});
+          String.format("AuthorizeRequest: Client[%s] is setting authorization callback to %s.",
+              new Object[] {id, authzFactoryName}));
     }
   }
 
@@ -115,10 +114,10 @@ public class AuthorizeRequest {
     getContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, getContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_GET_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
+          String.format("Not authorized to perform GET operation on region [%s]",
+              regionName);
       if (this.logger.fineEnabled()) {
-        this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+        this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       }
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
@@ -147,9 +146,9 @@ public class AuthorizeRequest {
     putContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, putContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_PUT_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform PUT operation on region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -170,10 +169,10 @@ public class AuthorizeRequest {
     putAllContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, putAllContext)) {
       final String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_PUTALL_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
+          String.format("Not authorized to perform PUTALL operation on region [%s]",
+              regionName);
       if (this.logger.warningEnabled()) {
-        this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+        this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       }
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
@@ -219,10 +218,10 @@ public class AuthorizeRequest {
     removeAllContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, removeAllContext)) {
       final String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_REMOVEALL_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
+          String.format("Not authorized to perform removeAll operation on region [%s]",
+              regionName);
       if (this.logger.warningEnabled()) {
-        this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+        this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       }
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
@@ -245,9 +244,9 @@ public class AuthorizeRequest {
     destroyEntryContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, destroyEntryContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_DESTROY_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform DESTROY operation on region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -277,9 +276,9 @@ public class AuthorizeRequest {
         new QueryOperationContext(queryString, regionNames, false, queryParams);
     if (!this.authzCallback.authorizeOperation(null, queryContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFOM_QUERY_OPERATION_0_ON_THE_CACHE
-              .toLocalizedString(queryString);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perfom QUERY operation [%s] on the cache",
+              queryString);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -304,9 +303,9 @@ public class AuthorizeRequest {
         new ExecuteCQOperationContext(cqName, queryString, regionNames, false);
     if (!this.authzCallback.authorizeOperation(null, executeCQContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFOM_EXECUTE_CQ_OPERATION_0_ON_THE_CACHE
-              .toLocalizedString(queryString);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perfom EXECUTE_CQ operation [%s] on the cache",
+              queryString);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -328,9 +327,9 @@ public class AuthorizeRequest {
         new StopCQOperationContext(cqName, queryString, regionNames);
     if (!this.authzCallback.authorizeOperation(null, stopCQContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFOM_STOP_CQ_OPERATION_0_ON_THE_CACHE
-              .toLocalizedString(cqName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perfom STOP_CQ operation [%s] on the cache",
+              cqName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -351,9 +350,9 @@ public class AuthorizeRequest {
         new CloseCQOperationContext(cqName, queryString, regionNames);
     if (!this.authzCallback.authorizeOperation(null, closeCQContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFOM_CLOSE_CQ_OPERATION_0_ON_THE_CACHE
-              .toLocalizedString(cqName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perfom CLOSE_CQ operation [%s] on the cache",
+              cqName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -372,9 +371,8 @@ public class AuthorizeRequest {
     GetDurableCQsOperationContext getDurableCQsContext = new GetDurableCQsOperationContext();
     if (!this.authzCallback.authorizeOperation(null, getDurableCQsContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_GET_DURABLE_CQS_OPERATION_0_ON_THE_CACHE
-              .toLocalizedString();
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          "Not authorized to perform GET_DURABLE_CQS operation on cache";
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -395,9 +393,9 @@ public class AuthorizeRequest {
     regionClearContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, regionClearContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_REGION_CLEAR_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform REGION_CLEAR operation on region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -419,9 +417,9 @@ public class AuthorizeRequest {
         key, InterestType.fromOrdinal((byte) interestType), policy);
     if (!this.authzCallback.authorizeOperation(regionName, registerInterestContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_REGISTER_INTEREST_OPERATION_FOR_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform REGISTER_INTEREST operation for region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -445,9 +443,9 @@ public class AuthorizeRequest {
         new RegisterInterestOperationContext(keys, InterestType.LIST, policy);
     if (!this.authzCallback.authorizeOperation(regionName, registerInterestListContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_REGISTER_INTEREST_LIST_OPERATION_FOR_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform REGISTER_INTEREST_LIST operation for region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -471,9 +469,9 @@ public class AuthorizeRequest {
         new UnregisterInterestOperationContext(key, InterestType.fromOrdinal((byte) interestType));
     if (!this.authzCallback.authorizeOperation(regionName, unregisterInterestContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_UNREGISTER_INTEREST_OPERATION_FOR_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform UNREGISTER_INTEREST operation for region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -495,9 +493,10 @@ public class AuthorizeRequest {
     unregisterInterestListContext = new UnregisterInterestOperationContext(keys, InterestType.LIST);
     if (!this.authzCallback.authorizeOperation(regionName, unregisterInterestListContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_UNREGISTER_INTEREST_LIST_OPERATION_FOR_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format(
+              "Not authorized to perform UNREGISTER_INTEREST_LIST operation for region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -518,9 +517,9 @@ public class AuthorizeRequest {
     KeySetOperationContext keySetContext = new KeySetOperationContext(false);
     if (!this.authzCallback.authorizeOperation(regionName, keySetContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_KEY_SET_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform KEY_SET operation on region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -540,9 +539,9 @@ public class AuthorizeRequest {
     ContainsKeyOperationContext containsKeyContext = new ContainsKeyOperationContext(key);
     if (!this.authzCallback.authorizeOperation(regionName, containsKeyContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_CONTAINS_KEY_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform CONTAINS_KEY operation on region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -561,9 +560,9 @@ public class AuthorizeRequest {
     RegionCreateOperationContext regionCreateContext = new RegionCreateOperationContext(false);
     if (!this.authzCallback.authorizeOperation(regionName, regionCreateContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_CREATE_REGION_OPERATION_FOR_THE_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform CREATE_REGION operation for the region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -584,9 +583,9 @@ public class AuthorizeRequest {
     regionDestroyContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, regionDestroyContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_REGION_DESTROY_OPERATION_FOR_THE_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform REGION_DESTROY operation for the region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {
@@ -608,10 +607,9 @@ public class AuthorizeRequest {
         functionName, region, keySet, arguments, optimizeForWrite, false);
     if (!this.authzCallback.authorizeOperation(region, executeContext)) {
       final String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_EXECUTE_REGION_FUNCTION_OPERATION
-              .toLocalizedString();
+          "Not authorized to perform EXECUTE_REGION_FUNCTION operation";
       if (this.logger.warningEnabled()) {
-        this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+        this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       }
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
@@ -634,9 +632,9 @@ public class AuthorizeRequest {
     invalidateEntryContext.setCallbackArg(callbackArg);
     if (!this.authzCallback.authorizeOperation(regionName, invalidateEntryContext)) {
       String errStr =
-          LocalizedStrings.AuthorizeRequest_NOT_AUTHORIZED_TO_PERFORM_INVALIDATE_OPERATION_ON_REGION_0
-              .toLocalizedString(regionName);
-      this.logger.warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, errStr});
+          String.format("Not authorized to perform INVALIDATE operation on region %s",
+              regionName);
+      this.logger.warning(String.format("%s : %s", new Object[] {this, errStr}));
       if (this.isPrincipalSerializable) {
         throw new NotAuthorizedException(errStr, this.principal);
       } else {

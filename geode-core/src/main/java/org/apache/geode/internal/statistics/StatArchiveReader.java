@@ -44,7 +44,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 
 /**
@@ -211,8 +210,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       case DOUBLE_CODE:
         return Double.longBitsToDouble(bits);
       default:
-        throw new InternalGemFireException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TYPECODE_0
-            .toLocalizedString(Integer.valueOf(type)));
+        throw new InternalGemFireException(String.format("Unexpected typecode  %s",
+            Integer.valueOf(type)));
     }
   }
 
@@ -607,7 +606,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (filter != this.filter) {
         if (filter != FILTER_NONE && filter != FILTER_PERSEC && filter != FILTER_PERSAMPLE) {
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_FILTER_VALUE_0_MUST_BE_1_2_OR_3.toLocalizedString(
+              String.format("Filter value %s must be %s, %s, or %s.",
                   new Object[] {Integer.valueOf(filter), Integer.valueOf(FILTER_NONE),
                       Integer.valueOf(FILTER_PERSEC), Integer.valueOf(FILTER_PERSAMPLE)}));
         }
@@ -723,36 +722,34 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
            * change the filter since a client has no way to select values based on the filter.
            */
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_CANT_COMBINE_VALUES_WITH_DIFFERENT_FILTERS
-                  .toLocalizedString());
+              "Cannot combine values with different filters.");
         }
         if (!typeName.equals(this.values[i].getType().getName())) {
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_CANT_COMBINE_VALUES_WITH_DIFFERENT_TYPES
-                  .toLocalizedString());
+              "Cannot combine values with different types.");
         }
         if (!statName.equals(this.values[i].getDescriptor().getName())) {
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_CANT_COMBINE_DIFFERENT_STATS.toLocalizedString());
+              "Cannot combine different stats.");
         }
         if (this.values[i].getDescriptor().isCounter()) {
-          // its a counter which is not the default
+          // it is a counter which is not the default
           if (!this.values[i].getDescriptor().isLargerBetter()) {
-            // this guy has non-defaults for both use him
+            // this value has non-defaults for both, use it
             bestTypeIdx = i;
           } else if (this.values[bestTypeIdx].getDescriptor()
               .isCounter() == this.values[bestTypeIdx].getDescriptor().isLargerBetter()) {
-            // as long as we haven't already found a guy with defaults
-            // make this guy the best type
+            // as long as we haven't already found a value with defaults
+            // make this value the best type
             bestTypeIdx = i;
           }
         } else {
           // its a gauge, see if it has a non-default largerBetter
           if (this.values[i].getDescriptor().isLargerBetter()) {
-            // as long as we haven't already found a guy with defaults
+            // as long as we haven't already found a value with defaults
             if (this.values[bestTypeIdx].getDescriptor().isCounter() == this.values[bestTypeIdx]
                 .getDescriptor().isLargerBetter()) {
-              // make this guy the best type
+              // make this value the best type
               bestTypeIdx = i;
             }
           }
@@ -1887,8 +1884,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       // assert
       if (idx != resultSize) {
         throw new InternalGemFireException(
-            LocalizedStrings.StatArchiveReader_GETVALUESEX_DIDNT_FILL_THE_LAST_0_ENTRIES_OF_ITS_RESULT
-                .toLocalizedString(Integer.valueOf(resultSize - idx)));
+            String.format("getValuesEx did not fill the last  %s  entries of its result.",
+                Integer.valueOf(resultSize - idx)));
       }
       return result;
     }
@@ -2108,7 +2105,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
     /**
      * Frees up any resources no longer needed after the archive file is closed. Returns true if
-     * this guy is no longer needed.
+     * this resource is no longer needed.
      */
     protected boolean close() {
       if (isLoaded()) {
@@ -2483,7 +2480,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
     /**
      * Frees up any resources no longer needed after the archive file is closed. Returns true if
-     * this guy is no longer needed.
+     * these stats are no longer needed.
      */
     protected boolean close() {
       if (isLoaded()) {
@@ -2832,8 +2829,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       }
       if (!this.updateOK) {
         throw new InternalGemFireException(
-            LocalizedStrings.StatArchiveReader_UPDATE_OF_THIS_TYPE_OF_FILE_IS_NOT_SUPPORTED
-                .toLocalizedString());
+            "update of this type of file is not supported.");
       }
 
       if (doReset) {
@@ -2952,15 +2948,15 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       String machine = dataIn.readUTF();
       if (archiveVersion <= 1) {
         throw new GemFireIOException(
-            LocalizedStrings.StatArchiveReader_ARCHIVE_VERSION_0_IS_NO_LONGER_SUPPORTED
-                .toLocalizedString(Byte.valueOf(archiveVersion)),
+            String.format("Archive version:  %s  is no longer supported.",
+                Byte.valueOf(archiveVersion)),
             null);
       }
       if (archiveVersion > ARCHIVE_VERSION) {
         throw new GemFireIOException(
-            LocalizedStrings.StatArchiveReader_UNSUPPORTED_ARCHIVE_VERSION_0_THE_SUPPORTED_VERSION_IS_1
-                .toLocalizedString(
-                    new Object[] {Byte.valueOf(archiveVersion), Byte.valueOf(ARCHIVE_VERSION)}),
+            String.format("Unsupported archive version:  %s .  The supported version is:  %s .",
+
+                new Object[] {Byte.valueOf(archiveVersion), Byte.valueOf(ARCHIVE_VERSION)}),
             null);
       }
       this.archiveVersion = archiveVersion;
@@ -3150,8 +3146,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               v = readCompactValue();
               break;
             default:
-              throw new IOException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TYPECODE_VALUE_0
-                  .toLocalizedString(Byte.valueOf(stats[i].getTypeCode())));
+              throw new IOException(String.format("unexpected typeCode value  %s",
+                  Byte.valueOf(stats[i].getTypeCode())));
           }
           resourceInstTable[resourceInstId].initialValue(i, v);
         }
@@ -3227,8 +3223,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               statDeltaBits = readCompactValue();
               break;
             default:
-              throw new IOException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TYPECODE_VALUE_0
-                  .toLocalizedString(Byte.valueOf(stats[statOffset].getTypeCode())));
+              throw new IOException(String.format("unexpected typeCode value  %s",
+                  Byte.valueOf(stats[statOffset].getTypeCode())));
           }
           if (resourceInstTable[resourceInstId].addValueSample(statOffset, statDeltaBits)) {
             if (dump) {
@@ -3281,8 +3277,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
             readSampleToken();
             break;
           default:
-            throw new IOException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TOKEN_BYTE_VALUE_0
-                .toLocalizedString(Byte.valueOf(token)));
+            throw new IOException(String.format("Unexpected token byte value:  %s",
+                Byte.valueOf(token)));
         }
         return true;
       } catch (EOFException ignore) {

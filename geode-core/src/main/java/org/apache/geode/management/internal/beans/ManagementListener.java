@@ -14,23 +14,22 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.AlertDetails;
 
@@ -40,23 +39,28 @@ import org.apache.geode.management.internal.AlertDetails;
  */
 public class ManagementListener implements ResourceEventsListener {
 
+  private final InternalDistributedSystem system;
+
   /**
    * Adapter to co-ordinate between GemFire and Federation framework
    */
-  private ManagementAdapter adapter;
-
-  private LogWriterI18n logger;
-
-  // having a readwrite lock to synchronize between handling cache creation/removal vs handling
-  // other notifications
-  private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+  private final ManagementAdapter adapter;
 
   /**
-   * Constructor
+   * ReadWriteLock to protect between handling cache creation/removal vs other notifications
    */
-  public ManagementListener() {
-    this.adapter = new ManagementAdapter();
-    this.logger = InternalDistributedSystem.getLoggerI18n();
+  private final ReadWriteLock readWriteLock;
+
+  public ManagementListener(InternalDistributedSystem system) {
+    this(system, new ManagementAdapter(), new ReentrantReadWriteLock());
+  }
+
+  @TestingOnly
+  ManagementListener(InternalDistributedSystem system, ManagementAdapter adapter,
+      ReadWriteLock readWriteLock) {
+    this.system = system;
+    this.adapter = adapter;
+    this.readWriteLock = readWriteLock;
   }
 
   /**
@@ -71,27 +75,19 @@ public class ManagementListener implements ResourceEventsListener {
    *
    * @return true or false depending on the status of Cache and System
    */
-  private boolean shouldProceed(ResourceEvent event) {
-    DistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+  boolean shouldProceed(ResourceEvent event) {
+    InternalDistributedSystem.getConnectedInstance();
 
-    // CACHE_REMOVE is a special event . It may happen that a
-    // ForcedDisconnectExcpetion will raise this event
-
-    // No need to check system.isConnected as
-    // InternalDistributedSystem.getConnectedInstance() does that internally.
-
-    if (system == null && !event.equals(ResourceEvent.CACHE_REMOVE)) {
+    // CACHE_REMOVE is a special event. ForcedDisconnectException may raise this event.
+    if (!system.isConnected() && !event.equals(ResourceEvent.CACHE_REMOVE)) {
       return false;
     }
 
-    InternalCache currentCache = GemFireCacheImpl.getInstance();
+    InternalCache currentCache = system.getCache();
     if (currentCache == null) {
       return false;
     }
-    if (currentCache.isClosed()) {
-      return false;
-    }
-    return true;
+    return !currentCache.isClosed();
   }
 
   /**
@@ -102,6 +98,7 @@ public class ManagementListener implements ResourceEventsListener {
    * @param event Management event for which invocation has happened
    * @param resource the GFE resource type
    */
+  @Override
   public void handleEvent(ResourceEvent event, Object resource) {
     if (!shouldProceed(event)) {
       return;
@@ -109,7 +106,7 @@ public class ManagementListener implements ResourceEventsListener {
     try {
       if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
         readWriteLock.writeLock().lock();
-      } else {
+      } else if (event != ResourceEvent.SYSTEM_ALERT) {
         readWriteLock.readLock().lock();
       }
       switch (event) {
@@ -228,7 +225,7 @@ public class ManagementListener implements ResourceEventsListener {
     } finally {
       if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
         readWriteLock.writeLock().unlock();
-      } else {
+      } else if (event != ResourceEvent.SYSTEM_ALERT) {
         readWriteLock.readLock().unlock();
       }
     }

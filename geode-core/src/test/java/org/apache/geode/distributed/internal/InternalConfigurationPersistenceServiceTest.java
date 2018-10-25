@@ -192,7 +192,7 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void getPackagesToScanWithoutSystemProperty() {
     Set<String> packages = service.getPackagesToScan();
-    assertThat(packages).containsExactly("org.apache.geode");
+    assertThat(packages).containsExactly("*");
   }
 
   @Test

@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 
@@ -34,7 +33,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -56,7 +55,7 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
   private VM server3;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -109,9 +108,9 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
         .setSubscriptionRedundancy(-1).setSubscriptionMessageTrackingTimeout(54321)
         .setIdleTimeout(-1).setPingInterval(200).create(uniqueName);
 
-    ClientRegionFactory crf =
+    ClientRegionFactory clientRegionFactory =
         clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
+    clientRegionFactory.setPoolName(pool.getName());
   }
 
   private void stopServer() {
@@ -119,7 +118,7 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
   }
 
   private void awaitConnectedServerCount(final int expectedServerCount) {
-    await().atMost(3, MINUTES)
+    await()
         .until(() -> findPool(uniqueName).getConnectedServerCount() == expectedServerCount);
   }
 

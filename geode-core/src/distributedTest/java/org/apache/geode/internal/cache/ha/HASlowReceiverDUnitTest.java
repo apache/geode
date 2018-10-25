@@ -17,14 +17,13 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.SocketException;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -228,7 +227,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void checkRedundancyLevel(final Integer redundantServers) {
-    Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       // check for slow client queue is removed or not.
       assertTrue(
           "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
@@ -254,7 +253,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
     putEntries();
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       // check for slow client queue is removed or not.
       assertTrue("isUnresponsiveClientRemoved is false, but should be true " + "after 60 seconds",
           isUnresponsiveClientRemoved);

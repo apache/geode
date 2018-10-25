@@ -24,12 +24,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Status;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
@@ -60,7 +62,6 @@ import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -100,6 +101,13 @@ public class TXState implements TXStateInterface {
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<EntryEventImpl>();
   // Access this variable should be in synchronized block.
   private boolean beforeCompletionCalled;
+
+  /**
+   * for client/server JTA transactions we need to have a single thread handle both beforeCompletion
+   * and afterCompletion so that beforeCompletion can obtain locks for the afterCompletion step.
+   * This is that thread
+   */
+  private final SingleThreadJTAExecutor singleThreadJTAExecutor;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
@@ -142,6 +150,11 @@ public class TXState implements TXStateInterface {
   private volatile DistributedMember proxyServer;
 
   public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
+    this(proxy, onBehalfOfRemoteStub, new SingleThreadJTAExecutor());
+  }
+
+  public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      SingleThreadJTAExecutor singleThreadJTAExecutor) {
     this.beginTime = CachePerfStats.getStatTime();
     this.regions = new IdentityHashMap<>();
 
@@ -154,7 +167,7 @@ public class TXState implements TXStateInterface {
     this.internalAfterSend = null;
     this.proxy = proxy;
     this.onBehalfOfRemoteStub = onBehalfOfRemoteStub;
-
+    this.singleThreadJTAExecutor = singleThreadJTAExecutor;
   }
 
   private boolean hasSeenEvent(EntryEventImpl event) {
@@ -365,8 +378,8 @@ public class TXState implements TXStateInterface {
   public void precommit()
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("precommit"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "precommit"));
   }
 
   /*
@@ -389,7 +402,7 @@ public class TXState implements TXStateInterface {
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_CANNOT_COMMIT_REMOTED_TRANSACTION.toLocalizedString());
+          "Cannot commit a transaction being run on behalf of a remote thread");
     }
     cleanupNonDirtyRegions();
     try {
@@ -401,8 +414,7 @@ public class TXState implements TXStateInterface {
       } catch (PrimaryBucketException pbe) {
         // not sure what to do here yet
         RuntimeException re = new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
         re.initCause(pbe);
         throw re;
       }
@@ -417,7 +429,7 @@ public class TXState implements TXStateInterface {
       }
 
       /*
-       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
+       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
       TransactionWriter writer = this.proxy.getTxMgr().getWriter();
@@ -460,10 +472,7 @@ public class TXState implements TXStateInterface {
          * (applyChanges) 2. Ask for advice on who to send to (buildMessage) 3. Send out to other
          * members.
          *
-         * If this is done out of order, we will have problems with GII, split brain, and HA. See
-         * bug #41187
-         *
-         * @gregp
+         * If this is done out of order, we will have problems with GII, split brain, and HA.
          */
 
         attachFilterProfileInformation(entries);
@@ -857,6 +866,14 @@ public class TXState implements TXStateInterface {
   }
 
   protected void cleanup() {
+    if (singleThreadJTAExecutor.shouldDoCleanup()) {
+      singleThreadJTAExecutor.cleanup();
+    } else {
+      doCleanup();
+    }
+  }
+
+  void doCleanup() {
     IllegalArgumentException iae = null;
     try {
       this.closed = true;
@@ -910,6 +927,7 @@ public class TXState implements TXStateInterface {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
       }
+
       if (iae != null && !this.proxy.getCache().isClosed()) {
         throw iae;
       }
@@ -1006,24 +1024,36 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
+    proxy.getTxMgr().setTXState(null);
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
+
     if (beforeCompletionCalled) {
       // do not re-execute beforeCompletion again
       return;
     }
     beforeCompletionCalled = true;
-    doBeforeCompletion();
+    singleThreadJTAExecutor.executeBeforeCompletion(this,
+        getExecutor(), getCancelCriterion());
   }
 
-  private void doBeforeCompletion() {
+  private Executor getExecutor() {
+    return getCache().getDistributionManager().getWaitingThreadPool();
+  }
+
+  private CancelCriterion getCancelCriterion() {
+    return getCache().getCancelCriterion();
+  }
+
+  void doBeforeCompletion() {
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
+
     try {
       reserveAndCheck();
       /*
-       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
+       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
       TransactionWriter writer = this.proxy.getTxMgr().getWriter();
@@ -1059,8 +1089,8 @@ public class TXState implements TXStateInterface {
       cleanup();
       proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
-          LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
-              .toLocalizedString(getTransactionId()),
+          String.format("Conflict detected in GemFire transaction  %s",
+              getTransactionId()),
           commitConflict);
     }
   }
@@ -1072,48 +1102,58 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public synchronized void afterCompletion(int status) {
-    this.proxy.getTxMgr().setTXState(null);
-    // For commit, beforeCompletion should be called. Otherwise
+    proxy.getTxMgr().setTXState(null);
+    // if there was a beforeCompletion call then there will be a thread
+    // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
     if (wasBeforeCompletionCalled()) {
-      doAfterCompletion(status);
+      switch (status) {
+        case Status.STATUS_COMMITTED:
+          singleThreadJTAExecutor.executeAfterCompletionCommit();
+          break;
+        case Status.STATUS_ROLLEDBACK:
+          singleThreadJTAExecutor.executeAfterCompletionRollback();
+          break;
+        default:
+          throw new TransactionException("Unknown JTA Synchronization status " + status);
+      }
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {
         throw new FailedSynchronizationException(
             "Could not execute afterCompletion when beforeCompletion was not executed");
       }
-      doAfterCompletion(status);
+      doAfterCompletionRollback();
     }
   }
 
-  private void doAfterCompletion(int status) {
+  void doAfterCompletionCommit() {
     final long opStart = CachePerfStats.getStatTime();
     try {
-      switch (status) {
-        case Status.STATUS_COMMITTED:
-          Assert.assertTrue(this.locks != null,
-              "Gemfire Transaction afterCompletion called with illegal state.");
-          try {
-            commit();
-            saveTXCommitMessageForClientFailover();
-          } catch (CommitConflictException error) {
-            Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
-                + " afterCompletion failed.due to CommitConflictException: " + error);
-          }
-
-          this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-          this.locks = null;
-          break;
-        case Status.STATUS_ROLLEDBACK:
-          this.jtaLifeTime = opStart - getBeginTime();
-          rollback();
-          saveTXCommitMessageForClientFailover();
-          this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
-          break;
-        default:
-          Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+      Assert.assertTrue(this.locks != null,
+          "Gemfire Transaction afterCompletion called with illegal state.");
+      try {
+        commit();
+        saveTXCommitMessageForClientFailover();
+      } catch (CommitConflictException error) {
+        Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
+            + " afterCompletion failed.due to CommitConflictException: " + error);
       }
+      this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
+      this.locks = null;
+
+    } catch (InternalGemFireError error) {
+      throw new TransactionException(error);
+    }
+  }
+
+  void doAfterCompletionRollback() {
+    final long opStart = CachePerfStats.getStatTime();
+    this.jtaLifeTime = opStart - getBeginTime();
+    try {
+      rollback();
+      saveTXCommitMessageForClientFailover();
+      this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
     } catch (InternalGemFireError error) {
       throw new TransactionException(error);
     }
@@ -1508,8 +1548,7 @@ public class TXState implements TXStateInterface {
         if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, val, internalRegion)) {
           txr.cleanupNonDirtyEntries(internalRegion);
           throw new EntryNotFoundException(
-              LocalizedStrings.AbstractRegionMap_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE
-                  .toLocalizedString());
+              "The current value was not equal to expected value.");
         }
       }
     } else {
@@ -1532,8 +1571,7 @@ public class TXState implements TXStateInterface {
          */
         if (!Token.isInvalid(expectedOldValue)) {
           throw new EntryNotFoundException(
-              LocalizedStrings.AbstractRegionMap_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE
-                  .toLocalizedString());
+              "The current value was not equal to expected value.");
         }
       }
     }
@@ -1671,7 +1709,7 @@ public class TXState implements TXStateInterface {
   private void validateDelta(EntryEventImpl event) {
     if (event.getDeltaBytes() != null && !event.getRegion().getAttributes().getCloningEnabled()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_DELTA_WITHOUT_CLONING_CANNOT_BE_USED_IN_TX.toLocalizedString());
+          "Delta without cloning cannot be used in transaction");
     }
   }
 
@@ -1856,20 +1894,19 @@ public class TXState implements TXStateInterface {
   @Override
   public void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_DESTROY_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "destroyRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_INVALIDATE_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString());
+        "invalidateRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "clear() is not supported while in a transaction");
   }
 
   /*
@@ -1898,7 +1935,7 @@ public class TXState implements TXStateInterface {
     Region.Entry txval = getEntry(key, pr, allowTombstones);
     if (txval == null) {
       throw new EntryNotFoundException(
-          LocalizedStrings.PartitionedRegionDataStore_ENTRY_NOT_FOUND.toLocalizedString());
+          "entry not found");
     } else {
       NonLocalRegionEntry nlre = new NonLocalRegionEntry(txval, localRegion);
       LocalRegion dataReg = localRegion.getDataRegionForRead(key);

@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import hydra.MethExecutorResult;
-import org.awaitility.Awaitility;
 
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.standalone.BounceResult;
@@ -136,6 +135,13 @@ public class VM implements Serializable {
     } else {
       return "vm" + pid + "_v" + version;
     }
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(VM... vms) {
+    return vms;
   }
 
   /**
@@ -376,22 +382,6 @@ public class VM implements Serializable {
    */
   public <V> V invoke(final SerializableCallableIF<V> callable) {
     return invoke(callable, "call");
-  }
-
-  /**
-   * Invokes the {@code run} method of a {@link Runnable} in this {@code VM}. If the invocation
-   * throws AssertionError, and repeatTimeoutMs is >0, the {@code run} method is invoked repeatedly
-   * until it either succeeds, or repeatTimeoutMs has passed. The AssertionError is thrown back to
-   * the sender of this method if {@code run} has not completed successfully before repeatTimeoutMs
-   * has passed.
-   *
-   * @deprecated Please use {@link Awaitility} to await condition and then
-   *             {@link #invoke(SerializableCallableIF)} instead.
-   */
-  @Deprecated
-  public void invokeRepeatingIfNecessary(final RepeatableRunnable runnable,
-      final long repeatTimeoutMs) {
-    invoke(runnable, "runRepeatingIfNecessary", new Object[] {repeatTimeoutMs});
   }
 
   /**

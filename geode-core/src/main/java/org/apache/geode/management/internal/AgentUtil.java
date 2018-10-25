@@ -17,6 +17,9 @@ package org.apache.geode.management.internal;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -27,17 +30,14 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Hosts common utility methods needed by the management package
  *
- * @since Geode 1.0.0.0
- *
+ * @since Geode 1.0.0
  */
 public class AgentUtil {
 
   private static final Logger logger = LogService.getLogger();
 
-  public static final String ERROR_VARIABLE_NOT_SET =
-      "The GEODE_HOME environment variable must be set!";
-
-  private String gemfireVersion = null;
+  private final String gemfireVersion;
+  private static final String GEODE_HOME = "GEODE_HOME";
 
   public AgentUtil(String gemfireVersion) {
     this.gemfireVersion = gemfireVersion;
@@ -53,49 +53,88 @@ public class AgentUtil {
    *        geode-web-api
    */
   public String findWarLocation(String warFilePrefix) {
-    String geodeHome = getGeodeHome();
-    if (StringUtils.isNotBlank(geodeHome)) {
-      String[] possibleFiles =
-          {geodeHome + "/tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
-              geodeHome + "/tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
-              geodeHome + "/lib/" + warFilePrefix + "-" + gemfireVersion + ".war",
-              geodeHome + "/tools/Extensions/" + warFilePrefix + ".war",
-              geodeHome + "/tools/Pulse/" + warFilePrefix + ".war",
-              geodeHome + "/lib/" + warFilePrefix + ".war"};
-      for (String possibleFile : possibleFiles) {
-        if (new File(possibleFile).isFile()) {
-          logger.info(warFilePrefix + " war found: {}", possibleFile);
-          return possibleFile;
-        }
-      }
-    }
+    final String versionedWarFileName = warFilePrefix + "-" + gemfireVersion + ".war";
+    final String unversionedWarFileName = warFilePrefix + ".war";
 
+    // This will attempt to find the war file defined somewhere on the Java classpath,
+    // other than the
+    String possiblePath =
+        lookupWarLocationFromClasspath(versionedWarFileName, unversionedWarFileName);
+    if (possiblePath != null) {
+      logger.info("Located war: {} at location: {}", warFilePrefix, possiblePath);
+      return possiblePath;
+    }
+    possiblePath =
+        findPossibleWarLocationFromGeodeHome(versionedWarFileName, unversionedWarFileName);
+    if (possiblePath != null) {
+      logger.info("Located war: {} at location: {}", warFilePrefix, possiblePath);
+      return possiblePath;
+    }
     // if $GEODE_HOME is not set or we are not able to find it in all the possible locations under
-    // $GEODE_HOME, try to
-    // find in the classpath
-    String[] possibleFiles = {warFilePrefix + "-" + gemfireVersion + ".war",
-        "tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
-        "tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
-        "lib/" + warFilePrefix + "-" + gemfireVersion + ".war", warFilePrefix + ".war"};
-    for (String possibleFile : possibleFiles) {
-      URL url = this.getClass().getClassLoader().getResource(possibleFile);
-      if (url != null) {
-        // found the war file
-        logger.info(warFilePrefix + " war found: {}", possibleFile);
-        return url.getPath();
-      }
+    // $GEODE_HOME, try to find in the classpath
+    possiblePath =
+        findPossibleWarLocationFromExtraLocations(versionedWarFileName, unversionedWarFileName);
+    if (possiblePath != null) {
+      logger.info("Located war: {} at location: {}", warFilePrefix, possiblePath);
+      return possiblePath;
     }
 
-    // we still couldn't find the war file
     logger.warn(warFilePrefix + " war file was not found");
     return null;
   }
 
-  public boolean isWebApplicationAvailable(final String warFileLocation) {
+  private String findPossibleWarLocationFromExtraLocations(String versionedWarFileName,
+      String unversionedWarFileName) {
+    final URL url = Arrays.stream(new String[] {versionedWarFileName,
+        "tools/Pulse/" + versionedWarFileName,
+        "tools/Extensions/" + versionedWarFileName,
+        "lib/" + versionedWarFileName,
+        unversionedWarFileName})
+        .map(possibleFile -> this.getClass().getClassLoader().getResource(possibleFile))
+        .filter(Objects::nonNull).findFirst().orElse(null);
+
+    if (url != null) {
+      final String path = url.getPath();
+      logger.info("War file found: {}", path);
+      return path;
+    }
+    return null;
+  }
+
+  private String findPossibleWarLocationFromGeodeHome(String versionedWarFileName,
+      String unversionedWarFileName) {
+    String[] possibleFiles = {};
+    String geodeHome = getGeodeHome();
+    if (StringUtils.isNotBlank(geodeHome)) {
+      possibleFiles = new String[] {geodeHome + "/tools/Extensions/" + versionedWarFileName,
+          geodeHome + "/tools/Pulse/" + versionedWarFileName,
+          geodeHome + "/lib/" + versionedWarFileName,
+          geodeHome + "/tools/Extensions/" + unversionedWarFileName,
+          geodeHome + "/tools/Pulse/" + unversionedWarFileName,
+          geodeHome + "/lib/" + unversionedWarFileName};
+    }
+    return findPossibleWarLocationFromStream(Arrays.stream(possibleFiles));
+  }
+
+  private String findPossibleWarLocationFromStream(Stream<String> stream) {
+    return stream.filter(possiblePath -> new File(possiblePath).isFile())
+        .findFirst().orElse(null);
+  }
+
+  private String lookupWarLocationFromClasspath(String versionedWarFileName,
+      String unversionedWarFileName) {
+    return Arrays
+        .stream(System.getProperty("java.class.path").split(File.pathSeparator))
+        .filter(pathString -> pathString.endsWith(versionedWarFileName) || pathString
+            .endsWith(unversionedWarFileName))
+        .findFirst().orElse(null);
+  }
+
+  boolean isWebApplicationAvailable(final String warFileLocation) {
     return StringUtils.isNotBlank(warFileLocation);
   }
 
-  public boolean isWebApplicationAvailable(final String... warFileLocations) {
+  boolean isWebApplicationAvailable(final String... warFileLocations) {
     for (String warFileLocation : warFileLocations) {
       if (isWebApplicationAvailable(warFileLocation)) {
         return true;
@@ -105,11 +144,11 @@ public class AgentUtil {
     return false;
   }
 
-  public String getGeodeHome() {
+  private String getGeodeHome() {
 
-    String geodeHome = System.getenv("GEODE_HOME");
+    String geodeHome = System.getenv(GEODE_HOME);
 
-    logger.info("GEODE_HOME:" + geodeHome);
+    logger.info(GEODE_HOME + ":" + geodeHome);
     // Check for empty variable. if empty, then log message and exit HTTP server
     // startup
     if (StringUtils.isBlank(geodeHome)) {

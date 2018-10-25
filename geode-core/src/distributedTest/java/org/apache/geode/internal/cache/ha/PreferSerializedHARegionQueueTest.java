@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -156,15 +155,15 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
 
   public void waitForCacheClientProxies(final int expectedSize) {
     final CacheServer cs = getCache().getCacheServers().iterator().next();
-    Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertEquals(expectedSize, cs.getAllClientSessions().size()));
+    await()
+        .untilAsserted(() -> assertEquals(expectedSize, cs.getAllClientSessions().size()));
   }
 
   public void waitForHARegionSize(final int expectedSize) {
     final CacheServer cs = getCache().getCacheServers().iterator().next();
     final CacheClientProxy ccp = (CacheClientProxy) cs.getAllClientSessions().iterator().next();
-    Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertEquals(expectedSize, getHAEventsCount(ccp)));
+    await()
+        .untilAsserted(() -> assertEquals(expectedSize, getHAEventsCount(ccp)));
   }
 
   private static int getHAEventsCount(CacheClientProxy ccp) {

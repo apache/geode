@@ -35,9 +35,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
@@ -187,8 +185,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       InternalDistributedMember newElder, DLockService dls) {
     GrantorRequestContext grc = sys.getGrantorRequestContext();
     grc.waitingToChangeElder = true;
-    final LocalizedMessage message = LocalizedMessage.create(
-        LocalizedStrings.GrantorRequestProcessor_GRANTORREQUESTPROCESSOR_ELDERSYNCWAIT_THE_CURRENT_ELDER_0_IS_WAITING_FOR_THE_NEW_ELDER_1,
+    final String message = String.format(
+        "GrantorRequestProcessor.elderSyncWait: The current Elder %s is waiting for the new Elder %s.",
         new Object[] {grc.currentElder, newElder});
     while (grc.waitingToChangeElder) {
       logger.info(LogMarker.DLS_MARKER, message);
@@ -207,10 +205,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * Sets currentElder to the memberId of the current elder if elder is remote; null if elder is in
-   * our vm. TODO: collaboration lock was removed
+   * our vm.
    */
-  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls,
-      boolean usesElderCollaborationLock) {
+  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls) {
     InternalDistributedMember elder;
     ElderState es = null;
 
@@ -221,15 +218,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       elder = dm.getElderId(); // call this before getElderState
       Assert.assertTrue(elder != null, "starting an elder call with no valid elder");
       if (dm.getId().equals(elder)) {
-        if (usesElderCollaborationLock) {
-          try {
-            es = dm.getElderState(false, true);
-          } catch (IllegalStateException e) {
-            // loop back around to reacquire Collaboration and try elder lock again
-            continue;
-          }
-        } else {
-          es = dm.getElderState(false, false);
+        try {
+          es = dm.getElderState(false);
+        } catch (IllegalStateException e) {
+          // loop back around to reacquire Collaboration and try elder lock again
+          continue;
         }
       } else {
         es = null;
@@ -333,12 +326,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     try {
       do {
         tryNewElder = false;
-        final boolean usesElderCollaborationLock = opCode == GET_OP || opCode == BECOME_OP;
-        if (usesElderCollaborationLock) {
-          Assert.assertTrue(service != null,
-              "Attempting GrantorRequest without instance of DistributedLockService");
-        }
-        final ElderState es = startElderCall(system, service, usesElderCollaborationLock);
+        final ElderState es = startElderCall(system, service);
         dm.throwIfDistributionStopped();
         try {
           if (es != null) {
@@ -501,7 +489,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder
-      ElderState es = dm.getElderState(true, false);
+      ElderState es = dm.getElderState(true);
       switch (this.opCode) {
         case GET_OP:
           replyGrantorInfo(dm, es.getGrantor(this.serviceName, getSender(), this.dlsSerialNumber));

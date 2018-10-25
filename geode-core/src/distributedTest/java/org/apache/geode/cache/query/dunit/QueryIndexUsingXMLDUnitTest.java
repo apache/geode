@@ -14,13 +14,12 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -29,10 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -518,7 +515,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void validateIndexSize() {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       boolean indexSizeCheck_NAME = validateIndexSizeForRegion(NAME);
       boolean indexSizeCheck_REP_REG_NAME = validateIndexSizeForRegion(REP_REG_NAME);
       boolean indexSizeCheck_PERSISTENT_REG_NAME = validateIndexSizeForRegion(PERSISTENT_REG_NAME);
@@ -635,7 +632,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitForIndexedBuckets(final PartitionedIndex index, final int bucketCount) {
-    await().atMost(2, MINUTES).until(() -> index.getNumberOfIndexedBuckets() >= bucketCount);
+    await().until(() -> index.getNumberOfIndexedBuckets() >= bucketCount);
   }
 
   private CacheSerializableRunnable loadRegion(final String name) {

@@ -26,14 +26,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -47,15 +47,15 @@ import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.assertj.core.api.Assertions;
 import org.awaitility.core.ConditionTimeoutException;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -68,18 +68,17 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
  * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code
  * duplication.
+ *
+ * The rule will try to clean up the working dir as best as it can. Any first level children
+ * created in the test will be cleaned up after the test.
  */
 public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
-
-  protected String oldUserDir;
-
-  protected transient TemporaryFolder temporaryFolder;
-  protected File workingDir;
   protected int memberPort = 0;
   protected int jmxPort = -1;
   protected int httpPort = -1;
@@ -89,6 +88,10 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected Properties properties = new Properties();
 
   protected boolean autoStart = false;
+  private final transient UniquePortSupplier portSupplier;
+
+  private List<File> firstLevelChildrenFile = new ArrayList<>();
+  private boolean cleanWorkingDir = true;
 
   public static void setWaitUntilTimeout(int waitUntilTimeout) {
     WAIT_UNTIL_TIMEOUT = waitUntilTimeout;
@@ -97,7 +100,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   private static int WAIT_UNTIL_TIMEOUT = 30;
 
   public MemberStarterRule() {
-    oldUserDir = System.getProperty("user.dir");
+    this(new UniquePortSupplier());
+  }
+
+  public MemberStarterRule(UniquePortSupplier portSupplier) {
+    this.portSupplier = portSupplier;
 
     // initial values
     properties.setProperty(MCAST_PORT, "0");
@@ -116,6 +123,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       // use putIfAbsent if it was configured using withProperty
       properties.putIfAbsent(HTTP_SERVICE_PORT, "0");
     }
+    firstLevelChildrenFile = Arrays.asList(getWorkingDir().listFiles());
   }
 
   @Override
@@ -123,47 +131,23 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // invoke stop() first and then ds.disconnect
     stopMember();
 
+    disconnectDSIfAny();
     // this will clean up the SocketCreators created in this VM so that it won't contaminate
     // future tests
     SocketCreatorFactory.close();
-    disconnectDSIfAny();
 
-    if (temporaryFolder != null) {
-      temporaryFolder.delete();
-    }
-
-    if (oldUserDir == null) {
-      System.clearProperty("user.dir");
-    } else {
-      System.setProperty("user.dir", oldUserDir);
-    }
+    // delete the first-level children files that are created in the tests
+    if (cleanWorkingDir)
+      Arrays.stream(getWorkingDir().listFiles())
+          // do not delete the pre-existing files
+          .filter(f -> !firstLevelChildrenFile.contains(f))
+          // do not delete the dunit folder that might have been created by dunit launcher
+          .filter(f -> !(f.isDirectory() && f.getName().equals("dunit")))
+          .forEach(FileUtils::deleteQuietly);
   }
 
   public T withPort(int memberPort) {
     this.memberPort = memberPort;
-    return (T) this;
-  }
-
-  public T withWorkingDir(File workingDir) {
-    this.workingDir = workingDir;
-    if (workingDir != null) {
-      System.setProperty("user.dir", workingDir.toString());
-    }
-    return (T) this;
-  }
-
-  /**
-   * create a working dir using temporaryFolder. Use with caution, this sets "user.dir" system
-   * property that not approved by JDK
-   */
-  public T withWorkingDir() {
-    temporaryFolder = new TemporaryFolder();
-    try {
-      temporaryFolder.create();
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-    withWorkingDir(temporaryFolder.getRoot().getAbsoluteFile());
     return (T) this;
   }
 
@@ -231,7 +215,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
       properties.putIfAbsent(JMX_MANAGER_PORT,
-          AvailablePortHelper.getRandomAvailableTCPPort() + "");
+          portSupplier.getAvailablePort() + "");
       this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
     } else {
       // the real port numbers will be set after we started the server/locator.
@@ -245,14 +229,19 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withHttpService(boolean useDefaultPort) {
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
-      httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      properties.put(HTTP_SERVICE_PORT, httpPort + "");
+      properties.putIfAbsent(HTTP_SERVICE_PORT,
+          portSupplier.getAvailablePort() + "");
+      this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
       // indicate start http service but with default port
       // (different from Gemfire properties, 0 means do not start http service)
       httpPort = 0;
     }
     return (T) this;
+  }
+
+  public void setCleanWorkingDir(boolean cleanWorkingDir) {
+    this.cleanWorkingDir = cleanWorkingDir;
   }
 
   /**
@@ -344,7 +333,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public void waitTillClientsAreReadyOnServer(String serverName, int serverPort, int clientCount) {
     waitTillCacheServerIsReady(serverName, serverPort);
     CacheServerMXBean bean = getCacheServerMXBean(serverName, serverPort);
-    await().atMost(1, TimeUnit.MINUTES).until(() -> bean.getClientIds().length == clientCount);
+    await().until(() -> bean.getClientIds().length == clientCount);
   }
 
   /**
@@ -365,7 +354,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public void waitTillCacheServerIsReady(String serverName, int serverPort) {
-    await().atMost(1, TimeUnit.MINUTES)
+    await()
         .until(() -> getCacheServerMXBean(serverName, serverPort) != null);
   }
 
@@ -430,7 +419,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
 
   /**
-   * This method wraps an {@link org.awaitility.Awaitility#await} call for more meaningful error
+   * This method wraps an {@link GeodeAwaitility#await()} call for more meaningful error
    * reporting.
    *
    * @param supplier Method to retrieve the result to be tested, e.g.,
@@ -441,7 +430,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    *        directly tests the value provided by {@code supplier}.
    * @param assertionConsumer assertThat styled condition on the output of {@code examiner} against
    *        which
-   *        the {@code await().until(...)} will be called. E.g.,
+   *        the {@code await().untilAsserted(...)} will be called. E.g.,
    *        {@code beanCount -> assertThat(beanCount, is(5))}
    * @param assertionConsumerDescription A description of the {@code assertionConsumer} method,
    *        for additional failure information should this call time out.
@@ -457,8 +446,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       throws Exception {
     try {
       await(assertionConsumerDescription)
-          .atMost(timeout, unit)
-          .until(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
+          .untilAsserted(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
     } catch (ConditionTimeoutException e) {
       // There is a very slight race condition here, where the above could conceivably time out,
       // and become satisfied before the next supplier.get()
@@ -491,7 +479,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public File getWorkingDir() {
-    return workingDir;
+    return new File(System.getProperty("user.dir"));
   }
 
   @Override

@@ -21,18 +21,19 @@ import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistribute
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PROXY;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -63,7 +64,6 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -88,21 +88,19 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Tests the basic use cases for PR persistence.
  */
-
 @RunWith(JUnitParamsRunner.class)
-@SuppressWarnings("deprecation,serial,unused")
+@SuppressWarnings("serial,unused")
 public class PersistentPartitionedRegionDistributedTest implements Serializable {
 
   private static final int NUM_BUCKETS = 15;
@@ -117,7 +115,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   private VM vm3;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule =
@@ -193,24 +191,25 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     assertThatThrownBy(() -> createPartitionedRegion(0, 0, 2, true))
         .isInstanceOf(IllegalStateException.class).hasMessageContaining(
-            LocalizedStrings.PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
-                .toString("/" + partitionedRegionName, 2, 5));
+            String.format(
+                "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
+                "/" + partitionedRegionName, 2, 5));
 
     getCache().close();
 
     assertThatThrownBy(() -> createPartitionedRegion(0, 0, 10, true))
         .isInstanceOf(IllegalStateException.class).hasMessageContaining(
-            LocalizedStrings.PartitionedRegion_FOR_REGION_0_TotalBucketNum_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
-                .toString("/" + partitionedRegionName, 10, 5));
+            String.format(
+                "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
+                "/" + partitionedRegionName, 10, 5));
   }
 
   @Test
   public void missingDiskStoreCanBeRevoked() throws Exception {
-    int numBuckets = 50;
-
     vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
 
+    int numBuckets = 50;
     vm0.invoke(() -> createData(0, numBuckets, "a"));
 
     Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList());
@@ -236,7 +235,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       try {
         adminDS.waitToBeConnected(MINUTES.toMillis(2));
 
-        await().atMost(2, MINUTES).until(() -> {
+        await().until(() -> {
           Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
           if (missingIds.size() != 1) {
             return false;
@@ -656,7 +655,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     // VM2 should pick up the slack
 
-    await().atMost(2, MINUTES).until(() -> {
+    await().until(() -> {
       Set<Integer> vm2Buckets = vm2.invoke(() -> getBucketList());
       return bucketsLost.equals(vm2Buckets);
     });
@@ -854,7 +853,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
    */
   @Test
   public void doesNotLogSuspectStringDuringCacheClosure() {
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION_OVERFLOW);
+    RegionFactory<?, ?> regionFactory = getCache().createRegionFactory(PARTITION_OVERFLOW);
     regionFactory.setEvictionAttributes(createLRUEntryAttributes(50, OVERFLOW_TO_DISK));
 
     regionFactory.create(partitionedRegionName);
@@ -864,12 +863,11 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @Test
   public void partitionedRegionsCanBeNested() throws Exception {
-    int numBuckets = 50;
-
     vm0.invoke(() -> createNestedPartitionedRegion());
     vm1.invoke(() -> createNestedPartitionedRegion());
     vm2.invoke(() -> createNestedPartitionedRegion());
 
+    int numBuckets = 50;
     vm0.invoke(() -> {
       createDataFor(0, numBuckets, "a", parentRegion1Name + SEPARATOR + partitionedRegionName);
       createDataFor(0, numBuckets, "b", parentRegion2Name + SEPARATOR + partitionedRegionName);
@@ -955,8 +953,10 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     vm0.invoke(() -> createPartitionedRegion(1, -1, 1, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 1, true));
 
-    // Make sure we create a bucket
-    vm1.invoke(() -> createData(0, 1, "a"));
+    vm1.invoke(() -> {
+      Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
+      region.put(0, -1);
+    });
 
     // Try to make sure there are some operations in flight while closing the cache
     AsyncInvocation<Integer> createPartitionedRegionWithPutsOnVM0 = vm0.invokeAsync(() -> {
@@ -980,15 +980,11 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     vm0.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
-      // The value is initialized as a String so wait for it to be changed to an Integer.
-      await().atMost(2, MINUTES).until(() -> region.get(0) != null);
-      return region.get(0);
+      await().until(() -> region.get(0) > 0);
     });
     vm1.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
-      // The value is initialized as a String so wait for it to be changed to an Integer.
-      await().atMost(2, MINUTES).until(() -> region.get(0) != null);
-      return region.get(0);
+      await().until(() -> region.get(0) > 0);
     });
 
     AsyncInvocation<Void> closeCacheOnVM0 = vm0.invokeAsync(() -> getCache().close());
@@ -1303,7 +1299,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
     PartitionedRegionDataStore dataStore = region.getDataStore();
 
-    await().atMost(2, MINUTES).until(() -> lostBuckets.equals(dataStore.getAllLocalBucketIds()));
+    await().until(() -> lostBuckets.equals(dataStore.getAllLocalBucketIds()));
   }
 
   private void createPartitionedRegionWithPersistence(final int redundancy) {
@@ -1357,7 +1353,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     partitionAttributesFactory.setRedundantCopies(1);
 
     RegionFactory<?, ?> regionFactoryPR =
-        getCache().createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+        getCache().createRegionFactory(PARTITION_PERSISTENT);
     regionFactoryPR.setPartitionAttributes(partitionAttributesFactory.create());
 
     regionFactoryPR.createSubregion(parentRegion1, partitionedRegionName);
@@ -1495,7 +1491,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     partitionAttributesFactory.setLocalMaxMemory(500);
 
     RegionFactory<?, ?> regionFactory =
-        getCache().createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+        getCache().createRegionFactory(PARTITION_PERSISTENT);
     regionFactory.setDiskSynchronous(synchronous);
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
@@ -1545,7 +1541,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     try {
       adminDS.waitToBeConnected(MINUTES.toMillis(2));
 
-      await().atMost(2, MINUTES).until(() -> {
+      await().until(() -> {
         Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
         if (missingIds.size() != numExpectedMissing) {
           return false;

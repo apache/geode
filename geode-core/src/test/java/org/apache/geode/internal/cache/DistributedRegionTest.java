@@ -17,10 +17,15 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+
 
 
 public class DistributedRegionTest {
@@ -36,5 +41,56 @@ public class DistributedRegionTest {
 
     assertThat(mockDistributedRegion.validatedDestroy(new Object(), mockEntryEventImpl))
         .isSameAs(returnValue);
+  }
+
+  @Test
+  public void cleanUpAfterFailedInitialImageHoldsLockForClear() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class, RETURNS_DEEP_STUBS);
+    RegionMap regionMap = mock(RegionMap.class);
+
+    doCallRealMethod().when(distributedRegion).cleanUpAfterFailedGII(false);
+    when(distributedRegion.getRegionMap()).thenReturn(regionMap);
+    when(regionMap.isEmpty()).thenReturn(false);
+
+    distributedRegion.cleanUpAfterFailedGII(false);
+
+    verify(distributedRegion).lockFailedInitialImageWriteLock();
+    verify(distributedRegion).closeEntries();
+    verify(distributedRegion).unlockFailedInitialImageWriteLock();
+  }
+
+  @Test
+  public void cleanUpAfterFailedInitialImageDoesNotCloseEntriesIfIsPersistentRegionAndRecoveredFromDisk() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+
+    doCallRealMethod().when(distributedRegion).cleanUpAfterFailedGII(true);
+    when(distributedRegion.getDiskRegion()).thenReturn(diskRegion);
+    when(diskRegion.isBackup()).thenReturn(true);
+
+    distributedRegion.cleanUpAfterFailedGII(true);
+
+    verify(diskRegion).resetRecoveredEntries(eq(distributedRegion));
+    verify(distributedRegion, never()).closeEntries();
+  }
+
+  @Test
+  public void lockHeldWhenRegionIsNotInitialized() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).lockWhenRegionIsInitializing();
+    when(distributedRegion.isInitialized()).thenReturn(false);
+
+    assertThat(distributedRegion.lockWhenRegionIsInitializing()).isTrue();
+    verify(distributedRegion).lockFailedInitialImageReadLock();
+  }
+
+  @Test
+  public void lockNotHeldWhenRegionIsInitialized() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).lockWhenRegionIsInitializing();
+    when(distributedRegion.isInitialized()).thenReturn(true);
+
+    assertThat(distributedRegion.lockWhenRegionIsInitializing()).isFalse();
+    verify(distributedRegion, never()).lockFailedInitialImageReadLock();
   }
 }

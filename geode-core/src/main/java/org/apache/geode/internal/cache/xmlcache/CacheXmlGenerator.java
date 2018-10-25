@@ -124,7 +124,6 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
 import org.apache.geode.management.internal.configuration.utils.XmlConstants;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -419,8 +418,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     } catch (Exception ex) {
       RuntimeException ex2 = new RuntimeException(
-          LocalizedStrings.CacheXmlGenerator_AN_EXCEPTION_WAS_THROWN_WHILE_GENERATING_XML
-              .toLocalizedString());
+          "An Exception was thrown while generating XML.");
       ex2.initCause(ex);
       throw ex2;
     }
@@ -581,7 +579,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             if (this.creation instanceof ClientCacheCreation) {
               try {
                 ClientRegionShortcut.valueOf(id);
-                // skip this guy since id mapped to one of the enum types
+                // skip this client region since id mapped to one of the enum types
                 continue;
               } catch (IllegalArgumentException ignore) {
                 // id is not a shortcut so go ahead and call generate
@@ -589,7 +587,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             } else {
               try {
                 RegionShortcut.valueOf(id);
-                // skip this guy since id mapped to one of the enum types
+                // skip this region since id mapped to one of the enum types
                 continue;
               } catch (IllegalArgumentException ignore) {
                 // id is not a shortcut so go ahead and call generate
@@ -1811,7 +1809,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       } else {
         throw new InternalGemFireException(
-            LocalizedStrings.CacheXmlGenerator_UNKNOWN_SCOPE_0.toLocalizedString(scope));
+            String.format("Unknown scope:  %s", scope));
       }
 
 
@@ -1899,7 +1897,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           }
         } else {
           throw new InternalGemFireException(
-              LocalizedStrings.CacheXmlGenerator_UNKNOWN_DATA_POLICY_0.toLocalizedString(dp));
+              String.format("Unknown data policy:  %s", dp));
         }
 
         if (generateDefaults() || !dp.equals(DataPolicy.DEFAULT))
@@ -1926,7 +1924,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           mirrorString = KEYS_VALUES;
         else
           throw new InternalGemFireException(
-              LocalizedStrings.CacheXmlGenerator_UNKNOWN_MIRROR_TYPE_0.toLocalizedString(mirror));
+              String.format("Unknown mirror type:  %s", mirror));
         atts.addAttribute("", "", MIRROR_TYPE, "", mirrorString);
       }
       if ((!(attrs instanceof RegionAttributesCreation)
@@ -2308,7 +2306,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     } else {
       throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlGenerator_UNKNOWN_EXPIRATIONACTION_0.toLocalizedString(action));
+          String.format("Unknown ExpirationAction:  %s", action));
     }
 
     atts.addAttribute("", "", ACTION, "", actionString);
@@ -2343,7 +2341,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       interestString = CACHE_CONTENT;
     } else {
       throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlGenerator_UNKNOWN_INTERESTPOLICY_0.toLocalizedString(ip));
+          String.format("Unknown InterestPolicy:  %s", ip));
     }
 
     atts.addAttribute("", "", INTEREST_POLICY, "", interestString);

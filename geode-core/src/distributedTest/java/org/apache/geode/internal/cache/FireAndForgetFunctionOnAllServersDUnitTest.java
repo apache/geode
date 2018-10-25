@@ -15,8 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import org.junit.Test;
 
@@ -96,8 +95,8 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
 
       PoolImpl pool = (PoolImpl) pool1;
 
-      await().atMost(60, SECONDS)
-          .until(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
+      await()
+          .untilAsserted(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
 
       String regionName = "R1";
       Execution dataSet = FunctionService.onServers(pool1);
@@ -106,8 +105,8 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
       // Step 5. Assert for the region keyset size with 1.
-      await().atMost(60, SECONDS)
-          .until(() -> Assert.assertEquals(1, region1.keySetOnServer().size()));
+      await()
+          .untilAsserted(() -> Assert.assertEquals(1, region1.keySetOnServer().size()));
 
       region1.clear();
 
@@ -117,19 +116,19 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
 
       // Step 7. Execute the same function to put DistributedMemberID into above created replicated
       // region.
-      await().atMost(60, SECONDS)
-          .until(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
+      await()
+          .untilAsserted(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
       dataSet = FunctionService.onServers(pool1);
       dataSet.setArguments(regionName).execute(function);
 
-      await().atMost(60, SECONDS)
-          .until(() -> Assert.assertEquals(2, pool.getCurrentServers().size()));
+      await()
+          .untilAsserted(() -> Assert.assertEquals(2, pool.getCurrentServers().size()));
 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
       // Step 8. Assert for the region keyset size with 2, since above function was executed on 2
       // servers.
-      await().atMost(60, SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         Assert.assertEquals(2, region1.keySetOnServer().size());
       });
 
@@ -143,13 +142,13 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       dataSet = FunctionService.onServers(pool1);
       dataSet.setArguments(regionName).execute(function);
 
-      await().atMost(60, SECONDS)
-          .until(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
+      await()
+          .untilAsserted(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
       // Step 10. Assert for the region keyset size with 1, since only one server was running.
-      await().atMost(60, SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         Assert.assertEquals(1, region1.keySetOnServer().size());
       });
 

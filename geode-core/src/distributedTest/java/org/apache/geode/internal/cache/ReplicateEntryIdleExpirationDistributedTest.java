@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.common.base.Stopwatch;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -40,34 +39,43 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
+@SuppressWarnings("serial")
 public class ReplicateEntryIdleExpirationDistributedTest implements Serializable {
-
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   private static final AtomicBoolean KEEP_READING = new AtomicBoolean(true);
 
   private static final String KEY = "KEY";
   private static final String VALUE = "VALUE";
 
-  private final VM member1 = getVM(0);
-  private final VM member2 = getVM(1);
-  private final VM member3 = getVM(2);
-  private final String regionName = getClass().getSimpleName();
+  private String regionName;
+
+  private VM member1;
+  private VM member2;
+  private VM member3;
+  private VM member4;
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheIn(member1).createCacheIn(member2)
-      .createCacheIn(member3).createCacheIn(getVM(3)).build();
+  public DistributedRule distributedRule = new DistributedRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
   @Before
   public void setUp() throws Exception {
+    member1 = getVM(0);
+    member2 = getVM(1);
+    member3 = getVM(2);
+    member4 = getVM(3);
+
+    regionName = getClass().getSimpleName();
+
     VM[] vms = new VM[] {member1, member2, member3};
     for (VM vm : vms) {
       vm.invoke(() -> {
         KEEP_READING.set(true);
+        cacheRule.createCache();
         ExpiryTask.suspendExpiration();
         createRegion();
       });
@@ -98,13 +106,13 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
     member2.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
     });
 
     member1.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
 
       ExpiryTask.permitExpiration();
@@ -122,9 +130,9 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
   @Test
   public void readsInNormalMemberShouldPreventExpiration() throws Exception {
-    VM member4 = getVM(3);
     member4.invoke(() -> {
       KEEP_READING.set(true);
+      cacheRule.createCache();
       ExpiryTask.suspendExpiration();
 
       RegionFactory<String, String> factory = cacheRule.getCache().createRegionFactory();
@@ -143,13 +151,13 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
     member2.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
     });
 
     member1.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
 
       ExpiryTask.permitExpiration();
@@ -182,13 +190,13 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
     member2.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(evictionRegionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
     });
 
     member1.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(evictionRegionName);
-      await().atMost(30, SECONDS).until(() -> region.containsKey(KEY));
+      await().until(() -> region.containsKey(KEY));
       assertThat(region.containsKey(KEY)).isTrue();
 
       ExpiryTask.permitExpiration();
@@ -204,7 +212,7 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
     memberReading.await();
   }
 
-  protected void createRegion() {
+  private void createRegion() {
     RegionFactory<String, String> factory = cacheRule.getCache().createRegionFactory(REPLICATE);
     factory.setEntryIdleTimeout(new ExpirationAttributes(1, DESTROY));
     factory.create(regionName);

@@ -44,7 +44,6 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.Result;
@@ -126,7 +125,7 @@ public class QueryCommandDUnitTestBase {
       CommandResult result = gfsh.executeCommand(query);
       assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
       assertThat(result.getResultData().toString())
-          .contains(LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(""));
+          .contains(String.format("Syntax error in query:  %s", ""));
     } finally {
       ex.remove();
     }
@@ -193,8 +192,7 @@ public class QueryCommandDUnitTestBase {
     CommandResult commandResult = gfsh.executeCommand(query);
     validateSelectResult(commandResult, Boolean.FALSE, -1, new String[] {"Value"});
     assertThat(commandResult.getResultData().toString())
-        .contains(LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_DESERIALIZING
-            .toLocalizedString());
+        .contains("An IOException was thrown while deserializing");
 
     ex.remove();
   }

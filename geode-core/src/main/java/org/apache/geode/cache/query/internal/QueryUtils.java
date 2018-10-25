@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.Bucket;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class QueryUtils {
@@ -431,8 +430,8 @@ public class QueryUtils {
       return (Boolean) result;
     } else if (result != null && result != QueryService.UNDEFINED) {
       throw new TypeMismatchException(
-          LocalizedStrings.QueryUtils_ANDOR_OPERANDS_MUST_BE_OF_TYPE_BOOLEAN_NOT_TYPE_0
-              .toLocalizedString(result.getClass().getName()));
+          String.format("AND/OR operands must be of type boolean, not type ' %s '",
+              result.getClass().getName()));
     } else {
       return false;
     }
@@ -482,7 +481,7 @@ public class QueryUtils {
   private static void mergeAndExpandCutDownRelationshipIndexResults(Object[][] values,
       SelectResults result, RuntimeIterator[][] indexFieldToItrsMapping,
       ListIterator expansionListIterator, List finalItrs, ExecutionContext context,
-      List[] checkList, CompiledValue iterOps, IndexCutDownExpansionHelper[] icdeh, int level)
+      CompiledValue iterOps, IndexCutDownExpansionHelper[] icdeh, int level)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
 
@@ -506,7 +505,7 @@ public class QueryUtils {
           }
         } else {
           mergeAndExpandCutDownRelationshipIndexResults(values, result, indexFieldToItrsMapping,
-              expansionListIterator, finalItrs, context, checkList, iterOps, icdeh, level + 1);
+              expansionListIterator, finalItrs, context, iterOps, icdeh, level + 1);
           if (icdeh[level + 1].cutDownNeeded) {
             icdeh[level + 1].checkSet.clear();
           }
@@ -715,7 +714,6 @@ public class QueryUtils {
       // be a Compiled Region otherwise it will be a CompiledPath that
       // we can extract the id from. In the end the result will be the alias which is used as a
       // prefix
-      CompiledValue collectionExpression = currentLevel.getCmpIteratorDefn().getCollectionExpr();
       String key = null;
       boolean useDerivedResults = true;
       if (currentLevel.getCmpIteratorDefn().getCollectionExpr()
@@ -1250,7 +1248,7 @@ public class QueryUtils {
                   maxCartesianDepth);
             } else {
               mergeAndExpandCutDownRelationshipIndexResults(values, returnSet, mappings,
-                  expansionListIterator, finalList, context, totalCheckList, iterOperands, icdeh,
+                  expansionListIterator, finalList, context, iterOperands, icdeh,
                   0);
             }
             if (icdeh[0].cutDownNeeded)
@@ -1472,7 +1470,6 @@ public class QueryUtils {
     RuntimeIterator[][] mappings = new RuntimeIterator[2][];
     mappings[0] = ich1.indexFieldToItrsMapping;
     mappings[1] = ich2.indexFieldToItrsMapping;
-    List[] totalCheckList = new List[] {ich1.checkList, ich2.checkList};
     Iterator dataItr = data.iterator();
     IndexCutDownExpansionHelper[] icdeh =
         new IndexCutDownExpansionHelper[] {new IndexCutDownExpansionHelper(ich1.checkList, context),
@@ -1494,7 +1491,7 @@ public class QueryUtils {
           // skip the similar row of a set , even when the row in its entirety is unique ( made by
           // different data in the other set)
           mergeAndExpandCutDownRelationshipIndexResults(values, returnSet, mappings,
-              expansionListIterator, totalFinalList, context, totalCheckList, iterOperands, icdeh,
+              expansionListIterator, totalFinalList, context, iterOperands, icdeh,
               0 /* Level */);
           if (icdeh[0].cutDownNeeded)
             icdeh[0].checkSet.clear();

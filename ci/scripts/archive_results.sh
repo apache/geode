@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -ex
 
 BASE_DIR=$(pwd)
 
@@ -30,6 +30,7 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source ${BASE_DIR}/concourse-metadata-resource/concourse_metadata
+source ${SCRIPTDIR}/shared_utilities.sh
 
 BUILDROOT=$(pwd)
 DEST_DIR=${BUILDROOT}/geode-results
@@ -68,7 +69,7 @@ if [ -z ${MAINTENANCE_VERSION+x} ]; then
 fi
 
 if [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
-CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
+  CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
   CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
   GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
   CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
@@ -95,23 +96,29 @@ gcloud config set account ${SERVICE_ACCOUNT}
 FILENAME=${ARTIFACT_SLUG}-${FULL_PRODUCT_VERSION}.tgz
 
 pushd ${GEODE_BUILD}
-
-  set +e
-  find . -type d -name "reports" > ${directories_file}
-  find . -type d -name "test-results" >> ${directories_file}
-  (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> ${directories_file}
-  find . -name "*-progress*txt" >> ${directories_file}
-  find . -type d -name "callstacks" >> ${directories_file}
-  echo "Collecting the following artifacts..."
-  cat ${directories_file}
-  echo ""
+  find-here-test-reports ${directories_file}
   tar zcf ${DEST_DIR}/${FILENAME} -T ${directories_file}
 popd
 
-ARTIFACTS_DESTINATION="${PUBLIC_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
+if [[ "${ARTIFACT_BUCKET}" =~ \. ]]; then
+  ARTIFACT_SCHEME="http"
+else
+  ARTIFACT_SCHEME="gs"
+fi
+
+ARTIFACTS_DESTINATION="${ARTIFACT_BUCKET}/builds/${BUILD_PIPELINE_NAME}/${FULL_PRODUCT_VERSION}"
 TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/${SANITIZED_GRADLE_TASK}/${BUILD_TIMESTAMP}/"
 TEST_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-artifacts/${BUILD_TIMESTAMP}/"
 
+BUILD_ARTIFACTS_FILENAME=geode-build-artifacts-${FULL_PRODUCT_VERSION}.tgz
+BUILD_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/${BUILD_ARTIFACTS_FILENAME}"
+
+if [ -n "${TAR_GEODE_BUILD_ARTIFACTS}" ] ; then
+  pushd ${GEODE_BUILD}
+    tar zcf ${DEST_DIR}/${BUILD_ARTIFACTS_FILENAME} .
+    gsutil -q cp ${DEST_DIR}/${BUILD_ARTIFACTS_FILENAME} gs://${BUILD_ARTIFACTS_DESTINATION}
+  popd
+fi
 
 if [ ! -f "${GEODE_BUILD}/build/reports/combined/index.html" ]; then
     echo "No tests exist, compile failed."
@@ -120,17 +127,26 @@ if [ ! -f "${GEODE_BUILD}/build/reports/combined/index.html" ]; then
 fi
 
 pushd ${GEODE_BUILD}/build/reports/combined
-gsutil -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
+  gsutil -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
 popd
-
-echo ""
-printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=  Test Results Website =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
-printf "\033[92mhttp://${TEST_RESULTS_DESTINATION}\033[0m\n"
-printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
-printf "\n"
 
 gsutil cp ${DEST_DIR}/${FILENAME} gs://${TEST_ARTIFACTS_DESTINATION}
 
-printf "\033[92mTest artifacts from this job are available at:\033[0m\n"
+set +x
+
+
+echo ""
+printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=  Test Results URI =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+printf "\033[92m${ARTIFACT_SCHEME}://${TEST_RESULTS_DESTINATION}\033[0m\n"
+printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
 printf "\n"
-printf "\033[92mhttp://${TEST_ARTIFACTS_DESTINATION}${FILENAME}\033[0m\n"
+
+printf "\033[92mTest report artifacts from this job are available at:\033[0m\n"
+printf "\n"
+printf "\033[92m${ARTIFACT_SCHEME}://${TEST_ARTIFACTS_DESTINATION}${FILENAME}\033[0m\n"
+
+if [ -n "${TAR_GEODE_BUILD_ARTIFACTS}" ] ; then
+  printf "\033[92mBuild artifacts from this job are available at:\033[0m\n"
+  printf "\n"
+  printf "\033[92m${ARTIFACT_SCHEME}://${BUILD_ARTIFACTS_DESTINATION}\033[0m\n"
+fi

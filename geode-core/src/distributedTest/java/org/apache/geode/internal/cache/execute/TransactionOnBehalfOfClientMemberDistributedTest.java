@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -42,20 +43,22 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@SuppressWarnings("serial")
 public class TransactionOnBehalfOfClientMemberDistributedTest implements Serializable {
+
   private String hostName;
   private String uniqueName;
   private String regionName;
+  private int port1;
+
   private VM server1;
   private VM server2;
 
-  private int port1;
-
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -88,7 +91,7 @@ public class TransactionOnBehalfOfClientMemberDistributedTest implements Seriali
     resumeAndCommitTransaction(true, txId);
   }
 
-  private int createServerRegion(int totalNumBuckets, boolean isAccessor) throws Exception {
+  private int createServerRegion(int totalNumBuckets, boolean isAccessor) throws IOException {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
     factory.setTotalNumBuckets(totalNumBuckets);
     if (isAccessor) {
@@ -169,5 +172,4 @@ public class TransactionOnBehalfOfClientMemberDistributedTest implements Seriali
     server2.invoke(() -> verifyOnBehalfOfClientMember(false));
     server1.invoke(() -> resumeAndCommitTransaction(false, txId));
   }
-
 }

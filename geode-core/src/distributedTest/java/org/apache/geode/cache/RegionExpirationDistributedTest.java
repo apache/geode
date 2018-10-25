@@ -16,9 +16,9 @@ package org.apache.geode.cache;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -30,7 +30,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +37,7 @@ import org.mockito.Mockito;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -52,7 +51,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 3.0
  */
-
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class RegionExpirationDistributedTest implements Serializable {
@@ -67,8 +65,8 @@ public class RegionExpirationDistributedTest implements Serializable {
   private VM withExpirationVM0;
   private VM withoutExpirationVM1;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
@@ -164,12 +162,12 @@ public class RegionExpirationDistributedTest implements Serializable {
       if (expirationAction().isInvalidate() || expirationAction().isLocalInvalidate()) {
         // verify region was invalidated
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES)
-            .until(() -> assertThat(region.containsValueForKey(KEY)).isFalse());
+        await()
+            .untilAsserted(() -> assertThat(region.containsValueForKey(KEY)).isFalse());
 
       } else {
         // verify region was destroyed (or is in process of being destroyed)
-        await().atMost(1, MINUTES).until(() -> isDestroyed(cache.getRegion(regionName)));
+        await().until(() -> isDestroyed(cache.getRegion(regionName)));
       }
     }
 
@@ -177,19 +175,19 @@ public class RegionExpirationDistributedTest implements Serializable {
       if (expirationAction().isInvalidate()) {
         // distributed invalidate region
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES).until(() -> {
+        await().untilAsserted(() -> {
           assertThat(region.containsKey(KEY)).isTrue();
           assertThat(region.containsValueForKey(KEY)).isFalse();
         });
 
       } else if (expirationAction().isDestroy()) {
         // verify region was destroyed (or is in process of being destroyed)
-        await().atMost(1, MINUTES).until(() -> isDestroyed(cache.getRegion(regionName)));
+        await().until(() -> isDestroyed(cache.getRegion(regionName)));
 
       } else {
         // for LOCAL_DESTROY or LOCAL_INVALIDATE, the value should be present
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES).until(() -> {
+        await().untilAsserted(() -> {
           assertThat(region.containsValueForKey(KEY)).isTrue();
           assertThat(region.get(KEY)).isEqualTo(VALUE);
         });

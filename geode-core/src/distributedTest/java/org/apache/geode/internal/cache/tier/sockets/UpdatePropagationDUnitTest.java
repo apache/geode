@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static junit.framework.TestCase.assertNotNull;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -25,9 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -131,7 +130,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
             String poolName = r.getAttributes().getPoolName();
             final PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
-            Awaitility.await().atMost(60, TimeUnit.SECONDS)
+            await()
                 .until(() -> !hasEndPointWithPort(pool, PORT1));
           }
         };
@@ -148,7 +147,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
             Region r = getCache().getRegion(REGION_NAME);
             String poolName = r.getAttributes().getPoolName();
             final PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
-            Awaitility.await().atMost(60, TimeUnit.SECONDS)
+            await()
                 .until(() -> hasEndPointWithPort(pool, PORT1));
           }
         };
@@ -289,7 +288,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void verifyUpdates() {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       Region r = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
       // verify updates
       if (r.getAttributes().getPartitionAttributes() == null) {

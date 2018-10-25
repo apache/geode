@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.pulse;
 
+import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -24,10 +25,10 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -65,10 +66,10 @@ public class TestClientsDUnitTest extends ManagementTestBase {
       }
     };
 
-    Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
+    GeodeAwaitility.await().untilAsserted(waitCriteria);
     final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
-    return Integer.valueOf(bean.getNumClients());
+    return valueOf(bean.getNumClients());
   }
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();

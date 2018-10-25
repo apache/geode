@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
@@ -46,7 +47,6 @@ import javax.transaction.Synchronization;
 import javax.transaction.UserTransaction;
 
 import org.assertj.core.api.Assertions;
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -111,6 +111,7 @@ import org.apache.geode.internal.jta.SyncImpl;
 import org.apache.geode.internal.jta.TransactionImpl;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.UserTransactionImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -118,7 +119,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -482,10 +482,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         final TXManagerImpl txmgr = getGemfireCache().getTxManager();
         try {
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
             public boolean done() {
               Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              getLogWriter()
                   .info("found " + states.size() + " tx states for " + myId);
               return states.isEmpty();
             }
@@ -493,7 +493,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             public String description() {
               return "Waiting for transaction state to expire";
             }
-          }, 15000, 500, true);
+          });
           return null;
         } finally {
           getGemfireCache().getDistributedSystem().disconnect();
@@ -914,7 +914,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             return "waiting for hosted tx in progress to terminate";
           }
         };
-        Wait.waitForCriterion(w, 10000, 200, true);
+        GeodeAwaitility.await().untilAsserted(w);
         return null;
       }
     });
@@ -1423,7 +1423,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         final ClientListener cl =
             (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           @Override
           public boolean done() {
@@ -1434,7 +1434,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           public String description() {
             return "Listener was not invoked in 30 seconds";
           }
-        }, 30000, 100, true);
+        });
 
         assertEquals(1, cl.invokeCount);
         return null;
@@ -2912,15 +2912,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        CacheServer s = getCache().addCacheServer();
-        getCache().getLogger().info("SWAP:ds1");
-        s.setPort(port2);
-        s.start();
-        return null;
-      }
-    });
     datastore1.invoke(new CreateReplicateRegion("r1"));
     datastore2.invoke(new CreateReplicateRegion("r2"));
 
@@ -2934,6 +2925,16 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         r1.put("key1", "value1");
         r2.put("key2", "value2");
         return cCache.getCacheTransactionManager().getTransactionId();
+      }
+    });
+
+    datastore1.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        CacheServer s = getCache().addCacheServer();
+        getCache().getLogger().info("SWAP:ds1");
+        s.setPort(port2);
+        s.start();
+        return null;
       }
     });
 
@@ -3012,12 +3013,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       return null;
     });
 
-    datastore1.invoke("create backup server", () -> {
-      CacheServer s = getCache().addCacheServer();
-      s.setPort(port2);
-      s.start();
-      return null;
-    });
     datastore1.invoke(new CreateReplicateRegion("r1"));
     datastore2.invoke(new CreateReplicateRegion("r1"));
 
@@ -3028,6 +3023,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       cCache.getCacheTransactionManager().begin();
       r1.destroy("key");
       return cCache.getCacheTransactionManager().getTransactionId();
+    });
+
+    datastore1.invoke("create backup server", () -> {
+      CacheServer s = getCache().addCacheServer();
+      s.setPort(port2);
+      s.start();
+      return null;
     });
 
     server.invoke("close cache after sending tx message to other servers", () -> {
@@ -3229,7 +3231,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     IgnoredException.addIgnoredException("ClassCastException");
     SerializableRunnable suspectStrings = new SerializableRunnable("suspect string") {
       public void run() {
-        InternalDistributedSystem.getLoggerI18n().convertToLogWriter()
+        InternalDistributedSystem.getLogger()
             .info("<ExpectedException action=add>" + "ClassCastException" + "</ExpectedException>"
                 + "<ExpectedException action=add>" + "TransactionDataNodeHasDeparted"
                 + "</ExpectedException>");
@@ -3314,7 +3316,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     } finally {
       suspectStrings = new SerializableRunnable("suspect string") {
         public void run() {
-          InternalDistributedSystem.getLoggerI18n().convertToLogWriter()
+          InternalDistributedSystem.getLogger()
               .info("<ExpectedException action=remove>" + "ClassCastException"
                   + "</ExpectedException>" + "<ExpectedException action=remove>"
                   + "TransactionDataNodeHasDeparted" + "</ExpectedException>");
@@ -3524,7 +3526,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         final TXStateProxy txState = mgr.getTXState();
         assertTrue(txState.isInProgress());
         r.put(new CustId(101), new Customer("name101", "address101"));
-        TransactionId txId = mgr.suspend(TimeUnit.MILLISECONDS);
+        TransactionId txId = mgr.suspend(MILLISECONDS);
         WaitCriterion waitForTxTimeout = new WaitCriterion() {
           public boolean done() {
             return !txState.isInProgress();
@@ -3536,7 +3538,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         };
         // tx should timeout after 1 ms but to deal with loaded machines and thread
         // scheduling latency wait for 10 seconds before reporting an error.
-        Wait.waitForCriterion(waitForTxTimeout, 10 * 1000, 10, true);
+        GeodeAwaitility.await().untilAsserted(waitForTxTimeout);
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
@@ -3956,7 +3958,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
                 return "expected:" + keys + " found:" + clientListener.keys;
               }
             };
-            Wait.waitForCriterion(wc, 30 * 1000, 500, true);
+            GeodeAwaitility.await().untilAsserted(wc);
           }
         }
         assertTrue(foundListener);
@@ -4021,7 +4023,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       createSubscriptionRegion(offheap, regionName, copies, totalBuckets);
       Region r = getCache().getRegion(regionName);
 
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         List<Integer> ids = ((PartitionedRegion) r).getLocalBucketsListTestOnly();
         assertFalse(ids.isEmpty());
       });
@@ -4069,22 +4071,22 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
     client1.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
+      await()
+          .untilAsserted(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
 
     client2.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
+      await()
+          .untilAsserted(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
   }
 
   Object verifyTXStateExpired(final DistributedMember myId, final TXManagerImpl txmgr) {
     try {
-      Wait.waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         public boolean done() {
           Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+          getLogWriter()
               .info("found " + states.size() + " tx states for " + myId);
           return states.isEmpty();
         }
@@ -4092,7 +4094,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         public String description() {
           return "Waiting for transaction state to expire";
         }
-      }, 15000, 500, true);
+      });
       return null;
     } finally {
       getGemfireCache().getDistributedSystem().disconnect();
@@ -4101,8 +4103,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   Object verifyProxyServerChanged(final TXStateProxyImpl tx, final DistributedMember newProxy) {
     try {
-      Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-          .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+      await()
           .until(() -> !((TXState) tx.realDeal).getProxyServer().equals(newProxy));
       return null;
     } finally {
@@ -4172,9 +4173,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     // hostedTXStates map. Client finishes the JTA once it gets the reply from server.
     // There exists a race that TXState is yet to be removed when client JTA tx is finished.
     // Add the wait before checking the TXState.
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS)
-        .until(() -> Assertions
+    await()
+        .untilAsserted(() -> Assertions
             .assertThat(txmgr.getTransactionsForClient((InternalDistributedMember) clientId).size())
             .isEqualTo(0));
   }

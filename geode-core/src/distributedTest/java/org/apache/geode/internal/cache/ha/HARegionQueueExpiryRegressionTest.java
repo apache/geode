@@ -14,17 +14,16 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionPool;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper.setIsSlowStart;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -190,7 +189,7 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
    * Waits for the listener to receive all events
    */
   private void validateEventCountAtClient() {
-    await().atMost(1, MINUTES)
-        .until(() -> verify(spyCacheListener, times(PUT_COUNT)).afterCreate(any()));
+    await()
+        .untilAsserted(() -> verify(spyCacheListener, times(PUT_COUNT)).afterCreate(any()));
   }
 }

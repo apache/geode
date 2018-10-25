@@ -11,7 +11,7 @@ To generate a pipeline, using jinja:
 (for the pipeline you want to create):
 
 ```bash
-./render.py <path to jinja template> <path to jinja variables> <path to generated file>
+./render.py <directory containing jinja template>
 ```
 
 The generated file should be named `generated-pipeline.yml`.

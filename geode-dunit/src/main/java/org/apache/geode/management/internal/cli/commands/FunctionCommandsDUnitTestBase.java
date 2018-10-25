@@ -19,10 +19,9 @@ import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTI
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION;
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS;
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_RETURN_ARGS;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.util.Strings;
 import org.junit.Before;
@@ -103,7 +102,7 @@ public class FunctionCommandsDUnitTestBase {
       ManagementService managementService = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
-      await().atMost(120, TimeUnit.SECONDS).until(() -> dsMXBean.getMemberCount() == 3);
+      await().until(() -> dsMXBean.getMemberCount() == 3);
     });
   }
 

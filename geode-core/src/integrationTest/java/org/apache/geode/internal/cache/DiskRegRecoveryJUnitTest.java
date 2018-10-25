@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,9 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.DiskStore;
@@ -1401,8 +1400,8 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
   private void waitForInVMToBe(final DiskRegion dr, final int expected) {
     // values are recovered async from disk
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS).until(() -> assertEquals(expected, dr.getNumEntriesInVM()));
+    await()
+        .untilAsserted(() -> assertEquals(expected, dr.getNumEntriesInVM()));
   }
 
   @Test

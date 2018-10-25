@@ -23,7 +23,6 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 
 @SuppressWarnings("serial")
 public class DistributedRegionFunction extends FunctionAdapter {
@@ -48,18 +47,7 @@ public class DistributedRegionFunction extends FunctionAdapter {
             "Throwing CacheClosedException " + "to simulate failover during function exception");
       }
     } else {
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
-
-        public boolean done() {
-          return false;
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 12000, 500, false);
+      Wait.pause(12000);
     }
     long endTime = System.currentTimeMillis();
 

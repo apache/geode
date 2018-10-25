@@ -14,21 +14,19 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,11 +47,10 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -62,6 +59,8 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 @Category({OQLIndexTest.class})
 public class QueryDataInconsistencyDUnitTest implements Serializable {
 
+  private static final Logger logger = LogService.getLogger();
+
   private static final int cnt = 0;
   private static final int cntDest = 10;
   private static VM server = null;
@@ -69,28 +68,21 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
   private static String repRegionName = "TestRepRegion"; // default name
   private static volatile boolean hooked = false;
 
-  private Logger logger = LogService.getLogger(QueryDataInconsistencyDUnitTest.class.getName());
-
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule(1);
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule(1);
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheInAll().disconnectAfter().build();
+  public CacheRule cacheRule = new CacheRule(1);
 
   @Before
-  public void initialize() {
-    server = Host.getHost(0).getVM(0);
+  public void setUp() {
+    server = getVM(0);
+    server.invoke(() -> cacheRule.createCache());
   }
 
   @After
-  public final void postTearDownCacheTestCase() {
+  public void tearDown() {
     Invoke.invokeInEveryVM(QueryObserverHolder::reset);
-  }
-
-  @BeforeClass
-  public static final void postSetUp() {
-    Awaitility.setDefaultPollInterval(200, TimeUnit.MILLISECONDS);
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS);
   }
 
   @Test
@@ -125,7 +117,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     });
     server.invoke("query on server", () -> {
       QueryService queryService = cacheRule.getCache().getQueryService();
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       Object resultSet = null;
       try {
         resultSet = queryService
@@ -148,7 +140,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     // Client put is again hooked in AFTER_UPDATE_OP call in updateIndex.
     server.invoke("query on server", () -> {
       QueryService queryService = cacheRule.getCache().getQueryService();
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       Object resultSet = null;
       try {
         resultSet = queryService
@@ -170,7 +162,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       }
       hooked = false;// Let client put go further.
     });
-    Awaitility.await().until(joinThread(putThread));
+    await().until(joinThread(putThread));
   }
 
   @Test
@@ -215,7 +207,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       Cache cache = cacheRule.getCache();
       QueryService queryService = cache.getQueryService();
       Position pos1 = null;
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       try {
         Object resultSet = queryService.newQuery("<trace> select pos from /" + repRegionName
             + " p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -233,7 +225,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       } finally {
         hooked = false;// Let client put go further.
       }
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       try {
         Object resultSet = queryService.newQuery("<trace> select pos from /" + repRegionName
             + " p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -254,7 +246,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
         IndexManager.testHook = null;
       }
     });
-    Awaitility.await().until(joinThread(putThread));
+    await().until(joinThread(putThread));
   }
 
   @Test
@@ -295,7 +287,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       Cache cache = cacheRule.getCache();
       QueryService queryService = cache.getQueryService();
       Position pos1 = null;
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       try {
         Object resultSet = queryService.newQuery("<trace> select pos from /" + repRegionName
             + " p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -313,7 +305,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       } finally {
         hooked = false;// Let client put go further.
       }
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       try {
         Object resultSet = queryService.newQuery("select pos from /" + repRegionName
             + " p, p.positions.values pos where pos.secId = 'APPL' AND p.ID = 1").execute();
@@ -333,7 +325,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
         IndexManager.testHook = null;
       }
     });
-    Awaitility.await().until(joinThread(putThread));
+    await().until(joinThread(putThread));
   }
 
   @Test
@@ -375,7 +367,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       Cache cache = cacheRule.getCache();
       QueryService queryService = cache.getQueryService();
       Position pos1 = null;
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
       try {
         Object resultSet = queryService
             .newQuery("<trace> select pos from /" + repRegionName
@@ -395,7 +387,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       } finally {
         hooked = false;// Let client put go further.
       }
-      Awaitility.await().until(() -> hooked);
+      await().until(() -> hooked);
 
       try {
         Object resultSet = queryService
@@ -418,7 +410,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
         hooked = false;// Let client put go further.
       }
     });
-    Awaitility.await().until(joinThread(putThread));
+    await().until(joinThread(putThread));
   }
 
   private Callable<Boolean> joinThread(AsyncInvocation thread) {
@@ -458,13 +450,13 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
           hooked = true;
           logger
               .info("QueryDataInconsistency.IndexManagerTestHook is hooked in Update Index Entry.");
-          Awaitility.await().until(() -> !hooked);
+          await().until(() -> !hooked);
           break;
         case 10: // Before Region update and after Index Remove call.
           hooked = true;
           logger
               .info("QueryDataInconsistency.IndexManagerTestHook is hooked in Remove Index Entry.");
-          Awaitility.await().until(() -> !hooked);
+          await().until(() -> !hooked);
           break;
         default:
           break;

@@ -25,15 +25,13 @@ import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
-import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
+import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.GemFireSecurityException;
@@ -51,7 +49,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   // TODO - GEODE-1746, the handshake holds state. It seems like the code depends
   // on all of the handshake operations happening in a single thread. I don't think we
   // want that, need to refactor.
-  private final ServerBlackList blackList;
+  private final ServerDenyList denyList;
   private ConnectionSource source;
   private PoolImpl pool;
   private final CancelCriterion cancelCriterion;
@@ -85,23 +83,23 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   public ConnectionFactoryImpl(ConnectionConnector connectionConnector, ConnectionSource source,
       long pingInterval, PoolImpl pool, CancelCriterion cancelCriterion) {
     this.source = source;
-    this.blackList = new ServerBlackList(pingInterval);
+    this.denyList = new ServerDenyList(pingInterval);
     this.pool = pool;
     this.cancelCriterion = cancelCriterion;
     this.connectionConnector = connectionConnector;
   }
 
   public void start(ScheduledExecutorService background) {
-    blackList.start(background);
+    denyList.start(background);
   }
 
-  public ServerBlackList getBlackList() {
-    return blackList;
+  public ServerDenyList getDenyList() {
+    return denyList;
   }
 
   public Connection createClientToServerConnection(ServerLocation location, boolean forQueue)
       throws GemFireSecurityException {
-    FailureTracker failureTracker = blackList.getFailureTracker(location);
+    FailureTracker failureTracker = denyList.getFailureTracker(location);
 
     boolean initialized = false;
     Connection connection = null;
@@ -115,9 +113,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       throw e;
     } catch (ServerRefusedConnectionException src) {
       // propagate this up, don't retry
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.AutoConnectionSourceImpl_COULD_NOT_CREATE_A_NEW_CONNECTION_TO_SERVER_0,
-          src.getMessage()));
+      logger.warn("Could not create a new connection to server: {}",
+          src.getMessage());
       testFailedConnectionToServer = true;
       throw src;
     } catch (Exception e) {
@@ -128,8 +125,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
           logger.debug("Unable to connect to {}: connection refused", location);
         }
       } else {// print a warning with the exception stack trace
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.ConnectException_COULD_NOT_CONNECT_TO_0, location), e);
+        logger.warn("Could not connect to: " + location, e);
       }
       testFailedConnectionToServer = true;
     } finally {
@@ -165,13 +161,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     }
     final Set origExcludedServers = excludedServers;
     excludedServers = new HashSet(excludedServers);
-    Set blackListedServers = blackList.getBadServers();
-    excludedServers.addAll(blackListedServers);
+    Set denyListedServers = denyList.getBadServers();
+    excludedServers.addAll(denyListedServers);
     ServerLocation server = source.findReplacementServer(currentServer, excludedServers);
     if (server == null) {
-      // Nothing worked! Let's try without the blacklist.
+      // Nothing worked! Let's try without the denylist.
       if (excludedServers.size() > origExcludedServers.size()) {
-        // We had some guys black listed so lets give this another whirl.
+        // We had some servers denylisted so lets give this another whirl.
         server = source.findReplacementServer(currentServer, origExcludedServers);
       }
     }
@@ -185,21 +181,21 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       throws GemFireSecurityException {
     final Set origExcludedServers = excludedServers;
     excludedServers = new HashSet(excludedServers);
-    Set blackListedServers = blackList.getBadServers();
-    excludedServers.addAll(blackListedServers);
+    Set denyListedServers = denyList.getBadServers();
+    excludedServers.addAll(denyListedServers);
     Connection conn = null;
     RuntimeException fatalException = null;
-    boolean tryBlackList = true;
+    boolean tryDenyList = true;
 
     do {
       ServerLocation server = source.findServer(excludedServers);
       if (server == null) {
 
-        if (tryBlackList) {
-          // Nothing worked! Let's try without the blacklist.
-          tryBlackList = false;
+        if (tryDenyList) {
+          // Nothing worked! Let's try without the denylist.
+          tryDenyList = false;
           int size = excludedServers.size();
-          excludedServers.removeAll(blackListedServers);
+          excludedServers.removeAll(denyListedServers);
           // make sure we didn't remove any of the ones that the caller set not to use
           excludedServers.addAll(origExcludedServers);
           if (excludedServers.size() < size) {
@@ -234,8 +230,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
               srce);
         }
       } catch (Exception e) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.ConnectException_COULD_NOT_CONNECT_TO_0, server), e);
+        logger.warn(String.format("Could not connect to: %s", server), e);
       }
 
       excludedServers.add(server);

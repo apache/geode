@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
@@ -41,10 +42,10 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -136,7 +137,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
     CacheSerializableRunnable putFromServer =
         new CacheSerializableRunnable("createRegionOnServer") {
           public void run2() throws CacheException {
-            final Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+            final Region region = cache.getRegion(SEPARATOR + REGION_NAME);
             assertNotNull(region);
             WaitCriterion ev = new WaitCriterion() {
               public boolean done() {
@@ -147,7 +148,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
                 return null;
               }
             };
-            Wait.waitForCriterion(ev, 5 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
           }
         };
     return putFromServer;

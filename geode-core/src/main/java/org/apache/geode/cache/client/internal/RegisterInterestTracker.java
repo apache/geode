@@ -28,9 +28,7 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to keep track of what interest a client has registered. This code was extracted from the old
@@ -120,9 +118,8 @@ public class RegisterInterestTracker {
     }
     Object interest = rie.getInterests().remove(key);
     if (interest == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.RegisterInterestTracker_REMOVESINGLEINTEREST_KEY_0_NOT_REGISTERED_IN_THE_CLIENT,
-          key));
+      logger.warn("removeSingleInterest: key {} not registered in the client",
+          key);
       return false;
     } else {
       return true;
@@ -199,10 +196,9 @@ public class RegisterInterestTracker {
             keepAlive);
       } catch (Exception e) {
         if (!srp.getPool().getCancelCriterion().isCancelInProgress()) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.RegisterInterestTracker_PROBLEM_REMOVING_ALL_INTEREST_ON_REGION_0_INTERESTTYPE_1_2,
+          logger.warn("Problem removing all interest on region={} interestType={} :{}",
               new Object[] {regName, InterestType.getString(interestType),
-                  e.getLocalizedMessage()}));
+                  e.getLocalizedMessage()});
         }
       }
     }
@@ -225,9 +221,8 @@ public class RegisterInterestTracker {
       if (interest != null) {
         removeCount++;
       } else {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.RegisterInterestTracker_REMOVEINTERESTLIST_KEY_0_NOT_REGISTERED_IN_THE_CLIENT,
-            key));
+        logger.warn("removeInterestList: key {} not registered in the client",
+            key);
       }
     }
     return removeCount != 0;

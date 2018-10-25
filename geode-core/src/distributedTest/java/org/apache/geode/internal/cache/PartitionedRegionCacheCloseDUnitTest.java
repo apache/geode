@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import org.junit.Test;
 
@@ -53,7 +52,7 @@ public class PartitionedRegionCacheCloseDUnitTest extends CacheTestCase {
     vm1.invoke(() -> {
       Region prRootRegion = PartitionedRegionHelper.getPRRoot(getCache());
 
-      await().atMost(2, MINUTES).until(() -> {
+      await().untilAsserted(() -> {
         PartitionRegionConfig partitionRegionConfig =
             (PartitionRegionConfig) prRootRegion.get("#" + REGION_NAME);
         assertThat(partitionRegionConfig.getNodes()).hasSize(1);

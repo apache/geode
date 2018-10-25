@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.DistributedTestUtils.crashDistributedSystem;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.List;
@@ -34,10 +34,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -48,7 +47,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -58,7 +57,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #39356: Missing PR buckets with HA
  */
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 @SuppressWarnings("serial")
 public class BucketCreationCrashCompletesRegressionTest implements Serializable {
 
@@ -69,7 +68,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
   private VM vm2;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -130,27 +129,26 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
   private void createPartitionedRegionWithObserver() {
     DistributionMessageObserver.setInstance(new MyRegionObserver());
 
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1);
-    paf.setRecoveryDelay(0);
+    PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setRedundantCopies(1);
+    partitionAttributesFactory.setRecoveryDelay(0);
 
-    AttributesFactory af = new AttributesFactory();
-    af.setDataPolicy(DataPolicy.PARTITION);
-    af.setPartitionAttributes(paf.create());
+    RegionFactory<?, ?> regionFactory = getCache().createRegionFactory(PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
-    getCache().createRegion(regionName, af.create());
+    regionFactory.create(regionName);
   }
 
   private void createAccessorAndCrash() {
-    PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(1);
-    paf.setLocalMaxMemory(0);
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setRedundantCopies(1);
+    partitionAttributesFactory.setLocalMaxMemory(0);
 
-    AttributesFactory<String, String> af = new AttributesFactory<>();
-    af.setDataPolicy(DataPolicy.PARTITION);
-    af.setPartitionAttributes(paf.create());
+    RegionFactory<String, String> regionFactory = getCache().createRegionFactory(PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
-    Region<String, String> region = getCache().createRegion(regionName, af.create());
+    Region<String, String> region = regionFactory.create(regionName);
 
     // trigger the creation of a bucket, which should trigger the destruction of this VM.
     assertThatThrownBy(() -> region.put("ping", "pong")).isInstanceOf(CancelException.class);
@@ -170,9 +168,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
         .getTotalNumBuckets(); i++) {
       int bucketId = i;
 
-      await().atMost(2, MINUTES).until(() -> {
-        hasBucketOwners(partitionedRegion, bucketId);
-      });
+      await().until(() -> hasBucketOwners(partitionedRegion, bucketId));
 
       List owners = partitionedRegion.getBucketOwnersForValidation(bucketId);
       assertThat(owners).isNotNull();
@@ -184,15 +180,15 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
   }
 
   private void createPartitionedRegion() {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1);
-    paf.setRecoveryDelay(-1);
-    paf.setStartupRecoveryDelay(-1);
+    PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setRedundantCopies(1);
+    partitionAttributesFactory.setRecoveryDelay(-1);
+    partitionAttributesFactory.setStartupRecoveryDelay(-1);
 
-    AttributesFactory af = new AttributesFactory();
-    af.setPartitionAttributes(paf.create());
+    RegionFactory<?, ?> regionFactory = getCache().createRegionFactory(PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
-    getCache().createRegion(regionName, af.create());
+    regionFactory.create(regionName);
   }
 
   private void createBucket() {

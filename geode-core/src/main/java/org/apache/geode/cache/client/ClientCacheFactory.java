@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -647,7 +646,7 @@ public class ClientCacheFactory {
     InternalClientCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
       throw new CacheClosedException(
-          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+          "A cache has not yet been created.");
     } else {
       if (!instance.isClient()) {
         throw new IllegalStateException(
@@ -705,7 +704,10 @@ public class ClientCacheFactory {
    * @param diskStoreName the name of the disk store to use for the PDX metadata.
    * @return this ClientCacheFactory
    * @since GemFire 6.6
+   * @deprecated Pdx Persistence is not supported on client side. Even when set, it's internally
+   *             ignored.
    */
+  @Deprecated
   public ClientCacheFactory setPdxDiskStore(String diskStoreName) {
     this.cacheConfig.setPdxDiskStore(diskStoreName);
     return this;
@@ -719,7 +721,10 @@ public class ClientCacheFactory {
    * @param isPersistent true if the metadata should be persistent
    * @return this ClientCacheFactory
    * @since GemFire 6.6
+   * @deprecated Pdx Persistence is not supported on client side. Even when set, it's internally
+   *             ignored.
    */
+  @Deprecated
   public ClientCacheFactory setPdxPersistent(boolean isPersistent) {
     this.cacheConfig.setPdxPersistent(isPersistent);
     return this;
@@ -743,5 +748,4 @@ public class ClientCacheFactory {
     this.cacheConfig.setPdxIgnoreUnreadFields(ignore);
     return this;
   }
-
 }

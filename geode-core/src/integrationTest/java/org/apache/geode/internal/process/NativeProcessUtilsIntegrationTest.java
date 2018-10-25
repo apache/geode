@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.process;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class NativeProcessUtilsIntegrationTest {
     assertThat(process.isAlive()).isTrue();
 
     pidFile = new File(directory, FILE_NAME);
-    await().atMost(2, MINUTES).until(() -> assertThat(pidFile).exists());
+    await().untilAsserted(() -> assertThat(pidFile).exists());
 
     pid = new PidFile(pidFile).readPid();
     assertThat(pid).isGreaterThan(0);
@@ -82,7 +81,7 @@ public class NativeProcessUtilsIntegrationTest {
     nativeProcessUtils.killProcess(pid);
 
     // assert
-    await().atMost(2, MINUTES).until(() -> assertThat(process.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   @Test
@@ -97,7 +96,7 @@ public class NativeProcessUtilsIntegrationTest {
     process.destroyForcibly();
 
     // act/assert
-    await().atMost(2, MINUTES).until(() -> assertThat(process.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
     assertThat(nativeProcessUtils.isProcessAlive(pid)).isFalse();
   }
 

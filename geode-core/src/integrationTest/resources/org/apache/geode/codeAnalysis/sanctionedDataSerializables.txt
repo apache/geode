@@ -187,7 +187,7 @@ fromData,27
 toData,24
 
 org/apache/geode/distributed/internal/StartupMessage,2
-fromData,293
+fromData,291
 toData,318
 
 org/apache/geode/distributed/internal/StartupResponseMessage,2
@@ -391,7 +391,7 @@ fromData,14
 toData,14
 
 org/apache/geode/internal/InternalInstantiator$RegistrationMessage,2
-fromData,125
+fromData,123
 toData,46
 
 org/apache/geode/internal/ManagerInfo,2
@@ -1871,7 +1871,7 @@ org/apache/geode/internal/cache/snapshot/SnapshotPacket$SnapshotRecord,2
 fromData,17
 toData,17
 
-org/apache/geode/internal/cache/tier/sockets/ClientBlacklistProcessor$ClientBlacklistMessage,2
+org/apache/geode/internal/cache/tier/sockets/ClientDenylistProcessor$ClientDenylistMessage,2
 fromData,24
 toData,24
 
@@ -1923,7 +1923,7 @@ org/apache/geode/internal/cache/tier/sockets/ObjectPartList651,2
 fromData,145
 toData,202
 
-org/apache/geode/internal/cache/tier/sockets/RemoveClientFromBlacklistMessage,2
+org/apache/geode/internal/cache/tier/sockets/RemoveClientFromDenylistMessage,2
 fromData,14
 toData,14
 

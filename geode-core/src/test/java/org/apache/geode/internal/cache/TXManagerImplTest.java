@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -37,8 +39,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -239,8 +241,7 @@ public class TXManagerImplTest {
 
         latch.countDown();
 
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> tx1.getLock().hasQueuedThreads());
 
         txMgr.removeHostedTXState(txid);
@@ -323,8 +324,7 @@ public class TXManagerImplTest {
 
         TXStateProxy existingTx = masqueradeToRollback();
         latch.countDown();
-        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+        await()
             .until(() -> tx1.getLock().hasQueuedThreads());
 
         rollbackTransaction(existingTx);
@@ -494,5 +494,28 @@ public class TXManagerImplTest {
     spyTxMgr.scheduleToRemoveClientTransaction(txid, 1000);
 
     verify(timer, times(1)).schedule(any(), eq(1000L));
+  }
+
+  @Test
+  public void unmasqueradeReleasesTheLockHeld() {
+    tx1 = mock(TXStateProxyImpl.class);
+    ReentrantLock lock = mock(ReentrantLock.class);
+    when(tx1.getLock()).thenReturn(lock);
+
+    spyTxMgr.unmasquerade(tx1);
+
+    verify(lock, times(1)).unlock();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void unmasqueradeReleasesTheLockHeldWhenCleanupTransactionIfNoLongerHostFailedWithException() {
+    tx1 = mock(TXStateProxyImpl.class);
+    ReentrantLock lock = mock(ReentrantLock.class);
+    when(tx1.getLock()).thenReturn(lock);
+    doThrow(new RuntimeException()).when(spyTxMgr).cleanupTransactionIfNoLongerHost(tx1);
+
+    spyTxMgr.unmasquerade(tx1);
+
+    verify(lock, times(1)).unlock();
   }
 }

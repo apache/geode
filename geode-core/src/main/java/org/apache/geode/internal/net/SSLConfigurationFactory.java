@@ -168,6 +168,8 @@ public class SSLConfigurationFactory {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(distributionConfig.getSSLCiphers());
     sslConfig
+        .setEndpointIdentificationEnabled(distributionConfig.getSSLEndPointIdentificationEnabled());
+    sslConfig
         .setEnabled(determineIfSSLEnabledForSSLComponent(distributionConfig, sslEnabledComponent));
     sslConfig.setKeystore(distributionConfig.getSSLKeyStore());
     sslConfig.setKeystorePassword(distributionConfig.getSSLKeyStorePassword());
@@ -178,21 +180,20 @@ public class SSLConfigurationFactory {
     sslConfig.setProtocols(distributionConfig.getSSLProtocols());
     sslConfig.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
     sslConfig.setAlias(distributionConfig.getSSLDefaultAlias());
+    sslConfig.setUseDefaultSSLContext(distributionConfig.getSSLUseDefaultContext());
+
     return sslConfig;
   }
 
   private boolean determineIfSSLEnabledForSSLComponent(final DistributionConfig distributionConfig,
       final SecurableCommunicationChannel sslEnabledComponent) {
     if (ArrayUtils.contains(distributionConfig.getSecurableCommunicationChannels(),
-        SecurableCommunicationChannel.NONE)) {
-      return false;
-    }
-    if (ArrayUtils.contains(distributionConfig.getSecurableCommunicationChannels(),
         SecurableCommunicationChannel.ALL)) {
       return true;
     }
+
     return ArrayUtils.contains(distributionConfig.getSecurableCommunicationChannels(),
-        sslEnabledComponent) ? true : false;
+        sslEnabledComponent);
   }
 
   /**

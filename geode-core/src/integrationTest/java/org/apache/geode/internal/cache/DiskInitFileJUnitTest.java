@@ -14,41 +14,57 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
 
 public class DiskInitFileJUnitTest {
-
-  private File testDirectory;
-  private Mockery context = new Mockery() {
-    {
-      setImposteriser(ClassImposteriser.INSTANCE);
-      setThreadingPolicy(new Synchroniser());
-    }
-  };
+  private DiskStoreImpl mockedDiskStoreImpl;
+  private DiskRegionView mockDiskRegionView;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
-    testDirectory = temporaryFolder.newFolder("_" + getClass().getSimpleName());
+    File testDirectory = temporaryFolder.newFolder("_" + getClass().getSimpleName());
+
+    // Mock statistics factory for creating directory holders.
+    final StatisticsFactory mockStatisticsFactory = mock(StatisticsFactory.class);
+    when(mockStatisticsFactory.createStatistics(any(), anyString()))
+        .thenReturn(mock(Statistics.class));
+
+    // Mock disk store impl. All we need to do is return this init file directory.
+    mockedDiskStoreImpl = mock(DiskStoreImpl.class);
+    DirectoryHolder holder = new DirectoryHolder(mockStatisticsFactory, testDirectory, 0, 0);
+    when(mockedDiskStoreImpl.getInfoFileDir()).thenReturn(holder);
+    when(mockedDiskStoreImpl.getDiskStoreID()).thenReturn(mock(DiskStoreID.class));
+    when(mockedDiskStoreImpl.getBackupLock()).thenReturn(mock(ReentrantLock.class));
+
+    // Mock required for the init file so it doesn't delete the file when the init file is closed.
+    mockDiskRegionView = spy(DiskRegionView.class);
+    when(mockDiskRegionView.getName()).thenReturn("diskRegionView");
+    when(mockDiskRegionView.getPartitionName()).thenReturn("diskRegionViewPartition");
+    when(mockDiskRegionView.getFlags())
+        .thenReturn(EnumSet.noneOf(DiskInitFile.DiskRegionFlag.class));
   }
 
   /**
@@ -56,123 +72,66 @@ public class DiskInitFileJUnitTest {
    */
   @Test
   public void testCanonicalIds() {
-    // create a mock statistics factory for creating directory holders
-    final StatisticsFactory sf = context.mock(StatisticsFactory.class);
-    context.checking(new Expectations() {
-      {
-        ignoring(sf);
-      }
-    });
-
-    // Create a mock disk store impl. All we need to do is return
-    // this init file directory.
-    final DiskStoreImpl parent = context.mock(DiskStoreImpl.class);
-    context.checking(new Expectations() {
-      {
-        allowing(parent).getInfoFileDir();
-        will(returnValue(new DirectoryHolder(sf, testDirectory, 0, 0)));
-        ignoring(parent);
-      }
-    });
-
-    // Create an init file and add some canonical ids
-    DiskInitFile dif = new DiskInitFile("testFile", parent, false, Collections.<File>emptySet());
-    assertEquals(null, dif.getCanonicalObject(5));
-    assertNull(dif.getCanonicalObject(0));
+    // Create an init file and add some canonical ids.
+    DiskInitFile dif =
+        new DiskInitFile("testFile", mockedDiskStoreImpl, false, Collections.emptySet());
+    assertThat(dif.getCanonicalObject(5)).isNull();
+    assertThat(dif.getCanonicalObject(0)).isNull();
     int id1 = dif.getOrCreateCanonicalId("object1");
     int id2 = dif.getOrCreateCanonicalId("object2");
+    assertThat(dif.getCanonicalObject(id1)).isEqualTo("object1");
+    assertThat(dif.getCanonicalObject(id2)).isEqualTo("object2");
+    assertThat(dif.getOrCreateCanonicalId("object2")).isEqualTo(id2);
+    dif.createRegion(mockDiskRegionView);
 
-    assertEquals("object1", dif.getCanonicalObject(id1));
-    assertEquals("object2", dif.getCanonicalObject(id2));
-    assertEquals(id2, dif.getOrCreateCanonicalId("object2"));
-
-
-    // Add a mock region to the init file so it doesn't
-    // delete the file when the init file is closed
-    final DiskRegionView drv = context.mock(DiskRegionView.class);
-    context.checking(new Expectations() {
-      {
-        ignoring(drv);
-      }
-    });
-    dif.createRegion(drv);
-
-    // close the init file
+    // Close the init file and recover the init file from disk
     dif.close();
+    dif = new DiskInitFile("testFile", mockedDiskStoreImpl, true, Collections.emptySet());
 
-    // recover the init file from disk
-    dif = new DiskInitFile("testFile", parent, true, Collections.<File>emptySet());
-
-    // make sure we can recover the ids from disk
-    assertEquals("object1", dif.getCanonicalObject(id1));
-    assertEquals("object2", dif.getCanonicalObject(id2));
-    assertEquals(id2, dif.getOrCreateCanonicalId("object2"));
+    // Make sure we can recover the ids from disk
+    assertThat(dif.getCanonicalObject(id1)).isEqualTo("object1");
+    assertThat(dif.getCanonicalObject(id2)).isEqualTo("object2");
+    assertThat(dif.getOrCreateCanonicalId("object2")).isEqualTo(id2);
 
     // Make sure we can add new ids
     int id3 = dif.getOrCreateCanonicalId("object3");
-    assertTrue(id3 > id2);
-    assertEquals("object1", dif.getCanonicalObject(id1));
-    assertEquals("object2", dif.getCanonicalObject(id2));
-    assertEquals("object3", dif.getCanonicalObject(id3));
+    assertThat(id3).isGreaterThan(id2);
+    assertThat(dif.getCanonicalObject(id1)).isEqualTo("object1");
+    assertThat(dif.getCanonicalObject(id2)).isEqualTo("object2");
+    assertThat(dif.getCanonicalObject(id3)).isEqualTo("object3");
 
     dif.close();
   }
 
   @Test
   public void testKrfIds() {
-    // create a mock statistics factory for creating directory holders
-    final StatisticsFactory sf = context.mock(StatisticsFactory.class);
-    context.checking(new Expectations() {
-      {
-        ignoring(sf);
-      }
-    });
-    // Add a mock region to the init file so it doesn't
-    // delete the file when the init file is closed
-    final DiskRegionView drv = context.mock(DiskRegionView.class);
-    context.checking(new Expectations() {
-      {
-        ignoring(drv);
-      }
-    });
-    // Create a mock disk store impl. All we need to do is return
-    // this init file directory.
-    final DiskStoreImpl parent = context.mock(DiskStoreImpl.class);
-    context.checking(new Expectations() {
-      {
-        allowing(parent).getInfoFileDir();
-        will(returnValue(new DirectoryHolder(sf, testDirectory, 0, 0)));
-        ignoring(parent);
-      }
-    });
-
-    DiskInitFile dif = new DiskInitFile("testKrfIds", parent, false, Collections.<File>emptySet());
-    assertEquals(false, dif.hasKrf(1));
+    DiskInitFile dif =
+        new DiskInitFile("testKrfIds", mockedDiskStoreImpl, false, Collections.emptySet());
+    assertThat(dif.hasKrf(1)).isFalse();
     dif.cmnKrfCreate(1);
-    assertEquals(true, dif.hasKrf(1));
-    assertEquals(false, dif.hasKrf(2));
+    assertThat(dif.hasKrf(1)).isTrue();
+    assertThat(dif.hasKrf(2)).isFalse();
     dif.cmnKrfCreate(2);
-    assertEquals(true, dif.hasKrf(2));
-    dif.createRegion(drv);
+    assertThat(dif.hasKrf(2)).isTrue();
+    dif.createRegion(mockDiskRegionView);
     dif.forceCompaction();
     dif.close();
 
-    dif = new DiskInitFile("testKrfIds", parent, true, Collections.<File>emptySet());
-    assertEquals(true, dif.hasKrf(1));
-    assertEquals(true, dif.hasKrf(2));
+    dif = new DiskInitFile("testKrfIds", mockedDiskStoreImpl, true, Collections.emptySet());
+    assertThat(dif.hasKrf(1)).isTrue();
+    assertThat(dif.hasKrf(2)).isTrue();
     dif.cmnCrfDelete(1);
-    assertEquals(false, dif.hasKrf(1));
-    assertEquals(true, dif.hasKrf(2));
+    assertThat(dif.hasKrf(1)).isFalse();
+    assertThat(dif.hasKrf(2)).isTrue();
     dif.cmnCrfDelete(2);
-    assertEquals(false, dif.hasKrf(2));
-    dif.createRegion(drv);
+    assertThat(dif.hasKrf(2)).isFalse();
+    dif.createRegion(mockDiskRegionView);
     dif.forceCompaction();
     dif.close();
 
-    dif = new DiskInitFile("testKrfIds", parent, true, Collections.<File>emptySet());
-    assertEquals(false, dif.hasKrf(1));
-    assertEquals(false, dif.hasKrf(2));
+    dif = new DiskInitFile("testKrfIds", mockedDiskStoreImpl, true, Collections.emptySet());
+    assertThat(dif.hasKrf(1)).isFalse();
+    assertThat(dif.hasKrf(2)).isFalse();
     dif.destroy();
   }
-
 }

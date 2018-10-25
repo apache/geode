@@ -18,14 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -359,7 +358,7 @@ public class RegionMembershipMBeanDUnitTestBase {
     return locator.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
 
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         DistributedRegionMXBean bean = ManagementService.getManagementService(cache)
             .getDistributedRegionMXBean(regionPath);
         assertThat(bean).isNotNull();

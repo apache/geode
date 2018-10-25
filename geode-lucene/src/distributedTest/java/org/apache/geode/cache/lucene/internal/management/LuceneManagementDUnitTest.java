@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal.management;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
@@ -24,11 +25,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -175,8 +174,9 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   private static LuceneServiceMXBean getMBeanProxy(DistributedMember member) {
     SystemManagementService service = (SystemManagementService) getManagementService();
     ObjectName objectName = MBeanJMXAdapter.getCacheServiceMBeanName(member, "LuceneService");
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertNotNull(service.getMBeanProxy(objectName, LuceneServiceMXBean.class)));
+    await()
+        .untilAsserted(
+            () -> assertNotNull(service.getMBeanProxy(objectName, LuceneServiceMXBean.class)));
     return service.getMBeanProxy(objectName, LuceneServiceMXBean.class);
   }
 

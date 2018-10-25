@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.snapshot;
 
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLogger;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -125,8 +125,8 @@ public class FlowController {
    */
   public void sendAck(DistributionManager dmgr, DistributedMember member, int windowId,
       String packetId) {
-    if (getLoggerI18n().fineEnabled())
-      getLoggerI18n().fine("SNP: Sending ACK for packet " + packetId + " on window " + windowId
+    if (getLogger().fineEnabled())
+      getLogger().fine("SNP: Sending ACK for packet " + packetId + " on window " + windowId
           + " to member " + member);
 
     if (dmgr.getDistributionManagerId().equals(member)) {
@@ -149,8 +149,8 @@ public class FlowController {
    * @param member the data source
    */
   public void sendAbort(DistributionManager dmgr, int windowId, DistributedMember member) {
-    if (getLoggerI18n().fineEnabled())
-      getLoggerI18n().fine("SNP: Sending ABORT to member " + member + " for window " + windowId);
+    if (getLogger().fineEnabled())
+      getLogger().fine("SNP: Sending ABORT to member " + member + " for window " + windowId);
 
     if (dmgr.getDistributionManagerId().equals(member)) {
       WindowImpl<?, ?> win = (WindowImpl<?, ?>) processors.retrieve(windowId);
@@ -189,8 +189,8 @@ public class FlowController {
         @Override
         public void afterRemoteRegionCrash(RegionEvent<K, V> event) {
           if (event.getDistributedMember().equals(sink)) {
-            if (getLoggerI18n().fineEnabled())
-              getLoggerI18n().fine("SNP: " + sink + " has crashed, closing window");
+            if (getLogger().fineEnabled())
+              getLogger().fine("SNP: " + sink + " has crashed, closing window");
 
             abort();
           }
@@ -269,8 +269,8 @@ public class FlowController {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      if (getLoggerI18n().fineEnabled())
-        getLoggerI18n()
+      if (getLogger().fineEnabled())
+        getLogger()
             .fine("SNP: Received ABORT on window " + windowId + " from member " + getSender());
 
       WindowImpl<?, ?> win =
@@ -325,8 +325,8 @@ public class FlowController {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      if (getLoggerI18n().fineEnabled())
-        getLoggerI18n().fine("SNP: Received ACK for packet " + packetId + " on window " + windowId
+      if (getLogger().fineEnabled())
+        getLogger().fine("SNP: Received ACK for packet " + packetId + " on window " + windowId
             + " from member " + getSender());
 
       WindowImpl<?, ?> win =

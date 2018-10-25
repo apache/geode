@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -24,9 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -105,7 +104,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     client1.invoke(() -> {
       Region r2 = getCache().getRegion(REGION_NAME2);
       MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> verifier.eventReceived);
+      await().until(() -> verifier.eventReceived);
     });
 
     // client2's update should have included a memberID - GEODE-2954
@@ -168,7 +167,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     interestClient.invoke("verification 1", () -> {
       Region r2 = getCache().getRegion(REGION_NAME2);
       MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> verifier.eventReceived);
+      await().until(() -> verifier.eventReceived);
       verifier.reset();
     });
 
@@ -179,9 +178,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server2.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
-        proxy.getHARegionQueue().isEmpty();
-      });
+      await()
+          .until(() -> proxy.getHARegionQueue().isEmpty());
     });
 
     // the client should now get duplicate events from the current-version server
@@ -204,9 +202,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server3.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
-        proxy.getHARegionQueue().isEmpty();
-      });
+      await()
+          .until(() -> proxy.getHARegionQueue().isEmpty());
     });
 
     // the client should now get duplicate events from the current-version server
@@ -266,7 +263,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
     // Make sure server 2 copies the queue
     server2.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      await().untilAsserted(() -> {
         final Collection<CacheClientProxy> clientProxies =
             CacheClientNotifier.getInstance().getClientProxies();
         assertFalse(clientProxies.isEmpty());
@@ -279,7 +276,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     interestClient.invoke("verification 1", () -> {
       Region r2 = getCache().getRegion(REGION_NAME2);
       MemberIDVerifier verifier = (MemberIDVerifier) ((LocalRegion) r2).getCacheListener();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> verifier.eventReceived);
+      await().until(() -> verifier.eventReceived);
       verifier.reset();
     });
 
@@ -290,9 +287,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server2.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-        proxy.getHARegionQueue().isEmpty();
-      });
+      await()
+          .until(() -> proxy.getHARegionQueue().isEmpty());
     });
   }
 

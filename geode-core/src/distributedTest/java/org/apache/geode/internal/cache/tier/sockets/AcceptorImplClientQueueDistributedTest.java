@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -22,14 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.rmi.RemoteException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,12 +51,12 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 @SuppressWarnings("serial")
 public class AcceptorImplClientQueueDistributedTest implements Serializable {
 
@@ -67,11 +64,11 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
 
   private String hostName;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheIn(getVM(0)).createCacheIn(getVM(1))
+  public CacheRule cacheRule = CacheRule.builder()
       .addSystemProperty("BridgeServer.HANDSHAKE_POOL_SIZE", "1").build();
 
   @Rule
@@ -87,11 +84,14 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
   @Before
   public void setUp() throws Exception {
     hostName = getHostName();
+
+    getVM(0).invoke(() -> cacheRule.createCache());
+    getVM(1).invoke(() -> cacheRule.createCache());
   }
 
   @After
-  public void tearDown() throws RemoteException {
-    getAllVMs().forEach((vm) -> vm.invoke(() -> {
+  public void tearDown() {
+    getAllVMs().forEach(vm -> vm.invoke(() -> {
       InitialImageOperation.slowImageProcessing = 0;
     }));
   }
@@ -176,21 +176,22 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
               cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
           AtomicInteger eventCount = new AtomicInteger(0);
 
-          Region region = clientRegionFactory.addCacheListener(new CacheListenerAdapter() {
-            @Override
-            public void afterCreate(EntryEvent event) {
-              eventCount.incrementAndGet();
-            }
+          Region<?, ?> region =
+              clientRegionFactory.addCacheListener(new CacheListenerAdapter<Object, Object>() {
+                @Override
+                public void afterCreate(EntryEvent event) {
+                  eventCount.incrementAndGet();
+                }
 
-            @Override
-            public void afterUpdate(EntryEvent event) {
-              eventCount.incrementAndGet();
-            }
-          }).create("subscriptionRegion");
+                @Override
+                public void afterUpdate(EntryEvent event) {
+                  eventCount.incrementAndGet();
+                }
+              }).create("subscriptionRegion");
 
           region.registerInterestRegex(".*", InterestResultPolicy.NONE, true);
           cache.readyForEvents();
-          Awaitility.await().atMost(200, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          await()
               .until(() -> eventCount.get() == NUMBER_OF_ENTRIES);
           cache.close();
           return eventCount.get() == NUMBER_OF_ENTRIES;

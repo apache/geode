@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -159,7 +158,7 @@ public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends Async
     waitForSamplerToSample(5);
 
     // Verify the bean attributes match the stat values
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       assertThat(bean.getEntriesOverflowedToDisk()).isEqualTo(drs.getNumOverflowOnDisk());
       assertThat(bean.getBytesOverflowedToDisk()).isEqualTo(drs.getNumOverflowBytesOnDisk());
     });
@@ -184,7 +183,7 @@ public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends Async
     waitForSamplerToSample(5);
 
     // Verify the bean attributes match the stat values
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       // Calculate the total entries and bytes overflowed to disk
       int entriesOverflowedToDisk = 0;
       long bytesOverflowedToDisk = 0l;

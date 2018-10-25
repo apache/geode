@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import static org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,9 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,7 +82,7 @@ public class AuthenticationIntegrationTest {
 
     socket = new Socket("localhost", cacheServerPort);
 
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    await().until(socket::isConnected);
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
 
@@ -304,7 +303,7 @@ public class AuthenticationIntegrationTest {
   }
 
   private void verifyConnectionClosed() {
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       try {
         assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
         return true;

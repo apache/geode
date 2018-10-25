@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
@@ -177,7 +176,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
     InternalCache cache = getCache();
     Region rootRegion = PartitionedRegionHelper.getPRRoot(cache);
 
-    await().atMost(1, MINUTES).until(() -> assertThat(cache.rootRegions()).isEmpty());
+    await().untilAsserted(() -> assertThat(cache.rootRegions()).isEmpty());
 
     assertEquals(
         "ThePrIdToPR Map size is:" + PartitionedRegion.getPrIdToPR().size() + " instead of 0",

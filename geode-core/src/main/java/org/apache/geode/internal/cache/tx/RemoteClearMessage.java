@@ -33,7 +33,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -72,7 +71,7 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
 
     Set<?> failures = region.getDistributionManager().putOutgoing(this);
     if (failures != null && failures.size() > 0) {
-      throw new RemoteOperationException(LocalizedStrings.FAILED_SENDING_0.toLocalizedString(this));
+      throw new RemoteOperationException(String.format("Failed sending < %s >", this));
     }
 
     p.waitForRemoteResponse();

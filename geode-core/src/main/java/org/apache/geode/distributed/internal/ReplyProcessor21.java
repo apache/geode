@@ -31,14 +31,11 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDNotFoundException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
@@ -418,9 +415,9 @@ public class ReplyProcessor21 implements MembershipListener {
         if (system.getConfig().getMcastPort() == 0 // could be using multicast & will get responses
                                                    // from everyone
             && (viewMembers == null || viewMembers.contains(sender))) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ReplyProcessor21_RECEIVED_REPLY_FROM_MEMBER_0_BUT_WAS_NOT_EXPECTING_ONE_MORE_THAN_ONE_REPLY_MAY_HAVE_BEEN_RECEIVED_THE_REPLY_THAT_WAS_NOT_EXPECTED_IS_1,
-              new Object[] {sender, msg}));
+          logger.warn(
+              "Received reply from member {} but was not expecting one. More than one reply may have been received. The reply that was not expected is: {}",
+              new Object[] {sender, msg});
         }
       }
     }
@@ -439,8 +436,7 @@ public class ReplyProcessor21 implements MembershipListener {
     } else if (logMultipleExceptions()) {
       if (!(ex.getCause() instanceof ConcurrentCacheModificationException)) {
         logger.fatal(
-            LocalizedMessage.create(
-                LocalizedStrings.ReplyProcessor21_EXCEPTION_RECEIVED_IN_REPLYMESSAGE_ONLY_ONE_EXCEPTION_IS_PASSED_BACK_TO_CALLER_THIS_EXCEPTION_IS_LOGGED_ONLY),
+            "Exception received in ReplyMessage. Only one exception is passed back to caller. This exception is logged only.",
             ex);
       }
     }
@@ -467,7 +463,8 @@ public class ReplyProcessor21 implements MembershipListener {
     if (versionStr == null) {
       versionStr = "Ordinal=" + versionOrdinal;
     }
-    logger.fatal(LocalizedMessage.create(LocalizedStrings.ReplyProcessor21_UNKNOWN_DSFID_ERROR,
+    logger.fatal(String.format(
+        "Exception received due to missing DSFID %s on remote node %s running version %s.",
         new Object[] {ex.getUnknownDSFID(), msg.getSender(), versionStr}), ex);
   }
 
@@ -606,8 +603,7 @@ public class ReplyProcessor21 implements MembershipListener {
       throws InterruptedException, ReplyException {
     if (this.keeperCleanedUp) {
       throw new IllegalStateException(
-          LocalizedStrings.ReplyProcessor21_THIS_REPLY_PROCESSOR_HAS_ALREADY_BEEN_REMOVED_FROM_THE_PROCESSOR_KEEPER
-              .toLocalizedString());
+          "This reply processor has already been removed from the processor keeper");
     }
     boolean result = true;
     boolean interrupted = Thread.interrupted();
@@ -714,22 +710,19 @@ public class ReplyProcessor21 implements MembershipListener {
             latch.await();
           }
           // Give an info message since timeout gave a warning.
-          logger.info(LocalizedMessage
-              .create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1, shortName()));
+          logger.info("{} wait for replies completed", shortName());
         }
       } else if (msecs > timeout) {
         if (!latch.await(timeout)) {
           timeout(doSuspectProcessing, false);
           // after timeout alert, wait remaining time
           if (!latch.await(msecs - timeout)) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_TIMING_OUT_AFTER_0_SEC,
-                Long.valueOf(msecs / 1000)));
+            logger.info("wait for replies timing out after {} seconds",
+                Long.valueOf(msecs / 1000));
             return false;
           }
           // Give an info message since timeout gave a warning.
-          logger.info(LocalizedMessage
-              .create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1, shortName()));
+          logger.info("{} wait for replies completed", shortName());
         }
       } else {
         if (!latch.await(msecs)) {
@@ -769,8 +762,7 @@ public class ReplyProcessor21 implements MembershipListener {
       boolean doCleanUp) throws ReplyException {
     if (this.keeperCleanedUp) {
       throw new IllegalStateException(
-          LocalizedStrings.ReplyProcessor21_THIS_REPLY_PROCESSOR_HAS_ALREADY_BEEN_REMOVED_FROM_THE_PROCESSOR_KEEPER
-              .toLocalizedString());
+          "This reply processor has already been removed from the processor keeper");
     }
     long msecs = p_msecs; // don't overwrite parameter
     boolean result = true;
@@ -884,7 +876,7 @@ public class ReplyProcessor21 implements MembershipListener {
       // failed computation. If you set the exception in onShutdown,
       // the resulting stack is not of interest.
       ReplyException re = new ReplyException(new DistributedSystemDisconnectedException(
-          LocalizedStrings.ReplyProcessor21_ABORTED_DUE_TO_SHUTDOWN.toLocalizedString()));
+          "aborted due to shutdown"));
       this.exception = re;
       return false;
     }
@@ -1057,12 +1049,12 @@ public class ReplyProcessor21 implements MembershipListener {
     final Object[] msgArgs =
         new Object[] {Long.valueOf(timeout + (severeAlert ? getSevereAlertThreshold() : 0)), this,
             getDistributionManager().getId(), activeMembers};
-    final StringId msg =
-        LocalizedStrings.ReplyProcessor21_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLIES_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3;
+    final String msg =
+        "%s seconds have elapsed while waiting for replies: %s on %s whose current membership list is: [%s]";
     if (severeAlert) {
-      logger.fatal(LocalizedMessage.create(msg, msgArgs));
+      logger.fatal(String.format(msg, msgArgs));
     } else {
-      logger.warn(LocalizedMessage.create(msg, msgArgs));
+      logger.warn(String.format(msg, msgArgs));
     }
     msgArgs[3] = "(omitted)";
     Breadcrumbs.setProblem(msg, msgArgs);
@@ -1081,9 +1073,9 @@ public class ReplyProcessor21 implements MembershipListener {
       for (int i = 0; i < this.members.length; i++) {
         if (this.members[i] != null) {
           if (!activeMembers.contains(this.members[i])) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ReplyProcessor21_VIEW_NO_LONGER_HAS_0_AS_AN_ACTIVE_MEMBER_SO_WE_WILL_NO_LONGER_WAIT_FOR_IT,
-                this.members[i]));
+            logger.warn(
+                "View no longer has {} as an active member, so we will no longer wait for it.",
+                this.members[i]);
             memberDeparted(getDistributionManager(), this.members[i], false);
           } else {
             if (suspectMembers != null) {
@@ -1097,10 +1089,11 @@ public class ReplyProcessor21 implements MembershipListener {
     if (THROW_EXCEPTION_ON_TIMEOUT) {
       // init the cause to be a TimeoutException so catchers can determine cause
       TimeoutException cause =
-          new TimeoutException(LocalizedStrings.TIMED_OUT_WAITING_FOR_ACKS.toLocalizedString());
+          new TimeoutException("Timed out waiting for ACKS.");
       throw new InternalGemFireException(
-          LocalizedStrings.ReplyProcessor21_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLIES_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3
-              .toLocalizedString(msgArgs),
+          String.format(
+              "%s seconds have elapsed while waiting for replies: %s on %s whose current membership list is: [%s]",
+              msgArgs),
           cause);
     } else if (suspectThem) {
       if (suspectMembers != null && suspectMembers.size() > 0) {
@@ -1239,7 +1232,8 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   /**
-   * To fix the hang of 42951 make sure the guys waiting on this processor are told to quit waiting
+   * To fix the hang of 42951 make sure that everything waiting on this processor are told to quit
+   * waiting
    * and tell them why.
    *
    * @param ex the reason the reply processor is being canceled

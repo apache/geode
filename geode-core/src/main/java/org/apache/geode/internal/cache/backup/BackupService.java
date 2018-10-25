@@ -20,10 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -36,7 +33,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 public class BackupService {
   private static final Logger logger = LogService.getLogger();
@@ -121,7 +118,7 @@ public class BackupService {
   }
 
   void validateRequestingSender(InternalDistributedMember sender) {
-    // We need to watch for pure admin guys that depart. this allMembershipListener set
+    // We need to watch for pure admin members that depart. this allMembershipListener set
     // looks like it should receive those events.
     Set allIds =
         cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
@@ -136,20 +133,7 @@ public class BackupService {
   }
 
   private ExecutorService createExecutor() {
-    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupService Thread", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-
-      private final AtomicInteger threadId = new AtomicInteger();
-
-      @Override
-      public Thread newThread(final Runnable command) {
-        Thread thread =
-            new Thread(group, command, "BackupServiceThread" + threadId.incrementAndGet());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    return Executors.newSingleThreadExecutor(threadFactory);
+    return LoggingExecutors.newSingleThreadExecutor("BackupServiceThread", true);
   }
 
   private void cleanup() {

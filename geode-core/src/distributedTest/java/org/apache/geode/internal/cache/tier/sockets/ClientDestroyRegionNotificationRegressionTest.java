@@ -14,11 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -29,9 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -42,7 +41,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -54,7 +53,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #36269: RegionDestroy operation may get sent to the originator
  */
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class ClientDestroyRegionNotificationRegressionTest implements Serializable {
 
   private String hostName;
@@ -68,7 +67,7 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
   private VM server2;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -100,10 +99,10 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
   @Test
   public void senderDoesNotReceiveRegionDestroy() throws Exception {
     server1.invoke(() -> {
-      await().atMost(1, MINUTES).until(() -> cacheRule.getCache().getRegion(regionName) == null);
+      await().until(() -> cacheRule.getCache().getRegion(regionName) == null);
     });
     server2.invoke(() -> {
-      await().atMost(1, MINUTES).until(() -> cacheRule.getCache().getRegion(regionName) == null);
+      await().until(() -> cacheRule.getCache().getRegion(regionName) == null);
     });
 
     Thread.sleep(5 * 1000);
@@ -124,10 +123,10 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
-    ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
-    crf.create(regionName);
+    ClientRegionFactory<?, ?> clientRegionFactory =
+        clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
+    clientRegionFactory.setPoolName(pool.getName());
+    clientRegionFactory.create(regionName);
 
     Connection connection = pool.acquireConnection(new ServerLocation(hostName, port2));
     EventID eventId = new EventID(new byte[] {1}, 1, 1);
@@ -139,13 +138,12 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
   private int createServerCache() throws IOException {
     cacheRule.createCache();
 
-    RegionFactory rf = cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
-    rf.create(regionName);
+    RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+    regionFactory.create(regionName);
 
-    CacheServer server = cacheRule.getCache().addCacheServer();
-    server.setPort(0);
-    server.setNotifyBySubscription(true);
-    server.start();
-    return server.getPort();
+    CacheServer cacheServer = cacheRule.getCache().addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
   }
 }

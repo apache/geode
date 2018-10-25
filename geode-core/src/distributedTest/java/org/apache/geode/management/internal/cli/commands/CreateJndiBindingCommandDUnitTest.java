@@ -26,8 +26,11 @@ import org.w3c.dom.NodeList;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -61,7 +64,7 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // create the binding
     gfsh.executeAndAssertThat(
-        "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
+        "create jndi-binding --name=jndi1 --username=myuser --password=mypass --type=SIMPLE --connection-url=\"jdbc:derby:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated
@@ -69,10 +72,14 @@ public class CreateJndiBindingCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+      String xmlContent = configuration.getCacheXmlContent();
+
+      Document document = XmlUtils.createDocumentFromXml(xmlContent);
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
-      assertThat(jndiBindings.getLength()).isGreaterThan(0);
+      assertThat(jndiBindings.getLength()).isEqualTo(1);
+      assertThat(xmlContent).contains("user-name=\"myuser\"");
+      assertThat(xmlContent).contains("password=\"mypass\"");
 
       boolean found = false;
       for (int i = 0; i < jndiBindings.getLength(); i++) {
@@ -97,5 +104,23 @@ public class CreateJndiBindingCommandDUnitTest {
     server1.invoke(() -> {
       assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1);
     });
+
+    verifyThatNonExistentClassCausesGfshToError();
+  }
+
+  private void verifyThatNonExistentClassCausesGfshToError() {
+    SerializableRunnableIF IgnoreClassNotFound = () -> {
+      IgnoredException ex =
+          new IgnoredException("non_existent_class_name");
+      LogService.getLogger().info(ex.getAddMessage());
+    };
+
+    server1.invoke(IgnoreClassNotFound);
+    server2.invoke(IgnoreClassNotFound);
+
+    // create the binding
+    gfsh.executeAndAssertThat(
+        "create jndi-binding --name=jndiBad --username=myuser --password=mypass --type=SIMPLE --jdbc-driver-class=non_existent_class_name --connection-url=\"jdbc:derby:newDB;create=true\"")
+        .statusIsError();
   }
 }

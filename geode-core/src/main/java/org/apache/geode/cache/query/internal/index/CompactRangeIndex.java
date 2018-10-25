@@ -68,7 +68,6 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeap;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -793,12 +792,8 @@ public class CompactRangeIndex extends AbstractIndex {
                 ok = QueryUtils.applyCondition(iterOps, context);
               }
               if (ok) {
-                if (context != null && context.isCqQueryContext()) {
-                  result.add(new CqEntry(indexEntry.getDeserializedRegionKey(), value));
-                } else {
-                  applyProjection(projAttrib, context, result, value, intermediateResults,
-                      isIntersection);
-                }
+                applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
+                    isIntersection, indexEntry.getDeserializedRegionKey());
                 if (verifyLimit(result, limit)) {
                   observer.limitAppliedAtIndexLevel(this, limit, result);
                   return;
@@ -1462,7 +1457,7 @@ public class CompactRangeIndex extends AbstractIndex {
         QueryInvocationTargetException, IMQException {
       if (QueryMonitor.isLowMemory()) {
         throw new IMQException(
-            LocalizedStrings.IndexCreationMsg_CANCELED_DUE_TO_LOW_MEMORY.toLocalizedString());
+            "Index creation canceled due to low memory");
       }
 
       Object indexKey = this.isFirstItrOnEntry ? this.indexedExpr.evaluate(this.initContext)

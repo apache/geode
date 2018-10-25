@@ -15,7 +15,10 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,9 +34,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,6 +46,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -84,6 +86,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -97,19 +100,19 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
   protected static Connection conn = null;
 
-  private static Cache static_cache;
+  static Cache static_cache;
 
-  private static int PORT1;
+  static int PORT1;
 
   private static final String k1 = "k1";
 
   private static final String k2 = "k2";
 
-  private static final String server_k1 = "server-k1";
+  static final String server_k1 = "server-k1";
 
-  private static final String server_k2 = "server-k2";
+  static final String server_k2 = "server-k2";
 
-  private static final String REGION_NAME1 = "ClientServerMiscDUnitTest_region1";
+  static final String REGION_NAME1 = "ClientServerMiscDUnitTest_region1";
 
   static final String REGION_NAME2 = "ClientServerMiscDUnitTest_region2";
 
@@ -186,8 +189,6 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
    * When a client's subscription thread connects to a server it should receive the server's
    * pingInterval setting. This is used by the client to set a read-timeout in order to avoid
    * hanging should the server's machine crash.
-   *
-   * @see MessageJUnitTest#messageWillTimeoutDuringRecvOnInactiveSocket
    */
   @Test
   public void testClientReceivesPingIntervalSetting() {
@@ -556,27 +557,16 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     Region region = static_cache.getRegion(REGION_NAME1);
     populateCache();
     region.put("invalidationKey", "invalidationValue");
+
     region.localDestroy("invalidationKey");
-    if (region.containsKey("invalidationKey")) {
-      fail("region still contains invalidationKey");
-    }
+    assertThat(region.containsKey("invalidationKey")).isFalse();
+
     region.invalidate("invalidationKey");
-    if (region.containsKey("invalidationKey")) {
-      fail(
-          "this test expects the entry is not created on invalidate() if not there before the operation");
-    }
+    assertThat(region.containsKey("invalidationKey")).isTrue();
+
     Object value = region.get("invalidationKey");
-    if (value != null) {
-      fail("this test expected a null response to get('invalidationKey')");
-    }
-    if (!region.containsKeyOnServer("invalidationKey")) {
-      fail("expected an entry on the server after invalidation");
-    }
-    // bug 43407 asserts that there should be an entry, but the product does not
-    // do this. This verifies that the product does not behave as asserted in that bug
-    if (region.containsKey("invalidationKey")) {
-      fail("expected no entry after invalidation when entry was not in client but was on server");
-    }
+    assertThat(value).isNull();
+    assertThat(region.containsKeyOnServer("invalidationKey")).isTrue();
   }
 
   /**
@@ -645,23 +635,22 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     populateCache();
     server1.invoke(() -> ClientServerMiscDUnitTestBase.put());
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region1.getEntry(k1).getValue();
       return k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region1.getEntry(k2).getValue();
       return k2.equals(val);
     });
 
-
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region2.getEntry(k1).getValue();
       return k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = region2.getEntry(k2).getValue();
       return k2.equals(val);
     });
@@ -829,6 +818,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
+    props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     Cache cache = new ClientServerMiscDUnitTestBase().createCacheV(props);
     ClientServerMiscDUnitTestBase.static_cache = cache;
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
@@ -867,7 +857,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(prRegion);
     pool = p;
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       try {
         conn = pool.acquireConnection();
         return conn != null;
@@ -988,8 +978,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       assertNotNull(r1);
       Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       assertNotNull(r2);
-      r1.registerInterest("ALL_KEYS", false, false);
-      r2.registerInterest("ALL_KEYS", false, false);
+      r1.registerInterestForAllKeys(InterestResultPolicy.KEYS, false, false);
+      r2.registerInterestForAllKeys(InterestResultPolicy.KEYS, false, false);
     } catch (CacheWriterException e) {
       e.printStackTrace();
       fail("Test failed due to CacheWriterException during registerInterestnBothRegions" + e);
@@ -1110,7 +1100,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       final CacheClientNotifier ccn = cacheServer.getAcceptor().getCacheClientNotifier();
 
       assertNotNull(ccn);
-      Awaitility.await().atMost(40, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> ccn.getClientProxies().size() == 0);
     } catch (Exception ex) {
       System.out.println("The size of the client proxies != 0");
@@ -1143,7 +1133,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
     assertNotNull(ccn);
 
-    Awaitility.await().atMost(40, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+    await()
         .until(() -> ccn.getClientProxies().size() == 1);
   }
 
@@ -1208,23 +1198,23 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
     // no interest registered in region1 - it should hold client values, which are
     // the same as the keys
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r1.getEntry(k1).getValue();
       return k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r1.getEntry(k2).getValue();
       return k2.equals(val);
     });
 
     // interest was registered in region2 - it should contain server values
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r2.getEntry(k1).getValue();
       return server_k1.equals(val);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Object val = r2.getEntry(k2).getValue();
       return server_k2.equals(val);
     });
@@ -1246,16 +1236,16 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       assertNotNull(r1);
       assertNotNull(r2);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r1.getEntry(k1).getValue() == null);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r1.getEntry(k2).getValue() == null);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r2.getEntry(k1).getValue() == null);
 
-      Awaitility.waitAtMost(90, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> r2.getEntry(k2).getValue() == null);
 
     } catch (Exception ex) {
@@ -1269,10 +1259,10 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       final Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       assertNotNull(r2);
 
-      Awaitility.waitAtMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> server_k1.equals(r2.getEntry(k1).getValue()));
 
-      Awaitility.waitAtMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> server_k2.equals(r2.getEntry(k2).getValue()));
 
       // assertIndexDetailsEquals(server_k2, r2.getEntry(k2).getValue());

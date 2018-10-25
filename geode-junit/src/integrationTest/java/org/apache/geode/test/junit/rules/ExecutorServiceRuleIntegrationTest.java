@@ -15,8 +15,8 @@
 package org.apache.geode.test.junit.rules;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
@@ -34,10 +34,10 @@ import org.apache.geode.test.junit.runners.TestRunner;
 
 public class ExecutorServiceRuleIntegrationTest {
 
-  static volatile CountDownLatch hangLatch;
-  static volatile CountDownLatch terminateLatch;
-  static volatile ExecutorService executorService;
-  static Awaits.Invocations invocations;
+  private static volatile CountDownLatch hangLatch;
+  private static volatile CountDownLatch terminateLatch;
+  private static volatile ExecutorService executorService;
+  private static Awaits.Invocations invocations;
 
   @Before
   public void setUp() throws Exception {
@@ -64,12 +64,13 @@ public class ExecutorServiceRuleIntegrationTest {
   }
 
   @Test
-  public void awaitTermination() throws Exception {
+  public void awaitTermination() {
     Result result = TestRunner.runTest(Awaits.class);
     assertThat(result.wasSuccessful()).isTrue();
 
     assertThat(isTestHung()).isTrue();
-    await().atMost(10, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
+    await()
+        .untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
     invocations.afterRule();
 
     InOrder invocationOrder = inOrder(invocations);

@@ -57,7 +57,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.BlobHelper;
 
@@ -374,7 +373,7 @@ public abstract class StreamingOperation {
         replyWithException(dm, rex);
       } else if (!sentFinalMessage && !receiverCacheClosed) {
         throw new InternalGemFireError(
-            LocalizedStrings.StreamingOperation_THIS_SHOULDNT_HAPPEN.toLocalizedString());
+            "this should not happen");
         // replyNoData(dm);
       }
     }

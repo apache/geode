@@ -15,9 +15,12 @@
 package org.apache.geode.management.internal;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
+import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,5 +52,20 @@ public class AgentUtilJUnitTest {
   public void testPulseWarExists() {
     String gemFireWarLocation = agentUtil.findWarLocation("geode-pulse");
     assertNotNull("Pulse WAR File was not found", gemFireWarLocation);
+  }
+
+  @Test
+  public void testLookupOfWarFileOnClassPath() {
+    String classpath = System.getProperty("java.class.path");
+    String gemFireWarLocation = agentUtil.findWarLocation("testWarFile");
+    assertNull(gemFireWarLocation);
+
+    classpath =
+        classpath + System.getProperty("path.separator") + "somelocation/testWarFile.war";
+    System.setProperty("java.class.path", classpath);
+    gemFireWarLocation = agentUtil.findWarLocation("testWarFile");
+    assertNotNull(gemFireWarLocation);
+    assertThat(gemFireWarLocation,
+        IsEqualIgnoringCase.equalToIgnoringCase("somelocation/testWarFile.war"));
   }
 }

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -23,6 +24,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -70,8 +72,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -97,17 +97,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     @Override
     public Object call() throws Exception {
       final TXManagerImpl mgr = getGemfireCache().getTxManager();
-      Wait.waitForCriterion(new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return mgr.hostedTransactionsInProgressForTest() == 0;
-        }
-
-        @Override
-        public String description() {
-          return "";
-        }
-      }, 30 * 1000, 500, true/* throwOnTimeout */);
+      await().untilAsserted(() -> assertEquals(0, mgr.hostedTransactionsInProgressForTest()));
       return null;
     }
   };
@@ -225,7 +215,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     boolean rContainsKC = custRegion.containsKey(custId);
     boolean rContainsKO = containsKey;
     for (OrderId o : ordersSet) {
-      getGemfireCache().getLoggerI18n()
+      getGemfireCache().getLogger()
           .fine("SWAP:rContainsKO:" + rContainsKO + " containsKey:" + orderRegion.containsKey(o));
       rContainsKO = rContainsKO && orderRegion.containsKey(o);
     }
@@ -523,7 +513,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     protected Exception ex = null;
 
     protected void verify(TransactionEvent txEvent) {
-      for (CacheEvent e : txEvent.getEvents()) {
+      for (CacheEvent e : (List<CacheEvent>) txEvent.getEvents()) {
         verifyOrigin(e);
         verifyPutAll(e);
       }

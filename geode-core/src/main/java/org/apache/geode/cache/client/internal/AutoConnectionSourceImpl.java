@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.ToDataException;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -50,9 +51,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A connection source which uses locators to find the least loaded server.
@@ -98,7 +97,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private volatile boolean isBalanced = true;
   /**
    * key is the InetSocketAddress of the locator. value will be an exception if we have already
-   * found the locator to be dead. value will be null if we last saw him alive.
+   * found the locator to be dead. value will be null if we last saw it alive.
    */
   private final Map<InetSocketAddress, Exception> locatorState =
       new HashMap<InetSocketAddress, Exception>();
@@ -188,10 +187,17 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private ServerLocationResponse queryOneLocator(HostAddress locator,
       ServerLocationRequest request) {
+    return queryOneLocatorUsingConnection(locator, request, tcpClient);
+  }
+
+
+  ServerLocationResponse queryOneLocatorUsingConnection(HostAddress locator,
+      ServerLocationRequest request,
+      TcpClient locatorConnection) {
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = tcpClient.requestToServer(locator.getSocketInetAddressNoLookup(), request,
+      returnObj = locatorConnection.requestToServer(locator.getSocketInetAddressNoLookup(), request,
           connectionTimeout, true);
       ServerLocationResponse response = (ServerLocationResponse) returnObj;
       pool.getStats().incLocatorResponses();
@@ -199,14 +205,16 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         reportLiveLocator(locator.getSocketInetAddressNoLookup());
       }
       return response;
-    } catch (IOException ioe) {
+    } catch (IOException | ToDataException ioe) {
+      if (ioe instanceof ToDataException) {
+        logger.warn("Encountered ToDataException when communicating with a locator.  "
+            + "This is expected if the locator is shutting down.", ioe);
+      }
       reportDeadLocator(locator.getSocketInetAddressNoLookup(), ioe);
       updateLocatorInLocatorList(locator);
       return null;
     } catch (ClassNotFoundException e) {
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.AutoConnectionSourceImpl_RECEIVED_EXCEPTION_FROM_LOCATOR_0, locator),
+      logger.warn(String.format("Received exception from locator %s", locator),
           e);
       return null;
     } catch (ClassCastException e) {
@@ -318,15 +326,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       addedLocators.removeAll(oldLocators.getLocators());
       if (!addedLocators.isEmpty()) {
         locatorCallback.locatorsDiscovered(Collections.unmodifiableList(addedLocators));
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.AutoConnectionSourceImpl_AUTOCONNECTIONSOURCE_DISCOVERED_NEW_LOCATORS_0,
-            addedLocators));
+        logger.info("AutoConnectionSource discovered new locators {}",
+            addedLocators);
       }
       if (!removedLocators.isEmpty()) {
         locatorCallback.locatorsRemoved(Collections.unmodifiableList(removedLocators));
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.AutoConnectionSourceImpl_AUTOCONNECTIONSOURCE_DROPPING_PREVIOUSLY_DISCOVERED_LOCATORS_0,
-            removedLocators));
+        logger.info("AutoConnectionSource dropping previously discovered locators {}",
+            removedLocators);
       }
     }
 
@@ -364,9 +370,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     if (locatorUpdateInterval > 0) {
       pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
           locatorUpdateInterval, TimeUnit.MILLISECONDS);
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AutoConnectionSourceImpl_UPDATE_LOCATOR_LIST_TASK_STARTED_WITH_INTERVAL_0,
-          new Object[] {this.locatorUpdateInterval}));
+      logger.info("AutoConnectionSource UpdateLocatorListTask started with interval={} ms.",
+          new Object[] {this.locatorUpdateInterval});
     }
   }
 
@@ -381,9 +386,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private synchronized void reportLiveLocator(InetSocketAddress l) {
     Object prevState = this.locatorState.put(l, null);
     if (prevState != null) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AutoConnectionSourceImpl_COMMUNICATION_HAS_BEEN_RESTORED_WITH_LOCATOR_0,
-          l));
+      logger.info("Communication has been restored with locator {}.",
+          l);
     }
   }
 
@@ -391,12 +395,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object prevState = this.locatorState.put(l, ex);
     if (prevState == null) {
       if (ex instanceof ConnectException) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.AutoConnectionSourceImpl_LOCATOR_0_IS_NOT_RUNNING, l), ex);
+        logger.info(String.format("locator %s is not running.", l), ex);
       } else {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.AutoConnectionSourceImpl_COMMUNICATION_WITH_LOCATOR_0_FAILED_WITH_1,
-            new Object[] {l, ex}), ex);
+        logger.info(String.format("Communication with locator %s failed with %s.",
+            new Object[] {l, ex}),
+            ex);
       }
     }
   }

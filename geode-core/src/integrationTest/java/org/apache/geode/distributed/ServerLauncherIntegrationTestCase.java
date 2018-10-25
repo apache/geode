@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link ServerLauncher}.
@@ -89,7 +89,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   }
 
   protected ServerLauncher awaitStart(final ServerLauncher launcher) {
-    await().atMost(2, MINUTES).until(() -> assertThat(isLauncherOnline()).isTrue());
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(isLauncherOnline()).isTrue());
     return launcher;
   }
 

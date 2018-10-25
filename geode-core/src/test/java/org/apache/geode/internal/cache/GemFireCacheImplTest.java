@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +31,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -173,9 +173,8 @@ public class GemFireCacheImplTest {
           }
         });
       }
-      Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-          .pollDelay(10, TimeUnit.MILLISECONDS).timeout(90, TimeUnit.SECONDS)
-          .until(() -> assertEquals(MAX_THREADS, executor.getCompletedTaskCount()));
+      await().timeout(90, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertEquals(MAX_THREADS, executor.getCompletedTaskCount()));
     } finally {
       gfc.close();
     }

@@ -67,9 +67,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
@@ -304,7 +302,7 @@ public abstract class AbstractRegionMap
   public void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat) {
     if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
       logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
+          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
@@ -322,7 +320,7 @@ public abstract class AbstractRegionMap
     boolean success = false;
     if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
       logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
+          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
@@ -1038,6 +1036,7 @@ public abstract class AbstractRegionMap
     final boolean hasRemoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     boolean callbackEventAddedToPending = false;
     IndexManager oqlIndexManager = owner.getIndexManager();
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
       RegionEntry re = getEntry(key);
       if (re != null) {
@@ -1291,6 +1290,10 @@ public abstract class AbstractRegionMap
     } catch (DiskAccessException dae) {
       owner.handleDiskAccessException(dae);
       throw dae;
+    } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
     }
   }
 
@@ -1331,20 +1334,23 @@ public abstract class AbstractRegionMap
       Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
 
     }
+    logger.debug("ARM.invalidate invoked for key {}", event.getKey());
     boolean didInvalidate = false;
     RegionEntry invalidatedRe = null;
     boolean clearOccured = false;
     DiskRegion dr = owner.getDiskRegion();
     boolean ownerIsInitialized = owner.isInitialized();
+
+    // Fix for Bug #44431. We do NOT want to update the region and wait
+    // later for index INIT as region.clear() can cause inconsistency if
+    // happened in parallel as it also does index INIT.
+    IndexManager oqlIndexManager = owner.getIndexManager();
+    if (oqlIndexManager != null) {
+      oqlIndexManager.waitForIndexInit();
+    }
+    lockForCacheModification(owner, event);
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
-      // Fix for Bug #44431. We do NOT want to update the region and wait
-      // later for index INIT as region.clear() can cause inconsistency if
-      // happened in parallel as it also does index INIT.
-      IndexManager oqlIndexManager = owner.getIndexManager();
-      if (oqlIndexManager != null) {
-        oqlIndexManager.waitForIndexInit();
-      }
-      lockForCacheModification(owner, event);
       try {
         try {
           if (forceNewEntry || forceCallbacks) {
@@ -1377,11 +1383,7 @@ public abstract class AbstractRegionMap
                       } else if (oldRe.isInvalid()) {
 
                         // was already invalid, do not invoke listeners or increment stat
-                        if (isDebugEnabled) {
-                          logger.debug("mapInvalidate: Entry already invalid: '{}'",
-                              event.getKey());
-                        }
-                        processVersionTag(oldRe, event);
+                        handleAlreadyInvalidEntry(event, owner, oldRe);
                         try {
                           oldRe.setValue(owner, oldRe.getValueInVM(owner)); // OFFHEAP noop setting
                                                                             // an already invalid to
@@ -1577,12 +1579,6 @@ public abstract class AbstractRegionMap
                       } else if (tombstone != null) {
                         processVersionTag(tombstone, event);
                         try {
-                          if (!tombstone.isTombstone()) {
-                            if (isDebugEnabled) {
-                              logger.debug("tombstone is no longer a tombstone. {}:event={}",
-                                  tombstone, event);
-                            }
-                          }
                           tombstone.setValue(owner, Token.TOMBSTONE);
                         } catch (RegionClearedException e) {
                           // that's okay - when writing a tombstone into a disk, the
@@ -1622,14 +1618,7 @@ public abstract class AbstractRegionMap
                     if (re.isInvalid()) {
                       // was already invalid, do not invoke listeners or increment
                       // stat
-                      if (isDebugEnabled) {
-                        logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
-                      }
-                      if (event.getVersionTag() != null && owner.getVersionVector() != null) {
-                        owner.getVersionVector().recordVersion(
-                            (InternalDistributedMember) event.getDistributedMember(),
-                            event.getVersionTag());
-                      }
+                      handleAlreadyInvalidEntry(event, owner, re);
                     } else { // previous value not invalid
                       event.setRegionEntry(re);
                       owner.serverInvalidate(event);
@@ -1725,9 +1714,27 @@ public abstract class AbstractRegionMap
         }
       }
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       releaseCacheModificationLock(owner, event);
     }
 
+  }
+
+  /**
+   * If an entry is already invalid we still want to perform a conflict check, update
+   * the entry's version stamp and invoke listeners.
+   */
+  private void handleAlreadyInvalidEntry(EntryEventImpl event, LocalRegion owner, RegionEntry re) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
+    }
+    processVersionTag(re, event);
+    if (owner.getConcurrencyChecksEnabled() && event.hasValidVersionTag()) {
+      // notify clients so they can update their version stamps
+      event.invokeCallbacks(owner, true, true);
+    }
   }
 
   private void invalidateNewEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry newRe)
@@ -1771,6 +1778,7 @@ public abstract class AbstractRegionMap
     }
 
     lockForCacheModification(owner, event);
+    final boolean locked = owner.lockWhenRegionIsInitializing();
 
     try {
       RegionEntry re = getEntry(event.getKey());
@@ -1802,6 +1810,9 @@ public abstract class AbstractRegionMap
       this._getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       releaseCacheModificationLock(owner, event);
       if (dr != null) {
         dr.removeClearCountReference();
@@ -1832,6 +1843,7 @@ public abstract class AbstractRegionMap
     if (oqlIndexManager != null) {
       oqlIndexManager.waitForIndexInit();
     }
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
       if (forceNewEntry) {
         boolean opCompleted = false;
@@ -2040,6 +2052,9 @@ public abstract class AbstractRegionMap
       owner.handleDiskAccessException(dae);
       throw dae;
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       if (oqlIndexManager != null) {
         oqlIndexManager.countDownIndexUpdaters();
       }
@@ -2113,6 +2128,7 @@ public abstract class AbstractRegionMap
       callbackEvent.makeSerializedNewValue();
       txHandleWANEvent(owner, callbackEvent, txEntryState);
     }
+
     RegionMapCommitPut commitPut = new RegionMapCommitPut(this, owner, callbackEvent, putOp,
         didDestroy, txId, txEvent, pendingCallbacks, txEntryState);
     commitPut.put();

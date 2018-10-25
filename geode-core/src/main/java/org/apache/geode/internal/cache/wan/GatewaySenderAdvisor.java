@@ -45,10 +45,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
   private static final Logger logger = LogService.getLogger();
@@ -62,9 +60,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   private final String lockToken;
 
   private Thread lockObtainingThread;
-
-  private final ThreadGroup threadGroup =
-      LoggingThreadGroup.createThreadGroup("GatewaySenderAdvisor Threads");
 
   private AbstractGatewaySender sender;
 
@@ -110,50 +105,57 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   private void checkCompatibility(GatewaySenderProfile sp) {
     if (sp.remoteDSId != sender.getRemoteDSId()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_REMOTE_DS_ID_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_2_REMOTE_DS_ID
-              .toString(new Object[] {sp.Id, sp.remoteDSId, sender.remoteDSId}));
+          String.format(
+              "Cannot create Gateway Sender %s with remote ds id %s because another cache has the same Gateway Sender defined with remote ds id %s.",
+              sp.Id, sp.remoteDSId, sender.remoteDSId));
     }
     if (sp.isParallel && !sender.isParallel()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_AS_PARALLEL_GATEWAY_SENDER_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_AS_SERIAL_GATEWAY_SENDER
-              .toString(new Object[] {sp.Id}));
+          String.format(
+              "Cannot create Gateway Sender %s as parallel gateway sender because another cache has the same sender as serial gateway sender",
+              sp.Id));
     }
     if (!sp.isParallel && sender.isParallel()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_AS_SERIAL_GATEWAY_SENDER_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_AS_PARALLEL_GATEWAY_SENDER
-              .toString(new Object[] {sp.Id}));
+          String.format(
+              "Cannot create Gateway Sender %s as serial gateway sender because another cache has the same sender as parallel gateway sender",
+              sp.Id));
     }
 
     if (sp.isBatchConflationEnabled != sender.isBatchConflationEnabled()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_IS_BACTH_CONFLATION_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_IS_BATCH_CONFLATION_2
-              .toString(new Object[] {sp.Id, sp.isBatchConflationEnabled,
-                  sender.isBatchConflationEnabled()}));
+          String.format(
+              "Cannot create Gateway Sender %s with isBatchConflationEnabled %s because another cache has the same Gateway Sender defined with isBatchConflationEnabled %s",
+              sp.Id, sp.isBatchConflationEnabled,
+              sender.isBatchConflationEnabled()));
     }
     if (sp.isPersistenceEnabled != sender.isPersistenceEnabled()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_IS_PERSISTENT_ENABLED_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_IS_PERSISTENT_ENABLED_2
-              .toString(
-                  new Object[] {sp.Id, sp.isPersistenceEnabled, sender.isPersistenceEnabled()}));
+          String.format(
+              "Cannot create Gateway Sender %s with isPersistentEnabled %s because another cache has the same Gateway Sender defined with isPersistentEnabled %s",
+              sp.Id, sp.isPersistenceEnabled, sender.isPersistenceEnabled()));
     }
     if (sp.alertThreshold != sender.getAlertThreshold()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_ALERT_THRESHOLD_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_ALERT_THRESHOLD_2
-              .toString(new Object[] {sp.Id, sp.alertThreshold, sender.getAlertThreshold()}));
+          String.format(
+              "Cannot create Gateway Sender %s with alertThreshold %s because another cache has the same Gateway Sender defined with alertThreshold %s",
+              sp.Id, sp.alertThreshold, sender.getAlertThreshold()));
     }
     if (!sender.isParallel()) {
       if (sp.manualStart != sender.isManualStart()) {
         throw new IllegalStateException(
-            LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_MANUAL_START_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_MANUAL_START_2
-                .toString(new Object[] {sp.Id, sp.manualStart, sender.isManualStart()}));
+            String.format(
+                "Cannot create Gateway Sender %s with manual start %s because another cache has the same Gateway Sender defined with manual start %s",
+                sp.Id, sp.manualStart, sender.isManualStart()));
       }
     }
 
     if (!sp.isParallel) {
       if (sp.orderPolicy != sender.getOrderPolicy()) {
         throw new IllegalStateException(
-            LocalizedStrings.GatewaySenderAdvisor_CANNOT_CREATE_GATEWAYSENDER_0_WITH_ORDER_POLICY_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_SENDER_WITH_ORDER_POLICY_2
-                .toString(new Object[] {sp.Id, sp.orderPolicy, sender.getOrderPolicy()}));
+            String.format(
+                "Cannot create Gateway Sender %s with orderPolicy %s because another cache has the same Gateway Sender defined with orderPolicy %s",
+                sp.Id, sp.orderPolicy, sender.getOrderPolicy()));
       }
     }
 
@@ -163,14 +165,16 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
     if (sp.eventFiltersClassNames.size() != senderEventFilterClassNames.size()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_GATEWAY_EVENT_FILTERS_MISMATCH.toString(
-              new Object[] {sp.Id, sp.eventFiltersClassNames, senderEventFilterClassNames}));
+          String.format(
+              "Cannot create Gateway Sender %s with GatewayEventFilters %s because another cache has the same Gateway Sender defined with GatewayEventFilters %s",
+              sp.Id, sp.eventFiltersClassNames, senderEventFilterClassNames));
     } else {
       for (String filterName : senderEventFilterClassNames) {
         if (!sp.eventFiltersClassNames.contains(filterName)) {
           throw new IllegalStateException(
-              LocalizedStrings.GatewaySenderAdvisor_GATEWAY_EVENT_FILTERS_MISMATCH.toString(
-                  new Object[] {sp.Id, sp.eventFiltersClassNames, senderEventFilterClassNames}));
+              String.format(
+                  "Cannot create Gateway Sender %s with GatewayEventFilters %s because another cache has the same Gateway Sender defined with GatewayEventFilters %s",
+                  sp.Id, sp.eventFiltersClassNames, senderEventFilterClassNames));
         }
       }
     }
@@ -181,17 +185,19 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
     if (sp.transFiltersClassNames.size() != senderTransportFilterClassNames.size()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_GATEWAY_TRANSPORT_FILTERS_MISMATCH.toString(
-              new Object[] {sp.Id, sp.transFiltersClassNames, senderTransportFilterClassNames}));
+          String.format(
+              "Cannot create Gateway Sender %s with GatewayTransportFilters %s because another cache has the same Gateway Sender defined with GatewayTransportFilters %s",
+              sp.Id, sp.transFiltersClassNames, senderTransportFilterClassNames));
     } else {
       Iterator<String> i1 = sp.transFiltersClassNames.iterator();
       Iterator<String> i2 = senderTransportFilterClassNames.iterator();
       while (i1.hasNext() && i2.hasNext()) {
         if (!i1.next().equals(i2.next())) {
           throw new IllegalStateException(
-              LocalizedStrings.GatewaySenderAdvisor_GATEWAY_TRANSPORT_FILTERS_MISMATCH
-                  .toString(new Object[] {sp.Id, sp.transFiltersClassNames,
-                      senderTransportFilterClassNames}));
+              String.format(
+                  "Cannot create Gateway Sender %s with GatewayTransportFilters %s because another cache has the same Gateway Sender defined with GatewayTransportFilters %s",
+                  sp.Id, sp.transFiltersClassNames,
+                  senderTransportFilterClassNames));
         }
       }
     }
@@ -201,23 +207,26 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
     if (sp.senderEventListenerClassNames.size() != senderEventListenerClassNames.size()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_GATEWAY_SENDER_LISTENER_MISMATCH
-              .toString(new Object[] {sp.Id, sp.senderEventListenerClassNames,
-                  senderEventListenerClassNames}));
+          String.format(
+              "Cannot create Gateway Sender %s with AsyncEventListeners %s because another cache has the same Gateway Sender defined with AsyncEventListener %s",
+              sp.Id, sp.senderEventListenerClassNames,
+              senderEventListenerClassNames));
     } else {
       for (String listenerName : senderEventListenerClassNames) {
         if (!sp.senderEventListenerClassNames.contains(listenerName)) {
           throw new IllegalStateException(
-              LocalizedStrings.GatewaySenderAdvisor_GATEWAY_SENDER_LISTENER_MISMATCH
-                  .toString(new Object[] {sp.Id, sp.senderEventListenerClassNames,
-                      senderEventListenerClassNames}));
+              String.format(
+                  "Cannot create Gateway Sender %s with AsyncEventListeners %s because another cache has the same Gateway Sender defined with AsyncEventListener %s",
+                  sp.Id, sp.senderEventListenerClassNames,
+                  senderEventListenerClassNames));
         }
       }
     }
     if (sp.isDiskSynchronous != sender.isDiskSynchronous()) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewaySenderAdvisor_GATEWAY_SENDER_IS_DISK_SYNCHRONOUS_MISMATCH
-              .toString(new Object[] {sp.Id, sp.isDiskSynchronous, sender.isDiskSynchronous()}));
+          String.format(
+              "Cannot create Gateway Sender %s with isDiskSynchronous %s because another cache has the same Gateway Sender defined with isDiskSynchronous %s",
+              sp.Id, sp.isDiskSynchronous, sender.isDiskSynchronous()));
     }
   }
 
@@ -382,15 +391,13 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   }
 
   public void makePrimary() {
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.SerialGatewaySenderImpl_0__STARTING_AS_PRIMARY, this.sender));
+    logger.info("{} : Starting as primary", this.sender);
     AbstractGatewaySenderEventProcessor eventProcessor = this.sender.getEventProcessor();
     if (eventProcessor != null) {
       eventProcessor.removeCacheListener();
     }
 
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.SerialGatewaySenderImpl_0__BECOMING_PRIMARY_GATEWAYSENDER, this.sender));
+    logger.info("{} : Becoming primary gateway sender", this.sender);
     notifyAndBecomePrimary();
     new UpdateAttributesProcessor(this.sender).distribute(false);
   }
@@ -415,54 +422,50 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
 
     // Set primary flag to false
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.SerialGatewaySenderImpl_0__STARTING_AS_SECONDARY_BECAUSE_PRIMARY_GATEWAY_SENDER_IS_AVAIALABLE_ON_MEMBER_2,
-        new Object[] {this.sender.getId(), advisePrimaryGatewaySender()}));
+    logger.info(
+        "{} starting as secondary because primary gateway sender is available on member :{}",
+        new Object[] {this.sender.getId(), advisePrimaryGatewaySender()});
     this.isPrimary = false;
     new UpdateAttributesProcessor(this.sender).distribute(false);
   }
 
   public void launchLockObtainingVolunteerThread() {
-    this.lockObtainingThread = new Thread(threadGroup, new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-        GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().lock();
-        try {
-          // Attempt to obtain the lock
-          if (!(GatewaySenderAdvisor.this.sender.isRunning())) {
-            return;
-          }
-          if (logger.isDebugEnabled()) {
-            logger.debug("{}: Obtaining the lock on {}", this, GatewaySenderAdvisor.this.lockToken);
-          }
-
-          if (volunteerForPrimary()) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("{}: Obtained the lock on {}", this,
-                  GatewaySenderAdvisor.this.lockToken);
-            }
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.GatewaySender_0_IS_BECOMING_PRIMARY_GATEWAY_Sender,
-                GatewaySenderAdvisor.this));
-
-            // As soon as the lock is obtained, set primary
-            GatewaySenderAdvisor.this.makePrimary();
-          }
-        } catch (CancelException e) {
-          // no action necessary
-        } catch (Exception e) {
-          if (!sender.getStopper().isCancelInProgress()) {
-            logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.GatewaySenderAdvisor_0_THE_THREAD_TO_OBTAIN_THE_FAILOVER_LOCK_WAS_INTERRUPTED__THIS_GATEWAY_SENDER_WILL_NEVER_BECOME_THE_PRIMARY,
-                GatewaySenderAdvisor.this), e);
-          }
-        } finally {
-          GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().unlock();
+    String threadName = "Gateway Sender Primary Lock Acquisition Thread Volunteer";
+    this.lockObtainingThread = new LoggingThread(threadName, () -> {
+      GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().lock();
+      try {
+        // Attempt to obtain the lock
+        if (!(GatewaySenderAdvisor.this.sender.isRunning())) {
+          return;
         }
-      }
-    }, "Gateway Sender Primary Lock Acquisition Thread Volunteer");
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Obtaining the lock on {}", this, GatewaySenderAdvisor.this.lockToken);
+        }
 
-    this.lockObtainingThread.setDaemon(true);
+        if (volunteerForPrimary()) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("{}: Obtained the lock on {}", this,
+                GatewaySenderAdvisor.this.lockToken);
+          }
+          logger.info("{} is becoming primary gateway Sender.",
+              GatewaySenderAdvisor.this);
+
+          // As soon as the lock is obtained, set primary
+          GatewaySenderAdvisor.this.makePrimary();
+        }
+      } catch (CancelException e) {
+        // no action necessary
+      } catch (Exception e) {
+        if (!sender.getStopper().isCancelInProgress()) {
+          logger.fatal(String.format(
+              "%s: The thread to obtain the failover lock was interrupted. This gateway sender will never become the primary.",
+              GatewaySenderAdvisor.this),
+              e);
+        }
+      } finally {
+        GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().unlock();
+      }
+    });
     this.lockObtainingThread.start();
   }
 
@@ -472,8 +475,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       return;
     }
     synchronized (this.primaryLock) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_0__WAITING_TO_BECOME_PRIMARY_GATEWAY, this.sender.getId()));
+      logger.info("{} : Waiting to become primary gateway", this.sender.getId());
       while (!isPrimary()) {
         this.primaryLock.wait(1000);
         if (sender.getEventProcessor() != null && callingProcessor.isStopped()) {

@@ -15,7 +15,6 @@
 package org.apache.geode.admin;
 
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides information about the aggregate health of the members of a GemFire distributed system
@@ -156,13 +155,13 @@ public interface GemFireHealth {
   class Health implements java.io.Serializable {
     private static final long serialVersionUID = 3039539430412151801L;
     /** The string for good health */
-    static final String GOOD_STRING = LocalizedStrings.GemFireHealth_GOOD.toLocalizedString();
+    static final String GOOD_STRING = "Good";
 
     /** The string for okay health */
-    static final String OKAY_STRING = LocalizedStrings.GemFireHealth_OKAY.toLocalizedString();
+    static final String OKAY_STRING = "Okay";
 
     /** The string for poor health */
-    static final String POOR_STRING = LocalizedStrings.GemFireHealth_POOR.toLocalizedString();
+    static final String POOR_STRING = "Poor";
 
     //////////////////// Instance Fields ////////////////////
 

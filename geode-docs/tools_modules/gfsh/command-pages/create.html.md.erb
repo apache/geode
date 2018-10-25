@@ -366,7 +366,7 @@ this `gfsh` command exits with an exit code indicating success.
 Outputs a tabular format status of each member's gateway receiver,
 independent of the success or failure of the creation.
 
-See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_4DB3D9CF01AD4F4899457D1250468D00).
+See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite_overview.html).
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -384,9 +384,9 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 
 <table>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="25%" />
+<col width="65%" />
+<col width="10%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -417,13 +417,13 @@ if this option is specified and cluster configuration is enabled.
 <tr class="even">
 <td><span class="keyword parmname">\-\-start-port</span></td>
 <td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5000</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-end-port</span></td>
 <td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5500</td>
 </tr>
 <tr class="even">
@@ -480,7 +480,7 @@ server1 | GatewayReceiver created on member "server1" and will listen on the por
 
 Creates a gateway sender on one or more members of a cluster.
 
-See [Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA).
+See [Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html).
 
 **Note:**
 The gateway sender configuration for a specific sender `id` must be identical on each <%=vars.product_name%> member that hosts the gateway sender.
@@ -1039,7 +1039,7 @@ If this option is specified without a value or is specified with a value of <cod
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-compressor</span></td>
-<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">org.apache.geode.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">org.apache.geode.compression.SnappyCompressor</code>), which is bundled with <%=vars.product_name%>. See <a href="../../../managing/region_compression.html#topic_r43_wgc_gl">Region Compression</a>.</td>
+<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">org.apache.geode.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">org.apache.geode.compression.SnappyCompressor</code>), which is bundled with <%=vars.product_name%>. See <a href="../../../managing/region_compression.html">Region Compression</a>.</td>
 <td>no compression</td>
 </tr>
 <tr class="odd">

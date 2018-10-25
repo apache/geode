@@ -14,15 +14,16 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,8 +41,7 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -52,20 +52,22 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
- * This class tests the ContiunousQuery mechanism in GemFire. This includes the test with diffetent
+ * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different
  * data activities.
  */
+@SuppressWarnings("SpellCheckingInspection")
 @Category({ClientSubscriptionTest.class})
 public class CqPerfDUnitTest extends JUnit4CacheTestCase {
-
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
+  private final Logger logger = LogService.getLogger();
+  @SuppressWarnings("CanBeFinal")
+  private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
   public CqPerfDUnitTest() {
     super();
   }
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUp() {
     // avoid IllegalStateException from HandShake by connecting all vms tor
     // system before creating connection pools
     getSystem();
@@ -78,63 +80,48 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests the cq performance.
-   *
    */
   @Ignore("perf")
   @Test
-  public void testCQPerf() throws Exception {
+  public void testCQPerf() {
 
-    final Host host = Host.getHost(0);
-    VM server = host.getVM(0);
-    VM client = host.getVM(1);
+    VM server = VM.getVM(0);
+    VM client = VM.getVM(1);
 
     cqDUnitTest.createServer(server);
 
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server.getHost());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
 
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
     final String cqName = "testCQPerf_0";
 
-    client.invoke(new CacheSerializableRunnable("Create CQ :" + cqName) {
-      public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
-        // Get CQ Service.
-        QueryService cqService = null;
-        try {
-          cqService = getCache().getQueryService();
-        } catch (Exception cqe) {
-          cqe.printStackTrace();
-          fail("Failed to getCQService.");
-        }
-        // Create CQ Attributes.
-        CqAttributesFactory cqf = new CqAttributesFactory();
-        CqListener[] cqListeners = {new CqTimeTestListener(LogWriterUtils.getLogWriter())};
-        ((CqTimeTestListener) cqListeners[0]).cqName = cqName;
+    client.invoke(() -> {
+      logger.info("### Create CQ. ###" + cqName);
+      // Get CQ Service.
+      QueryService cqService =
+          getCache().getQueryService();
 
-        cqf.initCqListeners(cqListeners);
-        CqAttributes cqa = cqf.create();
+      // Create CQ Attributes.
+      CqAttributesFactory cqf = new CqAttributesFactory();
+      CqListener[] cqListeners = {new CqTimeTestListener(LogWriterUtils.getLogWriter())};
+      ((CqTimeTestListener) cqListeners[0]).cqName = cqName;
 
-        // Create and Execute CQ.
-        try {
-          CqQuery cq1 = cqService.newCq(cqName, cqDUnitTest.cqs[0], cqa);
-          assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-          cq1.execute();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
-          ex.printStackTrace();
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
-          throw err;
-        }
-      }
+      cqf.initCqListeners(cqListeners);
+      CqAttributes cqa = cqf.create();
+
+      // Create and Execute CQ.
+      CqQuery cq1 = cqService.newCq(cqName, cqDUnitTest.cqs[0], cqa);
+      assertThat(cq1.getState().isStopped()).describedAs("newCq() state mismatch").isTrue();
+      cq1.execute();
     });
 
     final int size = 50;
 
     // Create values.
     cqDUnitTest.createValuesWithTime(client, cqDUnitTest.regions[0], size);
+
     Wait.pause(5000);
 
     // Update values
@@ -142,39 +129,13 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     client.invoke(new CacheSerializableRunnable("Validate CQs") {
       public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter().info("### Validating CQ. ### " + cqName);
+        logger.info("### Validating CQ. ### " + cqName);
         // Get CQ Service.
-        QueryService cqService = null;
-        try {
-          cqService = getCache().getQueryService();
-        } catch (Exception cqe) {
-          cqe.printStackTrace();
-          fail("Failed to getCqService.");
-        }
+        QueryService cqService = getCache().getQueryService();
 
         CqQuery cQuery = cqService.getCq(cqName);
-        if (cQuery == null) {
-          fail("Failed to get CqQuery for CQ : " + cqName);
-        }
+        assertThat(cQuery).isNotNull();
 
-        // CqAttributes cqAttr = cQuery.getCqAttributes();
-        // CqListener cqListeners[] = cqAttr.getCqListeners();
-        // CqTimeTestListener listener = (CqTimeTestListener) cqListeners[0];
-
-        // Wait for all the create to arrive.
-        // for (int i=1; i <= size; i++) {
-        // listener.waitForCreated(cqDUnitTest.KEY+i);
-        // }
-
-        // Wait for all the update to arrive.
-        // for (int i=1; i <= size; i++) {
-        // listener.waitForUpdated(cqDUnitTest.KEY+i);
-        // }
-        // getLogWriter().info("### Time taken for Creation of " + size + " events is :" +
-        // listener.getTotalQueryCreateTime());
-
-        // getLogWriter().info("### Time taken for Update of " + size + " events is :" +
-        // listener.getTotalQueryUpdateTime());
       }
     });
 
@@ -188,218 +149,173 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for maintaining keys for update optimization.
-   *
    */
   @Test
-  public void testKeyMaintainance() throws Exception {
+  public void testKeyMaintenance() {
 
-    final Host host = Host.getHost(0);
-    VM server = host.getVM(0);
-    VM client = host.getVM(1);
+    VM server = VM.getVM(0);
+    VM client = VM.getVM(1);
 
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server.getHost());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
     cqDUnitTest.createClient(client, port, host0);
 
-
-    // HashSet for caching purpose will be created for cqs.
-    final int cqSize = 2;
-
     // Cq1
-    cqDUnitTest.createCQ(client, "testKeyMaintainance_0", cqDUnitTest.cqs[0]);
-    cqDUnitTest.executeCQ(client, "testKeyMaintainance_0", false, null);
+    cqDUnitTest.createCQ(client, "testKeyMaintenance_0", cqDUnitTest.cqs[0]);
+    cqDUnitTest.executeCQ(client, "testKeyMaintenance_0", false, null);
 
     // Cq2
-    cqDUnitTest.createCQ(client, "testKeyMaintainance_1", cqDUnitTest.cqs[10]);
-    cqDUnitTest.executeCQ(client, "testKeyMaintainance_1", false, null);
+    cqDUnitTest.createCQ(client, "testKeyMaintenance_1", cqDUnitTest.cqs[10]);
+    cqDUnitTest.executeCQ(client, "testKeyMaintenance_1", false, null);
 
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], 1);
-    cqDUnitTest.waitForCreated(client, "testKeyMaintainance_0", CqQueryDUnitTest.KEY + 1);
+    cqDUnitTest.waitForCreated(client, "testKeyMaintenance_0", CqQueryDUnitTest.KEY + 1);
 
-    // Entry is made into the CQs cache hashset.
-    // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 0
-    server.invoke(new CacheSerializableRunnable("LookForCachedEventKeys1") {
-      public void run2() throws CacheException {
-        CqService cqService = null;
-        try {
-          cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
+    // Entry is made into the CQs cache hashSet.
+    // testKeyMaintenance_0 with 1 entry and testKeyMaintenance_1 with 0
+    server.invoke(() -> {
+      CqService cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-        Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
-        for (InternalCqQuery cq : cqs) {
-          ServerCQImpl cqQuery = (ServerCQImpl) cq;
-          String serverCqName = (String) cqQuery.getServerCqName();
-          if (serverCqName.startsWith("testKeyMaintainance_0")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 1,
-                cqQuery.getCqResultKeysSize());
-          } else if (serverCqName.startsWith("testKeyMaintainance_1")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_1 is wrong.", 0,
-                cqQuery.getCqResultKeysSize());
-          }
+      Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
+      for (InternalCqQuery cq : cqs) {
+        ServerCQImpl cqQuery = (ServerCQImpl) cq;
+        String serverCqName = cqQuery.getServerCqName();
+        if (serverCqName.startsWith("testKeyMaintenance_0")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_0 is wrong.")
+              .isEqualTo(1);
+        } else if (serverCqName.startsWith("testKeyMaintenance_1")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_1 is wrong.")
+              .isEqualTo(0);
         }
       }
     });
 
     // Update 1.
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], 10);
-    cqDUnitTest.waitForCreated(client, "testKeyMaintainance_0", CqQueryDUnitTest.KEY + 10);
+    cqDUnitTest.waitForCreated(client, "testKeyMaintenance_0", CqQueryDUnitTest.KEY + 10);
 
-    // Entry/check is made into the CQs cache hashset.
-    // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 1
-    server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate1") {
-      public void run2() throws CacheException {
-        CqService cqService = null;
-        try {
-          cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
-        Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
-        for (InternalCqQuery cq : cqs) {
-          ServerCQImpl cqQuery = (ServerCQImpl) cq;
+    // Entry/check is made into the CQs cache hashSet.
+    // testKeyMaintenance_0 with 1 entry and testKeyMaintenance_1 with 1
+    server.invoke(() -> {
+      CqService cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-          String serverCqName = (String) cqQuery.getServerCqName();
-          if (serverCqName.startsWith("testKeyMaintainance_0")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 10,
-                cqQuery.getCqResultKeysSize());
-          } else if (serverCqName.startsWith("testKeyMaintainance_1")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_1 is wrong.", 5,
-                cqQuery.getCqResultKeysSize());
-          }
+      Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
+      for (InternalCqQuery cq : cqs) {
+        ServerCQImpl cqQuery = (ServerCQImpl) cq;
+
+        String serverCqName = cqQuery.getServerCqName();
+        if (serverCqName.startsWith("testKeyMaintenance_0")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_0 is wrong.")
+              .isEqualTo(10);
+        } else if (serverCqName.startsWith("testKeyMaintenance_1")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_1 is wrong.")
+              .isEqualTo(5);
         }
       }
     });
 
     // Update.
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], 12);
-    cqDUnitTest.waitForCreated(client, "testKeyMaintainance_0", CqQueryDUnitTest.KEY + 12);
+    cqDUnitTest.waitForCreated(client, "testKeyMaintenance_0", CqQueryDUnitTest.KEY + 12);
 
-    // Entry/check is made into the CQs cache hashset.
-    // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 1
-    server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
-      public void run2() throws CacheException {
-        CqService cqService = null;
-        try {
-          cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
+    // Entry/check is made into the CQs cache hashSet.
+    // testKeyMaintenance_0 with 1 entry and testKeyMaintenance_1 with 1
+    server.invoke(() -> {
+      CqService cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
+
+      Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
+      for (InternalCqQuery cq : cqs) {
+        ServerCQImpl cqQuery = (ServerCQImpl) cq;
+        String serverCqName = cqQuery.getServerCqName();
+        if (serverCqName.startsWith("testKeyMaintenance_0")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_0 is wrong.")
+              .isEqualTo(12);
+        } else if (serverCqName.startsWith("testKeyMaintenance_1")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_1 is wrong.")
+              .isEqualTo(6);
         }
-
-        Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
-        for (InternalCqQuery cq : cqs) {
-          ServerCQImpl cqQuery = (ServerCQImpl) cq;
-          String serverCqName = (String) cqQuery.getServerCqName();
-          if (serverCqName.startsWith("testKeyMaintainance_0")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 12,
-                cqQuery.getCqResultKeysSize());
-          } else if (serverCqName.startsWith("testKeyMaintainance_1")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_1 is wrong.", 6,
-                cqQuery.getCqResultKeysSize());
-          }
-        }
-
       }
     });
 
     // Delete.
     cqDUnitTest.deleteValues(server, cqDUnitTest.regions[0], 6);
-    cqDUnitTest.waitForDestroyed(client, "testKeyMaintainance_0", CqQueryDUnitTest.KEY + 6);
+    cqDUnitTest.waitForDestroyed(client, "testKeyMaintenance_0", CqQueryDUnitTest.KEY + 6);
 
-    // Entry/check is made into the CQs cache hashset.
-    // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 1
-    server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
-      public void run2() throws CacheException {
-        CqService cqService = null;
-        try {
-          cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
-        Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
-        for (InternalCqQuery cq : cqs) {
-          ServerCQImpl cqQuery = (ServerCQImpl) cq;
+    // Entry/check is made into the CQs cache hashSet.
+    // testKeyMaintenance_0 with 1 entry and testKeyMaintenance_1 with 1
+    server.invoke(() -> {
+      CqService cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-          String serverCqName = (String) cqQuery.getServerCqName();
-          if (serverCqName.startsWith("testKeyMaintainance_0")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 6,
-                cqQuery.getCqResultKeysSize());
-          } else if (serverCqName.startsWith("testKeyMaintainance_1")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_1 is wrong.", 3,
-                cqQuery.getCqResultKeysSize());
-          }
+      Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
+      for (InternalCqQuery cq : cqs) {
+        ServerCQImpl cqQuery = (ServerCQImpl) cq;
+
+        String serverCqName = cqQuery.getServerCqName();
+        if (serverCqName.startsWith("testKeyMaintenance_0")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_0 is wrong.")
+              .isEqualTo(6);
+        } else if (serverCqName.startsWith("testKeyMaintenance_1")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_1 is wrong.")
+              .isEqualTo(3);
         }
       }
     });
 
     // Stop CQ.
     // This should still needs to process the events so that Results are up-to-date.
-    cqDUnitTest.stopCQ(client, "testKeyMaintainance_1");
+    cqDUnitTest.stopCQ(client, "testKeyMaintenance_1");
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], 12);
 
-    server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
-      public void run2() throws CacheException {
-        CqService cqService = null;
-        try {
-          cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
+    server.invoke(() -> {
+      CqService cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-        Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
-        for (InternalCqQuery cq : cqs) {
-          ServerCQImpl cqQuery = (ServerCQImpl) cq;
-          String serverCqName = (String) cqQuery.getServerCqName();
-          if (serverCqName.startsWith("testKeyMaintainance_0")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 12,
-                cqQuery.getCqResultKeysSize());
-          } else if (serverCqName.startsWith("testKeyMaintainance_1")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_1 is wrong.", 6,
-                cqQuery.getCqResultKeysSize());
-          }
+      Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
+      for (InternalCqQuery cq : cqs) {
+        ServerCQImpl cqQuery = (ServerCQImpl) cq;
+        String serverCqName = cqQuery.getServerCqName();
+        if (serverCqName.startsWith("testKeyMaintenance_0")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_0 is wrong.")
+              .isEqualTo(12);
+        } else if (serverCqName.startsWith("testKeyMaintenance_1")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_1 is wrong.")
+              .isEqualTo(6);
         }
-
       }
     });
-
 
     // re-start the CQ.
-    cqDUnitTest.executeCQ(client, "testKeyMaintainance_1", false, null);
+    cqDUnitTest.executeCQ(client, "testKeyMaintenance_1", false, null);
 
     // This will remove the caching for this CQ.
-    cqDUnitTest.closeCQ(client, "testKeyMaintainance_1");
-    server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
-      public void run2() throws CacheException {
-        CqService cqService = null;
-        try {
-          cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
-        Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
-        for (InternalCqQuery cq : cqs) {
-          ServerCQImpl cqQuery = (ServerCQImpl) cq;
+    cqDUnitTest.closeCQ(client, "testKeyMaintenance_1");
+    server.invoke(() -> {
+      CqService cqService = ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-          String serverCqName = (String) cqQuery.getServerCqName();
-          if (serverCqName.startsWith("testKeyMaintainance_0")) {
-            assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 12,
-                cqQuery.getCqResultKeysSize());
-          } else if (serverCqName.startsWith("testKeyMaintainance_1")) {
-            fail("The key maintainance should not be present for this CQ.");
-          }
-        }
+      Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
+      for (InternalCqQuery cq : cqs) {
+        ServerCQImpl cqQuery = (ServerCQImpl) cq;
 
+        String serverCqName = cqQuery.getServerCqName();
+        assertThat(serverCqName.startsWith("testKeyMaintenance_1")).isFalse();
+
+        if (serverCqName.startsWith("testKeyMaintenance_0")) {
+          assertThat(cqQuery.getCqResultKeysSize())
+              .describedAs("The number of keys cached for cq testKeyMaintenance_0 is wrong.")
+              .isEqualTo(12);
+        }
       }
     });
-
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -409,18 +325,16 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
-   *
    */
   @Test
-  public void testMatchingCqs() throws Exception {
+  public void testMatchingCqs() {
 
-    final Host host = Host.getHost(0);
-    VM server = host.getVM(0);
-    VM client = host.getVM(1);
+    VM server = VM.getVM(0);
+    VM client = VM.getVM(1);
 
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server.getHost());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
     cqDUnitTest.createClient(client, port, host0);
 
     // Create and Execute same kind of CQs.
@@ -463,7 +377,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     // Execute the stopped CQ.
     cqDUnitTest.executeCQ(client, "testMatchingCqs_1", false, null);
-
 
     // Update - 3.
     cqDUnitTest.clearCQListenerEvents(client, "testMatchingCqs_3");
@@ -509,22 +422,20 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
-   *
    */
   @Test
-  public void testMatchingCQWithMultipleClients() throws Exception {
+  public void testMatchingCQWithMultipleClients() {
 
-    final Host host = Host.getHost(0);
-    VM server = host.getVM(0);
-    VM client1 = host.getVM(1);
-    VM client2 = host.getVM(2);
-    VM client3 = host.getVM(3);
+    VM server = VM.getVM(0);
+    VM client1 = VM.getVM(1);
+    VM client2 = VM.getVM(2);
+    VM client3 = VM.getVM(3);
 
     VM clients[] = new VM[] {client1, client2, client3};
 
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server.getHost());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
 
     for (int clientIndex = 0; clientIndex < 3; clientIndex++) {
       cqDUnitTest.createClient(clients[clientIndex], port, host0);
@@ -589,7 +500,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     // Execute the stopped CQ.
     cqDUnitTest.executeCQ(client2, "testMatchingCQWithMultipleClients_1", false, null);
 
-
     // Update - 3.
     for (int clientIndex = 0; clientIndex < 3; clientIndex++) {
       cqDUnitTest.clearCQListenerEvents(clients[clientIndex],
@@ -636,7 +546,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     validateMatchingCqs(server, 2, cqDUnitTest.cqs[1], 2 * clients.length);
 
-
     // update 4
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], size);
 
@@ -664,19 +573,19 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testMatchingCQsWithMultipleServers() throws Exception {
-    final Host host = Host.getHost(0);
-    VM server1 = host.getVM(0);
-    VM server2 = host.getVM(1);
-    VM client1 = host.getVM(2);
-    VM client2 = host.getVM(3);
+  public void testMatchingCQsWithMultipleServers() {
+
+    VM server1 = VM.getVM(0);
+    VM server2 = VM.getVM(1);
+    VM client1 = VM.getVM(2);
+    VM client2 = VM.getVM(3);
 
     cqDUnitTest.createServer(server1);
 
     VM clients[] = new VM[] {client1, client2};
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
     // Create client.
 
     // Create client with redundancyLevel -1
@@ -696,10 +605,10 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
       cqDUnitTest.executeCQ(client2, "testMatchingCQsWithMultipleServers_" + i, false, null);
     }
 
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[0], 1 * clients.length);
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[1], 1 * clients.length);
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[0], clients.length);
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[1], clients.length);
 
-    Wait.pause(1 * 1000);
+    Wait.pause(1000);
 
     // CREATE.
     cqDUnitTest.createValues(server1, cqDUnitTest.regions[0], 10);
@@ -712,7 +621,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server2, ports[0]);
 
-    final int port2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port2 = server2.invoke(CqQueryDUnitTest::getCacheServerPort);
     System.out
         .println("### Port on which server1 running : " + port1 + " Server2 running : " + port2);
 
@@ -739,7 +648,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.waitForUpdated(client2, "testMatchingCQsWithMultipleServers_2",
         CqQueryDUnitTest.KEY + 4);
 
-
     int[] resultsCnt = new int[] {10, 1, 2};
 
     for (int i = 0; i < numCQs; i++) {
@@ -756,19 +664,21 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
 
   @Test
-  public void testFailOverMatchingCQsWithMultipleServers() throws Exception {
-    final Host host = Host.getHost(0);
-    VM server1 = host.getVM(0);
-    VM server2 = host.getVM(1);
-    VM client1 = host.getVM(2);
-    VM client2 = host.getVM(3);
+  public void testFailOverMatchingCQsWithMultipleServers() {
 
+    VM server1 = VM.getVM(0);
+    VM server2 = VM.getVM(1);
+    VM client1 = VM.getVM(2);
+    VM client2 = VM.getVM(3);
+
+    logger.info("Ready to create server 1");
     cqDUnitTest.createServer(server1);
+    logger.info("Ready to create server 1");
 
     VM clients[] = new VM[] {client1, client2};
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
     // Create client.
 
     // Create client with redundancyLevel -1
@@ -788,9 +698,8 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
       cqDUnitTest.executeCQ(client2, "testMatchingCQsWithMultipleServers_" + i, false, null);
     }
 
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[0], 1 * clients.length);
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[1], 1 * clients.length);
-
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[0], clients.length);
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[1], clients.length);
 
     cqDUnitTest.createServer(server2, ports[0]);
 
@@ -809,18 +718,16 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-
   /**
    * Test for CQ Fail over.
-   *
    */
   @Test
-  public void testMatchingCQsOnDataNodeWithMultipleServers() throws Exception {
-    final Host host = Host.getHost(0);
-    VM server1 = host.getVM(0);
-    VM server2 = host.getVM(1);
-    VM client1 = host.getVM(2);
-    VM client2 = host.getVM(3);
+  public void testMatchingCQsOnDataNodeWithMultipleServers() {
+
+    VM server1 = VM.getVM(0);
+    VM server2 = VM.getVM(1);
+    VM client1 = VM.getVM(2);
+    VM client2 = VM.getVM(3);
 
     cqDUnitTest.createServerOnly(server1, 0);
     cqDUnitTest.createServerOnly(server2, 0);
@@ -829,8 +736,8 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     VM clients[] = new VM[] {client1, client2};
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
 
     cqDUnitTest.createLocalRegion(client1, new int[] {port1, ports[0]}, host0, "-1",
@@ -850,11 +757,11 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
       cqDUnitTest.executeCQ(client2, "testMatchingCQsWithMultipleServers_" + i, false, null);
     }
 
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.prCqs[0], 1 * clients.length);
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.prCqs[1], 1 * clients.length);
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.prCqs[0], clients.length);
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.prCqs[1], clients.length);
 
-    validateMatchingCqs(server2, numCQs, cqDUnitTest.prCqs[0], 1 * clients.length);
-    validateMatchingCqs(server2, numCQs, cqDUnitTest.prCqs[1], 1 * clients.length);
+    validateMatchingCqs(server2, numCQs, cqDUnitTest.prCqs[0], clients.length);
+    validateMatchingCqs(server2, numCQs, cqDUnitTest.prCqs[1], clients.length);
 
     // Close.
     cqDUnitTest.closeClient(client1);
@@ -865,25 +772,24 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performance test for Matching CQ optimization changes.
-   *
    */
   @Ignore("perf")
   @Test
-  public void testPerformanceForMatchingCQs() throws Exception {
-    final Host host = Host.getHost(0);
-    VM server1 = host.getVM(0);
-    VM server2 = host.getVM(1);
-    VM client1 = host.getVM(2);
-    VM client2 = host.getVM(3);
+  public void testPerformanceForMatchingCQs() {
+
+    VM server1 = VM.getVM(0);
+    VM server2 = VM.getVM(1);
+    VM client1 = VM.getVM(2);
+    VM client2 = VM.getVM(3);
 
     cqDUnitTest.createServer(server1);
     cqDUnitTest.createServer(server2);
 
     // VM clients[] = new VM[]{client1, client2};
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
-    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final String host0 = NetworkUtils.getServerHostName();
 
     // Create client.
     // final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
@@ -895,22 +801,20 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createClient(client2, new int[] {port2}, host0, "-1");
 
     // Client1 registers matching CQs on server1.
-    boolean uniqueQueries = false;
-    String[] matchingCqs = this.generateCqQueries(uniqueQueries);
+    String[] matchingCqs = this.generateCqQueries(false);
     for (int i = 0; i < matchingCqs.length; i++) {
       cqDUnitTest.createCQ(client1, "testPerformanceForMatchingCQs_" + i, matchingCqs[i]);
       cqDUnitTest.executeCQ(client1, "testPerformanceForMatchingCQs_" + i, false, null);
     }
 
     // Client2 registers non-matching CQs on server2.
-    uniqueQueries = true;
-    matchingCqs = this.generateCqQueries(uniqueQueries);
+    matchingCqs = this.generateCqQueries(true);
     for (int i = 0; i < matchingCqs.length; i++) {
       cqDUnitTest.createCQ(client2, "testPerformanceForMatchingCQs_" + i, matchingCqs[i]);
       cqDUnitTest.executeCQ(client2, "testPerformanceForMatchingCQs_" + i, false, null);
     }
 
-    Wait.pause(1 * 1000);
+    Wait.pause(1000);
 
     // CREATE.
     int size = 1000;
@@ -937,7 +841,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
           CqQueryDUnitTest.KEY + k);
     }
 
-    Wait.pause(1 * 1000);
+    Wait.pause(1000);
     printCqQueryExecutionTime(server1);
     printCqQueryExecutionTime(server2);
 
@@ -949,58 +853,41 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  public void validateMatchingCqs(VM server, final int mapSize, final String query,
+  private void validateMatchingCqs(VM server, final int mapSize, final String query,
       final int numCqSize) {
-    server.invoke(new CacheSerializableRunnable("validateMatchingCqs") {
-      public void run2() throws CacheException {
-        CqServiceImpl cqService = null;
-        try {
-          cqService =
-              (CqServiceImpl) ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
+    server.invoke(() -> {
+      CqServiceImpl cqService =
+          (CqServiceImpl) ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-        Map matchedCqMap = cqService.getMatchingCqMap();
-        assertEquals("The number of matched cq is not as expected.", mapSize, matchedCqMap.size());
+      Map matchedCqMap = cqService.getMatchingCqMap();
+      await()
+          .until(matchedCqMap::size, equalTo(mapSize));
 
-        if (query != null) {
-          if (!matchedCqMap.containsKey(query)) {
-            fail("Query not found in the matched cq map. Query:" + query);
-          }
-          Collection cqs = (Collection) matchedCqMap.get(query);
-          assertEquals("Number of matched cqs are not equal to the expected matched cqs", numCqSize,
-              cqs.size());
-        }
+      if (query != null) {
+        assertThat(matchedCqMap.containsKey(query)).isTrue();
+
+        Collection cqs = (Collection) matchedCqMap.get(query);
+        await()
+            .until(cqs::size, equalTo(numCqSize));
       }
     });
   }
 
-  public void printCqQueryExecutionTime(VM server) {
-    server.invoke(new CacheSerializableRunnable("printCqQueryExecutionTime") {
-      public void run2() throws CacheException {
-        CqServiceImpl cqService = null;
-        try {
-          cqService =
-              (CqServiceImpl) ((DefaultQueryService) getCache().getQueryService()).getCqService();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("Failed to get the internal CqService.", ex);
-          Assert.fail("Failed to get the internal CqService.", ex);
-        }
+  private void printCqQueryExecutionTime(VM server) {
+    server.invoke(() -> {
+      CqServiceImpl cqService =
+          (CqServiceImpl) ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
-        long timeTaken = cqService.getCqServiceVsdStats().getCqQueryExecutionTime();
-        LogWriterUtils.getLogWriter().info("Total Time taken to Execute CQ Query :" + timeTaken);
-        // System.out.println("Total Time taken to Execute CQ Query :" + timeTaken);
-      }
+      long timeTaken = cqService.getCqServiceVsdStats().getCqQueryExecutionTime();
+      logger.info("Total Time taken to Execute CQ Query :" + timeTaken);
     });
   }
 
-  public String[] generateCqQueries(boolean uniqueQueries) {
-    ArrayList initQueries = new ArrayList();
+  private String[] generateCqQueries(boolean uniqueQueries) {
+    List<String> initQueries = new ArrayList<>();
     // From Portfolio object.
     String[] names = {"aaa", "bbb", "ccc", "ddd"};
-    int nameIndex = 0;
+    int nameIndex;
 
     // Construct few unique Queries.
     for (int i = 0; i < 3; i++) {
@@ -1015,10 +902,8 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     }
 
     int numMatchedQueries = 10;
-    ArrayList cqQueries = new ArrayList();
-    Iterator iter = initQueries.iterator();
-    while (iter.hasNext()) {
-      String query = (String) iter.next();
+    List<String> cqQueries = new ArrayList<>();
+    for (String query : initQueries) {
       for (int cnt = 0; cnt < numMatchedQueries; cnt++) {
         if (uniqueQueries) {
           // Append blank string, so that query string is different but the

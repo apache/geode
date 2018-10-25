@@ -36,6 +36,7 @@ import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher} as an application main in a
@@ -87,7 +88,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    await().until(() -> assertThat(process.isAlive()).isFalse());
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   /**
@@ -193,7 +194,8 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
 
   @Override
   protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
-    await().until(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
     assertThat(process.isAlive()).isTrue();
     return launcher;
   }

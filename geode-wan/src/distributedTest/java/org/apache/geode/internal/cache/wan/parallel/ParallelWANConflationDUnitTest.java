@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -21,9 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -143,7 +142,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   private void verifySecondaryEventQueuesDrained(final String senderId) {
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
+    await().untilAsserted(() -> {
       int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));

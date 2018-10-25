@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.cache.query.internal.cq.CqQueryImpl.testHook;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -65,6 +66,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -748,12 +750,12 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
             try {
               cqResults = cq1.executeWithInitialResults();
             } catch (Exception ex) {
-              Assert.fail("CQ execution failed", ex);
+              fail("CQ execution failed", ex);
             }
 
             // Check num of events received during executeWithInitialResults.
             final TestHook testHook = CqQueryImpl.testHook;
-            Wait.waitForCriterion(new WaitCriterion() {
+            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
               @Override
               public boolean done() {
@@ -764,7 +766,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
               public String description() {
                 return "No queued events found.";
               }
-            }, 3000, 5, true);
+            });
 
             getCache().getLogger().fine("Queued Events Size" + testHook.numQueuedEvents());
             // Make sure CQEvents are queued during execute with initial results.

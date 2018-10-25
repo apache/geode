@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -187,7 +186,7 @@ public class ControllableProcessIntegrationTest {
 
     // assert
     assertThat(created).isTrue();
-    await().atMost(2, MINUTES).until(() -> assertThat(statusRequestFile).doesNotExist());
+    await().untilAsserted(() -> assertThat(statusRequestFile).doesNotExist());
     assertThat(statusFile).exists();
   }
 }

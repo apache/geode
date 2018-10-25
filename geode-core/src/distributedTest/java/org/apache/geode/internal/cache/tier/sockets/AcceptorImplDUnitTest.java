@@ -15,15 +15,14 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Properties;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -160,7 +159,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       assertTrue(cache.isServer());
       assertFalse(cache.isClosed());
 
-      Awaitility.await("Acceptor is up and running").atMost(10, SECONDS)
+      await("Acceptor is up and running")
           .until(() -> getAcceptorImplFromCache(cache) != null);
       AcceptorImpl acceptorImpl = getAcceptorImplFromCache(cache);
 
@@ -179,17 +178,17 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
         clientRegion1.put("foo", "bar");
       });
 
-      Awaitility.await("Cache writer starts").atMost(10, SECONDS)
+      await("Cache writer starts")
           .until(sleepyCacheWriter::isStarted);
 
       cache.close();
 
-      Awaitility.await("Cache writer interrupted").atMost(10, SECONDS)
+      await("Cache writer interrupted")
           .until(sleepyCacheWriter::isInterrupted);
 
       sleepyCacheWriter.stopWaiting();
 
-      Awaitility.await("Acceptor shuts down properly").atMost(10, SECONDS)
+      await("Acceptor shuts down properly")
           .until(() -> acceptorImpl.isShutdownProperly());
 
       ThreadUtils.dumpMyThreads(); // for debugging.
@@ -217,13 +216,13 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
 
       assertTrue(cache.isServer());
       assertFalse(cache.isClosed());
-      Awaitility.await("Acceptor is up and running").atMost(10, SECONDS)
+      await("Acceptor is up and running")
           .until(() -> getAcceptorImplFromCache(cache) != null);
 
       AcceptorImpl acceptorImpl = getAcceptorImplFromCache(cache);
 
       cache.close();
-      Awaitility.await("Acceptor shuts down properly").atMost(10, SECONDS)
+      await("Acceptor shuts down properly")
           .until(acceptorImpl::isShutdownProperly);
 
       assertTrue(cache.isClosed());

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.management.MXBeanAwaitility.await;
 import static org.apache.geode.management.MXBeanAwaitility.getSystemManagementService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -35,6 +34,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.statistics.HostStatSampler;
 import org.apache.geode.internal.statistics.SampleCollector;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 
 /**
@@ -177,7 +177,8 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
       assertThat(memberMXBean.getClassPath()).isEqualTo(getClassPath());
       assertThat(memberMXBean.getCurrentTime()).isGreaterThan(0);
 
-      await().until(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(0));
+      GeodeAwaitility.await()
+          .untilAsserted(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(0));
 
       assertThat(memberMXBean.getUsedMemory()).isGreaterThan(10);
       assertThat(memberMXBean.getCurrentHeapSize()).isGreaterThan(10);

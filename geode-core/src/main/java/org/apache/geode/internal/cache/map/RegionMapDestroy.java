@@ -105,6 +105,7 @@ public class RegionMapDestroy {
     }
 
     cacheModificationLock.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
 
       while (retry) {
@@ -172,6 +173,9 @@ public class RegionMapDestroy {
       } // retry loop
 
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       cacheModificationLock.releaseCacheModificationLock(internalRegion, event);
     }
     return false;
@@ -354,8 +358,7 @@ public class RegionMapDestroy {
           doContinue = true;
           return;
         }
-        regionEntry = (RegionEntry) focusedRegionMap.getEntryMap().putIfAbsent(event.getKey(),
-            newRegionEntry);
+        regionEntry = focusedRegionMap.putEntryIfAbsent(event.getKey(), newRegionEntry);
         if (regionEntry != null && regionEntry != tombstone) {
           // concurrent change - try again
           retry = true;
@@ -484,6 +487,11 @@ public class RegionMapDestroy {
         // tombstone version info
         focusedRegionMap.processVersionTag(tombstone, event);
         if (doPart3) {
+          // TODO: this looks like dead code. We only get here if doPart3 is true
+          // but then only happens if !event.isOriginRemote() && concurrencyChecks().
+          // But if we have a versionTag then we will have concurrencyChecks().
+          // If concurrencyChecks is false then this code makes no sense;
+          // we should not be doing anything with version tags in that case.
           internalRegion.generateAndSetVersionTag(event, newRegionEntry);
         }
         // This is not conflict, we need to persist the tombstone again with new
@@ -551,9 +559,6 @@ public class RegionMapDestroy {
         if (regionEntry == null) {
           regionEntry = newRegionEntry;
         }
-        // invoke listeners and inform clients
-        internalRegion.basicDestroyPart2(regionEntry, event, inTokenMode,
-            false, duringRI, true);
         doPart3 = true;
       }
     }

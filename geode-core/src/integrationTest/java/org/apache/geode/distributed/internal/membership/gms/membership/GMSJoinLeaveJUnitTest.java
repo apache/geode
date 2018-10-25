@@ -14,8 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,9 +41,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -390,7 +387,7 @@ public class GMSJoinLeaveJUnitTest {
                                                  // change
     GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
 
-    Awaitility.await().atMost(viewInstallationTime, MILLISECONDS)
+    await()
         .until(() -> gmsJoinLeave.getView() != null);
 
     NetView oldView = gmsJoinLeave.getView();
@@ -403,7 +400,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.memberShutdown(mockMembers[1], "shutting down for test");
     gmsJoinLeave.remove(mockMembers[1], "removing for test");
 
-    Awaitility.await().atMost(viewInstallationTime, MILLISECONDS)
+    await()
         .until(() -> gmsJoinLeave.getView().getViewId() > newView.getViewId());
     assertFalse(gmsJoinLeave.getView().getCrashedMembers().contains(mockMembers[1]));
   }
@@ -670,7 +667,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testBecomeCoordinatorOnStartup() throws Exception {
     initMocks();
     GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
-    Awaitility.await().atMost(20, SECONDS).until(() -> gmsJoinLeave.isCoordinator());
+    await().until(() -> gmsJoinLeave.isCoordinator());
   }
 
   @Test
@@ -880,7 +877,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.processMessage(installViewMessage);
 
     // this test's member-timeout * 3
-    Awaitility.await().atMost(6, SECONDS)
+    await()
         .until(() -> gmsJoinLeave.getView().getViewId() != oldView.getViewId());
     assertTrue(gmsJoinLeave.isCoordinator());
     // wait for suspect processing
@@ -972,7 +969,7 @@ public class GMSJoinLeaveJUnitTest {
     synchronized (gmsJoinLeave.getViewInstallationLock()) {
       gmsJoinLeave.becomeCoordinator();
     }
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .until(() -> gmsJoinLeave.prepareProcessor.isWaiting());
 
     int newViewId = 6; // becomeCoordinator will bump the initial view Id by 5
@@ -987,9 +984,9 @@ public class GMSJoinLeaveJUnitTest {
     msg.setSender(otherMember);
     gmsJoinLeave.processMessage(msg);
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .until(() -> gmsJoinLeave.getViewCreator() != null);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .until(() -> gmsJoinLeave.getViewCreator().getAbandonedViewCount() > 0);
     assertEquals(installedView, gmsJoinLeave.getView());
 
@@ -1074,7 +1071,7 @@ public class GMSJoinLeaveJUnitTest {
       int viewRequests = gmsJoinLeave.getViewRequests().size();
 
       assertEquals("There should be 1 viewRequest", 1, viewRequests);
-      Awaitility.await().atMost(2 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, MILLISECONDS)
+      await()
           .until(() -> gmsJoinLeave.getViewRequests().size(), equalTo(0));
     } finally {
       System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
@@ -1231,7 +1228,7 @@ public class GMSJoinLeaveJUnitTest {
         gmsJoinLeave.processMessage(msg);
       }
 
-      Awaitility.await("waiting for view creator to stop").atMost(5000, MILLISECONDS)
+      await("waiting for view creator to stop")
           .until(() -> !gmsJoinLeave.getViewCreator().isAlive());
       assertEquals(1, gmsJoinLeave.getView().getViewId());
       assertFalse(testLocator.isCoordinator);
@@ -1275,7 +1272,7 @@ public class GMSJoinLeaveJUnitTest {
     vack.setSender(gmsJoinLeaveMemberId);
     gmsJoinLeave.processMessage(vack);
 
-    Awaitility.await("view creator finishes").atMost(30, SECONDS).until(() -> vc.waiting);
+    await("view creator finishes").until(() -> vc.waiting);
     NetView newView = gmsJoinLeave.getView();
     System.out.println("new view is " + newView);
     assertTrue(newView.contains(mockMembers[1]));
@@ -1322,7 +1319,7 @@ public class GMSJoinLeaveJUnitTest {
     vack.setSender(gmsJoinLeaveMemberId);
     gmsJoinLeave.processMessage(vack);
 
-    Awaitility.await("view creator finishes").atMost(30, SECONDS).until(() -> vc.waiting);
+    await("view creator finishes").until(() -> vc.waiting);
     NetView newView = gmsJoinLeave.getView();
     System.out.println("new view is " + newView);
     assertTrue(newView.contains(newMember));

@@ -31,10 +31,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -98,7 +101,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 162);
+    assertThat(attNames.length).isEqualTo(164);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -132,7 +135,7 @@ public class DistributionConfigJUnitTest {
 
     // TODO - This makes no sense. One has no idea what the correct expected number of attributes
     // are.
-    assertEquals(31, boolList.size());
+    assertEquals(33, boolList.size());
     assertEquals(35, intList.size());
     assertEquals(87, stringList.size());
     assertEquals(5, fileList.size());
@@ -418,5 +421,33 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENABLED_COMPONENTS, "");
 
     DistributionConfig config = new DistributionConfigImpl(props);
+  }
+
+  @Test
+  public void testSSLEnabledEndpointValidationIsSetDefaultToTrueWhenSetUseDefaultContextIsUsed() {
+    Properties props = new Properties();
+    props.put(SSL_ENABLED_COMPONENTS, "all");
+    props.put(SSL_USE_DEFAULT_CONTEXT, "true");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(true);
+  }
+
+  @Test
+  public void testSSLEnabledEndpointValidationIsSetDefaultToFalseWhenDefaultContextNotUsed() {
+    Properties props = new Properties();
+    props.put(SSL_ENABLED_COMPONENTS, "all");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(false);
+  }
+
+  @Test
+  public void testSSLUseEndpointValidationIsSet() {
+    Properties props = new Properties();
+    props.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(true);
   }
 }

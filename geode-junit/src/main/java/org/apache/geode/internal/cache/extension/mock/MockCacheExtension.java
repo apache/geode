@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
  * <dl>
  * <dt>Uses</dt>
  * <dd>org.apache.geode.management.internal.configuration.ClusterConfigurationDUnitTest</dd>
- * <dd>{@link org.apache.geode.cache30.CacheXml81DUnitTest}</dd>
+ * <dd>org.apache.geode.cache30.CacheXml81DUnitTest</dd>
  * </dl>
  *
  *

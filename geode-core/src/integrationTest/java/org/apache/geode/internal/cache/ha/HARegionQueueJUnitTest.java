@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -47,10 +48,9 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awaitility.Awaitility;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1380,8 +1380,8 @@ public class HARegionQueueJUnitTest {
     int updatedMessageSyncInterval = 10;
     cache.setMessageSyncInterval(updatedMessageSyncInterval);
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertThat("messageSyncInterval not updated.",
+    await()
+        .untilAsserted(() -> assertThat("messageSyncInterval not updated.",
             HARegionQueue.getMessageSyncInterval(), is(updatedMessageSyncInterval)));
   }
 
@@ -1783,8 +1783,8 @@ public class HARegionQueueJUnitTest {
    * passed
    */
   private void waitAtLeast(final int minimumElapsedTime, final long start,
-      final Runnable runnable) {
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(runnable);
+      final ThrowingRunnable runnable) {
+    await().untilAsserted(runnable);
     long elapsed = System.currentTimeMillis() - start;
     assertThat(elapsed >= minimumElapsedTime, is(true));
   }

@@ -45,7 +45,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -188,6 +187,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         }
       }
     }
+    setFailedBatchRemovalMessageKeysClearedFlag(true);
   }
 
   @Override
@@ -556,8 +556,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         if (isBucketDestroyed()) {
           throw new ForceReattemptException("Bucket moved",
               new RegionDestroyedException(
-                  LocalizedStrings.PartitionedRegionDataStore_REGION_HAS_BEEN_DESTROYED
-                      .toLocalizedString(),
+                  "Region has been destroyed",
                   getPartitionedRegion().getFullPath()));
         }
       }

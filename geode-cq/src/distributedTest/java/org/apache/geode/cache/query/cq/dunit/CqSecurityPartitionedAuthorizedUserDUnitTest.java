@@ -14,11 +14,9 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -57,8 +55,8 @@ public class CqSecurityPartitionedAuthorizedUserDUnitTest
     putIntoRegion(superUserClient, keys, values, regionName);
 
     specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, cqListener.getNumErrors()));
+      await()
+          .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
     });
   }
 }

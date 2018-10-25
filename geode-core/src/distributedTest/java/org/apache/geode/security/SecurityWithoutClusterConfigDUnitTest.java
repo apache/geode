@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -51,9 +50,12 @@ public class SecurityWithoutClusterConfigDUnitTest {
   @Before
   public void before() throws Exception {
     IgnoredException
-        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
+        .addIgnoredException(
+            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
+                .toString());
     IgnoredException
-        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+        .addIgnoredException(
+            "A server must use cluster configuration when joining a secured cluster.".toString());
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());

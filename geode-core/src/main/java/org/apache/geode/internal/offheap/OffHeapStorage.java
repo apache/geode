@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -172,11 +171,15 @@ public class OffHeapStorage implements OffHeapMemoryStats {
           long.class, long.class);
     } catch (ClassNotFoundException e) {
       throw new CacheException(
-          LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),
+          String.format(
+              "Your Java virtual machine is incompatible with off-heap memory.  Please refer to %s documentation for suggested JVMs.",
+              "product"),
           e) {};
     } catch (NoSuchMethodException e) {
       throw new CacheException(
-          LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),
+          String.format(
+              "Your Java virtual machine is incompatible with off-heap memory.  Please refer to %s documentation for suggested JVMs.",
+              "product"),
           e) {};
     }
   }

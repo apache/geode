@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
 
@@ -28,11 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.client.ClientCache;
@@ -42,6 +41,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
@@ -113,6 +113,13 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     this.vmCount = vmCount;
   }
 
+  /**
+   * Returns the port that the standard dunit locator is listening on.
+   */
+  public static int getDUnitLocatorPort() {
+    return DUnitEnv.get().getLocatorPort();
+  }
+
   public static ClientCache getClientCache() {
     if (clientCacheRule == null) {
       return null;
@@ -140,27 +147,29 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void after() {
-    try {
-      DUnitLauncher.closeAndCheckForSuspects();
-    } finally {
-      MemberStarterRule.disconnectDSIfAny();
 
-      // stop all the members in the order of clients, servers and locators
-      List<VMProvider> vms = new ArrayList<>();
-      vms.addAll(
-          occupiedVMs.values().stream().filter(x -> x.isClient()).collect(Collectors.toSet()));
-      vms.addAll(
-          occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
-      vms.addAll(
-          occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
-      vms.forEach(x -> x.stop());
+    MemberStarterRule.disconnectDSIfAny();
 
-      // delete any file under root dir
-      Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
-          .forEach(FileUtils::deleteQuietly);
+    // stop all the members in the order of clients, servers and locators
+    List<VMProvider> vms = new ArrayList<>();
+    vms.addAll(
+        occupiedVMs.values().stream().filter(x -> x.isClient()).collect(Collectors.toSet()));
+    vms.addAll(
+        occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
+    vms.addAll(
+        occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
+    vms.forEach(x -> x.stop());
 
-      restoreSystemProperties.after();
-    }
+    // delete any file under root dir
+    Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
+        .forEach(FileUtils::deleteQuietly);
+
+    restoreSystemProperties.after();
+
+    // close suspect string at the end of tear down
+    // any background thread can fill the dunit_suspect.log
+    // after its been truncated if we do it before closing cache
+    DUnitLauncher.closeAndCheckForSuspects();
   }
 
   public MemberVM startLocatorVM(int index, int... locatorPort) {
@@ -177,12 +186,12 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public MemberVM startLocatorVM(int index,
-      SerializableFunction1<LocatorStarterRule> ruleOperator) {
+      SerializableFunction<LocatorStarterRule> ruleOperator) {
     return startLocatorVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
   }
 
   public MemberVM startLocatorVM(int index, String version,
-      SerializableFunction1<LocatorStarterRule> ruleOperator) {
+      SerializableFunction<LocatorStarterRule> ruleOperator) {
     final String defaultName = "locator-" + index;
     VM locatorVM = getVM(index, version);
     Locator server = locatorVM.invoke(() -> {
@@ -217,12 +226,12 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
         x -> x.withProperties(properties).withConnectionToLocator(locatorPort));
   }
 
-  public MemberVM startServerVM(int index, SerializableFunction1<ServerStarterRule> ruleOperator) {
+  public MemberVM startServerVM(int index, SerializableFunction<ServerStarterRule> ruleOperator) {
     return startServerVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
   }
 
   public MemberVM startServerVM(int index, String version,
-      SerializableFunction1<ServerStarterRule> ruleOperator) {
+      SerializableFunction<ServerStarterRule> ruleOperator) {
     final String defaultName = "server-" + index;
     VM serverVM = getVM(index, version);
     Server server = serverVM.invoke(() -> {
@@ -348,7 +357,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     });
 
     // wait till member is not reachable anymore.
-    Awaitility.await().until(() -> {
+    await().until(() -> {
       try {
         member.invoke(() -> {
         });
@@ -372,6 +381,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   public static void stopElementInsideVM() {
     if (memberStarter != null) {
+      memberStarter.setCleanWorkingDir(false);
       memberStarter.after();
       memberStarter = null;
     }
@@ -381,6 +391,4 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     }
   }
 
-  public interface SerializableFunction1<T> extends UnaryOperator<T>, Serializable {
-  }
 }

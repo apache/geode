@@ -54,13 +54,13 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -302,7 +302,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
                     + initialCreatesListener.numCreates.get();
               }
             };
-            Wait.waitForCriterion(wc, 30 * 1000, 500, true);
+            GeodeAwaitility.await().untilAsserted(wc);
           }
         }
         if (!listenerFound) {
@@ -429,7 +429,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
               assertNull(r.putIfAbsent("clientNullKey", null));
               assertNull(pr.putIfAbsent("clientNullKey", null));
             } catch (AssertionError ex) {
-              r.getCache().getLoggerI18n().fine("SWAP:caught ", ex);
+              r.getCache().getLogger().fine("SWAP:caught ", ex);
               e = ex;
               return false;
             }
@@ -440,7 +440,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
             return "timeout " + e;
           }
         };
-        Wait.waitForCriterion(wc, 30000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -490,7 +490,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
             return "timeout " + e.getMessage();
           }
         };
-        Wait.waitForCriterion(wc, 30000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -1030,7 +1030,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
             return r.containsKey(key);
           }
         };
-        Wait.waitForCriterion(w, 10000, 200, true);
+        GeodeAwaitility.await().untilAsserted(w);
         assertTrue(r.containsKeyOnServer(key));
         boolean result = r.remove(key, null);
         // if (!result) {

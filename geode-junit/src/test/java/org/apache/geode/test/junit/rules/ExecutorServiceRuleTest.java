@@ -15,15 +15,13 @@
 package org.apache.geode.test.junit.rules;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -34,24 +32,23 @@ import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.junit.runners.TestRunner;
 
+/**
+ * Unit tests for {@link ExecutorServiceRule}.
+ */
 public class ExecutorServiceRuleTest {
 
-  static volatile AtomicIntegerWithMaxValueSeen concurrentTasks;
-  static volatile CountDownLatch hangLatch;
-  static volatile CountDownLatch terminateLatch;
-  static volatile ExecutorService executorService;
+  private static volatile CountDownLatch hangLatch;
+  private static volatile CountDownLatch terminateLatch;
+  private static volatile ExecutorService executorService;
 
   @Before
   public void setUp() throws Exception {
-    concurrentTasks = new AtomicIntegerWithMaxValueSeen(0);
     hangLatch = new CountDownLatch(1);
     terminateLatch = new CountDownLatch(1);
   }
 
   @After
   public void tearDown() throws Exception {
-    concurrentTasks = null;
-
     while (hangLatch != null && hangLatch.getCount() > 0) {
       hangLatch.countDown();;
     }
@@ -66,46 +63,46 @@ public class ExecutorServiceRuleTest {
   }
 
   @Test
-  public void providesExecutorService() throws Exception {
+  public void providesExecutorService() {
     Result result = TestRunner.runTest(HasExecutorService.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(executorService).isInstanceOf(ExecutorService.class);
   }
 
   @Test
-  public void shutsDownAfterTest() throws Exception {
+  public void shutsDownAfterTest() {
     Result result = TestRunner.runTest(HasExecutorService.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(executorService.isShutdown()).isTrue();
   }
 
   @Test
-  public void terminatesAfterTest() throws Exception {
+  public void terminatesAfterTest() {
     Result result = TestRunner.runTest(HasExecutorService.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(executorService.isTerminated()).isTrue();
   }
 
   @Test
-  public void shutsDownHungThread() throws Exception {
+  public void shutsDownHungThread() {
     Result result = TestRunner.runTest(Hangs.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(isTestHung()).isTrue();
     assertThat(executorService.isShutdown()).isTrue();
-    terminateLatch.await(10, SECONDS);
+    awaitLatch(terminateLatch);
   }
 
   @Test
-  public void terminatesHungThread() throws Exception {
+  public void terminatesHungThread() {
     Result result = TestRunner.runTest(Hangs.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(isTestHung()).isTrue();
-    await().atMost(10, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
-    terminateLatch.await(1, SECONDS);
+    await().untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
+    awaitLatch(terminateLatch);
   }
 
   @Test
-  public void futureTimesOut() throws Exception {
+  public void futureTimesOut() {
     Result result = TestRunner.runTest(TimesOut.class);
     assertThat(result.wasSuccessful()).isFalse();
     assertThat(result.getFailures()).hasSize(1);
@@ -113,38 +110,27 @@ public class ExecutorServiceRuleTest {
     assertThat(failure.getException()).isInstanceOf(TimeoutException.class);
   }
 
-  @Test
-  public void singleThreadedByDefault() throws Exception {
-    terminateLatch = new CountDownLatch(2);
-    Result result = TestRunner.runTest(SingleThreaded.class);
-    assertThat(result.wasSuccessful()).as(result.toString()).isTrue();
-    assertThat(concurrentTasks.getMaxValueSeen()).isEqualTo(1);
-  }
-
-  @Test
-  public void threadCountTwoHasTwoThreads() throws Exception {
-    terminateLatch = new CountDownLatch(3);
-    Result result = TestRunner.runTest(ThreadCountTwo.class);
-    assertThat(result.wasSuccessful()).as(result.toString()).isTrue();
-    assertThat(concurrentTasks.getMaxValueSeen()).isEqualTo(2);
+  private static void awaitLatch(CountDownLatch latch) {
+    await().untilAsserted(() -> assertThat(latch.getCount())
+        .as("Latch failed to countDown within timeout").isZero());
   }
 
   private static boolean isTestHung() {
     return hangLatch.getCount() > 0;
   }
 
-  public abstract static class HasAsynchronousRule {
+  public abstract static class HasExecutorServiceRule {
 
     @Rule
     public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
     @Before
-    public void setUpHasAsynchronousRule() throws Exception {
+    public void setUpHasAsynchronousRule() {
       executorService = executorServiceRule.getExecutorService();
     }
   }
 
-  public static class HasExecutorService extends HasAsynchronousRule {
+  public static class HasExecutorService extends HasExecutorServiceRule {
 
     @Test
     public void doTest() throws Exception {
@@ -152,7 +138,7 @@ public class ExecutorServiceRuleTest {
     }
   }
 
-  public static class Hangs extends HasAsynchronousRule {
+  public static class Hangs extends HasExecutorServiceRule {
 
     @Test
     public void doTest() throws Exception {
@@ -168,11 +154,11 @@ public class ExecutorServiceRuleTest {
     }
   }
 
-  public static class TimesOut extends HasAsynchronousRule {
+  public static class TimesOut extends HasExecutorServiceRule {
 
     @Test
     public void doTest() throws Exception {
-      Future<?> future = executorServiceRule.runAsync(() -> {
+      Future<Void> future = executorServiceRule.runAsync(() -> {
         try {
           hangLatch.await();
         } catch (InterruptedException e) {
@@ -182,196 +168,8 @@ public class ExecutorServiceRuleTest {
         }
       });
 
+      // this is expected to timeout
       future.get(1, MILLISECONDS);
-    }
-  }
-
-  public static class SingleThreaded extends HasAsynchronousRule {
-
-    private volatile CountDownLatch task1Latch;
-    private volatile CountDownLatch task2Latch;
-
-    private volatile CountDownLatch hang1Latch;
-    private volatile CountDownLatch hang2Latch;
-
-    @Before
-    public void setUp() throws Exception {
-      task1Latch = new CountDownLatch(1);
-      task2Latch = new CountDownLatch(1);
-
-      hang1Latch = new CountDownLatch(1);
-      hang2Latch = new CountDownLatch(1);
-
-      assertThat(terminateLatch.getCount()).isEqualTo(2);
-    }
-
-    @Test
-    public void doTest() throws Exception {
-      Future<Void> task1 = executorServiceRule.runAsync(() -> {
-        try {
-          task1Latch.countDown();
-          concurrentTasks.increment();
-          hang1Latch.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        } finally {
-          concurrentTasks.decrement();
-          terminateLatch.countDown();
-        }
-      });
-
-      // assert that task1 begins
-      task1Latch.await(30, SECONDS);
-
-      Future<Void> task2 = executorServiceRule.runAsync(() -> {
-        try {
-          task2Latch.countDown();
-          concurrentTasks.increment();
-          hang2Latch.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        } finally {
-          concurrentTasks.decrement();
-          terminateLatch.countDown();
-        }
-      });
-
-      // assert that there is only 1 thread in the default rule's ExecutorService
-      assertThat(task1Latch.getCount()).isEqualTo(0);
-      assertThat(task2Latch.getCount()).isEqualTo(1);
-
-      // assert that task1 completes
-      hang1Latch.countDown();
-      task1.get(30, SECONDS);
-      assertThat(terminateLatch.getCount()).isEqualTo(1);
-
-      // assert that task2 begins
-      task2Latch.await(30, SECONDS);
-
-      // assert that task2 completes
-      hang2Latch.countDown();
-      task2.get(30, SECONDS);
-      assertThat(terminateLatch.getCount()).isEqualTo(0);
-    }
-  }
-
-  public static class ThreadCountTwo {
-
-    private volatile CountDownLatch task1Latch;
-    private volatile CountDownLatch task2Latch;
-    private volatile CountDownLatch task3Latch;
-
-    private volatile CountDownLatch hang1Latch;
-    private volatile CountDownLatch hang2Latch;
-    private volatile CountDownLatch hang3Latch;
-
-    @Rule
-    public ExecutorServiceRule executorServiceRule =
-        ExecutorServiceRule.builder().threadCount(2).build();
-
-    @Before
-    public void setUp() throws Exception {
-      task1Latch = new CountDownLatch(1);
-      task2Latch = new CountDownLatch(1);
-      task3Latch = new CountDownLatch(1);
-
-      hang1Latch = new CountDownLatch(1);
-      hang2Latch = new CountDownLatch(1);
-      hang3Latch = new CountDownLatch(1);
-
-      assertThat(terminateLatch.getCount()).isEqualTo(3);
-    }
-
-    @Test
-    public void doTest() throws Exception {
-      Future<Void> task1 = executorServiceRule.runAsync(() -> {
-        try {
-          task1Latch.countDown();
-          concurrentTasks.increment();
-          hang1Latch.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        } finally {
-          concurrentTasks.decrement();
-          terminateLatch.countDown();
-        }
-      });
-
-      // assert that task1 begins
-      task1Latch.await(30, SECONDS);
-
-      Future<Void> task2 = executorServiceRule.runAsync(() -> {
-        try {
-          task2Latch.countDown();
-          concurrentTasks.increment();
-          hang2Latch.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        } finally {
-          concurrentTasks.decrement();
-          terminateLatch.countDown();
-        }
-      });
-
-      // assert that task2 begins
-      task2Latch.await(30, SECONDS);
-
-      Future<Void> task3 = executorServiceRule.runAsync(() -> {
-        try {
-          task3Latch.countDown();
-          concurrentTasks.increment();
-          hang3Latch.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        } finally {
-          concurrentTasks.decrement();
-          terminateLatch.countDown();
-        }
-      });
-
-      // assert that there are 2 threads in the rule's ExecutorService
-      assertThat(task1Latch.getCount()).isEqualTo(0);
-      assertThat(task2Latch.getCount()).isEqualTo(0);
-      assertThat(task3Latch.getCount()).isEqualTo(1);
-
-      // assert that task1 completes
-      hang1Latch.countDown();
-      task1.get(30, SECONDS);
-      assertThat(terminateLatch.getCount()).isEqualTo(2);
-
-      // assert that task3 begins
-      task3Latch.await(30, SECONDS);
-
-      // assert that task2 completes
-      hang2Latch.countDown();
-      task2.get(30, SECONDS);
-      assertThat(terminateLatch.getCount()).isEqualTo(1);
-
-      // assert that task3 completes
-      hang3Latch.countDown();
-      task3.get(30, SECONDS);
-      assertThat(terminateLatch.getCount()).isEqualTo(0);
-    }
-  }
-
-  static class AtomicIntegerWithMaxValueSeen extends AtomicInteger {
-
-    private int maxValueSeen = 0;
-
-    AtomicIntegerWithMaxValueSeen(int initialValue) {
-      super(initialValue);
-    }
-
-    void increment() {
-      maxValueSeen = Integer.max(maxValueSeen, super.incrementAndGet());
-    }
-
-    void decrement() {
-      super.decrementAndGet();
-    }
-
-    int getMaxValueSeen() {
-      return maxValueSeen;
     }
   }
 }

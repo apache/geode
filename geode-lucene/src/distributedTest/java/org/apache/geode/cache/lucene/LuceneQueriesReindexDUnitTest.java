@@ -17,15 +17,13 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.cache.lucene.LuceneDUnitTest.RegionTestableType.PARTITION_WITH_CLIENT;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.TimeUnit;
-
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -141,8 +139,9 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     waitForFlushBeforeExecuteTextSearch(accessor, 60000);
 
-    accessor.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> assertFalse(
-        LuceneServiceProvider.get(getCache()).isIndexingInProgress(INDEX_NAME, REGION_NAME))));
+    accessor.invoke(
+        () -> await().untilAsserted(() -> assertFalse(
+            LuceneServiceProvider.get(getCache()).isIndexingInProgress(INDEX_NAME, REGION_NAME))));
     executeTextSearch(accessor);
   }
 

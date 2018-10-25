@@ -39,10 +39,12 @@ public abstract class VMProvider {
 
   public void stop(boolean cleanWorkingDir) {
     getVM().invoke(() -> {
+      // this did not clean up the files
       ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
 
+    // clean up all the files under the working dir if asked to do so
     if (cleanWorkingDir) {
       Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
     }
@@ -80,6 +82,15 @@ public abstract class VMProvider {
 
   public <T> T invoke(String name, final SerializableCallableIF<T> callable) {
     return getVM().invoke(name, callable);
+  }
+
+  public <T> AsyncInvocation<T> invokeAsync(final SerializableCallableIF<T> callable) {
+    return getVM().invokeAsync(callable);
+  }
+
+
+  public <T> AsyncInvocation<T> invokeAsync(String name, final SerializableCallableIF<T> callable) {
+    return getVM().invokeAsync(name, callable);
   }
 
   public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {

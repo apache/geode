@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,9 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -222,9 +221,9 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
       });
     }
 
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad()));
+    await()
+        .untilAsserted(
+            () -> assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad()));
   }
 
   /**

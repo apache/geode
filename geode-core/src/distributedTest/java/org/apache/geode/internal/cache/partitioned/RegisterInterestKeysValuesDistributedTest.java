@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #43684: Register interest with policy KEYS_VALUES is inefficient
  */
-@Category({RegionsTest.class})
+@Category(RegionsTest.class)
 @SuppressWarnings("serial")
 public class RegisterInterestKeysValuesDistributedTest implements Serializable {
 
@@ -71,7 +71,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   private int port1;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -98,7 +98,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithSingleKeyOnRR() throws Exception {
+  public void testRIWithSingleKeyOnRR() {
     port1 = server1.invoke(() -> createServerCache(true, false));
     server2.invoke(() -> createServerCache(true, false));
     server3.invoke(() -> createServerCache(true, false));
@@ -107,7 +107,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithAllKeysOnRR() throws Exception {
+  public void testRIWithAllKeysOnRR() {
     port1 = server1.invoke(() -> createServerCache(true, false));
     server2.invoke(() -> createServerCache(true, false));
     server3.invoke(() -> createServerCache(true, false));
@@ -116,7 +116,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithKeyListOnRR() throws Exception {
+  public void testRIWithKeyListOnRR() {
     port1 = server1.invoke(() -> createServerCache(true, false));
     server2.invoke(() -> createServerCache(true, false));
     server3.invoke(() -> createServerCache(true, false));
@@ -134,7 +134,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithRegularExpressionOnRR() throws Exception {
+  public void testRIWithRegularExpressionOnRR() {
     port1 = server1.invoke(() -> createServerCache(true, false));
     server2.invoke(() -> createServerCache(true, false));
     server3.invoke(() -> createServerCache(true, false));
@@ -143,7 +143,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithSingleKeyOnPR() throws Exception {
+  public void testRIWithSingleKeyOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, false));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -152,7 +152,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithAllKeysOnPR() throws Exception {
+  public void testRIWithAllKeysOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, false));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -161,7 +161,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithKeyListOnPR() throws Exception {
+  public void testRIWithKeyListOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, false));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -179,7 +179,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithRegularExpressionOnPR() throws Exception {
+  public void testRIWithRegularExpressionOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, false));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -188,7 +188,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithMoreEntriesOnPR() throws Exception {
+  public void testRIWithMoreEntriesOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, false));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -197,7 +197,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithSingleKeyOnEmptyPrimaryOnPR() throws Exception {
+  public void testRIWithSingleKeyOnEmptyPrimaryOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, true));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -206,7 +206,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithAllKeysOnEmptyPrimaryOnPR() throws Exception {
+  public void testRIWithAllKeysOnEmptyPrimaryOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, true));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -215,7 +215,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithKeyListOnEmptyPrimaryOnPR() throws Exception {
+  public void testRIWithKeyListOnEmptyPrimaryOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, true));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -233,7 +233,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testRIWithRegularExpressionOnEmptyPrimaryOnPR() throws Exception {
+  public void testRIWithRegularExpressionOnEmptyPrimaryOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, true));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -242,7 +242,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   @Test
-  public void testNativeClientIssueOnPR() throws Exception {
+  public void testNativeClientIssueOnPR() {
     port1 = server1.invoke(() -> createServerCache(false, false));
     server2.invoke(() -> createServerCache(false, false));
     server3.invoke(() -> createServerCache(false, false));
@@ -268,7 +268,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
     doOps();
 
     client1.invoke(() -> {
-      Region region = clientCache().getRegion(regionName);
+      Region<Object, Object> region = clientCache().getRegion(regionName);
       region.registerInterest(keys);
       region.registerInterest("UNKNOWN_KEY");
     });
@@ -298,7 +298,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   private int getExpectedSize(Object keys, String regEx, int numOfPuts) {
-    return keys != null ? (keys instanceof List ? ((List) keys).size() : 1)
+    return keys != null ? keys instanceof List ? ((List) keys).size() : 1
         : regEx == null ? numOfPuts : regexCount;
   }
 
@@ -337,19 +337,19 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   private void registerInterest(Object keys, String regEx) {
-    Region region = clientCache().getRegion(regionName);
+    Region<Object, Object> region = clientCache().getRegion(regionName);
     if (keys == null && regEx == null) {
       region.registerInterest("ALL_KEYS");
     } else if (keys != null) {
       region.registerInterest(keys);
       region.registerInterest("UNKNOWN_KEY");
-    } else if (regEx != null) {
+    } else {
       region.registerInterestRegex(regEx);
     }
   }
 
   private void doPuts(int count, String regex, int regexNum) {
-    Region region = cache().getRegion(regionName);
+    Region<String, String> region = cache().getRegion(regionName);
     for (int i = 0; i < count; i++) {
       region.create("KEY_" + i, "VALUE__" + i);
     }
@@ -361,7 +361,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
   }
 
   private void doOps() {
-    Region region = clientCache().getRegion(regionName);
+    Region<String, String> region = clientCache().getRegion(regionName);
     for (int i = 0; i < 14; i++) {
       region.create("OPKEY_" + i, "OPVALUE__" + i);
     }
@@ -388,7 +388,7 @@ public class RegisterInterestKeysValuesDistributedTest implements Serializable {
     cacheRule.createCache();
   }
 
-  private void createClientCache(ClientCacheFactory ccf) {
-    clientCacheRule.createClientCache(ccf);
+  private void createClientCache(ClientCacheFactory clientCacheFactory) {
+    clientCacheRule.createClientCache(clientCacheFactory);
   }
 }

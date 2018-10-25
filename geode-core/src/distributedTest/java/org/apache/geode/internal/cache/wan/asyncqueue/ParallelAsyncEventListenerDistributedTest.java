@@ -21,12 +21,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,7 +93,7 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -117,7 +116,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   }
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -546,7 +545,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    * Test case to test possibleDuplicates. vm0 & vm1 are hosting the PR. vm1 is killed so the
    * buckets hosted by it are shifted to vm0.
    */
-  @Test // parallel, PartitionedRegion, FlakyTest, possibleDuplicates
+  @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario1() throws InterruptedException {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
@@ -658,7 +657,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    * Test case to test possibleDuplicates. vm0 & vm1 are hosting the PR. vm2 is brought up and
    * rebalancing is triggered so the buckets get balanced among vm0, vm1 & vm2.
    */
-  @Test // FlakyTest, parallel, PartitionedRegion, possibleDuplicates
+  @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario3() {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
@@ -778,8 +777,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     assertThat(vm0.invoke(() -> getBucketMovingAsyncEventListener().isMoved())).isTrue();
 
-    vm1.invoke(() -> await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(getBucketMovingAsyncEventListener().isMoved()).isTrue()));
+    vm1.invoke(() -> await()
+        .untilAsserted(() -> assertThat(getBucketMovingAsyncEventListener().isMoved()).isTrue()));
   }
 
   @Test // parallel, possibleDuplicates, PartitionedRegion, try-finally
@@ -830,7 +829,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     });
   }
 
-  @Test // parallel, FlakyTest, PartitionedRegion, Rebalancing
+  @Test // parallel, PartitionedRegion, Rebalancing
   public void testParallelAsyncEventQueueMovePrimaryAndMoveItBackDuringDispatching() {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
@@ -1149,12 +1148,13 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     AsyncEventQueueStats asyncEventQueueStats = asyncEventQueue.getStatistics();
     assertThat(asyncEventQueueStats).isNotNull();
 
-    await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(asyncEventQueueStats.getEventQueueSize()).isEqualTo(queueSize));
+    await()
+        .untilAsserted(
+            () -> assertThat(asyncEventQueueStats.getEventQueueSize()).isEqualTo(queueSize));
 
     if (asyncEventQueue.isParallel()) {
-      await().atMost(TWO_MINUTES)
-          .until(() -> assertThat(asyncEventQueueStats.getSecondaryEventQueueSize())
+      await()
+          .untilAsserted(() -> assertThat(asyncEventQueueStats.getSecondaryEventQueueSize())
               .isEqualTo(secondaryQueueSize));
 
     } else {
@@ -1209,12 +1209,12 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   private void validateSpyAsyncEventListenerEventsMap(int expectedSize) {
     Map eventsMap = (Map<?, ?>) getSpyAsyncEventListener().getEventsMap();
-    await().atMost(TWO_MINUTES).until(() -> assertThat(eventsMap).hasSize(expectedSize));
+    await().untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
   }
 
   private void waitForAsyncQueueToEmpty() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).until(() -> areRegionQueuesEmpty(gatewaySender));
+    await().until(() -> areRegionQueuesEmpty(gatewaySender));
   }
 
   private void waitForDispatcherToPause() {
@@ -1224,7 +1224,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   private void waitForParallelAsyncEventQueueSize(int expectedRegionQueueSize) {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
 
-    await().atMost(TWO_MINUTES).until(() -> {
+    await().untilAsserted(() -> {
       Set<RegionQueue> regionQueues = gatewaySender.getQueues();
       assertThat(regionQueues).isNotEmpty().hasSize(1);
 
@@ -1234,7 +1234,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForPrimaryToMove() {
-    await().atMost(TWO_MINUTES).until(() -> getPrimaryMovingAsyncEventListener().isMoved());
+    await().until(() -> getPrimaryMovingAsyncEventListener().isMoved());
   }
 
   private InternalGatewaySender getInternalGatewaySender() {

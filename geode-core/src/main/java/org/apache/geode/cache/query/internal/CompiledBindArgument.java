@@ -22,7 +22,6 @@ import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -85,7 +84,7 @@ public class CompiledBindArgument extends AbstractCompiledValue {
   public Object evaluate(Object[] bindArguments) {
     if (index > bindArguments.length) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecutionContext_TOO_FEW_QUERY_PARAMETERS.toLocalizedString());
+          "Too few query parameters");
     }
     return bindArguments[index - 1];
   }

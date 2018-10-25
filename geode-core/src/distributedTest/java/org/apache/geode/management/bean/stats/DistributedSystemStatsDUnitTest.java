@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,8 +24,6 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -69,7 +67,8 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
         long lastRefreshTime = service.getLastUpdateTime(memberMXBeanName);
 
         await()
-            .until(() -> assertTrue(service.getLastUpdateTime(memberMXBeanName) > lastRefreshTime));
+            .untilAsserted(
+                () -> assertTrue(service.getLastUpdateTime(memberMXBeanName) > lastRefreshTime));
       }
 
       // TODO: add assertions for distributedSystemMXBean stats?
@@ -82,7 +81,8 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
 
     String alias = "Awaiting MemberMXBean proxy for " + member;
     await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
@@ -90,16 +90,8 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
   private DistributedSystemMXBean awaitDistributedSystemMXBean() {
     ManagementService service = this.managementTestRule.getManagementService();
 
-    await().until(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
+    await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 
     return service.getDistributedSystemMXBean();
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
-  }
-
-  private ConditionFactory await(final String alias) {
-    return Awaitility.await(alias).atMost(2, MINUTES);
   }
 }

@@ -22,7 +22,7 @@ groups:
 - name: main
   jobs:
   - Build
-{%- for test in tests %}
+{%- for test in tests if not test.name.startswith("Windows") %}
   - {{test.name}}Test
 {%- endfor %}
 resources:
@@ -30,7 +30,7 @@ resources:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))((!docker-image-name))
     tag: latest
     username: ((!docker-username))
 - name: geode
@@ -63,11 +63,13 @@ resource_types:
   type: docker-image
   source:
     repository: jtarchie/pr
+# TODO : Is pipeline_prefix here correct?  is apachegeode-ci?  this bucket maybe doesn't exist?
+# Also see build jinja
 - name: concourse-metadata-resource
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}concourse-metadata-resource
+    repository: gcr.io/apachegeode-ci/((pipeline-prefix))concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 jobs:
@@ -102,7 +104,7 @@ jobs:
         platform: linux
         params:
           MAINTENANCE_VERSION: {{repository.branch}}
-          PUBLIC_BUCKET: ((!public-bucket))
+          ARTIFACT_BUCKET: ((artifact-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
         run:
           path: geode-ci/ci/scripts/build.sh
@@ -127,7 +129,7 @@ jobs:
             context: $BUILD_JOB_NAME
             path: geode-unmerged-request
             status: success
-{% for test in tests %}
+{% for test in tests if not test.name.startswith("Windows")%}
 - name: {{test.name}}Test
   public: true
   plan:
@@ -155,16 +157,18 @@ jobs:
             path: geode-unmerged-request
             status: pending
       - do:
-        - put: concourse-metadata-resource
-        - task: start_instance
+        - get: concourse-metadata-resource
+        - task: create_instance
           {{- alpine_tools_config()|indent(10) }}
             params:
               CPUS: {{test.CPUS}}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
+              UPSTREAM_FORK: ((upstream-fork))
+              GCP_PROJECT: ((gcp-project))
               RAM: {{test.RAM}}
             run:
-              path: geode-ci/ci/scripts/start_instance.sh
+              path: geode-ci/ci/scripts/create_instance.sh
             inputs:
             - name: concourse-metadata-resource
             - name: geode
@@ -186,14 +190,18 @@ jobs:
       {{- alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          JAVA_BUILD_VERSION: 8
+          JAVA_TEST_VERSION: 8
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
           DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
           GRADLE_TASK_OPTIONS: ""
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
-          PUBLIC_BUCKET: ((!public-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          SERVICE_ACCOUNT: ((concourse-gcp-account))
+          GRADLE_GLOBAL_ARGS: ((gradle-global-args))
         run:
           {%- if test.name=="StressNew" %}
           path: geode/ci/scripts/repeat-new-tests.sh
@@ -217,6 +225,9 @@ jobs:
       do:
       - task: rsync_code_down
         {{- alpine_tools_config()|indent(8) }}
+          params:
+            JAVA_BUILD_VERSION: 8
+            ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
@@ -234,7 +245,7 @@ jobs:
               ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{test.GRADLE_TASK}}
               MAINTENANCE_VERSION: {{repository.branch}}
-              PUBLIC_BUCKET: ((!public-bucket))
+              ARTIFACT_BUCKET: ((artifact-bucket))
               SERVICE_ACCOUNT: ((!concourse-gcp-account))
             run:
               path: geode-ci/ci/scripts/archive_results.sh
@@ -243,10 +254,10 @@ jobs:
             - name: geode
             - name: geode-ci
             - name: geode-results
-        - task: stop_instance
+        - task: delete_instance
           {{- alpine_tools_config()|indent(10) }}
             run:
-              path: geode-ci/ci/scripts/stop_instance.sh
+              path: geode-ci/ci/scripts/delete_instance.sh
             inputs:
             - name: geode
             - name: geode-ci

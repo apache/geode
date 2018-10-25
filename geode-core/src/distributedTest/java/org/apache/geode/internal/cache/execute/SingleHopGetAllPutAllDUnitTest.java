@@ -14,31 +14,34 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.ClientPartitionAdvisor;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 
 
+/**
+ * This class tests single-hop bulk operations in client caches. Single-hop makes use
+ * of metadata concerning partitioned region bucket locations to find primary buckets
+ * on which to operate. If the metadata is incorrect it forces scheduling of a refresh.
+ * A total count of all refresh requests is kept in the metadata service and is used
+ * by this test to verify whether the cache thought the metadata was correct or not.
+ */
 public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
 
 
@@ -49,33 +52,28 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
 
   }
 
-  /*
-   * Do a getAll from client and see if all the values are returned. Will also have to see if the
-   * function was routed from client to all the servers hosting the data.
-   */
-  @Ignore("Disabled due to bug #50618")
-  @Test
-  public void testServerGetAllFunction() {
-    createScenario();
-    client.invoke(() -> SingleHopGetAllPutAllDUnitTest.getAll());
-  }
-
-  private void createScenario() {
+  @Before
+  public void createScenario() {
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 1, 13, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 2, 13, null);
     createClientServerScenarioSingleHop(commonAttributes, 20, 20, 20);
   }
 
-  public static void getAll() {
-    Region region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
-    final List testValueList = new ArrayList();
-    final List testKeyList = new ArrayList();
-    for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
-      testValueList.add("execKey-" + i);
-    }
-    DistributedSystem.setThreadsSocketPolicy(false);
-    try {
+  /**
+   * populate the region, do a getAll, verify that metadata is fetched
+   * do another getAll and verify that metadata did not need to be refetched
+   */
+  @Test
+  public void testGetAllInClient() {
+    client.invoke("testGetAllInClient", () -> {
+      Region region = cache.getRegion(PartitionedRegionName);
+      assertThat(region).isNotNull();
+      final List testValueList = new ArrayList();
+      final List testKeyList = new ArrayList();
+      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+        testValueList.add("execKey-" + i);
+      }
+      DistributedSystem.setThreadsSocketPolicy(false);
       int j = 0;
       Map origVals = new HashMap();
       for (Iterator i = testValueList.iterator(); i.hasNext();) {
@@ -89,108 +87,191 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
       // check if the client meta-data is in synch
       verifyMetadata();
 
-      // check if the function was routed to pruned nodes
+      long metadataRefreshes =
+          ((GemFireCacheImpl) cache).getClientMetadataService()
+              .getTotalRefreshTaskCount_TEST_ONLY();
+
       Map resultMap = region.getAll(testKeyList);
-      assertTrue(resultMap.equals(origVals));
-      Wait.pause(2000);
-      Map secondResultMap = region.getAll(testKeyList);
-      assertTrue(secondResultMap.equals(origVals));
-    } catch (Exception e) {
-      Assert.fail("Test failed after the getAll operation", e);
-    }
+      assertThat(resultMap).isEqualTo(origVals);
+
+      // a new refresh should not have been triggered
+      assertThat(((GemFireCacheImpl) cache).getClientMetadataService()
+          .getTotalRefreshTaskCount_TEST_ONLY())
+              .isEqualTo(metadataRefreshes);
+    });
   }
 
-  private static void verifyMetadata() {
+
+  /**
+   * perform a putAll and ensure that metadata is fetched. Then do another
+   * putAll and ensure that metadata did not need to be refreshed
+   */
+  @Test
+  public void testPutAllInClient() {
+    client.invoke("testPutAllInClient", () -> {
+      Region<String, String> region = cache.getRegion(PartitionedRegionName);
+      assertThat(region).isNotNull();
+
+      Map<String, String> keysValuesMap = new HashMap<String, String>();
+      List<String> testKeysList = new ArrayList<>();
+      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+        testKeysList.add("putAllKey-" + i);
+        keysValuesMap.put("putAllKey-" + i, "values-" + i);
+      }
+      DistributedSystem.setThreadsSocketPolicy(false);
+
+      region.putAll(keysValuesMap);
+
+      verifyMetadata();
+
+      long metadataRefreshes =
+          ((GemFireCacheImpl) cache).getClientMetadataService()
+              .getTotalRefreshTaskCount_TEST_ONLY();
+
+      region.putAll(keysValuesMap);
+
+      // a new refresh should not have been triggered
+      assertThat(((GemFireCacheImpl) cache).getClientMetadataService()
+          .getTotalRefreshTaskCount_TEST_ONLY())
+              .isEqualTo(metadataRefreshes);
+    });
+  }
+
+  /**
+   * Do a putAll and ensure that metadata has been fetched. Then do a removeAll and
+   * ensure that metadata did not need to be refreshed. Finally do a getAll to ensure
+   * that the removeAll did its job.
+   */
+  @Test
+  public void testRemoveAllInClient() {
+    client.invoke("testRemoveAllInClient", () -> {
+      Region<String, String> region = cache.getRegion(PartitionedRegionName);
+      assertThat(region).isNotNull();
+
+      Map<String, String> keysValuesMap = new HashMap<String, String>();
+      List<String> testKeysList = new ArrayList<String>();
+      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+        testKeysList.add("putAllKey-" + i);
+        keysValuesMap.put("putAllKey-" + i, "values-" + i);
+      }
+
+      DistributedSystem.setThreadsSocketPolicy(false);
+
+      region.putAll(keysValuesMap);
+
+      verifyMetadata();
+
+      long metadataRefreshes =
+          ((GemFireCacheImpl) cache).getClientMetadataService()
+              .getTotalRefreshTaskCount_TEST_ONLY();
+
+      region.removeAll(testKeysList);
+
+      // a new refresh should not have been triggered
+      assertThat(((GemFireCacheImpl) cache).getClientMetadataService()
+          .getTotalRefreshTaskCount_TEST_ONLY())
+              .isEqualTo(metadataRefreshes);
+
+      HashMap<String, Object> noValueMap = new HashMap<String, Object>();
+      for (String key : testKeysList) {
+        noValueMap.put(key, null);
+      }
+
+      assertThat(noValueMap).isEqualTo(region.getAll(testKeysList));
+
+      assertThat(((GemFireCacheImpl) cache).getClientMetadataService()
+          .getTotalRefreshTaskCount_TEST_ONLY())
+              .isEqualTo(metadataRefreshes);
+    });
+  }
+
+  /**
+   * If a client doesn't know the primary location of a bucket it should perform a
+   * metadata refresh. This test purposefully removes all primary location knowledge
+   * from PR metadata in a client cache and then performs a bulk operation. This
+   * should trigger a refresh.
+   */
+  @Test
+  public void testBulkOpInClientWithBadMetadataCausesRefresh() {
+    client.invoke("testBulkOpInClientWithBadMetadataCausesRefresh", () -> {
+      Region region = cache.getRegion(PartitionedRegionName);
+      assertThat(region).isNotNull();
+      final List testValueList = new ArrayList();
+      final List testKeyList = new ArrayList();
+      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+        testValueList.add("execKey-" + i);
+      }
+      DistributedSystem.setThreadsSocketPolicy(false);
+      int j = 0;
+      Map origVals = new HashMap();
+      for (Iterator i = testValueList.iterator(); i.hasNext();) {
+        testKeyList.add(j);
+        Integer key = new Integer(j++);
+        Object val = i.next();
+        origVals.put(key, val);
+        region.put(key, val);
+      }
+
+      // check if the client meta-data is in synch
+      verifyMetadata();
+
+      long metadataRefreshes =
+          ((GemFireCacheImpl) cache).getClientMetadataService()
+              .getTotalRefreshTaskCount_TEST_ONLY();
+
+      removePrimaryMetadata();
+
+      Map resultMap = region.getAll(testKeyList);
+      assertThat(resultMap).isEqualTo(origVals);
+
+      // a new refresh should have been triggered
+      assertThat(((GemFireCacheImpl) cache).getClientMetadataService()
+          .getTotalRefreshTaskCount_TEST_ONLY())
+              .isNotEqualTo(metadataRefreshes);
+    });
+  }
+
+
+  private void verifyMetadata() {
     Region region = cache.getRegion(PartitionedRegionName);
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion) region);
 
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
-    WaitCriterion wc = new WaitCriterion() {
+    await().until(() -> regionMetaData.size() > 0);
+    assertThat(regionMetaData).containsKey(region.getFullPath());
+    await().until(() -> {
+      ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+      assertThat(prMetaData).isNotNull();
+      assertThat(prMetaData.adviseRandomServerLocation()).isNotNull();
+      return true;
+    });
+  }
 
-      public boolean done() {
-        return (regionMetaData.size() == 1);
-      }
+  private void removePrimaryMetadata() {
+    Region region = cache.getRegion(PartitionedRegionName);
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+    cms.getClientPRMetadata((LocalRegion) region);
 
-      public String description() {
-        return "Region metadat size is not 1. Exisitng size of regionMetaData is "
-            + regionMetaData.size();
-      }
-    };
-    Wait.waitForCriterion(wc, 5000, 200, true);
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
+
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    wc = new WaitCriterion() {
-
-      public boolean done() {
-        return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 13);
+    Map<Integer, List<BucketServerLocation66>> bucketLocations =
+        prMetaData.getBucketServerLocationsMap_TEST_ONLY();
+    for (Map.Entry<Integer, List<BucketServerLocation66>> locationEntry : bucketLocations
+        .entrySet()) {
+      List<BucketServerLocation66> newList = new ArrayList<>(locationEntry.getValue());
+      for (Iterator<BucketServerLocation66> bucketIterator = newList.iterator(); bucketIterator
+          .hasNext();) {
+        BucketServerLocation66 location = bucketIterator.next();
+        if (location.isPrimary()) {
+          bucketIterator.remove();
+        }
+        bucketLocations.put(locationEntry.getKey(), newList);
       }
 
-      public String description() {
-        return "Bucket server location map size is not 13. Exisitng size is :"
-            + prMetaData.getBucketServerLocationsMap_TEST_ONLY().size();
-      }
-    };
-    Wait.waitForCriterion(wc, 5000, 200, true);
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertEquals(2, ((List) entry.getValue()).size());
     }
   }
 
-  /*
-   * Do a getAll from client and see if all the values are returned. Will also have to see if the
-   * function was routed from client to all the servers hosting the data.
-   */
-  @Test
-  public void testServerPutAllFunction() {
-    createScenario();
-    client.invoke(() -> SingleHopGetAllPutAllDUnitTest.putAll());
-  }
-
-  public static void putAll() {
-    Region<String, String> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
-    final Map<String, String> keysValuesMap = new HashMap<String, String>();
-    final List<String> testKeysList = new ArrayList<String>();
-    for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
-      testKeysList.add("execKey-" + i);
-      keysValuesMap.put("execKey-" + i, "values-" + i);
-    }
-    DistributedSystem.setThreadsSocketPolicy(false);
-    try {
-      // check if the client meta-data is in synch
-
-      // check if the function was routed to pruned nodes
-      region.putAll(keysValuesMap);
-      // check the listener
-      // check how the function was executed
-      Wait.pause(2000);
-      region.putAll(keysValuesMap);
-
-      // check if the client meta-data is in synch
-      verifyMetadata();
-
-      // check if the function was routed to pruned nodes
-      Map<String, String> resultMap = region.getAll(testKeysList);
-      assertTrue(resultMap.equals(keysValuesMap));
-      Wait.pause(2000);
-      Map<String, String> secondResultMap = region.getAll(testKeysList);
-      assertTrue(secondResultMap.equals(keysValuesMap));
-
-      // Now test removeAll
-      region.removeAll(testKeysList);
-      HashMap<String, Object> noValueMap = new HashMap<String, Object>();
-      for (String key : testKeysList) {
-        noValueMap.put(key, null);
-      }
-      assertEquals(noValueMap, region.getAll(testKeysList));
-      Wait.pause(2000); // Why does this test keep pausing for 2 seconds and then do the exact same
-                        // thing?
-      region.removeAll(testKeysList);
-      assertEquals(noValueMap, region.getAll(testKeysList));
-    } catch (Exception e) {
-      Assert.fail("Test failed after the putAll operation", e);
-    }
-  }
 }

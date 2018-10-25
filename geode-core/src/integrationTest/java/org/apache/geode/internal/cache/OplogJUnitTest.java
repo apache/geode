@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +37,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -1046,25 +1046,25 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
     assertEquals(0, dss.getQueueSize());
     put100Int();
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(100, dss.getQueueSize()));
+    await()
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(100, dss.getQueueSize()));
 
     assertEquals(0, dss.getFlushes());
 
     DiskRegion diskRegion = ((LocalRegion) region).getDiskRegion();
     diskRegion.getDiskStore().flush();
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(0, dss.getQueueSize()));
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(100, dss.getFlushes()));
+    await()
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(0, dss.getQueueSize()));
+    await()
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(100, dss.getFlushes()));
     put100Int();
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(100, dss.getQueueSize()));
+    await()
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(100, dss.getQueueSize()));
     diskRegion.getDiskStore().flush();
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(0, dss.getQueueSize()));
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(200, dss.getFlushes()));
+    await()
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(0, dss.getQueueSize()));
+    await()
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(200, dss.getFlushes()));
     closeDown();
   }
 
@@ -1623,7 +1623,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       region.put("key3", val);
       putsCompleted.countDown();
       cache.getLogger().info("waiting for compaction");
-      Awaitility.await().atMost(9, TimeUnit.SECONDS).until(() -> testObserver.hasCompacted());
+      await().until(() -> testObserver.hasCompacted());
       assertFalse(testObserver.exceptionOccured());
 
       region.close();
@@ -1752,7 +1752,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
   private void verifyOplogHeader(File dir, String... oplogTypes) throws IOException {
 
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       List<String> types = new ArrayList<>(Arrays.asList(oplogTypes));
       Arrays.stream(dir.listFiles()).map(File::getName).map(f -> f.substring(f.indexOf(".")))
           .forEach(types::remove);

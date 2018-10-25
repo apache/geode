@@ -193,15 +193,15 @@ function process_web_xml() {
     
     WEB_XML=$(find $WORK_DIR -name web.xml)
     TMP_WEB_XML="${WORK_DIR}/web.xml.$$"
-    JAVA_CMD="java $JVM_OPTS -jar $SESSION_JAR $ARG_P -t $ARG_CACHE_TYPE -w $WEB_XML"
-    log "Executing java cmd: $JAVA_CMD" D
+    CMD="${JAVACMD} $JVM_OPTS -jar $SESSION_JAR $ARG_P -t $ARG_CACHE_TYPE -w $WEB_XML"
+    log "Executing java cmd: ${CMD}" D
 
     if [ $ARG_TEST_RUN -eq 0 ]; then
-        eval $JAVA_CMD > $TMP_WEB_XML || exiting "Error updating web.xml" 1
+        eval ${CMD} > $TMP_WEB_XML || exiting "Error updating web.xml" 1
         cp $TMP_WEB_XML $WEB_XML
         rm -f $TMP_WEB_XML
     else
-        eval $JAVA_CMD || exiting "Error updating web.xml" 1
+        eval ${CMD} || exiting "Error updating web.xml" 1
     fi
 }
 
@@ -235,9 +235,9 @@ function process_input_file() {
 
             log "Creating new war $WAR" D
             if [ -n "$MANIFEST" ]; then
-                jar cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
+                $JARCMD cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
             else
-                jar cf $WAR -C $TMP_WAR_DIR .
+                $JARCMD cf $WAR -C $TMP_WAR_DIR .
             fi
         fi
 
@@ -277,6 +277,23 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${LIB_DIR}/slf4j-jdk14-@SLF4J_VERSION@.jar)
 
 TMP_DIR="/tmp/modify_war.$$"
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+    JARCMD="$JAVA_HOME/bin/jar"
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVACMD="java"
+    JARCMD="jar"
+    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+fi
 
 ARG_INPUT_FILE=""
 ARG_WAR_LIB_DIR="WEB-INF/lib"
@@ -403,7 +420,7 @@ fi
 if [ $ARG_TEST_RUN -eq 0 ]; then
     mkdir -p $TMP_DIR/META-INF
     touch $TMP_DIR/META-INF/MANIFEST.MF
-    jar cmf $TMP_DIR/META-INF/MANIFEST.MF $ARG_OUTPUT_FILE -C $TMP_DIR .
+    $JARCMD cmf $TMP_DIR/META-INF/MANIFEST.MF $ARG_OUTPUT_FILE -C $TMP_DIR .
     log "Created file: $ARG_OUTPUT_FILE" I
 fi
 

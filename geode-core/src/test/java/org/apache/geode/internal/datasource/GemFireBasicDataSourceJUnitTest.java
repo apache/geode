@@ -12,38 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.datasource;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class GemFireBasicDataSourceJUnitTest {
+
   private GemFireBasicDataSource dataSource;
-  private Map params = new HashMap();
+  private Map<String, String> params;
 
   @Before
   public void setUp() {
+    params = new HashMap<>();
+
     params.put("connection-url", "jdbc:postgresql://myurl:5432");
     params.put("jdbc-driver-class", "org.apache.geode.internal.datasource.TestDriver");
     params.put("jndi-name", "datasource");
   }
 
-  @After
-  public void cleanUp() {
-    params.clear();
-  }
-
   @Test
   public void connectWithoutUsernameOrPassword() throws DataSourceCreateException {
-    dataSource = (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(params);
+    dataSource = (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(params);
 
     assertThatThrownBy(() -> dataSource.getConnection())
         .hasMessage("Test Driver Connection attempted!");
@@ -53,21 +48,19 @@ public class GemFireBasicDataSourceJUnitTest {
   public void connectWithUsernameButNoPassword() throws DataSourceCreateException {
     params.put("user-name", "myUser");
 
-    dataSource = (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(params);
+    dataSource = (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(params);
 
     assertThatThrownBy(() -> dataSource.getConnection())
         .hasMessage("Test Driver Connection attempted!");
   }
 
-
   @Test
   public void connectWithPasswordButNoUsername() throws DataSourceCreateException {
     params.put("password", "myPassword");
 
-    dataSource = (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(params);
+    dataSource = (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(params);
 
     assertThatThrownBy(() -> dataSource.getConnection())
         .hasMessage("Test Driver Connection attempted!");
-
   }
 }

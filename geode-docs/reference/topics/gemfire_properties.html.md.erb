@@ -439,7 +439,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <p>The system uniquely identifies the member using the combined host IP address and UDP port number.</p>
 <p>You may want to restrict the range of ports that <%=vars.product_name%> uses so the product can run in an environment where routers only allow traffic on certain ports.</p></td>
 <td>S, L</td>
-<td>1024-65535</td>
+<td>41000-61000</td>
 </tr>
 <tr class="even">
 <td>memcached-port</td>
@@ -613,6 +613,15 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <td>Components for which to enable SSL. Comma-separated list of one or more of (cluster, gateway, jmx, locator, server, web) or "all". When defining this property, also set <code>security-udp-dhalgo</code> to secure UDP cluster communications.</td>
 <td>S, L</td>
 <td>all</td>
+</tr>
+
+<tr>
+<td>ssl-endpoint-identification-enabled</td>
+<td> A boolean value that, when set to true,
+causes clients to validate the server's hostname using 
+the server's certificate.</td>
+<td>C, S, L</td>
+<td>false</td>
 </tr>
 
 <tr>
