@@ -732,7 +732,7 @@ public class GatewaySenderEventImpl
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("SenderEventImpl[").append("id=").append(this.id).append(";action=")
+    buffer.append("GatewaySenderEventImpl[").append("id=").append(this.id).append(";action=")
         .append(this.action).append(";operation=").append(getOperation()).append(";region=")
         .append(this.regionPath).append(";key=").append(this.key).append(";value=")
         .append(getValueAsString(true)).append(";valueIsObject=").append(this.valueIsObject)
