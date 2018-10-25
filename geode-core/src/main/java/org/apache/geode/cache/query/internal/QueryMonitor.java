@@ -43,6 +43,8 @@ import org.apache.geode.internal.logging.LogService;
 public class QueryMonitor {
   private static final Logger logger = LogService.getLogger();
 
+  public static final int CorePoolSize = 1;
+
   private final InternalCache cache;
   /**
    * Holds the query execution status for the thread executing the query. FALSE if the query is not
@@ -52,7 +54,7 @@ public class QueryMonitor {
   private static final ThreadLocal<AtomicBoolean> queryCancelled =
       ThreadLocal.withInitial(() -> new AtomicBoolean(Boolean.FALSE));
 
-  private final long maxQueryExecutionTime;
+  private final long defaultMaxQueryExecutionTime;
 
   private final ScheduledThreadPoolExecutor executorService;
 
@@ -63,11 +65,11 @@ public class QueryMonitor {
 
   private static volatile long LOW_MEMORY_USED_BYTES = 0;
 
-  public QueryMonitor(InternalCache cache, long maxQueryExecutionTime) {
+  public QueryMonitor(InternalCache cache, long defaultMaxQueryExecutionTime) {
     this.cache = cache;
-    this.maxQueryExecutionTime = maxQueryExecutionTime;
+    this.defaultMaxQueryExecutionTime = defaultMaxQueryExecutionTime;
 
-    executorService = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
+    executorService = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(CorePoolSize);
     executorService.setRemoveOnCancelPolicy(true);
   }
 
@@ -78,6 +80,16 @@ public class QueryMonitor {
    * @param query Query.
    */
   public void monitorQueryThread(final Thread queryThread, final DefaultQuery query) {
+    monitorQueryThread(queryThread, query, defaultMaxQueryExecutionTime);
+  }
+
+  /**
+   * Each query can have a different maxQueryExecution time. Make this method public to
+   * expose that feature to callers.
+   */
+  private void monitorQueryThread(final Thread queryThread, final DefaultQuery query,
+      final long maxQueryExecutionTime) {
+
     // cq query is not monitored
     if (query.isCqQuery()) {
       return;
@@ -91,9 +103,7 @@ public class QueryMonitor {
       throw new QueryExecutionLowMemoryException(reason);
     }
 
-    final ScheduledFuture<?> expirationTask = getExpirationTask(query);
-
-    query.setExpirationTask(expirationTask);
+    query.setExpirationTask(scheduleExpirationTask(query, maxQueryExecutionTime));
 
     if (logger.isDebugEnabled()) {
       logger.debug(
@@ -193,7 +203,10 @@ public class QueryMonitor {
     return executorService.getQueue().size();
   }
 
-  private ScheduledFuture<?> getExpirationTask(DefaultQuery query) {
+  private ScheduledFuture<?> scheduleExpirationTask(final DefaultQuery query,
+      final long timeLimitMillis) {
+
+    // make thread local queryCancelled, available to closure
     final AtomicBoolean querysThreadLocalQueryCancelled = queryCancelled.get();
 
     return executorService.schedule(() -> {
@@ -209,10 +222,10 @@ public class QueryMonitor {
                   : new QueryExecutionTimeoutException(
                       String.format(
                           "Query execution cancelled after exceeding max execution time %sms.",
-                          maxQueryExecutionTime)));
+                          timeLimitMillis)));
           querysThreadLocalQueryCancelled.set(true);
         }
       }
-    }, maxQueryExecutionTime, TimeUnit.MILLISECONDS);
+    }, timeLimitMillis, TimeUnit.MILLISECONDS);
   }
 }

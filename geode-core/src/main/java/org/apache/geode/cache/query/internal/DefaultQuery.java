@@ -167,7 +167,7 @@ public class DefaultQuery implements Query {
     return expirationTask;
   }
 
-  public void setExpirationTask(ScheduledFuture expirationTask) {
+  public void setExpirationTask(final ScheduledFuture expirationTask) {
     this.expirationTask = Optional.of(expirationTask);
   }
 
