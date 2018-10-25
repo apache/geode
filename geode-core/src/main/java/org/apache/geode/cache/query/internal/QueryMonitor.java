@@ -54,10 +54,9 @@ public class QueryMonitor {
 
   private final ScheduledThreadPoolExecutorFactory executorFactory;
 
-  // this is volatile because we need to be able to re-assign it
   private volatile ScheduledThreadPoolExecutor executor;
 
-  private boolean cancellingDueToLowMemory;
+  private volatile boolean cancellingDueToLowMemory;
 
   // Variables for cancelling queries due to low memory
   private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
@@ -187,7 +186,7 @@ public class QueryMonitor {
     }
   }
 
-  public void cancelAllQueriesDueToMemory() {
+  public synchronized void cancelAllQueriesDueToMemory() {
 
     /*
      * An expiration task is actually dual-purpose. Its primary purpose is to cancel
