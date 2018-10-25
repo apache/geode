@@ -94,7 +94,8 @@ public class MonitorQueryUnderContentionBenchmark {
   @Setup(Level.Trial)
   public void trialSetup() throws InterruptedException {
     cache = mock(InternalCache.class);
-    monitor = new QueryMonitor(cache, QueryMaxExecutionTime);
+    monitor = new QueryMonitor(()->(ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
+        cache, QueryMaxExecutionTime);
     thread = mock(Thread.class);
 
     final int numberOfThreads =

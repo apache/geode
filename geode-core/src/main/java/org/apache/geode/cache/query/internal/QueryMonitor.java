@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +52,10 @@ public class QueryMonitor {
 
   private final long defaultMaxQueryExecutionTime;
 
-  private final ScheduledThreadPoolExecutor executor;
+  private final ScheduledThreadPoolExecutorFactory executorFactory;
+
+  // this is volatile because we need to be able to re-assign it
+  private volatile ScheduledThreadPoolExecutor executor;
 
   private boolean cancellingDueToLowMemory;
 
@@ -62,12 +64,18 @@ public class QueryMonitor {
 
   private static volatile long LOW_MEMORY_USED_BYTES = 0;
 
-  public QueryMonitor(ScheduledThreadPoolExecutor executor, InternalCache cache,
-      long defaultMaxQueryExecutionTime) {
+  @FunctionalInterface
+  public interface ScheduledThreadPoolExecutorFactory {
+    ScheduledThreadPoolExecutor create();
+  }
+
+  public QueryMonitor(final ScheduledThreadPoolExecutorFactory executorFactory, final InternalCache cache,
+                      final long defaultMaxQueryExecutionTime) {
     this.cache = cache;
     this.defaultMaxQueryExecutionTime = defaultMaxQueryExecutionTime;
 
-    this.executor = executor;
+    this.executorFactory = executorFactory;
+    this.executor = executorFactory.create();
     this.executor.setRemoveOnCancelPolicy(true);
   }
 
@@ -190,16 +198,20 @@ public class QueryMonitor {
     cancellingDueToLowMemory = true;
 
     try {
-      /*
-       * The task queue within the ScheduledThreadPoolExecutor has
-       * weak-consistency guarantees on its iterator; that is, a copy
-       * of the queue is made when we iterate.
-       */
-      for (Runnable expirationTask : executor.getQueue()) {
-        expirationTask.run();
+      executor.shutdown();
+      try {
+        final boolean terminatedAllQueries = executor.awaitTermination(1, TimeUnit.SECONDS);
+        if (!terminatedAllQueries)
+          logger.info("When cancelling queries due to low memory, failed to cancel all queries.");
+      } catch (final InterruptedException e) {
+        logger.info("When cancelling queries due to low memory, scheduler thread was interrupted.");
+        // we rec'd an InterruptedException and are not re-throwing it so we have to interrupt()
+        Thread.currentThread().interrupt();
       }
     } finally {
       cancellingDueToLowMemory = false;
+      // executor is volatile so other threads will see this modification
+      executor = executorFactory.create();
     }
 
   }

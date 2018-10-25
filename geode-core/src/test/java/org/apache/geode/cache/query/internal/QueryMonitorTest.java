@@ -55,7 +55,7 @@ public class QueryMonitorTest {
   public void setUp() {
     cache = mock(InternalCache.class);
     scheduledThreadPoolExecutor = mock(ScheduledThreadPoolExecutor.class);
-    monitor = new QueryMonitor(scheduledThreadPoolExecutor, cache, max_execution_time);
+    monitor = new QueryMonitor(()->scheduledThreadPoolExecutor, cache, max_execution_time);
     captor = ArgumentCaptor.forClass(Runnable.class);
   }
 
@@ -102,5 +102,21 @@ public class QueryMonitorTest {
     Mockito.verify(query, times(1)).setCanceled(isA(QueryExecutionTimeoutException.class));
     assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled())
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
+  }
+
+  @Test
+  public void cancelAllQueriesDueToLowMemoryShutsDownExecutor() throws InterruptedException {
+    monitor.cancelAllQueriesDueToMemory();
+    Mockito.verify(scheduledThreadPoolExecutor, times(1)).shutdown();
+    Mockito.verify(scheduledThreadPoolExecutor, times(1)).awaitTermination(anyLong(), isA(TimeUnit.class));
+  }
+
+  @Test
+  public void cancelAllQueriesDueToMemoryCanMonitorAfterwards() {
+    monitor.cancelAllQueriesDueToMemory();
+    /* Verify we can still monitor and expire a query after
+     * cancelling all queries due to low memory.
+     */
+    monitorQueryThreadExpirationTaskScheduled();
   }
 }
