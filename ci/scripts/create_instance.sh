@@ -64,7 +64,7 @@ fi
 
 ZONE=us-central1-f
 INSTANCE_NAME_STRING="${WINDOWS_PREFIX}${GEODE_FORK}-${GEODE_BRANCH}-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
-INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING})"
+INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING}")"
 echo "Hashed ${INSTANCE_NAME_STRING} into ${INSTANCE_NAME}"
 
 MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
