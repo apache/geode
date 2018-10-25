@@ -269,7 +269,7 @@ public class DataSourceFactoryTest {
     inputs.put("conn-pooled-datasource-class",
         "org.apache.geode.internal.datasource.DataSourceFactoryTest$TestPooledDataSourceFactory");
 
-    DataSource dataSource = DataSourceFactory.getPooledDataSource(inputs, configProperties);
+    DataSource dataSource = new DataSourceFactory().getPooledDataSource(inputs, configProperties);
 
     assertThat(dataSource).isInstanceOf(TestDataSource.class);
   }
@@ -293,7 +293,7 @@ public class DataSourceFactoryTest {
     configProperties.add(new ConfigProperty("pool.n2", "v2", null));
 
     TestDataSource dataSource =
-        (TestDataSource) DataSourceFactory.getPooledDataSource(inputs, configProperties);
+        (TestDataSource) new DataSourceFactory().getPooledDataSource(inputs, configProperties);
 
     Properties poolProperties = dataSource.getPoolProperties();
     Properties dataSourceProperties = dataSource.getDataSourceProperties();
@@ -311,7 +311,7 @@ public class DataSourceFactoryTest {
     inputs.put("conn-pooled-datasource-class", "doesNotExist");
 
     Throwable throwable =
-        catchThrowable(() -> DataSourceFactory.getPooledDataSource(inputs, configProperties));
+        catchThrowable(() -> new DataSourceFactory().getPooledDataSource(inputs, configProperties));
 
     assertThat(throwable).isInstanceOf(DataSourceCreateException.class).hasMessage(
         "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=java.lang.ClassNotFoundException: doesNotExist");
