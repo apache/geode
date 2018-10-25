@@ -202,7 +202,7 @@ jobs:
       params:
         pre: build
     - do:
-      - get: concourse-metadata-resource
+      - put: concourse-metadata-resource
       - task: create_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
@@ -321,7 +321,7 @@ jobs:
       params:
         pre: build
     - do:
-      - get: concourse-metadata-resource
+      - put: concourse-metadata-resource
       - task: create_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
@@ -387,7 +387,7 @@ jobs:
   - do:
     {{ plan_resource_gets() |indent(4) }}
       - do:
-        - get: concourse-metadata-resource
+        - put: concourse-metadata-resource
         - task: create_instance
           {{ alpine_tools_config()|indent(10) }}
             params:
