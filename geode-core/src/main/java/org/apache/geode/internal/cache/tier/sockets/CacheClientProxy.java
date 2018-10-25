@@ -2286,7 +2286,9 @@ public class CacheClientProxy implements ClientSession {
             && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
             && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
         if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
-          logger.debug("Creating a durable HA queue");
+          logger.debug("Creating a {} subscription queue for {}",
+              createDurableQueue ? "durable" : "non-durable",
+              proxy.getProxyID());
         }
         this._messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
             getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
