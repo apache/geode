@@ -63,8 +63,9 @@ if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
 fi
 
 ZONE=us-central1-f
-
-INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${WINDOWS_PREFIX}${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-${SANITIZED_BUILD_PIPELINE_NAME}-${SANITIZED_BUILD_JOB_NAME}-${SANITIZED_BUILD_NAME}")"
+INSTANCE_NAME_STRING="${WINDOWS_PREFIX}${GEODE_FORK}-${GEODE_BRANCH}-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
+INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING})"
+echo "Hashed ${INSTANCE_NAME_STRING} into ${INSTANCE_NAME}"
 
 MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
