@@ -171,7 +171,8 @@ public class LoggingExecutors {
     final BlockingQueue<Runnable> blockingQueue = new SynchronousQueue<>();
     ThreadFactory threadFactory =
         new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 0, SECONDS, blockingQueue,
+    return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSeconds, SECONDS,
+        blockingQueue,
         threadFactory);
   }
 

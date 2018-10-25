@@ -109,13 +109,13 @@ public class AbstractPoolCacheJUnitTest {
     props.add(new ConfigProperty("databaseName", "newDB", "java.lang.String"));
 
     GemFireBasicDataSource gbds =
-        (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(map);
+        (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(map);
     map.put("xa-datasource-class", "org.apache.derby.jdbc.EmbeddedXADataSource");
 
     map.put("connection-url", "jdbc:derby:newDB;create=true");
 
     GemFireTransactionDataSource gtds =
-        (GemFireTransactionDataSource) DataSourceFactory.getTranxDataSource(map, props);
+        (GemFireTransactionDataSource) new DataSourceFactory().getTranxDataSource(map, props);
 
     XAConnection xaconn = (XAConnection) gtds.provider.borrowConnection();
     try {

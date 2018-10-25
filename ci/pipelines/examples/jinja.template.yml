@@ -83,15 +83,15 @@ jobs:
     - get: 24h
       trigger: true
     - do:
-      - put: concourse-metadata-resource
-      - task: start_instance
+      - get: concourse-metadata-resource
+      - task: create_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
             {{ common_instance_params(examples_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
           run:
-            path: geode-ci/ci/scripts/start_instance.sh
+            path: geode-ci/ci/scripts/create_instance.sh
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
@@ -126,10 +126,10 @@ jobs:
           - name: results
     ensure:
       do:
-      - task: stop_instance
+      - task: delete_instance
         {{ alpine_tools_config()|indent(8) }}
           run:
-            path: geode-ci/ci/scripts/stop_instance.sh
+            path: geode-ci/ci/scripts/delete_instance.sh
           inputs:
           - name: geode-ci
           - name: instance-data

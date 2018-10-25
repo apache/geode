@@ -34,28 +34,36 @@ for cmd in Jinja2 PyYAML; do
   fi
 done
 
-if [ -z $(command -v gcloud) ]; then
-  echo "Install gcloud (try brew cask install google-cloud-sdk, or see https://cloud.google.com/sdk/docs/downloads-interactive#mac)"
-  exit 1
+META_PROPERTIES=${SCRIPTDIR}/meta.properties
+LOCAL_META_PROPERTIES=${SCRIPTDIR}/meta.properties.local
+
+## Load default properties file
+source ${META_PROPERTIES}
+echo "**************************************************"
+echo "Default Environment variables for this deployment:"
+cat ${SCRIPTDIR}/meta.properties | grep -v "^#"
+source ${META_PROPERTIES}
+echo "**************************************************"
+
+## Load local overrides properties file
+if [[ -f ${LOCAL_META_PROPERTIES} ]]; then
+  echo "Locally overridden environment variables for this:"
+  cat ${SCRIPTDIR}/meta.properties.local
+  source ${LOCAL_META_PROPERTIES}
+  echo "**************************************************"
+else
+  echo "(to deploy your own pipeline, press x then create ${LOCAL_META_PROPERTIES} containing GEODE_FORK=<your github username>)"
 fi
 
-GCP_PROJECT=${GCP_PROJECT:-$(gcloud info --format="value(config.project)")}
-echo "GCP_PROJECT=${GCP_PROJECT}"
-if [ -z ${GCP_PROJECT} ]; then
-  echo "GCP_PROJECT not set. Quitting"
-  exit 1
+read -n 1 -s -r -p "Press any key to continue or x to abort" DEPLOY
+echo
+if [[ "${DEPLOY}" == "x" ]]; then
+  echo "x pressed, aborting deploy."
+  exit 0
 fi
-
 set -e
 set -x
 
-GEODE_FORK=${1:-"apache"}
-GEODE_REPO_NAME=${2:-"geode"}
-UPSTREAM_FORK=${3:-"apache"}
-CONCOURSE_HOST=${4:-"concourse.apachegeode-ci.info"}
-ARTIFACT_BUCKET=${5:-"files.apachegeode-ci.info"}
-PUBLIC=${6:-"true"}
-REPOSITORY_PUBLIC=${7:-"true"}
 if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
   CONCOURSE_SCHEME=https
 fi
@@ -95,6 +103,8 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
     --var geode-repo-name=${GEODE_REPO_NAME} \
     --var upstream-fork=${UPSTREAM_FORK} \
     --var pipeline-prefix=${PIPELINE_PREFIX} \
+    --var gradle-global-args="${GRADLE_GLOBAL_ARGS}" \
+    --var maven-snapshot-bucket="${MAVEN_SNAPSHOT_BUCKET}" \
     --var concourse-team=main \
     --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
@@ -138,7 +148,7 @@ function pauseNewJobs {
   shift
   for JOB; do
     STATUS="$(jobStatus $PIPELINE $JOB)"
-    [[ "$STATUS" == "n/a" ]] && pauseJob $PIPELINE $JOB
+    [[ "$STATUS" == "n/a" ]] && pauseJob $PIPELINE $JOB || true
   done
 }
 
@@ -203,13 +213,15 @@ set +x
 if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
   echo "Disabling unnecessary jobs for forks."
   pauseJobs ${META_PIPELINE} set-images set-reaper
-elif [[ "$GEODE_FORK" == "apache" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
+  pauseNewJobs ${META_PIPELINE} set-metrics
+elif [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   echo "Disabling optional jobs for develop"
-  pauseNewJobs set-pr set-images set-metrics set-examples
+  pauseNewJobs ${META_PIPELINE} set-pr set-images set-metrics set-examples
 else
   echo "Disabling unnecessary jobs for release branches."
   echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
-  pauseJobs set-pr set-images set-reaper set-metrics set-examples
+  pauseJobs ${META_PIPELINE} set-pr set-images set-reaper
+  pauseNewJobs ${META_PIPELINE} set-metrics set-examples
 fi
 
 unpausePipeline ${META_PIPELINE}
@@ -222,6 +234,6 @@ driveToGreen $META_PIPELINE set-pipeline
 unpausePipeline ${PIPELINE_PREFIX}main
 echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
 
-if [[ "$GEODE_FORK" == "apache" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
+if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   unpauseJobs set-pr set-metrics set-examples
 fi

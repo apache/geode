@@ -115,10 +115,10 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   }
 
   private static final String TRUSTED_STORE = "trusted.keystore";
-  private static final String CLIENT_KEY_STORE = "client.keystore";
-  private static final String CLIENT_TRUST_STORE = "client.truststore";
-  private static final String SERVER_KEY_STORE = "cacheserver.keystore";
-  private static final String SERVER_TRUST_STORE = "cacheserver.truststore";
+  private static final String CLIENT_KEY_STORE = "default.keystore";
+  private static final String CLIENT_TRUST_STORE = "default.keystore";
+  private static final String SERVER_KEY_STORE = "default.keystore";
+  private static final String SERVER_TRUST_STORE = "default.keystore";
 
   private static CacheServerSSLConnectionDUnitTest instance;
 
@@ -169,12 +169,10 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     return hostName;
   }
 
-  public void stopCacheServer() {
-    this.cacheServer.stop();
-  }
-
   @SuppressWarnings("rawtypes")
   public void setUpServerVM(final boolean cacheServerSslenabled) throws Exception {
+    System.setProperty("javax.net.debug", "ssl,handshake");
+
     Properties gemFireProps = new Properties();
 
     String cacheServerSslprotocols = "any";
@@ -228,6 +226,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
       boolean cacheServerSslRequireAuth, String keyStore, String trustStore, boolean subscription,
       boolean clientHasTrustedKeystore) {
 
+    System.setProperty("javax.net.debug", "ssl,handshake");
     Properties gemFireProps = new Properties();
 
     String cacheServerSslprotocols = "any";

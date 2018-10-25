@@ -961,11 +961,12 @@ public class WANTestBase extends DistributedTestCase {
     gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, String.valueOf(gatewaySslRequireAuth));
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
+    // this uses the default.keystore which is all jdk compliant in geode-dunit module
     gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/client.keystore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/client.truststore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -2036,10 +2037,10 @@ public class WANTestBase extends DistributedTestCase {
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/cacheserver.keystore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/cacheserver.truststore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");

@@ -71,8 +71,9 @@ DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
 MAINTENANCE_VERSION: ((geode-build-branch ))
 PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
 PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
-ARTIFACT_BUCKET: ((!artifact-bucket))
-SERVICE_ACCOUNT: ((!concourse-gcp-account))
+ARTIFACT_BUCKET: ((artifact-bucket))
+SERVICE_ACCOUNT: ((concourse-gcp-account))
+GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
 {% macro all_gating_jobs(test) %}
@@ -88,8 +89,7 @@ groups:
   jobs:
   - {{ build_test.name }}
   {{ all_gating_jobs() | indent(2) }}
-  {%- if repository.sanitized_fork == "apache" %}
-  - UpdatePassingRef
+  {%- if repository.sanitized_fork == repository.upstream_fork %}
   - PublishArtifacts
   {%- endif %}
 - name: complete
@@ -100,8 +100,7 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor -%}
-  {%- if repository.sanitized_fork == "apache" %}
-  - UpdatePassingRef
+  {%- if repository.sanitized_fork == repository.upstream_fork %}
   - PublishArtifacts
   {%- endif %}
 - name: linux
@@ -130,7 +129,7 @@ groups:
 {%- endfor %}
 
 resources:
-{% if repository.sanitized_fork == "apache" %}
+{% if repository.sanitized_fork == repository.upstream_fork %}
 - name: send-notification-email
   type: email
   source:
@@ -184,7 +183,7 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
-{% if repository.sanitized_fork == "apache" %}
+{% if repository.sanitized_fork == repository.upstream_fork %}
 - name: email
   type: docker-image
   source:
@@ -203,15 +202,15 @@ jobs:
       params:
         pre: build
     - do:
-      - put: concourse-metadata-resource
-      - task: start_instance
+      - get: concourse-metadata-resource
+      - task: create_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
             {{ common_instance_params(build_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
           run:
-            path: geode-ci/ci/scripts/start_instance.sh
+            path: geode-ci/ci/scripts/create_instance.sh
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
@@ -228,6 +227,16 @@ jobs:
       - name: geode
       - name: instance-data
     timeout: 5m
+    on_failure:
+      do:
+      - task: delete_instance
+        {{ alpine_tools_config()|indent(8) }}
+          run:
+            path: geode-ci/ci/scripts/delete_instance.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+        timeout: 1h
   - task: build
     {{ alpine_tools_config()|indent(4) }}
       params:
@@ -244,7 +253,7 @@ jobs:
       outputs:
       - name: built-geode
       - name: results
-{% if repository.sanitized_fork == "apache" %}
+{% if repository.sanitized_fork == repository.upstream_fork %}
     on_failure:
       aggregate:
       - put: send-notification-email
@@ -289,38 +298,16 @@ jobs:
               - name: geode-build-version
               - name: geode-results
             timeout: 1h
-          - task: stop_instance
+          - task: delete_instance
             {{ alpine_tools_config()|indent(12) }}
               run:
-                path: geode-ci/ci/scripts/stop_instance.sh
+                path: geode-ci/ci/scripts/delete_instance.sh
               inputs:
               - name: geode-ci
               - name: instance-data
             timeout: 1h
 
-{% if repository.sanitized_fork == "apache" %}
-- name: UpdatePassingRef
-  public: true
-  serial: true
-  plan:
-  - get: geode
-    passed:
-    {{ all_gating_jobs() | indent(4) }}
-    trigger: true
-  - get: geode-ci
-  - task: updatepassingref
-    {{ alpine_tools_config()|indent(4) }}
-      params:
-        MAINTENANCE_VERSION: ((geode-build-branch))
-        ARTIFACT_BUCKET: ((artifact-bucket))
-        SERVICE_ACCOUNT: ((!concourse-gcp-account))
-      run:
-        path: geode-ci/ci/scripts/update-passing-ref.sh
-      inputs:
-      - name: geode
-      - name: geode-ci
-      outputs:
-      - name: results
+{% if repository.sanitized_fork == repository.upstream_fork %}
 - name: PublishArtifacts
   public: true
   plan:
@@ -334,15 +321,15 @@ jobs:
       params:
         pre: build
     - do:
-      - put: concourse-metadata-resource
-      - task: start_instance
+      - get: concourse-metadata-resource
+      - task: create_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
             {{ common_instance_params(publish_artifacts) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
           run:
-            path: geode-ci/ci/scripts/start_instance.sh
+            path: geode-ci/ci/scripts/create_instance.sh
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
@@ -366,6 +353,7 @@ jobs:
         ARTIFACT_BUCKET: ((artifact-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
         JAVA_BUILD_VERSION: {{ java_build_version.version }}
+        MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
       run:
         path: geode-ci/ci/scripts/execute_publish.sh
       inputs:
@@ -375,10 +363,10 @@ jobs:
       - name: geode-build-version
     ensure:
       do:
-      - task: stop_instance
+      - task: delete_instance
         {{ alpine_tools_config()|indent(8) }}
           run:
-            path: geode-ci/ci/scripts/stop_instance.sh
+            path: geode-ci/ci/scripts/delete_instance.sh
           inputs:
           - name: geode-ci
           - name: instance-data
@@ -399,15 +387,15 @@ jobs:
   - do:
     {{ plan_resource_gets() |indent(4) }}
       - do:
-        - put: concourse-metadata-resource
-        - task: start_instance
+        - get: concourse-metadata-resource
+        - task: create_instance
           {{ alpine_tools_config()|indent(10) }}
             params:
               {{ common_instance_params(parameters) | indent(14) }}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
             run:
-              path: geode-ci/ci/scripts/start_instance.sh
+              path: geode-ci/ci/scripts/create_instance.sh
             inputs:
             - name: concourse-metadata-resource
             - name: geode-ci
@@ -475,10 +463,10 @@ jobs:
               - name: geode-build-version
               - name: geode-results
             timeout: 1h
-          - task: stop_instance
+          - task: delete_instance
             {{ alpine_tools_config()|indent(12) }}
               run:
-                path: geode-ci/ci/scripts/stop_instance.sh
+                path: geode-ci/ci/scripts/delete_instance.sh
               inputs:
               - name: geode-ci
               - name: instance-data

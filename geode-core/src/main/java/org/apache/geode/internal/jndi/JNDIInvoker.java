@@ -15,6 +15,8 @@
 package org.apache.geode.internal.jndi;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -116,6 +118,8 @@ public class JNDIInvoker {
    */
   private static Boolean IGNORE_JTA =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
+
+  private static final DataSourceFactory dataSourceFactory = new DataSourceFactory();
 
   /**
    * Bind the transaction resources. Bind UserTransaction and TransactionManager.
@@ -326,54 +330,53 @@ public class JNDIInvoker {
    *
    * @param map contains Datasource configuration properties.
    */
-  public static void mapDatasource(Map map, List<ConfigProperty> props) {
+  public static void mapDatasource(Map map, List<ConfigProperty> props)
+      throws NamingException, DataSourceCreateException {
+    mapDatasource(map, props, dataSourceFactory, ctx);
+  }
+
+  static void mapDatasource(Map map, List<ConfigProperty> props,
+      DataSourceFactory dataSourceFactory, Context context)
+      throws NamingException, DataSourceCreateException {
     String value = (String) map.get("type");
     String jndiName = "";
-    LogWriter writer = TransactionUtils.getLogWriter();
-    DataSource ds = null;
-    try {
-      jndiName = (String) map.get("jndi-name");
-      if (value.equals("PooledDataSource")) {
-        ds = DataSourceFactory.getPooledDataSource(map, props);
-        ctx.rebind("java:/" + jndiName, ds);
-        dataSourceMap.put(jndiName, ds);
-        if (writer.fineEnabled())
-          writer.fine("Bound java:/" + jndiName + " to Context");
-      } else if (value.equals("XAPooledDataSource")) {
-        ds = DataSourceFactory.getTranxDataSource(map, props);
-        ctx.rebind("java:/" + jndiName, ds);
-        dataSourceMap.put(jndiName, ds);
-        if (writer.fineEnabled())
-          writer.fine("Bound java:/" + jndiName + " to Context");
-      } else if (value.equals("SimpleDataSource")) {
-        ds = DataSourceFactory.getSimpleDataSource(map);
-        ctx.rebind("java:/" + jndiName, ds);
-        dataSourceMap.put(jndiName, ds);
-        if (writer.fineEnabled())
-          writer.fine("Bound java:/" + jndiName + " to Context");
-      } else if (value.equals("ManagedDataSource")) {
-        ClientConnectionFactoryWrapper ds1 = DataSourceFactory.getManagedDataSource(map, props);
-        ctx.rebind("java:/" + jndiName, ds1.getClientConnFactory());
-        dataSourceMap.put(jndiName, ds1);
-        if (writer.fineEnabled())
-          writer.fine("Bound java:/" + jndiName + " to Context");
-      } else {
-        String exception = "JNDIInvoker::mapDataSource::No correct type of DataSource";
-        if (writer.fineEnabled())
-          writer.fine(exception);
-        throw new DataSourceCreateException(exception);
+    jndiName = (String) map.get("jndi-name");
+    if (value.equals("PooledDataSource")) {
+      validateAndBindDataSource(context, jndiName,
+          dataSourceFactory.getPooledDataSource(map, props));
+    } else if (value.equals("XAPooledDataSource")) {
+      validateAndBindDataSource(context, jndiName,
+          dataSourceFactory.getTranxDataSource(map, props));
+    } else if (value.equals("SimpleDataSource")) {
+      validateAndBindDataSource(context, jndiName, dataSourceFactory.getSimpleDataSource(map));
+    } else if (value.equals("ManagedDataSource")) {
+      ClientConnectionFactoryWrapper wrapper = dataSourceFactory.getManagedDataSource(map, props);
+      ctx.rebind("java:/" + jndiName, wrapper.getClientConnFactory());
+      dataSourceMap.put(jndiName, wrapper);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Bound java:/" + jndiName + " to Context");
       }
-      ds = null;
-    } catch (NamingException ne) {
-      if (writer.infoEnabled())
-        writer.info(
-            String.format("JNDIInvoker::mapDataSource::%s while binding %s to JNDI Context",
-                new Object[] {"NamingException", jndiName}));
-    } catch (DataSourceCreateException dsce) {
-      if (writer.infoEnabled())
-        writer.info(
-            String.format("JNDIInvoker::mapDataSource::%s while binding %s to JNDI Context",
-                new Object[] {"DataSourceCreateException", jndiName}));
+    } else {
+      String exception = "JNDIInvoker::mapDataSource::No correct type of DataSource";
+      if (logger.isDebugEnabled()) {
+        logger.debug(exception);
+      }
+      throw new DataSourceCreateException(exception);
+    }
+  }
+
+  private static void validateAndBindDataSource(Context context, String jndiName,
+      DataSource dataSource) throws NamingException, DataSourceCreateException {
+    try (Connection connection = dataSource.getConnection()) {
+    } catch (SQLException sqlEx) {
+      closeDataSource(dataSource);
+      throw new DataSourceCreateException(
+          "Failed to connect to \"" + jndiName + "\". See log for details", sqlEx);
+    }
+    context.rebind("java:/" + jndiName, dataSource);
+    dataSourceMap.put(jndiName, dataSource);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Bound java:/" + jndiName + " to Context");
     }
   }
 
