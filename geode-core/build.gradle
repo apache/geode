@@ -198,6 +198,7 @@ dependencies {
 
   compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
   compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
+  compile('com.github.davidmoten:geo:0.7.1')
 
   runtimeOnly('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true

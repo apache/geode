@@ -23,7 +23,6 @@ import java.util.Map;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
@@ -55,8 +54,8 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
 
       String score;
       try {
-        score = new String(GeoCoder.geohashBits(longitude, latitude, GeoCoder.LEN_GEOHASH));
-      } catch (CoderException ce) {
+        score = GeoCoder.geohash(longitude, latitude);
+      } catch (IllegalArgumentException e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
             "ERR " + ERROR_INVALID_LATLONG +
                 " " + longitude.toString() + " " + latitude.toString()));

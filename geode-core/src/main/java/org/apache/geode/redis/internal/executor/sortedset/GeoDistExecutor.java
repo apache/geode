@@ -46,7 +46,7 @@ public class GeoDistExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    Double dist = GeoCoder.geoDist(hw1.toString().toCharArray(), hw2.toString().toCharArray());
+    Double dist = GeoCoder.geoDist(hw1.toString(), hw2.toString());
 
     if (commandElems.size() == 5) {
       String unit = new String(commandElems.get(4));

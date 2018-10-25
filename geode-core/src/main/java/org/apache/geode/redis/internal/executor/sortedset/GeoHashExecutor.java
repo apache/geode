@@ -15,16 +15,15 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeoHashExecutor extends GeoSortedSetExecutor {
 
@@ -47,7 +46,7 @@ public class GeoHashExecutor extends GeoSortedSetExecutor {
 
       ByteArrayWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
       if (hashWrapper != null) {
-        hashes.add(GeoCoder.bitsToHash(hashWrapper.toString().toCharArray()));
+        hashes.add(hashWrapper.toString());
       } else {
         hashes.add(null);
       }

@@ -16,24 +16,22 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_LATLONG;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import com.github.davidmoten.geo.LatLong;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.GeoRadiusResponseElement;
-import org.apache.geode.redis.internal.HashNeighbors;
 import org.apache.geode.redis.internal.MemberNotFoundException;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -72,43 +70,33 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
           RedisConstants.ArityDef.GEORADIUS));
       return;
-    } catch (CoderException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_LATLONG));
-      return;
     } catch (MemberNotFoundException e) {
       /* Not possible for GEORADIUS */
       return;
     }
 
-    HashNeighbors hn;
-    try {
-      hn = GeoCoder.geohashSearchAreas(params.lon, params.lat, params.radius);
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
-      return;
-    }
+    Set<String> hn = GeoCoder.geohashSearchAreas(params.lon, params.lat, params.radius);
 
     List<GeoRadiusResponseElement> results = new ArrayList<>();
-    for (String neighbor : hn.get()) {
+    for (String neighbor : hn) {
       try {
         List<StructImpl> range = getGeoRadiusRange(context, key, neighbor);
         for (StructImpl point : range) {
           String name = point.get("key").toString();
-          char[] hashBits = point.get("value").toString().toCharArray();
+          String hash = point.get("value").toString();
 
-          Double dist = GeoCoder.geoDist(params.centerHashPrecise, hashBits) * params.distScale;
+          Double dist = GeoCoder.geoDist(params.centerHashPrecise, hash) * params.distScale;
 
           // Post-filter for accuracy
           if (dist > (params.radius * params.distScale))
             continue;
 
-          Optional<GeoCoord> coord =
-              params.withCoord ? Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
-          Optional<String> hash =
-              params.withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
+          Optional<LatLong> coord =
+              params.withCoord ? Optional.of(GeoCoder.geoPos(hash)) : Optional.empty();
+          Optional<String> hashOpt =
+              params.withHash ? Optional.of(hash) : Optional.empty();
 
-          results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hash));
+          results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hashOpt));
         }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));

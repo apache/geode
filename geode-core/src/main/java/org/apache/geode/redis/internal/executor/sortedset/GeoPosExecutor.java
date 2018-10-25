@@ -18,13 +18,14 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.davidmoten.geo.LatLong;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.RedisConstants;
 
 public class GeoPosExecutor extends GeoSortedSetExecutor {
@@ -40,7 +41,7 @@ public class GeoPosExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    List<GeoCoord> positions = new ArrayList<>();
+    List<LatLong> positions = new ArrayList<>();
     Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
     for (int i = 2; i < commandElems.size(); i++) {
@@ -48,7 +49,7 @@ public class GeoPosExecutor extends GeoSortedSetExecutor {
 
       ByteArrayWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
       if (hashWrapper != null) {
-        positions.add(GeoCoder.geoPos(hashWrapper.toString().toCharArray()));
+        positions.add(GeoCoder.geoPos(hashWrapper.toString()));
       } else {
         positions.add(null);
       }

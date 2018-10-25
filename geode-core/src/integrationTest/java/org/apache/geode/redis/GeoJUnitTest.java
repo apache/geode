@@ -14,20 +14,12 @@
  */
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.test.junit.categories.RedisTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,13 +31,19 @@ import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.test.junit.categories.RedisTest;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @Category({RedisTest.class})
 public class GeoJUnitTest {
@@ -83,35 +81,12 @@ public class GeoJUnitTest {
     assertNotNull("Expected region to be not NULL", sicilyRegion);
 
     // Check GeoHash
-    String hashBin =
+    String hash =
         sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString();
-    assertEquals(
-        GeoCoder.bitsToHash(hashBin.toCharArray()),
-        "sqc8b49rnyte");
+    assertEquals("sqc8b49rnyte", hash);
 
-    hashBin = sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString();
-    assertEquals(
-        GeoCoder.bitsToHash(hashBin.toCharArray()),
-        "sqdtr74hyu5n");
-  }
-
-  @Test
-  public void testGeoAddBoundaries() {
-    Exception ex = null;
-    try {
-      jedis.geoadd("Sicily", 13.36, 91.0, "Palermo");
-    } catch (Exception e) {
-      ex = e;
-    }
-    assertNotNull(ex);
-
-    ex = null;
-    try {
-      jedis.geoadd("Sicily", -181, 38.12, "Palermo");
-    } catch (Exception e) {
-      ex = e;
-    }
-    assertNotNull(ex);
+    hash = sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString();
+    assertEquals("sqdtr74hyu5n", hash);
   }
 
   @Test
@@ -398,6 +373,7 @@ public class GeoJUnitTest {
 
     List<GeoRadiusResponse> gr = jedis.georadiusByMember("North", "Northern Iceland", 1590.0,
         GeoUnit.KM, GeoRadiusParam.geoRadiusParam().withDist());
+
     assertEquals(2, gr.size());
     assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Nuuk")));
     assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Glasgow")));

@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
+import com.github.davidmoten.geo.LatLong;
 import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.cache.Region;
@@ -28,7 +29,6 @@ import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.GeoRadiusResponseElement;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -78,7 +78,7 @@ public abstract class GeoSortedSetExecutor extends AbstractExecutor {
   }
 
   protected void respondGeoCoordinates(Command command, ExecutionHandlerContext context,
-      List<GeoCoord> positions) {
+      List<LatLong> positions) {
     ByteBuf rsp;
     try {
       rsp = GeoCoder.getBulkStringGeoCoordinateArrayResponse(context.getByteBufAllocator(),

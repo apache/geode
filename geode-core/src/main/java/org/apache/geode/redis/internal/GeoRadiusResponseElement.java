@@ -19,9 +19,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.davidmoten.geo.LatLong;
+
 public class GeoRadiusResponseElement {
   private String name;
-  private Optional<GeoCoord> coord;
+  private Optional<LatLong> coord;
   private Double distFromCenter;
   private boolean showDist;
   private Optional<String> hash;
@@ -30,7 +32,7 @@ public class GeoRadiusResponseElement {
     return name;
   }
 
-  public Optional<GeoCoord> getCoord() {
+  public Optional<LatLong> getCoord() {
     return coord;
   }
 
@@ -46,7 +48,7 @@ public class GeoRadiusResponseElement {
     return hash;
   }
 
-  public GeoRadiusResponseElement(String n, Optional<GeoCoord> c, Double d, boolean sh,
+  public GeoRadiusResponseElement(String n, Optional<LatLong> c, Double d, boolean sh,
       Optional<String> h) {
     this.name = n;
     this.coord = c;

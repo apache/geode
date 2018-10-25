@@ -17,12 +17,12 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
+import com.github.davidmoten.geo.LatLong;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.MemberNotFoundException;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 
@@ -40,7 +40,7 @@ public class GeoRadiusParameters {
   final SortOrder order;
 
   final Double distScale;
-  final char[] centerHashPrecise;
+  final String centerHashPrecise;
 
   public enum CommandType {
     GEORADIUS, GEORADIUSBYMEMBER
@@ -52,7 +52,7 @@ public class GeoRadiusParameters {
 
   public GeoRadiusParameters(Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion,
       List<byte[]> commandElems, CommandType cmdType) throws IllegalArgumentException,
-      RedisCommandParserException, CoderException, MemberNotFoundException {
+      RedisCommandParserException, MemberNotFoundException {
     byte[] radArray;
 
     switch (cmdType) {
@@ -61,7 +61,7 @@ public class GeoRadiusParameters {
         byte[] latArray = commandElems.get(3);
         radArray = commandElems.get(4);
         unit = new String(commandElems.get(5));
-        centerHashPrecise = GeoCoder.geohashBits(lonArray, latArray, GeoCoder.LEN_GEOHASH);
+        centerHashPrecise = GeoCoder.geohash(lonArray, latArray);
         lon = Coder.bytesToDouble(lonArray);
         lat = Coder.bytesToDouble(latArray);
         member = null;
@@ -76,10 +76,10 @@ public class GeoRadiusParameters {
           throw new MemberNotFoundException();
         }
 
-        centerHashPrecise = hashWrapper.toString().toCharArray();
-        GeoCoord pos = GeoCoder.geoPos(centerHashPrecise);
-        lon = pos.getLongitude();
-        lat = pos.getLatitude();
+        centerHashPrecise = hashWrapper.toString();
+        LatLong pos = GeoCoder.geoPos(centerHashPrecise);
+        lon = pos.getLon();
+        lat = pos.getLat();
         break;
     }
 

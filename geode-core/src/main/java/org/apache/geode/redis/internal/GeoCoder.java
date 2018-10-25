@@ -19,43 +19,36 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import com.github.davidmoten.geo.GeoHash;
+import com.github.davidmoten.geo.LatLong;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
 public class GeoCoder {
-  /**
-   * Length of generated geohash in bits.
-   */
-  public static final int LEN_GEOHASH = 60;
 
   /**
    * Earth radius for distance calculations.
    */
   private static final double EARTH_RADIUS_IN_METERS = 6372797.560856;
-  public static final double LONG_MIN = -180.0;
-  public static final double LONG_MAX = 180.0;
-  public static final double LAT_MIN = -90.0;
-  public static final double LAT_MAX = 90.0;
-  public static final double MERCATOR_MAX = 20037726.37;
-
 
   public static ByteBuf getBulkStringGeoCoordinateArrayResponse(ByteBufAllocator alloc,
-      Collection<GeoCoord> items)
+      Collection<LatLong> items)
       throws CoderException {
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);
     ByteBuf tmp = alloc.buffer();
     int size = 0;
     try {
-      for (GeoCoord next : items) {
+      for (LatLong next : items) {
         if (next == null) {
           tmp.writeBytes(Coder.bNIL);
         } else {
           tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
               Arrays.asList(
-                  Double.toString(next.getLongitude()),
-                  Double.toString(next.getLatitude()))));
+                  Double.toString(next.getLon()),
+                  Double.toString(next.getLat()))));
         }
         size++;
       }
@@ -87,8 +80,8 @@ public class GeoCoder {
 
       List<String> coord = new ArrayList<>();
       if (element.getCoord().isPresent()) {
-        coord.add(Double.toString(element.getCoord().get().getLongitude()));
-        coord.add(Double.toString(element.getCoord().get().getLatitude()));
+        coord.add(Double.toString(element.getCoord().get().getLon()));
+        coord.add(Double.toString(element.getCoord().get().getLat()));
       }
 
       String hash = "";
@@ -119,13 +112,10 @@ public class GeoCoder {
    * Converts geohash to lat/long.
    *
    * @param hash geohash as base32
-   * @return a GeoCoord object containing the coordinates
+   * @return a LatLong object containing the coordinates
    */
-  public static GeoCoord geoPos(char[] hash) {
-    Pair<char[], char[]> hashBits = deinterleave(hash);
-
-    return new GeoCoord(coord(hashBits.fst, LONG_MIN, LONG_MAX),
-        coord(hashBits.snd, LAT_MIN, LAT_MAX));
+  public static LatLong geoPos(String hash) {
+    return GeoHash.decodeHash(hash);
   }
 
   /**
@@ -135,14 +125,14 @@ public class GeoCoder {
    * @param hash2 geohash of second point
    * @return distance in meters
    */
-  public static Double geoDist(char[] hash1, char[] hash2) {
-    GeoCoord coord1 = geoPos(hash1);
-    GeoCoord coord2 = geoPos(hash2);
+  public static Double geoDist(String hash1, String hash2) {
+    LatLong coord1 = geoPos(hash1);
+    LatLong coord2 = geoPos(hash2);
 
-    Double lat1 = Math.toRadians(coord1.getLatitude());
-    Double long1 = Math.toRadians(coord1.getLongitude());
-    Double lat2 = Math.toRadians(coord2.getLatitude());
-    Double long2 = Math.toRadians(coord2.getLongitude());
+    Double lat1 = Math.toRadians(coord1.getLat());
+    Double long1 = Math.toRadians(coord1.getLon());
+    Double lat2 = Math.toRadians(coord2.getLat());
+    Double long2 = Math.toRadians(coord2.getLon());
 
     return dist(long1, lat1, long2, lat2);
   }
@@ -154,112 +144,35 @@ public class GeoCoder {
    * @param lat byte array encoding latitude as decimal
    * @return geohash as base32
    */
-  public static String geohash(byte[] lon, byte[] lat, int length) throws CoderException {
-    return bitsToHash(geohashBits(lon, lat, length));
-  }
-
-  public static char[] geohashBits(byte[] lon, byte[] lat, int length) throws CoderException {
+  public static String geohash(byte[] lon, byte[] lat) throws IllegalArgumentException {
     Double longitude = Coder.bytesToDouble(lon);
     Double latitude = Coder.bytesToDouble(lat);
-
-    int longLen, latLen;
-    if (length % 2 == 0) {
-      longLen = length / 2;
-      latLen = length / 2;
-    } else {
-      longLen = (length + 1) / 2;
-      latLen = (length - 1) / 2;
-    }
-
-    char[] longDigits = coordDigits(longitude, LONG_MIN, LONG_MAX, longLen);
-    char[] latDigits = coordDigits(latitude, LAT_MIN, LAT_MAX, latLen);
-
-    return interleave(longDigits, latDigits);
+    return GeoHash.encodeHash(latitude, longitude);
   }
 
-  public static HashNeighbors geohashSearchAreas(double longitude, double latitude,
-      double radiusMeters) throws CoderException {
-    HashArea boundingBox = geohashBoundingBox(longitude, latitude, radiusMeters);
-    int steps = geohashLengthByRadius(radiusMeters, latitude);
-    char[] hash =
-        geohashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
-            2 * steps);
-    HashNeighbors neighbors = getNeighbors(hash);
-    HashArea centerArea = geohashTile(hash);
-    HashArea northArea = geohashTile(neighbors.north.toCharArray());
-    HashArea southArea = geohashTile(neighbors.south.toCharArray());
-    HashArea eastArea = geohashTile(neighbors.east.toCharArray());
-    HashArea westArea = geohashTile(neighbors.west.toCharArray());
+  public static Set<String> geohashSearchAreas(double longitude, double latitude,
+      double radiusMeters) {
+    HashArea boundingBox = boundingBox(longitude, latitude, radiusMeters);
+    int steps =
+        Math.max(1, GeoHash.hashLengthToCoverBoundingBox(boundingBox.maxlat, boundingBox.maxlon,
+            boundingBox.minlat, boundingBox.minlon));
 
-    if ((dist(longitude, latitude, longitude, northArea.maxlat) < radiusMeters
-        || dist(longitude, latitude, longitude, southArea.minlat) < radiusMeters
-        || dist(longitude, latitude, eastArea.maxlon, latitude) < radiusMeters
-        || dist(longitude, latitude, westArea.minlon, latitude) < radiusMeters) && steps > 1) {
-      steps--;
-      hash =
-          geohashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
-              2 * steps);
-      neighbors = getNeighbors(hash);
-      centerArea = geohashTile(hash);
+    List<String> extra = new ArrayList<>();
+    // Large distance boundary condition
+    if (steps == 1) {
+      extra.addAll(GeoHash.neighbours(GeoHash.encodeHash(latitude, longitude, steps)));
     }
 
-    if (steps >= 2) {
-      if (centerArea.minlat < boundingBox.minlat) {
-        neighbors.south = null;
-        neighbors.southwest = null;
-        neighbors.southeast = null;
-      }
-
-      if (centerArea.maxlat > boundingBox.maxlat) {
-        neighbors.north = null;
-        neighbors.northeast = null;
-        neighbors.northwest = null;
-      }
-
-      if (centerArea.minlon < boundingBox.minlon) {
-        neighbors.west = null;
-        neighbors.southwest = null;
-        neighbors.northwest = null;
-      }
-
-      if (centerArea.maxlon > boundingBox.maxlon) {
-        neighbors.east = null;
-        neighbors.southeast = null;
-        neighbors.northeast = null;
-      }
+    Set<String> areas = GeoHash.coverBoundingBox(boundingBox.maxlat, boundingBox.maxlon,
+        boundingBox.minlat, boundingBox.minlon, steps).getHashes();
+    if (!extra.isEmpty()) {
+      extra.forEach(ex -> areas.add(ex));
     }
 
-    return neighbors;
+    return areas;
   }
 
-  public static double log2(double n) {
-    return (Math.log(n) / Math.log(2));
-  }
-
-  public static int geohashLengthByRadius(double rangeMeters, double lat) {
-    int maxStep = LEN_GEOHASH / 2;
-    double range = rangeMeters;
-
-    if (range == 0) {
-      return maxStep;
-    }
-
-    int length = (int) (Math.ceil(log2(MERCATOR_MAX / range)) - 1);
-
-    if (lat > 66 || lat < -66) {
-      length--;
-    }
-
-    if (lat > 80 || lat < -80) {
-      length--;
-    }
-
-    length = Math.max(1, Math.min(length, maxStep));
-
-    return length;
-  }
-
-  public static HashArea geohashBoundingBox(double longitude, double latitude,
+  public static HashArea boundingBox(double longitude, double latitude,
       double radiusMeters) {
     double minlon = longitude - Math
         .toDegrees((radiusMeters / EARTH_RADIUS_IN_METERS) * Math.cos(Math.toRadians(latitude)));
@@ -279,135 +192,6 @@ public class GeoCoder {
     return EARTH_RADIUS_IN_METERS * distAngle;
   }
 
-  public static HashArea geohashTile(char[] hash) {
-    Pair<char[], char[]> coordBits = deinterleave(hash);
-    Pair<Double, Double> lonRange = getRange(coordBits.fst, LONG_MIN, LONG_MAX);
-    Pair<Double, Double> latRange = getRange(coordBits.snd, LAT_MIN, LAT_MAX);
-
-    return new HashArea(lonRange.fst, lonRange.snd, latRange.fst, latRange.snd);
-  }
-
-  public static Pair<Double, Double> getRange(char[] coordDigits, Double min, Double max) {
-    Double mid = (min + max) / 2;
-    for (char d : coordDigits) {
-      if (d == '1') {
-        min = mid;
-      } else {
-        max = mid;
-      }
-      mid = (min + max) / 2;
-    }
-
-    return Pair.of(min, max);
-  }
-
-  public static HashNeighbors getNeighbors(char[] hash) throws CoderException {
-    HashNeighbors hn = new HashNeighbors();
-    hn.center = new String(hash);
-    hn.west = new String(move(hash, -1, 0));
-    hn.east = new String(move(hash, 1, 0));
-    hn.north = new String(move(hash, 0, 1));
-    hn.south = new String(move(hash, 0, -1));
-    hn.northwest = new String(move(hash, -1, 1));
-    hn.northeast = new String(move(hash, 1, 1));
-    hn.southwest = new String(move(hash, -1, -1));
-    hn.southeast = new String(move(hash, 1, -1));
-
-    return hn;
-  }
-
-  private static char[] move(char[] hash, int dist_lon, int dist_lat) throws CoderException {
-    Pair<char[], char[]> coordBits = deinterleave(hash);
-    char[] lonbits = coordBits.fst;
-    char[] latbits = coordBits.snd;
-
-    char[] newLonBits = Integer
-        .toBinaryString((Integer.parseInt(new String(lonbits), 2) + dist_lon))
-        .toCharArray();
-    char[] newLatBits = Integer
-        .toBinaryString((Integer.parseInt(new String(latbits), 2) + dist_lat))
-        .toCharArray();
-
-    newLonBits = sliceOrPad(newLonBits, lonbits.length);
-
-    if (newLatBits.length > latbits.length) {
-      newLatBits = latbits;
-    } else {
-      newLatBits = sliceOrPad(newLatBits, latbits.length);
-    }
-
-    return interleave(newLonBits, newLatBits);
-  }
-
-  public static char[] hashToBits(String hash) {
-    StringBuilder binStringBuilder = new StringBuilder();
-    for (char digit : hash.toCharArray()) {
-      int val = base32Val(digit);
-      binStringBuilder.append(base32bin(val));
-    }
-
-    return binStringBuilder.toString().toCharArray();
-  }
-
-  private static Pair<char[], char[]> deinterleave(char[] binChars) {
-    int longLen, latLen;
-    if (binChars.length % 2 == 0) {
-      longLen = binChars.length / 2;
-      latLen = binChars.length / 2;
-    } else {
-      longLen = (binChars.length + 1) / 2;
-      latLen = (binChars.length - 1) / 2;
-    }
-
-    char[] lonChars = new char[longLen];
-    char[] latChars = new char[latLen];
-    for (int i = 0; i < binChars.length; i += 2) {
-      lonChars[i / 2] = binChars[i];
-
-      if (i / 2 < latChars.length) {
-        latChars[i / 2] = binChars[i + 1];
-      }
-    }
-
-    return Pair.of(lonChars, latChars);
-  }
-
-  private static char[] interleave(char[] longDigits, char[] latDigits) throws CoderException {
-    if (longDigits.length > latDigits.length + 1) {
-      throw new CoderException();
-    }
-
-    char[] hashBin = new char[longDigits.length + latDigits.length];
-    for (int i = 0; i < longDigits.length; i++) {
-      hashBin[2 * i] = longDigits[i];
-
-      if (i < latDigits.length) {
-        hashBin[(2 * i) + 1] = latDigits[i];
-      }
-    }
-
-    return hashBin;
-  }
-
-  public static String bitsToHash(char[] hashBin) {
-    StringBuilder hashStrBuilder = new StringBuilder();
-    StringBuilder digitBuilder = new StringBuilder();
-
-    int e = 0;
-    for (int d = 0; d < hashBin.length; d++) {
-      digitBuilder.append(hashBin[d]);
-      if (e == 4 || d == hashBin.length - 1) {
-        hashStrBuilder.append(base32(Integer.parseInt(digitBuilder.toString(), 2)));
-        digitBuilder = new StringBuilder();
-        e = 0;
-      } else {
-        e++;
-      }
-    }
-
-    return hashStrBuilder.toString();
-  }
-
   public static double haversine(Double rad) {
     return 0.5 * (1 - Math.cos(rad));
   }
@@ -425,69 +209,5 @@ public class GeoCoder {
       default:
         throw new IllegalArgumentException();
     }
-  }
-
-  private static char base32(int x) {
-    String base32str = "0123456789bcdefghjkmnpqrstuvwxyz";
-    return base32str.charAt(x);
-  }
-
-  private static int base32Val(char d) {
-    String base32str = "0123456789bcdefghjkmnpqrstuvwxyz";
-    return base32str.indexOf(d);
-  }
-
-  private static String base32bin(int v) {
-    if (v > 15) {
-      return Integer.toBinaryString(v);
-    }
-
-    if (v > 7) {
-      return "0" + Integer.toBinaryString(v);
-    }
-
-    if (v > 3) {
-      return "00" + Integer.toBinaryString(v);
-    }
-
-    if (v > 1) {
-      return "000" + Integer.toBinaryString(v);
-    }
-
-    return "0000" + Integer.toBinaryString(v);
-  }
-
-  private static char[] coordDigits(Double coordinate, Double min, Double max, int length)
-      throws CoderException {
-    if (coordinate > max || coordinate < min) {
-      throw new CoderException();
-    }
-
-    Double coordOffset = (coordinate - min) / (max - min);
-    Long coordOffsetL = (long) (coordOffset * (1 << length));
-    char[] x = sliceOrPad(Long.toBinaryString(coordOffsetL).toCharArray(), length);
-
-    return x;
-  }
-
-  private static double coord(char[] digits, Double min, Double max) {
-    double coord = (double) Long.parseLong(new String(digits), 2);
-    double scale = (double) (1 << digits.length);
-
-    return min + ((coord / scale) * (max - min));
-  }
-
-  private static char[] sliceOrPad(char[] binChars, int length) {
-    char[] newBinChars = new char[length];
-
-    for (int i = 0, j = binChars.length - newBinChars.length; i < newBinChars.length; i++, j++) {
-      if (j >= 0) {
-        newBinChars[i] = binChars[j];
-      } else {
-        newBinChars[i] = '0';
-      }
-    }
-
-    return newBinChars;
   }
 }
