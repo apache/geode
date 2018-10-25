@@ -16,8 +16,10 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
+import static java.util.Collections.synchronizedSet;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
@@ -43,7 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -772,7 +773,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     allKeys.addAll(vm0.invoke(() -> getBucketMovingAsyncEventListener().getKeysSeen()));
     allKeys.addAll(vm1.invoke(() -> getBucketMovingAsyncEventListener().getKeysSeen()));
 
-    Set<Integer> expectedKeys = IntStream.range(0, 113).boxed().collect(Collectors.toSet());
+    Set<Integer> expectedKeys = IntStream.range(0, 113).boxed().collect(toSet());
     assertThat(allKeys).isEqualTo(expectedKeys);
 
     assertThat(vm0.invoke(() -> getBucketMovingAsyncEventListener().isMoved())).isTrue();
@@ -872,7 +873,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     allKeys.addAll(vm0.invoke(() -> getPrimaryMovingAsyncEventListener().getKeysSeen()));
     allKeys.addAll(vm1.invoke(() -> getPrimaryMovingAsyncEventListener().getKeysSeen()));
 
-    Set<Integer> expectedKeys = IntStream.range(0, 113).boxed().collect(Collectors.toSet());
+    Set<Integer> expectedKeys = IntStream.range(0, 113).boxed().collect(toSet());
     assertThat(allKeys).isEqualTo(expectedKeys);
   }
 
@@ -1290,7 +1291,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   private abstract static class AbstractMovingAsyncEventListener implements AsyncEventListener {
 
     private final DistributedMember destination;
-    private final Set<Object> keysSeen = new HashSet<>();
+    private final Set<Object> keysSeen = synchronizedSet(new HashSet<>());
     private volatile boolean moved;
 
     AbstractMovingAsyncEventListener(final DistributedMember destination) {
@@ -1307,7 +1308,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
         return false;
       }
 
-      events.stream().map(AsyncEvent::getKey).forEach(keysSeen::add);
+      Set<Object> keysInThisBatch = events.stream()
+          .map(AsyncEvent::getKey)
+          .collect(toSet());
+      keysSeen.addAll(keysInThisBatch);
       return true;
     }
 
