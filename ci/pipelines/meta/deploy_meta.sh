@@ -42,20 +42,17 @@ source ${META_PROPERTIES}
 echo "**************************************************"
 echo "Default Environment variables for this deployment:"
 cat ${SCRIPTDIR}/meta.properties | grep -v "^#"
+source ${META_PROPERTIES}
 echo "**************************************************"
 
 ## Load local overrides properties file
 if [[ -f ${LOCAL_META_PROPERTIES} ]]; then
   echo "Locally overridden environment variables for this:"
   cat ${SCRIPTDIR}/meta.properties.local
+  source ${LOCAL_META_PROPERTIES}
   echo "**************************************************"
-  source ${LOCAL_META_PROPERTIES}
-fi
-
-source ${META_PROPERTIES}
-
-if [[ -f ${LOCAL_META_PROPERTIES} ]]; then
-  source ${LOCAL_META_PROPERTIES}
+else
+  echo "(to deploy your own pipeline, press x then create ${LOCAL_META_PROPERTIES} containing GEODE_FORK=<your github username>)"
 fi
 
 read -n 1 -s -r -p "Press any key to continue or x to abort" DEPLOY
@@ -151,7 +148,7 @@ function pauseNewJobs {
   shift
   for JOB; do
     STATUS="$(jobStatus $PIPELINE $JOB)"
-    [[ "$STATUS" == "n/a" ]] && pauseJob $PIPELINE $JOB
+    [[ "$STATUS" == "n/a" ]] && pauseJob $PIPELINE $JOB || true
   done
 }
 
@@ -237,6 +234,6 @@ driveToGreen $META_PIPELINE set-pipeline
 unpausePipeline ${PIPELINE_PREFIX}main
 echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
 
-if [[ "$GEODE_FORK" == "apache" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
+if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   unpauseJobs set-pr set-metrics set-examples
 fi
