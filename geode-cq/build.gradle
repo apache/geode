@@ -16,7 +16,7 @@
  */
 
 dependencies {
-  compileOnly(project(':geode-core'))
+  compile(project(':geode-core'))
   testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -24,7 +24,34 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  upgradeTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+
+  integrationTestCompile('junit:junit:' + project.'junit.version')
+  integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+
+  distributedTestCompile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  distributedTestCompile('junit:junit:' + project.'junit.version')
+  distributedTestCompile('mx4j:mx4j:' + project.'mx4j.version')
+  distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  distributedTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+  distributedTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
+  distributedTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
+  distributedTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
+
+  upgradeTestCompile('junit:junit:' + project.'junit.version')
+  upgradeTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+  upgradeTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
 }

@@ -16,20 +16,23 @@
  */
 
 dependencies {
-  compileOnly(project(':geode-common'))
-  compileOnly(project(':geode-core'))
+  compile(project(':geode-common'))
+  compile(project(':geode-core'))
+  testCompile(project(':geode-core'))
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
   compile('org.springframework:spring-context:' + project.'springframework.version') {
     exclude module: 'spring-beans'
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }
 
-  testCompile(project(':geode-core'))
-
+  integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
-  // Only needed for category Flaky by Gradle
-  integrationTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
+  integrationTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
+  integrationTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
 }
