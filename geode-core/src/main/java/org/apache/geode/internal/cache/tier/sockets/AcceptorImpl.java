@@ -334,11 +334,14 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * @since GemFire 5.7
    */
   public AcceptorImpl(int port, String bindHostName, boolean notifyBySubscription,
-      int socketBufferSize, int maximumTimeBetweenPings, InternalCache internalCache,
-      int maxConnections, int maxThreads, int maximumMessageCount, int messageTimeToLive,
-      ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver,
+      int socketBufferSize, int maximumTimeBetweenPings,
+      InternalCache internalCache,
+      int maxConnections, int maxThreads, int maximumMessageCount,
+      int messageTimeToLive,
+      ConnectionListener listener, List overflowAttributesList,
+      boolean isGatewayReceiver,
       List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
-      ServerConnectionFactory serverConnectionFactory) throws IOException {
+      ServerConnectionFactory serverConnectionFactory, long timeLimitMillis) throws IOException {
     this.securityService = internalCache.getSecurityService();
     this.bindHostName = calcBindHostName(internalCache, bindHostName);
     this.connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
@@ -430,7 +433,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         gc = null;
       }
       final int backLog = Integer.getInteger(BACKLOG_PROPERTY_NAME, DEFAULT_BACKLOG).intValue();
-      final long tilt = System.currentTimeMillis() + 120 * 1000;
+      final long tilt = System.currentTimeMillis() + timeLimitMillis;
 
       if (isSelector()) {
         if (this.socketCreator.useSSL()) {
@@ -692,7 +695,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       receipients = pr.getRegionAdvisor().adviseAllPRNodes();
       // send it to all in one messgae
       ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(receipients,
-          pr.getDistributionManager(), pr.getPRId(), profiles, true);
+          pr.getDistributionManager(), pr.getPRId(), profiles);
       if (reply != null) {
         reply.waitForRepliesUninterruptibly();
       }
@@ -1550,38 +1553,40 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         this.clientNotifier.shutdown(this.acceptorId);
         shutdownPools();
         this.stats.close();
-        notifyCacheMembersOfClose();
+        if (!cache.isClosed()) {
+          // the cache isn't closing so we need to inform peers that this CacheServer no longer
+          // exists
+          notifyCacheMembersOfClose();
+        }
       } // synchronized
     } catch (RuntimeException e) {/* ignore and log */
       logger.warn("unexpected", e);
     }
   }
 
-  private void notifyCacheMembersOfClose() {
-    if (!this.cache.forcedDisconnect()) {
-      for (PartitionedRegion pr : this.cache.getPartitionedRegions()) {
-        Map<Integer, BucketAdvisor.BucketProfile> profiles = new HashMap<>();
-        // get all local real bucket advisors
-        Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
-        for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
-          BucketAdvisor advisor = entry.getValue();
-          BucketProfile bp = (BucketProfile) advisor.createProfile();
-          advisor.updateServerBucketProfile(bp);
-          profiles.put(entry.getKey(), bp);
-        }
-
-        Set recipients = pr.getRegionAdvisor().adviseAllPRNodes();
-        // send it to all in one message
-        ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(recipients,
-            pr.getDistributionManager(), pr.getPRId(), profiles, true);
-        if (reply != null) {
-          reply.waitForRepliesUninterruptibly();
-        }
-
-        if (logger.isDebugEnabled()) {
-          logger.debug("sending messages to all peers for removing this server..");
-        }
+  void notifyCacheMembersOfClose() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("sending messages to all peers for removing this server..");
+    }
+    for (PartitionedRegion pr : this.cache.getPartitionedRegions()) {
+      Map<Integer, BucketAdvisor.BucketProfile> profiles = new HashMap<>();
+      // get all local real bucket advisors
+      Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
+      for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
+        BucketAdvisor advisor = entry.getValue();
+        BucketProfile bp = (BucketProfile) advisor.createProfile();
+        advisor.updateServerBucketProfile(bp);
+        profiles.put(entry.getKey(), bp);
       }
+
+      Set recipients = pr.getRegionAdvisor().adviseAllPRNodes();
+      // send it to all in one message
+      ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(recipients,
+          pr.getDistributionManager(), pr.getPRId(), profiles);
+      if (reply != null) {
+        reply.waitForRepliesUninterruptibly();
+      }
+
     }
   }
 
