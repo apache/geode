@@ -43,8 +43,6 @@ import org.apache.geode.internal.logging.LogService;
 public class QueryMonitor {
   private static final Logger logger = LogService.getLogger();
 
-  public static final int CorePoolSize = 1;
-
   private final InternalCache cache;
   /**
    * Holds the query execution status for the thread executing the query. FALSE if the query is not
@@ -56,7 +54,7 @@ public class QueryMonitor {
 
   private final long defaultMaxQueryExecutionTime;
 
-  private final ScheduledThreadPoolExecutor executorService;
+  private final ScheduledThreadPoolExecutor executor;
 
   private boolean cancellingDueToLowMemory;
 
@@ -65,12 +63,12 @@ public class QueryMonitor {
 
   private static volatile long LOW_MEMORY_USED_BYTES = 0;
 
-  public QueryMonitor(InternalCache cache, long defaultMaxQueryExecutionTime) {
+  public QueryMonitor(ScheduledThreadPoolExecutor executor, InternalCache cache, long defaultMaxQueryExecutionTime) {
     this.cache = cache;
     this.defaultMaxQueryExecutionTime = defaultMaxQueryExecutionTime;
 
-    executorService = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(CorePoolSize);
-    executorService.setRemoveOnCancelPolicy(true);
+    this.executor = executor;
+    this.executor.setRemoveOnCancelPolicy(true);
   }
 
   /**
@@ -108,7 +106,7 @@ public class QueryMonitor {
     if (logger.isDebugEnabled()) {
       logger.debug(
           "Adding thread to QueryMonitor. QueryMonitor size is: {}, Thread (id): {}, Query: {}, Thread is : {}",
-          executorService.getQueue().size(), queryThread.getId(), query.getQueryString(),
+          executor.getQueue().size(), queryThread.getId(), query.getQueryString(),
           queryThread);
     }
   }
@@ -128,7 +126,7 @@ public class QueryMonitor {
     if (logger.isDebugEnabled()) {
       logger.debug(
           "Query completed before expiration. QueryMonitor size is: {}, Thread ID is: {},  Thread is: {}",
-          executorService.getQueue().size(), queryThread.getId(), queryThread);
+          executor.getQueue().size(), queryThread.getId(), queryThread);
     }
   }
 
@@ -150,7 +148,7 @@ public class QueryMonitor {
    * Stops query monitoring.
    */
   public void stopMonitoring() {
-    executorService.shutdownNow();
+    executor.shutdownNow();
   }
 
   /**
@@ -187,7 +185,7 @@ public class QueryMonitor {
        * weak-consistency guarantees on its iterator; that is, a copy
        * of the queue is made when we iterate.
        */
-      for (Runnable expirationTask : executorService.getQueue()) {
+      for (Runnable expirationTask : executor.getQueue()) {
         expirationTask.run();
       }
     } finally {
@@ -196,20 +194,13 @@ public class QueryMonitor {
 
   }
 
-  /**
-   * FOR TEST PURPOSE
-   */
-  public int getQueryCount() {
-    return executorService.getQueue().size();
-  }
-
   private ScheduledFuture<?> scheduleExpirationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
     // make thread local queryCancelled, available to closure
     final AtomicBoolean querysThreadLocalQueryCancelled = queryCancelled.get();
 
-    return executorService.schedule(() -> {
+    return executor.schedule(() -> {
       final boolean[] queryCompleted = query.getQueryCompletedForMonitoring();
 
       synchronized (queryCompleted) {
