@@ -33,14 +33,55 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  acceptanceTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 
-  compile(group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version')
+  compile('com.zaxxer:HikariCP:3.2.0')
+  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+    ext.optional = true
+  }
+  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
+    ext.optional = true
+  }
 
+  runtime('mysql:mysql-connector-java:5.1.46')
+
+  integrationTestCompile('junit:junit:' + project.'junit.version')
+  integrationTestCompile('junit:junit:4.12')
+  integrationTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+
+  distributedTestCompile('junit:junit:' + project.'junit.version')
+  distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  distributedTestCompile('org.mockito:mockito-core:2.19.1')
+
+  acceptanceTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+    exclude module: 'junit-dep'
+  }
+  acceptanceTestCompile('junit:junit:' + project.'junit.version')
+  acceptanceTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  acceptanceTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+  acceptanceTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-core', version: '0.31.1')
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
-  acceptanceTestCompile(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
 
   acceptanceTestRuntime(group: 'org.apache.derby', name: 'derby', version: project.'derby.version')
   acceptanceTestRuntime(group: 'org.postgresql', name: 'postgresql', version: '42.2.2')
