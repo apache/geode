@@ -23,14 +23,17 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  */
 public class LegacyAlertService {
 
-  // TODO:KIRK: shuttingDown (AgentImpl, GMSMembershipManager)
-  public static void shuttingDown() {}
+  public static void shuttingDown() {
+
+  }
 
   public static boolean removeAlertListener(InternalDistributedMember member) {
     return false;
   }
 
-  public static void onConnect(InternalDistributedSystem system) {}
+  public static void onConnect(InternalDistributedSystem system) {
+
+  }
 
   public static boolean hasAlertListener(DistributedMember member, int alertLevel) {
     return false;
@@ -40,13 +43,19 @@ public class LegacyAlertService {
     return false;
   }
 
-  public static void addAlertListener(final DistributedMember member, final int alertLevel) {}
+  public static void addAlertListener(final DistributedMember member, final int alertLevel) {
+
+  }
 
   public static boolean isAlertingDisabled() {
     return false;
   }
 
-  public static void setAlertingDisabled(final boolean alertingDisabled) {}
+  public static void setAlertingDisabled(final boolean alertingDisabled) {
 
-  public static void setIsAlerting(boolean isAlerting) {}
+  }
+
+  public static void setIsAlerting(boolean isAlerting) {
+    
+  }
 }
