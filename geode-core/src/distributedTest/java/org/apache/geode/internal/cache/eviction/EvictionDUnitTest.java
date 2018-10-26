@@ -26,6 +26,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
@@ -72,16 +73,21 @@ public class EvictionDUnitTest {
         .withProperties(properties).withConnectionToLocator(locatorPort));
     server1 = cluster.startServerVM(1, s -> s.withNoCacheServer()
         .withProperties(properties).withConnectionToLocator(locatorPort));
+
+    VMProvider.invokeInEveryMember(() -> {
+      HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
+      System.setProperty("gemfire.memoryEventTolerance", "0");
+      InternalCache cache = ClusterStartupRule.getCache();
+      cache.getResourceManager().setEvictionHeapPercentage(85);
+      if (offHeap) {
+        cache.getInternalResourceManager().getOffHeapMonitor().stopMonitoring(true);
+      }
+    }, server0, server1);
   }
 
   @Test
   public void testDummyInlineNCentralizedEvictionAndPoolSize() {
     VMProvider.invokeInEveryMember(() -> {
-      HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
-      System.setProperty("gemfire.memoryEventTolerance", "0");
-      Cache cache = ClusterStartupRule.getCache();
-      cache.getResourceManager().setEvictionHeapPercentage(85);
-
       ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
       server.createPartitionRegion("PR1",
           f -> f.setOffHeap(offHeap).setEvictionAttributes(
@@ -128,11 +134,6 @@ public class EvictionDUnitTest {
   public void testCheckEntryLruEvictionsIn2DataStore() {
     int maxEntries = 20;
     VMProvider.invokeInEveryMember(() -> {
-      HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
-      System.setProperty("gemfire.memoryEventTolerance", "0");
-      Cache cache = ClusterStartupRule.getCache();
-      cache.getResourceManager().setEvictionHeapPercentage(85);
-
       ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
       server.createPartitionRegion("PR1",
           f -> f.setOffHeap(offHeap)
@@ -167,11 +168,7 @@ public class EvictionDUnitTest {
   @Test
   public void testCentralizedEvictionForDistributedRegionWithDummyEvent() {
     server0.invoke(() -> {
-      HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
-      System.setProperty("gemfire.memoryEventTolerance", "0");
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
-      cache.getResourceManager().setEvictionHeapPercentage(85);
-
       ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
       LocalRegion dr1 =
           (LocalRegion) server.createRegion(RegionShortcut.LOCAL, "DR1",
@@ -207,7 +204,6 @@ public class EvictionDUnitTest {
   @Test
   public void testEvictionWithNodeDown() throws Exception {
     SerializableRunnableIF setupVM = () -> {
-      System.setProperty("gemfire.memoryEventTolerance", "0");
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
       final File[] diskDirs = new File[1];
       diskDirs[0] =
