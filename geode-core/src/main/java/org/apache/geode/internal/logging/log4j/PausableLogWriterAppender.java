@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -317,7 +316,7 @@ public class PausableLogWriterAppender extends AbstractAppender
   }
 
   /**
-   * TODO:KIRK: createSession might be called more than once for reconnect
+   * TODO:KIRK: startSession might be called more than once for reconnect
    */
   @Override
   public void startSession() {
@@ -328,7 +327,7 @@ public class PausableLogWriterAppender extends AbstractAppender
     resume();
 
     if (logBanner) {
-      // TODO: add boolean logBanner and also pass in way to skip for reconnect
+      // TODO:KIRK: add ability to skip for reconnect
       logBanner();
     }
 
@@ -394,7 +393,7 @@ public class PausableLogWriterAppender extends AbstractAppender
   private void doAppendToLogWriter(final ManagerLogWriter logWriter, final LogEvent event) {
     byte[] bytes = getLayout().toByteArray(event);
     if (bytes != null && bytes.length > 0) {
-      // TODO:PERF: avoid creating new String from bytes - event.getMessage().getFormattedMessage()?
+      // TODO:KIRK:PERF: creating new String - change to event.getMessage().getFormattedMessage()?
       logWriter.writeFormattedMessage(new String(bytes, Charset.defaultCharset()));
     }
     if (debug) {
@@ -421,78 +420,9 @@ public class PausableLogWriterAppender extends AbstractAppender
    * TODO:KIRK: loner and stand-alone locator previously suppressed logConfiguration
    */
   private void logConfiguration(final LogConfig logConfig) {
-    // log the config
-    boolean logTheConfig = !security; // or if stand-alone locator
+    boolean logTheConfig = !security;
     if (logTheConfig) {
-      // if (!logConfig.isLoner()) {
       LogManager.getLogger().info(Configuration.STARTUP_CONFIGURATION + logConfig.toLoggerString());
-      // }
-    }
-  }
-
-  // TODO: delete toCharArray
-  private static char[] toCharArray(final byte[] input) {
-    char[] result = new char[input.length];
-    for (int i = 0; i < input.length; i++) {
-      result[i] = (char) input[i];
-    }
-    return result;
-  }
-
-  // TODO: delete MemberNameReference
-  private interface MemberNameReference {
-
-    void setMemberName(final String memberName);
-
-    String getMemberName();
-
-    boolean checkMemberName();
-  }
-
-  // TODO: delete FinalMemberNameReference
-  private static class FinalMemberNameReference implements MemberNameReference {
-
-    private final String memberName;
-
-    FinalMemberNameReference(final String memberName) {
-      this.memberName = memberName;
-    }
-
-    @Override
-    public void setMemberName(final String memberName) {
-      throw new UnsupportedOperationException(
-          getClass().getSimpleName() + " does not support setMemberName");
-    }
-
-    @Override
-    public String getMemberName() {
-      return memberName;
-    }
-
-    @Override
-    public boolean checkMemberName() {
-      return false;
-    }
-  }
-
-  // TODO: delete FinalMemberNameReference
-  private static class AtomicMemberNameReference implements MemberNameReference {
-
-    private final AtomicReference<String> memberNameRef = new AtomicReference<>();
-
-    @Override
-    public void setMemberName(final String memberName) {
-      memberNameRef.set(memberName);
-    }
-
-    @Override
-    public String getMemberName() {
-      return memberNameRef.get();
-    }
-
-    @Override
-    public boolean checkMemberName() {
-      return memberNameRef.get() == null;
     }
   }
 }
