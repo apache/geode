@@ -2324,12 +2324,10 @@ public class DLockService extends DistributedLockService {
       } while (retry);
     }
 
-    // KIRK: probably don't need to do the following if isMakingLockGrantor
     if (isCurrentlyLockGrantor || isMakingLockGrantor) {
       // If forcedDisconnect is in progress, the membership view will not
       // change and no-one else can contact this member, so don't wait for a grantor
       if (this.ds.getCancelCriterion().isCancelInProgress()) {
-        // KIRK: probably don't need to waitForGrantor
         try {
           DLockGrantor.waitForGrantor(this);
         } catch (InterruptedException e) {

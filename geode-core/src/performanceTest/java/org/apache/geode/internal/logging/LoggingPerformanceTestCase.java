@@ -101,7 +101,6 @@ public abstract class LoggingPerformanceTestCase {
     for (int sets = 0; sets < LOG_SETS; sets++) {
       for (int count = 0; count < LOG_REPETITIONS_PER_SET; count++) {
         perfLogger.log(message);
-        // fail("KIRK");
       }
     }
     stopWatch.stop();

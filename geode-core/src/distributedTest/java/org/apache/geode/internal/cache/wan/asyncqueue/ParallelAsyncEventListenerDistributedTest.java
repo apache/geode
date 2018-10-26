@@ -580,7 +580,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> {
       // give some time for rebalancing to happen
-      SECONDS.sleep(2); // TODO:KIRK: await rebalancing to complete
+      SECONDS.sleep(2); // TODO: change to await rebalancing to complete
 
       getInternalGatewaySender().resume();
 
