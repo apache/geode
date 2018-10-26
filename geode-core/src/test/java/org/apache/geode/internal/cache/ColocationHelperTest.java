@@ -15,8 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +32,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -125,5 +130,23 @@ public class ColocationHelperTest {
       caughtIllegalStateException = true;
     }
     assertTrue(caughtIllegalStateException);
+  }
+
+  @Test
+  public void testGetColocatedRegionThrowsCacheClosedExceptionWhenCacheIsClosed() {
+    when(pr.getCache()).thenReturn(cache);
+    DistributedRegion prRoot = mock(DistributedRegion.class);
+    when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
+        .thenReturn(prRoot);
+    when(pr.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn("region2");
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(CacheClosedException.class).when(cancelCriterion).checkCancelInProgress(any());
+
+    assertThatThrownBy(() -> ColocationHelper.getColocatedRegion(pr))
+        .isInstanceOf(CacheClosedException.class);
   }
 }

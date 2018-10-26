@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.wan.concurrent;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.net.SocketException;
@@ -24,7 +23,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryExistsException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.BatchException70;
@@ -32,7 +30,6 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -603,18 +600,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
-        isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
-        isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
-        isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
-        isOffHeap()));
-
-    // wait until regions have all been created
-    waitForRegionToBeReadyOnServers(regionName, vm2, vm3, vm4, vm5, vm6, vm7);
-
     vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
         true, 6, OrderPolicy.KEY));
     vm5.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
@@ -623,6 +608,15 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         true, 6, OrderPolicy.KEY));
     vm7.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
         true, 6, OrderPolicy.KEY));
+
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
+        isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
+        isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 2, 100,
+        isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
@@ -661,28 +655,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     // verify all buckets drained on the sender nodes that up and running.
     vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-  }
-
-  private void waitForRegionToBeReadyOnServers(String regionName, VM... vms) {
-    int numVmsReady = 0;
-    int expectedVmsWithRegion = vms.length;
-
-    for (VM vm : vms) {
-      try {
-        vm.invoke(() -> await().untilAsserted(() -> {
-          assertThat(cache.getRegion(Region.SEPARATOR + regionName)).isNotNull();
-        }));
-        numVmsReady += 1;
-      } catch (Exception e) {
-        // eat the exception and keep checking
-      }
-    }
-    if (numVmsReady != expectedVmsWithRegion) {
-      throw new IllegalStateException(
-          "Test regions were not created within a reasonable amount of time. "
-              + (expectedVmsWithRegion - numVmsReady)
-              + " region(s) were not created in time.");
-    }
   }
 
   @Test
