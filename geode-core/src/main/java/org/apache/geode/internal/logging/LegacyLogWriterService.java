@@ -27,15 +27,25 @@ public class LegacyLogWriterService {
     return null;
   }
 
-  public static void stop() {}
+  public static void stop() {
 
-  public static void destroy() {}
+  }
 
-  public static void getOrCreate(boolean isLoner, LogConfig logConfig, boolean logTheConfig) {}
+  public static void destroy() {
 
-  public static void startupComplete() {}
+  }
 
-  public static void configChanged() {}
+  public static void getOrCreate(boolean isLoner, LogConfig logConfig, boolean logTheConfig) {
+
+  }
+
+  public static void startupComplete() {
+
+  }
+
+  public static void configChanged() {
+
+  }
 
   public static File getLogDir() {
     return null;
@@ -54,19 +64,31 @@ public class LegacyLogWriterService {
   }
 
   public static void getOrCreateSecurity(boolean isLoner, LogConfig logConfig,
-      boolean logTheConfig) {}
+      boolean logTheConfig) {
 
-  public static void startupCompleteSecurity() {}
+  }
 
-  public static void stopSecurity() {}
+  public static void startupCompleteSecurity() {
 
-  public static void destroySecurity() {}
+  }
+
+  public static void stopSecurity() {
+
+  }
+
+  public static void destroySecurity() {
+
+  }
 
   public static void getOrCreate(boolean appendToFile, boolean isLoner, LogConfig logConfig,
-      boolean startDistributedSystem) {}
+      boolean startDistributedSystem) {
+
+  }
 
   public static void getOrCreateSecurity(boolean appendToFile, boolean isLoner, LogConfig logConfig,
-      boolean startDistributedSystem) {}
+      boolean startDistributedSystem) {
+
+  }
 
   public static AbstractAppender getAppender() {
     return null;
