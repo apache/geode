@@ -87,26 +87,6 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
     return new LogWriterLogger(logger, null, false);
   }
 
-  // public void setLevel(final Level level) {
-  // if (getLevel().isLessSpecificThan(Level.DEBUG) || level.isLessSpecificThan(Level.DEBUG)) {
-  // debug("Changing level for Logger '{}' from {} to {}", loggerName, getLevel(), level);
-  // }
-  //
-  // if (LogService.MAIN_LOGGER_NAME.equals(loggerName)) {
-  // LogService.setBaseLogLevel(level);
-  // } else if (LogService.SECURITY_LOGGER_NAME.equals(loggerName)) {
-  // LogService.setSecurityLogLevel(level);
-  // } else {
-  // Configurator.setLevel(loggerName, level);
-  // }
-  // }
-
-  @Override
-  public void setLogWriterLevel(final int logWriterLevel) {
-    // setLevel(LogWriterLevelConverter.toLevel(LogWriterLevel.find(logWriterLevel)));
-    throw new UnsupportedOperationException("TODO:KIRK");
-  }
-
   /**
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
    *
