@@ -57,9 +57,9 @@ public class LoggingSession {
   public synchronized void stopSession() {
     changeStateTo(State.STOPPED);
     loggingSessionListeners.stopSession();
-    // TODO:KIRK: should this invoke shutdown()?
   }
 
+  // TODO:KIRK: consider combining stopSession and shutdown
   public synchronized void shutdown() {
     configuration.shutdown();
   }
