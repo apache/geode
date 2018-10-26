@@ -57,15 +57,13 @@ public abstract class VMProvider {
   }
 
   public boolean isLocator() {
-    return getVM().invoke(() -> {
-      return ClusterStartupRule.getLocator() != null;
-    });
+    return getVM().invoke(() -> ClusterStartupRule.getLocator() != null);
   }
 
+  // a server can be started without a cache server, so as long as this member has no locator,
+  // it's deemed as a server
   public boolean isServer() {
-    return getVM().invoke(() -> {
-      return ClusterStartupRule.getServer() != null;
-    });
+    return getVM().invoke(() -> ClusterStartupRule.getLocator() == null);
   }
 
   public void invoke(final SerializableRunnableIF runnable) {
