@@ -2506,7 +2506,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     services.setShutdownCause(shutdownCause);
     services.getCancelCriterion().cancel(reason);
 
-    LegacyAlertService.shuttingDown(); // TODO:KIRK
+    LegacyAlertService.shuttingDown();
+    // TODO:KIRK: how to get AlertAppender here to stop it
     PausableAlertAppender.getInstance().stopSession();
 
     if (!inhibitForceDisconnectLogging) {
