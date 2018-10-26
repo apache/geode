@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.cache.CacheRuntimeException;
@@ -107,11 +108,7 @@ public class DefaultQuery implements Query {
 
   private CacheRuntimeException canceledException;
 
-  /**
-   * This is declared as array so that it can be synchronized between two threads to validate the
-   * state.
-   */
-  private final boolean[] queryCompletedForMonitoring = new boolean[] {false};
+  private final AtomicBoolean queryCompletedForMonitoring = new AtomicBoolean();
 
   private ProxyCache proxyCache;
 
@@ -712,13 +709,12 @@ public class DefaultQuery implements Query {
     return this.canceledException;
   }
 
-  boolean[] getQueryCompletedForMonitoring() {
-    return this.queryCompletedForMonitoring;
+  AtomicBoolean getQueryCompletedForMonitoring() {
+    return queryCompletedForMonitoring;
   }
 
-  // TODO: parameter value is always true
-  void setQueryCompletedForMonitoring(boolean value) {
-    this.queryCompletedForMonitoring[0] = value;
+  void setQueryCompletedForMonitoring() {
+    queryCompletedForMonitoring.set(true);
   }
 
   /**

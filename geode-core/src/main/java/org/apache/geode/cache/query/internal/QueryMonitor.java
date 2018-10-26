@@ -68,8 +68,9 @@ public class QueryMonitor {
     ScheduledThreadPoolExecutor create();
   }
 
-  public QueryMonitor(final ScheduledThreadPoolExecutorFactory executorFactory, final InternalCache cache,
-                      final long defaultMaxQueryExecutionTime) {
+  public QueryMonitor(final ScheduledThreadPoolExecutorFactory executorFactory,
+      final InternalCache cache,
+      final long defaultMaxQueryExecutionTime) {
     this.cache = cache;
     this.defaultMaxQueryExecutionTime = defaultMaxQueryExecutionTime;
 
@@ -131,12 +132,12 @@ public class QueryMonitor {
    * because this class uses a ThreadLocal on the query thread!
    */
   public void stopMonitoringQueryThread(final DefaultQuery query) {
-    final boolean[] queryCompleted = query.getQueryCompletedForMonitoring();
+    final AtomicBoolean queryCompleted = query.getQueryCompletedForMonitoring();
 
     synchronized (queryCompleted) {
       query.getExpirationTask().ifPresent(task -> task.cancel(false));
       queryCancelled.get().set(false);
-      query.setQueryCompletedForMonitoring(true);
+      query.setQueryCompletedForMonitoring();
     }
 
     if (logger.isDebugEnabled()) {
@@ -222,10 +223,10 @@ public class QueryMonitor {
     final AtomicBoolean querysThreadLocalQueryCancelled = queryCancelled.get();
 
     return executor.schedule(() -> {
-      final boolean[] queryCompleted = query.getQueryCompletedForMonitoring();
+      final AtomicBoolean queryCompleted = query.getQueryCompletedForMonitoring();
 
       synchronized (queryCompleted) {
-        if (!queryCompleted[0]) {
+        if (!queryCompleted.get()) {
           query.setCanceled(
               cancellingDueToLowMemory ? new QueryExecutionLowMemoryException(
                   String.format(

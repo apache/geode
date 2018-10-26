@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -94,8 +95,9 @@ public class MonitorQueryUnderContentionBenchmark {
   @Setup(Level.Trial)
   public void trialSetup() throws InterruptedException {
     cache = mock(InternalCache.class);
-    monitor = new QueryMonitor(()->(ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
-        cache, QueryMaxExecutionTime);
+    monitor =
+        new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
+            cache, QueryMaxExecutionTime);
     thread = mock(Thread.class);
 
     final int numberOfThreads =
@@ -187,7 +189,7 @@ public class MonitorQueryUnderContentionBenchmark {
   private DefaultQuery createDefaultQuery() {
     // we can reuse this because it doesn't affect lookup or equality in the collection(s)
     final DefaultQuery defaultQuery = mock(DefaultQuery.class);
-    doReturn(new boolean[] {false}).when(defaultQuery).getQueryCompletedForMonitoring();
+    doReturn(new AtomicBoolean(false)).when(defaultQuery).getQueryCompletedForMonitoring();
     return defaultQuery;
   }
 }

@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -55,7 +56,7 @@ public class QueryMonitorTest {
   public void setUp() {
     cache = mock(InternalCache.class);
     scheduledThreadPoolExecutor = mock(ScheduledThreadPoolExecutor.class);
-    monitor = new QueryMonitor(()->scheduledThreadPoolExecutor, cache, max_execution_time);
+    monitor = new QueryMonitor(() -> scheduledThreadPoolExecutor, cache, max_execution_time);
     captor = ArgumentCaptor.forClass(Runnable.class);
   }
 
@@ -64,7 +65,7 @@ public class QueryMonitorTest {
     // cleanup the thread local of the queryCancelled status
     DefaultQuery query = mock(DefaultQuery.class);
     doReturn(Optional.empty()).when(query).getExpirationTask();
-    when(query.getQueryCompletedForMonitoring()).thenReturn(new boolean[] {true});
+    when(query.getQueryCompletedForMonitoring()).thenReturn(new AtomicBoolean(true));
     monitor.stopMonitoringQueryThread(query);
     monitor.setLowMemory(false, 100);
   }
@@ -92,7 +93,7 @@ public class QueryMonitorTest {
   @Test
   public void monitorQueryThreadExpirationTaskScheduled() {
     DefaultQuery query = mock(DefaultQuery.class);
-    doReturn(new boolean[] {false}).when(query).getQueryCompletedForMonitoring();
+    doReturn(new AtomicBoolean(false)).when(query).getQueryCompletedForMonitoring();
 
     monitor.monitorQueryThread(query);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
@@ -108,13 +109,15 @@ public class QueryMonitorTest {
   public void cancelAllQueriesDueToLowMemoryShutsDownExecutor() throws InterruptedException {
     monitor.cancelAllQueriesDueToMemory();
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).shutdown();
-    Mockito.verify(scheduledThreadPoolExecutor, times(1)).awaitTermination(anyLong(), isA(TimeUnit.class));
+    Mockito.verify(scheduledThreadPoolExecutor, times(1)).awaitTermination(anyLong(),
+        isA(TimeUnit.class));
   }
 
   @Test
   public void cancelAllQueriesDueToMemoryCanMonitorAfterwards() {
     monitor.cancelAllQueriesDueToMemory();
-    /* Verify we can still monitor and expire a query after
+    /*
+     * Verify we can still monitor and expire a query after
      * cancelling all queries due to low memory.
      */
     monitorQueryThreadExpirationTaskScheduled();
