@@ -518,8 +518,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       throws CacheLoaderException, TimeoutException, IllegalStateException, IOException,
       TransformerException, SAXException, ParserConfigurationException {
     this.status.set(SharedConfigurationStatus.STARTED);
-    Region<String, Configuration> configRegion = this.getConfigurationRegion(); // TODO:KIRK:
-                                                                                // creates directory
+    Region<String, Configuration> configRegion = this.getConfigurationRegion();
     lockSharedConfiguration();
     removeInvalidXmlConfigurations(configRegion);
     try {
