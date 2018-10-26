@@ -117,7 +117,7 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
       }
 
       // security check
-      function.getRequiredPermissions(onRegion).forEach(securityService::authorize);
+      function.getRequiredPermissions(onRegion,functionArgs).forEach(securityService::authorize);
 
       Execution execution = null;
       if (onRegion != null && onRegion.length() > 0) {

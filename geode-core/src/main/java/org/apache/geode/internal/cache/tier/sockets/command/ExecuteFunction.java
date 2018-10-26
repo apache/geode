@@ -113,7 +113,7 @@ public class ExecuteFunction extends BaseCommand {
       FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
 
       // check if the caller is authorized to do this operation on server
-      functionObject.getRequiredPermissions(null).forEach(securityService::authorize);
+      functionObject.getRequiredPermissions(null,args).forEach(securityService::authorize);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       ExecuteFunctionOperationContext executeContext = null;

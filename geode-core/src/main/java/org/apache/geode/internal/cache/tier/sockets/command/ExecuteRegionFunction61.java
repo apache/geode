@@ -167,7 +167,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           functionObject = (Function) function;
         }
         // check if the caller is authorized to do this operation on server
-        functionObject.getRequiredPermissions(regionName).forEach(securityService::authorize);
+        functionObject.getRequiredPermissions(regionName,args).forEach(securityService::authorize);
 
         AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
         final String functionName = functionObject.getId();

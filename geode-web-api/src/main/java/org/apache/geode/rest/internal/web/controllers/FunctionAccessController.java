@@ -148,8 +148,13 @@ public class FunctionAccessController extends AbstractBaseController {
           String.format("The function %s is not registered.", functionId));
     }
 
+    Object[] args = null;
+    if (argsInBody != null) {
+      args = jsonToObjectArray(argsInBody);
+    }
+
     // check for required permissions of the function
-    Collection<ResourcePermission> requiredPermissions = function.getRequiredPermissions(region);
+    Collection<ResourcePermission> requiredPermissions = function.getRequiredPermissions(region,args);
     for (ResourcePermission requiredPermission : requiredPermissions) {
       securityService.authorize(requiredPermission);
     }
@@ -213,9 +218,7 @@ public class FunctionAccessController extends AbstractBaseController {
     final ResultCollector<?, ?> results;
 
     try {
-      if (argsInBody != null) {
-        Object[] args = jsonToObjectArray(argsInBody);
-
+      if (args != null) {
         // execute function with specified arguments
         if (args.length == 1) {
           results = execution.setArguments(args[0]).execute(functionId);

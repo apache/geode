@@ -145,4 +145,33 @@ public interface Function<T> extends Identifiable<String> {
   default Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singletonList(ResourcePermissions.DATA_WRITE);
   }
+
+  /**
+   * Returns the list of ResourcePermission this function requires.
+   * <p>
+   * By default, functions require DATA:WRITE permission. If your function requires other
+   * permissions, you will need to override this method.
+   * </p>
+   * <p>
+   * Please be as specific as possible when you set the required permissions for your function e.g.
+   * if your function reads from a region, it would be good to include the region name in your
+   * permission. It's better to return "DATA:READ:regionName" as the required permission other than
+   * "DATA:READ", because the latter means only users with read permission on ALL regions can
+   * execute your function.
+   * </p>
+   * <p>
+   * All the permissions returned from this method will be ANDed together.
+   * </p>
+   *
+   * @param regionName the region this function will be executed on. The regionName is optional and
+   *        will only be present when the function is executed by an onRegion() executor. In other
+   *        cases, it will be null. This method returns permissions appropriate to the context,
+   *        independent of the presence of the regionName parameter.
+   * @param args the arguments this function will be executed.
+   * @return a collection of {@link ResourcePermission}s indicating the permissions required to
+   *         execute the function.
+   */
+  default Collection<ResourcePermission> getRequiredPermissions(String regionName,Object args) {
+    return getRequiredPermissions(regionName);
+  }
 }
