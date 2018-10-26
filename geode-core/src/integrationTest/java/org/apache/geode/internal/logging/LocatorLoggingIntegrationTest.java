@@ -149,7 +149,8 @@ public class LocatorLoggingIntegrationTest {
 
     DistributionConfig distributionConfig = system.getConfig();
 
-    assertThat(distributionConfig.getLogFile().getAbsolutePath()).isEqualTo(logFile.getAbsolutePath());
+    assertThat(distributionConfig.getLogFile().getAbsolutePath())
+        .isEqualTo(logFile.getAbsolutePath());
     assertThat(distributionConfig.getSecurityLogFile().getAbsolutePath())
         .isEqualTo(currentWorkingDirPath);
 
