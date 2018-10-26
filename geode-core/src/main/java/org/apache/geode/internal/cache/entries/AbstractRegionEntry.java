@@ -158,7 +158,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
 
     event.setCallbacksInvokedByCurrentThread();
 
-    if (logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled() && !rgn.isInternalRegion()) {
       logger.debug("{} dispatching event {}", this, event);
     }
     // All the following code that sets "thr" is to workaround
