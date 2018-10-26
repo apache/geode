@@ -29,12 +29,9 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -42,8 +39,6 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 public class ListMappingCommandTest {
   public static final String COMMAND = "list jdbc-mappings";
   private ListMappingCommand command;
-  private ConfigurationPersistenceService ccService;
-  private CacheConfig cacheConfig;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -51,73 +46,18 @@ public class ListMappingCommandTest {
   @Before
   public void setUp() {
     command = spy(ListMappingCommand.class);
-    ccService = mock(InternalConfigurationPersistenceService.class);
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-    cacheConfig = mock(CacheConfig.class);
-    when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
 
-  // @Test
-  // public void whenCCServiceIsNotAvailable() {
-  // doReturn(null).when(command).getConfigurationPersistenceService();
-  // doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-  // gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-  // .containsOutput("No mappings found");
-  // }
-
-  // @Test
-  // public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
-  // doReturn(ccService).when(command).getConfigurationPersistenceService();
-  // gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-  // .containsOutput("(Experimental) \\nNo mappings found");
-  // }
-
-  // @Test
-  // public void whenCCServiceIsRunningAndNoConnectionFound() {
-  // doReturn(ccService).when(command).getConfigurationPersistenceService();
-  //
-  // ConnectorService connectorService = mock(ConnectorService.class);
-  // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-  // gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-  // .containsOutput("(Experimental) \\nNo mappings found");
-  // }
-  //
-  // @Test
-  // public void whenCCIsAvailable() {
-  // doReturn(ccService).when(command).getConfigurationPersistenceService();
-  //
-  // // mappings found in CC
-  // RegionMapping mapping1 =
-  // new RegionMapping("region1", "class1", "table1", "name1", true);
-  // mapping1.getFieldMapping()
-  // .add(new RegionMapping.FieldMapping("field1", "value1"));
-  // RegionMapping mapping2 =
-  // new RegionMapping("region2", "class2", "table2", "name2", true);
-  // mapping2.getFieldMapping()
-  // .add(new RegionMapping.FieldMapping("field2", "value2"));
-  //
-  // ConnectorService connectorService = new ConnectorService();
-  // connectorService.getRegionMapping().add(mapping1);
-  // connectorService.getRegionMapping().add(mapping2);
-  //
-  // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-  //
-  // gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region1",
-  // "region2");
-  // }
-
   @Test
-  public void whenCCIsNotAvailableAndNoMemberExists() {
-    // doReturn(null).when(command).getConfigurationPersistenceService();
+  public void whenNoMemberExists() {
     doReturn(Collections.emptySet()).when(command).findMembers(null, null);
 
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("No Members Found");
   }
 
   @Test
-  public void whenCCIsNotAvailableAndMemberExists() {
-    // doReturn(null).when(command).getConfigurationPersistenceService();
+  public void whenMemberExists() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
 
@@ -146,8 +86,7 @@ public class ListMappingCommandTest {
 
 
   @Test
-  public void whenCCIsNotAvailableAndNoConnectionFoundOnMember() {
-    // doReturn(null).when(command).getConfigurationPersistenceService();
+  public void whenNoMappingsExist() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
 

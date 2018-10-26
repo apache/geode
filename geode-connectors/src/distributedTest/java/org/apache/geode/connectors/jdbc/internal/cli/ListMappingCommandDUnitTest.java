@@ -58,6 +58,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     String mapping = "create jdbc-mapping --region=testRegion --connection=connection "
         + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
@@ -80,6 +82,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0, properties);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     server.invoke(() -> createNRegionMappings(3));
 
@@ -97,6 +101,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
 

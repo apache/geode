@@ -50,19 +50,6 @@ public class ListMappingCommand extends GfshCommand {
   public ResultModel listMapping() {
     Collection<RegionMapping> mappings = null;
 
-    // check if CC is available and use it to describe the connection
-    // ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    // if (ccService != null) {
-    // CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
-    // if (cacheConfig != null) {
-    // ConnectorService service =
-    // cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-    // if (service != null) {
-    // mappings = service.getRegionMapping();
-    // }
-    // }
-    // } else {
-    // otherwise get it from any member
     Set<DistributedMember> members = findMembers(null, null);
     if (members.size() > 0) {
       DistributedMember targetMember = members.iterator().next();
@@ -71,11 +58,8 @@ public class ListMappingCommand extends GfshCommand {
       if (result != null) {
         mappings = (Collection<RegionMapping>) result.getResultObject();
       }
-    }
-    // }
-
-    if (mappings == null) {
-      return ResultModel.createInfo(EXPERIMENTAL + "\n" + "No mappings found");
+    } else {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     // output
@@ -95,6 +79,9 @@ public class ListMappingCommand extends GfshCommand {
    */
   private boolean fillTabularResultData(Collection<RegionMapping> mappings,
       TabularResultModel tableModel) {
+    if (mappings == null) {
+      return false;
+    }
     for (RegionMapping mapping : mappings) {
       tableModel.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
