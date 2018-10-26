@@ -32,6 +32,7 @@ import static org.apache.geode.management.JMXNotificationType.SYSTEM_ALERT;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.mbeanServer;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -54,7 +55,6 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -81,7 +81,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category({AlertingTest.class, ManagementTest.class})
 public class AlertingServiceDistributedTest implements Serializable {
 
-  private static final long FIVE_MINUTES = Duration.FIVE_MINUTES.getValueInMS();
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 
@@ -89,7 +88,7 @@ public class AlertingServiceDistributedTest implements Serializable {
   private static Logger logger;
 
   private static AlertingService alertingService;
-  private static AlertListenerMessage.Listener alertListenerMessageListener;
+  private static AlertListenerMessage.Listener messageListener;
   private static DistributedSystemMXBean distributedSystemMXBean;
   private static NotificationListener notificationListener;
 
@@ -138,7 +137,7 @@ public class AlertingServiceDistributedTest implements Serializable {
         logger = null;
         distributedSystemMXBean = null;
         notificationListener = null;
-        removeListener(alertListenerMessageListener);
+        removeListener(messageListener);
       });
     }
   }
@@ -164,7 +163,7 @@ public class AlertingServiceDistributedTest implements Serializable {
 
     memberVM.invoke(() -> logger.fatal(alertMessage));
 
-    managerVM.invoke(() -> verifyNoMoreInteractions(alertListenerMessageListener));
+    managerVM.invoke(() -> verifyNoMoreInteractions(messageListener));
   }
 
   @Test
@@ -209,7 +208,7 @@ public class AlertingServiceDistributedTest implements Serializable {
 
     memberVM.invoke(() -> logger.fatal(alertMessage));
 
-    managerVM.invoke(() -> verifyNoMoreInteractions(alertListenerMessageListener));
+    managerVM.invoke(() -> verifyNoMoreInteractions(messageListener));
   }
 
   @Test
@@ -219,7 +218,7 @@ public class AlertingServiceDistributedTest implements Serializable {
       logger.error(alertMessage);
     });
 
-    managerVM.invoke(() -> verifyNoMoreInteractions(alertListenerMessageListener));
+    managerVM.invoke(() -> verifyNoMoreInteractions(messageListener));
   }
 
   @Test
@@ -331,8 +330,8 @@ public class AlertingServiceDistributedTest implements Serializable {
   }
 
   private DistributedMember createManager() throws InstanceNotFoundException {
-    alertListenerMessageListener = spy(AlertListenerMessage.Listener.class);
-    addListener(alertListenerMessageListener);
+    messageListener = spy(AlertListenerMessage.Listener.class);
+    addListener(messageListener);
 
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, managerName);
@@ -387,15 +386,15 @@ public class AlertingServiceDistributedTest implements Serializable {
 
   private Notification captureNotification() {
     ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-    verify(notificationListener, timeout(FIVE_MINUTES))
+    verify(notificationListener, timeout(getTimeout().getValueInMS()))
         .handleNotification(notificationCaptor.capture(), isNull());
     return notificationCaptor.getValue();
   }
 
   private AlertDetails captureAlertDetails() {
     ArgumentCaptor<AlertDetails> alertDetailsCaptor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertListenerMessageListener, timeout(FIVE_MINUTES))
-        .createdAlertDetails(alertDetailsCaptor.capture());
+    verify(messageListener, timeout(getTimeout().getValueInMS()))
+        .created(alertDetailsCaptor.capture());
     return alertDetailsCaptor.getValue();
   }
 }

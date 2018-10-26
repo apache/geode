@@ -37,6 +37,9 @@ import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.AlertingTest;
 
+/**
+ * Integration tests for {@link AlertingService} in a loner member.
+ */
 @Category(AlertingTest.class)
 public class LonerAlertingServiceIntegrationTest {
 

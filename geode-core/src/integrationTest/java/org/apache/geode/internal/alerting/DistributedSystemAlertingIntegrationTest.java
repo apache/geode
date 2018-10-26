@@ -19,11 +19,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
+import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
+import static org.apache.geode.internal.alerting.AlertLevel.NONE;
+import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
+import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -50,10 +55,12 @@ import org.apache.geode.test.junit.categories.AlertingTest;
 @Category(AlertingTest.class)
 public class DistributedSystemAlertingIntegrationTest {
 
+  private static final long TIMEOUT = getTimeout().getValueInMS();
+
   private InternalDistributedSystem system;
   private DistributedMember member;
   private AlertingService alertingService;
-  private Listener alertMessageListener;
+  private Listener messageListener;
   private Logger logger;
   private String connectionName;
   private String alertMessage;
@@ -72,25 +79,24 @@ public class DistributedSystemAlertingIntegrationTest {
     threadName = Thread.currentThread().getName();
     threadId = Long.valueOf(Long.toHexString(Thread.currentThread().getId()));
 
+    String startLocator = getServerHostName() + "[" + getRandomAvailableTCPPort() + "]";
+
     Properties config = new Properties();
-    config.setProperty(START_LOCATOR,
-        getServerHostName() + "[" + getRandomAvailableTCPPort() + "]");
+    config.setProperty(START_LOCATOR, startLocator);
     config.setProperty(NAME, connectionName);
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
     member = system.getDistributedMember();
     alertingService = system.getAlertingService();
-
-    alertMessageListener = spy(Listener.class);
-    addListener(alertMessageListener);
-
+    messageListener = spy(Listener.class);
+    addListener(messageListener);
     logger = LogService.getLogger();
   }
 
   @After
   public void tearDown() {
-    removeListener(alertMessageListener);
+    removeListener(messageListener);
     system.disconnect();
   }
 
@@ -98,209 +104,167 @@ public class DistributedSystemAlertingIntegrationTest {
   public void alertMessageIsNotReceivedByDefault() {
     logger.warn(alertMessage);
 
-    verifyNoMoreInteractions(alertMessageListener);
+    verifyNoMoreInteractions(messageListener);
   }
 
   @Test
   public void alertMessageIsReceivedForLevelWarning() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    verify(alertMessageListener).receivedAlertListenerMessage(isA(AlertListenerMessage.class));
+    verify(messageListener, timeout(TIMEOUT)).received(isA(AlertListenerMessage.class));
   }
 
   @Test
   public void alertMessageIsReceivedForLevelError() {
-    alertingService.addAlertListener(member, AlertLevel.ERROR);
+    alertingService.addAlertListener(member, ERROR);
 
     logger.error(alertMessage);
 
-    verify(alertMessageListener).receivedAlertListenerMessage(isA(AlertListenerMessage.class));
+    verify(messageListener, timeout(TIMEOUT)).received(isA(AlertListenerMessage.class));
   }
 
   @Test
   public void alertMessageIsReceivedForLevelFatal() {
-    alertingService.addAlertListener(member, AlertLevel.SEVERE);
+    alertingService.addAlertListener(member, SEVERE);
 
     logger.fatal(alertMessage);
 
-    verify(alertMessageListener).receivedAlertListenerMessage(isA(AlertListenerMessage.class));
+    verify(messageListener, timeout(TIMEOUT)).received(isA(AlertListenerMessage.class));
   }
 
   @Test
   public void alertMessageIsNotReceivedForLevelNone() {
-    alertingService.addAlertListener(member, AlertLevel.NONE);
+    alertingService.addAlertListener(member, NONE);
 
     logger.fatal(alertMessage);
 
-    verifyNoMoreInteractions(alertMessageListener);
+    verifyNoMoreInteractions(messageListener);
   }
 
   @Test
   public void alertMessageIsReceivedForHigherLevels() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.error(alertMessage);
     logger.fatal(alertMessage);
 
-    verify(alertMessageListener, times(2))
-        .receivedAlertListenerMessage(isA(AlertListenerMessage.class));
+    verify(messageListener, timeout(TIMEOUT).times(2)).received(isA(AlertListenerMessage.class));
   }
 
   @Test
   public void alertMessageIsNotReceivedForLowerLevels() {
-    alertingService.addAlertListener(member, AlertLevel.SEVERE);
+    alertingService.addAlertListener(member, SEVERE);
 
     logger.warn(alertMessage);
     logger.error(alertMessage);
 
-    verifyNoMoreInteractions(alertMessageListener);
+    verifyNoMoreInteractions(messageListener);
   }
 
   @Test
   public void alertDetailsIsCreatedByAlertMessage() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    verify(alertMessageListener).createdAlertDetails(isA(AlertDetails.class));
-
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-
-    AlertDetails alertDetails = captor.getValue();
-    assertThat(alertDetails).isNotNull().isInstanceOf(AlertDetails.class);
+    assertThat(captureAlertDetails()).isNotNull().isInstanceOf(AlertDetails.class);
   }
 
   @Test
   public void alertDetailsAlertLevelMatches() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getAlertLevel()).isEqualTo(AlertLevel.WARNING.intLevel());
+    assertThat(captureAlertDetails().getAlertLevel()).isEqualTo(WARNING.intLevel());
   }
 
   @Test
   public void alertDetailsMessageMatches() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getMsg()).isEqualTo(alertMessage);
+    assertThat(captureAlertDetails().getMsg()).isEqualTo(alertMessage);
   }
 
   @Test
   public void alertDetailsSenderIsNullForLocalAlert() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getSender()).isNull();
+    assertThat(captureAlertDetails().getSender()).isNull();
   }
 
   @Test
   public void alertDetailsSource() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getSource()).contains(threadName);
+    assertThat(captureAlertDetails().getSource()).contains(threadName);
   }
 
   @Test
   public void alertDetailsConnectionName() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getConnectionName()).isEqualTo(connectionName);
+    assertThat(captureAlertDetails().getConnectionName()).isEqualTo(connectionName);
   }
 
   @Test
   public void alertDetailsExceptionTextIsEmpty() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getExceptionText()).isEqualTo("");
+    assertThat(captureAlertDetails().getExceptionText()).isEqualTo("");
   }
 
   @Test
   public void alertDetailsExceptionTextMatches() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage, new Exception(exceptionMessage));
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    // getExceptionText returns the full stack trace
-    assertThat(alertDetails.getExceptionText()).contains(exceptionMessage);
+    assertThat(captureAlertDetails().getExceptionText()).contains(exceptionMessage);
   }
 
   @Test
   public void alertDetailsThreadName() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getThreadName()).isEqualTo(threadName);
+    assertThat(captureAlertDetails().getThreadName()).isEqualTo(threadName);
   }
 
   @Test
   public void alertDetailsThreadId() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
-
-    assertThat(alertDetails.getTid()).isEqualTo(threadId);
+    assertThat(captureAlertDetails().getTid()).isEqualTo(threadId);
   }
 
   @Test
   public void alertDetailsMessageTime() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
 
-    ArgumentCaptor<AlertDetails> captor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(alertMessageListener).createdAlertDetails(captor.capture());
-    AlertDetails alertDetails = captor.getValue();
+    assertThat(captureAlertDetails().getMsgTime()).isNotNull();
+  }
 
-    assertThat(alertDetails.getMsgTime()).isNotNull();
+  private AlertDetails captureAlertDetails() {
+    ArgumentCaptor<AlertDetails> alertDetailsCaptor = ArgumentCaptor.forClass(AlertDetails.class);
+    verify(messageListener, timeout(TIMEOUT)).created(alertDetailsCaptor.capture());
+    return alertDetailsCaptor.getValue();
   }
 }

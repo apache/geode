@@ -22,10 +22,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isA;
@@ -43,14 +47,15 @@ import javax.management.NotificationListener;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.ManagementTest;
@@ -64,6 +69,8 @@ public class DistributedSystemMXBeanIntegrationTest {
 
   private String name;
   private InternalCache cache;
+  private AlertingService alertingService;
+  private DistributedMember distributedMember;
   private Logger logger;
   private String alertMessage;
 
@@ -79,7 +86,8 @@ public class DistributedSystemMXBeanIntegrationTest {
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, name);
 
-    config.setProperty(LOCATORS, "");
+    config.setProperty(START_LOCATOR,
+        getServerHostName() + "[" + getRandomAvailableTCPPort() + "]");
     config.setProperty(JMX_MANAGER, "true");
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
@@ -88,6 +96,7 @@ public class DistributedSystemMXBeanIntegrationTest {
     config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
+    alertingService = cache.getInternalDistributedSystem().getAlertingService();
     logger = LogService.getLogger();
 
     alertMessage = "Alerting in " + testName.getMethodName();
@@ -116,7 +125,7 @@ public class DistributedSystemMXBeanIntegrationTest {
    * This test confirms existence of bug GEODE-5923.
    */
   @Test
-  @Ignore("GEODE-5923")
+  // @Ignore("GEODE-5923")
   public void providesSystemAlertNotification() throws Exception {
     NotificationListener notificationListener = spy(NotificationListener.class);
     NotificationFilter notificationFilter = (Notification notification) -> notification.getType()
@@ -124,8 +133,7 @@ public class DistributedSystemMXBeanIntegrationTest {
     getPlatformMBeanServer().addNotificationListener(getDistributedSystemName(),
         notificationListener, notificationFilter, null);
 
-    // work around GEODE-5924 by invoking DistributedSystemMXBean.changeAlertLevel
-    distributedSystemMXBean.changeAlertLevel("warning");
+    await().until(() -> alertingService.hasAlertListener(distributedMember, SEVERE));
 
     logger.fatal(alertMessage);
 

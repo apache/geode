@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.logging;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
@@ -33,6 +32,8 @@ import static org.apache.geode.internal.logging.log4j.Log4jAgent.getLoggerConfig
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+
+import org.apache.geode.internal.logging.assertj.LogFileAssert;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -147,7 +148,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       system.getLogWriter().info("log another line");
 
       assertThat(logFile).exists();
@@ -361,7 +362,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
 
@@ -491,7 +492,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     Logger geodeLogger = LogService.getLogger();
 
@@ -597,7 +598,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     // CONFIG level
 
@@ -794,7 +795,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
 
@@ -845,7 +846,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     Logger geodeLogger = LogService.getLogger();
 
@@ -1013,7 +1014,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
 
@@ -1064,7 +1065,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     Logger geodeLogger = LogService.getLogger();
 
@@ -1354,7 +1355,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
 
@@ -1413,7 +1414,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     Logger geodeLogger = LogService.getLogger();
 
@@ -1523,7 +1524,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     LogWriterLogger securityLogWriter = (LogWriterLogger) system.getSecurityLogWriter();
 
@@ -1582,7 +1583,7 @@ public class DistributedSystemLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+    await().untilAsserted(() -> assertThat(logFile).exists());
 
     Logger geodeLogger = LogService.getLogger();
 
@@ -1626,6 +1627,7 @@ public class DistributedSystemLoggingIntegrationTest {
     return prefix + level.name() + " [" + COUNTER.incrementAndGet() + "]";
   }
 
+  // TODO:KIRK: change test to use LogFileAssert
   private void assertThatFileContains(final File file, final String string)
       throws IOException {
     try (Scanner scanner = new Scanner(file)) {
@@ -1641,6 +1643,7 @@ public class DistributedSystemLoggingIntegrationTest {
         + "Actual: " + lines);
   }
 
+  // TODO:KIRK: change test to use LogFileAssert
   private void assertThatFileDoesNotContain(final File file, final String string)
       throws IOException {
     boolean fail = false;

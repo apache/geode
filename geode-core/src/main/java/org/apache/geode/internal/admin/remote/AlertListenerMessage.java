@@ -83,7 +83,7 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   public void process(ClusterDistributionManager dm) {
     Listener listener = getListener();
     if (listener != null) {
-      listener.receivedAlertListenerMessage(this);
+      listener.received(this);
     }
 
     RemoteGfManagerAgent agent = dm.getAgent();
@@ -96,7 +96,7 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
           message, exceptionText, getSender());
 
       if (listener != null) {
-        listener.createdAlert(alert);
+        listener.created(alert);
       }
 
       agent.callAlertListener(alert);
@@ -109,7 +109,7 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
           threadId, message, exceptionText, getSender());
 
       if (listener != null) {
-        listener.createdAlertDetails(alertDetail);
+        listener.created(alertDetail);
       }
 
       dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
@@ -169,10 +169,10 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
 
   public interface Listener {
 
-    void receivedAlertListenerMessage(AlertListenerMessage message);
+    void received(AlertListenerMessage message);
 
-    void createdAlert(Alert alert);
+    void created(Alert alert);
 
-    void createdAlertDetails(AlertDetails alertDetails);
+    void created(AlertDetails alertDetails);
   }
 }
