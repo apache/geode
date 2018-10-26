@@ -659,7 +659,7 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       SocketCreatorFactory.setDistributionConfig(config);
 
-      LegacyAlertService.onConnect(this); // TODO:KIRK: move AlertingService init earlier
+      LegacyAlertService.onConnect(this); // TODO:KIRK: remove LegacyAlertService
 
       // LOG: create LogWriterAppender(s) if log-file or security-log-file is specified
       final boolean hasLogFile =
@@ -706,7 +706,7 @@ public class InternalDistributedSystem extends DistributedSystem
       Services.setLogWriter(this.logWriter);
       Services.setSecurityLogWriter(this.securityLogWriter);
 
-      // TODO:KIRK: enabling loggingSession here may add more to log file
+      // TODO:KIRK: starting logging here may add more to log file
       loggingSession.startSession();
 
       this.clock = new DSClock(this.isLoner);
