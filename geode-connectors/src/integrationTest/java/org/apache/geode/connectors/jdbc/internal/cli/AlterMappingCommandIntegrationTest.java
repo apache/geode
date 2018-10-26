@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
@@ -49,10 +50,11 @@ public class AlterMappingCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache.createRegionFactory(RegionShortcut.LOCAL).create(regionName);
     CreateMappingCommand create = new CreateMappingCommand();
     create.setCache(cache);
-    create.createMapping(regionName, connectionName, tableName, pdxClass, keyInValue,
-        fieldMappings);
+    assertThat(create.createMapping(regionName, connectionName, tableName, pdxClass, keyInValue,
+        fieldMappings).isSuccessful()).isTrue();
 
     alterRegionMappingCommand = new AlterMappingCommand();
     alterRegionMappingCommand.setCache(cache);
@@ -79,8 +81,6 @@ public class AlterMappingCommandIntegrationTest {
     assertThat(regionMapping.getTableName()).isEqualTo("newTable");
     assertThat(regionMapping.getPdxClassName()).isEqualTo("newPdxClass");
     assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
-    // assertThat(regionMapping.getFieldToColumnMap()).containsEntry("field3", "column3")
-    // .containsEntry("field4", "column4");
   }
 
 }

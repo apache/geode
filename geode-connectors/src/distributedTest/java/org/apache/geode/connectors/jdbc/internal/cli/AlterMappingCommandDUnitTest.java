@@ -50,6 +50,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({JDBCConnectorTest.class})
 public class AlterMappingCommandDUnitTest {
+  private static final String REGION_NAME = "testRegion";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -69,8 +70,10 @@ public class AlterMappingCommandDUnitTest {
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
@@ -83,7 +86,7 @@ public class AlterMappingCommandDUnitTest {
   @Test
   public void altersMappingWithNewValues() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(ALTER_MAPPING);
-    csb.addOption(ALTER_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(ALTER_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(ALTER_MAPPING__CONNECTION_NAME, "newConnection");
     csb.addOption(ALTER_MAPPING__TABLE_NAME, "newTable");
     csb.addOption(ALTER_MAPPING__PDX_CLASS_NAME, "newPdxClass");
@@ -101,7 +104,7 @@ public class AlterMappingCommandDUnitTest {
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       RegionMapping mapping =
-          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
+          cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping.getConnectionConfigName()).isEqualTo("newConnection");
       assertThat(mapping.getTableName()).isEqualTo("newTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("newPdxClass");
@@ -118,7 +121,7 @@ public class AlterMappingCommandDUnitTest {
   @Test
   public void altersMappingByRemovingValues() {
     CommandStringBuilder csb = new CommandStringBuilder(ALTER_MAPPING);
-    csb.addOption(ALTER_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(ALTER_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(ALTER_MAPPING__TABLE_NAME, "");
     csb.addOption(ALTER_MAPPING__PDX_CLASS_NAME, "");
     csb.addOption(ALTER_MAPPING__FIELD_MAPPING, "");
@@ -134,7 +137,7 @@ public class AlterMappingCommandDUnitTest {
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       RegionMapping mapping =
-          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
+          cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxClassName()).isNull();
