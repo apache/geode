@@ -16,17 +16,16 @@ package org.apache.geode.internal.logging;
 
 import java.io.File;
 
+/**
+ * Details about the system log file.
+ */
 public interface LogFileDetails {
 
-  // TODO: getChildLogFile (AgentImpl, TailLogResponse, MemberMBeanBridge)
   File getChildLogFile();
 
-  // TODO: getLogDir (StatArchiveHandler)
   File getLogDir();
 
-  // TODO: getMainLogId (StatArchiveHandler)
   int getMainLogId();
 
-  // TODO: useChildLogging (StatArchiveHandler)
   boolean useChildLogging();
 }

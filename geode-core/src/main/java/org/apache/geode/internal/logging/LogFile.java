@@ -17,7 +17,7 @@ package org.apache.geode.internal.logging;
 import java.io.File;
 
 /**
- * Provides file details about the system log file.
+ * Provides details about the system log file.
  */
 public class LogFile implements LogFileDetails {
 
