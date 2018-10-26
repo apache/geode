@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -66,12 +67,17 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LegacyLogWriterService;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogConfigListener;
+import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -95,7 +101,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
  *
  * @since GemFire 4.0
  */
-public class InternalLocator extends Locator implements ConnectListener {
+public class InternalLocator extends Locator implements ConnectListener, LogConfigSupplier {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -179,6 +185,10 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private volatile Thread restartThread;
 
+  private final LoggingSession loggingSession;
+
+  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
+
   public boolean isSharedConfigurationEnabled() {
     return this.config.getEnableClusterConfiguration();
   }
@@ -221,10 +231,12 @@ public class InternalLocator extends Locator implements ConnectListener {
       return;
     }
     synchronized (locatorLock) {
-      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
-      LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
-      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
-      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+      LegacyLogWriterService.stop();
+      LegacyLogWriterService.stopSecurity();
+      locator.loggingSession.stopSession();
+      LegacyLogWriterService.destroy();
+      LegacyLogWriterService.destroySecurity();
+      locator.loggingSession.shutdown();
       if (locator.equals(InternalLocator.locator)) {
         InternalLocator.locator = null;
       }
@@ -427,27 +439,30 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.config.unsafeSetLogFile(this.logFile);
     }
 
+    loggingSession = LoggingSession.create();
+
     // LOG: create LogWriterAppenders (these are closed at shutdown)
     final boolean hasLogFile =
         this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
     final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null
         && !this.config.getSecurityLogFile().equals(new File(""));
-    LogService.configureLoggers(hasLogFile, hasSecurityLogFile);
+    LegacyLogWriterService.configureLoggers(hasLogFile, hasSecurityLogFile);
     if (hasLogFile || hasSecurityLogFile) {
 
       if (hasLogFile) {
         // if log-file then create logWriterAppender
-        LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.MAIN, true, false,
-            this.config, !startDistributedSystem);
+        LegacyLogWriterService.getOrCreate(true, false, config, !startDistributedSystem);
       }
 
       if (hasSecurityLogFile) {
         // if security-log-file then create securityLogWriterAppender
-        LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, true, false,
-            this.config, false);
+        LegacyLogWriterService.getOrCreateSecurity(true, false, config, !startDistributedSystem);
       }
       // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
     }
+
+    loggingSession.createSession(this);
+    loggingSession.startSession();
 
     // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
     if (logWriter == null) {
@@ -459,7 +474,8 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     if (securityLogWriter == null) {
       securityLogWriter = LogWriterFactory.createLogWriterLogger(false, true, this.config, false);
-      logWriter.setLogWriterLevel(this.config.getSecurityLogLevel());
+      // TODO:KIRK: next line looks wrong but has been this way since 2014
+      // logWriter.setLogWriterLevel(this.config.getSecurityLogLevel());
       securityLogWriter.fine("SecurityLogWriter for locator is created.");
     }
 
@@ -1090,6 +1106,39 @@ public class InternalLocator extends Locator implements ConnectListener {
     return null;
   }
 
+  @Override
+  public LogConfig getLogConfig() {
+    return config;
+  }
+
+  @Override
+  public StatisticsConfig getStatisticsConfig() {
+    return config;
+  }
+
+  @Override
+  public void addLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.add(logConfigListener);
+  }
+
+  @Override
+  public void removeLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.remove(logConfigListener);
+  }
+
+  /**
+   * Apparently nothing provides RuntimeDistributionConfigImpl behavior in a stand-alone locator
+   * (without DS), so there are currently no callers of {@code logConfigChanged()}. Keep it?
+   *
+   * TODO:KIRK: can we make stand-alone locator config mutable?
+   */
+  @SuppressWarnings("unused")
+  void logConfigChanged() {
+    for (LogConfigListener listener : logConfigListeners) {
+      listener.configChanged();
+    }
+  }
+
   class FetchSharedConfigStatus implements Callable<SharedConfigurationStatusResponse> {
 
     static final int SLEEPTIME = 1000;
@@ -1324,7 +1373,8 @@ public class InternalLocator extends Locator implements ConnectListener {
             new InternalConfigurationPersistenceService(locator.myCache);
       }
       locator.configurationPersistenceService
-          .initSharedConfiguration(locator.loadFromSharedConfigDir());
+          .initSharedConfiguration(locator.loadFromSharedConfigDir()); // TODO:KIRK: creates
+                                                                       // directory
       logger.info(
           "Cluster configuration service start up completed successfully and is now running ....");
       isSharedConfigurationStarted = true;

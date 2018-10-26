@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
+
 public enum LogWriterLevel {
 
   ALL(InternalLogWriter.ALL_LEVEL),
@@ -27,13 +28,22 @@ public enum LogWriterLevel {
   SEVERE(InternalLogWriter.SEVERE_LEVEL),
   NONE(InternalLogWriter.NONE_LEVEL);
 
-  private final int logWriterLevel;
-
-  LogWriterLevel(int logWriterLevel) {
-    this.logWriterLevel = logWriterLevel;
+  public static LogWriterLevel find(int intLevel) {
+    for (LogWriterLevel logWriterLevel : values()) {
+      if (logWriterLevel.intLevel == intLevel) {
+        return logWriterLevel;
+      }
+    }
+    throw new IllegalArgumentException("No LogWriterLevel found for intLevel " + intLevel);
   }
 
-  public int getLogWriterLevel() {
-    return logWriterLevel;
+  private final int intLevel;
+
+  LogWriterLevel(int intLevel) {
+    this.intLevel = intLevel;
+  }
+
+  public int intLevel() {
+    return intLevel;
   }
 }

@@ -14,19 +14,17 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.internal.logging.Configuration.MAIN_LOGGER_NAME;
+import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
- * Creates LogWriterLogger instances.
- *
+ * Creates {@code LogWriterLogger}s.
  */
 public class LogWriterFactory {
 
@@ -48,33 +46,33 @@ public class LogWriterFactory {
       final boolean isSecure, final LogConfig config, final boolean logConfig) {
 
     // if isSecurity then use "org.apache.geode.security" else use "org.apache.geode"
-    String name = null;
+    String name;
     if (isSecure) {
-      name = LogService.SECURITY_LOGGER_NAME;
+      name = SECURITY_LOGGER_NAME;
     } else {
-      name = LogService.MAIN_LOGGER_NAME;
+      name = MAIN_LOGGER_NAME;
     }
 
     // create the LogWriterLogger
     final LogWriterLogger logger =
         LogService.createLogWriterLogger(name, config.getName(), isSecure);
 
-    if (isSecure) {
-      logger.setLogWriterLevel(((DistributionConfig) config).getSecurityLogLevel());
-    } else {
-      boolean defaultSource = false;
-      if (config instanceof DistributionConfig) {
-        ConfigSource source = ((DistributionConfig) config).getConfigSource(LOG_LEVEL);
-        if (source == null) {
-          defaultSource = true;
-        }
-      }
-      if (!defaultSource) {
-        // LOG: fix bug #51709 by not setting if log-level was not specified
-        // LOG: let log4j2.xml specify log level which defaults to INFO
-        logger.setLogWriterLevel(config.getLogLevel());
-      }
-    }
+    // if (isSecure) {
+    // logger.setLogWriterLevel(((DistributionConfig) config).getSecurityLogLevel());
+    // } else {
+    // boolean defaultSource = false;
+    // if (config instanceof DistributionConfig) {
+    // ConfigSource source = ((DistributionConfig) config).getConfigSource(LOG_LEVEL);
+    // if (source == null) {
+    // defaultSource = true;
+    // }
+    // }
+    // if (!defaultSource) {
+    // // LOG: fix bug #51709 by not setting if log-level was not specified
+    // // LOG: let log4j2.xml specify log level which defaults to INFO
+    // logger.setLogWriterLevel(config.getLogLevel());
+    // }
+    // }
 
     // log the banner
     if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)

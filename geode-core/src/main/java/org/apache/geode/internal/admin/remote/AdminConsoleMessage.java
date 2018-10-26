@@ -12,8 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
@@ -23,15 +21,16 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.alerting.AlertLevel;
+import org.apache.geode.internal.alerting.LegacyAlertService;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
- * administation console that just connected.
+ * administration console that just connected.
  */
 public class AdminConsoleMessage extends PooledDistributionMessage {
   // instance variables
-  int level;
+  private int level;
 
   public static AdminConsoleMessage create(int level) {
     AdminConsoleMessage m = new AdminConsoleMessage();
@@ -45,12 +44,14 @@ public class AdminConsoleMessage extends PooledDistributionMessage {
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    if (this.level != Alert.OFF) {
-      AlertAppender.getInstance().addAlertListener(this.getSender(), this.level);
+    if (level != Alert.OFF) {
+      LegacyAlertService.addAlertListener(this.getSender(), this.level);
+      dm.getAlertingService().addAlertListener(getSender(), AlertLevel.find(level));
     }
-    dm.addAdminConsole(this.getSender());
+    dm.addAdminConsole(getSender());
   }
 
+  @Override
   public int getDSFID() {
     return ADMIN_CONSOLE_MESSAGE;
   }
@@ -58,18 +59,18 @@ public class AdminConsoleMessage extends PooledDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeInt(this.level);
+    out.writeInt(level);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.level = in.readInt();
+    level = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "AdminConsoleMessage from " + this.getSender() + " level=" + level;
+    return "AdminConsoleMessage from " + getSender() + " level=" + level;
   }
 
 }

@@ -75,9 +75,10 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.alerting.AlertingAction;
+import org.apache.geode.internal.alerting.LegacyAlertService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
@@ -1035,7 +1036,8 @@ public class Connection implements Runnable {
         } else {
           // if we're sending an alert and can't connect, bail out. A sick
           // alert listener should not prevent cache operations from continuing
-          if (AlertAppender.isThreadAlerting()) {
+          LegacyAlertService.isThreadAlerting();
+          if (AlertingAction.isThreadAlerting()) {
             // do not change the text of this exception - it is looked for in exception handlers
             throw new IOException("Cannot form connection to alert listener " + remoteAddr);
           }

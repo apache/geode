@@ -22,21 +22,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LifeCycle;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.DefaultErrorHandler;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.apache.logging.log4j.junit.LoggerContextRule;
-import org.apache.logging.log4j.test.appender.ListAppender;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -46,15 +40,24 @@ import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 
+/**
+ * Verifies behavior of {@code SystemOutRule} with {@code LoggerContextRule} that other Geode
+ * logging tests depends on. If this behavior changes, then those tests may also need to change.
+ */
 @Category(LoggingTest.class)
 public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
 
+  private static final String CONFIG_FILE_NAME =
+      "ConsoleAppenderWithLoggerContextRuleIntegrationTest_log4j2.xml";
+  private static final String APPENDER_NAME = "STDOUT";
+
   private static String configFilePath;
 
-  private Logger postConfigLogger;
+  private Logger logger;
   private String logMessage;
 
   @ClassRule
@@ -69,32 +72,31 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
   @Rule
   public LoggerContextRule loggerContextRule = new LoggerContextRule(configFilePath);
 
+  @Rule
+  public TestName testName = new TestName();
+
   @BeforeClass
   public static void setUpLogConfigFile() throws Exception {
-    String configFileName =
-        ConsoleAppenderWithLoggerContextRuleIntegrationTest.class.getSimpleName() + "_log4j2.xml";
-    URL resource = getResource(configFileName);
-    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), configFileName)
+    URL resource = getResource(CONFIG_FILE_NAME);
+    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), CONFIG_FILE_NAME)
         .getAbsolutePath();
   }
 
   @Before
   public void setUp() throws Exception {
-    postConfigLogger = LogManager.getLogger();
-    logMessage = "this is a log statement";
+    logger = LogManager.getLogger();
 
     systemOutRule.clearLog();
     systemErrRule.clearLog();
+
+    logMessage = "Logging in " + testName.getMethodName();
   }
 
   @Test
-  public void delegateConsoleAppenderIsConfigured() {
-    assertThat(loggerContextRule.getListAppender("LIST")).isNotNull();
+  public void consoleAppenderIsConfigured() {
+    ConsoleAppender consoleAppender =
+        loggerContextRule.getAppender(APPENDER_NAME, ConsoleAppender.class);
 
-    ListAppender listAppender = findAppender(ListAppender.class);
-    assertThat(listAppender).isNotNull();
-
-    ConsoleAppender consoleAppender = findAppender(ConsoleAppender.class);
     assertThat(consoleAppender).isNotNull();
 
     assertThat(consoleAppender.getFilter()).isNull();
@@ -102,7 +104,7 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
     assertThat(consoleAppender.getImmediateFlush()).isTrue();
     assertThat(consoleAppender.getLayout()).isNotNull();
     assertThat(consoleAppender.getManager()).isInstanceOf(OutputStreamManager.class);
-    assertThat(consoleAppender.getName()).isEqualTo("STDOUT");
+    assertThat(consoleAppender.getName()).isEqualTo(APPENDER_NAME);
     assertThat(consoleAppender.getState()).isSameAs(LifeCycle.State.STARTED);
     assertThat(consoleAppender.getTarget()).isSameAs(ConsoleAppender.Target.SYSTEM_OUT);
 
@@ -116,27 +118,12 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
   }
 
   @Test
-  public void staticSystemOutRuleCapturesConsoleAppenderOutputFromPostConfigLogger() {
-    postConfigLogger.info(logMessage);
+  public void staticSystemOutRuleCapturesConsoleAppenderOutput() {
+    logger.info(logMessage);
 
     assertThat(systemOutRule.getLog()).contains(Level.INFO.name().toLowerCase());
     assertThat(systemOutRule.getLog()).contains(logMessage);
 
     assertThat(systemErrRule.getLog()).isEmpty();
-  }
-
-  private <T extends Appender> T findAppender(Class<T> appenderClass) {
-    LoggerContext loggerContext =
-        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).getContext();
-    Map<String, Appender> appenders = loggerContext.getConfiguration().getAppenders();
-    List<Class<? extends Appender>> appenderClasses = new ArrayList<>();
-    for (Appender appender : appenders.values()) {
-      appenderClasses.add(appender.getClass());
-      if (appenderClass.isAssignableFrom(appender.getClass())) {
-        return appenderClass.cast(appender);
-      }
-    }
-    assertThat(appenderClasses).contains(appenderClass);
-    return null;
   }
 }

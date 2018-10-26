@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.AlertLevel;
@@ -40,6 +41,8 @@ import org.apache.geode.management.internal.AlertDetails;
  * {@code Awaitility}.
  */
 public class AlertListenerMessage extends PooledDistributionMessage implements AdminMessageType {
+
+  private static final AtomicReference<Listener> listenerRef = new AtomicReference<>();
 
   private int alertLevel;
   private Date date;
@@ -78,6 +81,11 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
 
   @Override
   public void process(ClusterDistributionManager dm) {
+    Listener listener = getListener();
+    if (listener != null) {
+      listener.receivedAlertListenerMessage(this);
+    }
+
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
       RemoteGemFireVM manager = agent.getMemberById(getSender());
@@ -86,6 +94,11 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
       }
       Alert alert = new RemoteAlert(manager, alertLevel, date, connectionName, threadName, threadId,
           message, exceptionText, getSender());
+
+      if (listener != null) {
+        listener.createdAlert(alert);
+      }
+
       agent.callAlertListener(alert);
     } else {
       /*
@@ -94,6 +107,11 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
        */
       AlertDetails alertDetail = new AlertDetails(alertLevel, date, connectionName, threadName,
           threadId, message, exceptionText, getSender());
+
+      if (listener != null) {
+        listener.createdAlertDetails(alertDetail);
+      }
+
       dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
     }
   }
@@ -135,5 +153,26 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   @Override
   public String toString() {
     return "Alert \"" + message + "\" level " + AlertLevel.forSeverity(alertLevel);
+  }
+
+  public static void addListener(Listener listener) {
+    listenerRef.compareAndSet(null, listener);
+  }
+
+  public static void removeListener(Listener listener) {
+    listenerRef.compareAndSet(listener, null);
+  }
+
+  public static Listener getListener() {
+    return listenerRef.get();
+  }
+
+  public interface Listener {
+
+    void receivedAlertListenerMessage(AlertListenerMessage message);
+
+    void createdAlert(Alert alert);
+
+    void createdAlertDetails(AlertDetails alertDetails);
   }
 }

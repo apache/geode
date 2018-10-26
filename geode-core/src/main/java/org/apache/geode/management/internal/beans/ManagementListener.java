@@ -95,7 +95,7 @@ public class ManagementListener implements ResourceEventsListener {
    *
    * It checks for race conditions cases by calling shouldProceed();
    *
-   * @param event Management event for which invocation has happened
+   * @param event Management event for which invocation has hapAlertMessaging.javapened
    * @param resource the GFE resource type
    */
   @Override

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-@Category({GfshTest.class, LoggingTest.class})
+@Category({LoggingTest.class, GfshTest.class})
 public class GfshStartLocatorLogAcceptanceTest {
 
   @Rule

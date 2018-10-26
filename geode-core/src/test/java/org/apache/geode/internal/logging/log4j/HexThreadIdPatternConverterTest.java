@@ -20,10 +20,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Unit tests for {@link HexThreadIdPatternConverter}.
  */
+@Category(LoggingTest.class)
 public class HexThreadIdPatternConverterTest {
 
   private HexThreadIdPatternConverter converter;

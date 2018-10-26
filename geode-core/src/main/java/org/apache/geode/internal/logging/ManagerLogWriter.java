@@ -25,16 +25,15 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.util.LogFileUtils;
 
 /**
- * Implementation of {@link LogWriterI18n} for distributed system members. It's just like
+ * Implementation of {@code LogWriter} for distributed system members. It's just like
  * {@link LocalLogWriter} except it has support for rolling and alerts.
  *
  * @since Geode 1.0
  */
-public class ManagerLogWriter extends LocalLogWriter {
+public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
 
   private static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "logging.test.fileSizeLimitInKB";
@@ -62,16 +61,19 @@ public class ManagerLogWriter extends LocalLogWriter {
 
   private boolean started;
 
+  private final boolean loner;
+
   /**
    * Creates a writer that logs to <code>printStream</code>.
    *
    * @param level only messages greater than or equal to this value will be logged.
    * @param printStream is the stream that message will be printed to.
+   * @param loner if the distributed member is not part of a cluster
    *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public ManagerLogWriter(int level, PrintStream printStream) {
-    this(level, printStream, null);
+  public ManagerLogWriter(int level, PrintStream printStream, boolean loner) {
+    this(level, printStream, null, loner);
   }
 
   /**
@@ -80,15 +82,18 @@ public class ManagerLogWriter extends LocalLogWriter {
    * @param level only messages greater than or equal to this value will be logged.
    * @param printStream is the stream that message will be printed to.
    * @param connectionName Name of the connection associated with this logger
+   * @param loner if the distributed member is not part of a cluster
    *
    * @throws IllegalArgumentException if level is not in legal range
    *
    * @since GemFire 3.5
    */
-  public ManagerLogWriter(int level, PrintStream printStream, String connectionName) {
+  public ManagerLogWriter(int level, PrintStream printStream, String connectionName,
+      boolean loner) {
     super(level, printStream, connectionName);
     fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
     rollingFileHandler = new MainWithChildrenRollingFileHandler();
+    this.loner = loner;
   }
 
   /**
@@ -97,6 +102,10 @@ public class ManagerLogWriter extends LocalLogWriter {
   public void setConfig(LogConfig config) {
     this.config = config;
     configChanged();
+  }
+
+  public LogConfig getConfig() {
+    return config;
   }
 
   /**
@@ -126,16 +135,24 @@ public class ManagerLogWriter extends LocalLogWriter {
     }
   }
 
+  @Override
   public File getChildLogFile() {
     return activeLogFile;
   }
 
+  @Override
   public File getLogDir() {
     return logDir;
   }
 
+  @Override
   public int getMainLogId() {
     return mainLogId;
+  }
+
+  @Override
+  public boolean useChildLogging() {
+    return useChildLogging;
   }
 
   private File getNextChildLogFile() {
@@ -156,10 +173,6 @@ public class ManagerLogWriter extends LocalLogWriter {
     } else {
       return result;
     }
-  }
-
-  public boolean useChildLogging() {
-    return useChildLogging;
   }
 
   private long getLogFileSizeLimit() {
@@ -244,8 +257,8 @@ public class ManagerLogWriter extends LocalLogWriter {
               File tempLogDir = rollingFileHandler.getParentFile(config.getLogFile());
               tempFile = File.createTempFile("mlw", null, tempLogDir);
               // close the old print writer down before we do the rename
-              PrintStream tempPrintStream = OSProcess.redirectOutput(tempFile,
-                  AlertAppender.getInstance().isAlertingDisabled()/* See #49492 */);
+              // do not redirect if loner -- see #49492
+              PrintStream tempPrintStream = OSProcess.redirectOutput(tempFile, !loner);
               PrintWriter oldPrintWriter = setTarget(new PrintWriter(tempPrintStream, true));
               if (oldPrintWriter != null) {
                 oldPrintWriter.close();
@@ -265,8 +278,7 @@ public class ManagerLogWriter extends LocalLogWriter {
         activeLogFile = new File(oldName);
         // Don't redirect sysouts/syserrs to client log file. See #49492.
         // IMPORTANT: This assumes that only a loner would have sendAlert set to false.
-        PrintStream printStream = OSProcess.redirectOutput(activeLogFile,
-            AlertAppender.getInstance().isAlertingDisabled());
+        PrintStream printStream = OSProcess.redirectOutput(activeLogFile, !loner);
         PrintWriter oldPrintWriter =
             setTarget(new PrintWriter(printStream, true), activeLogFile.length());
         if (oldPrintWriter != null) {

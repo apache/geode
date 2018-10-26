@@ -29,7 +29,7 @@ import java.util.TreeMap;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.ConfigurationInfo;
 import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
@@ -124,7 +124,7 @@ public class Banner {
         out.println("    " + key + " = " + value);
       }
       out.println("Log4J 2 Configuration:");
-      out.println("    " + LogService.getConfigurationInfo());
+      out.println("    " + ConfigurationInfo.getConfigurationInfo());
     }
     out.println(SEPARATOR);
   }

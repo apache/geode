@@ -31,6 +31,9 @@ import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.Failure
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.Implementation;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
+/**
+ * Unit tests for {@link LoggingUncaughtExceptionHandler}.
+ */
 @Category(LoggingTest.class)
 public class LoggingUncaughtExceptionHandlerTest {
 
