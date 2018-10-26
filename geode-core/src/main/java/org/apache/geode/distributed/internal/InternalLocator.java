@@ -1129,8 +1129,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   /**
    * Apparently nothing provides RuntimeDistributionConfigImpl behavior in a stand-alone locator
    * (without DS), so there are currently no callers of {@code logConfigChanged()}. Keep it?
-   *
-   * TODO:KIRK: can we make stand-alone locator config mutable?
    */
   @SuppressWarnings("unused")
   void logConfigChanged() {
@@ -1373,8 +1371,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
             new InternalConfigurationPersistenceService(locator.myCache);
       }
       locator.configurationPersistenceService
-          .initSharedConfiguration(locator.loadFromSharedConfigDir()); // TODO:KIRK: creates
-                                                                       // directory
+          .initSharedConfiguration(locator.loadFromSharedConfigDir());
       logger.info(
           "Cluster configuration service start up completed successfully and is now running ....");
       isSharedConfigurationStarted = true;
