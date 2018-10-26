@@ -56,6 +56,6 @@ public class LegacyAlertService {
   }
 
   public static void setIsAlerting(boolean isAlerting) {
-    
+
   }
 }
