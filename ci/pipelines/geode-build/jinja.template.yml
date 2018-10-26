@@ -90,6 +90,7 @@ groups:
   - {{ build_test.name }}
   {{ all_gating_jobs() | indent(2) }}
   {%- if repository.sanitized_fork == repository.upstream_fork %}
+  - UpdatePassingRef
   - PublishArtifacts
   {%- endif %}
 - name: complete
@@ -101,6 +102,7 @@ groups:
     {%- endfor -%}
   {%- endfor -%}
   {%- if repository.sanitized_fork == repository.upstream_fork %}
+  - UpdatePassingRef
   - PublishArtifacts
   {%- endif %}
 - name: linux
@@ -308,6 +310,28 @@ jobs:
             timeout: 1h
 
 {% if repository.sanitized_fork == repository.upstream_fork %}
+- name: UpdatePassingRef
+  public: true
+  serial: true
+  plan:
+  - get: geode
+    passed:
+    {{ all_gating_jobs() | indent(4) }}
+    trigger: true
+  - get: geode-ci
+  - task: updatepassingref
+    {{ alpine_tools_config()|indent(4) }}
+      params:
+        MAINTENANCE_VERSION: ((geode-build-branch))
+        ARTIFACT_BUCKET: ((artifact-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: geode-ci/ci/scripts/update-passing-ref.sh
+      inputs:
+      - name: geode
+      - name: geode-ci
+      outputs:
+      - name: results
 - name: PublishArtifacts
   public: true
   plan:
