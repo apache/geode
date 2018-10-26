@@ -83,7 +83,7 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:region-mapping").contains("jdbc:field-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping").contains("jdbc:field-mapping");
     });
 
     server.invoke(() -> {
@@ -151,7 +151,7 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:region-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping");
       assertThat(xml).isNotNull().doesNotContain("jdbc:field-mapping");
     });
   }

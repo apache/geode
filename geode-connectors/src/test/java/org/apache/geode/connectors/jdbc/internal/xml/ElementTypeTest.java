@@ -16,13 +16,12 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 
 
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.REGION_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.COLUMN_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CONNECTION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.FIELD_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_CLASS;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.REGION;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -106,20 +105,20 @@ public class ElementTypeTest {
   public void startElementRegionMappingThrowsWithoutJdbcServiceConfiguration() {
     stack.push(new Object());
 
-    assertThatThrownBy(() -> REGION_MAPPING.startElement(stack, attributes))
+    assertThatThrownBy(() -> JDBC_MAPPING.startElement(stack, attributes))
         .isInstanceOf(CacheXmlException.class);
   }
 
   @Test
   public void startElementRegionMapping() {
-    when(attributes.getValue(REGION)).thenReturn("region");
     when(attributes.getValue(CONNECTION_NAME)).thenReturn("connectionName");
     when(attributes.getValue(TABLE)).thenReturn("table");
     when(attributes.getValue(PDX_CLASS)).thenReturn("pdxClass");
     when(attributes.getValue(PRIMARY_KEY_IN_VALUE)).thenReturn("true");
+    when(regionCreation.getFullPath()).thenReturn("/region");
     stack.push(regionCreation);
 
-    ElementType.REGION_MAPPING.startElement(stack, attributes);
+    ElementType.JDBC_MAPPING.startElement(stack, attributes);
 
     RegionMapping regionMapping = (RegionMapping) stack.pop();
     assertThat(regionMapping.getRegionName()).isEqualTo("region");
@@ -135,7 +134,7 @@ public class ElementTypeTest {
     stack.push(regionCreation);
     stack.push(mapping);
 
-    ElementType.REGION_MAPPING.endElement(stack);
+    ElementType.JDBC_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(1);
   }

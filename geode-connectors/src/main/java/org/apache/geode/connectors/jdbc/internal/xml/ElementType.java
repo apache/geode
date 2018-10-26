@@ -23,16 +23,16 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public enum ElementType {
-  REGION_MAPPING("region-mapping") {
+  JDBC_MAPPING("mapping") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
       if (!(stack.peek() instanceof RegionCreation)) {
         throw new CacheXmlException(
-            "jdbc <region-mapping> elements must occur within <region> elements");
+            "<jdbc:mapping> elements must occur within <region> elements");
       }
-      // RegionCreation regionCreation = (RegionCreation) stack.peek();
+      RegionCreation regionCreation = (RegionCreation) stack.peek();
       RegionMapping mapping = new RegionMapping();
-      mapping.setRegionName(attributes.getValue(JdbcConnectorServiceXmlParser.REGION));
+      mapping.setRegionName(regionCreation.getFullPath().substring(1));
       mapping.setConnectionConfigName(
           attributes.getValue(JdbcConnectorServiceXmlParser.CONNECTION_NAME));
       mapping.setTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE));
@@ -55,7 +55,7 @@ public enum ElementType {
     void startElement(Stack<Object> stack, Attributes attributes) {
       if (!(stack.peek() instanceof RegionMapping)) {
         throw new CacheXmlException(
-            "jdbc <field-mapping> elements must occur within <region-mapping> elements");
+            "<jdbc:field-mapping> elements must occur within <jdbc:mapping> elements");
       }
       RegionMapping mapping = (RegionMapping) stack.peek();
       mapping.getFieldMapping()

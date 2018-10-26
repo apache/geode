@@ -98,7 +98,7 @@ public class AlterMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:region-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping");
     });
 
     server.invoke(() -> {
@@ -131,7 +131,7 @@ public class AlterMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:region-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping");
     });
 
     server.invoke(() -> {

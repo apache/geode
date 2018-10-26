@@ -14,7 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.REGION_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -43,6 +43,7 @@ public class JdbcConnectorServiceXmlParserTest {
   public void setup() {
     attributes = mock(Attributes.class);
     regionCreation = mock(RegionCreation.class);
+    when(regionCreation.getFullPath()).thenReturn("/region");
     extensionPoint = mock(ExtensionPoint.class);
     when(regionCreation.getExtensionPoint()).thenReturn(extensionPoint);
     stack = new Stack<>();
@@ -59,7 +60,7 @@ public class JdbcConnectorServiceXmlParserTest {
     stack.push(regionCreation);
     parser.setStack(stack);
 
-    parser.startElement(NAMESPACE, REGION_MAPPING.getTypeName(), null, attributes);
+    parser.startElement(NAMESPACE, JDBC_MAPPING.getTypeName(), null, attributes);
 
     assertThat(stack.pop()).isInstanceOf(RegionMapping.class);
   }
@@ -70,7 +71,7 @@ public class JdbcConnectorServiceXmlParserTest {
     stack.push(regionCreation);
     parser.setStack(stack);
 
-    parser.startElement("wrongNamespace", REGION_MAPPING.getTypeName(), null, attributes);
+    parser.startElement("wrongNamespace", JDBC_MAPPING.getTypeName(), null, attributes);
 
     assertThat(stack.pop()).isEqualTo(regionCreation);
   }
@@ -83,7 +84,7 @@ public class JdbcConnectorServiceXmlParserTest {
     stack.push(regionMapping);
     parser.setStack(stack);
 
-    parser.endElement(NAMESPACE, REGION_MAPPING.getTypeName(), null);
+    parser.endElement(NAMESPACE, JDBC_MAPPING.getTypeName(), null);
 
     assertThat(stack.pop()).isEqualTo(regionCreation);
     verifyZeroInteractions(regionMapping);
@@ -97,7 +98,7 @@ public class JdbcConnectorServiceXmlParserTest {
     stack.push(regionMapping);
     parser.setStack(stack);
 
-    parser.endElement("wrongNamespace", REGION_MAPPING.getTypeName(), null);
+    parser.endElement("wrongNamespace", JDBC_MAPPING.getTypeName(), null);
 
     assertThat(stack.pop()).isEqualTo(regionMapping);
     verifyZeroInteractions(regionMapping);

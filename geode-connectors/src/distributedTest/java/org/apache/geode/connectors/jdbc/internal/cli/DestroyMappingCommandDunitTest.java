@@ -92,7 +92,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).doesNotContain("jdbc:region-mapping");
+      assertThat(xml).doesNotContain("jdbc:mapping");
     });
 
     server.invoke(() -> {

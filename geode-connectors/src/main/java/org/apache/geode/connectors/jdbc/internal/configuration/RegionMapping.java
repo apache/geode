@@ -63,7 +63,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *         &lt;/element>
  *       &lt;/sequence>
  *       &lt;attribute name="connection-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="region" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="pdx-class" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="primary-key-in-value" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -77,7 +76,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 @Experimental
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"fieldMapping"})
-@XmlRootElement(name = "region-mapping", namespace = "http://geode.apache.org/schema/jdbc")
+@XmlRootElement(name = "mapping", namespace = "http://geode.apache.org/schema/jdbc")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
 public class RegionMapping implements CacheElement {
@@ -89,8 +88,6 @@ public class RegionMapping implements CacheElement {
   protected boolean fieldMappingModified = false;
   @XmlAttribute(name = "connection-name")
   protected String connectionConfigName;
-  @XmlAttribute(name = "region")
-  protected String regionName;
   @XmlAttribute(name = "table")
   protected String tableName;
   @XmlAttribute(name = "pdx-class")
@@ -98,7 +95,10 @@ public class RegionMapping implements CacheElement {
   @XmlAttribute(name = "primary-key-in-value")
   protected Boolean primaryKeyInValue;
 
-  public static final String ELEMENT_ID = "region-mapping";
+  @XmlTransient
+  protected String regionName;
+
+  public static final String ELEMENT_ID = "jdbc-mapping";
 
   public RegionMapping() {}
 

@@ -38,7 +38,7 @@ XML schema for JDBC Connector Service in Geode.
 
     ]]></xsd:documentation>
     </xsd:annotation>
-        <xsd:element name="region-mapping">
+        <xsd:element name="mapping">
             <xsd:complexType>
                 <xsd:sequence>
                     <xsd:element name="field-mapping" maxOccurs="unbounded" minOccurs="0">
@@ -53,7 +53,6 @@ XML schema for JDBC Connector Service in Geode.
                     </xsd:element>
                 </xsd:sequence>
                 <xsd:attribute type="xsd:string" name="connection-name" use="optional"/>
-                <xsd:attribute type="xsd:string" name="region" use="optional"/>
                 <xsd:attribute type="xsd:string" name="table" use="optional"/>
                 <xsd:attribute type="xsd:string" name="pdx-class" use="optional"/>
                 <xsd:attribute type="xsd:string" name="primary-key-in-value" use="optional"/>
