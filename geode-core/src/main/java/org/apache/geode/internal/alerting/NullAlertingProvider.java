@@ -20,7 +20,7 @@ class NullAlertingProvider implements AlertingProvider {
 
   @Override
   public void addAlertListener(DistributedMember member, AlertLevel alertLevel) {
-    throw new Error("Invoked addAlertListener on NullAlertingProvider");
+    // nothing
   }
 
   @Override
