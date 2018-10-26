@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
@@ -36,6 +37,8 @@ public class CreateMappingFunction extends CliFunction<RegionMapping> {
     // input
     RegionMapping regionMapping = context.getArguments();
 
+    verifyRegionExists(context, regionMapping);
+
     // action
     createRegionMapping(service, regionMapping);
 
@@ -44,6 +47,16 @@ public class CreateMappingFunction extends CliFunction<RegionMapping> {
     String message =
         "Created JDBC mapping for region " + regionMapping.getRegionName() + " on " + member;
     return new CliFunctionResult(member, true, message);
+  }
+
+  private void verifyRegionExists(FunctionContext<RegionMapping> context,
+      RegionMapping regionMapping) {
+    Cache cache = context.getCache();
+    String regionName = regionMapping.getRegionName();
+    if (cache.getRegion(regionName) == null) {
+      throw new IllegalStateException(
+          "create jdbc-mapping requires that the region \"" + regionName + "\" exists.");
+    }
   }
 
   /**

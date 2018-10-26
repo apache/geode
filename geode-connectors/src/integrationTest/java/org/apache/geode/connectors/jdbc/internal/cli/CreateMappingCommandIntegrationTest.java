@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
@@ -58,6 +59,7 @@ public class CreateMappingCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache.createRegionFactory(RegionShortcut.LOCAL).create(regionName);
 
     createRegionMappingCommand = new CreateMappingCommand();
     createRegionMappingCommand.setCache(cache);
@@ -92,14 +94,16 @@ public class CreateMappingCommandIntegrationTest {
 
   @Test
   public void createsRegionMappingOnceOnly() {
-    createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
-        keyInValue, fieldMappings);
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    ResultModel result;
+    result =
+        createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
+            keyInValue, fieldMappings);
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     IgnoredException ignoredException =
         IgnoredException.addIgnoredException(RegionMappingExistsException.class.getName());
 
-    ResultModel result;
     try {
       result = createRegionMappingCommand.createMapping(regionName, connectionName, tableName,
           pdxClass, keyInValue, fieldMappings);

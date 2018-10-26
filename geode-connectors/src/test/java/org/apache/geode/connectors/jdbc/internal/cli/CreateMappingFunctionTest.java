@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -31,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
@@ -50,6 +52,7 @@ public class CreateMappingFunctionTest {
   private DistributedMember distributedMember;
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
+  private InternalCache cache;
 
   private CreateMappingFunction function;
 
@@ -57,7 +60,8 @@ public class CreateMappingFunctionTest {
   public void setUp() {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
-    InternalCache cache = mock(InternalCache.class);
+    cache = mock(InternalCache.class);
+    Region region = mock(Region.class);
     DistributedSystem system = mock(DistributedSystem.class);
     distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
@@ -67,6 +71,7 @@ public class CreateMappingFunctionTest {
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
+    when(cache.getRegion(REGION_NAME)).thenReturn(region);
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(regionMapping);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
@@ -111,6 +116,16 @@ public class CreateMappingFunctionTest {
         .isInstanceOf(RegionMappingExistsException.class);
 
     verify(service, times(1)).createRegionMapping(regionMapping);
+  }
+
+  @Test
+  public void createRegionMappingThrowsIfRegionDoesNotExist() throws Exception {
+    when(cache.getRegion(REGION_NAME)).thenReturn(null);
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(IllegalStateException.class)
+        .hasMessage("create jdbc-mapping requires that the region \"" + REGION_NAME + "\" exists.");
   }
 
   @Test
