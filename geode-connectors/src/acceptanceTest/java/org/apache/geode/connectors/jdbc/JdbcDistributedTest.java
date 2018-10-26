@@ -221,7 +221,6 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, false);
     createJdbcConnection();
-    createMapping("NoSuchRegion", CONNECTION_NAME);
 
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =

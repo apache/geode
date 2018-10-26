@@ -51,6 +51,9 @@ public class JdbcClusterConfigDistributedTest {
   @Test
   public void recreateCacheFromClusterConfig() throws Exception {
     gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat("create region --name=regionName --type=REPLICATE").statusIsSuccess();
+
     gfsh.executeAndAssertThat(
         "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-class-name=myPdxClass --value-contains-primary-key --field-mapping=field1:column1,field2:column2")
         .statusIsSuccess();

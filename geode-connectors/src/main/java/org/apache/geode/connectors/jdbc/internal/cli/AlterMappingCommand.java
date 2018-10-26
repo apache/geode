@@ -86,7 +86,9 @@ public class AlterMappingCommand extends SingleGfshCommand {
         executeAndGetFunctionResult(new AlterMappingFunction(), newMapping, targetMembers);
     ResultModel result =
         ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
-
+    if (!result.isSuccessful()) {
+      return result;
+    }
     // find the merged regionMapping from the function result
     CliFunctionResult successResult =
         results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
