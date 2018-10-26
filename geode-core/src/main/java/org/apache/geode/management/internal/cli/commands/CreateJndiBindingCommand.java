@@ -50,7 +50,8 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       "This element specifies the maximum time to block while waiting for a connection before throwing an exception.";
   static final String CONNECTION_POOLED_DATASOURCE_CLASS = "conn-pooled-datasource-class";
   static final String CONNECTION_POOLED_DATASOURCE_CLASS__HELP =
-      "This is the fully qualified name of the connection pool implementation to hold XA datasource connections.";
+      "This is the fully qualified name of the connection pool implementation to hold XA datasource connections."
+          + " When used with --type=POOLED this class must implement org.apache.geode.datasource.PooledDataSourceFactory.";
   static final String CONNECTION_URL = "connection-url";
   static final String URL = "url";
   static final String CONNECTION_URL__HELP =
@@ -93,7 +94,9 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       "Skip the create operation when a jndi binding with the same name already exists.  Without specifying this option, this command execution results into an error.";
   static final String DATASOURCE_CONFIG_PROPERTIES = "datasource-config-properties";
   static final String DATASOURCE_CONFIG_PROPERTIES_HELP =
-      "Properties for the custom XADataSource driver. Append json string containing (name, type, value) to set any property. Eg: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
+      "Properties for the data source. When used with the --type==POOLED, these properties will be used to configure the database data source unless the name begins with \"pool.\"."
+          + " If that prefix is used it will be used to configure the pool data source. Append json string containing (name, type, value) to set any property. "
+          + "For example: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,

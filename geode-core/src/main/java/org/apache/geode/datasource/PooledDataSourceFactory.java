@@ -24,6 +24,8 @@ import javax.sql.DataSource;
  * Classes that implement this interface can be used as the class name
  * specified in the jndi-binding "conn-pooled-datasource-class" when the
  * jndi-binding type is "POOLED". For more information see "gfsh create jndi-binding".
+ * <p>
+ * Note: implementors of this interface must also implement a zero-arg constructor.
  */
 public interface PooledDataSourceFactory {
   /**
