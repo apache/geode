@@ -46,6 +46,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category({JDBCConnectorTest.class})
 public class DestroyMappingCommandDunitTest implements Serializable {
 
+  private static final String REGION_NAME = "testRegion";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -59,19 +60,19 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   private MemberVM locator;
   private MemberVM server;
 
-  private String regionName;
-
   @Before
   public void before() throws Exception {
-    regionName = "testRegion";
 
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
 
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
+
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
@@ -84,7 +85,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   @Test
   public void destroysRegionMapping() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
-    csb.addOption(DESTROY_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(DESTROY_MAPPING__REGION_NAME, REGION_NAME);
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -97,7 +98,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       RegionMapping mapping =
-          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
+          cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping).isNull();
     });
   }
