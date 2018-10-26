@@ -81,16 +81,17 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category({AlertingTest.class, ManagementTest.class})
 public class AlertingServiceDistributedTest implements Serializable {
 
+  private static final long TIMEOUT = getTimeout().getValueInMS();
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 
   private static InternalCache cache;
   private static Logger logger;
 
-  private static AlertingService alertingService;
   private static AlertListenerMessage.Listener messageListener;
   private static DistributedSystemMXBean distributedSystemMXBean;
   private static NotificationListener notificationListener;
+  private static AlertingService alertingService;
 
   private DistributedMember managerMember;
 
@@ -121,7 +122,6 @@ public class AlertingServiceDistributedTest implements Serializable {
     memberVM = getVM(1);
 
     managerMember = managerVM.invoke(() -> createManager());
-
     memberVM.invoke(() -> createMember());
 
     addIgnoredException(alertMessage);
@@ -132,12 +132,14 @@ public class AlertingServiceDistributedTest implements Serializable {
   public void tearDown() {
     for (VM vm : toArray(managerVM, memberVM)) {
       vm.invoke(() -> {
+        removeListener(messageListener);
         cache.close();
         cache = null;
         logger = null;
+        messageListener = null;
         distributedSystemMXBean = null;
         notificationListener = null;
-        removeListener(messageListener);
+        alertingService = null;
       });
     }
   }
@@ -386,14 +388,14 @@ public class AlertingServiceDistributedTest implements Serializable {
 
   private Notification captureNotification() {
     ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-    verify(notificationListener, timeout(getTimeout().getValueInMS()))
+    verify(notificationListener, timeout(TIMEOUT))
         .handleNotification(notificationCaptor.capture(), isNull());
     return notificationCaptor.getValue();
   }
 
   private AlertDetails captureAlertDetails() {
     ArgumentCaptor<AlertDetails> alertDetailsCaptor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(messageListener, timeout(getTimeout().getValueInMS()))
+    verify(messageListener, timeout(TIMEOUT))
         .created(alertDetailsCaptor.capture());
     return alertDetailsCaptor.getValue();
   }

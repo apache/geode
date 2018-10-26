@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.log4j.PausableAlertAppender;
 import org.apache.geode.test.junit.categories.AlertingTest;
 
 @Category(AlertingTest.class)
-public class DistributedSystemAlertListenerIntegrationTest {
+public class AlertListenerRegistrationIntegrationTest {
 
   private InternalDistributedSystem system;
   private DistributedMember member;
@@ -45,6 +45,7 @@ public class DistributedSystemAlertListenerIntegrationTest {
   public void setUp() {
     Properties config = new Properties();
     config.setProperty(LOCATORS, "");
+
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
     member = system.getDistributedMember();
     alertingService = system.getAlertingService();

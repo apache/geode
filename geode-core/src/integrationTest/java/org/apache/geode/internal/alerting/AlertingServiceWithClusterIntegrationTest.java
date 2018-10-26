@@ -47,26 +47,29 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
-import org.apache.geode.internal.admin.remote.AlertListenerMessage.Listener;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.AlertDetails;
 import org.apache.geode.test.junit.categories.AlertingTest;
 
+/**
+ * Integration tests for {@link AlertingService} in a cluster member.
+ */
 @Category(AlertingTest.class)
-public class DistributedSystemAlertingIntegrationTest {
+public class AlertingServiceWithClusterIntegrationTest {
 
   private static final long TIMEOUT = getTimeout().getValueInMS();
 
   private InternalDistributedSystem system;
   private DistributedMember member;
-  private AlertingService alertingService;
-  private Listener messageListener;
+  private AlertListenerMessage.Listener messageListener;
   private Logger logger;
   private String connectionName;
   private String alertMessage;
   private String exceptionMessage;
   private String threadName;
   private long threadId;
+
+  private AlertingService alertingService;
 
   @Rule
   public TestName testName = new TestName();
@@ -79,6 +82,9 @@ public class DistributedSystemAlertingIntegrationTest {
     threadName = Thread.currentThread().getName();
     threadId = Long.valueOf(Long.toHexString(Thread.currentThread().getId()));
 
+    messageListener = spy(AlertListenerMessage.Listener.class);
+    addListener(messageListener);
+
     String startLocator = getServerHostName() + "[" + getRandomAvailableTCPPort() + "]";
 
     Properties config = new Properties();
@@ -86,12 +92,10 @@ public class DistributedSystemAlertingIntegrationTest {
     config.setProperty(NAME, connectionName);
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
-
     member = system.getDistributedMember();
-    alertingService = system.getAlertingService();
-    messageListener = spy(Listener.class);
-    addListener(messageListener);
     logger = LogService.getLogger();
+
+    alertingService = system.getAlertingService();
   }
 
   @After
@@ -101,14 +105,14 @@ public class DistributedSystemAlertingIntegrationTest {
   }
 
   @Test
-  public void alertMessageIsNotReceivedByDefault() {
-    logger.warn(alertMessage);
+  public void alertMessageIsNotReceivedWithoutListener() {
+    logger.fatal(alertMessage);
 
     verifyNoMoreInteractions(messageListener);
   }
 
   @Test
-  public void alertMessageIsReceivedForLevelWarning() {
+  public void alertMessageIsReceivedForListenerLevelWarning() {
     alertingService.addAlertListener(member, WARNING);
 
     logger.warn(alertMessage);
@@ -117,7 +121,7 @@ public class DistributedSystemAlertingIntegrationTest {
   }
 
   @Test
-  public void alertMessageIsReceivedForLevelError() {
+  public void alertMessageIsReceivedForListenerLevelError() {
     alertingService.addAlertListener(member, ERROR);
 
     logger.error(alertMessage);
@@ -126,7 +130,7 @@ public class DistributedSystemAlertingIntegrationTest {
   }
 
   @Test
-  public void alertMessageIsReceivedForLevelFatal() {
+  public void alertMessageIsReceivedForListenerLevelFatal() {
     alertingService.addAlertListener(member, SEVERE);
 
     logger.fatal(alertMessage);
@@ -165,99 +169,99 @@ public class DistributedSystemAlertingIntegrationTest {
 
   @Test
   public void alertDetailsIsCreatedByAlertMessage() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails()).isNotNull().isInstanceOf(AlertDetails.class);
   }
 
   @Test
   public void alertDetailsAlertLevelMatches() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
-    assertThat(captureAlertDetails().getAlertLevel()).isEqualTo(WARNING.intLevel());
+    assertThat(captureAlertDetails().getAlertLevel()).isEqualTo(SEVERE.intLevel());
   }
 
   @Test
   public void alertDetailsMessageMatches() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getMsg()).isEqualTo(alertMessage);
   }
 
   @Test
   public void alertDetailsSenderIsNullForLocalAlert() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getSender()).isNull();
   }
 
   @Test
   public void alertDetailsSource() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getSource()).contains(threadName);
   }
 
   @Test
   public void alertDetailsConnectionName() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getConnectionName()).isEqualTo(connectionName);
   }
 
   @Test
   public void alertDetailsExceptionTextIsEmpty() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getExceptionText()).isEqualTo("");
   }
 
   @Test
   public void alertDetailsExceptionTextMatches() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage, new Exception(exceptionMessage));
+    logger.fatal(alertMessage, new Exception(exceptionMessage));
 
     assertThat(captureAlertDetails().getExceptionText()).contains(exceptionMessage);
   }
 
   @Test
   public void alertDetailsThreadName() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getThreadName()).isEqualTo(threadName);
   }
 
   @Test
   public void alertDetailsThreadId() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getTid()).isEqualTo(threadId);
   }
 
   @Test
   public void alertDetailsMessageTime() {
-    alertingService.addAlertListener(member, WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     assertThat(captureAlertDetails().getMsgTime()).isNotNull();
   }

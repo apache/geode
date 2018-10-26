@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * {@link Cache}.
  */
 @Category(LoggingTest.class)
-public class CacheLogLevelIntegrationTest {
+public class LogLevelChangesWithCacheIntegrationTest {
 
   private static final String APPLICATION_LOGGER_NAME = "com.application";
 

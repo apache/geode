@@ -15,13 +15,11 @@
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.management.JMXNotificationType.REGION_CREATED;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
@@ -78,14 +76,14 @@ import org.apache.geode.test.junit.categories.ManagementTest;
  */
 @Category(ManagementTest.class)
 @SuppressWarnings("serial")
-public class DistributedSystemMXBeanNotificationsDistributedTest implements Serializable {
+public class DistributedSystemMXBeanWithNotificationsDistributedTest implements Serializable {
 
-  private static volatile InternalCache cache;
-  private static volatile InternalDistributedMember distributedMember;
-  private static volatile SystemManagementService managementService;
-  private static volatile DistributedSystemMXBean distributedSystemMXBean;
-  private static volatile List<Notification> notifications;
-  private static volatile Map<ObjectName, NotificationListener> notificationListenerMap;
+  private static InternalCache cache;
+  private static InternalDistributedMember distributedMember;
+  private static SystemManagementService managementService;
+  private static List<Notification> notifications;
+  private static Map<ObjectName, NotificationListener> notificationListenerMap;
+  private static DistributedSystemMXBean distributedSystemMXBean;
 
   private VM managerVM;
   private VM memberVM1;
@@ -122,9 +120,9 @@ public class DistributedSystemMXBeanNotificationsDistributedTest implements Seri
         cache = null;
         distributedMember = null;
         managementService = null;
-        distributedSystemMXBean = null;
         notifications = null;
         notificationListenerMap = null;
+        distributedSystemMXBean = null;
       });
     }
   }
@@ -226,31 +224,27 @@ public class DistributedSystemMXBeanNotificationsDistributedTest implements Seri
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
     config.setProperty(HTTP_SERVICE_PORT, "0");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
-
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
-    distributedSystemMXBean = managementService.getDistributedSystemMXBean();
     notifications = Collections.synchronizedList(new ArrayList<>());
     notificationListenerMap = Collections.synchronizedMap(new HashMap<>());
+
+    distributedSystemMXBean = managementService.getDistributedSystemMXBean();
   }
 
   private void createMember(int vmId) {
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, "memberVM-" + vmId);
     config.setProperty(JMX_MANAGER, "false");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
-
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
   }
 
+  // TODO:KIRK: convert to mockito spy
   private static class SpyNotificationListener implements NotificationListener {
 
     @Override

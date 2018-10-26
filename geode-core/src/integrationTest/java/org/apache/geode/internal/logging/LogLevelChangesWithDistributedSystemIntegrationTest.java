@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * {@link DistributedSystem}.
  */
 @Category(LoggingTest.class)
-public class DistributedSystemLogLevelIntegrationTest {
+public class LogLevelChangesWithDistributedSystemIntegrationTest {
 
   private static final String APPLICATION_LOGGER_NAME = "com.application";
 

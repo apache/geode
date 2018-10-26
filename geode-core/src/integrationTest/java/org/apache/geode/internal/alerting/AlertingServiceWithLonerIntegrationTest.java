@@ -17,6 +17,7 @@ package org.apache.geode.internal.alerting;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
+import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -41,29 +42,34 @@ import org.apache.geode.test.junit.categories.AlertingTest;
  * Integration tests for {@link AlertingService} in a loner member.
  */
 @Category(AlertingTest.class)
-public class LonerAlertingServiceIntegrationTest {
+public class AlertingServiceWithLonerIntegrationTest {
 
   private InternalDistributedSystem system;
   private DistributedMember member;
-  private AlertingService alertingService;
   private AlertListenerMessage.Listener messageListener;
   private Logger logger;
   private String alertMessage;
+
+  private AlertingService alertingService;
 
   @Rule
   public TestName testName = new TestName();
 
   @Before
   public void setUp() {
-    Properties config = new Properties();
-    config.setProperty(LOCATORS, "");
-    system = (InternalDistributedSystem) DistributedSystem.connect(config);
-    member = system.getDistributedMember();
-    alertingService = system.getAlertingService();
+    alertMessage = "Alerting in " + testName.getMethodName();
+
     messageListener = spy(AlertListenerMessage.Listener.class);
     addListener(messageListener);
+
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, "");
+
+    system = (InternalDistributedSystem) DistributedSystem.connect(config);
+    member = system.getDistributedMember();
     logger = LogService.getLogger();
-    alertMessage = "Alerting in " + testName.getMethodName();
+
+    alertingService = system.getAlertingService();
   }
 
   @After
@@ -74,9 +80,9 @@ public class LonerAlertingServiceIntegrationTest {
 
   @Test
   public void alertMessageIsNotReceived() {
-    alertingService.addAlertListener(member, AlertLevel.WARNING);
+    alertingService.addAlertListener(member, SEVERE);
 
-    logger.warn(alertMessage);
+    logger.fatal(alertMessage);
 
     verifyNoMoreInteractions(messageListener);
   }

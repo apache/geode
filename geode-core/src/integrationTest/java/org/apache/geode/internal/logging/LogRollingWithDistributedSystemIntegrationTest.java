@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * @since GemFire 6.5
  */
 @Category(LoggingTest.class)
-public class DistributedSystemLogRollingIntegrationTest {
+public class LogRollingWithDistributedSystemIntegrationTest {
 
   private static final int MAX_LOG_STATEMENTS = 100000;
   private static final String SECURITY_PREFIX = "security_";

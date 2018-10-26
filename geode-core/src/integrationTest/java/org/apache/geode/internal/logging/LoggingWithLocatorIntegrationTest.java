@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * Integration tests for logging with {@link InternalLocator} lifecycle.
  */
 @Category(LoggingTest.class)
-public class LocatorLoggingIntegrationTest {
+public class LoggingWithLocatorIntegrationTest {
 
   private String name;
   private int port;

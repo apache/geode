@@ -15,13 +15,11 @@
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
 import static org.apache.geode.internal.alerting.AlertLevel.NONE;
 import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
@@ -71,12 +69,12 @@ import org.apache.geode.test.junit.categories.ManagementTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Distributed tests for {@link DistributedSystemMXBean} with alerting. Extracted from
+ * Distributed tests for {@link DistributedSystemMXBean} with alerts. Extracted from
  * {@link DistributedSystemMXBeanDistributedTest}.
  */
 @Category({ManagementTest.class, AlertingTest.class})
 @SuppressWarnings("serial")
-public class DistributedSystemMXBeanAlertingDistributedTest implements Serializable {
+public class DistributedSystemMXBeanWithAlertsDistributedTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -88,8 +86,8 @@ public class DistributedSystemMXBeanAlertingDistributedTest implements Serializa
 
   private static InternalCache cache;
   private static AlertingService alertingService;
-  private static DistributedSystemMXBean distributedSystemMXBean;
   private static AlertNotificationListener alertNotificationListener;
+  private static DistributedSystemMXBean distributedSystemMXBean;
 
   private DistributedMember managerMember;
 
@@ -140,8 +138,8 @@ public class DistributedSystemMXBeanAlertingDistributedTest implements Serializa
         }
         cache = null;
         alertingService = null;
-        distributedSystemMXBean = null;
         alertNotificationListener = null;
+        distributedSystemMXBean = null;
       });
     }
   }
@@ -387,17 +385,15 @@ public class DistributedSystemMXBeanAlertingDistributedTest implements Serializa
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
     config.setProperty(HTTP_SERVICE_PORT, "0");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
-
     alertingService = cache.getInternalDistributedSystem().getAlertingService();
-    distributedSystemMXBean = getManagementService(cache).getDistributedSystemMXBean();
-    alertNotificationListener = new AlertNotificationListener();
 
+    alertNotificationListener = new AlertNotificationListener();
     getPlatformMBeanServer().addNotificationListener(getDistributedSystemName(),
         alertNotificationListener, SYSTEM_ALERT_FILTER, null);
+
+    distributedSystemMXBean = getManagementService(cache).getDistributedSystemMXBean();
 
     return cache.getDistributionManager().getId();
   }
@@ -406,11 +402,8 @@ public class DistributedSystemMXBeanAlertingDistributedTest implements Serializa
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, MEMBER_NAME + memberVM.getId());
     config.setProperty(JMX_MANAGER, "false");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
-
     alertingService = cache.getInternalDistributedSystem().getAlertingService();
 
     await().until(() -> alertingService.hasAlertListener(managerMember, SEVERE));
@@ -432,6 +425,7 @@ public class DistributedSystemMXBeanAlertingDistributedTest implements Serializa
     }
   }
 
+  // TODO:KIRK: convert to mockito spy
   private class AlertNotificationListener implements NotificationListener {
 
     private int warningAlertCount;

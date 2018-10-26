@@ -14,13 +14,11 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -180,13 +178,11 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
     config.setProperty(HTTP_SERVICE_PORT, "0");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
-
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
+
     distributedSystemMXBean = managementService.getDistributedSystemMXBean();
   }
 
@@ -194,11 +190,8 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, MEMBER_NAME + vmId);
     config.setProperty(JMX_MANAGER, "false");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
-
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
   }
