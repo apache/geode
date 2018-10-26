@@ -797,7 +797,9 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
       boolean interrupted = Thread.interrupted();
       try {
-        this.server.join(TcpServer.SHUTDOWN_WAIT_TIME * 1000 + 10000);
+        // TcpServer up to SHUTDOWN_WAIT_TIME for its executor pool to shut down.
+        // We wait 2 * SHUTDOWN_WAIT_TIME here to account for that shutdown, and then our own.
+        this.server.join(TcpServer.SHUTDOWN_WAIT_TIME * 2);
 
       } catch (InterruptedException ex) {
         interrupted = true;
