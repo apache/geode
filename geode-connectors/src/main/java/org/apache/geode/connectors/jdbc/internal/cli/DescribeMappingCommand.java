@@ -58,19 +58,6 @@ public class DescribeMappingCommand extends GfshCommand {
       mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
     RegionMapping mapping = null;
 
-    // check if CC is available and use it to describe the connection
-    // ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    // if (ccService != null) {
-    // CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
-    // if (cacheConfig != null) {
-    // ConnectorService service =
-    // cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-    // if (service != null) {
-    // mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
-    // }
-    // }
-    // } else {
-    // otherwise get it from any member
     Set<DistributedMember> members = findMembers(null, null);
     if (members.size() > 0) {
       DistributedMember targetMember = members.iterator().next();
@@ -79,8 +66,9 @@ public class DescribeMappingCommand extends GfshCommand {
       if (result != null) {
         mapping = (RegionMapping) result.getResultObject();
       }
+    } else {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
-    // }
 
     if (mapping == null) {
       throw new EntityNotFoundException(

@@ -67,9 +67,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "testTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
@@ -100,6 +102,8 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_MAPPING)
         .addOption(DESCRIBE_MAPPING__REGION_NAME, "nonExisting");
@@ -119,6 +123,8 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0, properties);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
 
     server.invoke(() -> createRegionMapping());
 
