@@ -47,11 +47,6 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
   }
 
   @Override
-  public void setLogWriterLevel(int logWriterLevel) {
-    throw new UnsupportedOperationException("Unable to change log level after creation");
-  }
-
-  @Override
   public boolean isSecure() {
     return true;
   }

@@ -113,11 +113,6 @@ public class PureLogWriter extends LogWriterImpl {
     this.level = level;
   }
 
-  @Override
-  public void setLogWriterLevel(final int logWriterLevel) {
-    setLevel(logWriterLevel);
-  }
-
   protected String getThreadName() {
     return Thread.currentThread().getName();
   }
