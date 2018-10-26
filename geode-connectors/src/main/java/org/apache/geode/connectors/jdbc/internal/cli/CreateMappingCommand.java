@@ -92,20 +92,22 @@ public class CreateMappingCommand extends SingleGfshCommand {
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
     RegionMapping newCacheElement = (RegionMapping) element;
-    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);
+    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(
+        newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);
 
     if (existingCacheElement != null) {
       cacheConfig
           .getRegions()
           .stream()
-          .filter(regionConfig ->  regionConfig.getName().equals(newCacheElement.getRegionName()))
-          .forEach(regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+          .filter(regionConfig -> regionConfig.getName().equals(newCacheElement.getRegionName()))
+          .forEach(
+              regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
     }
 
     cacheConfig
         .getRegions()
         .stream()
-        .filter(regionConfig ->  regionConfig.getName().equals(newCacheElement.getRegionName()))
+        .filter(regionConfig -> regionConfig.getName().equals(newCacheElement.getRegionName()))
         .forEach(regionConfig -> regionConfig.getCustomRegionElements().add(newCacheElement));
   }
 }

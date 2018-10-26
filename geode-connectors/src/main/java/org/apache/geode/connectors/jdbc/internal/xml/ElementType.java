@@ -20,7 +20,6 @@ import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public enum ElementType {
@@ -31,7 +30,7 @@ public enum ElementType {
         throw new CacheXmlException(
             "jdbc <region-mapping> elements must occur within <region> elements");
       }
-//      RegionCreation regionCreation = (RegionCreation) stack.peek();
+      // RegionCreation regionCreation = (RegionCreation) stack.peek();
       RegionMapping mapping = new RegionMapping();
       mapping.setRegionName(attributes.getValue(JdbcConnectorServiceXmlParser.REGION));
       mapping.setConnectionConfigName(
@@ -47,7 +46,7 @@ public enum ElementType {
     void endElement(Stack<Object> stack) {
       RegionMapping mapping = (RegionMapping) stack.pop();
       RegionCreation regionCreation = (RegionCreation) stack.peek();
-//      regionCreation.addRegionMapping(mapping);
+      // regionCreation.addRegionMapping(mapping);
       regionCreation.getExtensionPoint().addExtension(new RegionMappingConfiguration(mapping));
     }
   },

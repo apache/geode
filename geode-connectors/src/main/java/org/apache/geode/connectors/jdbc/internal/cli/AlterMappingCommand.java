@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 
 import java.util.List;
 import java.util.Set;
@@ -24,13 +23,10 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -103,18 +99,20 @@ public class AlterMappingCommand extends SingleGfshCommand {
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
     RegionMapping newCacheElement = (RegionMapping) element;
-    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);
+    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(
+        newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);
 
     cacheConfig
         .getRegions()
         .stream()
-        .filter(regionConfig ->  regionConfig.getName().equals(newCacheElement.getRegionName()))
-        .forEach(regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+        .filter(regionConfig -> regionConfig.getName().equals(newCacheElement.getRegionName()))
+        .forEach(
+            regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
 
     cacheConfig
         .getRegions()
         .stream()
-        .filter(regionConfig ->  regionConfig.getName().equals(newCacheElement.getRegionName()))
+        .filter(regionConfig -> regionConfig.getName().equals(newCacheElement.getRegionName()))
         .forEach(regionConfig -> regionConfig.getCustomRegionElements().add(newCacheElement));
   }
 }

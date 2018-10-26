@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 
 import java.util.Collection;
 import java.util.Set;
@@ -22,9 +21,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -54,28 +51,28 @@ public class ListMappingCommand extends GfshCommand {
     Collection<RegionMapping> mappings = null;
 
     // check if CC is available and use it to describe the connection
-//    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-//    if (ccService != null) {
-//      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
-//      if (cacheConfig != null) {
-//        ConnectorService service =
-//            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-//        if (service != null) {
-//          mappings = service.getRegionMapping();
-//        }
-//      }
-//    } else {
-      // otherwise get it from any member
-      Set<DistributedMember> members = findMembers(null, null);
-      if (members.size() > 0) {
-        DistributedMember targetMember = members.iterator().next();
-        CliFunctionResult result =
-            executeFunctionAndGetFunctionResult(new ListMappingFunction(), null, targetMember);
-        if (result != null) {
-          mappings = (Collection<RegionMapping>) result.getResultObject();
-        }
+    // ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    // if (ccService != null) {
+    // CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
+    // if (cacheConfig != null) {
+    // ConnectorService service =
+    // cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+    // if (service != null) {
+    // mappings = service.getRegionMapping();
+    // }
+    // }
+    // } else {
+    // otherwise get it from any member
+    Set<DistributedMember> members = findMembers(null, null);
+    if (members.size() > 0) {
+      DistributedMember targetMember = members.iterator().next();
+      CliFunctionResult result =
+          executeFunctionAndGetFunctionResult(new ListMappingFunction(), null, targetMember);
+      if (result != null) {
+        mappings = (Collection<RegionMapping>) result.getResultObject();
       }
-//    }
+    }
+    // }
 
     if (mappings == null) {
       return ResultModel.createInfo(EXPERIMENTAL + "\n" + "No mappings found");

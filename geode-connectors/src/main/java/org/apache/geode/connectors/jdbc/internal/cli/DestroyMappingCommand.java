@@ -22,7 +22,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -63,15 +62,17 @@ public class DestroyMappingCommand extends SingleGfshCommand {
 
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object configObject) {
-    String region = (String)configObject;
-    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement("/" + region, RegionMapping.ELEMENT_ID, RegionMapping.class);
+    String region = (String) configObject;
+    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement("/" + region,
+        RegionMapping.ELEMENT_ID, RegionMapping.class);
 
     if (existingCacheElement != null) {
       cacheConfig
           .getRegions()
           .stream()
           .filter(regionConfig -> regionConfig.getName().equals(region))
-          .forEach(regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+          .forEach(
+              regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
     }
   }
 }

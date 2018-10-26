@@ -12,52 +12,41 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-//package org.apache.geode.connectors.jdbc.internal.xml;
+// package org.apache.geode.connectors.jdbc.internal.xml;
 //
-//import java.util.ArrayList;
-//import java.util.List;
 //
-//import org.apache.geode.InternalGemFireException;
-//import org.apache.geode.cache.Cache;
-//import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-//import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-//import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-//import org.apache.geode.internal.cache.InternalCache;
-//import org.apache.geode.internal.cache.extension.Extensible;
-//import org.apache.geode.internal.cache.extension.Extension;
-//import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 //
-//public class JdbcServiceConfiguration implements Extension<Cache> {
+// public class JdbcServiceConfiguration implements Extension<Cache> {
 //
-//  private final List<RegionMapping> mappings = new ArrayList<>();
+// private final List<RegionMapping> mappings = new ArrayList<>();
 //
-//  void addRegionMapping(RegionMapping mapping) {
-//    mappings.add(mapping);
-//  }
+// void addRegionMapping(RegionMapping mapping) {
+// mappings.add(mapping);
+// }
 //
-//  @Override
-//  public XmlGenerator<Cache> getXmlGenerator() {
-//    return null;
-//  }
+// @Override
+// public XmlGenerator<Cache> getXmlGenerator() {
+// return null;
+// }
 //
-//  @Override
-//  public void beforeCreate(Extensible<Cache> source, Cache cache) {
-//    // nothing
-//  }
+// @Override
+// public void beforeCreate(Extensible<Cache> source, Cache cache) {
+// // nothing
+// }
 //
-//  @Override
-//  public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
-//    InternalCache internalCache = (InternalCache) target;
-//    JdbcConnectorService service = internalCache.getService(JdbcConnectorService.class);
-//    mappings.forEach(mapping -> createRegionMapping(service, mapping));
-//  }
+// @Override
+// public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
+// InternalCache internalCache = (InternalCache) target;
+// JdbcConnectorService service = internalCache.getService(JdbcConnectorService.class);
+// mappings.forEach(mapping -> createRegionMapping(service, mapping));
+// }
 //
-//  private void createRegionMapping(JdbcConnectorService service,
-//      RegionMapping regionMapping) {
-//    try {
-//      service.createRegionMapping(regionMapping);
-//    } catch (RegionMappingExistsException e) {
-//      throw new InternalGemFireException(e);
-//    }
-//  }
-//}
+// private void createRegionMapping(JdbcConnectorService service,
+// RegionMapping regionMapping) {
+// try {
+// service.createRegionMapping(regionMapping);
+// } catch (RegionMappingExistsException e) {
+// throw new InternalGemFireException(e);
+// }
+// }
+// }

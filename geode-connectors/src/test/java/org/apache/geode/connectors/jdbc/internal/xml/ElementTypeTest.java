@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
-//import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION_SERVICE;
 
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.REGION_MAPPING;
@@ -37,13 +36,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public class ElementTypeTest {
@@ -64,13 +61,13 @@ public class ElementTypeTest {
     stack = new Stack<>();
   }
 
-//  @Test
-//  public void gettingElementTypeByNameReturnsCorrectType() {
-//    assertThat(ElementType.getTypeFromName(CONNECTION_SERVICE.getTypeName()))
-//        .isSameAs(CONNECTION_SERVICE);
-//    assertThat(ElementType.getTypeFromName(REGION_MAPPING.getTypeName())).isSameAs(REGION_MAPPING);
-//    assertThat(ElementType.getTypeFromName(FIELD_MAPPING.getTypeName())).isSameAs(FIELD_MAPPING);
-//  }
+  // @Test
+  // public void gettingElementTypeByNameReturnsCorrectType() {
+  // assertThat(ElementType.getTypeFromName(CONNECTION_SERVICE.getTypeName()))
+  // .isSameAs(CONNECTION_SERVICE);
+  // assertThat(ElementType.getTypeFromName(REGION_MAPPING.getTypeName())).isSameAs(REGION_MAPPING);
+  // assertThat(ElementType.getTypeFromName(FIELD_MAPPING.getTypeName())).isSameAs(FIELD_MAPPING);
+  // }
 
   @Test
   public void gettingElementTypeThatDoesNotExistThrowsException() {
@@ -78,32 +75,32 @@ public class ElementTypeTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
-//  @Test
-//  public void startElementConnectionServiceThrowsWithoutCacheCreation() {
-//    stack.push(new Object());
-//
-//    assertThatThrownBy(() -> CONNECTION_SERVICE.startElement(stack, attributes))
-//        .isInstanceOf(CacheXmlException.class);
-//  }
+  // @Test
+  // public void startElementConnectionServiceThrowsWithoutCacheCreation() {
+  // stack.push(new Object());
+  //
+  // assertThatThrownBy(() -> CONNECTION_SERVICE.startElement(stack, attributes))
+  // .isInstanceOf(CacheXmlException.class);
+  // }
 
-//  @Test
-//  public void startElementConnectionService() {
-//    stack.push(cacheCreation);
-//
-//    CONNECTION_SERVICE.startElement(stack, attributes);
-//
-//    verify(extensionPoint, times(1)).addExtension(any(JdbcServiceConfiguration.class));
-//    assertThat(stack.peek()).isInstanceOf(JdbcServiceConfiguration.class);
-//  }
-//
-//  @Test
-//  public void endElementConnectionService() {
-//    stack.push(new Object());
-//
-//    CONNECTION_SERVICE.endElement(stack);
-//
-//    assertThat(stack).isEmpty();
-//  }
+  // @Test
+  // public void startElementConnectionService() {
+  // stack.push(cacheCreation);
+  //
+  // CONNECTION_SERVICE.startElement(stack, attributes);
+  //
+  // verify(extensionPoint, times(1)).addExtension(any(JdbcServiceConfiguration.class));
+  // assertThat(stack.peek()).isInstanceOf(JdbcServiceConfiguration.class);
+  // }
+  //
+  // @Test
+  // public void endElementConnectionService() {
+  // stack.push(new Object());
+  //
+  // CONNECTION_SERVICE.endElement(stack);
+  //
+  // assertThat(stack).isEmpty();
+  // }
 
   @Test
   public void startElementRegionMappingThrowsWithoutJdbcServiceConfiguration() {

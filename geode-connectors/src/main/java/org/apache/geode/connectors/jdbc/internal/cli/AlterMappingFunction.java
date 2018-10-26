@@ -48,7 +48,7 @@ public class AlterMappingFunction extends CliFunction<RegionMapping> {
   }
 
   RegionMapping alterRegionMapping(RegionMapping regionMapping,
-                                   RegionMapping existingMapping) {
+      RegionMapping existingMapping) {
     String connectionName = getValue(regionMapping.getConnectionConfigName(),
         existingMapping.getConnectionConfigName());
     String table = getValue(regionMapping.getTableName(), existingMapping.getTableName());

@@ -54,7 +54,7 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
   }
 
   private void createRegionMapping(JdbcConnectorService service,
-                                   RegionMapping regionMapping) {
+      RegionMapping regionMapping) {
     try {
       service.createRegionMapping(regionMapping);
     } catch (RegionMappingExistsException e) {

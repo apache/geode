@@ -20,9 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -63,47 +61,48 @@ public class DescribeMappingCommandTest {
         .containsOutput("Invalid command");
   }
 
-//  @Test
-//  public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
-//    doReturn(ccService).when(command).getConfigurationPersistenceService();
-//    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-//        .containsOutput("mapping for region 'region' not found");
-//  }
+  // @Test
+  // public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
+  // doReturn(ccService).when(command).getConfigurationPersistenceService();
+  // gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+  // .containsOutput("mapping for region 'region' not found");
+  // }
 
-//  @Test
-//  public void whenCCServiceIsRunningAndNoConnectionFound() {
-//    doReturn(ccService).when(command).getConfigurationPersistenceService();
-//
-//    ConnectorService connectorService = mock(ConnectorService.class);
-//    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-//    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-//        .containsOutput("mapping for region 'region' not found");
-//  }
+  // @Test
+  // public void whenCCServiceIsRunningAndNoConnectionFound() {
+  // doReturn(ccService).when(command).getConfigurationPersistenceService();
+  //
+  // ConnectorService connectorService = mock(ConnectorService.class);
+  // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
+  // gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+  // .containsOutput("mapping for region 'region' not found");
+  // }
 
-//  @Test
-//  public void whenCCIsAvailable() {
-//    doReturn(ccService).when(command).getConfigurationPersistenceService();
-//
-//    // mapping found in CC
-//    RegionMapping mapping =
-//        new RegionMapping("region", "class1", "table1", "name1", true);
-//    mapping.getFieldMapping()
-//        .add(new RegionMapping.FieldMapping("field1", "value1"));
-//    mapping.getFieldMapping()
-//        .add(new RegionMapping.FieldMapping("field2", "value2"));
-//
-//    ConnectorService connectorService = mock(ConnectorService.class);
-//    List<RegionMapping> mappings = new ArrayList<>();
-//    when(connectorService.getRegionMapping()).thenReturn(mappings);
-//    mappings.add(mapping);
-//    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-//
-//    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
-//        .containsOutput("connection", "name1").containsOutput("table", "table1")
-//        .containsOutput("pdx-class-name", "class1")
-//        .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
-//        .containsOutput("field2", "value2");
-//  }
+  // @Test
+  // public void whenCCIsAvailable() {
+  // doReturn(ccService).when(command).getConfigurationPersistenceService();
+  //
+  // // mapping found in CC
+  // RegionMapping mapping =
+  // new RegionMapping("region", "class1", "table1", "name1", true);
+  // mapping.getFieldMapping()
+  // .add(new RegionMapping.FieldMapping("field1", "value1"));
+  // mapping.getFieldMapping()
+  // .add(new RegionMapping.FieldMapping("field2", "value2"));
+  //
+  // ConnectorService connectorService = mock(ConnectorService.class);
+  // List<RegionMapping> mappings = new ArrayList<>();
+  // when(connectorService.getRegionMapping()).thenReturn(mappings);
+  // mappings.add(mapping);
+  // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
+  //
+  // gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region",
+  // "region")
+  // .containsOutput("connection", "name1").containsOutput("table", "table1")
+  // .containsOutput("pdx-class-name", "class1")
+  // .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
+  // .containsOutput("field2", "value2");
+  // }
 
   @Test
   public void whenCCIsNotAvailableAndNoMemberExists() {

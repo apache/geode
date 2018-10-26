@@ -103,7 +103,7 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxClassName, String tableName,
-                       String connectionConfigName, Boolean primaryKeyInValue) {
+      String connectionConfigName, Boolean primaryKeyInValue) {
     this.regionName = regionName;
     this.pdxClassName = pdxClassName;
     this.tableName = tableName;
@@ -360,7 +360,7 @@ public class RegionMapping implements CacheElement {
   }
 
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class   FieldMapping implements Serializable {
+  public static class FieldMapping implements Serializable {
     @XmlAttribute(name = "field-name")
     protected String fieldName;
     @XmlAttribute(name = "column-name")

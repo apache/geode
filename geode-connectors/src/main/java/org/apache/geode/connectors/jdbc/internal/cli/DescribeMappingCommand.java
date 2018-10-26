@@ -26,10 +26,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -62,28 +59,28 @@ public class DescribeMappingCommand extends GfshCommand {
     RegionMapping mapping = null;
 
     // check if CC is available and use it to describe the connection
-//    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-//    if (ccService != null) {
-//      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
-//      if (cacheConfig != null) {
-//        ConnectorService service =
-//            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-//        if (service != null) {
-//          mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
-//        }
-//      }
-//    } else {
-      // otherwise get it from any member
-      Set<DistributedMember> members = findMembers(null, null);
-      if (members.size() > 0) {
-        DistributedMember targetMember = members.iterator().next();
-        CliFunctionResult result = executeFunctionAndGetFunctionResult(
-            new DescribeMappingFunction(), regionName, targetMember);
-        if (result != null) {
-          mapping = (RegionMapping) result.getResultObject();
-        }
+    // ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    // if (ccService != null) {
+    // CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+    // if (cacheConfig != null) {
+    // ConnectorService service =
+    // cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+    // if (service != null) {
+    // mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
+    // }
+    // }
+    // } else {
+    // otherwise get it from any member
+    Set<DistributedMember> members = findMembers(null, null);
+    if (members.size() > 0) {
+      DistributedMember targetMember = members.iterator().next();
+      CliFunctionResult result = executeFunctionAndGetFunctionResult(
+          new DescribeMappingFunction(), regionName, targetMember);
+      if (result != null) {
+        mapping = (RegionMapping) result.getResultObject();
       }
-//    }
+    }
+    // }
 
     if (mapping == null) {
       throw new EntityNotFoundException(

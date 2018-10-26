@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,7 +46,7 @@ public class AlterMappingCommandTest {
   private ConfigurationPersistenceService ccService;
   private RegionMapping mapping;
   private List<RegionMapping> mappings;
-//  private ConnectorService connectorService;
+  // private ConnectorService connectorService;
   private CacheConfig cacheConfig;
 
   @ClassRule
@@ -67,7 +66,7 @@ public class AlterMappingCommandTest {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     cacheConfig = mock(CacheConfig.class);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
-//    connectorService = mock(ConnectorService.class);
+    // connectorService = mock(ConnectorService.class);
     mappings = new ArrayList<>();
     mapping = new RegionMapping();
     mapping.setRegionName("region");
@@ -112,27 +111,27 @@ public class AlterMappingCommandTest {
     verify(command).executeAndGetFunctionResult(any(), any(), any());
   }
 
-//  @Test
-//  public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
-//    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-//        .containsOutput("mapping with name 'region' does not exist.");
-//    verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
-//  }
+  // @Test
+  // public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
+  // gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+  // .containsOutput("mapping with name 'region' does not exist.");
+  // verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
+  // }
 
-//  @Test
-//  public void whenCCServiceIsRunningAndNoMappingFound() {
-//    ConnectorService connectorService = mock(ConnectorService.class);
-//    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-//    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-//        .containsOutput("mapping with name 'region' does not exist.");
-//    verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
-//  }
+  // @Test
+  // public void whenCCServiceIsRunningAndNoMappingFound() {
+  // ConnectorService connectorService = mock(ConnectorService.class);
+  // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
+  // gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+  // .containsOutput("mapping with name 'region' does not exist.");
+  // verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
+  // }
 
   @Test
   public void noSuccessfulResult() {
     // mapping found in CC
-//    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-//    when(connectorService.getRegionMapping()).thenReturn(mappings);
+    // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
+    // when(connectorService.getRegionMapping()).thenReturn(mappings);
     mappings.add(mapping);
     // result is not successful
     when(result.isSuccessful()).thenReturn(false);
@@ -145,8 +144,8 @@ public class AlterMappingCommandTest {
   @Test
   public void successfulResult() {
     // mapping found in CC
-//    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-//    when(connectorService.getRegionMapping()).thenReturn(mappings);
+    // when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
+    // when(connectorService.getRegionMapping()).thenReturn(mappings);
     mappings.add(mapping);
 
     // result is not successful
