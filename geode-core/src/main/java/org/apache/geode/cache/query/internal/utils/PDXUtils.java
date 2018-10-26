@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.utils;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
@@ -79,8 +80,8 @@ public class PDXUtils {
         obj = ((PdxString) obj).toString();
       }
 
-      if (getDeserializedObject && obj instanceof VMCachedDeserializable) {
-        obj = ((VMCachedDeserializable) obj).getDeserializedForReading();
+      if (getDeserializedObject && obj instanceof CachedDeserializable) {
+        obj = ((CachedDeserializable) obj).getDeserializedForReading();
         objectChangedMarker[0] = true;
       }
 

@@ -196,7 +196,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   }
 
   protected void configAndStartBridgeServer(boolean isPr, boolean isAccessor) {
-    configAndStartBridgeServer(false, false, false, null);
+    configAndStartBridgeServer(isPr, isAccessor, false, null);
   }
 
   protected void configAndStartBridgeServer(boolean isPr, boolean isAccessor, boolean asyncIndex,

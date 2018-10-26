@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.internal.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -1481,6 +1482,46 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     this.closeClient(vm0);
   }
 
+  @Test
+  public void testPdxReadSerializedForPRSelectAllQuery() throws CacheException {
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+
+    final int numPuts = 10;
+
+    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+      public void run2() throws CacheException {
+        configAndStartBridgeServer(true, false);
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
+        cache.setReadSerializedForTest(true);
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+      public void run2() throws CacheException {
+        configAndStartBridgeServer(true, false);
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
+        cache.setReadSerializedForTest(true);
+      }
+    });
+
+    vm0.invoke(() -> {
+      Region region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i < numPuts; i++) {
+        region.put("key-" + i, new TestObject(i, "val-" + i));
+      }
+    });
+
+    vm0.invoke(() -> {
+      QueryService qs = getCache().getQueryService();
+      Query query = qs.newQuery(queryString[1]);
+      SelectResults sr = (SelectResults) query.execute();
+      assertThat(sr.size()).isEqualTo(numPuts);
+      for (Object result : sr) {
+        assertThat(result).isInstanceOf(PdxInstance.class);
+      }
+    });
+  }
 
   /**
    * Tests index on PdxInstance.
