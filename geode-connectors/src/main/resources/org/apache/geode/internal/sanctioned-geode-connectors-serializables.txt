@@ -6,6 +6,5 @@ org/apache/geode/connectors/jdbc/internal/cli/CreateMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DescribeMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListMappingFunction,false
-org/apache/geode/connectors/jdbc/internal/configuration/ConnectorService,false,name:java/lang/String,regionMapping:java/util/List
-org/apache/geode/connectors/jdbc/internal/configuration/ConnectorService$RegionMapping,false,connectionConfigName:java/lang/String,fieldMapping:java/util/List,fieldMappingModified:boolean,pdxClassName:java/lang/String,primaryKeyInValue:java/lang/Boolean,regionName:java/lang/String,tableName:java/lang/String
-org/apache/geode/connectors/jdbc/internal/configuration/ConnectorService$RegionMapping$FieldMapping,false,columnName:java/lang/String,fieldName:java/lang/String
+org/apache/geode/connectors/jdbc/internal/configuration/RegionMapping,false,connectionConfigName:java/lang/String,fieldMapping:java/util/List,fieldMappingModified:boolean,pdxClassName:java/lang/String,primaryKeyInValue:java/lang/Boolean,regionName:java/lang/String,tableName:java/lang/String
+org/apache/geode/connectors/jdbc/internal/configuration/RegionMapping$FieldMapping,false,columnName:java/lang/String,fieldName:java/lang/String

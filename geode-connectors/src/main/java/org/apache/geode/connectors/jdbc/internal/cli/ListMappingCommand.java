@@ -23,7 +23,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -51,20 +51,20 @@ public class ListMappingCommand extends GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel listMapping() {
-    Collection<ConnectorService.RegionMapping> mappings = null;
+    Collection<RegionMapping> mappings = null;
 
     // check if CC is available and use it to describe the connection
-    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    if (ccService != null) {
-      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
-      if (cacheConfig != null) {
-        ConnectorService service =
-            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-        if (service != null) {
-          mappings = service.getRegionMapping();
-        }
-      }
-    } else {
+//    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+//    if (ccService != null) {
+//      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
+//      if (cacheConfig != null) {
+//        ConnectorService service =
+//            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+//        if (service != null) {
+//          mappings = service.getRegionMapping();
+//        }
+//      }
+//    } else {
       // otherwise get it from any member
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
@@ -72,10 +72,10 @@ public class ListMappingCommand extends GfshCommand {
         CliFunctionResult result =
             executeFunctionAndGetFunctionResult(new ListMappingFunction(), null, targetMember);
         if (result != null) {
-          mappings = (Collection<ConnectorService.RegionMapping>) result.getResultObject();
+          mappings = (Collection<RegionMapping>) result.getResultObject();
         }
       }
-    }
+//    }
 
     if (mappings == null) {
       return ResultModel.createInfo(EXPERIMENTAL + "\n" + "No mappings found");
@@ -96,9 +96,9 @@ public class ListMappingCommand extends GfshCommand {
   /**
    * Returns true if any connections exist
    */
-  private boolean fillTabularResultData(Collection<ConnectorService.RegionMapping> mappings,
+  private boolean fillTabularResultData(Collection<RegionMapping> mappings,
       TabularResultModel tableModel) {
-    for (ConnectorService.RegionMapping mapping : mappings) {
+    for (RegionMapping mapping : mappings) {
       tableModel.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
     return !mappings.isEmpty();

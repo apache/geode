@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 
@@ -29,14 +29,14 @@ public class JdbcConnectorServiceTest {
 
   private static final String TEST_REGION_NAME = "testRegion";
 
-  private ConnectorService.RegionMapping mapping;
+  private RegionMapping mapping;
 
   private JdbcConnectorServiceImpl service;
 
   @Before
   public void setUp() throws Exception {
     InternalCache cache = mock(InternalCache.class);
-    mapping = mock(ConnectorService.RegionMapping.class);
+    mapping = mock(RegionMapping.class);
     String[] parameters = new String[] {"key1:value1", "key2:value2"};
 
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));

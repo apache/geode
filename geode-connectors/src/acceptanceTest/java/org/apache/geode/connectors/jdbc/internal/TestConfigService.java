@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 
@@ -50,9 +50,9 @@ public class TestConfigService {
     return cache;
   }
 
-  private static ConnectorService.RegionMapping createRegionMapping(String pdxClassName,
-      boolean primaryKeyInValue) {
-    return new ConnectorService.RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
+  private static RegionMapping createRegionMapping(String pdxClassName,
+                                                   boolean primaryKeyInValue) {
+    return new RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
         CONNECTION_CONFIG_NAME, primaryKeyInValue);
   }
 }

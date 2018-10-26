@@ -17,21 +17,21 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
 
 @Experimental
 public interface JdbcConnectorService extends CacheService {
 
-  void createRegionMapping(ConnectorService.RegionMapping mapping)
+  void createRegionMapping(RegionMapping mapping)
       throws RegionMappingExistsException;
 
-  void replaceRegionMapping(ConnectorService.RegionMapping mapping)
+  void replaceRegionMapping(RegionMapping mapping)
       throws RegionMappingNotFoundException;
 
   void destroyRegionMapping(String regionName);
 
-  ConnectorService.RegionMapping getMappingForRegion(String regionName);
+  RegionMapping getMappingForRegion(String regionName);
 
-  Set<ConnectorService.RegionMapping> getRegionMappings();
+  Set<RegionMapping> getRegionMappings();
 }

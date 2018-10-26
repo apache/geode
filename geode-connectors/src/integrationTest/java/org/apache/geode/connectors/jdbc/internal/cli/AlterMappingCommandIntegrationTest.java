@@ -24,7 +24,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -72,7 +72,7 @@ public class AlterMappingCommandIntegrationTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    ConnectorService.RegionMapping regionMapping = service.getMappingForRegion(regionName);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("newConnection");

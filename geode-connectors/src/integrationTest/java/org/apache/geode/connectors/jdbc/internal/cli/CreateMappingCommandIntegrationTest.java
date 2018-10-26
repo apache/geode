@@ -27,7 +27,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -76,7 +76,7 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    ConnectorService.RegionMapping regionMapping = service.getMappingForRegion(regionName);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
@@ -118,7 +118,7 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    ConnectorService.RegionMapping regionMapping = service.getMappingForRegion(regionName);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);

@@ -30,7 +30,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxInstance;
@@ -71,7 +71,7 @@ public class SqlHandler {
       throw new IllegalArgumentException("Key for query cannot be null");
     }
 
-    ConnectorService.RegionMapping regionMapping = getMappingForRegion(region.getName());
+    RegionMapping regionMapping = getMappingForRegion(region.getName());
     PdxInstance result;
     try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
@@ -97,8 +97,8 @@ public class SqlHandler {
     return statement.executeQuery();
   }
 
-  private ConnectorService.RegionMapping getMappingForRegion(String regionName) {
-    ConnectorService.RegionMapping regionMapping =
+  private RegionMapping getMappingForRegion(String regionName) {
+    RegionMapping regionMapping =
         this.configService.getMappingForRegion(regionName);
     if (regionMapping == null) {
       throw new JdbcConnectorException("JDBC mapping for region " + regionName
@@ -158,7 +158,7 @@ public class SqlHandler {
     if (value == null && operation != Operation.DESTROY) {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
-    ConnectorService.RegionMapping regionMapping = getMappingForRegion(region.getName());
+    RegionMapping regionMapping = getMappingForRegion(region.getName());
 
     try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
@@ -228,7 +228,7 @@ public class SqlHandler {
   }
 
   <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
-      ConnectorService.RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
+                                         RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
     String keyColumnName = tableMetaData.getKeyColumnName();
     ColumnData keyColumnData =
         new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
@@ -242,7 +242,7 @@ public class SqlHandler {
   }
 
   private List<ColumnData> createColumnDataList(TableMetaDataView tableMetaData,
-      ConnectorService.RegionMapping regionMapping, PdxInstance value) {
+                                                RegionMapping regionMapping, PdxInstance value) {
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);

@@ -28,7 +28,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -59,20 +59,20 @@ public class DescribeMappingCommand extends GfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
       mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
-    ConnectorService.RegionMapping mapping = null;
+    RegionMapping mapping = null;
 
     // check if CC is available and use it to describe the connection
-    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    if (ccService != null) {
-      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
-      if (cacheConfig != null) {
-        ConnectorService service =
-            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-        if (service != null) {
-          mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
-        }
-      }
-    } else {
+//    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+//    if (ccService != null) {
+//      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+//      if (cacheConfig != null) {
+//        ConnectorService service =
+//            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+//        if (service != null) {
+//          mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
+//        }
+//      }
+//    } else {
       // otherwise get it from any member
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
@@ -80,10 +80,10 @@ public class DescribeMappingCommand extends GfshCommand {
         CliFunctionResult result = executeFunctionAndGetFunctionResult(
             new DescribeMappingFunction(), regionName, targetMember);
         if (result != null) {
-          mapping = (ConnectorService.RegionMapping) result.getResultObject();
+          mapping = (RegionMapping) result.getResultObject();
         }
       }
-    }
+//    }
 
     if (mapping == null) {
       throw new EntityNotFoundException(
@@ -96,7 +96,7 @@ public class DescribeMappingCommand extends GfshCommand {
     return resultModel;
   }
 
-  private void fillResultData(ConnectorService.RegionMapping mapping, ResultModel resultModel) {
+  private void fillResultData(RegionMapping mapping, ResultModel resultModel) {
     DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
     sectionModel.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
     sectionModel.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());

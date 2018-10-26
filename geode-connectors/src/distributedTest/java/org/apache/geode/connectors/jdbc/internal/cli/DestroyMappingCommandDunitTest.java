@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -91,12 +91,12 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).contains("jdbc:connector-service");
+      assertThat(xml).doesNotContain("jdbc:region-mapping");
     });
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      ConnectorService.RegionMapping mapping =
+      RegionMapping mapping =
           cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping).isNull();
     });

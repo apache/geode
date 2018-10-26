@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -111,7 +111,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     for (int i = 1; i <= N; i++) {
       String name = regionName + "-" + i;
       service.createRegionMapping(
-          new ConnectorService.RegionMapping(name, "x.y.MyPdxClass", "table", "connection", true));
+          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", true));
       assertThat(service.getMappingForRegion(name)).isNotNull();
     }
   }

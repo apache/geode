@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -135,7 +135,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   private void createRegionMapping() throws RegionMappingExistsException {
     InternalCache cache = ClusterStartupRule.getCache();
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    service.createRegionMapping(new ConnectorService.RegionMapping(REGION_NAME, "myPdxClass",
+    service.createRegionMapping(new RegionMapping(REGION_NAME, "myPdxClass",
         "testTable", "connection", true));
     assertThat(service.getMappingForRegion(REGION_NAME)).isNotNull();
   }

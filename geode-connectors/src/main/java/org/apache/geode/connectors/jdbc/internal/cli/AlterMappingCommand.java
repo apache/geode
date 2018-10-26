@@ -25,7 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -81,26 +81,9 @@ public class AlterMappingCommand extends SingleGfshCommand {
           specifiedDefaultValue = "") String[] fieldMappings) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
-    ConnectorService.RegionMapping newMapping = new ConnectorService.RegionMapping(regionName,
+    RegionMapping newMapping = new RegionMapping(regionName,
         pdxClassName, table, connectionName, keyInValue);
     newMapping.setFieldMapping(fieldMappings);
-
-    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    // if cc is running, you can only alter connection available in cc service.
-    if (ccService != null) {
-      // search for the connection that has this id to see if it exists
-      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
-      ConnectorService service =
-          cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-      if (service == null) {
-        throw new EntityNotFoundException("mapping with name '" + regionName + "' does not exist.");
-      }
-      ConnectorService.RegionMapping mapping =
-          CacheElement.findElement(service.getRegionMapping(), regionName);
-      if (mapping == null) {
-        throw new EntityNotFoundException("mapping with name '" + regionName + "' does not exist.");
-      }
-    }
 
     // action
     List<CliFunctionResult> results =
@@ -111,19 +94,27 @@ public class AlterMappingCommand extends SingleGfshCommand {
     // find the merged regionMapping from the function result
     CliFunctionResult successResult =
         results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
-    ConnectorService.RegionMapping mergedMapping =
-        (ConnectorService.RegionMapping) successResult.getResultObject();
+    RegionMapping mergedMapping =
+        (RegionMapping) successResult.getResultObject();
     result.setConfigObject(mergedMapping);
     return result;
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
-    ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) element;
-    ConnectorService service =
-        config.findCustomCacheElement("connector-service", ConnectorService.class);
-    // service is not nul at this point
-    CacheElement.removeElement(service.getRegionMapping(), mapping.getId());
-    service.getRegionMapping().add(mapping);
+  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
+    RegionMapping newCacheElement = (RegionMapping) element;
+    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);
+
+    cacheConfig
+        .getRegions()
+        .stream()
+        .filter(regionConfig ->  regionConfig.getName().equals(newCacheElement.getRegionName()))
+        .forEach(regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+
+    cacheConfig
+        .getRegions()
+        .stream()
+        .filter(regionConfig ->  regionConfig.getName().equals(newCacheElement.getRegionName()))
+        .forEach(regionConfig -> regionConfig.getCustomRegionElements().add(newCacheElement));
   }
 }

@@ -37,7 +37,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -47,10 +47,10 @@ public class AlterMappingFunctionTest {
 
   private static final String REGION_NAME = "testRegion";
 
-  private ConnectorService.RegionMapping regionMapping;
-  private ConnectorService.RegionMapping existingMapping;
-  private ConnectorService.RegionMapping mappingToAlter;
-  private FunctionContext<ConnectorService.RegionMapping> context;
+  private RegionMapping regionMapping;
+  private RegionMapping existingMapping;
+  private RegionMapping mappingToAlter;
+  private FunctionContext<RegionMapping> context;
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
 
@@ -65,10 +65,10 @@ public class AlterMappingFunctionTest {
     DistributedMember distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
 
-    regionMapping = new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
-    existingMapping = new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    regionMapping = new RegionMapping(REGION_NAME, null, null, null, null);
+    existingMapping = new RegionMapping(REGION_NAME, null, null, null, null);
     mappingToAlter =
-        new ConnectorService.RegionMapping(REGION_NAME, "pdxClass", "myTable", "connection", true);
+        new RegionMapping(REGION_NAME, "pdxClass", "myTable", "connection", true);
     mappingToAlter.setFieldMapping(new String[] {"field1:column1", "field2:column2"});
 
     when(context.getResultSender()).thenReturn(resultSender);
@@ -137,10 +137,10 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void alterMappingPdxClassName() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, "newClassName", null, null, null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, "newClassName", null, null, null);
 
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -152,8 +152,8 @@ public class AlterMappingFunctionTest {
     assertFieldMapping(alteredConfig);
   }
 
-  private void assertFieldMapping(ConnectorService.RegionMapping alteredConfig) {
-    List<ConnectorService.RegionMapping.FieldMapping> fieldMappings =
+  private void assertFieldMapping(RegionMapping alteredConfig) {
+    List<RegionMapping.FieldMapping> fieldMappings =
         alteredConfig.getFieldMapping();
     assertThat(fieldMappings).hasSize(2);
     assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field1");
@@ -164,10 +164,10 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void alterRegionMappingTable() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, "newTable", null, null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, "newTable", null, null);
 
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -180,10 +180,10 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void alterRegionMappingPrimaryKeyInValue() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, false);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, null, null, false);
 
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -196,10 +196,10 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void alterRegionMappingConnectionName() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, "newConnection", null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, null, "newConnection", null);
 
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -212,12 +212,12 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void alterRegionMappingFieldMappings() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, null, null, null);
     newConfigValues.setFieldMapping(new String[] {"field5:column5", "field6:column6"});
 
 
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -225,21 +225,21 @@ public class AlterMappingFunctionTest {
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
-    List<ConnectorService.RegionMapping.FieldMapping> fieldMappings =
+    List<RegionMapping.FieldMapping> fieldMappings =
         alteredConfig.getFieldMapping();
     assertThat(fieldMappings).hasSize(2);
     assertThat(fieldMappings)
-        .contains(new ConnectorService.RegionMapping.FieldMapping("field5", "column5"));
+        .contains(new RegionMapping.FieldMapping("field5", "column5"));
     assertThat(fieldMappings)
-        .contains(new ConnectorService.RegionMapping.FieldMapping("field6", "column6"));
+        .contains(new RegionMapping.FieldMapping("field6", "column6"));
   }
 
   @Test
   public void alterRegionMappingRemoveFieldMappings() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, null, null, null);
     newConfigValues.setFieldMapping(new String[0]);
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -247,17 +247,17 @@ public class AlterMappingFunctionTest {
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
-    List<ConnectorService.RegionMapping.FieldMapping> fieldMappings =
+    List<RegionMapping.FieldMapping> fieldMappings =
         alteredConfig.getFieldMapping();
     assertThat(fieldMappings).hasSize(0);
   }
 
   @Test
   public void alterRegionMappingWithEmptyString() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, null, null, null);
     newConfigValues.setFieldMapping(new String[] {""});
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
@@ -265,17 +265,17 @@ public class AlterMappingFunctionTest {
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
-    List<ConnectorService.RegionMapping.FieldMapping> fieldMappings =
+    List<RegionMapping.FieldMapping> fieldMappings =
         alteredConfig.getFieldMapping();
     assertThat(fieldMappings).hasSize(0);
   }
 
   @Test
   public void alterRegionMappingWithNothingToAlter() {
-    ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    RegionMapping newConfigValues =
+        new RegionMapping(REGION_NAME, null, null, null, null);
 
-    ConnectorService.RegionMapping alteredConfig =
+    RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);

@@ -35,7 +35,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -45,8 +45,8 @@ public class CreateMappingFunctionTest {
 
   private static final String REGION_NAME = "testRegion";
 
-  private ConnectorService.RegionMapping regionMapping;
-  private FunctionContext<ConnectorService.RegionMapping> context;
+  private RegionMapping regionMapping;
+  private FunctionContext<RegionMapping> context;
   private DistributedMember distributedMember;
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
@@ -62,7 +62,7 @@ public class CreateMappingFunctionTest {
     distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
 
-    regionMapping = new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    regionMapping = new RegionMapping(REGION_NAME, null, null, null, null);
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
