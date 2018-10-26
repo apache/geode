@@ -8648,7 +8648,7 @@ public class PartitionedRegion extends LocalRegion
 
         if (null != response) {
           response.waitForResults();
-          logger.info("Done wating for remove index...");
+          logger.info("Done waiting for index removal...");
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "Total number of buckets which removed indexes , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
@@ -8748,7 +8748,7 @@ public class PartitionedRegion extends LocalRegion
 
       if (response != null) {
         response.waitForResults();
-        logger.info("Done wating for remove index...");
+        logger.info("Done waiting for index removal...");
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Total number of buckets which removed indexs , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
