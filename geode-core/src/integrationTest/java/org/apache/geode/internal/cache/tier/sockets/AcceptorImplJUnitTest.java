@@ -45,7 +45,7 @@ public class AcceptorImplJUnitTest {
 
   DistributedSystem system;
   InternalCache cache;
-  AcceptorImpl a1 = null, a2 = null;
+  AcceptorImpl acceptor1 = null, acceptor2 = null;
   ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
 
   @Before
@@ -58,11 +58,11 @@ public class AcceptorImplJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    if (a1 != null) {
-      a1.close();
+    if (acceptor1 != null) {
+      acceptor1.close();
     }
-    if (a2 != null) {
-      a2.close();
+    if (acceptor2 != null) {
+      acceptor2.close();
     }
     this.cache.close();
     this.system.disconnect();
@@ -70,23 +70,24 @@ public class AcceptorImplJUnitTest {
 
   @Test(expected = BindException.class)
   public void constructorThrowsBindException() throws CacheException, IOException {
-    a1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
         CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
         AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
         null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
         serverConnectionFactory, 1000);
-    a2 = new AcceptorImpl(a1.getPort(), null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
-        AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
-        CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
-        null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
-        serverConnectionFactory, 1000);
+    acceptor2 =
+        new AcceptorImpl(acceptor1.getPort(), null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+            AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
+            CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
+            null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
+            serverConnectionFactory, 1000);
   }
 
   @Test
   public void acceptorBindsToLocalAddress() throws CacheException, IOException {
-    a1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
         CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
         AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
@@ -97,7 +98,7 @@ public class AcceptorImplJUnitTest {
     DistributionConfig config = isystem.getConfig();
     String bindAddress = config.getBindAddress();
     if (bindAddress == null || bindAddress.length() <= 0) {
-      assertTrue(a1.getServerInetAddr().isAnyLocalAddress());
+      assertTrue(acceptor1.getServerInetAddr().isAnyLocalAddress());
     }
   }
 
@@ -108,7 +109,7 @@ public class AcceptorImplJUnitTest {
    */
   @Test
   public void acceptorCloseInformsOtherServersIfCacheIsNotClosed() throws Exception {
-    a1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
         CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
         AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
@@ -116,7 +117,7 @@ public class AcceptorImplJUnitTest {
         serverConnectionFactory, 1000);
     InternalDistributedSystem isystem =
         (InternalDistributedSystem) this.cache.getDistributedSystem();
-    AcceptorImpl spy = Mockito.spy(a1);
+    AcceptorImpl spy = Mockito.spy(acceptor1);
     spy.close();
     verify(spy, atLeastOnce()).notifyCacheMembersOfClose();
   }
@@ -127,7 +128,7 @@ public class AcceptorImplJUnitTest {
    */
   @Test
   public void acceptorCloseDoesNotInformOtherServersIfCacheIsClosed() throws Exception {
-    a1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
         CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
         AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
@@ -135,7 +136,7 @@ public class AcceptorImplJUnitTest {
         serverConnectionFactory, 1000);
     InternalDistributedSystem isystem =
         (InternalDistributedSystem) this.cache.getDistributedSystem();
-    AcceptorImpl spy = Mockito.spy(a1);
+    AcceptorImpl spy = Mockito.spy(acceptor1);
     cache.close();
     spy.close();
     verify(spy, never()).notifyCacheMembersOfClose();
