@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal;
 
 
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.Random;
@@ -24,7 +23,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -189,7 +187,6 @@ public class MonitorQueryUnderContentionBenchmark {
   private DefaultQuery createDefaultQuery() {
     // we can reuse this because it doesn't affect lookup or equality in the collection(s)
     final DefaultQuery defaultQuery = mock(DefaultQuery.class);
-    doReturn(new AtomicBoolean(false)).when(defaultQuery).getQueryCompletedForMonitoring();
     return defaultQuery;
   }
 }

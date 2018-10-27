@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -65,7 +64,6 @@ public class QueryMonitorTest {
     // cleanup the thread local of the queryCancelled status
     DefaultQuery query = mock(DefaultQuery.class);
     doReturn(Optional.empty()).when(query).getExpirationTask();
-    when(query.getQueryCompletedForMonitoring()).thenReturn(new AtomicBoolean(true));
     monitor.stopMonitoringQueryThread(query);
     monitor.setLowMemory(false, 100);
   }
@@ -93,14 +91,14 @@ public class QueryMonitorTest {
   @Test
   public void monitorQueryThreadExpirationTaskScheduled() {
     DefaultQuery query = mock(DefaultQuery.class);
-    doReturn(new AtomicBoolean(false)).when(query).getQueryCompletedForMonitoring();
 
     monitor.monitorQueryThread(query);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
         isA(TimeUnit.class));
     captor.getValue().run();
 
-    Mockito.verify(query, times(1)).setCanceled(isA(QueryExecutionTimeoutException.class));
+    Mockito.verify(query, times(1))
+        .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
     assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled())
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }

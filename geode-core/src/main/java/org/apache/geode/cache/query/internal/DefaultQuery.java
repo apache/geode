@@ -104,11 +104,7 @@ public class DefaultQuery implements Query {
    */
   public static final Object NULL_RESULT = new Object();
 
-  private volatile boolean isCanceled = false;
-
-  private CacheRuntimeException canceledException;
-
-  private final AtomicBoolean queryCompletedForMonitoring = new AtomicBoolean();
+  private volatile CacheRuntimeException queryCanceledException;
 
   private ProxyCache proxyCache;
 
@@ -151,6 +147,9 @@ public class DefaultQuery implements Query {
    */
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
+
+  static final ThreadLocal<AtomicBoolean> QueryCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
 
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
     pdxClassToMethodsMap.set(map);
@@ -313,8 +312,9 @@ public class DefaultQuery implements Query {
       // query execution canceled exception will be thrown from the QueryMonitor
       // canceled exception should not be null at this point as it should be set
       // when query is canceled.
-      if (this.canceledException != null) {
-        throw this.canceledException;
+      final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+      if (queryCanceledException != null) {
+        throw queryCanceledException;
       } else {
         throw new QueryExecutionCanceledException(
             "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
@@ -453,8 +453,9 @@ public class DefaultQuery implements Query {
         // query execution canceled exception will be thrown from the QueryMonitor
         // canceled exception should not be null at this point as it should be set
         // when query is canceled.
-        if (this.canceledException != null) {
-          throw this.canceledException;
+        final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+        if (queryCanceledException != null) {
+          throw queryCanceledException;
         } else {
           throw new QueryExecutionCanceledException(
               "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
@@ -469,6 +470,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
+      QueryCanceled.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -702,27 +704,18 @@ public class DefaultQuery implements Query {
    * if it takes more than the max query execution time or low memory situations
    */
   public boolean isCanceled() {
-    return this.isCanceled;
+    return getQueryCanceledException() != null;
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return this.canceledException;
-  }
-
-  AtomicBoolean getQueryCompletedForMonitoring() {
-    return queryCompletedForMonitoring;
-  }
-
-  void setQueryCompletedForMonitoring() {
-    queryCompletedForMonitoring.set(true);
+    return queryCanceledException;
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
-  public void setCanceled(CacheRuntimeException canceledException) {
-    this.isCanceled = true;
-    this.canceledException = canceledException;
+  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
+    this.queryCanceledException = queryCanceledException;
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
@@ -755,7 +748,7 @@ public class DefaultQuery implements Query {
     sb.append(this.queryString);
     sb.append(';');
     sb.append("isCancelled = ");
-    sb.append(this.isCanceled);
+    sb.append(this.isCanceled());
     sb.append("; Total Executions = ");
     sb.append(this.numExecutions);
     sb.append("; Total Execution Time = ");

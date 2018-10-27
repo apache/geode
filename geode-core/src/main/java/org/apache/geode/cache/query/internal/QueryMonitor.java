@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -42,13 +43,6 @@ public class QueryMonitor {
   private static final Logger logger = LogService.getLogger();
 
   private final InternalCache cache;
-  /**
-   * Holds the query execution status for the thread executing the query. FALSE if the query is not
-   * canceled due to max query execution timeout. TRUE it the query is canceled due to max query
-   * execution timeout timeout.
-   */
-  private static final ThreadLocal<AtomicBoolean> queryCancelled =
-      ThreadLocal.withInitial(() -> new AtomicBoolean(Boolean.FALSE));
 
   private final long defaultMaxQueryExecutionTime;
 
@@ -107,11 +101,9 @@ public class QueryMonitor {
     }
 
     if (LOW_MEMORY) {
-      String reason = String.format(
-          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
-          LOW_MEMORY_USED_BYTES);
-      query.setCanceled(new QueryExecutionLowMemoryException(reason));
-      throw new QueryExecutionLowMemoryException(reason);
+      final QueryExecutionLowMemoryException lowMemoryException = createLowMemoryException();
+      query.setQueryCanceledException(lowMemoryException);
+      throw lowMemoryException;
     }
 
     query.setExpirationTask(scheduleExpirationTask(query, maxQueryExecutionTime));
@@ -132,13 +124,7 @@ public class QueryMonitor {
    * because this class uses a ThreadLocal on the query thread!
    */
   public void stopMonitoringQueryThread(final DefaultQuery query) {
-    final AtomicBoolean queryCompleted = query.getQueryCompletedForMonitoring();
-
-    synchronized (queryCompleted) {
-      query.getExpirationTask().ifPresent(task -> task.cancel(false));
-      queryCancelled.get().set(false);
-      query.setQueryCompletedForMonitoring();
-    }
+    query.getExpirationTask().ifPresent(task -> task.cancel(false));
 
     if (logger.isDebugEnabled()) {
       final Thread queryThread = Thread.currentThread();
@@ -157,13 +143,13 @@ public class QueryMonitor {
    * gemfire.Cache.MAX_QUERY_EXECUTION_TIME
    */
   public static void throwExceptionIfQueryOnCurrentThreadIsCancelled() {
-    if (queryCancelled.get() != null && queryCancelled.get().get()) {
+    if (DefaultQuery.QueryCanceled.get().get()) {
       throw new QueryExecutionCanceledException();
     }
   }
 
   /**
-   * Stops query monitoring.
+   * Stops query monitoring. Makes this QueryMonitor unusable for further monitoring.
    */
   public void stopMonitoring() {
     executor.shutdownNow();
@@ -219,26 +205,32 @@ public class QueryMonitor {
   private ScheduledFuture<?> scheduleExpirationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
-    // make ThreadLocal queryCancelled, available to closure
-    final AtomicBoolean querysThreadLocalQueryCancelled = queryCancelled.get();
+    // make ThreadLocal QueryCanceled, available to closure
+    final AtomicBoolean queryCanceledThreadLocal =
+        DefaultQuery.QueryCanceled.get();
 
     return executor.schedule(() -> {
-      final AtomicBoolean queryCompleted = query.getQueryCompletedForMonitoring();
+      final CacheRuntimeException exception = cancellingDueToLowMemory ? createLowMemoryException()
+          : createExpirationException(timeLimitMillis);
 
-      synchronized (queryCompleted) {
-        if (!queryCompleted.get()) {
-          query.setCanceled(
-              cancellingDueToLowMemory ? new QueryExecutionLowMemoryException(
-                  String.format(
-                      "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
-                      LOW_MEMORY_USED_BYTES))
-                  : new QueryExecutionTimeoutException(
-                      String.format(
-                          "Query execution cancelled after exceeding max execution time %sms.",
-                          timeLimitMillis)));
-          querysThreadLocalQueryCancelled.set(true);
-        }
-      }
+      query.setQueryCanceledException(exception);
+      queryCanceledThreadLocal.set(true);
+
+      logger.info(exception.getMessage());
     }, timeLimitMillis, TimeUnit.MILLISECONDS);
+  }
+
+  private QueryExecutionTimeoutException createExpirationException(long timeLimitMillis) {
+    return new QueryExecutionTimeoutException(
+        String.format(
+            "Query execution cancelled after exceeding max execution time %sms.",
+            timeLimitMillis));
+  }
+
+  private QueryExecutionLowMemoryException createLowMemoryException() {
+    return new QueryExecutionLowMemoryException(
+        String.format(
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+            LOW_MEMORY_USED_BYTES));
   }
 }
