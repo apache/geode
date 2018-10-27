@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,18 +26,39 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * QueryMonitor class, monitors the query execution time. Instantiated based on the system property
- * MAX_QUERY_EXECUTION_TIME. At most there will be one query monitor-thread that cancels the long
- * running queries.
+ * {@link QueryMonitor} class, monitors the query execution time. In typical usage, the maximum
+ * query execution time might be set (upon construction) via the system property
+ * {@link GemFireCacheImpl#MAX_QUERY_EXECUTION_TIME}. The number of threads allocated to query
+ * monitoring is determined by the instance of {@link ScheduledThreadPoolExecutorFactory} passed
+ * to the constructor.
  *
- * The queries to be monitored is added into the ordered queue, ordered based on its start/arrival
- * time. The first one in the Queue is the older query that will be canceled first.
+ * This class supports a low-memory mode, established by {@link #setLowMemory(boolean, long)}. \
+ * In that mode, any attempt to monitor a (new) query will throw an exception. Clients, needing
+ * to go further, immedately cancelling all queries can call {@link #cancelAllQueriesDueToMemory()}.
  *
- * The QueryMonitor cancels a query-execution thread if its taking more than the max time.
+ * The {@link #monitorQueryThread(DefaultQuery)} method initiates monitoring of a query.
+ * {@link #stopMonitoringQueryThread(DefaultQuery)} stops monitoring a query.
+ *
+ * If the {@link QueryMonitor} determines a query needs to be cancelled: either because it is
+ * taking too long, or because memory is running low, it does two things:
+ *
+ * <ul>
+ *   <li>registers an exception on the query via
+ *   {@link DefaultQuery#setQueryCanceledException(CacheRuntimeException)}</li>
+ *   <li>sets the {@link DefaultQuery#QueryCanceled} thread-local variable to {@code true}
+ *   so that subsequent calls to {@link #throwExceptionIfQueryOnCurrentThreadIsCancelled()}
+ *   will throw an exception</li>
+ * </ul>
+ *
+ * Code outside this class, that wishes to participate in cooperative cancellation of queries
+ * calls {@link #throwExceptionIfQueryOnCurrentThreadIsCancelled()} at various yield points.
+ * In catch blocks, {@link DefaultQuery#getQueryCanceledException()} is interrogated to learn
+ * the cancellation cause.
  *
  * @since GemFire 6.0
  */
@@ -52,7 +75,6 @@ public class QueryMonitor {
 
   private volatile boolean cancellingDueToLowMemory;
 
-  // Variables for cancelling queries due to low memory
   private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
 
   private static volatile long LOW_MEMORY_USED_BYTES = 0;
@@ -62,6 +84,20 @@ public class QueryMonitor {
     ScheduledThreadPoolExecutor create();
   }
 
+  /**
+   * This class will call {@link ScheduledThreadPoolExecutor#setRemoveOnCancelPolicy(boolean)}
+   * on {@link ScheduledThreadPoolExecutor} instances returned by the
+   * {@link ScheduledThreadPoolExecutorFactory} to set that property to {@code true}.
+   *
+   * The default behavior of a {@link ScheduledThreadPoolExecutor} is to keep canceled
+   * tasks in the queue, relying on the timeout processing loop to remove them
+   * when their time is up. That behaviour would result in tasks for completed
+   * queries to remain in the queue until their timeout deadline was reached,
+   * resulting in queue growth.
+   *
+   * Setting the remove-on-cancel-policy to {@code true} changes that behavior so tasks are
+   * removed immediately upon cancellation (via {@link #stopMonitoringQueryThread(DefaultQuery)}).
+   */
   public QueryMonitor(final ScheduledThreadPoolExecutorFactory executorFactory,
       final InternalCache cache,
       final long defaultMaxQueryExecutionTime) {
@@ -78,8 +114,6 @@ public class QueryMonitor {
    *
    * Must not be called from a thread that is not the query thread,
    * because this class uses a ThreadLocal on the query thread!
-   *
-   * @param query Query.
    */
   public void monitorQueryThread(final DefaultQuery query) {
     monitorQueryThread(query, defaultMaxQueryExecutionTime);
@@ -118,7 +152,7 @@ public class QueryMonitor {
   }
 
   /**
-   * Stops monitoring the query. Removes the passed thread from QueryMonitor queue.
+   * Stops monitoring the query.
    *
    * Must not be called from a thread that is not the query thread,
    * because this class uses a ThreadLocal on the query thread!
@@ -135,12 +169,11 @@ public class QueryMonitor {
   }
 
   /**
-   * This method is called to check if the query execution is canceled. The QueryMonitor cancels the
-   * query execution if it takes more than the max query execution time set or in low memory
-   * situations where critical heap percentage has been set on the resource manager
+   * Throw an exception if the query has been cancelled. The {@link QueryMonitor} cancels the
+   * query if it takes more than the max query execution time or in low memory situations where
+   * critical heap percentage has been set on the resource manager.
    *
-   * The max query execution time is set using the system property
-   * gemfire.Cache.MAX_QUERY_EXECUTION_TIME
+   * @throws QueryExecutionCanceledException if the query has been cancelled
    */
   public static void throwExceptionIfQueryOnCurrentThreadIsCancelled() {
     if (DefaultQuery.QueryCanceled.get().get()) {
@@ -149,7 +182,7 @@ public class QueryMonitor {
   }
 
   /**
-   * Stops query monitoring. Makes this QueryMonitor unusable for further monitoring.
+   * Stops query monitoring. Makes this {@link QueryMonitor} unusable for further monitoring.
    */
   public void stopMonitoring() {
     executor.shutdownNow();
@@ -184,18 +217,21 @@ public class QueryMonitor {
     cancellingDueToLowMemory = true;
 
     try {
+      /*
+       * It's tempting to try to process the list of tasks returned from shutdownNow().
+       * Unfortunately, that call leaves the executor in a state that causes the task's
+       * run() to cancel the task, instead of actually running it. By calling shutdown()
+       * we block new task additions and put the executor in a state that allows the
+       * task's run() to actually run the task logic.
+       */
       executor.shutdown();
-      try {
-        final boolean terminatedAllQueries = executor.awaitTermination(1, TimeUnit.SECONDS);
-        if (!terminatedAllQueries)
-          logger.info("When cancelling queries due to low memory, failed to cancel all queries.");
-      } catch (final InterruptedException e) {
-        logger.info("When cancelling queries due to low memory, scheduler thread was interrupted.");
-        // we rec'd an InterruptedException and are not re-throwing it so we have to interrupt()
-        Thread.currentThread().interrupt();
+      final BlockingQueue<Runnable> expirationTaskQueue = executor.getQueue();
+      for(final Runnable expirationTask : expirationTaskQueue) {
+        expirationTask.run();
       }
     } finally {
       cancellingDueToLowMemory = false;
+
       // executor is volatile so other threads will see this modification
       executor = executorFactory.create();
     }
