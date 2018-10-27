@@ -60,46 +60,11 @@ public class ElementTypeTest {
     stack = new Stack<>();
   }
 
-  // @Test
-  // public void gettingElementTypeByNameReturnsCorrectType() {
-  // assertThat(ElementType.getTypeFromName(CONNECTION_SERVICE.getTypeName()))
-  // .isSameAs(CONNECTION_SERVICE);
-  // assertThat(ElementType.getTypeFromName(REGION_MAPPING.getTypeName())).isSameAs(REGION_MAPPING);
-  // assertThat(ElementType.getTypeFromName(FIELD_MAPPING.getTypeName())).isSameAs(FIELD_MAPPING);
-  // }
-
   @Test
   public void gettingElementTypeThatDoesNotExistThrowsException() {
     assertThatThrownBy(() -> ElementType.getTypeFromName("non-existent element"))
         .isInstanceOf(IllegalArgumentException.class);
   }
-
-  // @Test
-  // public void startElementConnectionServiceThrowsWithoutCacheCreation() {
-  // stack.push(new Object());
-  //
-  // assertThatThrownBy(() -> CONNECTION_SERVICE.startElement(stack, attributes))
-  // .isInstanceOf(CacheXmlException.class);
-  // }
-
-  // @Test
-  // public void startElementConnectionService() {
-  // stack.push(cacheCreation);
-  //
-  // CONNECTION_SERVICE.startElement(stack, attributes);
-  //
-  // verify(extensionPoint, times(1)).addExtension(any(JdbcServiceConfiguration.class));
-  // assertThat(stack.peek()).isInstanceOf(JdbcServiceConfiguration.class);
-  // }
-  //
-  // @Test
-  // public void endElementConnectionService() {
-  // stack.push(new Object());
-  //
-  // CONNECTION_SERVICE.endElement(stack);
-  //
-  // assertThat(stack).isEmpty();
-  // }
 
   @Test
   public void startElementRegionMappingThrowsWithoutJdbcServiceConfiguration() {
