@@ -102,7 +102,7 @@ public class QueryMonitorTest {
     Mockito.verify(query, times(1))
         .setQueryCancelledException(isA(QueryExecutionTimeoutException.class));
     assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled())
-        .isExactlyInstanceOf(QueryExecutionCancelledException.class);
+        .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }
 
   @Test

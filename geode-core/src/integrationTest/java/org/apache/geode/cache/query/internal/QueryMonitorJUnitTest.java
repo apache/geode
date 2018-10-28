@@ -56,21 +56,33 @@ public class QueryMonitorJUnitTest {
   @Test
   public void setLowMemoryTrueCancelsQueriesImmediately() {
 
-    final QueryMonitor queryMonitor = new QueryMonitor(
-        () -> new ScheduledThreadPoolExecutor(1),
-        cache,
-        NEVER_EXPIRE_MILLIS);
-
-    queryMonitor.monitorQueryThread(query);
-
-    queryMonitor.setLowMemory(true, 1);
-
+    QueryMonitor queryMonitor = null;
     try {
-      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
-      throw new AssertionError(
-          "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.");
-    } catch (final QueryExecutionCancelledException _ignored) {
-      // expected
+      queryMonitor = new QueryMonitor(
+          () -> new ScheduledThreadPoolExecutor(1),
+          cache,
+          NEVER_EXPIRE_MILLIS);
+
+      queryMonitor.monitorQueryThread(query);
+
+      queryMonitor.setLowMemory(true, 1);
+
+      try {
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
+        throw new AssertionError(
+            "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.");
+      } catch (final QueryExecutionCanceledException _ignored) {
+        // expected
+      }
+    } finally {
+      if (queryMonitor != null) {
+        /*
+         * Setting the low-memory state (above) sets it globally. If we fail to reset it here,
+         * then subsequent tests, e.g. if we run this test class more than once in succession
+         * in the same JVM, as the Gemfire "stress" test does, will give unexpected results.
+         */
+        queryMonitor.setLowMemory(false, 1);
+      }
     }
   }
 
@@ -78,7 +90,7 @@ public class QueryMonitorJUnitTest {
   public void monitorQueryThreadCancelsLongRunningQueriesAndSetsException()
       throws InterruptedException {
 
-    final QueryMonitor queryMonitor = new QueryMonitor(
+    QueryMonitor queryMonitor = new QueryMonitor(
         () -> new ScheduledThreadPoolExecutor(1),
         cache,
         EXPIRE_QUICK_MILLIS);
@@ -113,7 +125,7 @@ public class QueryMonitorJUnitTest {
         try {
           QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
           Thread.sleep(5 * EXPIRE_QUICK_MILLIS);
-        } catch (final QueryExecutionCancelledException _ignored) {
+        } catch (final QueryExecutionCanceledException _ignored) {
           break;
         } catch (final InterruptedException e) {
           Thread.currentThread().interrupt();

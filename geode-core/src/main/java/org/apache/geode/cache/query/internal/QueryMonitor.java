@@ -171,11 +171,11 @@ public class QueryMonitor {
    * query if it takes more than the max query execution time or in low memory situations where
    * critical heap percentage has been set on the resource manager.
    *
-   * @throws QueryExecutionCancelledException if the query has been cancelled
+   * @throws QueryExecutionCanceledException if the query has been cancelled
    */
   public static void throwExceptionIfQueryOnCurrentThreadIsCancelled() {
     if (DefaultQuery.QueryCancelled.get().get()) {
-      throw new QueryExecutionCancelledException();
+      throw new QueryExecutionCanceledException();
     }
   }
 
@@ -243,7 +243,7 @@ public class QueryMonitor {
   }
 
   private ScheduledFuture<?> scheduleCancellationTask(final DefaultQuery query,
-                                                      final long timeLimitMillis) {
+      final long timeLimitMillis) {
 
     // make ThreadLocal QueryCancelled, available to closure, which will run in a separate thread
     final AtomicBoolean queryCancelledThreadLocal =

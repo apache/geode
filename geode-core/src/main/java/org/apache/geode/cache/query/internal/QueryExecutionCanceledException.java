@@ -26,42 +26,42 @@ import org.apache.geode.cache.CacheRuntimeException;
  *
  * @since GemFire 7.0
  */
-public class QueryExecutionCancelledException extends CacheRuntimeException {
+public class QueryExecutionCanceledException extends CacheRuntimeException {
   private static final long serialVersionUID = -2699578956684551688L;
 
   /**
-   * Creates a new instance of <code>QueryExecutionCancelledException</code> without detail message.
+   * Creates a new instance of <code>QueryExecutionCanceledException</code> without detail message.
    */
-  public QueryExecutionCancelledException() {}
+  public QueryExecutionCanceledException() {}
 
   /**
-   * Constructs an instance of <code>QueryExecutionCancelledException</code> with the specified
+   * Constructs an instance of <code>QueryExecutionCanceledException</code> with the specified
    * detail message.
    *
    * @param msg the detail message.
    */
-  public QueryExecutionCancelledException(String msg) {
+  public QueryExecutionCanceledException(String msg) {
     super(msg);
   }
 
   /**
-   * Constructs an instance of <code>QueryExecutionCancelledException</code> with the specified
+   * Constructs an instance of <code>QueryExecutionCanceledException</code> with the specified
    * detail message and cause.
    *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
-  public QueryExecutionCancelledException(String msg, Throwable cause) {
+  public QueryExecutionCanceledException(String msg, Throwable cause) {
     super(msg, cause);
   }
 
   /**
-   * Constructs an instance of <code>QueryExecutionCancelledException</code> with the specified
+   * Constructs an instance of <code>QueryExecutionCanceledException</code> with the specified
    * cause.
    *
    * @param cause the causal Throwable
    */
-  public QueryExecutionCancelledException(Throwable cause) {
+  public QueryExecutionCanceledException(Throwable cause) {
     super(cause);
   }
 }
