@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +56,7 @@ public class QueryMonitorTest {
   public void setUp() {
     cache = mock(InternalCache.class);
     scheduledThreadPoolExecutor = mock(ScheduledThreadPoolExecutor.class);
+    when(scheduledThreadPoolExecutor.getQueue()).thenReturn(new ArrayBlockingQueue<Runnable>(1));
     monitor = new QueryMonitor(() -> scheduledThreadPoolExecutor, cache, max_execution_time);
     captor = ArgumentCaptor.forClass(Runnable.class);
   }
@@ -63,7 +65,7 @@ public class QueryMonitorTest {
   public void afterClass() {
     // cleanup the thread local of the queryCancelled status
     DefaultQuery query = mock(DefaultQuery.class);
-    doReturn(Optional.empty()).when(query).getExpirationTask();
+    doReturn(Optional.empty()).when(query).getCancellationTask();
     monitor.stopMonitoringQueryThread(query);
     monitor.setLowMemory(false, 100);
   }
@@ -98,22 +100,21 @@ public class QueryMonitorTest {
     captor.getValue().run();
 
     Mockito.verify(query, times(1))
-        .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
+        .setQueryCancelledException(isA(QueryExecutionTimeoutException.class));
     assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled())
-        .isExactlyInstanceOf(QueryExecutionCanceledException.class);
+        .isExactlyInstanceOf(QueryExecutionCancelledException.class);
   }
 
   @Test
-  public void cancelAllQueriesDueToLowMemoryShutsDownExecutor() throws InterruptedException {
-    monitor.cancelAllQueriesDueToMemory();
+  public void setLowMemoryTrueShutsDownExecutor() throws InterruptedException {
+    monitor.setLowMemory(true, 1);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).shutdown();
-    Mockito.verify(scheduledThreadPoolExecutor, times(1)).awaitTermination(anyLong(),
-        isA(TimeUnit.class));
   }
 
   @Test
-  public void cancelAllQueriesDueToMemoryCanMonitorAfterwards() {
-    monitor.cancelAllQueriesDueToMemory();
+  public void setLowMemoryTrueThenFalseAllowsSubsequentMonitoring() {
+    monitor.setLowMemory(true, 1);
+    monitor.setLowMemory(false, 1);
     /*
      * Verify we can still monitor and expire a query after
      * cancelling all queries due to low memory.

@@ -239,11 +239,11 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (QueryMonitor.isLowMemory()) {
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
-          query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
+          query.setQueryCancelledException(new QueryExecutionLowMemoryException(reason));
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("query cancelled while gathering results, aborting due to exception "
-                + query.getQueryCanceledException());
+                + query.getQueryCancelledException());
           }
         }
         return false;
@@ -424,7 +424,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     if (query.isCanceled()) {
-      throw query.getQueryCanceledException();
+      throw query.getQueryCancelledException();
     }
 
     if (localFault != null) {
@@ -759,13 +759,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     if (QueryMonitor.isLowMemory()) {
       String reason =
           "Query execution canceled due to low memory while gathering results from partitioned regions";
-      query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
+      query.setQueryCancelledException(new QueryExecutionLowMemoryException(reason));
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(5);
       }
-      throw query.getQueryCanceledException();
+      throw query.getQueryCancelledException();
     } else if (query.isCanceled()) {
-      throw query.getQueryCanceledException();
+      throw query.getQueryCancelledException();
     }
   }
 
@@ -1099,7 +1099,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (m.isCanceled()) {
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
-          query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
+          query.setQueryCancelledException(new QueryExecutionLowMemoryException(reason));
           this.abort = true;
         }
 

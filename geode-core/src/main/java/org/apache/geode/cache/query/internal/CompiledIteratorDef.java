@@ -131,7 +131,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       throw re;
     } catch (NotAuthorizedException e) {
       throw e;
-    } catch (QueryExecutionCanceledException e) {
+    } catch (QueryExecutionCancelledException e) {
       throw e;
     } catch (CacheClosedException e) {
       throw e;

@@ -148,7 +148,7 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  static final ThreadLocal<AtomicBoolean> QueryCanceled =
+  static final ThreadLocal<AtomicBoolean> QueryCancelled =
       ThreadLocal.withInitial(AtomicBoolean::new);
 
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
@@ -159,11 +159,11 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
-  public Optional<ScheduledFuture> getExpirationTask() {
+  public Optional<ScheduledFuture> getCancellationTask() {
     return expirationTask;
   }
 
-  public void setExpirationTask(final ScheduledFuture expirationTask) {
+  public void setCancellationTask(final ScheduledFuture expirationTask) {
     this.expirationTask = Optional.of(expirationTask);
   }
 
@@ -308,15 +308,15 @@ public class DefaultQuery implements Query {
         }
       }
       return result;
-    } catch (QueryExecutionCanceledException ignore) {
+    } catch (QueryExecutionCancelledException ignore) {
       // query execution canceled exception will be thrown from the QueryMonitor
       // canceled exception should not be null at this point as it should be set
       // when query is canceled.
-      final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+      final CacheRuntimeException queryCanceledException = getQueryCancelledException();
       if (queryCanceledException != null) {
         throw queryCanceledException;
       } else {
-        throw new QueryExecutionCanceledException(
+        throw new QueryExecutionCancelledException(
             "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
       }
     } finally {
@@ -449,15 +449,15 @@ public class DefaultQuery implements Query {
           testHook.doTestHook(1);
         }
         results = this.compiledQuery.evaluate(context);
-      } catch (QueryExecutionCanceledException ignore) {
+      } catch (QueryExecutionCancelledException ignore) {
         // query execution canceled exception will be thrown from the QueryMonitor
         // canceled exception should not be null at this point as it should be set
         // when query is canceled.
-        final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+        final CacheRuntimeException queryCanceledException = getQueryCancelledException();
         if (queryCanceledException != null) {
           throw queryCanceledException;
         } else {
-          throw new QueryExecutionCanceledException(
+          throw new QueryExecutionCancelledException(
               "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
         }
       } finally {
@@ -470,7 +470,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      QueryCanceled.remove();
+      QueryCancelled.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -704,17 +704,17 @@ public class DefaultQuery implements Query {
    * if it takes more than the max query execution time or low memory situations
    */
   public boolean isCanceled() {
-    return getQueryCanceledException() != null;
+    return getQueryCancelledException() != null;
   }
 
-  public CacheRuntimeException getQueryCanceledException() {
+  public CacheRuntimeException getQueryCancelledException() {
     return queryCanceledException;
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
-  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
+  public void setQueryCancelledException(final CacheRuntimeException queryCanceledException) {
     this.queryCanceledException = queryCanceledException;
   }
 
