@@ -104,7 +104,7 @@ public class DefaultQuery implements Query {
    */
   public static final Object NULL_RESULT = new Object();
 
-  private volatile CacheRuntimeException queryCanceledException;
+  private volatile CacheRuntimeException queryCancelledException;
 
   private ProxyCache proxyCache;
 
@@ -309,22 +309,30 @@ public class DefaultQuery implements Query {
       }
       return result;
     } catch (QueryExecutionCancelledException ignore) {
-      // query execution canceled exception will be thrown from the QueryMonitor
-      // canceled exception should not be null at this point as it should be set
-      // when query is canceled.
-      final CacheRuntimeException queryCanceledException = getQueryCancelledException();
-      if (queryCanceledException != null) {
-        throw queryCanceledException;
-      } else {
-        throw new QueryExecutionCancelledException(
-            "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
-      }
+      return reinterpretQueryExecutionCancelledException();
     } finally {
       this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
         queryMonitor.stopMonitoringQueryThread(this);
       }
       this.endTrace(indexObserver, startTime, result);
+    }
+  }
+
+  /**
+   * This method attempts to reintrepret a {@link QueryExecutionCancelledException} using the
+   * the value returned by {@link #getQueryCancelledException} (set by the {@link QueryMonitor}).
+   *
+   * @throws if {@link #getQueryCancelledException} doesn't return {@code null} then throw that
+   * {@link CacheRuntimeException}, otherwise throw {@link QueryExecutionCancelledException}
+   */
+  private Object reinterpretQueryExecutionCancelledException() {
+    final CacheRuntimeException queryCancelledException = getQueryCancelledException();
+    if (queryCancelledException != null) {
+      throw queryCancelledException;
+    } else {
+      throw new QueryExecutionCancelledException(
+          "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
     }
   }
 
@@ -450,16 +458,7 @@ public class DefaultQuery implements Query {
         }
         results = this.compiledQuery.evaluate(context);
       } catch (QueryExecutionCancelledException ignore) {
-        // query execution canceled exception will be thrown from the QueryMonitor
-        // canceled exception should not be null at this point as it should be set
-        // when query is canceled.
-        final CacheRuntimeException queryCanceledException = getQueryCancelledException();
-        if (queryCanceledException != null) {
-          throw queryCanceledException;
-        } else {
-          throw new QueryExecutionCancelledException(
-              "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
-        }
+        reinterpretQueryExecutionCancelledException();
       } finally {
         observer.afterQueryEvaluation(results);
       }
@@ -708,14 +707,14 @@ public class DefaultQuery implements Query {
   }
 
   public CacheRuntimeException getQueryCancelledException() {
-    return queryCanceledException;
+    return queryCancelledException;
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
   public void setQueryCancelledException(final CacheRuntimeException queryCanceledException) {
-    this.queryCanceledException = queryCanceledException;
+    this.queryCancelledException = queryCanceledException;
   }
 
   public void setIsCqQuery(boolean isCqQuery) {

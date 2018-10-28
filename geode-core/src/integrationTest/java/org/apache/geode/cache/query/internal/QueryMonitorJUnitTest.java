@@ -44,13 +44,13 @@ public class QueryMonitorJUnitTest {
 
   private InternalCache cache;
   private DefaultQuery query;
-  private volatile CacheRuntimeException queryCanceledException;
+  private volatile CacheRuntimeException queryCancelledException;
 
   @Before
   public void before() {
     cache = mock(InternalCache.class);
     query = mock(DefaultQuery.class);
-    queryCanceledException = null;
+    queryCancelledException = null;
   }
 
   @Test
@@ -83,10 +83,10 @@ public class QueryMonitorJUnitTest {
         cache,
         EXPIRE_QUICK_MILLIS);
 
-    final Answer<Void> processSetQueryCanceledException = invocation -> {
+    final Answer<Void> processSetQueryCancelledException = invocation -> {
       final Object[] args = invocation.getArguments();
       if (args[0] instanceof CacheRuntimeException) {
-        queryCanceledException = (CacheRuntimeException) args[0];
+        queryCancelledException = (CacheRuntimeException) args[0];
       } else {
         throw new AssertionError(
             "setQueryCancelledException() received argument that wasn't a CacheRuntimeException");
@@ -94,14 +94,14 @@ public class QueryMonitorJUnitTest {
       return null;
     };
 
-    doAnswer(processSetQueryCanceledException).when(query)
+    doAnswer(processSetQueryCancelledException).when(query)
         .setQueryCancelledException(any(CacheRuntimeException.class));
 
     startQueryThread(queryMonitor, query);
 
-    GeodeAwaitility.await().until(() -> queryCanceledException != null);
+    GeodeAwaitility.await().until(() -> queryCancelledException != null);
 
-    assertThat(queryCanceledException)
+    assertThat(queryCancelledException)
         .hasMessageContaining("cancelled after exceeding max execution time");
   }
 
