@@ -29,6 +29,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -45,6 +47,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class CreateMappingCommandDUnitTest {
 
   private static final String REGION_NAME = "testRegion";
+  private static final String SUBREGION_NAME = REGION_NAME + "/testSubRegion";
+
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
@@ -118,6 +122,12 @@ public class CreateMappingCommandDUnitTest {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("primary-key-in-value=\"false\"");
+      Element element = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getXmlElement(null, "region", "name", REGION_NAME);
+      assertThat(element).isNotNull();
+      NodeList list = element.getElementsByTagName("jdbc:mapping");
+      assertThat(list).isNotNull();
+      assertThat(list.getLength()).isEqualTo(1);
     });
 
     server.invoke(() -> {
