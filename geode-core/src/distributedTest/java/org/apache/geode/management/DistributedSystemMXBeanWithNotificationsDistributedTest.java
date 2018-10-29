@@ -25,16 +25,18 @@ import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBea
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
 import static org.apache.geode.management.internal.ManagementConstants.REGION_CREATED_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -66,23 +68,40 @@ import org.apache.geode.test.junit.categories.ManagementTest;
  * Distributed tests for {@link DistributedSystemMXBean} notifications. Extracted from
  * {@link DistributedSystemMXBeanDistributedTest}.
  *
+ * <p>
+ * TODO: test all notifications emitted by DistributedSystemMXBean:
+ *
  * <pre>
  * a) gemfire.distributedsystem.member.joined
  * b) gemfire.distributedsystem.member.left
  * c) gemfire.distributedsystem.member.suspect
- * d) All notifications emitted by member mbeans
- * d) Alerts
+ * d) All notifications emitted by MemberMXBeans
  * </pre>
  */
 @Category(ManagementTest.class)
 @SuppressWarnings("serial")
 public class DistributedSystemMXBeanWithNotificationsDistributedTest implements Serializable {
 
+  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final String MANAGER_NAME = "managerVM";
+  private static final String MEMBER_NAME = "memberVM-";
+
+  /** One NotificationListener is added for the DistributedSystemMXBean in Manager VM. */
+  private static final int ONE_LISTENER_FOR_MANAGER = 1;
+
+  /** One NotificationListener is added for spying by the test. */
+  private static final int ONE_LISTENER_FOR_SPYING = 1;
+
+  /** Three Member VMs, one Manager VM and one DUnit Locator VM. */
+  private static final int CLUSTER_SIZE = 5;
+
+  /** Three Member VMs. */
+  private static final int THREE_MEMBERS = 3;
+
   private static InternalCache cache;
   private static InternalDistributedMember distributedMember;
   private static SystemManagementService managementService;
-  private static List<Notification> notifications;
-  private static Map<ObjectName, NotificationListener> notificationListenerMap;
+  private static NotificationListener notificationListener;
   private static DistributedSystemMXBean distributedSystemMXBean;
 
   private VM managerVM;
@@ -120,8 +139,6 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
         cache = null;
         distributedMember = null;
         managementService = null;
-        notifications = null;
-        notificationListenerMap = null;
         distributedSystemMXBean = null;
       });
     }
@@ -129,84 +146,65 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
 
   @Test
   public void testNotificationHub() {
+    // add spy notificationListener to each MemberMXBean in cluster
     managerVM.invoke(() -> {
+      // wait until Manager VM has MemberMXBean for each node in cluster
       await().untilAsserted(
-          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
+          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(CLUSTER_SIZE));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
-        SpyNotificationListener listener = new SpyNotificationListener();
-        getPlatformMBeanServer().addNotificationListener(objectName, listener, null, null);
-        notificationListenerMap.put(objectName, listener);
+        getPlatformMBeanServer().addNotificationListener(objectName, notificationListener, null,
+            null);
       }
     });
 
-    // Check in all VMS
-
+    // verify each Member VM has one spy listener in addition to one for DistributedSystemMXBean
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> {
-        NotificationHub notificationHub = managementService.getNotificationHub();
-        Map<ObjectName, NotificationHubListener> listenerMap =
-            notificationHub.getListenerObjectMap();
-        assertThat(listenerMap.keySet()).hasSize(1);
+        Map<ObjectName, NotificationHubListener> listenerObjectMap =
+            managementService.getNotificationHub().getListenerObjectMap();
+        NotificationHubListener hubListener =
+            listenerObjectMap.get(getMemberMBeanName(distributedMember));
 
-        ObjectName memberMBeanName = getMemberMBeanName(distributedMember);
-        NotificationHubListener listener = listenerMap.get(memberMBeanName);
+        assertThat(hubListener.getNumCounter())
+            .isEqualTo(ONE_LISTENER_FOR_SPYING + ONE_LISTENER_FOR_MANAGER);
+      });
+    }
 
-        /*
-         * Counter of listener should be 2 . One for default Listener which is added for each member
-         * mbean by distributed system mbean One for the added listener in test
-         */
-        assertThat(listener.getNumCounter()).isEqualTo(2);
-
-        // Raise some notifications
-
+    // send a dummy notification from each Member VM (no actual region is created)
+    for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
+      memberVM.invoke(() -> {
+        Notification notification =
+            new Notification(REGION_CREATED, getMemberNameOrId(distributedMember),
+                SequenceNumber.next(), System.currentTimeMillis(), REGION_CREATED_PREFIX + "/test");
         NotificationBroadcasterSupport notifier = (MemberMBean) managementService.getMemberMXBean();
-        String memberSource = getMemberNameOrId(distributedMember);
-
-        // Only a dummy notification , no actual region is created
-        Notification notification = new Notification(REGION_CREATED,
-            memberSource, SequenceNumber.next(), System.currentTimeMillis(),
-            REGION_CREATED_PREFIX + "/test");
         notifier.sendNotification(notification);
       });
     }
 
+    // remove spy notificationListener from each MemberMXBean in cluster
     managerVM.invoke(() -> {
-      await().untilAsserted(() -> assertThat(notifications).hasSize(3));
+      verify(notificationListener, timeout(TIMEOUT).times(THREE_MEMBERS))
+          .handleNotification(isA(Notification.class), isNull());
 
-      notifications.clear();
-
-      for (ObjectName objectName : notificationListenerMap.keySet()) {
-        NotificationListener listener = notificationListenerMap.get(objectName);
-        getPlatformMBeanServer().removeNotificationListener(objectName, listener);
+      for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
+        getPlatformMBeanServer().removeNotificationListener(objectName, notificationListener);
       }
     });
 
-    // Check in all VMS again
-
+    // verify each Member VM has just one listener for DistributedSystemMXBean
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> {
-        NotificationHub hub = managementService.getNotificationHub();
-        Map<ObjectName, NotificationHubListener> listenerObjectMap = hub.getListenerObjectMap();
-
-        assertThat(listenerObjectMap.keySet()).hasSize(1);
-
-        NotificationHubListener listener =
+        Map<ObjectName, NotificationHubListener> listenerObjectMap =
+            managementService.getNotificationHub().getListenerObjectMap();
+        NotificationHubListener hubListener =
             listenerObjectMap.get(getMemberMBeanName(distributedMember));
 
-        /*
-         * Counter of listener should be 1 for the default Listener which is added for each member
-         * mbean by distributed system mbean.
-         */
-        assertThat(listener.getNumCounter()).isEqualTo(1);
+        assertThat(hubListener.getNumCounter()).isEqualTo(ONE_LISTENER_FOR_MANAGER);
       });
     }
 
-    managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
-    });
-
+    // verify NotificationHub#cleanUpListeners() behavior in each Member VM
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> {
         NotificationHub notificationHub = managementService.getNotificationHub();
@@ -219,7 +217,7 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
 
   private void createManager() {
     Properties config = getDistributedSystemProperties();
-    config.setProperty(NAME, "managerVM");
+    config.setProperty(NAME, MANAGER_NAME);
     config.setProperty(JMX_MANAGER, "true");
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
@@ -228,28 +226,18 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
     cache = (InternalCache) new CacheFactory(config).create();
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
-    notifications = Collections.synchronizedList(new ArrayList<>());
-    notificationListenerMap = Collections.synchronizedMap(new HashMap<>());
+    notificationListener = spy(NotificationListener.class);
 
     distributedSystemMXBean = managementService.getDistributedSystemMXBean();
   }
 
   private void createMember(int vmId) {
     Properties config = getDistributedSystemProperties();
-    config.setProperty(NAME, "memberVM-" + vmId);
+    config.setProperty(NAME, MEMBER_NAME + vmId);
     config.setProperty(JMX_MANAGER, "false");
 
     cache = (InternalCache) new CacheFactory(config).create();
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
-  }
-
-  // TODO:KIRK: convert to mockito spy
-  private static class SpyNotificationListener implements NotificationListener {
-
-    @Override
-    public synchronized void handleNotification(Notification notification, Object handback) {
-      notifications.add(notification);
-    }
   }
 }
