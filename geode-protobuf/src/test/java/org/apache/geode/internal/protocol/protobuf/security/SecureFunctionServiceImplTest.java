@@ -71,7 +71,7 @@ public class SecureFunctionServiceImplTest {
 
   @Test
   public void executeFunctionOnRegionWithoutAuthorization() throws Exception {
-    when(function.getRequiredPermissions(REGION))
+    when(function.getRequiredPermissions(REGION,null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
         () -> functionService.executeFunctionOnRegion(FUNCTION_ID, REGION, null, null))
@@ -80,7 +80,7 @@ public class SecureFunctionServiceImplTest {
 
   @Test
   public void executeFunctionOnMemberWithoutAuthorization() throws Exception {
-    when(function.getRequiredPermissions(null))
+    when(function.getRequiredPermissions(null,null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
         () -> functionService.executeFunctionOnMember(FUNCTION_ID, null, Arrays.asList("member")))
@@ -89,7 +89,7 @@ public class SecureFunctionServiceImplTest {
 
   @Test
   public void executeFunctionOnGroupsWithoutAuthorization() throws Exception {
-    when(function.getRequiredPermissions(null))
+    when(function.getRequiredPermissions(null,null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
         () -> functionService.executeFunctionOnGroups(FUNCTION_ID, null, Arrays.asList("group")))
