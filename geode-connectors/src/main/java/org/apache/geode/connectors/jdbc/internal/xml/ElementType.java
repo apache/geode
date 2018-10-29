@@ -46,7 +46,6 @@ public enum ElementType {
     void endElement(Stack<Object> stack) {
       RegionMapping mapping = (RegionMapping) stack.pop();
       RegionCreation regionCreation = (RegionCreation) stack.peek();
-      // regionCreation.addRegionMapping(mapping);
       regionCreation.getExtensionPoint().addExtension(new RegionMappingConfiguration(mapping));
     }
   },
