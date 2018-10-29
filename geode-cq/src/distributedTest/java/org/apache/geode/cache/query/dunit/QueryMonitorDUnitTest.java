@@ -395,7 +395,7 @@ public class QueryMonitorDUnitTest {
       error = e.getCause().getMessage();
     }
 
-    if (error.contains("Query execution cancelled after exceeding max execution time")
+    if (error.contains("Query execution canceled after exceeding max execution time")
         || error.contains("The Query completed sucessfully before it got canceled")
         || error.contains("The QueryMonitor thread may be sleeping longer than the set sleep time")
         || error.contains(

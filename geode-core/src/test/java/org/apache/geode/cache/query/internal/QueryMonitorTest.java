@@ -65,7 +65,7 @@ public class QueryMonitorTest {
   public void afterClass() {
     // cleanup the thread local of the queryCancelled status
     DefaultQuery query = mock(DefaultQuery.class);
-    doReturn(Optional.empty()).when(query).getCancellationTask();
+    doReturn(Optional.empty()).when(query).getCancelationTask();
     monitor.stopMonitoringQueryThread(query);
     monitor.setLowMemory(false, 100);
   }
@@ -100,8 +100,8 @@ public class QueryMonitorTest {
     captor.getValue().run();
 
     Mockito.verify(query, times(1))
-        .setQueryCancelledException(isA(QueryExecutionTimeoutException.class));
-    assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled())
+        .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
+    assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled())
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }
 

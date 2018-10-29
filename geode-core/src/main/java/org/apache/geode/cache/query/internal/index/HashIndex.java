@@ -600,7 +600,7 @@ public class HashIndex extends AbstractIndex {
     int i = 0;
     while (entriesIter.hasNext()) {
       // Check if query execution on this thread is canceled.
-      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
+      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
       if (IndexManager.testHook != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("IndexManager TestHook is set in addToResultsFromEntries.");

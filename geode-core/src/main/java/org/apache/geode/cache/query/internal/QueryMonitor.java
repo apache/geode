@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -42,21 +43,21 @@ import org.apache.geode.internal.logging.LogService;
  * The {@link #monitorQueryThread(DefaultQuery)} method initiates monitoring of a query.
  * {@link #stopMonitoringQueryThread(DefaultQuery)} stops monitoring a query.
  *
- * If the {@link QueryMonitor} determines a query needs to be cancelled: either because it is
+ * If the {@link QueryMonitor} determines a query needs to be canceled: either because it is
  * taking too long, or because memory is running low, it does two things:
  *
  * <ul>
  * <li>registers an exception on the query via
- * {@link DefaultQuery#setQueryCancelledException(CacheRuntimeException)}</li>
- * <li>sets the {@link DefaultQuery#QueryCancelled} thread-local variable to {@code true}
- * so that subsequent calls to {@link #throwExceptionIfQueryOnCurrentThreadIsCancelled()}
+ * {@link DefaultQuery#setQueryCanceledException(CacheRuntimeException)}</li>
+ * <li>sets the {@link DefaultQuery#QueryCanceled} thread-local variable to {@code true}
+ * so that subsequent calls to {@link #throwExceptionIfQueryOnCurrentThreadIsCanceled()}
  * will throw an exception</li>
  * </ul>
  *
- * Code outside this class, that wishes to participate in cooperative cancellation of queries
- * calls {@link #throwExceptionIfQueryOnCurrentThreadIsCancelled()} at various yield points.
- * In catch blocks, {@link DefaultQuery#getQueryCancelledException()} is interrogated to learn
- * the cancellation cause.
+ * Code outside this class, that wishes to participate in cooperative cancelation of queries
+ * calls {@link #throwExceptionIfQueryOnCurrentThreadIsCanceled()} at various yield points.
+ * In catch blocks, {@link DefaultQuery#getQueryCanceledException()} is interrogated to learn
+ * the cancelation cause.
  *
  * @since GemFire 6.0
  */
@@ -71,7 +72,7 @@ public class QueryMonitor {
 
   private volatile ScheduledThreadPoolExecutor executor;
 
-  private volatile boolean cancellingDueToLowMemory;
+  private volatile boolean cancelingDueToLowMemory;
 
   private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
 
@@ -87,14 +88,14 @@ public class QueryMonitor {
    * on {@link ScheduledThreadPoolExecutor} instances returned by the
    * {@link ScheduledThreadPoolExecutorFactory} to set that property to {@code true}.
    *
-   * The default behavior of a {@link ScheduledThreadPoolExecutor} is to keep cancelled
+   * The default behavior of a {@link ScheduledThreadPoolExecutor} is to keep canceled
    * tasks in the queue, relying on the timeout processing loop to remove them
    * when their time is up. That behaviour would result in tasks for completed
    * queries to remain in the queue until their timeout deadline was reached,
    * resulting in queue growth.
    *
    * Setting the remove-on-cancel-policy to {@code true} changes that behavior so tasks are
-   * removed immediately upon cancellation (via {@link #stopMonitoringQueryThread(DefaultQuery)}).
+   * removed immediately upon cancelation (via {@link #stopMonitoringQueryThread(DefaultQuery)}).
    *
    * @param executorFactory is called to construct the initial executor. It's called subsequently
    *        every time the QueryMonitor moves out of the low-memory state, to create a new executor.
@@ -106,6 +107,9 @@ public class QueryMonitor {
   public QueryMonitor(final ScheduledThreadPoolExecutorFactory executorFactory,
       final InternalCache cache,
       final long defaultMaxQueryExecutionTime) {
+    Objects.requireNonNull(executorFactory);
+    Objects.requireNonNull(cache);
+
     this.cache = cache;
     this.defaultMaxQueryExecutionTime = defaultMaxQueryExecutionTime;
 
@@ -141,11 +145,11 @@ public class QueryMonitor {
 
     if (LOW_MEMORY) {
       final QueryExecutionLowMemoryException lowMemoryException = createLowMemoryException();
-      query.setQueryCancelledException(lowMemoryException);
+      query.setQueryCanceledException(lowMemoryException);
       throw lowMemoryException;
     }
 
-    query.setCancellationTask(scheduleCancellationTask(query, maxQueryExecutionTime));
+    query.setCancelationTask(scheduleCancelationTask(query, maxQueryExecutionTime));
 
     if (logger.isDebugEnabled()) {
       logDebug(query, "Adding thread to QueryMonitor.");
@@ -159,22 +163,22 @@ public class QueryMonitor {
    * because this class uses a ThreadLocal on the query thread!
    */
   public void stopMonitoringQueryThread(final DefaultQuery query) {
-    query.getCancellationTask().ifPresent(task -> task.cancel(false));
+    query.getCancelationTask().ifPresent(task -> task.cancel(false));
 
     if (logger.isDebugEnabled()) {
-      logDebug(query, "Query completed before cancellation.");
+      logDebug(query, "Query completed before cancelation.");
     }
   }
 
   /**
-   * Throw an exception if the query has been cancelled. The {@link QueryMonitor} cancels the
+   * Throw an exception if the query has been canceled. The {@link QueryMonitor} cancels the
    * query if it takes more than the max query execution time or in low memory situations where
    * critical heap percentage has been set on the resource manager.
    *
-   * @throws QueryExecutionCanceledException if the query has been cancelled
+   * @throws QueryExecutionCanceledException if the query has been canceled
    */
-  public static void throwExceptionIfQueryOnCurrentThreadIsCancelled() {
-    if (DefaultQuery.QueryCancelled.get().get()) {
+  public static void throwExceptionIfQueryOnCurrentThreadIsCanceled() {
+    if (DefaultQuery.QueryCanceled.get().get()) {
       throw new QueryExecutionCanceledException();
     }
   }
@@ -197,31 +201,39 @@ public class QueryMonitor {
     return LOW_MEMORY_USED_BYTES;
   }
 
-  public synchronized void setLowMemory(final boolean lowMemory, final long usedBytes) {
+  public synchronized void setLowMemory(final boolean isLowMemory, final long usedBytes) {
     if (!cache.isQueryMonitorDisabledForLowMemory()) {
       QueryMonitor.LOW_MEMORY_USED_BYTES = usedBytes;
-      if (lowMemory != QueryMonitor.LOW_MEMORY) {
-        // state transition
-        if (lowMemory) {
+      final boolean memoryStateChanged = isLowMemory != QueryMonitor.LOW_MEMORY;
+      if (memoryStateChanged) {
+        if (isLowMemory) {
           cancelAllQueriesDueToMemory();
         } else {
-          // executor is volatile so other threads will see this modification
+          /*
+           * Executor was shut down and made permanently unusable when we went into
+           * the low-memory state. We have to make a new executor now that we're monitoring
+           * queries again.
+           */
           executor = executorFactory.create();
         }
       }
-      QueryMonitor.LOW_MEMORY = lowMemory;
+      QueryMonitor.LOW_MEMORY = isLowMemory;
     }
   }
 
+  /**
+   * Stop accepting new monitoring requests. Run all cancelation tasks with
+   * {@link #cancelingDueToLowMemory} set. Leave the executor's task queue empty.
+   */
   private synchronized void cancelAllQueriesDueToMemory() {
 
     /*
-     * A cancellation task is dual-purpose. Its primary purpose is to cancel
+     * A cancelation task is dual-purpose. Its primary purpose is to cancel
      * a query if the query runs too long. Alternately, if this flag
-     * (cancellingDueToLowMemory) is set, the cancellation task will cancel the query
+     * {@link #cancelingDueToLowMemory} is set, the cancelation task will cancel the query
      * due to low memory.
      */
-    cancellingDueToLowMemory = true;
+    cancelingDueToLowMemory = true;
 
     try {
       /*
@@ -233,44 +245,47 @@ public class QueryMonitor {
        */
       executor.shutdown(); // executor won't accept new work ever again
       final BlockingQueue<Runnable> expirationTaskQueue = executor.getQueue();
-      for (final Runnable cancellationTask : expirationTaskQueue) {
-        cancellationTask.run();
+      for (final Runnable cancelationTask : expirationTaskQueue) {
+        cancelationTask.run();
       }
+      expirationTaskQueue.clear();
     } finally {
-      cancellingDueToLowMemory = false;
+      cancelingDueToLowMemory = false;
     }
 
   }
 
-  private ScheduledFuture<?> scheduleCancellationTask(final DefaultQuery query,
+  private ScheduledFuture<?> scheduleCancelationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
-    // make ThreadLocal QueryCancelled, available to closure, which will run in a separate thread
-    final AtomicBoolean queryCancelledThreadLocal =
-        DefaultQuery.QueryCancelled.get();
+    // Make ThreadLocal QueryCanceled available to closure, which will run in a separate thread
+    final AtomicBoolean queryCanceledThreadLocal =
+        DefaultQuery.QueryCanceled.get();
 
     return executor.schedule(() -> {
-      final CacheRuntimeException exception = cancellingDueToLowMemory ? createLowMemoryException()
+      final CacheRuntimeException exception = cancelingDueToLowMemory ? createLowMemoryException()
           : createExpirationException(timeLimitMillis);
 
-      query.setQueryCancelledException(exception);
-      queryCancelledThreadLocal.set(true);
+      query.setQueryCanceledException(exception);
+      queryCanceledThreadLocal.set(true);
 
-      logger.info(exception.getMessage());
+      if (logger.isInfoEnabled() && !cancelingDueToLowMemory) {
+        logger.info(String.format("%s %s", exception.getMessage(), query));
+      }
     }, timeLimitMillis, TimeUnit.MILLISECONDS);
   }
 
   private QueryExecutionTimeoutException createExpirationException(final long timeLimitMillis) {
     return new QueryExecutionTimeoutException(
         String.format(
-            "Query execution cancelled after exceeding max execution time %sms.",
+            "Query execution canceled after exceeding max execution time %sms.",
             timeLimitMillis));
   }
 
   private QueryExecutionLowMemoryException createLowMemoryException() {
     return new QueryExecutionLowMemoryException(
         String.format(
-            "Query execution cancelled due to memory threshold crossed in system, memory used: %s bytes.",
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
             LOW_MEMORY_USED_BYTES));
   }
 

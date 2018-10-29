@@ -148,7 +148,7 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  static final ThreadLocal<AtomicBoolean> QueryCancelled =
+  static final ThreadLocal<AtomicBoolean> QueryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
 
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
@@ -159,11 +159,11 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
-  public Optional<ScheduledFuture> getCancellationTask() {
+  public Optional<ScheduledFuture> getCancelationTask() {
     return expirationTask;
   }
 
-  public void setCancellationTask(final ScheduledFuture expirationTask) {
+  public void setCancelationTask(final ScheduledFuture expirationTask) {
     this.expirationTask = Optional.of(expirationTask);
   }
 
@@ -309,7 +309,7 @@ public class DefaultQuery implements Query {
       }
       return result;
     } catch (QueryExecutionCanceledException ignore) {
-      return reinterpretQueryExecutionCancelledException();
+      return reinterpretQueryExecutionCanceledException();
     } finally {
       this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
@@ -321,15 +321,15 @@ public class DefaultQuery implements Query {
 
   /**
    * This method attempts to reintrepret a {@link QueryExecutionCanceledException} using the
-   * the value returned by {@link #getQueryCancelledException} (set by the {@link QueryMonitor}).
+   * the value returned by {@link #getQueryCanceledException} (set by the {@link QueryMonitor}).
    *
-   * @throws if {@link #getQueryCancelledException} doesn't return {@code null} then throw that
+   * @throws if {@link #getQueryCanceledException} doesn't return {@code null} then throw that
    *         {@link CacheRuntimeException}, otherwise throw {@link QueryExecutionCanceledException}
    */
-  private Object reinterpretQueryExecutionCancelledException() {
-    final CacheRuntimeException queryCancelledException = getQueryCancelledException();
-    if (queryCancelledException != null) {
-      throw queryCancelledException;
+  private Object reinterpretQueryExecutionCanceledException() {
+    final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+    if (queryCanceledException != null) {
+      throw queryCanceledException;
     } else {
       throw new QueryExecutionCanceledException(
           "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
@@ -458,7 +458,7 @@ public class DefaultQuery implements Query {
         }
         results = this.compiledQuery.evaluate(context);
       } catch (QueryExecutionCanceledException ignore) {
-        reinterpretQueryExecutionCancelledException();
+        reinterpretQueryExecutionCanceledException();
       } finally {
         observer.afterQueryEvaluation(results);
       }
@@ -469,7 +469,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      QueryCancelled.remove();
+      QueryCanceled.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -703,17 +703,17 @@ public class DefaultQuery implements Query {
    * if it takes more than the max query execution time or low memory situations
    */
   public boolean isCanceled() {
-    return getQueryCancelledException() != null;
+    return getQueryCanceledException() != null;
   }
 
-  public CacheRuntimeException getQueryCancelledException() {
+  public CacheRuntimeException getQueryCanceledException() {
     return queryCancelledException;
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
-  public void setQueryCancelledException(final CacheRuntimeException queryCanceledException) {
+  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
     this.queryCancelledException = queryCanceledException;
   }
 

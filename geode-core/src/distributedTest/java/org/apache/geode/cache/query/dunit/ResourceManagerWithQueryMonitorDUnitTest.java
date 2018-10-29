@@ -1213,7 +1213,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     String message = e.getMessage();
     return (message.contains(
         String.format(
-            "Query execution cancelled due to memory threshold crossed in system, memory used: %s bytes.",
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
             HEAP_USED))
         || message.contains(
             "Query execution canceled due to low memory while gathering results from partitioned regions"));
@@ -1224,9 +1224,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     // -1 needs to be matched due to client/server set up, BaseCommand uses the
     // MAX_QUERY_EXECUTION_TIME and not the testMaxQueryExecutionTime
     return (message.contains("The QueryMonitor thread may be sleeping longer than")
-        || message.contains("Query execution cancelled after exceeding max execution time")
+        || message.contains("Query execution canceled after exceeding max execution time")
         || message.contains(
-            String.format("Query execution cancelled after exceeding max execution time %sms.",
+            String.format("Query execution canceled after exceeding max execution time %sms.",
                 -1)));
   }
 

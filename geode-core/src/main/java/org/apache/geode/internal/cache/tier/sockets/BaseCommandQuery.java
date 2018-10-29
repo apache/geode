@@ -264,7 +264,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // Check if query got canceled from QueryMonitor.
       DefaultQuery defaultQuery = (DefaultQuery) query;
       if ((defaultQuery).isCanceled()) {
-        e = new QueryException(defaultQuery.getQueryCancelledException().getMessage(),
+        e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(),
             e.getCause());
       }
       writeQueryResponseException(msg, e, servConn);

@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -34,7 +35,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  *
  * Mock DefaultQuery.
  */
-public class QueryMonitorJUnitTest {
+public class QueryMonitorIntegrationTest {
 
   // query expiration duration so long that the query never expires
   public static final int NEVER_EXPIRE_MILLIS = 100000;
@@ -44,22 +45,28 @@ public class QueryMonitorJUnitTest {
 
   private InternalCache cache;
   private DefaultQuery query;
-  private volatile CacheRuntimeException queryCancelledException;
+  private volatile CacheRuntimeException cacheRuntimeException;
+  private volatile QueryExecutionCanceledException queryExecutionCanceledException;
 
   @Before
   public void before() {
     cache = mock(InternalCache.class);
     query = mock(DefaultQuery.class);
-    queryCancelledException = null;
+    cacheRuntimeException = null;
+    queryExecutionCanceledException = null;
   }
 
   @Test
   public void setLowMemoryTrueCancelsQueriesImmediately() {
 
     QueryMonitor queryMonitor = null;
+
+    ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
+        new ScheduledThreadPoolExecutor(1);
+
     try {
       queryMonitor = new QueryMonitor(
-          () -> new ScheduledThreadPoolExecutor(1),
+          () -> scheduledThreadPoolExecutor,
           cache,
           NEVER_EXPIRE_MILLIS);
 
@@ -67,27 +74,25 @@ public class QueryMonitorJUnitTest {
 
       queryMonitor.setLowMemory(true, 1);
 
-      try {
-        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
-        throw new AssertionError(
-            "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.");
-      } catch (final QueryExecutionCanceledException _ignored) {
-        // expected
-      }
+      assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled(),
+          "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.",
+          QueryExecutionCanceledException.class);
     } finally {
       if (queryMonitor != null) {
         /*
          * Setting the low-memory state (above) sets it globally. If we fail to reset it here,
          * then subsequent tests, e.g. if we run this test class more than once in succession
-         * in the same JVM, as the Gemfire "stress" test does, will give unexpected results.
+         * in the same JVM, as the Geode "stress" test does, will give unexpected results.
          */
         queryMonitor.setLowMemory(false, 1);
       }
     }
+
+    assertThat(scheduledThreadPoolExecutor.getQueue().size()).isZero();
   }
 
   @Test
-  public void monitorQueryThreadCancelsLongRunningQueriesAndSetsException()
+  public void monitorQueryThreadCancelsLongRunningQueriesAndSetsExceptionAndThrowsException()
       throws InterruptedException {
 
     QueryMonitor queryMonitor = new QueryMonitor(
@@ -95,44 +100,50 @@ public class QueryMonitorJUnitTest {
         cache,
         EXPIRE_QUICK_MILLIS);
 
-    final Answer<Void> processSetQueryCancelledException = invocation -> {
+    final Answer<Void> processSetQueryCanceledException = invocation -> {
       final Object[] args = invocation.getArguments();
       if (args[0] instanceof CacheRuntimeException) {
-        queryCancelledException = (CacheRuntimeException) args[0];
+        cacheRuntimeException = (CacheRuntimeException) args[0];
       } else {
         throw new AssertionError(
-            "setQueryCancelledException() received argument that wasn't a CacheRuntimeException");
+            "setQueryCanceledException() received argument that wasn't a CacheRuntimeException.");
       }
       return null;
     };
 
-    doAnswer(processSetQueryCancelledException).when(query)
-        .setQueryCancelledException(any(CacheRuntimeException.class));
+    doAnswer(processSetQueryCanceledException).when(query)
+        .setQueryCanceledException(any(CacheRuntimeException.class));
 
     startQueryThread(queryMonitor, query);
 
-    GeodeAwaitility.await().until(() -> queryCancelledException != null);
+    GeodeAwaitility.await().until(() -> cacheRuntimeException != null);
 
-    assertThat(queryCancelledException)
-        .hasMessageContaining("cancelled after exceeding max execution time");
+    assertThat(cacheRuntimeException)
+        .hasMessageContaining("canceled after exceeding max execution time");
+
+    assertThat(queryExecutionCanceledException).isNotNull();
   }
 
   private void startQueryThread(final QueryMonitor queryMonitor,
       final DefaultQuery query) {
+
     final Thread queryThread = new Thread(() -> {
       queryMonitor.monitorQueryThread(query);
+
       while (true) {
         try {
-          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCancelled();
+          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
           Thread.sleep(5 * EXPIRE_QUICK_MILLIS);
-        } catch (final QueryExecutionCanceledException _ignored) {
+        } catch (final QueryExecutionCanceledException e) {
+          queryExecutionCanceledException = e;
           break;
         } catch (final InterruptedException e) {
           Thread.currentThread().interrupt();
-          throw new AssertionError("simulated query thread unexpectedly interrupted");
+          throw new AssertionError("Simulated query thread unexpectedly interrupted.");
         }
       }
     });
+
     queryThread.start();
   }
 }

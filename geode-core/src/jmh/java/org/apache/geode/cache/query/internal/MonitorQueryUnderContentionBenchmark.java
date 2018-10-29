@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-
 import static org.mockito.Mockito.mock;
 
 import java.util.Random;
@@ -37,32 +36,35 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 
 @State(Scope.Thread)
 @Fork(1)
 public class MonitorQueryUnderContentionBenchmark {
 
   /*
-   * all times in milliseconds
+   * All times in milliseconds.
+   *
+   * The "mode" is the center of the "hump" of the Gaussian distribution.
    */
 
   private static final long QueryMaxExecutionTime = 6;
+
+  /*
+   * Delay, before starting a simulated query task
+   */
+  public static final int StartDelayRangeMillis = 100;
 
   /*
    * Delay, from time startOneSimulatedQuery() is called, until monitorQueryThread() is called.
    */
   public static final int QueryInitialDelay = 0;
 
-  /*
-   * The mode is the center of the "hump" of the Gaussian distribution.
-   *
-   * We usually want to arrange the two humps equidistant from QueryMaxExecutionTime.
-   */
   private static final int FastQueryCompletionMode = 1;
   private static final int SlowQueryCompletionMode = 1000000;
 
   /*
-   * How often should we start a query of each type?
+   * Dictates how often we start each query type.
    *
    * Starting them more frequently leads to heavier load.
    *
@@ -83,17 +85,22 @@ public class MonitorQueryUnderContentionBenchmark {
 
   public static final int RandomSeed = 151;
 
-  private QueryMonitor monitor;
+  private QueryMonitor queryMonitor;
   private Thread thread;
   private DefaultQuery query;
   private InternalCache cache;
   private Random random;
-  private ScheduledThreadPoolExecutor executorService;
+  private ScheduledThreadPoolExecutor loadGenerationExecutorService;
+  private org.apache.logging.log4j.Level originalBaseLogLevel;
 
   @Setup(Level.Trial)
   public void trialSetup() throws InterruptedException {
+
+    originalBaseLogLevel = LogService.getBaseLogLevel();
+    LogService.setBaseLogLevel(org.apache.logging.log4j.Level.OFF);
+
     cache = mock(InternalCache.class);
-    monitor =
+    queryMonitor =
         new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
             cache, QueryMaxExecutionTime);
     thread = mock(Thread.class);
@@ -101,34 +108,39 @@ public class MonitorQueryUnderContentionBenchmark {
     final int numberOfThreads =
         ThreadPoolProcessorMultiple * Runtime.getRuntime().availableProcessors();
 
-    executorService =
+    loadGenerationExecutorService =
         (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
             numberOfThreads);
 
     System.out.println(String.format("Pool has %d threads", numberOfThreads));
 
-    executorService.setRemoveOnCancelPolicy(true);
+    loadGenerationExecutorService.setRemoveOnCancelPolicy(true);
 
     random = new Random(RandomSeed);
 
     query = createDefaultQuery();
 
-    generateLoad(executorService, () -> startOneFastQuery(executorService),
+    generateLoad(
+        loadGenerationExecutorService, () -> startOneFastQuery(loadGenerationExecutorService),
         StartFastQueryPeriod);
 
-    generateLoad(executorService, () -> startOneSlowQuery(executorService),
+    generateLoad(
+        loadGenerationExecutorService, () -> startOneSlowQuery(loadGenerationExecutorService),
         StartSlowQueryPeriod);
 
     // allow system to quiesce
     Thread.sleep(TimeToQuiesceBeforeSampling);
 
-    System.out.println("Queries in flight prior to test: " + executorService.getQueue().size());
+    System.out.println(
+        "Queries in flight prior to test: " + loadGenerationExecutorService.getQueue().size());
   }
 
   @TearDown(Level.Trial)
   public void trialTeardown() {
-    executorService.shutdownNow();
-    monitor.stopMonitoring();
+    loadGenerationExecutorService.shutdownNow();
+    queryMonitor.stopMonitoring();
+
+    LogService.setBaseLogLevel(originalBaseLogLevel);
   }
 
   @Benchmark
@@ -137,8 +149,8 @@ public class MonitorQueryUnderContentionBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
   public void monitorQuery() {
-    monitor.monitorQueryThread(query);
-    monitor.stopMonitoringQueryThread(query);
+    queryMonitor.monitorQueryThread(query);
+    queryMonitor.stopMonitoringQueryThread(query);
   }
 
   private ScheduledFuture<?> generateLoad(final ScheduledExecutorService executorService,
@@ -152,11 +164,11 @@ public class MonitorQueryUnderContentionBenchmark {
   }
 
   private void startOneFastQuery(ScheduledExecutorService executorService) {
-    startOneSimulatedQuery(executorService, 100, FastQueryCompletionMode);
+    startOneSimulatedQuery(executorService, StartDelayRangeMillis, FastQueryCompletionMode);
   }
 
   private void startOneSlowQuery(ScheduledExecutorService executorService) {
-    startOneSimulatedQuery(executorService, 100, SlowQueryCompletionMode);
+    startOneSimulatedQuery(executorService, StartDelayRangeMillis, SlowQueryCompletionMode);
   }
 
   private void startOneSimulatedQuery(ScheduledExecutorService executorService,
@@ -164,9 +176,9 @@ public class MonitorQueryUnderContentionBenchmark {
     executorService.schedule(() -> {
       final Thread thread = mock(Thread.class);
       final DefaultQuery query = createDefaultQuery();
-      monitor.monitorQueryThread(query);
+      queryMonitor.monitorQueryThread(query);
       executorService.schedule(() -> {
-        monitor.stopMonitoringQueryThread(query);
+        queryMonitor.stopMonitoringQueryThread(query);
       },
           gaussianLong(completeDelayRangeMillis),
           TimeUnit.MILLISECONDS);
