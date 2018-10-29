@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -203,6 +204,7 @@ public class EvictionDUnitTest {
    */
   @Test
   public void testEvictionWithNodeDown() throws Exception {
+    IgnoredException.addIgnoredException("java.io.IOException");
     SerializableRunnableIF setupVM = () -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
       final File[] diskDirs = new File[1];
