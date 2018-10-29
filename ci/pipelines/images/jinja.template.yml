@@ -20,6 +20,15 @@
 ---
 
 resources:
+- name: once-a-week
+  type: time
+  source:
+    days: [Monday]
+    start: 6:00 AM
+    stop: 7:00 AM
+    interval: 1h
+    location: US/Pacific
+
 - name: build-concourse-dockerfile
   type: git
   source:
@@ -159,6 +168,8 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: once-a-week
+      trigger: true
     - get: test-container-docker-image
       passed: [build-test-container-docker-image]
       trigger: true
@@ -187,6 +198,8 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: once-a-week
+      trigger: true
     - get: google-windows-geode-builder
       trigger: true
     - get: alpine-tools-docker-image
