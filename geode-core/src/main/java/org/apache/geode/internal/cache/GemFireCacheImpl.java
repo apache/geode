@@ -4276,7 +4276,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private static void closeQuietly(Closeable closeable) { // KIRK
+  private static void closeQuietly(Closeable closeable) {
     try {
       if (closeable != null) {
         closeable.close();
