@@ -1282,22 +1282,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     PoolFactoryImpl poolFactory = (PoolFactoryImpl) PoolManager.createFactory();
     poolFactory.init(poolAttr);
-    PoolImpl pool = null;
+    PoolImpl pool = (PoolImpl) poolFactory.create("DeltaPropagationDUnitTest");
 
-    GeodeAwaitility.await()
-        .until(() -> !cache.isReconnecting() && !cache.isClosed());
-
-
-    while (pool == null) {
-      try {
-        pool = (PoolImpl) poolFactory.create("DeltaPropagationDUnitTest");
-        if (pool == null) {
-          Thread.sleep(100);
-        }
-      } catch (org.apache.geode.cache.NoSubscriptionServersAvailableException e) {
-        Thread.sleep(100);
-      }
-    }
 
     AttributesFactory<String, DeltaTestImpl> factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);

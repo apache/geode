@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
@@ -339,6 +340,7 @@ public class PoolFactoryImpl implements PoolFactory {
     InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     InternalCache cache = GemFireCacheImpl.getInstance();
     ThreadsMonitoring threadMonitoring = null;
+
     if (cache != null) {
       threadMonitoring = cache.getDistributionManager().getThreadMonitoring();
       TypeRegistry registry = cache.getPdxRegistry();
@@ -346,8 +348,26 @@ public class PoolFactoryImpl implements PoolFactory {
         registry.creatingPool();
       }
     }
-    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses, distributedSystem,
-        cache, threadMonitoring);
+
+    Pool returnPool = null;
+    int retries = 0;
+    final int MAX_RETRIES = 20;
+    while (returnPool == null && retries < MAX_RETRIES) {
+      try {
+        returnPool =
+            PoolImpl
+                .create(this.pm, name, this.attributes, this.locatorAddresses, distributedSystem,
+                    cache, threadMonitoring);
+      } catch (NoSubscriptionServersAvailableException nsa) {
+        retries++;
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
+
+    return returnPool;
   }
 
   /**
