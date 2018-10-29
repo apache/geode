@@ -29,15 +29,23 @@ import static org.apache.geode.management.JMXNotificationUserData.ALERT_LEVEL;
 import static org.apache.geode.management.ManagementService.getManagementService;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.management.InstanceNotFoundException;
@@ -46,13 +54,13 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 
 import org.apache.logging.log4j.Logger;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
@@ -80,13 +88,13 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
 
   private static final String MANAGER_NAME = "managerVM";
   private static final String MEMBER_NAME = "memberVM-";
-
+  private static final long TIMEOUT = getTimeout().getValueInMS();
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 
   private static InternalCache cache;
   private static AlertingService alertingService;
-  private static AlertNotificationListener alertNotificationListener;
+  private static NotificationListener notificationListener;
   private static DistributedSystemMXBean distributedSystemMXBean;
 
   private DistributedMember managerMember;
@@ -94,6 +102,10 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
   private String warningLevelMessage;
   private String errorLevelMessage;
   private String severeLevelMessage;
+
+  private Alert warningAlert;
+  private Alert errorAlert;
+  private Alert severeAlert;
 
   private VM managerVM;
   private VM memberVM1;
@@ -114,6 +126,10 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     warningLevelMessage = WARNING.name() + " level alert in " + testName.getMethodName();
     errorLevelMessage = ERROR.name() + " level alert in " + testName.getMethodName();
     severeLevelMessage = SEVERE.name() + " level alert in " + testName.getMethodName();
+
+    warningAlert = new Alert(WARNING, warningLevelMessage);
+    errorAlert = new Alert(ERROR, errorLevelMessage);
+    severeAlert = new Alert(SEVERE, severeLevelMessage);
 
     managerVM = getVM(0);
     memberVM1 = getVM(1);
@@ -138,7 +154,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
         }
         cache = null;
         alertingService = null;
-        alertNotificationListener = null;
+        notificationListener = null;
         distributedSystemMXBean = null;
       });
     }
@@ -165,8 +181,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(1));
+      assertThat(captureAlert()).isEqualTo(severeAlert);
     });
   }
 
@@ -182,8 +197,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      assertThat(alertNotificationListener.getWarningAlertCount()).isEqualTo(0);
-      assertThat(alertNotificationListener.getErrorAlertCount()).isEqualTo(0);
+      verifyZeroInteractions(notificationListener);
     });
   }
 
@@ -201,8 +215,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      assertThat(alertNotificationListener.getErrorAlertCount()).isEqualTo(1);
-      assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(1);
+      assertThat(captureAllAlerts(2)).contains(errorAlert, severeAlert);
     });
   }
 
@@ -215,8 +228,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(1));
+      assertThat(captureAlert()).isEqualTo(severeAlert);
     });
   }
 
@@ -232,8 +244,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      assertThat(alertNotificationListener.getWarningAlertCount()).isEqualTo(0);
-      assertThat(alertNotificationListener.getErrorAlertCount()).isEqualTo(0);
+      verifyZeroInteractions(notificationListener);
     });
   }
 
@@ -259,8 +270,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      assertThat(alertNotificationListener.getErrorAlertCount()).isEqualTo(1);
-      assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(1);
+      assertThat(captureAllAlerts(2)).contains(errorAlert, severeAlert);
     });
   }
 
@@ -275,8 +285,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     }
 
     managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(3));
+      assertThat(captureAllAlerts(3)).contains(severeAlert, severeAlert, severeAlert);
     });
   }
 
@@ -299,12 +308,8 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     }
 
     managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getWarningAlertCount()).isEqualTo(3));
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getErrorAlertCount()).isEqualTo(3));
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(3));
+      assertThat(captureAllAlerts(9)).contains(warningAlert, warningAlert, warningAlert, errorAlert,
+          errorAlert, errorAlert, severeAlert, severeAlert, severeAlert);
     });
   }
 
@@ -327,9 +332,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     }
 
     managerVM.invoke(() -> {
-      assertThat(alertNotificationListener.getWarningAlertCount()).isEqualTo(0);
-      assertThat(alertNotificationListener.getErrorAlertCount()).isEqualTo(0);
-      assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(0);
+      verifyZeroInteractions(notificationListener);
     });
   }
 
@@ -359,7 +362,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     // managerVM should have missed the alerts from BEFORE it started
 
     managerVM.invoke(() -> {
-      assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(0);
+      verifyZeroInteractions(notificationListener);
     });
 
     // managerVM should now receive any new alerts though
@@ -373,8 +376,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     }
 
     managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(alertNotificationListener.getSevereAlertCount()).isEqualTo(3));
+      assertThat(captureAllAlerts(3)).contains(severeAlert, severeAlert, severeAlert);
     });
   }
 
@@ -389,9 +391,9 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     cache = (InternalCache) new CacheFactory(config).create();
     alertingService = cache.getInternalDistributedSystem().getAlertingService();
 
-    alertNotificationListener = new AlertNotificationListener();
+    notificationListener = spy(NotificationListener.class);
     getPlatformMBeanServer().addNotificationListener(getDistributedSystemName(),
-        alertNotificationListener, SYSTEM_ALERT_FILTER, null);
+        notificationListener, SYSTEM_ALERT_FILTER, null);
 
     distributedSystemMXBean = getManagementService(cache).getDistributedSystemMXBean();
 
@@ -425,44 +427,69 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     }
   }
 
-  // TODO:KIRK: convert to mockito spy
-  private class AlertNotificationListener implements NotificationListener {
+  private Notification captureNotification() {
+    ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+    verify(notificationListener, timeout(TIMEOUT)).handleNotification(captor.capture(), isNull());
+    return captor.getValue();
+  }
 
-    private int warningAlertCount;
-    private int errorAlertCount;
-    private int severeAlertCount;
+  private List<Notification> captureAllNotifications(int count) {
+    ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+    verify(notificationListener, timeout(TIMEOUT).times(count)).handleNotification(captor.capture(),
+        isNull());
+    return captor.getAllValues();
+  }
+
+  private Alert captureAlert() {
+    Notification notification = captureNotification();
+    return new Alert(getAlertLevel(notification), notification.getMessage());
+  }
+
+  private List<Alert> captureAllAlerts(int count) {
+    List<Alert> alerts = new ArrayList<>();
+    for (Notification notification : captureAllNotifications(count)) {
+      alerts.add(new Alert(getAlertLevel(notification), notification.getMessage()));
+    }
+    return alerts;
+  }
+
+  private static AlertLevel getAlertLevel(Notification notification) {
+    return AlertLevel.valueOf(getUserData(notification).get(ALERT_LEVEL).toUpperCase());
+  }
+
+  private static Map<String, String> getUserData(Notification notification) {
+    return (Map<String, String>) notification.getUserData();
+  }
+
+  /**
+   * Simple struct with {@link AlertLevel} and {@code String} message with {@code equals}
+   * implemented to compare both fields.
+   */
+  private static class Alert implements Serializable {
+
+    private final AlertLevel level;
+    private final String message;
+
+    Alert(AlertLevel level, String message) {
+      this.level = level;
+      this.message = message;
+    }
 
     @Override
-    public synchronized void handleNotification(final Notification notification,
-        final Object handback) {
-      errorCollector.checkThat(notification, notNullValue());
-
-      Map<String, String> notificationUserData = (Map<String, String>) notification.getUserData();
-
-      if (notificationUserData.get(ALERT_LEVEL).equalsIgnoreCase(WARNING.name())) {
-        errorCollector.checkThat(notification.getMessage(), Matchers.equalTo(warningLevelMessage));
-        warningAlertCount++;
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
       }
-      if (notificationUserData.get(ALERT_LEVEL).equalsIgnoreCase(ERROR.name())) {
-        errorCollector.checkThat(notification.getMessage(), Matchers.equalTo(errorLevelMessage));
-        errorAlertCount++;
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
       }
-      if (notificationUserData.get(ALERT_LEVEL).equalsIgnoreCase(SEVERE.name())) {
-        errorCollector.checkThat(notification.getMessage(), Matchers.equalTo(severeLevelMessage));
-        severeAlertCount++;
-      }
+      Alert alert = (Alert) obj;
+      return level == alert.level && Objects.equals(message, alert.message);
     }
 
-    synchronized int getWarningAlertCount() {
-      return warningAlertCount;
-    }
-
-    synchronized int getErrorAlertCount() {
-      return errorAlertCount;
-    }
-
-    synchronized int getSevereAlertCount() {
-      return severeAlertCount;
+    @Override
+    public int hashCode() {
+      return Objects.hash(level, message);
     }
   }
 }
