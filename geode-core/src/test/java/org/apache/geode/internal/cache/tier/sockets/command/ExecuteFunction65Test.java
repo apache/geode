@@ -131,6 +131,7 @@ public class ExecuteFunction65Test {
 
     when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
     doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
+    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any(),any());
 
     when(this.functionPart.getStringOrObject()).thenReturn(FUNCTION);
 
