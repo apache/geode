@@ -1583,7 +1583,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       // send it to all in one message
       ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(recipients,
           pr.getDistributionManager(), pr.getPRId(), profiles);
-      reply.waitForRepliesUninterruptibly();
+      if (reply != null) {
+        reply.waitForRepliesUninterruptibly();
+      }
     }
   }
 
