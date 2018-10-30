@@ -191,11 +191,6 @@ public class MonitorQueryUnderContentionBenchmark {
     return (long) (random.nextGaussian() * range);
   }
 
-  private String querySpeed(int completeDelayRangeMillis) {
-    return completeDelayRangeMillis == FAST_QUERY_COMPLETION_MODE
-        ? "FAST" : "(slow)";
-  }
-
   private DefaultQuery createDefaultQuery() {
     // we can reuse this because it doesn't affect lookup or equality in the collection(s)
     final DefaultQuery defaultQuery = mock(DefaultQuery.class);
