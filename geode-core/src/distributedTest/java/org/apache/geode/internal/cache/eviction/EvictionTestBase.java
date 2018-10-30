@@ -54,7 +54,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -80,8 +79,6 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
 
   static int maxEntries = 20;
 
-  static int maxSizeInMb = 20;
-
   static int totalNoOfBuckets = 4;
 
   @Override
@@ -95,9 +92,9 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
 
   public void prepareScenario1(EvictionAlgorithm evictionAlgorithm, int maxEntries) {
     createCacheInAllVms();
-    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR1", totalNoOfBuckets, 1, 10000,
+    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR1", totalNoOfBuckets, 1,
         maxEntries);
-    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR2", totalNoOfBuckets, 2, 10000,
+    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR2", totalNoOfBuckets, 2,
         maxEntries);
   }
 
@@ -156,28 +153,28 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
     dataStore3.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(true, evictionAlgorithm, partitionRegion1, 2, 2, 10000, 0);
+        createPartitionedRegion(true, evictionAlgorithm, partitionRegion1, 2, 2, 0);
       }
     });
 
     dataStore4.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(true, evictionAlgorithm, partitionRegion1, 2, 2, 10000, 0);
+        createPartitionedRegion(true, evictionAlgorithm, partitionRegion1, 2, 2, 0);
       }
     });
 
     dataStore3.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(true, evictionAlgorithm, partitionRegion2, 2, 2, 10000, 0);
+        createPartitionedRegion(true, evictionAlgorithm, partitionRegion2, 2, 2, 0);
       }
     });
 
     dataStore4.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(true, evictionAlgorithm, partitionRegion2, 2, 2, 10000, 0);
+        createPartitionedRegion(true, evictionAlgorithm, partitionRegion2, 2, 2, 0);
       }
     });
   }
@@ -262,27 +259,23 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
   }
 
   public void createCache() {
-    try {
-      HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "0");
+    HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "0");
 
-      Properties props = new Properties();
-      DistributedSystem ds = getSystem(props);
-      assertNotNull(ds);
-      ds.disconnect();
-      ds = getSystem(props);
-      cache = CacheFactory.create(ds);
-      assertNotNull(cache);
-      LogWriterUtils.getLogWriter().info("cache= " + cache);
-      LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
-      cache.getResourceManager().setEvictionHeapPercentage(85);
-      LogWriterUtils.getLogWriter()
-          .info("eviction= " + cache.getResourceManager().getEvictionHeapPercentage());
-      LogWriterUtils.getLogWriter()
-          .info("critical= " + cache.getResourceManager().getCriticalHeapPercentage());
-    } catch (Exception e) {
-      Assert.fail("Failed while creating the cache", e);
-    }
+    Properties props = new Properties();
+    DistributedSystem ds = getSystem(props);
+    assertNotNull(ds);
+    ds.disconnect();
+    ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+    assertNotNull(cache);
+    LogWriterUtils.getLogWriter().info("cache= " + cache);
+    LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
+    cache.getResourceManager().setEvictionHeapPercentage(85);
+    LogWriterUtils.getLogWriter()
+        .info("eviction= " + cache.getResourceManager().getEvictionHeapPercentage());
+    LogWriterUtils.getLogWriter()
+        .info("critical= " + cache.getResourceManager().getCriticalHeapPercentage());
   }
 
   public List<Integer> getTestTaskSetSizes() {
@@ -290,15 +283,17 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
   }
 
   protected void createPartitionedRegionInAllVMS(final boolean setEvictionOn,
-      final EvictionAlgorithm evictionAlgorithm, final String regionName,
-      final int totalNoOfBuckets, final int evictionAction, final int evictorInterval,
+      final EvictionAlgorithm evictionAlgorithm,
+      final String regionName,
+      final int totalNoOfBuckets,
+      final int evictionAction,
       final int maxEntries) {
 
     dataStore1.invoke(new SerializableRunnable() {
       @Override
       public void run() {
         createPartitionedRegion(setEvictionOn, evictionAlgorithm, regionName, totalNoOfBuckets,
-            evictionAction, evictorInterval, maxEntries);
+            evictionAction, maxEntries);
       }
     });
 
@@ -306,13 +301,13 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
       @Override
       public void run() {
         createPartitionedRegion(setEvictionOn, evictionAlgorithm, regionName, totalNoOfBuckets,
-            evictionAction, evictorInterval, maxEntries);
+            evictionAction, maxEntries);
       }
     });
   }
 
   public void createPartitionedRegion(boolean setEvictionOn, EvictionAlgorithm evictionAlgorithm,
-      String regionName, int totalNoOfBuckets, int evictionAction, int evictorInterval,
+      String regionName, int totalNoOfBuckets, int evictionAction,
       int maxEnteries) {
 
     final AttributesFactory factory = new AttributesFactory();
@@ -486,14 +481,14 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
     dataStore4.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR3", 2, 2, 10000, 0);
+        createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR3", 2, 2, 0);
       }
     });
 
     dataStore4.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR4", 2, 2, 10000, 0);
+        createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR4", 2, 2, 0);
       }
     });
   }

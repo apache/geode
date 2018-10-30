@@ -94,7 +94,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
     int extraEntries = 1;
     createCache();
     maxEntries = 3;
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 4, 1, 1000, maxEntries);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 4, 1, maxEntries);
 
     final PartitionedRegion pr = (PartitionedRegion) cache.getRegion("PR1");
     LogWriterUtils.getLogWriter().info("PR- " + pr.getEvictionAttributes().getMaximum());
@@ -110,7 +110,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
   public void testEntryLru() {
     createCache();
     maxEntries = 12;
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 4, 1, 1000, maxEntries);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 4, 1, maxEntries);
 
     final PartitionedRegion pr = (PartitionedRegion) cache.getRegion("PR1");
     LogWriterUtils.getLogWriter().info("PR- " + pr.getEvictionAttributes().getMaximum());
@@ -133,7 +133,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
     int extraEntries = 10;
     createCache();
     maxEntries = 20;
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 5, 1, 1000, maxEntries);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 5, 1, maxEntries);
 
     final PartitionedRegion pr = (PartitionedRegion) cache.getRegion("PR1");
     LogWriterUtils.getLogWriter().info("PR- " + pr.getEvictionAttributes().getMaximum());
@@ -167,7 +167,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
   @Test
   public void testMemLruForPRAndDR() {
     createCache();
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_MEMORY, "PR1", 4, 1, 1000, 40);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_MEMORY, "PR1", 4, 1, 40);
     createDistRegionWithMemEvictionAttr();
     PartitionedRegion pr = (PartitionedRegion) cache.getRegion("PR1");
     DistributedRegion dr = (DistributedRegion) cache.getRegion("DR1");
@@ -194,9 +194,9 @@ public class EvictionDUnitTest extends EvictionTestBase {
   @Test
   public void testEachTaskSize() {
     createCache();
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR1", 6, 1, 1000, 40);
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR2", 10, 1, 1000, 40);
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR3", 15, 1, 1000, 40);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR1", 6, 1, 40);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR2", 10, 1, 40);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR3", 15, 1, 40);
     createDistRegion();
 
     List<Integer> taskSetSizes = getTestTaskSetSizes();

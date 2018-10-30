@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -71,26 +70,22 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
 
   @Override
   public void createCache() {
-    try {
-      Properties props = new Properties();
-      DistributedSystem ds = getSystem(props);
-      assertNotNull(ds);
-      ds.disconnect();
-      ds = getSystem(getDistributedSystemProperties());
-      cache = CacheFactory.create(ds);
-      assertNotNull(cache);
-      LogWriterUtils.getLogWriter().info("cache= " + cache);
-      LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
-      cache.getResourceManager().setEvictionOffHeapPercentage(85);
-      ((GemFireCacheImpl) cache).getInternalResourceManager().getOffHeapMonitor()
-          .stopMonitoring(true);
-      LogWriterUtils.getLogWriter()
-          .info("eviction= " + cache.getResourceManager().getEvictionOffHeapPercentage());
-      LogWriterUtils.getLogWriter()
-          .info("critical= " + cache.getResourceManager().getCriticalOffHeapPercentage());
-    } catch (Exception e) {
-      Assert.fail("Failed while creating the cache", e);
-    }
+    Properties props = new Properties();
+    DistributedSystem ds = getSystem(props);
+    assertNotNull(ds);
+    ds.disconnect();
+    ds = getSystem(getDistributedSystemProperties());
+    cache = CacheFactory.create(ds);
+    assertNotNull(cache);
+    LogWriterUtils.getLogWriter().info("cache= " + cache);
+    LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
+    cache.getResourceManager().setEvictionOffHeapPercentage(85);
+    ((GemFireCacheImpl) cache).getInternalResourceManager().getOffHeapMonitor()
+        .stopMonitoring(true);
+    LogWriterUtils.getLogWriter()
+        .info("eviction= " + cache.getResourceManager().getEvictionOffHeapPercentage());
+    LogWriterUtils.getLogWriter()
+        .info("critical= " + cache.getResourceManager().getCriticalOffHeapPercentage());
   }
 
   @Override
