@@ -165,4 +165,26 @@ public class CreateMappingCommandDUnitTest {
       assertThat(xml).isNotNull().doesNotContain("jdbc:field-mapping");
     });
   }
+
+  @Test
+  public void createExistingRegionMappingFails() {
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogus");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+
+    locator.invoke(() -> {
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
+      assertThat(xml).isNotNull().contains("jdbc:mapping").contains("myTable")
+          .doesNotContain("bogus");
+    });
+  }
 }
