@@ -79,9 +79,11 @@ public class EvictionDUnitTest {
       HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
       System.setProperty("gemfire.memoryEventTolerance", "0");
       InternalCache cache = ClusterStartupRule.getCache();
-      cache.getResourceManager().setEvictionHeapPercentage(85);
       if (offHeap) {
+        cache.getResourceManager().setEvictionOffHeapPercentage(85);
         cache.getInternalResourceManager().getOffHeapMonitor().stopMonitoring(true);
+      } else {
+        cache.getResourceManager().setEvictionHeapPercentage(85);
       }
     }, server0, server1);
   }
@@ -106,23 +108,16 @@ public class EvictionDUnitTest {
 
     VMProvider.invokeInEveryMember(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
-      HeapEvictor evictor = getEvictor(cache);
-      int expectedEviction = (int) Math
-          .ceil((evictor.getTotalBytesToEvict() / 2) / (double) ((1024 * 1024) + 100)) * 2;
       PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
-      evictor.setTestAbortAfterLoopCount(1);
 
-      InternalResourceManager irm = cache.getInternalResourceManager();
-      HeapMemoryMonitor hmm = irm.getHeapMonitor();
-      hmm.setTestMaxMemoryBytes(100);
-      hmm.updateStateAndSendEvent(90);
+      int expectedEviction = getExpectedEviction(cache);
 
       GeodeAwaitility.await()
           .until(() -> (abs(region.getTotalEvictions() - expectedEviction) <= 1));
 
       assertThat(region.getTotalEvictions()).isEqualTo(expectedEviction);
 
-      ExecutorService evictorThreadPool = evictor.getEvictorThreadPool();
+      ExecutorService evictorThreadPool = getEvictor(cache).getEvictorThreadPool();
       if (evictorThreadPool != null) {
         long taskCount = ((ThreadPoolExecutor) evictorThreadPool).getTaskCount();
         assertThat(taskCount).isLessThanOrEqualTo(HeapEvictor.MAX_EVICTOR_THREADS);
@@ -179,20 +174,30 @@ public class EvictionDUnitTest {
         dr1.put(new Integer(counter), new byte[1024 * 1024]);
       }
 
-      HeapEvictor evictor = getEvictor(cache);
-      evictor.setTestAbortAfterLoopCount(1);
-      int expectedEviction = (int) Math
-          .ceil((evictor.getTotalBytesToEvict() / 2) / (double) ((1024 * 1024) + 100)) * 2;
-
-      InternalResourceManager irm = cache.getInternalResourceManager();
-      HeapMemoryMonitor hmm = irm.getHeapMonitor();
-      hmm.setTestMaxMemoryBytes(100);
-      hmm.updateStateAndSendEvent(90);
+      int expectedEviction = getExpectedEviction(cache);
 
       GeodeAwaitility.await().until(() -> (abs(dr1.getTotalEvictions() - expectedEviction) <= 1));
 
       assertThat(dr1.getTotalEvictions()).isEqualTo(expectedEviction);
     });
+  }
+
+  private static int getExpectedEviction(GemFireCacheImpl cache) {
+    HeapEvictor evictor = getEvictor(cache);
+    evictor.setTestAbortAfterLoopCount(1);
+
+    if (offHeap) {
+      cache.getInternalResourceManager().getOffHeapMonitor()
+          .updateStateAndSendEvent(188743680);
+    } else {
+      HeapMemoryMonitor hmm = cache.getInternalResourceManager().getHeapMonitor();
+      hmm.setTestMaxMemoryBytes(100);
+      hmm.updateStateAndSendEvent(90);
+    }
+
+    int expectedEviction = (int) Math
+        .ceil((evictor.getTotalBytesToEvict() / 2) / (double) ((1024 * 1024) + 100)) * 2;
+    return expectedEviction;
   }
 
   /**
