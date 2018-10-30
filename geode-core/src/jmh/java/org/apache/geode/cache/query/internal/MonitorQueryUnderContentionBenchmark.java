@@ -48,20 +48,20 @@ public class MonitorQueryUnderContentionBenchmark {
    * The "mode" is the center of the "hump" of the Gaussian distribution.
    */
 
-  private static final long QueryMaxExecutionTime = 6;
+  private static final long QUERY_MAX_EXECUTION_TIME = 6;
 
   /*
    * Delay, before starting a simulated query task
    */
-  public static final int StartDelayRangeMillis = 100;
+  public static final int START_DELAY_RANGE_MILLIS = 100;
 
   /*
    * Delay, from time startOneSimulatedQuery() is called, until monitorQueryThread() is called.
    */
-  public static final int QueryInitialDelay = 0;
+  public static final int QUERY_INITIAL_DELAY = 0;
 
-  private static final int FastQueryCompletionMode = 1;
-  private static final int SlowQueryCompletionMode = 1000000;
+  private static final int FAST_QUERY_COMPLETION_MODE = 1;
+  private static final int SLOW_QUERY_COMPLETION_MODE = 1000000;
 
   /*
    * Dictates how often we start each query type.
@@ -70,20 +70,20 @@ public class MonitorQueryUnderContentionBenchmark {
    *
    * They're separated so we can play with different mixes.
    */
-  private static final int StartFastQueryPeriod = 1;
-  private static final int StartSlowQueryPeriod = 1;
+  private static final int START_FAST_QUERY_PERIOD = 1;
+  private static final int START_SLOW_QUERY_PERIOD = 1;
 
   /*
    * After load is established, how many measurements shall we take?
    */
-  private static final double BenchmarkIterations = 1e4;
+  private static final double BENCHMARK_ITERATIONS = 1e4;
 
-  public static final int TimeToQuiesceBeforeSampling = 240000;
+  public static final int TIME_TO_QUIESCE_BEFORE_SAMPLING = 240000;
 
-  public static final int ThreadPoolProcessorMultiple = 2;
+  public static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
 
 
-  public static final int RandomSeed = 151;
+  public static final int RANDOM_SEED = 151;
 
   private QueryMonitor queryMonitor;
   private Thread thread;
@@ -102,11 +102,11 @@ public class MonitorQueryUnderContentionBenchmark {
     cache = mock(InternalCache.class);
     queryMonitor =
         new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
-            cache, QueryMaxExecutionTime);
+            cache, QUERY_MAX_EXECUTION_TIME);
     thread = mock(Thread.class);
 
     final int numberOfThreads =
-        ThreadPoolProcessorMultiple * Runtime.getRuntime().availableProcessors();
+        THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
 
     loadGenerationExecutorService =
         (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
@@ -116,20 +116,20 @@ public class MonitorQueryUnderContentionBenchmark {
 
     loadGenerationExecutorService.setRemoveOnCancelPolicy(true);
 
-    random = new Random(RandomSeed);
+    random = new Random(RANDOM_SEED);
 
     query = createDefaultQuery();
 
     generateLoad(
         loadGenerationExecutorService, () -> startOneFastQuery(loadGenerationExecutorService),
-        StartFastQueryPeriod);
+        START_FAST_QUERY_PERIOD);
 
     generateLoad(
         loadGenerationExecutorService, () -> startOneSlowQuery(loadGenerationExecutorService),
-        StartSlowQueryPeriod);
+        START_SLOW_QUERY_PERIOD);
 
     // allow system to quiesce
-    Thread.sleep(TimeToQuiesceBeforeSampling);
+    Thread.sleep(TIME_TO_QUIESCE_BEFORE_SAMPLING);
 
     System.out.println(
         "Queries in flight prior to test: " + loadGenerationExecutorService.getQueue().size());
@@ -144,7 +144,7 @@ public class MonitorQueryUnderContentionBenchmark {
   }
 
   @Benchmark
-  @Measurement(iterations = (int) BenchmarkIterations)
+  @Measurement(iterations = (int) BENCHMARK_ITERATIONS)
   @BenchmarkMode(Mode.SingleShotTime)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
@@ -158,17 +158,17 @@ public class MonitorQueryUnderContentionBenchmark {
     return executorService.scheduleAtFixedRate(() -> {
       queryStarter.run();
     },
-        QueryInitialDelay,
+        QUERY_INITIAL_DELAY,
         startPeriod,
         TimeUnit.MILLISECONDS);
   }
 
   private void startOneFastQuery(ScheduledExecutorService executorService) {
-    startOneSimulatedQuery(executorService, StartDelayRangeMillis, FastQueryCompletionMode);
+    startOneSimulatedQuery(executorService, START_DELAY_RANGE_MILLIS, FAST_QUERY_COMPLETION_MODE);
   }
 
   private void startOneSlowQuery(ScheduledExecutorService executorService) {
-    startOneSimulatedQuery(executorService, StartDelayRangeMillis, SlowQueryCompletionMode);
+    startOneSimulatedQuery(executorService, START_DELAY_RANGE_MILLIS, SLOW_QUERY_COMPLETION_MODE);
   }
 
   private void startOneSimulatedQuery(ScheduledExecutorService executorService,
@@ -192,7 +192,7 @@ public class MonitorQueryUnderContentionBenchmark {
   }
 
   private String querySpeed(int completeDelayRangeMillis) {
-    return completeDelayRangeMillis == FastQueryCompletionMode
+    return completeDelayRangeMillis == FAST_QUERY_COMPLETION_MODE
         ? "FAST" : "(slow)";
   }
 

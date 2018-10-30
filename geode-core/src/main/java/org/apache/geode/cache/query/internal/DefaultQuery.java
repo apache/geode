@@ -148,7 +148,7 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  static final ThreadLocal<AtomicBoolean> QueryCanceled =
+  static final ThreadLocal<AtomicBoolean> queryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
 
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
@@ -469,7 +469,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      QueryCanceled.remove();
+      queryCanceled.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }

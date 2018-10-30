@@ -292,7 +292,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * (see QueryMonitor class for reasons why a query might be cancelled).
    * That processing is very efficient, so we don't foresee needing to raise this above 1.
    */
-  private static final int QueryMonitorThreadPoolSize = 1;
+  private static final int QUERY_MONITOR_THREAD_POOL_SIZE = 1;
 
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
@@ -4469,7 +4469,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           this.queryMonitor =
               new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
-                  QueryMonitorThreadPoolSize,
+                  QUERY_MONITOR_THREAD_POOL_SIZE,
                   (runnable) -> new LoggingThread("QueryMonitor Thread", runnable)),
                   this,
                   maxTime);

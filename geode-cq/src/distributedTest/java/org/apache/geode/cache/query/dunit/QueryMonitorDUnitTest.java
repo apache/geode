@@ -66,6 +66,7 @@ import org.apache.geode.test.junit.rules.VMProvider;
 @Category({OQLQueryTest.class})
 public class QueryMonitorDUnitTest {
   private static int MAX_QUERY_EXECUTE_TIME = 1;
+
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(5);
 

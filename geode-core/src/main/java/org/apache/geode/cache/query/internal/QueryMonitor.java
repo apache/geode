@@ -49,7 +49,7 @@ import org.apache.geode.internal.logging.LogService;
  * <ul>
  * <li>registers an exception on the query via
  * {@link DefaultQuery#setQueryCanceledException(CacheRuntimeException)}</li>
- * <li>sets the {@link DefaultQuery#QueryCanceled} thread-local variable to {@code true}
+ * <li>sets the {@link DefaultQuery#queryCanceled} thread-local variable to {@code true}
  * so that subsequent calls to {@link #throwExceptionIfQueryOnCurrentThreadIsCanceled()}
  * will throw an exception</li>
  * </ul>
@@ -178,7 +178,7 @@ public class QueryMonitor {
    * @throws QueryExecutionCanceledException if the query has been canceled
    */
   public static void throwExceptionIfQueryOnCurrentThreadIsCanceled() {
-    if (DefaultQuery.QueryCanceled.get().get()) {
+    if (DefaultQuery.queryCanceled.get().get()) {
       throw new QueryExecutionCanceledException();
     }
   }
@@ -201,6 +201,10 @@ public class QueryMonitor {
     return LOW_MEMORY_USED_BYTES;
   }
 
+  /**
+   * Caller should not call this method concurrently from multiple threads. Doing so can
+   * result in lost low memory state updates due to lock unfairness.
+   */
   public synchronized void setLowMemory(final boolean isLowMemory, final long usedBytes) {
     if (!cache.isQueryMonitorDisabledForLowMemory()) {
       QueryMonitor.LOW_MEMORY_USED_BYTES = usedBytes;
@@ -258,9 +262,9 @@ public class QueryMonitor {
   private ScheduledFuture<?> scheduleCancelationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
-    // Make ThreadLocal QueryCanceled available to closure, which will run in a separate thread
+    // Make ThreadLocal queryCanceled available to closure, which will run in a separate thread
     final AtomicBoolean queryCanceledThreadLocal =
-        DefaultQuery.QueryCanceled.get();
+        DefaultQuery.queryCanceled.get();
 
     return executor.schedule(() -> {
       final CacheRuntimeException exception = cancelingDueToLowMemory ? createLowMemoryException()
