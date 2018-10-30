@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.internal.ClusterDistributionManager.FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX;
+
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -24,7 +26,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -42,6 +47,11 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
   protected final PoolStatHelper stats;
   private final ThreadsMonitoring threadMonitoring;
+
+  private static final Logger logger = LogService.getLogger();
+
+  private static final int OFFER_TIME =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RETRY_INTERVAL", 5000).intValue();
 
   /**
    * Create a new pool
@@ -86,15 +96,32 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
             throw new RejectedExecutionException(
                 "executor has been shutdown");
           } else {
-            // System.out.println("Asif: Rejection called");
-            if (Thread
-                .currentThread() == ((FunctionExecutionPooledExecutor) executor).bufferConsumer) {
-              Thread th = executor.getThreadFactory().newThread((new Runnable() {
-                public void run() {
-                  r.run();
+            // The request was rejected due to all threads being in use.
+            //
+            // In the normal case, add the rejected request to the blocking queue.
+            //
+            // If the handler was invoked via the bufferConsumer (the thread that takes from the
+            // blocking queue and offers to the synchronous queue), then spin off a thread directly.
+            // In this case, an offer has already been made to the synchronous queue and failed, so
+            // all the function execution threads are in use.
+            //
+            // If the handler was invoked via a function execution thread, then spin off a thread
+            // directly. In this case, that means a function is executing another function. The
+            // child function request shouldn't be in the queue behind the parent request since the
+            // parent function is dependent on the child function executing.
+            boolean isBufferConsumer = isBufferConsumer(executor);
+            if (isBufferConsumer || isFunctionExecutionThread()) {
+              if (isBufferConsumer) {
+                logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
+                    + " thread is being launched because all " + executor.getMaximumPoolSize()
+                    + " thread pool threads are in use for greater than " + OFFER_TIME + " ms");
+              } else {
+                if (logger.isDebugEnabled()) {
+                  logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
+                      + " thread is being launched to prevent slow performance due to nested function executions");
                 }
-              }));
-              th.start();
+              }
+              launchAdditionalThread(r, executor);
             } else {
               try {
                 q.put(r);
@@ -105,6 +132,25 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
               }
             }
           }
+        }
+
+        private boolean isBufferConsumer(ThreadPoolExecutor executor) {
+          return Thread
+              .currentThread() == ((FunctionExecutionPooledExecutor) executor).bufferConsumer;
+        }
+
+        private boolean isFunctionExecutionThread() {
+          return ClusterDistributionManager.isFunctionExecutionThread();
+        }
+
+        private void launchAdditionalThread(final Runnable r, ThreadPoolExecutor executor) {
+          Thread th = executor.getThreadFactory().newThread(
+              (new Runnable() {
+                public void run() {
+                  r.run();
+                }
+              }));
+          th.start();
         }
       };
     } else {
@@ -125,8 +171,6 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
       PoolStatHelper stats, ThreadFactory tf, int msTimeout, final boolean forFnExec,
       ThreadsMonitoring tMonitoring) {
     this(initQ(q), maxPoolSize, stats, tf, msTimeout, initREH(q, forFnExec), tMonitoring);
-    final int retryFor =
-        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RETRY_INTERVAL", 5000).intValue();
     if (!(q instanceof SynchronousQueue)) {
       this.bufferQueue = q;
       // create a thread that takes from bufferQueue and puts into result
@@ -139,10 +183,14 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
               SystemFailure.checkFailure();
               Runnable task = takeQueue.take();
               if (forFnExec) {
-                if (!putQueue.offer(task, retryFor, TimeUnit.MILLISECONDS)) {
+                // In the function case, offer the request to the work queue.
+                // If it fails, execute it anyway. This will cause the RejectedExecutionHandler to
+                // spin off a thread for it.
+                if (!putQueue.offer(task, OFFER_TIME, TimeUnit.MILLISECONDS)) {
                   execute(task);
                 }
               } else {
+                // In the non-function case, put the request on the work queue.
                 putQueue.put(task);
               }
             }
