@@ -41,7 +41,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -442,7 +441,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
     if (xmlEntity != null) {
       verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+          () -> (getConfigurationPersistenceService())
               .addXmlEntity(xmlEntity, groups));
     }
     return result;
