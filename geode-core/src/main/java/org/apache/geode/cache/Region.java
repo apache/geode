@@ -180,26 +180,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   <PK, PV> Region<PK, PV> getParentRegion();
 
   /**
-   * Gets the root ancestor region for this region. If the region itself is a root region
-   * (i.e. has no parents), returns null.
-   * <p>
-   * Does not throw a <code>CacheClosedException</code> or a <code>RegionDestroyedException</code>.
-   *
-   * @return the root ancestor region which contains this region; null,
-   *         if this region is the root region
-   * @see Region#createSubregion(String, RegionAttributes) createSubregion
-   */
-  default <PK, PV> Region<PK, PV> getRootRegion() {
-    Region<PK, PV> currentRegion = getParentRegion();
-
-    while (currentRegion != null && currentRegion.getParentRegion() != null) {
-      currentRegion = currentRegion.getParentRegion();
-    }
-
-    return currentRegion;
-  }
-
-  /**
    * Returns the <code>RegionAttributes</code> for this region. This object is backed by this
    * region, so if attributes are modified using this region's <code>AttributesMutator</code>, this
    * <code>RegionAttributes</code> object will immediately reflect the change.
@@ -213,7 +193,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see #getAttributesMutator
    */
   RegionAttributes<K, V> getAttributes();
-
 
   /**
    * Returns a mutator object used for modifying this region's attributes after region creation.

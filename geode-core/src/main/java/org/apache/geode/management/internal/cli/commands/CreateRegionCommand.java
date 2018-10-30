@@ -441,8 +441,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
     if (xmlEntity != null) {
       verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> (getConfigurationPersistenceService())
-              .addXmlEntity(xmlEntity, groups));
+          () -> getConfigurationPersistenceService().addXmlEntity(xmlEntity, groups));
     }
     return result;
   }
