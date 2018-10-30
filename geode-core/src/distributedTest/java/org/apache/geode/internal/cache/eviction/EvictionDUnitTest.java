@@ -1,3 +1,17 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.internal.cache.eviction;
 
 import static java.lang.Math.abs;
@@ -63,7 +77,7 @@ public class EvictionDUnitTest {
   private MemberVM server0, server1;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     int locatorPort = ClusterStartupRule.getDUnitLocatorPort();
     Properties properties = new Properties();
     if (offHeap) {
@@ -211,7 +225,7 @@ public class EvictionDUnitTest {
               f -> f.setOffHeap(offHeap).setDataPolicy(DataPolicy.NORMAL).setEvictionAttributes(
                   EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.LOCAL_DESTROY)));
       for (int counter = 1; counter <= 50; counter++) {
-        dr1.put(new Integer(counter), new byte[1024 * 1024]);
+        dr1.put(counter, new byte[1024 * 1024]);
       }
 
       int expectedEviction = getExpectedEviction();
@@ -242,9 +256,8 @@ public class EvictionDUnitTest {
       hmm.updateStateAndSendEvent(90);
     }
 
-    int expectedEviction = (int) Math
+    return (int) Math
         .ceil((evictor.getTotalBytesToEvict() / 2) / (double) ((1024 * 1024) + 100)) * 2;
-    return expectedEviction;
   }
 
   /**
@@ -252,10 +265,10 @@ public class EvictionDUnitTest {
    * Test Case verifies:If naturally Eviction up and eviction Down events are raised. Centralized
    * and Inline eviction are happening. All this verification is done through logs. It also verifies
    * that during eviction, if one node goes down and then comes up again causing GII to take place,
-   * the system doesnot throw an OOME.
+   * the system does not throw an OOME.
    */
   @Test
-  public void testEvictionWithNodeDown() throws Exception {
+  public void testEvictionWithNodeDown() {
     IgnoredException.addIgnoredException("java.io.IOException");
     SerializableRunnableIF setupVM = () -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
@@ -270,7 +283,7 @@ public class EvictionDUnitTest {
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK))
               .setDiskSynchronous(true)
               .setDiskStoreName(cache.createDiskStoreFactory().setDiskDirs(diskDirs)
-                  .create("EvictionTestBase").getName()),
+                  .create("EvictionTest").getName()),
           f -> f.setTotalNumBuckets(2).setRedundantCopies(1));
 
       server.createPartitionRegion("PR2",
@@ -278,7 +291,7 @@ public class EvictionDUnitTest {
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK))
               .setDiskSynchronous(true)
               .setDiskStoreName(cache.createDiskStoreFactory().setDiskDirs(diskDirs)
-                  .create("EvictionTestBase").getName()),
+                  .create("EvictionTest").getName()),
           f -> f.setTotalNumBuckets(2).setRedundantCopies(1));
     };
 

@@ -1,3 +1,17 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.internal.cache.eviction;
 
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
@@ -5,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +60,7 @@ public class EvictionIntegrationTest {
   public ServerStarterRule server = new ServerStarterRule().withNoCacheServer();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     if (offHeap) {
       server.withProperty(OFF_HEAP_MEMORY_SIZE, "200m");
     }
@@ -113,9 +126,10 @@ public class EvictionIntegrationTest {
 
     assertThat(pr1.getTotalEvictions()).isEqualTo(extraEntries);
 
-    for (final Iterator i = pr1.getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+    for (Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : pr1.getDataStore()
+        .getAllLocalBuckets()) {
+      final BucketRegion bucketRegion =
+          (BucketRegion) ((Map.Entry) integerBucketRegionEntry).getValue();
       if (bucketRegion == null) {
         continue;
       }
@@ -179,7 +193,7 @@ public class EvictionIntegrationTest {
         f -> f.setOffHeap(offHeap).setDataPolicy(DataPolicy.NORMAL).setEvictionAttributes(
             EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.LOCAL_DESTROY)));
 
-    HeapEvictor evictor = ((GemFireCacheImpl) server.getCache()).getHeapEvictor();;
+    HeapEvictor evictor = ((GemFireCacheImpl) server.getCache()).getHeapEvictor();
     List<Integer> taskSetSizes = evictor.testOnlyGetSizeOfTasks();
 
     for (Integer size : taskSetSizes) {
