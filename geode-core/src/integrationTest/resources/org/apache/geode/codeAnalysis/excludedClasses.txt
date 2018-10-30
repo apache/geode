@@ -50,12 +50,9 @@ org/apache/geode/internal/hll/HyperLogLogPlus$Builder
 org/apache/geode/internal/hll/HyperLogLogPlus$Format
 org/apache/geode/internal/hll/HyperLogLogPlus$HyperLogLogPlusMergeException
 org/apache/geode/internal/hll/HyperLogLogPlus$SerializationHolder
-org/apache/geode/internal/logging/Configuration
 org/apache/geode/internal/logging/Configuration$LogLevelUpdateOccurs
 org/apache/geode/internal/logging/Configuration$LogLevelUpdateScope
-org/apache/geode/internal/logging/LogMessageRegex
 org/apache/geode/internal/logging/LogMessageRegex$Groups
-org/apache/geode/internal/logging/LoggingSession
 org/apache/geode/internal/logging/LoggingSession$State
 org/apache/geode/internal/logging/LogWriterLevel
 org/apache/geode/internal/logging/log4j/FastLogger
