@@ -342,7 +342,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
     setTXState(proxy);
     if (logger.isDebugEnabled()) {
-      logger.debug("begin tx: " + proxy);
+      logger.debug("begin tx: {}", proxy);
     }
     this.localTxMap.put(id, proxy);
   }
@@ -1006,7 +1006,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
     setTXState(txState);
     if (logger.isDebugEnabled()) {
-      logger.debug("masqueradeAs tx " + txState);
+      logger.debug("masqueradeAs tx {}", txState);
     }
   }
 

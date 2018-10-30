@@ -312,7 +312,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     }
   }
 
-  public static class MyFixedPartitionResolver implements FixedPartitionResolver {
+  private static class MyFixedPartitionResolver implements FixedPartitionResolver {
 
     public MyFixedPartitionResolver() {}
 
