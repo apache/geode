@@ -766,7 +766,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       try {
-        startInitLocator();
+        startInitLocator(loggingSession);
       } catch (InterruptedException e) {
         throw new SystemConnectException("Startup has been interrupted", e);
       }
@@ -815,7 +815,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
       if (attemptingToReconnect && (this.startedLocator == null)) {
         try {
-          startInitLocator();
+          startInitLocator(loggingSession);
         } catch (InterruptedException e) {
           throw new SystemConnectException("Startup has been interrupted", e);
         }
@@ -856,9 +856,10 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
+   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does nothing
    * @since GemFire 5.7
    */
-  private void startInitLocator() throws InterruptedException {
+  private void startInitLocator(LoggingSession loggingSession) throws InterruptedException {
     String locatorString = this.originalConfig.getStartLocator();
     if (locatorString.length() == 0) {
       return;
@@ -878,9 +879,10 @@ public class InternalDistributedSystem extends DistributedSystem
     }
     DistributionLocatorId locId = new DistributionLocatorId(locatorString);
     try {
-      this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, this.logWriter,
-          this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
-          this.originalConfig.toProperties(), false);
+      this.startedLocator =
+          InternalLocator.createLocator(locId.getPort(), loggingSession, null, this.logWriter,
+              this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
+              this.originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);

@@ -39,7 +39,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.assertj.LogFileAssert;
+import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 

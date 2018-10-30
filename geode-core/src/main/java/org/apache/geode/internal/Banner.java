@@ -14,6 +14,17 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.internal.BannerHeader.CLASS_PATH;
+import static org.apache.geode.internal.BannerHeader.COMMAND_LINE_PARAMETERS;
+import static org.apache.geode.internal.BannerHeader.COMMUNICATIONS_VERSION;
+import static org.apache.geode.internal.BannerHeader.CURRENT_DIR;
+import static org.apache.geode.internal.BannerHeader.HOME_DIR;
+import static org.apache.geode.internal.BannerHeader.LIBRARY_PATH;
+import static org.apache.geode.internal.BannerHeader.LOG4J2_CONFIGURATION;
+import static org.apache.geode.internal.BannerHeader.PROCESS_ID;
+import static org.apache.geode.internal.BannerHeader.SYSTEM_PROPERTIES;
+import static org.apache.geode.internal.BannerHeader.USER;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
@@ -36,6 +47,9 @@ import org.apache.geode.internal.util.ArgumentRedactor;
  * Utility class to print banner information at manager startup.
  */
 public class Banner {
+
+  public static final String SEPARATOR =
+      "---------------------------------------------------------------------------";
 
   private Banner() {
     // everything is static so don't allow instance creation
@@ -72,8 +86,6 @@ public class Banner {
     sp.remove("os.name");
     sp.remove("os.arch");
 
-    final String SEPARATOR =
-        "---------------------------------------------------------------------------";
     int processId = attemptToReadProcessId();
     short currentOrdinal = Version.CURRENT_ORDINAL;
 
@@ -94,28 +106,28 @@ public class Banner {
     printASFLicense(out);
     out.println(SEPARATOR);
     GemFireVersion.print(out);
-    out.println("Communications version: " + currentOrdinal);
-    out.println("Process ID: " + processId);
-    out.println("User: " + userName);
-    out.println("Current dir: " + userDir);
-    out.println("Home dir: " + userHome);
+    out.println(COMMUNICATIONS_VERSION.displayValue() + ": " + currentOrdinal);
+    out.println(PROCESS_ID.displayValue() + ": " + processId);
+    out.println(USER.displayValue() + ": " + userName);
+    out.println(CURRENT_DIR.displayValue() + ": " + userDir);
+    out.println(HOME_DIR.displayValue() + ": " + userHome);
 
     if (!commandLineArguments.isEmpty()) {
-      out.println("Command Line Parameters:");
+      out.println(COMMAND_LINE_PARAMETERS.displayValue() + ":");
       for (String arg : commandLineArguments) {
         out.println("  " + ArgumentRedactor.redact(arg));
       }
     }
 
-    out.println("Class Path:");
+    out.println(CLASS_PATH.displayValue() + ":");
     prettyPrintPath((String) javaClassPath, out);
-    out.println("Library Path:");
+    out.println(LIBRARY_PATH.displayValue() + ":");
     prettyPrintPath((String) javaLibraryPath, out);
 
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableSystemPropertyLogging")) {
       out.println("System property logging disabled.");
     } else {
-      out.println("System Properties:");
+      out.println(SYSTEM_PROPERTIES.displayValue() + ":");
       for (Object o : sp.entrySet()) {
         Entry me = (Entry) o;
         String key = me.getKey().toString();
@@ -123,7 +135,7 @@ public class Banner {
             ArgumentRedactor.redactArgumentIfNecessary(key, String.valueOf(me.getValue()));
         out.println("    " + key + " = " + value);
       }
-      out.println("Log4J 2 Configuration:");
+      out.println(LOG4J2_CONFIGURATION.displayValue() + ":");
       out.println("    " + ConfigurationInfo.getConfigurationInfo());
     }
     out.println(SEPARATOR);
@@ -154,7 +166,7 @@ public class Banner {
 
   private static void printASFLicense(PrintWriter out) {
     out.println("  ");
-    out.println("  Licensed to the Apache Software Foundation (ASF) under one or more");
+    out.println("  " + BannerHeader.LICENSE_START.displayValue());
     out.println("  contributor license agreements.  See the NOTICE file distributed with this");
     out.println("  work for additional information regarding copyright ownership.");
     out.println("   ");
@@ -184,4 +196,5 @@ public class Banner {
     pw.close();
     return sw.toString();
   }
+
 }

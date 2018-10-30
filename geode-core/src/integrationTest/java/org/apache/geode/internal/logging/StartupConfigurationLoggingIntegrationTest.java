@@ -19,16 +19,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.logging.Configuration.STARTUP_CONFIGURATION;
-import static org.apache.geode.internal.logging.LogMessageRegex.getPattern;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +42,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.logging.assertj.LogFileAssert;
+import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -58,7 +55,7 @@ public class StartupConfigurationLoggingIntegrationTest {
   private File mainLogFile;
   private InternalDistributedSystem system;
   private String banner;
-  private String startupConfiguration;
+  private String[] startupConfiguration;
   private Logger geodeLogger;
   private String logMessage;
 
@@ -83,7 +80,8 @@ public class StartupConfigurationLoggingIntegrationTest {
     banner = Banner.getString(null);
 
     DistributionConfig distributionConfig = system.getConfig();
-    startupConfiguration = STARTUP_CONFIGURATION + distributionConfig.toLoggerString();
+    startupConfiguration = StringUtils
+        .split(STARTUP_CONFIGURATION + distributionConfig.toLoggerString(), LINE_SEPARATOR);
 
     geodeLogger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
@@ -97,82 +95,19 @@ public class StartupConfigurationLoggingIntegrationTest {
   }
 
   @Test
-  public void simpleControl() {
-    geodeLogger.info(logMessage);
-
-    LogFileAssert.assertThat(mainLogFile).contains(logMessage);
-  }
-
-  @Test
   public void startupConfigurationIsLoggedToFile() {
     LogFileAssert.assertThat(mainLogFile).contains(startupConfiguration);
   }
 
   @Test
-  public void startupConfigurationIsLoggedToFileBeforeLogMessage() throws Exception {
-    geodeLogger.info(logMessage);
-
-    List<String> startupConfigLines =
-        Arrays.asList(StringUtils.split(startupConfiguration, LINE_SEPARATOR));
-    List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
-
-    boolean foundStartupConfig = false;
-    boolean foundLogMessage = false;
-
-    for (String line : logLines) {
-      if (startupConfigLines.contains(line)) {
-        assertThat(foundLogMessage)
-            .as("Startup configuration should be before log message: " + logLines).isFalse();
-        foundStartupConfig = true;
-      }
-      if (line.contains(logMessage)) {
-        assertThat(foundStartupConfig)
-            .as("Log message should be after startup configuration: " + logLines).isTrue();
-        foundLogMessage = true;
-      }
-    }
-
-    assertThat(foundStartupConfig).as("Startup configuration not found in: " + logLines).isTrue();
-    assertThat(foundLogMessage).as("Log message not found in: " + logLines).isTrue();
-  }
-
-  /**
-   * Verifies that the startup configuration is logged to file once and matches the startup
-   * configuration in memory.
-   */
-  @Test
-  public void startupConfigurationIsLoggedToFileOnce() throws Exception {
-    List<String> startupConfigLines =
-        Arrays.asList(StringUtils.split(startupConfiguration, LINE_SEPARATOR));
-    List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
-
-    List<String> logLinesMatchingStartupConfigLines = new ArrayList<>();
-    List<String> actualStartupConfigLinesToCompare = new ArrayList<>();
-
-    for (String line : logLines) {
-      if (line.contains(STARTUP_CONFIGURATION)) {
-        logLinesMatchingStartupConfigLines.add(line);
-
-        // add just MESSAGE portion of the log message
-        Matcher matcher = getPattern().matcher(line);
-        assertThat(matcher.matches()).isTrue();
-        actualStartupConfigLinesToCompare
-            .add(matcher.group(LogMessageRegex.Groups.MESSAGE.getName()));
-      }
-      if (startupConfigLines.contains(line)) {
-        logLinesMatchingStartupConfigLines.add(line);
-        actualStartupConfigLinesToCompare.add(line);
-      }
-    }
-
-    assertThat(actualStartupConfigLinesToCompare).isEqualTo(startupConfigLines);
+  public void startupConfigurationIsLoggedToFileOnlyOnce() {
+    LogFileAssert.assertThat(mainLogFile).containsOnlyOnce(startupConfiguration);
   }
 
   @Test
   public void startupConfigurationIsLoggedToFileAfterBanner() throws Exception {
     List<String> bannerLines = Arrays.asList(StringUtils.split(banner, LINE_SEPARATOR));
-    List<String> startupConfigLines =
-        Arrays.asList(StringUtils.split(startupConfiguration, LINE_SEPARATOR));
+    List<String> startupConfigLines = Arrays.asList(startupConfiguration);
     List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
 
     boolean foundBanner = false;
@@ -193,5 +128,32 @@ public class StartupConfigurationLoggingIntegrationTest {
 
     assertThat(foundBanner).as("Banner not found in: " + logLines).isTrue();
     assertThat(foundStartupConfig).as("Startup configuration not found in: " + logLines).isTrue();
+  }
+
+  @Test
+  public void startupConfigurationIsLoggedToFileBeforeLogMessage() throws Exception {
+    geodeLogger.info(logMessage);
+
+    List<String> startupConfigLines = Arrays.asList(startupConfiguration);
+    List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
+
+    boolean foundStartupConfig = false;
+    boolean foundLogMessage = false;
+
+    for (String line : logLines) {
+      if (startupConfigLines.contains(line)) {
+        assertThat(foundLogMessage)
+            .as("Startup configuration should be before log message: " + logLines).isFalse();
+        foundStartupConfig = true;
+      }
+      if (line.contains(logMessage)) {
+        assertThat(foundStartupConfig)
+            .as("Log message should be after startup configuration: " + logLines).isTrue();
+        foundLogMessage = true;
+      }
+    }
+
+    assertThat(foundStartupConfig).as("Startup configuration not found in: " + logLines).isTrue();
+    assertThat(foundLogMessage).as("Log message not found in: " + logLines).isTrue();
   }
 }

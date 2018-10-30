@@ -12,34 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.assertj.impl;
+package org.apache.geode.test.assertj.internal;
 
-import java.util.List;
-
-import org.assertj.core.api.Condition;
+import org.apache.logging.log4j.Level;
 import org.assertj.core.error.BasicErrorMessageFactory;
 import org.assertj.core.error.ErrorMessageFactory;
 
-public class ShouldContainLine extends BasicErrorMessageFactory {
+class ShouldBeLessSpecificThan extends BasicErrorMessageFactory {
 
   /**
-   * Creates a new <code>{@link ShouldContainLine}</code>.
+   * Creates a new {@code ShouldBeLessSpecificThan}.
    *
-   * @param actual the actual file in the failed assertion.
-   * @param entryCondition entry condition.
+   * @param actual the actual value in the failed assertion.
+   * @param level the value that actual is being compared to in the failed assertion.
    * @return the created {@code ErrorMessageFactory}.
    */
-  public static ErrorMessageFactory shouldContainLine(List<String> actual,
-      Condition<?> entryCondition) {
-    return new ShouldContainLine(actual, entryCondition);
+  static ErrorMessageFactory shouldBeLessSpecificThan(final Level actual, final Level level) {
+    return new ShouldBeLessSpecificThan(actual, level);
   }
 
-  private ShouldContainLine(List<String> actual, Condition<?> entryCondition) {
-    super("%n" +
-        "Expecting:%n" +
-        " <%s>%n" +
-        "to contain a line satisfying:%n" +
-        " <%s>",
-        actual, entryCondition);
+  private ShouldBeLessSpecificThan(final Level actual, final Level level) {
+    super("%nExpecting:%n <%s>%nto be less specific than:%n <%s>%n", actual, level);
   }
 }

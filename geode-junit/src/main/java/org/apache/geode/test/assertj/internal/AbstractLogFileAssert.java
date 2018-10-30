@@ -12,10 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.assertj.impl;
+package org.apache.geode.test.assertj.internal;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.internal.CommonValidations.checkIsNotNull;
 import static org.assertj.core.internal.CommonValidations.failIfEmptySinceActualIsNotEmpty;
 
@@ -23,10 +24,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AssertionInfo;
 import org.assertj.core.internal.Files;
@@ -57,17 +61,8 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
     return myself;
   }
 
-  public SELF containsLine(String value) {
-    return containsLines(value);
-  }
-
-  public SELF containsLines(String... values) {
-    assertContainsLines(info, actual, charset, values);
-    return myself;
-  }
-
-  public SELF doesNotContainLines(String... values) {
-    assertDoesNotContainLines(info, actual, charset, values);
+  public SELF containsOnlyOnce(String... value) {
+    assertContainsOnlyOnce(info, actual, charset, value);
     return myself;
   }
 
@@ -78,7 +73,61 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
     files.assertIsFile(info, actual);
     try {
       List<String> actualLines = FileUtils.readLines(actual, charset);
-      assertThat(StringUtils.join(actualLines, LINE_SEPARATOR)).contains(values);
+      List<String> expectedLines = nonBlankStrings(Arrays.asList(values));
+
+      List<String> notFound = new ArrayList<>();
+      for (String expectedLine : expectedLines) {
+        if (!actualLinesContain(actualLines, expectedLine)) {
+          notFound.add(expectedLine);
+        }
+      }
+
+      if (!notFound.isEmpty()) {
+        fail("Expecting:" + LINE_SEPARATOR + " " + printLines(actualLines) + LINE_SEPARATOR +
+            "to contain:" + LINE_SEPARATOR + " " + printLines(expectedLines) + LINE_SEPARATOR +
+            "but could not find:" + LINE_SEPARATOR + " " + printLines(notFound));
+      }
+    } catch (IOException e) {
+      String msg = String.format("Unable to verify text contents of file:<%s>", actual);
+      throw new UncheckedIOException(msg, e);
+    }
+  }
+
+  private void assertContainsOnlyOnce(AssertionInfo info, File actual, Charset charset,
+      String[] values) {
+    if (commonCheckThatLogFileAssertionSucceeds(info, actual, values)) {
+      return;
+    }
+    files.assertIsFile(info, actual);
+    try {
+      List<String> actualLines = FileUtils.readLines(actual, charset);
+      List<String> expectedLines = nonBlankStrings(Arrays.asList(values));
+
+      List<String> notFound = new ArrayList<>();
+      List<String> moreThanOnce = new ArrayList<>();
+      for (String expectedLine : expectedLines) {
+        if (actualLinesContain(actualLines, expectedLine)) {
+          if (Collections.frequency(actualLines, expectedLine) > 1) {
+            moreThanOnce.add(expectedLine);
+          }
+        } else {
+          notFound.add(expectedLine);
+        }
+      }
+
+      if (!notFound.isEmpty()) {
+        fail("Expecting:" + LINE_SEPARATOR + " " + printLines(actualLines) + LINE_SEPARATOR +
+            "to contain:" + LINE_SEPARATOR + " " + printLines(expectedLines) + LINE_SEPARATOR +
+            "but could not find:" + LINE_SEPARATOR + " " + printLines(notFound));
+      }
+
+      if (!moreThanOnce.isEmpty()) {
+        fail("Expecting:" + LINE_SEPARATOR + " " + printLines(actualLines) + LINE_SEPARATOR +
+            "to contain only once:" + LINE_SEPARATOR + " " + printLines(expectedLines)
+            + LINE_SEPARATOR +
+            "but found more than once:" + LINE_SEPARATOR + " " + printLines(moreThanOnce));
+      }
+
     } catch (IOException e) {
       String msg = String.format("Unable to verify text contents of file:<%s>", actual);
       throw new UncheckedIOException(msg, e);
@@ -93,37 +142,23 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
     files.assertIsFile(info, actual);
     try {
       List<String> actualLines = FileUtils.readLines(actual, charset);
-      assertThat(StringUtils.join(actualLines, LINE_SEPARATOR)).doesNotContain(values);
-    } catch (IOException e) {
-      String msg = String.format("Unable to verify text contents of file:<%s>", actual);
-      throw new UncheckedIOException(msg, e);
-    }
-  }
+      List<String> unexpectedLines = nonBlankStrings(Arrays.asList(values));
 
-  private void assertContainsLines(AssertionInfo info, File actual, Charset charset,
-      String[] values) {
-    if (commonCheckThatLogFileAssertionSucceeds(info, actual, values)) {
-      return;
-    }
-    files.assertIsFile(info, actual);
-    try {
-      List<String> actualLines = FileUtils.readLines(actual, charset);
-      assertThat(actualLines).contains(values);
-    } catch (IOException e) {
-      String msg = String.format("Unable to verify text contents of file:<%s>", actual);
-      throw new UncheckedIOException(msg, e);
-    }
-  }
+      List<String> found = new ArrayList<>();
+      for (String actualLine : actualLines) {
+        for (String unexpectedLine : unexpectedLines) {
+          if (actualLine.contains(unexpectedLine)) {
+            found.add(actualLine);
+          }
+        }
+      }
 
-  private void assertDoesNotContainLines(AssertionInfo info, File actual, Charset charset,
-      String[] values) {
-    if (commonCheckThatLogFileAssertionSucceeds(info, actual, values)) {
-      return;
-    }
-    files.assertIsFile(info, actual);
-    try {
-      List<String> actualLines = FileUtils.readLines(actual, charset);
-      assertThat(actualLines).doesNotContain(values);
+      if (!found.isEmpty()) {
+        fail("Expecting:" + LINE_SEPARATOR + " " + printLines(actualLines) + LINE_SEPARATOR +
+            "to not contain:" + LINE_SEPARATOR + " " + printLines(unexpectedLines) + LINE_SEPARATOR
+            +
+            "but found:" + LINE_SEPARATOR + " " + printLines(found));
+      }
     } catch (IOException e) {
       String msg = String.format("Unable to verify text contents of file:<%s>", actual);
       throw new UncheckedIOException(msg, e);
@@ -147,4 +182,26 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
   private void assertNotNull(AssertionInfo info, File actual) {
     Objects.instance().assertNotNull(info, actual);
   }
+
+  private boolean actualLinesContain(List<String> actualLines, String value) {
+    for (String actualLine : actualLines) {
+      if (actualLine.contains(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private String printLines(List<String> lines) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (String line : lines) {
+      stringBuilder.append(line).append(LINE_SEPARATOR);
+    }
+    return stringBuilder.toString();
+  }
+
+  private static List<String> nonBlankStrings(List<String> values) {
+    return values.stream().filter(s -> isNotBlank(s)).collect(Collectors.toList());
+  }
+
 }

@@ -12,12 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.assertj;
+package org.apache.geode.test.assertj;
 
 import java.io.File;
 
-import org.apache.geode.internal.logging.assertj.impl.AbstractLogFileAssert;
+import org.apache.geode.test.assertj.internal.AbstractLogFileAssert;
 
+/**
+ * {@code AssertJ} assertions for partial string contains of log files.
+ */
 public class LogFileAssert extends AbstractLogFileAssert<LogFileAssert> {
 
   public static LogFileAssert assertThat(File actual) {

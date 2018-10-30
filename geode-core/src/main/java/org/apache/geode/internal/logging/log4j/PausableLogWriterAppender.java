@@ -401,10 +401,6 @@ public class PausableLogWriterAppender extends AbstractAppender
     }
   }
 
-  private void logBanner() {
-    LogManager.getLogger().info(LogMarker.CONFIG_MARKER, Banner.getString(null));
-  }
-
   private void logRolloverDetails(final LogFileRolloverDetails logFileRolloverDetails) {
     // log the first msg about renaming logFile for rolling if it pre-existed
     if (logFileRolloverDetails.exists()) {
@@ -414,6 +410,10 @@ public class PausableLogWriterAppender extends AbstractAppender
         LogManager.getLogger().info(logFileRolloverDetails.getMessage());
       }
     }
+  }
+
+  private void logBanner() {
+    LogManager.getLogger().info(LogMarker.CONFIG_MARKER, Banner.getString(null));
   }
 
   /**

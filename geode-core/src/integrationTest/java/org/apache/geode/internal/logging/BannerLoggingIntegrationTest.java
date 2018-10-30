@@ -14,20 +14,17 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.internal.BannerHeader.displayValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +37,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.logging.assertj.LogFileAssert;
+import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -51,7 +48,6 @@ public class BannerLoggingIntegrationTest {
 
   private File mainLogFile;
   private InternalDistributedSystem system;
-  private String banner;
   private Logger geodeLogger;
   private String logMessage;
 
@@ -72,8 +68,6 @@ public class BannerLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    banner = Banner.getString(null);
-
     geodeLogger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
   }
@@ -87,24 +81,28 @@ public class BannerLoggingIntegrationTest {
 
   @Test
   public void bannerIsLoggedToFile() {
-    LogFileAssert.assertThat(mainLogFile).contains(banner);
+    LogFileAssert.assertThat(mainLogFile).contains(displayValues());
+  }
+
+  @Test
+  public void bannerIsLoggedToFileOnlyOnce() {
+    LogFileAssert.assertThat(mainLogFile).containsOnlyOnce(displayValues());
   }
 
   /**
-   * Verifies that the banner is logged completely before any log messages.
+   * Verifies that the banner is logged before any log messages.
    */
   @Test
   public void bannerIsLoggedToFileBeforeLogMessage() throws Exception {
     geodeLogger.info(logMessage);
 
-    List<String> bannerLines = Arrays.asList(StringUtils.split(banner, LINE_SEPARATOR));
     List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
 
     boolean foundBanner = false;
     boolean foundLogMessage = false;
 
     for (String line : logLines) {
-      if (bannerLines.contains(line)) {
+      if (containsAny(line, displayValues())) {
         assertThat(foundLogMessage).as("Banner should be logged before log message: " + logLines)
             .isFalse();
         foundBanner = true;
@@ -120,21 +118,12 @@ public class BannerLoggingIntegrationTest {
     assertThat(foundLogMessage).as("Log message not found in: " + logLines).isTrue();
   }
 
-  /**
-   * Verifies that the banner is logged to file once and matches the banner in memory.
-   */
-  @Test
-  public void bannerIsLoggedToFileOnce() throws Exception {
-    List<String> bannerLines = Arrays.asList(StringUtils.split(banner, LINE_SEPARATOR));
-    List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
-
-    List<String> logLinesMatchingBannerLines = new ArrayList<>();
-    for (String line : logLines) {
-      if (bannerLines.contains(line)) {
-        logLinesMatchingBannerLines.add(line);
+  private boolean containsAny(String string, String... values) {
+    for (String value : values) {
+      if (string.contains(value)) {
+        return true;
       }
     }
-
-    assertThat(logLinesMatchingBannerLines).isEqualTo(bannerLines);
+    return false;
   }
 }

@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.assertj.impl;
+package org.apache.geode.test.assertj.internal;
 
-import static org.apache.geode.internal.logging.assertj.impl.ShouldBeLessSpecificThan.shouldBeLessSpecificThan;
+import static org.apache.geode.test.assertj.internal.ShouldBeLessSpecificThan.shouldBeLessSpecificThan;
 
 import org.apache.logging.log4j.Level;
 import org.assertj.core.api.AbstractAssert;
