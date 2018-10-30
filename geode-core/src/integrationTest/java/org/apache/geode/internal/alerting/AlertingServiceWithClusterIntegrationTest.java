@@ -80,7 +80,7 @@ public class AlertingServiceWithClusterIntegrationTest {
     exceptionMessage = "Exception in " + testName.getMethodName();
     connectionName = "Member in " + testName.getMethodName();
     threadName = Thread.currentThread().getName();
-    threadId = Long.valueOf(Long.toHexString(Thread.currentThread().getId()));
+    threadId = Thread.currentThread().getId();
 
     messageListener = spy(AlertListenerMessage.Listener.class);
     addListener(messageListener);
