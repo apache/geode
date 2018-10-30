@@ -125,7 +125,9 @@ public class SSLTest {
 
   @Test
   public void driverFailsToConnectWhenThereAreNoServers() throws Exception {
-    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "any", "any");
+    // using TLSv1.2 specifically so that in jdk11 (by default using TLSv1.3) this won't take
+    // too long to finish.
+    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.2", "any");
     expectedException.expect(IOException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort).create();
   }
@@ -153,7 +155,9 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectWithBogusServerKeystore() throws Exception {
-    startLocator(BOGUSSERVER_KEY_STORE, SERVER_TRUST_STORE, true, "any", "any");
+    // using TLSv1.2 specifically so that in jdk11 (by default using TLSv1.3) this won't take
+    // too long to finish.
+    startLocator(BOGUSSERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.2", "any");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)
