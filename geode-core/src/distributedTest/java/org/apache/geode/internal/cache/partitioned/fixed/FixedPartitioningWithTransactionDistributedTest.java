@@ -61,7 +61,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -308,9 +307,6 @@ public class FixedPartitioningWithTransactionDistributedTest implements
       ResultCollector resultCollector =
           execution.withFilter(keySet).execute(new MyResumeTransactionFunction());
       resultCollector.getResult();
-    } catch (Exception e) {
-      LogService.getLogger().info("got exception ", e);
-      throw e;
     } finally {
       manager.rollback();
     }
