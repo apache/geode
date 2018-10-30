@@ -104,6 +104,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -766,7 +767,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       try {
-        startInitLocator(loggingSession);
+        startInitLocator();
       } catch (InterruptedException e) {
         throw new SystemConnectException("Startup has been interrupted", e);
       }
@@ -815,7 +816,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
       if (attemptingToReconnect && (this.startedLocator == null)) {
         try {
-          startInitLocator(loggingSession);
+          startInitLocator();
         } catch (InterruptedException e) {
           throw new SystemConnectException("Startup has been interrupted", e);
         }
@@ -856,10 +857,9 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does nothing
    * @since GemFire 5.7
    */
-  private void startInitLocator(LoggingSession loggingSession) throws InterruptedException {
+  private void startInitLocator() throws InterruptedException {
     String locatorString = this.originalConfig.getStartLocator();
     if (locatorString.length() == 0) {
       return;
@@ -880,9 +880,9 @@ public class InternalDistributedSystem extends DistributedSystem
     DistributionLocatorId locId = new DistributionLocatorId(locatorString);
     try {
       this.startedLocator =
-          InternalLocator.createLocator(locId.getPort(), loggingSession, null, this.logWriter,
-              this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
-              this.originalConfig.toProperties(), false);
+          InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
+              logWriter, securityLogWriter, locId.getHost().getAddress(),
+              locId.getHostnameForClients(), originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);

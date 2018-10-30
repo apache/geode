@@ -26,17 +26,17 @@ public class NullLoggingSession extends LoggingSession {
 
   @Override
   public void createSession(final LogConfigSupplier logConfigSupplier) {
-    changeStateTo(State.CREATED);
+    // nothing
   }
 
   @Override
   public void startSession() {
-    changeStateTo(State.STARTED);
+    // nothing
   }
 
   @Override
   public void stopSession() {
-    changeStateTo(State.STOPPED);
+    // nothing
   }
 
   @Override

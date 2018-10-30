@@ -123,9 +123,9 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
 
       if (!moreThanOnce.isEmpty()) {
         fail("Expecting:" + LINE_SEPARATOR + " " + printLines(actualLines) + LINE_SEPARATOR +
-            "to contain only once:" + LINE_SEPARATOR + " " + printLines(expectedLines)
-            + LINE_SEPARATOR +
-            "but found more than once:" + LINE_SEPARATOR + " " + printLines(moreThanOnce));
+            "to contain only once:" + LINE_SEPARATOR + " " + printLines(expectedLines) +
+            LINE_SEPARATOR + "but found more than once:" + LINE_SEPARATOR + " " +
+            printLines(moreThanOnce));
       }
 
     } catch (IOException e) {
@@ -156,8 +156,7 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
       if (!found.isEmpty()) {
         fail("Expecting:" + LINE_SEPARATOR + " " + printLines(actualLines) + LINE_SEPARATOR +
             "to not contain:" + LINE_SEPARATOR + " " + printLines(unexpectedLines) + LINE_SEPARATOR
-            +
-            "but found:" + LINE_SEPARATOR + " " + printLines(found));
+            + "but found:" + LINE_SEPARATOR + " " + printLines(found));
       }
     } catch (IOException e) {
       String msg = String.format("Unable to verify text contents of file:<%s>", actual);

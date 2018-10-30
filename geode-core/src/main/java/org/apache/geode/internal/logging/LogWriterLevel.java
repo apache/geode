@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.logging;
 
-
 public enum LogWriterLevel {
 
   ALL(InternalLogWriter.ALL_LEVEL),

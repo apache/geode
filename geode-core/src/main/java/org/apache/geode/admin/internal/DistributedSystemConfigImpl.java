@@ -289,7 +289,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
       @Override
       public int getSecurityLogLevel() {
-        return 0;
+        return LogLevel.getLogWriterLevel(DistributedSystemConfigImpl.this.getLogLevel());
       }
 
       @Override
