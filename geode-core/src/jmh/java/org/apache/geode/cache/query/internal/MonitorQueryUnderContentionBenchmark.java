@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -53,12 +52,12 @@ public class MonitorQueryUnderContentionBenchmark {
   /*
    * Delay, before starting a simulated query task
    */
-  public static final int START_DELAY_RANGE_MILLIS = 100;
+  private static final int START_DELAY_RANGE_MILLIS = 100;
 
   /*
    * Delay, from time startOneSimulatedQuery() is called, until monitorQueryThread() is called.
    */
-  public static final int QUERY_INITIAL_DELAY = 0;
+  private static final int QUERY_INITIAL_DELAY = 0;
 
   private static final int FAST_QUERY_COMPLETION_MODE = 1;
   private static final int SLOW_QUERY_COMPLETION_MODE = 1000000;
@@ -78,17 +77,15 @@ public class MonitorQueryUnderContentionBenchmark {
    */
   private static final double BENCHMARK_ITERATIONS = 1e4;
 
-  public static final int TIME_TO_QUIESCE_BEFORE_SAMPLING = 240000;
+  private static final int TIME_TO_QUIESCE_BEFORE_SAMPLING = 240000;
 
-  public static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
+  private static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
 
 
-  public static final int RANDOM_SEED = 151;
+  private static final int RANDOM_SEED = 151;
 
   private QueryMonitor queryMonitor;
-  private Thread thread;
   private DefaultQuery query;
-  private InternalCache cache;
   private Random random;
   private ScheduledThreadPoolExecutor loadGenerationExecutorService;
   private org.apache.logging.log4j.Level originalBaseLogLevel;
@@ -99,11 +96,9 @@ public class MonitorQueryUnderContentionBenchmark {
     originalBaseLogLevel = LogService.getBaseLogLevel();
     LogService.setBaseLogLevel(org.apache.logging.log4j.Level.OFF);
 
-    cache = mock(InternalCache.class);
     queryMonitor =
         new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
-            cache, QUERY_MAX_EXECUTION_TIME);
-    thread = mock(Thread.class);
+            mock(InternalCache.class), QUERY_MAX_EXECUTION_TIME);
 
     final int numberOfThreads =
         THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
@@ -153,11 +148,9 @@ public class MonitorQueryUnderContentionBenchmark {
     queryMonitor.stopMonitoringQueryThread(query);
   }
 
-  private ScheduledFuture<?> generateLoad(final ScheduledExecutorService executorService,
+  private void generateLoad(final ScheduledExecutorService executorService,
       final Runnable queryStarter, int startPeriod) {
-    return executorService.scheduleAtFixedRate(() -> {
-      queryStarter.run();
-    },
+    executorService.scheduleAtFixedRate(queryStarter,
         QUERY_INITIAL_DELAY,
         startPeriod,
         TimeUnit.MILLISECONDS);
@@ -174,7 +167,6 @@ public class MonitorQueryUnderContentionBenchmark {
   private void startOneSimulatedQuery(ScheduledExecutorService executorService,
       int startDelayRangeMillis, int completeDelayRangeMillis) {
     executorService.schedule(() -> {
-      final Thread thread = mock(Thread.class);
       final DefaultQuery query = createDefaultQuery();
       queryMonitor.monitorQueryThread(query);
       executorService.schedule(() -> {
@@ -192,8 +184,6 @@ public class MonitorQueryUnderContentionBenchmark {
   }
 
   private DefaultQuery createDefaultQuery() {
-    // we can reuse this because it doesn't affect lookup or equality in the collection(s)
-    final DefaultQuery defaultQuery = mock(DefaultQuery.class);
-    return defaultQuery;
+    return mock(DefaultQuery.class);
   }
 }

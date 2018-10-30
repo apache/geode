@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.InternalCache;
  */
 public class QueryMonitorTest {
 
-  private InternalCache cache;
   private QueryMonitor monitor;
   private long max_execution_time = 5;
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
@@ -54,10 +53,10 @@ public class QueryMonitorTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
     scheduledThreadPoolExecutor = mock(ScheduledThreadPoolExecutor.class);
-    when(scheduledThreadPoolExecutor.getQueue()).thenReturn(new ArrayBlockingQueue<Runnable>(1));
-    monitor = new QueryMonitor(() -> scheduledThreadPoolExecutor, cache, max_execution_time);
+    when(scheduledThreadPoolExecutor.getQueue()).thenReturn(new ArrayBlockingQueue<>(1));
+    monitor = new QueryMonitor(() -> scheduledThreadPoolExecutor, mock(InternalCache.class),
+        max_execution_time);
     captor = ArgumentCaptor.forClass(Runnable.class);
   }
 
@@ -101,12 +100,12 @@ public class QueryMonitorTest {
 
     Mockito.verify(query, times(1))
         .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
-    assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled())
+    assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled)
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }
 
   @Test
-  public void setLowMemoryTrueShutsDownExecutor() throws InterruptedException {
+  public void setLowMemoryTrueShutsDownExecutor() {
     monitor.setLowMemory(true, 1);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).shutdown();
   }

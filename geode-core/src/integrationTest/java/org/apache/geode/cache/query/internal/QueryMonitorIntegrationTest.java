@@ -38,10 +38,10 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public class QueryMonitorIntegrationTest {
 
   // query expiration duration so long that the query never expires
-  public static final int NEVER_EXPIRE_MILLIS = 100000;
+  private static final int NEVER_EXPIRE_MILLIS = 100000;
 
   // much much smaller than default maximum wait time of GeodeAwaitility
-  public static final int EXPIRE_QUICK_MILLIS = 1;
+  private static final int EXPIRE_QUICK_MILLIS = 1;
 
   private InternalCache cache;
   private DefaultQuery query;
@@ -74,7 +74,7 @@ public class QueryMonitorIntegrationTest {
 
       queryMonitor.setLowMemory(true, 1);
 
-      assertThatThrownBy(() -> QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled(),
+      assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled,
           "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.",
           QueryExecutionCanceledException.class);
     } finally {
@@ -92,8 +92,7 @@ public class QueryMonitorIntegrationTest {
   }
 
   @Test
-  public void monitorQueryThreadCancelsLongRunningQueriesAndSetsExceptionAndThrowsException()
-      throws InterruptedException {
+  public void monitorQueryThreadCancelsLongRunningQueriesAndSetsExceptionAndThrowsException() {
 
     QueryMonitor queryMonitor = new QueryMonitor(
         () -> new ScheduledThreadPoolExecutor(1),
