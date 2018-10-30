@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -89,7 +88,7 @@ public class EvictionDUnitTest {
   }
 
   @Test
-  public void testDummyInlineNCentralizedEvictionAndPoolSize() {
+  public void testDummyInlineNCentralizedEviction() {
     VMProvider.invokeInEveryMember(() -> {
       ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
       server.createPartitionRegion("PR1",
@@ -106,16 +105,65 @@ public class EvictionDUnitTest {
       }
     });
 
-    VMProvider.invokeInEveryMember(() -> {
+    int server0ExpectedEviction = server0.invoke(EvictionDUnitTest::getExpectedEviction);
+    int server1ExpectedEviction = server1.invoke(EvictionDUnitTest::getExpectedEviction);
+
+    server0.invoke(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
+      GeodeAwaitility.await()
+          .until(() -> (abs(region.getTotalEvictions() - server0ExpectedEviction) <= 1));
+    });
 
-      int expectedEviction = getExpectedEviction(cache);
+    server1.invoke(() -> {
+      GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
+      GeodeAwaitility.await()
+          .until(() -> (abs(region.getTotalEvictions() - server1ExpectedEviction) <= 1));
+    });
 
+    Long server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
+    Long server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
+
+    assertThat(server0EvictionCount + server1EvictionCount)
+        .isEqualTo(server0ExpectedEviction + server1ExpectedEviction);
+
+    // do 4 puts again in PR1
+    server0.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("PR1");
+      for (int counter = 1; counter <= 4; counter++) {
+        region.put(counter, new byte[1024 * 1024]);
+      }
+    });
+
+    server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
+    server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
+
+    assertThat(server0EvictionCount + server1EvictionCount)
+        .isEqualTo(4 + server0ExpectedEviction + server1ExpectedEviction);
+  }
+
+  @Test
+  public void testThreadPoolSize() {
+    VMProvider.invokeInEveryMember(() -> {
+      ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
+      server.createPartitionRegion("PR1",
+          f -> f.setOffHeap(offHeap).setEvictionAttributes(
+              EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.LOCAL_DESTROY)),
+          f -> f.setTotalNumBuckets(4).setRedundantCopies(0));
+
+    }, server0, server1);
+
+    server0.invoke(() -> {
+      GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
+      for (int counter = 1; counter <= 50; counter++) {
+        region.put(counter, new byte[1024 * 1024]);
+      }
+
+      int expectedEviction = getExpectedEviction();
       GeodeAwaitility.await()
           .until(() -> (abs(region.getTotalEvictions() - expectedEviction) <= 1));
-
-      assertThat(region.getTotalEvictions()).isEqualTo(expectedEviction);
 
       ExecutorService evictorThreadPool = getEvictor(cache).getEvictorThreadPool();
       if (evictorThreadPool != null) {
@@ -123,7 +171,7 @@ public class EvictionDUnitTest {
         assertThat(taskCount).isLessThanOrEqualTo(HeapEvictor.MAX_EVICTOR_THREADS);
       }
 
-    }, server0, server1);
+    });
   }
 
   @Test
@@ -148,15 +196,8 @@ public class EvictionDUnitTest {
       }
     });
 
-    // validate the total # of evictions happening on both servers
-    SerializableCallableIF getEvictions = () -> {
-      final PartitionedRegion pr =
-          (PartitionedRegion) ClusterStartupRule.getCache().getRegion("PR1");
-      return pr.getTotalEvictions();
-    };
-
-    Long server0EvictionCount = (Long) server0.invoke(getEvictions);
-    Long server1EvictionCount = (Long) server1.invoke(getEvictions);
+    Long server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
+    Long server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
 
     assertThat(server0EvictionCount + server1EvictionCount).isEqualTo(20);
   }
@@ -164,7 +205,6 @@ public class EvictionDUnitTest {
   @Test
   public void testCentralizedEvictionForDistributedRegionWithDummyEvent() {
     server0.invoke(() -> {
-      GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
       ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
       LocalRegion dr1 =
           (LocalRegion) server.createRegion(RegionShortcut.LOCAL, "DR1",
@@ -174,7 +214,7 @@ public class EvictionDUnitTest {
         dr1.put(new Integer(counter), new byte[1024 * 1024]);
       }
 
-      int expectedEviction = getExpectedEviction(cache);
+      int expectedEviction = getExpectedEviction();
 
       GeodeAwaitility.await().until(() -> (abs(dr1.getTotalEvictions() - expectedEviction) <= 1));
 
@@ -182,7 +222,14 @@ public class EvictionDUnitTest {
     });
   }
 
-  private static int getExpectedEviction(GemFireCacheImpl cache) {
+  private static long getActualEviction(String region) {
+    final PartitionedRegion pr =
+        (PartitionedRegion) ClusterStartupRule.getCache().getRegion(region);
+    return pr.getTotalEvictions();
+  }
+
+  private static int getExpectedEviction() {
+    GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
     HeapEvictor evictor = getEvictor(cache);
     evictor.setTestAbortAfterLoopCount(1);
 
