@@ -352,6 +352,7 @@ jobs:
             {{ common_instance_params(publish_artifacts) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
+            GRADLE_GLOBAL_ARGS: ((gradle-global-args))
           run:
             path: geode-ci/ci/scripts/create_instance.sh
           inputs:
