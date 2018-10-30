@@ -36,12 +36,6 @@
   </scm>
   <dependencies>
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.46</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
       <version>1.8.0-SNAPSHOT</version>

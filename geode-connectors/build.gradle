@@ -63,7 +63,6 @@ dependencies {
     ext.optional = true
   }
 
-  runtime('mysql:mysql-connector-java:5.1.46')
 
   integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('junit:junit:4.12')
@@ -83,6 +82,7 @@ dependencies {
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-core', version: '0.31.1')
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
 
+  acceptanceTestRuntime(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
   acceptanceTestRuntime(group: 'org.apache.derby', name: 'derby', version: project.'derby.version')
   acceptanceTestRuntime(group: 'org.postgresql', name: 'postgresql', version: '42.2.2')
 }
