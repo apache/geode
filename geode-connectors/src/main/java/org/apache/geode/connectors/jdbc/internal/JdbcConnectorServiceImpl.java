@@ -21,27 +21,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 @Experimental
 public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
-  private final Map<String, ConnectorService.RegionMapping> mappingsByRegion =
+  private final Map<String, RegionMapping> mappingsByRegion =
       new ConcurrentHashMap<>();
 
   @Override
-  public Set<ConnectorService.RegionMapping> getRegionMappings() {
-    Set<ConnectorService.RegionMapping> regionMappings = new HashSet<>();
+  public Set<RegionMapping> getRegionMappings() {
+    Set<RegionMapping> regionMappings = new HashSet<>();
     regionMappings.addAll(mappingsByRegion.values());
     return regionMappings;
   }
 
   @Override
-  public void createRegionMapping(ConnectorService.RegionMapping mapping)
+  public void createRegionMapping(RegionMapping mapping)
       throws RegionMappingExistsException {
-    ConnectorService.RegionMapping existing =
+    RegionMapping existing =
         mappingsByRegion.putIfAbsent(mapping.getRegionName(), mapping);
     if (existing != null) {
       throw new RegionMappingExistsException(
@@ -50,9 +50,9 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public void replaceRegionMapping(ConnectorService.RegionMapping alteredMapping)
+  public void replaceRegionMapping(RegionMapping alteredMapping)
       throws RegionMappingNotFoundException {
-    ConnectorService.RegionMapping existingMapping =
+    RegionMapping existingMapping =
         mappingsByRegion.get(alteredMapping.getRegionName());
     if (existingMapping == null) {
       throw new RegionMappingNotFoundException(
@@ -63,7 +63,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public ConnectorService.RegionMapping getMappingForRegion(String regionName) {
+  public RegionMapping getMappingForRegion(String regionName) {
     return mappingsByRegion.get(regionName);
   }
 

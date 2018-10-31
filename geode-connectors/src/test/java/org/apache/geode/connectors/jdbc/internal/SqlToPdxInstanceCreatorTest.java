@@ -42,7 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
@@ -63,7 +63,7 @@ public class SqlToPdxInstanceCreatorTest {
   private static final String PDX_FIELD_NAME_2 = COLUMN_NAME_2.toLowerCase();
 
   private InternalCache cache;
-  private ConnectorService.RegionMapping regionMapping;
+  private RegionMapping regionMapping;
   private ResultSet resultSet;
   private TableMetaDataView tableMetaDataView;
 
@@ -73,7 +73,7 @@ public class SqlToPdxInstanceCreatorTest {
   @Before
   public void setup() throws Exception {
     cache = mock(InternalCache.class);
-    regionMapping = mock(ConnectorService.RegionMapping.class);
+    regionMapping = mock(RegionMapping.class);
     resultSet = mock(ResultSet.class);
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);

@@ -27,7 +27,6 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String USER = "user";
   static final String PASSWORD = "password";
   static final String PARAMETERS = "parameters";
-  static final String REGION = "region";
   static final String CONNECTION_NAME = "connection-name";
   static final String TABLE = "table";
   static final String PDX_CLASS = "pdx-class";

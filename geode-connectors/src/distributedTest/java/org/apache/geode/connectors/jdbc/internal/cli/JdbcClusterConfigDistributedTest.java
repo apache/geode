@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
@@ -51,6 +51,9 @@ public class JdbcClusterConfigDistributedTest {
   @Test
   public void recreateCacheFromClusterConfig() throws Exception {
     gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat("create region --name=regionName --type=PARTITION").statusIsSuccess();
+
     gfsh.executeAndAssertThat(
         "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-class-name=myPdxClass --value-contains-primary-key --field-mapping=field1:column1,field2:column2")
         .statusIsSuccess();
@@ -71,7 +74,7 @@ public class JdbcClusterConfigDistributedTest {
     });
   }
 
-  private static void validateRegionMapping(ConnectorService.RegionMapping regionMapping) {
+  private static void validateRegionMapping(RegionMapping regionMapping) {
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connection");
