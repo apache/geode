@@ -85,7 +85,7 @@ public class QueryMonitorDUnitTest {
     // configure the server to make the query to wait for at least 1 second in every execution spot
     // and set a MAX_QUERY_EXECUTION_TIME to be 10ms
     VMProvider.invokeInEveryMember(() -> {
-      DefaultQuery.testHook = new QueryTimeoutHook();
+      DefaultQuery.testHook = QueryMonitorDUnitTest::delayQueryTestHook;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
     }, server1, server2);
     gfsh.connectAndVerify(locator);
@@ -284,7 +284,7 @@ public class QueryMonitorDUnitTest {
     MemberVM server3 = cluster.startServerVM(3, locatorPort);
 
     server3.invoke(() -> {
-      DefaultQuery.testHook = new QueryTimeoutHook();
+      DefaultQuery.testHook = QueryMonitorDUnitTest::delayQueryTestHook;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
     });
 
@@ -416,24 +416,27 @@ public class QueryMonitorDUnitTest {
         + "\"Query execution taking more than the max execution time\"" + "\n Found \n" + error);
   }
 
-  private static class QueryTimeoutHook implements DefaultQuery.TestHook {
-    /**
-     * Delay query execution long enough for the QueryMonitor to mark the query as cancelled.
-     */
-    public void doTestHook(int spot, DefaultQuery query) {
-      if (spot != 6) {
-        return;
-      }
-
-      /*
-       * The pollDelay() value was chosen to be larger than the
-       * GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME (system property) value,
-       * set during test initialization.
-       */
-      await("stall the query execution so that it gets cancelled")
-          .pollDelay(10, TimeUnit.MILLISECONDS)
-          .until(() -> query.isCanceled());
+  /**
+   * This method is used as an implementation of the TestHook functional interface, to delay
+   * query execution long enough for the QueryMonitor to mark the query as cancelled.
+   */
+  private static void delayQueryTestHook(final DefaultQuery.TestHook.SPOTS spot,
+      final DefaultQuery query) {
+    if (spot != DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION) {
+      return;
     }
+    if (query.isCqQuery()) {
+      return;
+    }
+
+    /*
+     * The pollDelay() value was chosen to be larger than the
+     * GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME (system property) value,
+     * set during test initialization.
+     */
+    await("stall the query execution so that it gets cancelled")
+        .pollDelay(10, TimeUnit.MILLISECONDS)
+        .until(() -> query.isCanceled());
   }
 
   private static String[] queryStr = {"SELECT ID FROM /exampleRegion p WHERE  p.ID > 100",
