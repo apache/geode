@@ -86,7 +86,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
       @CliOption(key = POOLED, help = POOLED__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean pooled,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean pooled,
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
           help = POOL_PROPERTIES_HELP) DataSourceProperty[] poolProperties) {
 
