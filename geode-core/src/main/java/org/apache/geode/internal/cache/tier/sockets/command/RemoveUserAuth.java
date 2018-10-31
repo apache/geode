@@ -62,7 +62,8 @@ public class RemoveUserAuth extends BaseCommand {
       if (serverConnection.getLogWriter().warningEnabled()) {
         serverConnection.getLogWriter().warning(
             String.format("An exception was thrown for client [%s]. %s",
-                new Object[] {serverConnection.getProxyID(), ""}, ex));
+                serverConnection.getProxyID(), ""),
+            ex);
       }
       writeException(clientMessage, ex, false, serverConnection);
     } finally {

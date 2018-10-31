@@ -573,7 +573,7 @@ public class CacheServerLauncher {
 
   protected void printStartMessage(final Map<String, Object> options, final int pid)
       throws Exception {
-    System.out.println(String.format("Starting %s with pid: {1,number,#}",
+    System.out.println(String.format("Starting %s with pid: %s",
         this.baseName, pid));
   }
 

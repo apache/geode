@@ -1393,10 +1393,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private void logInfo(String message, Throwable t) {
     if (t instanceof GemFireSecurityException) {
       securityLogWriter.info(String.format("%s : %s",
-          new Object[] {message, t}, t));
+          message, t), t);
     } else {
       logger.info(String.format("%s : %s",
-          new Object[] {message, t}), t);
+          message, t), t);
     }
   }
 

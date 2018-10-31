@@ -479,8 +479,8 @@ public class ContextImpl implements Context {
     } catch (NameNotFoundException e) {
       LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.infoEnabled())
-        writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name,
-            e));
+        writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name),
+            e);
       throw new NameNotFoundException(
           String.format("Name  %s  not found", new Object[] {name}));
     }

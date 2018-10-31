@@ -961,7 +961,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           DataSerializer other = (DataSerializer) oldSerializer;
           throw new IllegalStateException(
               String.format(
-                  "A DataSerializer of class %s is already registered with id %s so the DataSerializer of class %s could not be registered.",
+                  "A DataSerializer of class %s is already registered with id %s.",
                   new Object[] {other.getClass().getName(), other.getId()}));
         }
       }
@@ -1070,7 +1070,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       if (oldValue.getId() != 0 && holder.getId() != 0 && oldValue.getId() != holder.getId()) {
         throw new IllegalStateException(
             String.format(
-                "A DataSerializer of class %s is already registered with id %s so the DataSerializer of class %s could not be registered.",
+                "A DataSerializer of class %s is already registered with id %s.",
                 new Object[] {oldValue.getClass().getName(), oldValue.getId()}));
       }
     }

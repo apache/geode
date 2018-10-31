@@ -331,7 +331,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       if (writer.infoEnabled())
         writer.info(
             String.format("Exception in notify after completion due to %s",
-                ge.getMessage(), ge));
+                ge.getMessage()),
+            ge);
     }
     Thread thread = Thread.currentThread();
     transactionMap.remove(thread);
@@ -465,7 +466,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       if (writer.infoEnabled())
         writer.info(
             String.format("Exception in notify after completion due to %s",
-                e1.getMessage(), e1));
+                e1.getMessage()),
+            e1);
     }
     Thread thread = Thread.currentThread();
     transactionMap.remove(thread);

@@ -614,7 +614,7 @@ public class DistributedSystemBridge {
     if (bean != null) {
       return bean;
     } else {
-      throw new Exception(String.format("{0} is an invalid member name or Id", member));
+      throw new Exception(String.format("%s is an invalid member name or Id", member));
     }
   }
 

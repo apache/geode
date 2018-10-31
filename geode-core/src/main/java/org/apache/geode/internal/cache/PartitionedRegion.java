@@ -4837,8 +4837,8 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (Exception es) {
       logger.warn(String.format("releasePRIDLock: unlocking %s caught an exception",
-          Integer.valueOf(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID),
-          es));
+          Integer.valueOf(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID)),
+          es);
     }
   }
 

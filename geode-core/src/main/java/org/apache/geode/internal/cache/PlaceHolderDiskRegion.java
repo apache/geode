@@ -181,7 +181,8 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion
     getDiskStore().getCache().getLogger().error(
         String.format(
             "A DiskAccessException has occurred while recovering values asynchronously from disk for region %s.",
-            getName(), dae));
+            getName()),
+        dae);
 
   }
 

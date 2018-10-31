@@ -1742,7 +1742,7 @@ public class Oplog implements CompactableOplog, Flushable {
               if (oldValue != null) {
                 throw new AssertionError(
                     String.format(
-                        "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is {0,number,#}.",
+                        "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is %s.",
                         oplogKeyId));
               }
             }
@@ -2559,7 +2559,7 @@ public class Oplog implements CompactableOplog, Flushable {
             if (oldValue != null) {
               throw new AssertionError(
                   String.format(
-                      "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is {0,number,#}.",
+                      "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is %s.",
                       oplogKeyId));
             }
           }
@@ -2952,7 +2952,7 @@ public class Oplog implements CompactableOplog, Flushable {
         if (oldValue != null) {
           throw new AssertionError(
               String.format(
-                  "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is {0,number,#}.",
+                  "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is %s.",
                   oplogKeyId));
         }
         // Check the actual region to see if it has this key from

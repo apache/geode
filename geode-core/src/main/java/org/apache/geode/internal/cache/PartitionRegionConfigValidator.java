@@ -188,25 +188,25 @@ public class PartitionRegionConfigValidator {
     if (!userRA.getRegionIdleTimeout().equals(prconf.getRegionIdleTimeout())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" region idle timout "}));
     }
     if (!userRA.getRegionTimeToLive().equals(prconf.getRegionTimeToLive())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" region time to live "}));
     }
     if (!userRA.getEntryIdleTimeout().equals(prconf.getEntryIdleTimeout())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" entry idle timout "}));
     }
     if (!userRA.getEntryTimeToLive().equals(prconf.getEntryTimeToLive())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" entry time to live "}));
     }
   }
@@ -427,8 +427,6 @@ public class PartitionRegionConfigValidator {
         int numSecondaries = 0;
         for (FixedPartitionAttributes otherfpa : allSameFPAs) {
           if (fpa.getNumBuckets() != otherfpa.getNumBuckets()) {
-            Object[] prms = new Object[] {this.pr.getName(), fpa.getPartitionName(),
-                fpa.getNumBuckets(), otherfpa.getNumBuckets()};
             throw new IllegalStateException(
                 String.format(
                     "For region %s,for partition %s, num-buckets are not same (%s, %s)across nodes.",

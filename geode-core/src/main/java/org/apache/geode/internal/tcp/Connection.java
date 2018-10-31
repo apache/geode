@@ -3709,7 +3709,7 @@ public class Connection implements Runnable {
               if (this.replyCode != REPLY_CODE_OK
                   && this.replyCode != REPLY_CODE_OK_WITH_ASYNC_INFO) {
                 String err =
-                    "Unknown handshake reply code: {} nioMessageLength=%s processorType={}";
+                    "Unknown handshake reply code: %s nioMessageLength: %s";
                 Object[] errArgs = new Object[] {Integer.valueOf(this.replyCode),
                     Integer.valueOf(nioMessageLength)};
                 if (replyCode == 0 && logger.isDebugEnabled()) { // bug 37113
