@@ -59,8 +59,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.functions.DistributedRegionFunctionFunctionInvocationException;
 import org.apache.geode.internal.cache.functions.DistributedRegionFunction;
+import org.apache.geode.internal.cache.functions.DistributedRegionFunctionFunctionInvocationException;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.security.templates.DummyAuthenticator;
@@ -1024,8 +1024,9 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   }
 
   public static void registerFunction(Boolean isHA, Integer retryCount) {
-    Function function = new DistributedRegionFunctionFunctionInvocationException(isHA.booleanValue(),
-        retryCount.intValue());
+    Function function =
+        new DistributedRegionFunctionFunctionInvocationException(isHA.booleanValue(),
+            retryCount.intValue());
     FunctionService.registerFunction(function);
   }
 
@@ -1173,7 +1174,8 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
       e.printStackTrace();
-      if (!((e instanceof FunctionInvocationTargetException) || (e.getCause() instanceof FunctionInvocationTargetException))) {
+      if (!((e instanceof FunctionInvocationTargetException)
+          || (e.getCause() instanceof FunctionInvocationTargetException))) {
         fail("FunctionInvocationTargetException should be thrown");
       }
     }
