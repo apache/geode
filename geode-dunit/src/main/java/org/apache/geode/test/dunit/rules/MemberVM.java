@@ -16,15 +16,18 @@ package org.apache.geode.test.dunit.rules;
 
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.Member;
@@ -89,35 +92,40 @@ public class MemberVM extends VMProvider implements Member {
   }
 
   /**
-   * This disconnects the distributed system of the member. The reconnect thread will wait for at
-   * least the given delay before completing the attempt.
+   * This disconnects the distributed system of the member. The reconnect thread will wait until the
+   * given mailbox is set to true from within the vm that this method is invoked on.
    *
-   * @param delayReconnecting minimum delay in milliseconds before reconnect can complete.
+   * For example, if forceDisconnect is called like this:
+   * member1.forceDisconnect(300, "reconnectReady");
+   * Then the reconnect should be triggered like this:
+   * member1.invoke(() -> getBlackboard().setMailbox("reconnectReady", true));
+   *
+   * Setting this mailbox from within the test JVM will not cause the member to begin reconnecting.
+   *
+   * @param timeoutSeconds maximum time that the reconnect can take
+   * @param reconnectBBKey String key to the blackboard mailbox containing a boolean that shall
+   *        be set to true when the member should start reconnecting.
    */
-  public void forceDisconnect(final long delayReconnecting) {
+  public void forceDisconnect(int timeoutSeconds, String reconnectBBKey) {
     vm.invoke(() -> {
-      // The reconnect thread can yield the CPU before allowing the listeners to be invoked. The
-      // latch ensures that the listener is guaranteed to be called before this method returns thus
-      // ensuring that reconnection has started but not yet completed.
-      CountDownLatch latch = new CountDownLatch(1);
+      DUnitBlackboard server1BB = getBlackboard();
+      server1BB.initBlackboard();
+      server1BB.setMailbox(reconnectBBKey, false);
+
       InternalDistributedSystem.addReconnectListener(
           new InternalDistributedSystem.ReconnectListener() {
             @Override
             public void reconnecting(InternalDistributedSystem oldSystem) {
-              try {
-                Thread.sleep(delayReconnecting);
-                latch.countDown();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-              }
+              await().atMost(timeoutSeconds, TimeUnit.SECONDS)
+                  .until(() -> (boolean) server1BB.getMailbox(reconnectBBKey));
             }
 
             @Override
             public void onReconnect(InternalDistributedSystem oldSystem,
                 InternalDistributedSystem newSystem) {}
           });
+
       ClusterStartupRule.memberStarter.forceDisconnectMember();
-      latch.await();
     });
   }
 
@@ -131,12 +139,18 @@ public class MemberVM extends VMProvider implements Member {
               .isConnected() && intLocator.isReconnected();
         });
       } catch (Exception e) {
-        // provide more information when condition is not satisfied after one minute
+        // provide more information when condition is not satisfied after awaitility timeout
         InternalLocator intLocator = ClusterStartupRule.getLocator();
         InternalCache cache = ClusterStartupRule.getCache();
-        logger.info("locator is not null: " + (intLocator != null));
-        logger.info("cache is not null: " + (cache != null));
-        logger.info("ds is connected: " + (intLocator.getDistributedSystem().isConnected()));
+        DistributedSystem ds = intLocator.getDistributedSystem();
+        logger.info("locator is: " + (intLocator != null ? "not null" : "null"));
+        logger.info("cache is: " + (cache != null ? "not null" : "null"));
+        if (ds != null) {
+          logger
+              .info("distributed system is: " + (ds.isConnected() ? "connected" : "not connected"));
+        } else {
+          logger.info("distributed system is: null");
+        }
         logger.info("locator is reconnected: " + (intLocator.isReconnected()));
         throw e;
       }
@@ -155,13 +169,12 @@ public class MemberVM extends VMProvider implements Member {
               && !internalDistributedSystem.getCache().getCacheServers().isEmpty();
         });
       } catch (Exception e) {
-        // provide more information when condition is not satisfied after one minute
-        InternalDistributedSystem internalDistributedSystem =
-            InternalDistributedSystem.getConnectedInstance();
-        logger.info("ds is not null: " + (internalDistributedSystem != null));
-        logger.info("cache is not null: " + (internalDistributedSystem.getCache() != null));
+        // provide more information when condition is not satisfied after awaitility timeout
+        InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
+        logger.info("ds is: " + (ids != null ? "not null" : "null"));
+        logger.info("cache is: " + (ids.getCache() != null ? "not null" : "null"));
         logger.info("has cache server: "
-            + (!internalDistributedSystem.getCache().getCacheServers().isEmpty()));
+            + (!ids.getCache().getCacheServers().isEmpty()));
         throw e;
       }
     });

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Field;
@@ -255,6 +256,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
     private Duration duration;
     private Boolean expectedResultIsSet;
     private T expectedValue;
+    private Boolean eventualExpectedValueSet;
     private Throwable expectedException;
     private Class expectedExceptionType;
     private Class expectedExceptionCauseType;
@@ -268,6 +270,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
       expectedExceptionType = null;
       expectedExceptionCauseType = null;
       expectedValue = null;
+      eventualExpectedValueSet = false;
     }
 
     public ConcurrentOperation(Callable<T> toAdd) {
@@ -279,6 +282,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
       expectedExceptionType = null;
       expectedExceptionCauseType = null;
       expectedValue = null;
+      eventualExpectedValueSet = false;
     }
 
     /**
@@ -312,6 +316,25 @@ public class ConcurrencyRule extends SerializableExternalResource {
       }
 
       this.duration = duration;
+      return this;
+    }
+
+    /**
+     * Sets the expected result of running the thread to be a value eventually matching the given
+     * value
+     *
+     * @param expectedValue the value expected to be returned from the thread. The value must
+     *        implement equals
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation repeatUntilValue(T expectedValue) {
+      if (this.expectedResultIsSet) {
+        throw new IllegalArgumentException("Specify only one expected outcome.");
+      }
+
+      this.eventualExpectedValueSet = true;
+      this.expectedValue = expectedValue;
+      this.expectedResultIsSet = true;
       return this;
     }
 
@@ -397,15 +420,27 @@ public class ConcurrencyRule extends SerializableExternalResource {
         callAndValidate();
       } while ((iterations != DEFAULT_ITERATIONS && numRuns < iterations) ||
           (duration != DEFAULT_DURATION
-              && timeRun.elapsed(TimeUnit.SECONDS) <= duration.getSeconds()));
+              && timeRun.elapsed(SECONDS) <= duration.getSeconds()));
       return null;
     }
 
     private void callAndValidate() throws Exception {
       Exception exception = null;
+      T retVal;
+      int numRuns = 0;
+      Stopwatch timeRun = Stopwatch.createStarted();
 
       try {
-        T retVal = this.callable.call();
+        do {
+          numRuns++;
+          retVal = this.callable.call();
+
+          if (eventualExpectedValueSet && retVal.equals(expectedValue)) {
+            return;
+          }
+        } while (eventualExpectedValueSet
+            && ((iterations != DEFAULT_ITERATIONS && numRuns < iterations)
+                || (timeRun.elapsed(SECONDS) <= duration.getSeconds())));
 
         if (this.expectedValue != null) {
           assertThat(retVal).isEqualTo(this.expectedValue);
@@ -428,7 +463,6 @@ public class ConcurrencyRule extends SerializableExternalResource {
           throw exception; // rethrow if we weren't expecting any exception and got one
         }
       }
-
     }
 
     private void checkThrown(Throwable actual, Throwable expected) {
