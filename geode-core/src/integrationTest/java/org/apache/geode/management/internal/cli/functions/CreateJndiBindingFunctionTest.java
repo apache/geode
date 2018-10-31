@@ -81,6 +81,33 @@ public class CreateJndiBindingFunctionTest {
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
     assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.toString()).contains("jndi-binding");
+
+    Context ctx = JNDIInvoker.getJNDIContext();
+    Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
+
+    assertThat(bindings.keySet()).containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
+        "java:TransactionManager");
+  }
+
+  @Test
+  public void createDataSourceIsSuccessful() throws Exception {
+    JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
+    config.setCreatedByDataSourceCommand(true);
+    config.setJndiName("jndi1");
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setConnectionUrl("jdbc:derby:newDB;create=true");
+    when(context.getArguments()).thenReturn(config);
+    when(context.getMemberName()).thenReturn("mock-member");
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    createBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.toString()).contains("data-source");
 
     Context ctx = JNDIInvoker.getJNDIContext();
     Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
