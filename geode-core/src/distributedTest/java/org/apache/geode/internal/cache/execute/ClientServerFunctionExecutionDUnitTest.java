@@ -14,10 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.apache.geode.distributed.internal.ClusterDistributionManager.MAX_FE_THREADS;
-import static org.apache.geode.internal.cache.functions.TestFunction.TEST_EXECUTE_PARENT;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,9 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,10 +37,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -61,9 +54,7 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
@@ -76,10 +67,6 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   Boolean toRegister = null;
   static final String retryRegionName = "RetryDataRegion";
   static Region metaDataRegion;
-
-  @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
 
   public ClientServerFunctionExecutionDUnitTest() {
     super();
@@ -437,71 +424,11 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
             Boolean.FALSE));
   }
 
-  @Test
-  public void testNestedFunctionExecutionOnReplicatedRegion() {
-    // Set function execution timeout in the client
-    client.invoke(() -> setFunctionExecutionTimeout(30000));
-
-    // Create single client/server scenario with replicated region
-    createSingleClientServerScenario();
-
-    // Execute the function with multiple threads
-    function = new TestFunction(true, TEST_EXECUTE_PARENT);
-    client.invoke(() -> executeFunction(function, MAX_FE_THREADS * 3));
-  }
-
-  private void setFunctionExecutionTimeout(int timeout) {
-    System.setProperty("gemfire.CLIENT_FUNCTION_TIMEOUT", String.valueOf(timeout));
-  }
 
   private void createScenario() {
     LogWriterUtils.getLogWriter()
         .info("ClientServerFFunctionExecutionDUnitTest#createScenario : creating scenario");
     createClientServerScenarionWithoutRegion();
-  }
-
-  private void createSingleClientServerScenario() {
-    createCacheInSingleClientServer();
-    Integer port = server1.invoke(() -> createCacheServer());
-    serverPort1 = port;
-    server1.invoke(() -> createReplicatedRegion());
-    client.invoke(() -> createPool(NetworkUtils.getServerHostName(), port));
-    client.invoke(() -> createProxyRegion(null));
-  }
-
-  private void createPool(String host, Integer port) {
-    pool = (PoolImpl) PoolManager.createFactory().addServer(host, port).setRetryAttempts(0)
-        .create("PRClientServerTestBase");
-  }
-
-  private void executeFunction(Function function, int numThreads) {
-    final AtomicInteger successfulFunctionExecutions = new AtomicInteger(0);
-    final AtomicInteger failedFunctionExecutions = new AtomicInteger(0);
-
-    // Execute the function with multiple threads
-    Thread[] threads = new Thread[numThreads];
-    for (int i = 0; i < numThreads; i++) {
-      Runnable functionRequest = () -> {
-        try {
-          FunctionService.onRegion(metaDataRegion).execute(function).getResult();
-          successfulFunctionExecutions.incrementAndGet();
-        } catch (Exception e) {
-          e.printStackTrace();
-          failedFunctionExecutions.incrementAndGet();
-        }
-      };
-      threads[i] = new Thread(functionRequest, "Client Function Request " + i);
-    }
-    for (int i = 0; i < numThreads; i++) {
-      threads[i].start();
-    }
-    for (int i = 0; i < numThreads; i++) {
-      ThreadUtils.join(threads[i], 120 * 1000);
-    }
-
-    // Assert that all are successful
-    assertThat(successfulFunctionExecutions.get()).isEqualTo(numThreads);
-    assertThat(failedFunctionExecutions.get()).isEqualTo(0);
   }
 
   public static void serverExecution(Boolean isByName, Function function, Boolean toRegister) {

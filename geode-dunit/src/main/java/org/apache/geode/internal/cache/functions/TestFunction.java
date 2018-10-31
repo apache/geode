@@ -39,7 +39,6 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -95,8 +94,6 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       "executeFunctionRunningForLongTime";
   public static final String TEST_FUNCTION_BUCKET_FILTER = "TestFunctionBucketFilter";
   public static final String TEST_FUNCTION_NONHA_NOP = "executeFunctionNoHANop";
-  public static final String TEST_EXECUTE_PARENT = "executeParentFunction";
-  public static final String TEST_EXECUTE_CHILD = "executeChildFunction";
   private static final String ID = "id";
   private static final String HAVE_RESULTS = "haveResults";
   private final Properties props;
@@ -191,10 +188,6 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       executeFunctionBucketFilter(context);
     } else if (id.equals(TEST_FUNCTION_NONHA_NOP)) {
       execute1(context);
-    } else if (id.equals(TEST_EXECUTE_PARENT)) {
-      executeParent(context);
-    } else if (id.equals(TEST_EXECUTE_CHILD)) {
-      executeChild(context);
     } else if (noAckTest.equals("true")) {
       execute1(context);
     }
@@ -1016,20 +1009,6 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       e.printStackTrace();
     }
     context.getResultSender().lastResult(context.getArguments());
-  }
-
-  private void executeParent(FunctionContext context) {
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException e) {
-    }
-    FunctionService.onRegion(((RegionFunctionContext) context).getDataSet())
-        .execute(new TestFunction(true, TEST_EXECUTE_CHILD)).getResult();
-    context.getResultSender().lastResult(true);
-  }
-
-  public void executeChild(FunctionContext context) {
-    context.getResultSender().lastResult(true);
   }
 
   /**

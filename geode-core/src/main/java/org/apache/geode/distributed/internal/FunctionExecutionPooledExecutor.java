@@ -109,7 +109,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
             // directly. In this case, that means a function is executing another function. The
             // child function request shouldn't be in the queue behind the parent request since the
             // parent function is dependent on the child function executing.
-            boolean isBufferConsumer = isBufferConsumer(executor);
+            final boolean isBufferConsumer = isBufferConsumer(executor);
             if (isBufferConsumer || isFunctionExecutionThread()) {
               if (isBufferConsumer) {
                 logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX

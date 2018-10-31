@@ -609,19 +609,6 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     client.invoke(() -> PRClientServerTestBase.createCacheInVm(props));
   }
 
-  protected void createCacheInSingleClientServer() {
-    // Create server cache
-    Properties props = new Properties();
-    props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.internal.cache.functions.TestFunction;org.apache.geode.internal.cache.execute.**");
-    server1.invoke(() -> createCacheInVm(props));
-
-    // Create client cache
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    client.invoke(() -> createCacheInVm(props));
-  }
-
   public static void createCacheInVm(Properties props) {
     new PRClientServerTestBase().createCache(props);
   }
