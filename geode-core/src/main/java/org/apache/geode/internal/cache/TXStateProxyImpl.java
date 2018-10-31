@@ -140,7 +140,6 @@ public class TXStateProxyImpl implements TXStateProxy {
           // wait for the region to be initialized fixes bug 44652
           r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
           target = r.getOwnerForKey(key);
-
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
             this.realDeal = new TXState(this, false);
           } else {
@@ -724,6 +723,10 @@ public class TXStateProxyImpl implements TXStateProxy {
   public void setTarget(DistributedMember target) {
     assert this.target == null;
     getRealDeal(target);
+    if (this.target == null && isRealDealLocal()) {
+      assert target.equals(getCache().getDistributedSystem().getDistributedMember());
+      this.target = target;
+    }
   }
 
   @Override
