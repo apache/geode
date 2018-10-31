@@ -39,6 +39,7 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -76,7 +77,8 @@ import org.apache.geode.test.junit.categories.ManagementTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Distributed tests for {@link AlertingService} with {@link DistributedSystemMXBean}.
+ * Distributed tests for {@link AlertingService} with {@link DistributedSystemMXBean} in the
+ * JMX Manager.
  */
 @Category({AlertingTest.class, ManagementTest.class})
 public class AlertingServiceDistributedTest implements Serializable {
@@ -118,8 +120,8 @@ public class AlertingServiceDistributedTest implements Serializable {
     managerName = "Manager in " + testName.getMethodName();
     memberName = "Member in " + testName.getMethodName();
 
-    managerVM = getController();
-    memberVM = getVM(1);
+    managerVM = getVM(0);
+    memberVM = getController();
 
     managerMember = managerVM.invoke(() -> createManager());
     memberVM.invoke(() -> createMember());
@@ -159,16 +161,6 @@ public class AlertingServiceDistributedTest implements Serializable {
   }
 
   @Test
-  public void alertMessageIsNotReceivedWithoutListener() {
-    managerVM.invoke(() -> getPlatformMBeanServer()
-        .removeNotificationListener(getDistributedSystemName(), notificationListener));
-
-    memberVM.invoke(() -> logger.fatal(alertMessage));
-
-    managerVM.invoke(() -> verifyNoMoreInteractions(messageListener));
-  }
-
-  @Test
   public void listenerReceivesAlertFromRemoteMember() {
     memberVM.invoke(() -> logger.fatal(alertMessage));
 
@@ -201,6 +193,18 @@ public class AlertingServiceDistributedTest implements Serializable {
 
     managerVM.invoke(() -> {
       assertThat(captureNotification().getMessage()).isEqualTo(alertMessage);
+    });
+  }
+
+  @Test
+  public void alertListenerMessageIsStillReceivedAfterRemoveListener() {
+    managerVM.invoke(() -> getPlatformMBeanServer()
+        .removeNotificationListener(getDistributedSystemName(), notificationListener));
+
+    memberVM.invoke(() -> logger.fatal(alertMessage));
+
+    managerVM.invoke(() -> {
+      verify(messageListener, timeout(TIMEOUT)).received(isA(AlertListenerMessage.class));
     });
   }
 
@@ -388,15 +392,14 @@ public class AlertingServiceDistributedTest implements Serializable {
 
   private Notification captureNotification() {
     ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-    verify(notificationListener, timeout(TIMEOUT))
-        .handleNotification(notificationCaptor.capture(), isNull());
+    verify(notificationListener, timeout(TIMEOUT)).handleNotification(notificationCaptor.capture(),
+        isNull());
     return notificationCaptor.getValue();
   }
 
   private AlertDetails captureAlertDetails() {
     ArgumentCaptor<AlertDetails> alertDetailsCaptor = ArgumentCaptor.forClass(AlertDetails.class);
-    verify(messageListener, timeout(TIMEOUT))
-        .created(alertDetailsCaptor.capture());
+    verify(messageListener, timeout(TIMEOUT)).created(alertDetailsCaptor.capture());
     return alertDetailsCaptor.getValue();
   }
 }
