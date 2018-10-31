@@ -22,7 +22,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.cache.CacheRuntimeException;
@@ -76,6 +79,8 @@ public class DefaultQuery implements Query {
 
   private final QueryStatistics stats;
 
+  private Optional<ScheduledFuture> expirationTask;
+
   private boolean traceOn = false;
 
   private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -99,15 +104,7 @@ public class DefaultQuery implements Query {
    */
   public static final Object NULL_RESULT = new Object();
 
-  private volatile boolean isCanceled = false;
-
-  private CacheRuntimeException canceledException;
-
-  /**
-   * This is declared as array so that it can be synchronized between two threads to validate the
-   * state.
-   */
-  private final boolean[] queryCompletedForMonitoring = new boolean[] {false};
+  private volatile CacheRuntimeException queryCancelledException;
 
   private ProxyCache proxyCache;
 
@@ -151,6 +148,9 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
+  static final ThreadLocal<AtomicBoolean> queryCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
+
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
     pdxClassToMethodsMap.set(map);
   }
@@ -159,6 +159,13 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
+  public Optional<ScheduledFuture> getCancelationTask() {
+    return expirationTask;
+  }
+
+  public void setCancelationTask(final ScheduledFuture expirationTask) {
+    this.expirationTask = Optional.of(expirationTask);
+  }
 
   /**
    * Should be constructed from DefaultQueryService
@@ -181,6 +188,7 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
+    this.expirationTask = Optional.empty();
   }
 
   /**
@@ -262,7 +270,7 @@ public class DefaultQuery implements Query {
         // Add current thread to be monitored by QueryMonitor.
         // In case of partitioned region it will be added before the query execution
         // starts on the Local Buckets.
-        queryMonitor.monitorQueryThread(Thread.currentThread(), this);
+        queryMonitor.monitorQueryThread(this);
       }
 
       context.setCqQueryContext(this.isCqQuery);
@@ -301,21 +309,30 @@ public class DefaultQuery implements Query {
       }
       return result;
     } catch (QueryExecutionCanceledException ignore) {
-      // query execution canceled exception will be thrown from the QueryMonitor
-      // canceled exception should not be null at this point as it should be set
-      // when query is canceled.
-      if (this.canceledException != null) {
-        throw this.canceledException;
-      } else {
-        throw new QueryExecutionCanceledException(
-            "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
-      }
+      return reinterpretQueryExecutionCanceledException();
     } finally {
       this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
-        queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
+        queryMonitor.stopMonitoringQueryThread(this);
       }
       this.endTrace(indexObserver, startTime, result);
+    }
+  }
+
+  /**
+   * This method attempts to reintrepret a {@link QueryExecutionCanceledException} using the
+   * the value returned by {@link #getQueryCanceledException} (set by the {@link QueryMonitor}).
+   *
+   * @throws if {@link #getQueryCanceledException} doesn't return {@code null} then throw that
+   *         {@link CacheRuntimeException}, otherwise throw {@link QueryExecutionCanceledException}
+   */
+  private Object reinterpretQueryExecutionCanceledException() {
+    final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+    if (queryCanceledException != null) {
+      throw queryCanceledException;
+    } else {
+      throw new QueryExecutionCanceledException(
+          "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
     }
   }
 
@@ -388,7 +405,7 @@ public class DefaultQuery implements Query {
     // QueryMonitor Service.
     if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
       // Add current thread to be monitored by QueryMonitor.
-      queryMonitor.monitorQueryThread(Thread.currentThread(), this);
+      queryMonitor.monitorQueryThread(this);
     }
 
     Object result = null;
@@ -396,7 +413,7 @@ public class DefaultQuery implements Query {
       result = executeUsingContext(context);
     } finally {
       if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
-        queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
+        queryMonitor.stopMonitoringQueryThread(this);
       }
 
       int resultSize = 0;
@@ -441,15 +458,7 @@ public class DefaultQuery implements Query {
         }
         results = this.compiledQuery.evaluate(context);
       } catch (QueryExecutionCanceledException ignore) {
-        // query execution canceled exception will be thrown from the QueryMonitor
-        // canceled exception should not be null at this point as it should be set
-        // when query is canceled.
-        if (this.canceledException != null) {
-          throw this.canceledException;
-        } else {
-          throw new QueryExecutionCanceledException(
-              "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
-        }
+        reinterpretQueryExecutionCanceledException();
       } finally {
         observer.afterQueryEvaluation(results);
       }
@@ -460,6 +469,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
+      queryCanceled.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -693,28 +703,18 @@ public class DefaultQuery implements Query {
    * if it takes more than the max query execution time or low memory situations
    */
   public boolean isCanceled() {
-    return this.isCanceled;
+    return getQueryCanceledException() != null;
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return this.canceledException;
-  }
-
-  boolean[] getQueryCompletedForMonitoring() {
-    return this.queryCompletedForMonitoring;
-  }
-
-  // TODO: parameter value is always true
-  void setQueryCompletedForMonitoring(boolean value) {
-    this.queryCompletedForMonitoring[0] = value;
+    return queryCancelledException;
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
-  public void setCanceled(CacheRuntimeException canceledException) {
-    this.isCanceled = true;
-    this.canceledException = canceledException;
+  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
+    this.queryCancelledException = queryCanceledException;
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
@@ -747,7 +747,7 @@ public class DefaultQuery implements Query {
     sb.append(this.queryString);
     sb.append(';');
     sb.append("isCancelled = ");
-    sb.append(this.isCanceled);
+    sb.append(this.isCanceled());
     sb.append("; Total Executions = ");
     sb.append(this.numExecutions);
     sb.append("; Total Execution Time = ");
