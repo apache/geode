@@ -24,6 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
@@ -46,7 +47,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
   static final String POOLED_DATA_SOURCE_FACTORY_CLASS = "pooled-data-source-factory-class";
   static final String POOLED_DATA_SOURCE_FACTORY_CLASS__HELP =
       "This class will be created, by calling its no-arg constructor, and used as the pool of this data source. "
-          + " The class must implement org.apache.geode.datasource.PooledDataSourceFactory.";
+          + " The class must implement org.apache.geode.datasource.PooledDataSourceFactory. Only valid if --pooled.";
+  private static final String DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS =
+      "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
   static final String URL = "url";
   static final String URL__HELP =
       "This is the JDBC data source URL string, for example, jdbc:hsqldb:hsql://localhost:1701.";
@@ -63,10 +66,10 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       "By default a pooled data source is created. If this option is false then a non-pooled data source is created.";
   static final String IFNOTEXISTS__HELP =
       "Skip the create operation when a data source with the same name already exists.  Without specifying this option, this command execution results into an error.";
-  static final String PROPERTIES = "properties";
-  static final String PROPERTIES_HELP =
-      "Properties for the data source. When used with a pooled data source, these properties will be used to configure the database data source unless the name begins with \"pool.\"."
-          + " If that prefix is used it will be used to configure the pool data source. For non-pooled data sources, these properties are just passed to the database data source. "
+  static final String POOL_PROPERTIES = "pool-properties";
+  static final String POOL_PROPERTIES_HELP =
+      "Properties for a pooled data source. Only valid if --pooled. These properties will be used to configure the database data source unless the name begins with \"pool.\"."
+          + " If that prefix is used it will be used to configure the pool data source."
           + "The value is a comma separated list of json strings. Each json string contains a name and value. "
           + "For example: --properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}";
 
@@ -77,7 +80,8 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createJDNIBinding(
       @CliOption(key = POOLED_DATA_SOURCE_FACTORY_CLASS,
-          help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String connectionPooledDatasource,
+          help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP,
+          unspecifiedDefaultValue = DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS) String pooledDataSourceFactoryClass,
       @CliOption(key = URL, mandatory = true,
           help = URL__HELP) String url,
       @CliOption(key = NAME, mandatory = true, help = NAME__HELP) String jndiName,
@@ -87,12 +91,12 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
       @CliOption(key = POOLED, help = POOLED__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean pooled,
-      @CliOption(key = PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = PROPERTIES_HELP) DataSourceProperty[] properties) {
+      @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = POOL_PROPERTIES_HELP) DataSourceProperty[] poolProperties) {
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
     configuration.setCreatedByDataSourceCommand(true);
-    configuration.setConnPooledDatasourceClass(connectionPooledDatasource);
+    configuration.setConnPooledDatasourceClass(pooledDataSourceFactoryClass);
     configuration.setConnectionUrl(url);
     configuration.setJndiName(jndiName);
     configuration.setPassword(password);
@@ -102,9 +106,13 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       configuration.setType(DATASOURCE_TYPE.SIMPLE.getType());
     }
     configuration.setUserName(username);
-    if (properties != null && properties.length > 0) {
-      // TODO convert DataSourceProperty to ConfigProperty
-      configuration.getConfigProperties().addAll(Arrays.asList(properties));
+    if (poolProperties != null && poolProperties.length > 0) {
+      List<ConfigProperty> configProperties = configuration.getConfigProperties();
+      for (DataSourceProperty dataSourceProperty : poolProperties) {
+        String name = dataSourceProperty.getName();
+        String value = dataSourceProperty.getValue();
+        configProperties.add(new ConfigProperty(name, "type", value));
+      }
     }
 
     InternalConfigurationPersistenceService service =

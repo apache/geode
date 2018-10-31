@@ -63,7 +63,7 @@ public class CreateDataSourceCommandDUnitTest {
 
     // create the data-source
     gfsh.executeAndAssertThat(
-        "create data-source --name=jndi1 --username=myuser --password=mypass --pooled=false --url=\"jdbc:derby:newDB;create=true\" --properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}")
+        "create data-source --name=jndi1 --username=myuser --password=mypass --pooled=false --url=\"jdbc:derby:newDB;create=true\" --pool-properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated
