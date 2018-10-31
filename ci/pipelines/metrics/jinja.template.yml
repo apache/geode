@@ -68,8 +68,6 @@ resources:
 
 jobs:
 {{- metrics_job('Build') }}
-  {%- for test in (tests) if not test.name=="StressNew" -%}
-    {%- for java_test_version in (java_test_versions) %}
-{{ metrics_job(test.name+'Test'+java_test_version.name) }}
-    {%- endfor -%}
+  {%- for test in (tests) if not test.name=="StressNew" %}
+{{ metrics_job(test.name+'Test') }}
   {%- endfor -%}
