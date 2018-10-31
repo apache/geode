@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -27,7 +26,6 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
@@ -40,8 +38,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateDataSourceCommand extends SingleGfshCommand {
-  private static final Logger logger = LogService.getLogger();
-
   static final String CREATE_DATA_SOURCE = "create data-source";
   static final String CREATE_DATA_SOURCE__HELP = "Create a JDBC data source.";
   static final String POOLED_DATA_SOURCE_FACTORY_CLASS = "pooled-data-source-factory-class";
@@ -84,7 +80,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String pooledDataSourceFactoryClass,
       @CliOption(key = URL, mandatory = true,
           help = URL__HELP) String url,
-      @CliOption(key = NAME, mandatory = true, help = NAME__HELP) String jndiName,
+      @CliOption(key = NAME, mandatory = true, help = NAME__HELP) String name,
       @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
@@ -98,7 +94,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     configuration.setCreatedByDataSourceCommand(true);
     configuration.setConnPooledDatasourceClass(pooledDataSourceFactoryClass);
     configuration.setConnectionUrl(url);
-    configuration.setJndiName(jndiName);
+    configuration.setJndiName(name);
     configuration.setPassword(password);
     if (pooled) {
       configuration.setType(DATASOURCE_TYPE.POOLED.getType());
@@ -109,9 +105,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     if (poolProperties != null && poolProperties.length > 0) {
       List<ConfigProperty> configProperties = configuration.getConfigProperties();
       for (DataSourceProperty dataSourceProperty : poolProperties) {
-        String name = dataSourceProperty.getName();
-        String value = dataSourceProperty.getValue();
-        configProperties.add(new ConfigProperty(name, "type", value));
+        String propName = dataSourceProperty.getName();
+        String propValue = dataSourceProperty.getValue();
+        configProperties.add(new ConfigProperty(propName, "type", propValue));
       }
     }
 
@@ -122,10 +118,10 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");
       if (cacheConfig != null) {
         JndiBindingsType.JndiBinding existing =
-            CacheElement.findElement(cacheConfig.getJndiBindings(), jndiName);
+            CacheElement.findElement(cacheConfig.getJndiBindings(), name);
         if (existing != null) {
           throw new EntityExistsException(
-              CliStrings.format("Data source named \"{0}\" already exists.", jndiName),
+              CliStrings.format("Data source named \"{0}\" already exists.", name),
               ifNotExists);
         }
       }
@@ -149,20 +145,10 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
   }
 
   public static class DataSourceProperty {
-    @Override
-    public String toString() {
-      return "DataSourceProperty [name=" + name + ", value=" + value + "]";
-    }
-
     private String name;
     private String value;
 
     public DataSourceProperty() {}
-
-    public DataSourceProperty(String name, String value) {
-      this.name = name;
-      this.value = value;
-    }
 
     public String getName() {
       return name;
@@ -180,5 +166,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       this.value = value;
     }
 
+    @Override
+    public String toString() {
+      return "DataSourceProperty [name=" + name + ", value=" + value + "]";
+    }
   }
 }
