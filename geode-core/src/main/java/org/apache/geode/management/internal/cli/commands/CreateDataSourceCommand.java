@@ -45,11 +45,12 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
   static final String CREATE_DATA_SOURCE = "create data-source";
   static final String CREATE_DATA_SOURCE__HELP = "Create a JDBC data source.";
   static final String POOLED_DATA_SOURCE_FACTORY_CLASS = "pooled-data-source-factory-class";
-  static final String POOLED_DATA_SOURCE_FACTORY_CLASS__HELP =
-      "This class will be created, by calling its no-arg constructor, and used as the pool of this data source. "
-          + " The class must implement org.apache.geode.datasource.PooledDataSourceFactory. Only valid if --pooled.";
   private static final String DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS =
       "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
+  static final String POOLED_DATA_SOURCE_FACTORY_CLASS__HELP =
+      "This class will be created, by calling its no-arg constructor, and used as the pool of this data source. "
+          + " The class must implement org.apache.geode.datasource.PooledDataSourceFactory. Only valid if --pooled."
+          + " Defaults to: " + DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS;
   static final String URL = "url";
   static final String URL__HELP =
       "This is the JDBC data source URL string, for example, jdbc:hsqldb:hsql://localhost:1701.";
@@ -75,13 +76,12 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
-      interceptor = "org.apache.geode.management.internal.cli.commands.UsernamePasswordInterceptor")
+      interceptor = "org.apache.geode.management.internal.cli.commands.CreateDataSourceInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createJDNIBinding(
       @CliOption(key = POOLED_DATA_SOURCE_FACTORY_CLASS,
-          help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP,
-          unspecifiedDefaultValue = DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS) String pooledDataSourceFactoryClass,
+          help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String pooledDataSourceFactoryClass,
       @CliOption(key = URL, mandatory = true,
           help = URL__HELP) String url,
       @CliOption(key = NAME, mandatory = true, help = NAME__HELP) String jndiName,

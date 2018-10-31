@@ -23,29 +23,21 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class UsernamePasswordInterceptor extends AbstractCliAroundInterceptor {
+  private final Gfsh gfsh;
+
+  public UsernamePasswordInterceptor() {
+    this(Gfsh.getCurrentInstance());
+  }
+
+  // Constructor for unit test
+  UsernamePasswordInterceptor(Gfsh gfsh) {
+    this.gfsh = gfsh;
+  }
+
   @Override
   public ResultModel preExecution(GfshParseResult parseResult) {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
     if (gfsh == null || !gfsh.isConnectedAndReady()) {
       return new ResultModel();
-    }
-
-    if (CreateDataSourceCommand.CREATE_DATA_SOURCE.equals(parseResult.getCommandName())) {
-      String pooled = parseResult.getParamValueAsString("pooled");
-      if (pooled != null && pooled.equalsIgnoreCase("false")) {
-        String poolProperties =
-            parseResult.getParamValueAsString(CreateDataSourceCommand.POOL_PROPERTIES);
-        if (poolProperties != null && poolProperties.length() > 0) {
-          return ResultModel
-              .createError(CliStrings.POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE);
-        }
-        String pooledDataSourceFactoryClass = parseResult
-            .getParamValueAsString(CreateDataSourceCommand.POOLED_DATA_SOURCE_FACTORY_CLASS);
-        if (pooledDataSourceFactoryClass != null && pooledDataSourceFactoryClass.length() > 0) {
-          return ResultModel.createError(
-              CliStrings.POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE);
-        }
-      }
     }
 
     String userInput = parseResult.getUserInput();

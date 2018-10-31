@@ -22,27 +22,20 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Gfsh.class})
 public class UsernamePasswordInterceptorTest {
   private Gfsh gfsh;
   private GfshParseResult parseResult;
+  private UsernamePasswordInterceptor interceptor;
 
   @Before
   public void setUp() throws Exception {
     gfsh = mock(Gfsh.class);
     parseResult = mock(GfshParseResult.class);
-
-    PowerMockito.mockStatic(Gfsh.class);
-    PowerMockito.when(Gfsh.getCurrentInstance()).thenReturn(gfsh);
+    interceptor = new UsernamePasswordInterceptor(gfsh);
   }
 
   @Test
@@ -56,7 +49,6 @@ public class UsernamePasswordInterceptorTest {
     when(parseResult.getParamValueAsString("username")).thenReturn("");
     when(parseResult.getParamValueAsString("password")).thenReturn("");
 
-    UsernamePasswordInterceptor interceptor = new UsernamePasswordInterceptor();
     interceptor.preExecution(parseResult);
 
     verify(gfsh, times(0)).readText(any());
@@ -74,7 +66,6 @@ public class UsernamePasswordInterceptorTest {
     when(parseResult.getParamValueAsString("username")).thenReturn("user");
     when(parseResult.getParamValueAsString("password")).thenReturn("");
 
-    UsernamePasswordInterceptor interceptor = new UsernamePasswordInterceptor();
     interceptor.preExecution(parseResult);
 
     verify(gfsh, times(0)).readText(any());
@@ -91,7 +82,6 @@ public class UsernamePasswordInterceptorTest {
     when(parseResult.getParamValueAsString("username")).thenReturn("user");
     when(parseResult.getParamValueAsString("password")).thenReturn("pass");
 
-    UsernamePasswordInterceptor interceptor = new UsernamePasswordInterceptor();
     interceptor.preExecution(parseResult);
 
     verify(gfsh, times(0)).readText(any());
@@ -109,7 +99,6 @@ public class UsernamePasswordInterceptorTest {
     when(parseResult.getParamValueAsString("username")).thenReturn("");
     when(parseResult.getParamValueAsString("password")).thenReturn("pass");
 
-    UsernamePasswordInterceptor interceptor = new UsernamePasswordInterceptor();
     interceptor.preExecution(parseResult);
 
     verify(gfsh, times(1)).readText(any());
@@ -126,7 +115,6 @@ public class UsernamePasswordInterceptorTest {
     when(parseResult.getParamValueAsString("username")).thenReturn("");
     when(parseResult.getParamValueAsString("password")).thenReturn("");
 
-    UsernamePasswordInterceptor interceptor = new UsernamePasswordInterceptor();
     interceptor.preExecution(parseResult);
 
     verify(gfsh, times(0)).readText(any());
