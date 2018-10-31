@@ -63,6 +63,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Category({EvictionTest.class})
 public class EvictionDUnitTest {
 
+  private static final int ENTRY_SIZE = 1024 * 1024;
+
   @Parameterized.Parameters(name = "offHeap={0}")
   public static Collection booleans() {
     return Arrays.asList(true, false);
@@ -72,7 +74,7 @@ public class EvictionDUnitTest {
   public static boolean offHeap;
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   private MemberVM server0, server1;
 
@@ -115,26 +117,12 @@ public class EvictionDUnitTest {
     server0.invoke(() -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
       for (int counter = 1; counter <= 50; counter++) {
-        region.put(counter, new byte[1024 * 1024]);
+        region.put(counter, new byte[ENTRY_SIZE]);
       }
     });
 
-    int server0ExpectedEviction = server0.invoke(EvictionDUnitTest::getExpectedEviction);
-    int server1ExpectedEviction = server1.invoke(EvictionDUnitTest::getExpectedEviction);
-
-    server0.invoke(() -> {
-      GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
-      PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
-      GeodeAwaitility.await()
-          .until(() -> (abs(region.getTotalEvictions() - server0ExpectedEviction) <= 1));
-    });
-
-    server1.invoke(() -> {
-      GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
-      PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
-      GeodeAwaitility.await()
-          .until(() -> (abs(region.getTotalEvictions() - server1ExpectedEviction) <= 1));
-    });
+    int server0ExpectedEviction = server0.invoke(() -> sendEventAndWaitForExpectedEviction("PR1"));
+    int server1ExpectedEviction = server1.invoke(() -> sendEventAndWaitForExpectedEviction("PR1"));
 
     Long server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
     Long server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
@@ -146,7 +134,7 @@ public class EvictionDUnitTest {
     server0.invoke(() -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
       for (int counter = 1; counter <= 4; counter++) {
-        region.put(counter, new byte[1024 * 1024]);
+        region.put(counter, new byte[ENTRY_SIZE]);
       }
     });
 
@@ -172,12 +160,10 @@ public class EvictionDUnitTest {
       GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion("PR1");
       for (int counter = 1; counter <= 50; counter++) {
-        region.put(counter, new byte[1024 * 1024]);
+        region.put(counter, new byte[ENTRY_SIZE]);
       }
 
-      int expectedEviction = getExpectedEviction();
-      GeodeAwaitility.await()
-          .until(() -> (abs(region.getTotalEvictions() - expectedEviction) <= 1));
+      sendEventAndWaitForExpectedEviction("PR1");
 
       ExecutorService evictorThreadPool = getEvictor(cache).getEvictorThreadPool();
       if (evictorThreadPool != null) {
@@ -206,7 +192,7 @@ public class EvictionDUnitTest {
     server0.invoke(() -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
       for (int counter = 1; counter <= 60; counter++) {
-        region.put(counter, new byte[1024 * 1024]);
+        region.put(counter, new byte[ENTRY_SIZE]);
       }
     });
 
@@ -225,12 +211,10 @@ public class EvictionDUnitTest {
               f -> f.setOffHeap(offHeap).setDataPolicy(DataPolicy.NORMAL).setEvictionAttributes(
                   EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.LOCAL_DESTROY)));
       for (int counter = 1; counter <= 50; counter++) {
-        dr1.put(counter, new byte[1024 * 1024]);
+        dr1.put(counter, new byte[ENTRY_SIZE]);
       }
 
-      int expectedEviction = getExpectedEviction();
-
-      GeodeAwaitility.await().until(() -> (abs(dr1.getTotalEvictions() - expectedEviction) <= 1));
+      int expectedEviction = sendEventAndWaitForExpectedEviction("DR1");
 
       assertThat(dr1.getTotalEvictions()).isEqualTo(expectedEviction);
     });
@@ -242,8 +226,9 @@ public class EvictionDUnitTest {
     return pr.getTotalEvictions();
   }
 
-  private static int getExpectedEviction() {
+  private static int sendEventAndWaitForExpectedEviction(String regionName) {
     GemFireCacheImpl cache = (GemFireCacheImpl) ClusterStartupRule.getCache();
+    LocalRegion region = (LocalRegion) cache.getRegion(regionName);
     HeapEvictor evictor = getEvictor(cache);
     evictor.setTestAbortAfterLoopCount(1);
 
@@ -256,8 +241,13 @@ public class EvictionDUnitTest {
       hmm.updateStateAndSendEvent(90);
     }
 
-    return (int) Math
-        .ceil((evictor.getTotalBytesToEvict() / 2) / (double) ((1024 * 1024) + 100)) * 2;
+    int entrySize = ENTRY_SIZE + 100;
+    long totalBytesToEvict = evictor.getTotalBytesToEvict();
+    int expectedEviction = (int) Math.ceil((double) totalBytesToEvict / (double) entrySize);
+
+    GeodeAwaitility.await()
+        .until(() -> (abs(region.getTotalEvictions() - expectedEviction) <= 1));
+    return expectedEviction;
   }
 
   /**
@@ -300,7 +290,7 @@ public class EvictionDUnitTest {
     server0.invoke(() -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
       for (int counter = 1; counter <= 100; counter++) {
-        region.put(counter, new byte[1024 * 1024]);
+        region.put(counter, new byte[ENTRY_SIZE]);
       }
     });
 
