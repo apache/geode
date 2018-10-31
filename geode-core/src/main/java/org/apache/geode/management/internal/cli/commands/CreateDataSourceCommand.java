@@ -74,7 +74,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           + "For example: --properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}";
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
+  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
       interceptor = "org.apache.geode.management.internal.cli.commands.UsernamePasswordInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
