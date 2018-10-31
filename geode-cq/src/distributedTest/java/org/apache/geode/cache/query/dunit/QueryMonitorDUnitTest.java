@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -43,7 +44,6 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -434,7 +434,7 @@ public class QueryMonitorDUnitTest {
      * GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME (system property) value,
      * set during test initialization.
      */
-    GeodeAwaitility.await("stall the query execution so that it gets cancelled")
+    await("stall the query execution so that it gets cancelled")
         .pollDelay(10, TimeUnit.MILLISECONDS)
         .until(() -> query.isCanceled());
   }
