@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -29,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.operations.DestroyOperationContext;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
@@ -179,4 +183,12 @@ public class DestroyTest {
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
 
+  @Test
+  public void destroyThrowsAndHandlesEntryNotFoundExceptionOnServer() {
+    doThrow(new EntryNotFoundException("")).when(region).basicBridgeDestroy(any(), any(), any(),
+        anyBoolean(), any());
+
+    assertThatCode(() -> destroy.cmdExecute(message, serverConnection, securityService, 0))
+        .doesNotThrowAnyException();
+  }
 }
