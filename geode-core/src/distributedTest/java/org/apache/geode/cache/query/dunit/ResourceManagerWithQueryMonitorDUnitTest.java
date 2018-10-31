@@ -1224,9 +1224,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     // -1 needs to be matched due to client/server set up, BaseCommand uses the
     // MAX_QUERY_EXECUTION_TIME and not the testMaxQueryExecutionTime
     return (message.contains("The QueryMonitor thread may be sleeping longer than")
-        || message.contains("Query execution cancelled after exceeding max execution time")
+        || message.contains("Query execution canceled after exceeding max execution time")
         || message.contains(
-            String.format("Query execution cancelled after exceeding max execution time %sms.",
+            String.format("Query execution canceled after exceeding max execution time %sms.",
                 -1)));
   }
 

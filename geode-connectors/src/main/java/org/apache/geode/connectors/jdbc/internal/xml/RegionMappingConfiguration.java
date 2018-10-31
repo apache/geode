@@ -14,46 +14,47 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
-public class JdbcServiceConfiguration implements Extension<Cache> {
+public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
 
-  private final List<ConnectorService.RegionMapping> mappings = new ArrayList<>();
+  private final RegionMapping mapping;
 
-  void addRegionMapping(ConnectorService.RegionMapping mapping) {
-    mappings.add(mapping);
+  public RegionMappingConfiguration(RegionMapping mapping) {
+    this.mapping = mapping;
   }
 
   @Override
-  public XmlGenerator<Cache> getXmlGenerator() {
+  public XmlGenerator<Region<?, ?>> getXmlGenerator() {
     return null;
   }
 
   @Override
-  public void beforeCreate(Extensible<Cache> source, Cache cache) {
+  public void beforeCreate(Extensible<Region<?, ?>> source, Cache cache) {
     // nothing
   }
 
   @Override
-  public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
-    InternalCache internalCache = (InternalCache) target;
+  public void onCreate(Extensible<Region<?, ?>> source, Extensible<Region<?, ?>> target) {
+    final ExtensionPoint<Region<?, ?>> extensionPoint = target.getExtensionPoint();
+    final Region<?, ?> region = extensionPoint.getTarget();
+    InternalCache internalCache = (InternalCache) region.getRegionService();
     JdbcConnectorService service = internalCache.getService(JdbcConnectorService.class);
-    mappings.forEach(mapping -> createRegionMapping(service, mapping));
+    createRegionMapping(service, mapping);
   }
 
   private void createRegionMapping(JdbcConnectorService service,
-      ConnectorService.RegionMapping regionMapping) {
+      RegionMapping regionMapping) {
     try {
       service.createRegionMapping(regionMapping);
     } catch (RegionMappingExistsException e) {

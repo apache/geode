@@ -23,6 +23,9 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
@@ -36,6 +39,8 @@ public class TXStateProxyImplTest {
   LocalRegionDataView view;
   private TXId txId;
   private TXManagerImpl txManager;
+  private DistributedSystem system;
+  private DistributedMember member;
 
   @Before
   public void setUp() {
@@ -44,6 +49,11 @@ public class TXStateProxyImplTest {
     txId = new TXId(mock(InternalDistributedMember.class), 1);
     txManager = mock(TXManagerImpl.class);
     view = mock(LocalRegionDataView.class);
+    system = mock(InternalDistributedSystem.class);
+    member = mock(InternalDistributedMember.class);
+
+    when(cache.getDistributedSystem()).thenReturn(system);
+    when(system.getDistributedMember()).thenReturn(member);
   }
 
   @Test
@@ -98,5 +108,54 @@ public class TXStateProxyImplTest {
     when(txManager.getTransactionTimeToLive()).thenReturn(1);
 
     assertThat(tx.isOverTransactionTimeoutLimit()).isEqualTo(false);
+  }
+
+  @Test
+  public void setTargetWillSetTargetToItselfAndSetTXStateIfRealDealIsNull() {
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    assertThat(tx.hasRealDeal()).isFalse();
+    assertThat(tx.getTarget()).isNull();
+
+    tx.setTarget(member);
+
+    assertThat(tx.getTarget()).isEqualTo(member);
+    assertThat(tx.isRealDealLocal()).isTrue();
+  }
+
+  @Test
+  public void setTargetWillSetTXStateStubIfTargetIsDifferentFromLocalMember() {
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    assertThat(tx.hasRealDeal()).isFalse();
+    assertThat(tx.getTarget()).isNull();
+    DistributedMember remoteMember = mock(InternalDistributedMember.class);
+
+    tx.setTarget(remoteMember);
+
+    assertThat(tx.getTarget()).isEqualTo(remoteMember);
+    assertThat(tx.isRealDealLocal()).isFalse();
+    assertThat(tx.hasRealDeal()).isTrue();
+  }
+
+  @Test
+  public void setTargetToItSelfIfRealDealIsTXStateAndTargetIsSameAsLocalMember() {
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    tx.setLocalTXState(new TXState(tx, true));
+    assertThat(tx.isRealDealLocal()).isTrue();
+    assertThat(tx.getTarget()).isNull();
+
+    tx.setTarget(member);
+
+    assertThat(tx.getTarget()).isEqualTo(member);
+    assertThat(tx.isRealDealLocal()).isTrue();
+  }
+
+  @Test(expected = AssertionError.class)
+  public void setTargetThrowsIfIfRealDealIsTXStateAndTargetIsDifferentFromLocalMember() {
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    tx.setLocalTXState(new TXState(tx, true));
+    assertThat(tx.getTarget()).isNull();
+    DistributedMember remoteMember = mock(InternalDistributedMember.class);
+
+    tx.setTarget(remoteMember);
   }
 }

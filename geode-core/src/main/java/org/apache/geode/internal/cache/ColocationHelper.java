@@ -77,6 +77,7 @@ public class ColocationHelper {
     PartitionRegionConfig prConf =
         (PartitionRegionConfig) prRoot.get(getRegionIdentifier(colocatedWith));
     if (prConf == null) {
+      partitionedRegion.getCache().getCancelCriterion().checkCancelInProgress(null);
       throw new IllegalStateException(
           String.format(
               "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
@@ -89,6 +90,7 @@ public class ColocationHelper {
       if (colocatedPR != null) {
         colocatedPR.waitOnBucketMetadataInitialization();
       } else {
+        partitionedRegion.getCache().getCancelCriterion().checkCancelInProgress(null);
         throw new IllegalStateException(
             String.format(
                 "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",

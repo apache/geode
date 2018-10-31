@@ -276,6 +276,7 @@ Distribution License:
   - javax.resource v 1.7 (https://glassfish.java.net/)
   - javax.servlet v3.1.0 (https://glassfish.java.net/)
   - javax.transaction v1.2 (https://glassfish.java.net/)
+  - javax.xml.bind v2.2.11
 
 1. Definitions.
   1.1. Contributor means each individual or entity that creates or

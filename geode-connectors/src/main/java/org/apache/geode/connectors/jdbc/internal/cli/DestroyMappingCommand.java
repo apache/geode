@@ -22,8 +22,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -62,11 +61,18 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
-    ConnectorService service =
-        config.findCustomCacheElement("connector-service", ConnectorService.class);
-    if (service != null) {
-      CacheElement.removeElement(service.getRegionMapping(), (String) element);
+  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object configObject) {
+    String region = (String) configObject;
+    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement("/" + region,
+        RegionMapping.ELEMENT_ID, RegionMapping.class);
+
+    if (existingCacheElement != null) {
+      cacheConfig
+          .getRegions()
+          .stream()
+          .filter(regionConfig -> regionConfig.getName().equals(region))
+          .forEach(
+              regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
     }
   }
 }

@@ -29,9 +29,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -43,6 +45,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({JDBCConnectorTest.class})
 public class CreateMappingCommandDUnitTest {
+
+  private static final String REGION_NAME = "testRegion";
+  private static final String SUBREGION_NAME = REGION_NAME + "/testSubRegion";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -62,12 +67,15 @@ public class CreateMappingCommandDUnitTest {
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
   }
 
   @Test
   public void createsMappingWithAllOptions() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
@@ -79,20 +87,18 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:connector-service")
-          .doesNotContain("jdbc:connection").contains("jdbc:region-mapping")
-          .contains("jdbc:field-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping").contains("jdbc:field-mapping");
     });
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      ConnectorService.RegionMapping mapping =
-          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
+      RegionMapping mapping =
+          cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(true);
-      List<ConnectorService.RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
+      List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
       assertThat(fieldMappings).hasSize(2);
       assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field1");
       assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column1");
@@ -104,7 +110,7 @@ public class CreateMappingCommandDUnitTest {
   @Test
   public void validateThatPrimaryKeyInValueDefaultsToFalse() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
@@ -116,17 +122,23 @@ public class CreateMappingCommandDUnitTest {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("primary-key-in-value=\"false\"");
+      Element element = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getXmlElement(null, "region", "name", REGION_NAME);
+      assertThat(element).isNotNull();
+      NodeList list = element.getElementsByTagName("jdbc:mapping");
+      assertThat(list).isNotNull();
+      assertThat(list.getLength()).isEqualTo(1);
     });
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      ConnectorService.RegionMapping mapping =
-          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
+      RegionMapping mapping =
+          cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(false);
-      List<ConnectorService.RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
+      List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
       assertThat(fieldMappings).hasSize(2);
       assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field1");
       assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column1");
@@ -138,7 +150,7 @@ public class CreateMappingCommandDUnitTest {
   @Test
   public void createsRegionMappingWithoutFieldMap() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
@@ -149,9 +161,30 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:connector-service");
-      assertThat(xml).isNotNull().contains("jdbc:region-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping");
       assertThat(xml).isNotNull().doesNotContain("jdbc:field-mapping");
+    });
+  }
+
+  @Test
+  public void createExistingRegionMappingFails() {
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogus");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+
+    locator.invoke(() -> {
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
+      assertThat(xml).isNotNull().contains("jdbc:mapping").contains("myTable")
+          .doesNotContain("bogus");
     });
   }
 }

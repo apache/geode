@@ -33,6 +33,9 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -118,6 +121,51 @@ public class CreateRegionCommandDUnitTest {
       Region region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.getAttributes().getCompressor()).isNull();
+    });
+  }
+
+  @Test
+  public void testCreateRegionWithSubregion() throws Exception {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
+    String subRegionName = "subregion";
+    String subRegionPath = regionName + "/" + subRegionName;
+
+    gfsh.executeAndAssertThat("create region --name=" + subRegionPath +
+        " --type=REPLICATE")
+        .statusIsSuccess();
+
+    String subSubRegionName = "subregion2";
+    String subSubRegionPath = regionName + "/" + subRegionName + "/" + subSubRegionName;
+    gfsh.executeAndAssertThat("create region --name=" + subSubRegionPath +
+        " --type=REPLICATE")
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region region = cache.getRegion(regionName);
+      assertThat(region).isNotNull();
+
+      Region subRegion = cache.getRegion(subRegionPath);
+      assertThat(subRegion).isNotNull();
+
+      Region subSubRegion = cache.getRegion(subSubRegionPath);
+      assertThat(subSubRegion).isNotNull();
+    });
+
+    locator.invoke(() -> {
+      CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("cluster");
+      assertThat(CacheElement.findElement(config.getRegions(), regionName)).isNotNull();
+
+      RegionConfig parentConfig = CacheElement.findElement(config.getRegions(), regionName);
+      assertThat(CacheElement.findElement(parentConfig.getRegions(), subRegionName)).isNotNull();
+
+      RegionConfig subRegionConfig = CacheElement.findElement(parentConfig.getRegions(),
+          subRegionName);
+      assertThat(CacheElement.findElement(subRegionConfig.getRegions(), subSubRegionName))
+          .isNotNull();
     });
   }
 

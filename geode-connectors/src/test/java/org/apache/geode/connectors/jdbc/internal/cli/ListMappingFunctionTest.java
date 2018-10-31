@@ -33,7 +33,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -45,11 +45,11 @@ public class ListMappingFunctionTest {
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
 
-  private ConnectorService.RegionMapping regionMapping1;
-  private ConnectorService.RegionMapping regionMapping2;
-  private ConnectorService.RegionMapping regionMapping3;
+  private RegionMapping regionMapping1;
+  private RegionMapping regionMapping2;
+  private RegionMapping regionMapping3;
 
-  private Set<ConnectorService.RegionMapping> expected;
+  private Set<RegionMapping> expected;
 
   private ListMappingFunction function;
 
@@ -62,9 +62,9 @@ public class ListMappingFunctionTest {
     service = mock(JdbcConnectorService.class);
     DistributedSystem system = mock(DistributedSystem.class);
 
-    regionMapping1 = mock(ConnectorService.RegionMapping.class);
-    regionMapping2 = mock(ConnectorService.RegionMapping.class);
-    regionMapping3 = mock(ConnectorService.RegionMapping.class);
+    regionMapping1 = mock(RegionMapping.class);
+    regionMapping2 = mock(RegionMapping.class);
+    regionMapping3 = mock(RegionMapping.class);
 
     expected = new HashSet<>();
 
@@ -103,16 +103,16 @@ public class ListMappingFunctionTest {
     expected.add(regionMapping2);
     expected.add(regionMapping3);
 
-    Set<ConnectorService.RegionMapping> actual =
-        (Set<ConnectorService.RegionMapping>) function.executeFunction(context).getResultObject();
+    Set<RegionMapping> actual =
+        (Set<RegionMapping>) function.executeFunction(context).getResultObject();
 
     assertThat(actual).containsExactlyInAnyOrder(regionMapping1, regionMapping2, regionMapping3);
   }
 
   @Test
   public void getRegionMappingsReturnsEmpty() {
-    Set<ConnectorService.RegionMapping> actual =
-        (Set<ConnectorService.RegionMapping>) function.executeFunction(context).getResultObject();
+    Set<RegionMapping> actual =
+        (Set<RegionMapping>) function.executeFunction(context).getResultObject();
 
     assertThat(actual).isEmpty();
   }
@@ -127,8 +127,8 @@ public class ListMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    Set<ConnectorService.RegionMapping> mappings =
-        (Set<ConnectorService.RegionMapping>) argument.getValue().getResultObject();
+    Set<RegionMapping> mappings =
+        (Set<RegionMapping>) argument.getValue().getResultObject();
     assertThat(mappings).containsExactlyInAnyOrder(regionMapping1, regionMapping2, regionMapping3);
   }
 

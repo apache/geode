@@ -94,6 +94,7 @@ public class TXManagerImplTest {
     InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
     doReturn(distributedSystem).when(spyCache).getDistributedSystem();
     when(distributedSystem.getDistributionManager()).thenReturn(dm);
+    when(distributedSystem.getDistributedMember()).thenReturn(member);
     spyTxMgr = spy(new TXManagerImpl(mock(CachePerfStats.class), spyCache));
     timer = mock(SystemTimer.class);
     doReturn(timer).when(spyCache).getCCPTimer();
@@ -517,5 +518,13 @@ public class TXManagerImplTest {
     spyTxMgr.unmasquerade(tx1);
 
     verify(lock, times(1)).unlock();
+  }
+
+  @Test
+  public void masqueradeAsSetsTarget() throws InterruptedException {
+    TXStateProxy tx;
+
+    tx = txMgr.masqueradeAs(msg);
+    assertNotNull(tx.getTarget());
   }
 }

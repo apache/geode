@@ -168,7 +168,6 @@ import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.SimpleClass1;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestCase;
@@ -2892,7 +2891,7 @@ public class WANTestBase extends DistributedTestCase {
             + sameRegionSizeCounter + " :regionSize " + previousSize;
       }
     };
-    GeodeAwaitility.await().untilAsserted(wc);
+    await().untilAsserted(wc);
   }
 
   public static String getRegionFullPath(String regionName) {
@@ -3940,6 +3939,10 @@ public class WANTestBase extends DistributedTestCase {
             DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
             ObjectName expectedName = service.getGatewayReceiverMBeanName(receiverMember);
             try {
+              await("wait for member to be added to DistributedSystemBridge membership list")
+                  .untilAsserted(
+                      () -> assertThat(bean.fetchGatewayReceiverObjectName(receiverMember.getId()))
+                          .isNotNull());
               ObjectName actualName = bean.fetchGatewayReceiverObjectName(receiverMember.getId());
               assertEquals(expectedName, actualName);
             } catch (Exception e) {
