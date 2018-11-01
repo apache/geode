@@ -14,14 +14,18 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.function.IntSupplier;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,22 +58,26 @@ import org.apache.geode.util.test.TestUtil;
  * Subclasses provide installation of specific containers.
  */
 public abstract class ContainerInstall {
+  private final IntSupplier portSupplier;
   public static final Logger logger = LogService.getLogger();
+  public static final String TMP_DIR = createTempDir();
+  public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
+  public static final String GEODE_BUILD_HOME_LIB = GEODE_BUILD_HOME + "/lib/";
+  public static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
+  public static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
+  protected static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
 
-  private String defaultLocatorAddress;
-  private int defaultLocatorPort;
+  protected IntSupplier portSupplier() {
+    return portSupplier;
+  }
 
   private final ConnectionType connType;
+  private final String installPath;
+  private final String modulePath;
+  private final String warFilePath;
 
-  private final String INSTALL_PATH;
-  private final String MODULE_PATH;
-  private final String WAR_FILE_PATH;
-
-  public static final String TMP_DIR = System.getProperty("java.io.tmpdir", "/tmp");
-  public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
-  public static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
-  protected static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
-  public static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
+  private final String defaultLocatorAddress;
+  private int defaultLocatorPort;
 
   /**
    * Represents the type of connection used in this installation
@@ -83,7 +91,9 @@ public abstract class ContainerInstall {
     CACHING_CLIENT_SERVER("client-server", "cache-client.xml", true, true);
 
     private final String name;
+
     private final String cacheXMLFileName;
+
     private final boolean enableLocalCache;
     private final boolean isClientServer;
 
@@ -110,30 +120,28 @@ public abstract class ContainerInstall {
     public boolean isClientServer() {
       return isClientServer;
     }
+
+
   }
 
-  public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
-      String moduleName) throws IOException {
-    this(installDir, downloadURL, connType, moduleName, DEFAULT_MODULE_LOCATION);
+  public ContainerInstall(String name, String downloadURL, ConnectionType connectionType,
+      String moduleName, IntSupplier portSupplier) throws IOException {
+    this(name, downloadURL, connectionType, moduleName, DEFAULT_MODULE_LOCATION, portSupplier);
   }
 
   /**
-   * Base class for handling downloading and configuring J2EE installations
-   *
-   * This class contains common logic for downloading and configuring J2EE installations with cargo,
-   * and some common methods for applying geode session replication configuration to those
-   * installations.
-   *
-   * Subclasses provide installation of specific containers.
-   *
+   * @param name used to name install directory
    * @param connType Enum representing the connection type of this installation (either client
    *        server or peer to peer)
    * @param moduleName The module name of the installation being setup (i.e. tomcat, appserver,
    *        etc.)
    */
-  public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
-      String moduleName, String geodeModuleLocation) throws IOException {
+  public ContainerInstall(String name, String downloadURL, ConnectionType connType,
+      String moduleName, String geodeModuleLocation, IntSupplier portSupplier) throws IOException {
     this.connType = connType;
+    this.portSupplier = portSupplier;
+
+    String installDir = DEFAULT_INSTALL_DIR + name;
 
     clearPreviousInstall(installDir);
 
@@ -147,22 +155,18 @@ public abstract class ContainerInstall {
     installer.install();
 
     // Set install home
-    INSTALL_PATH = installer.getHome();
+    installPath = installer.getHome();
     // Find and extract the module path
-    MODULE_PATH = findAndExtractModule(geodeModuleLocation, moduleName);
-    logger.info("Extracted module " + moduleName + " to " + MODULE_PATH);
+    modulePath = findAndExtractModule(geodeModuleLocation, moduleName);
+    logger.info("Extracted module " + moduleName + " to " + modulePath);
     // Find the session testing war path
-    WAR_FILE_PATH = findSessionTestingWar();
+    warFilePath = findSessionTestingWar();
 
     // Default locator
     defaultLocatorPort = 8080;
     defaultLocatorAddress = "localhost";
 
     logger.info("Installed container into " + getHome());
-  }
-
-  public ServerContainer generateContainer(File containerConfigHome) throws IOException {
-    return generateContainer(containerConfigHome, "");
   }
 
   public ServerContainer generateContainer(String containerDescriptors) throws IOException {
@@ -181,11 +185,7 @@ public abstract class ContainerInstall {
     }
   }
 
-  /**
-   * Sets the default locator address and port
-   */
-  public void setDefaultLocator(String address, int port) {
-    defaultLocatorAddress = address;
+  public void setDefaultLocatorPort(int port) {
     defaultLocatorPort = port;
   }
 
@@ -203,7 +203,7 @@ public abstract class ContainerInstall {
    * Where the installation is located
    */
   public String getHome() {
-    return INSTALL_PATH;
+    return installPath;
   }
 
   /**
@@ -213,14 +213,14 @@ public abstract class ContainerInstall {
    * needed XML files.
    */
   public String getModulePath() {
-    return MODULE_PATH;
+    return modulePath;
   }
 
   /**
    * The path to the session testing WAR file
    */
   public String getWarFilePath() {
-    return WAR_FILE_PATH;
+    return warFilePath;
   }
 
   /**
@@ -255,7 +255,7 @@ public abstract class ContainerInstall {
    * Gets the cache XML file to use by default for this installation
    */
   public File getCacheXMLFile() {
-    return new File(MODULE_PATH + "/conf/" + getConnectionType().getCacheXMLFileName());
+    return new File(modulePath + "/conf/" + getConnectionType().getCacheXMLFileName());
   }
 
   /**
@@ -342,6 +342,8 @@ public abstract class ContainerInstall {
         }
       }
     }
+
+    assertThat(modulePath).describedAs("module path").isNotNull();
 
     String extractedModulePath =
         modulePath.getName().substring(0, modulePath.getName().length() - 4);
@@ -599,5 +601,15 @@ public abstract class ContainerInstall {
     }
 
     return true;
+  }
+
+  private static String createTempDir() {
+    try {
+      return Files.createTempDirectory("geode_container_install")
+          .toAbsolutePath()
+          .toString();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

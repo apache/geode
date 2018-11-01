@@ -26,7 +26,7 @@ dependencies {
   compileOnly('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
   compileOnly('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
   compileOnly('org.assertj:assertj-core:' + project.'assertj-core.version')
-  compileOnly(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
+  compileOnly(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: project.'cargo-core-uberjar.version')
 }
 
 disableMavenPublishing()

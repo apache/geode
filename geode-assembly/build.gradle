@@ -161,7 +161,7 @@ dependencies {
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
+  distributedTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: project.'cargo-core-uberjar.version')
 
 
   acceptanceTestCompile(project(':geode-core'))
@@ -191,7 +191,7 @@ dependencies {
   }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 
-  upgradeTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
+  upgradeTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: project.'cargo-core-uberjar.version')
   upgradeTestRuntime('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
   upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime files({ downloadWebServers } )
