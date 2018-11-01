@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -64,7 +65,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -654,20 +654,21 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
       // Step 3
       vm0.invoke(this::doPuts);
+//
+//      // Step 3a
+//      vm0.invoke(this::doPutLast);
 
       // Step 4
       vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
-
       // Step 5
-      GeodeAwaitility.await().until(closeCacheFinished::get);
-
+      await().until(closeCacheFinished::get);
 
       // Step 6
       createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), properties,
           false);
 
-      GeodeAwaitility.await().until(markerReceived::get);
+//      await().until(markerReceived::get);
 
       // Step 7
       waitForLastKey();
@@ -737,7 +738,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     Pool testPool = PoolManager.getAll().values().stream().findFirst().get();
     VM pVM = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0 : vm1;
 
-    GeodeAwaitility.await().until(markerReceived::get);
+    await().until(markerReceived::get);
 
     // Step 6
     pVM.invoke((SerializableRunnableIF) this::closeCache);
@@ -767,8 +768,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   private void assertOp() {
     final int expected = 1;
 
-    GeodeAwaitility
-        .await("numOfInvalidates was expected to be " + expected + " but is " + numOfInvalidates)
+    await("numOfInvalidates was expected to be " + expected + " but is " + numOfInvalidates)
         .until(() -> numOfInvalidates == expected);
 
   }
@@ -792,12 +792,12 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries
             .getEvictionController();
 
-    GeodeAwaitility.await("HA Overflow did not occur.")
+    await("HA Overflow did not occur.")
         .until(() -> cc.getCounters().getEvictions() > 0);
   }
 
   private void waitForLastKey() {
-    GeodeAwaitility.await("Last key NOT received.").until(this::isLastKeyReceived);
+    await("Last key NOT received.").until(this::isLastKeyReceived);
   }
 
   private void prepareDeltas() {
@@ -890,7 +890,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       Region<String, DeltaTestImpl> r = cache.getRegion("/" + regionName);
       assertThat(r).isNotNull();
       DeltaTestImpl val;
-      for (int i = 0; i < 10000; i++) {
+      for (int i = 0; i < 100; i++) {
         val = new DeltaTestImpl();
         val.setStr("" + i);
         r.put(DELTA_KEY, val);
@@ -902,6 +902,25 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       Assertions.fail("failed in createDelta()", ex);
     }
   }
+
+  private void doPutLast() {
+    try {
+//      final int AbsurdlyLongTime = 10000;
+//      Thread.sleep(AbsurdlyLongTime);
+      Region<String, DeltaTestImpl> r = cache.getRegion("/" + regionName);
+      assertThat(r).isNotNull();
+//      assertThat(cache).isInstanceOf(GemFireCacheImpl.class);
+//      GemFireCacheImpl cacheAsProxy = (GemFireCacheImpl) cache;
+//      System.out.println("The Cow says: ");
+//      System.out.println(cacheAsProxy.iss ? "NOTHING!" : "Moo.");
+      DeltaTestImpl val = new DeltaTestImpl();
+      val.setStr("");
+      r.put(LAST_KEY, val);
+    } catch (Exception ex) {
+      Assertions.fail("failed in createDelta()", ex);
+    }
+  }
+
 
   private void createAndUpdateDeltas() {
     createDelta();
@@ -1297,7 +1316,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     RegionAttributes<String, DeltaTestImpl> attrs = factory.create();
     Region<String, DeltaTestImpl> r = cache.createRegionFactory(attrs).create(regionName);
 
-    GeodeAwaitility.await()
+    await()
         .until(() -> !cache.isReconnecting() && !cache.isClosed());
 
     r.registerInterestForAllKeys();
