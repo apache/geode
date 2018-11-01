@@ -75,7 +75,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
-  private final Compressor compressor = SnappyCompressor.getDefaultInstance();
+  private final Compressor compressor = new SnappyCompressor();
 
   private static Cache cache = null;
 
@@ -614,7 +614,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testBug40165ClientReconnects() throws Exception {
+  public void testBug40165ClientReconnects() {
 
     PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
 
@@ -890,7 +890,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       Region<String, DeltaTestImpl> r = cache.getRegion("/" + regionName);
       assertThat(r).isNotNull();
       DeltaTestImpl val;
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 1000; i++) {
         val = new DeltaTestImpl();
         val.setStr("" + i);
         r.put(DELTA_KEY, val);
@@ -1023,14 +1023,15 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       factory.setDataPolicy(DataPolicy.NORMAL);
       factory.setConcurrencyChecksEnabled(false);
       RegionAttributes<String, DeltaTestImpl> attrs = factory.create();
-      Region<String, DeltaTestImpl> r = cache.createRegion(regionName, attrs);
+      Region<String, DeltaTestImpl> r = cache.createRegionFactory(attrs).create(regionName);
       r.create(DELTA_KEY, deltaPut[0]);
     } else {
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.setConcurrencyChecksEnabled(false);
       RegionAttributes<String, DeltaTestImpl> attrs = factory.create();
-      cache.createRegion(regionName, attrs);
+      cache.createRegionFactory(attrs).create(regionName);
+
     }
 
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -1263,7 +1264,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     }
     factory.setConcurrencyChecksEnabled(false);
     RegionAttributes<String, DeltaTestImpl> attrs = factory.create();
-    cache.createRegion(regionName, attrs);
+    cache.createRegionFactory(attrs).create(regionName);
+
 
   }
 
@@ -1277,7 +1279,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void createDurableCacheClient(Pool poolAttr, Properties dsProperties,
-      Boolean close) throws Exception {
+      Boolean close) {
     new DeltaPropagationDUnitTest().createCache(dsProperties);
 
     PoolFactoryImpl poolFactory = (PoolFactoryImpl) PoolManager.createFactory();
@@ -1293,8 +1295,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       factory.addCacheListener(getCacheListener(DeltaPropagationDUnitTest.DURABLE_CLIENT_LISTENER));
     }
     RegionAttributes<String, DeltaTestImpl> attrs = factory.create();
-    Region<String, DeltaTestImpl> r =
-        cache.createRegion(DeltaPropagationDUnitTest.regionName, attrs);
+    Region<String, DeltaTestImpl> r = cache.createRegionFactory(attrs).create(regionName);
+
     GeodeAwaitility.await()
         .until(() -> !cache.isReconnecting() && !cache.isClosed());
 
