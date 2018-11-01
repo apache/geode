@@ -14,40 +14,28 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER;
+import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.function.IntSupplier;
 
 import javax.servlet.http.HttpSession;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.dunit.DUnitEnv;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
-/**
- * Jetty 9 Client Server tests
- *
- * Runs all the tests in {@link CargoTestBase} on the Jetty 9 install, setup in the
- * {@link #setupJettyInstall()} method before tests are run.
- */
 public class Jetty9CachingClientServerTest extends GenericAppServerClientServerTest {
-  private static ContainerInstall install;
-
-  @BeforeClass
-  public static void setupJettyInstall() throws Exception {
-    install = new GenericAppServerInstall(GenericAppServerInstall.GenericAppServerVersion.JETTY9,
-        ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9CachingClientServerTest");
-    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
-  }
 
   @Override
-  public ContainerInstall getInstall() {
-    return install;
+  public ContainerInstall getInstall(IntSupplier portSupplier)
+      throws IOException, InterruptedException {
+    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY9, CACHING_CLIENT_SERVER,
+        portSupplier);
   }
 
   /**
@@ -56,7 +44,7 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
    */
   @Test
   public void shouldCacheSessionOnClient()
-      throws IOException, URISyntaxException, InterruptedException {
+      throws Exception {
     manager.startAllInactiveContainers();
 
     String key = "value_testSessionExpiration";
@@ -66,14 +54,13 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
     Client.Response resp = client.set(key, value);
     String cookie = resp.getSessionCookie();
 
-    // Modify the values on the server
-    serverVM.invoke(() -> {
-      Cache cache = getCache();
+    serverVM.invoke("set bogus session key", () -> {
+      final InternalCache cache = ClusterStartupRule.memberStarter.getCache();
       Region<String, HttpSession> region = cache.getRegion("gemfire_modules_sessions");
       region.values().forEach(session -> session.setAttribute(key, "bogus"));
     });
 
-    // Make sure the client still sees it's original cached value
+    // Make sure the client still sees its original cached value
     resp = client.get(key);
     assertEquals(value, resp.getResponse());
   }
