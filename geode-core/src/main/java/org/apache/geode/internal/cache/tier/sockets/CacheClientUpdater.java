@@ -227,7 +227,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         return false;
       }
       if (System.currentTimeMillis() > tilt) {
-        logger.warn("{}: wait timed out (more than %s seconds)",
+        logger.warn("{}: wait timed out (more than {} seconds)",
             new Object[] {this, MAX_CACHE_WAIT});
         return false;
       }

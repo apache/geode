@@ -1481,7 +1481,7 @@ public class CacheClientProxy implements ClientSession {
             }
 
             if (!isAuthorized) {
-              logger.warn("{}: Not Adding CQ message to queue %s because authorization failed.",
+              logger.warn("{}: Not Adding CQ message to queue {} because authorization failed.",
                   new Object[] {this, clientMessage});
               clientCq.delete(cqNames[i]);
             }
@@ -1509,7 +1509,7 @@ public class CacheClientProxy implements ClientSession {
       OperationContext opctxt = getOperationContext(clientMessage, regionNameHolder);
       if (opctxt == null) {
         logger.warn(
-            "{}: Not Adding message to queue: %s because the operation context object could not be obtained for this client message.",
+            "{}: Not Adding message to queue: {} because the operation context object could not be obtained for this client message.",
             new Object[] {this, clientMessage});
         return false;
       }

@@ -256,7 +256,7 @@ public class PartitionRegionConfigValidator {
         // LRUHeap doesn't support maximum, but other eviction algos do
         if (!ea.getAlgorithm().isLRUHeap() && ea.getMaximum() != prconfEa.getMaximum()) {
           logger.warn(
-              "For Partitioned Region %s the locally configured EvictionAttributes {} do not match with other EvictionAttributes {} and may cause misses during reads from VMs with smaller maximums.",
+              "For Partitioned Region {} the locally configured EvictionAttributes {} do not match with other EvictionAttributes {} and may cause misses during reads from VMs with smaller maximums.",
               new Object[] {pr.getFullPath(), ea, prconfEa});
         }
       }

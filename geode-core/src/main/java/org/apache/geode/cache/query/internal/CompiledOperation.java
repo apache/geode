@@ -112,8 +112,7 @@ public class CompiledOperation extends AbstractCompiledValue {
        * eval0(rcvrItr.evaluate(context), rcvrItr.getElementType().resolveClass(), context); }
        *
        * // function call: no functions implemented except keywords in the grammar throw new
-       * TypeMismatchException(String.format("Could not resolve method named ' %s '",.
-       * toLocalizedString(this.methodName));
+       * TypeMismatchException("Could not resolve method named 'xyz'")
        */
     } else {
       // if not null, then explicit receiver

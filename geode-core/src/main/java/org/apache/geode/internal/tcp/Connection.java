@@ -3177,7 +3177,7 @@ public class Connection implements Runnable {
                   long blockedMs = now - queueTimeoutTarget;
                   blockedMs += this.asyncQueueTimeout;
                   logger.warn(
-                      "Blocked for %sms which is longer than the max of %sms, asking slow receiver {} to disconnect.",
+                      "Blocked for {}ms which is longer than the max of {}ms, asking slow receiver {} to disconnect.",
                       Long.valueOf(blockedMs),
                       Integer.valueOf(this.asyncQueueTimeout), this.remoteAddr);
                   stats.incAsyncQueueTimeouts(1);

@@ -146,7 +146,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     this.proxy = ((PoolImpl) pf.create(this.getId()));
     if (this.proxyFailureTries > 0) {
       logger.info(
-          "GatewaySender %s got remote locator information for remote site {} after {} failures in connecting to remote site.",
+          "GatewaySender {} got remote locator information for remote site {} after {} failures in connecting to remote site.",
           new Object[] {this.id, this.remoteDSId, this.proxyFailureTries});
       this.proxyFailureTries = 0;
     }

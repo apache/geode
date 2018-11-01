@@ -8686,7 +8686,7 @@ public class PartitionedRegion extends LocalRegion
     // Check if the returned value is instance of Index (this means the index is
     // not in create phase, its created successfully).
     if (prIndex == null || !(prIndex instanceof Index)) {
-      logger.info("This index %s is not on this partitoned region :  {}",
+      logger.info("This index {} is not on this partitoned region :  {}",
           ind, this);
       return numBuckets;
     }
