@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 public class CreateJndiBindingFunctionTest {
 
   private CreateJndiBindingFunction createBindingFunction;
-  private FunctionContext<JndiBindingsType.JndiBinding> context;
+  private FunctionContext<Object[]> context;
   private DistributedSystem distributedSystem;
   private ResultSender resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
@@ -72,7 +72,8 @@ public class CreateJndiBindingFunctionTest {
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    when(context.getArguments()).thenReturn(config);
+    Object[] arguments = new Object[] {config, false};
+    when(context.getArguments()).thenReturn(arguments);
     when(context.getMemberName()).thenReturn("mock-member");
     when(context.getResultSender()).thenReturn(resultSender);
 
@@ -93,14 +94,14 @@ public class CreateJndiBindingFunctionTest {
   @Test
   public void createDataSourceIsSuccessful() throws Exception {
     JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
-    config.setCreatedByDataSourceCommand(true);
     final String NAME = "jndi1";
     final String MEMBER = "mock-member";
     config.setJndiName(NAME);
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    when(context.getArguments()).thenReturn(config);
+    Object[] arguments = new Object[] {config, true};
+    when(context.getArguments()).thenReturn(arguments);
     when(context.getMemberName()).thenReturn(MEMBER);
     when(context.getResultSender()).thenReturn(resultSender);
 

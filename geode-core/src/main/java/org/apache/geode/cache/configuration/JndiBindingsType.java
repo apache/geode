@@ -25,7 +25,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
@@ -237,9 +236,6 @@ public class JndiBindingsType {
     protected String userName;
     @XmlAttribute(name = "xa-datasource-class")
     protected String xaDatasourceClass;
-
-    @XmlTransient
-    private boolean createdByDataSourceCommand;
 
     /**
      * Gets the value of the configProperties property.
@@ -605,15 +601,6 @@ public class JndiBindingsType {
     public String getId() {
       return getJndiName();
     }
-
-    public boolean isCreatedByDataSourceCommand() {
-      return createdByDataSourceCommand;
-    }
-
-    public void setCreatedByDataSourceCommand(boolean createdByDataSourceCommand) {
-      this.createdByDataSourceCommand = createdByDataSourceCommand;
-    }
-
 
     /**
      * <p>

@@ -91,7 +91,6 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
-    configuration.setCreatedByDataSourceCommand(true);
     configuration.setConnPooledDatasourceClass(pooledDataSourceFactoryClass);
     configuration.setConnectionUrl(url);
     configuration.setJndiName(name);
@@ -129,8 +128,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
+      Object[] arguments = new Object[] {configuration, true};
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
-          new CreateJndiBindingFunction(), configuration, targetMembers);
+          new CreateJndiBindingFunction(), arguments, targetMembers);
       ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
       result.setConfigObject(configuration);
       return result;
