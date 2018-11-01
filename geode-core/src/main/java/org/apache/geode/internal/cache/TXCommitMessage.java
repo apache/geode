@@ -508,7 +508,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (!regionDistributionExceptions.isEmpty()) {
       throw new CommitDistributionException(
           String.format(
-              "These regions experienced reliability failure during distribution of the operation:  %s",
+              "These regions experienced reliability failure during distribution of the operation: %s",
               failedRegionNames),
           regionDistributionExceptions);
     }
@@ -752,7 +752,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       CommitReplyException replyEx = null;
       if (!this.processingExceptions.isEmpty()) {
         replyEx = new CommitReplyException(
-            String.format("Commit operation generated one or more exceptions from  %s",
+            String.format("Commit operation generated one or more exceptions from %s",
                 this.getSender()),
             this.processingExceptions);
       }

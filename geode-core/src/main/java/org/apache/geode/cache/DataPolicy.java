@@ -131,7 +131,7 @@ public class DataPolicy implements java.io.Serializable {
     }
     if (VALUES[ordinal] != null) {
       throw new IllegalArgumentException(
-          String.format("Ordinal %s is already defined by  %s",
+          String.format("Ordinal %s is already defined by %s",
               new Object[] {Integer.valueOf(ordinal), VALUES[ordinal]}));
     }
     this.name = name;

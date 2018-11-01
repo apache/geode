@@ -94,7 +94,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
       // ex.printStackTrace();
       throw new ResourceException(
           String.format(
-              "JCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to  %s",
+              "JCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to %s",
               ex.getMessage()),
           ex);
     }
@@ -120,13 +120,13 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
       }
     } catch (RollbackException ex) {
       throw new ResourceException(
-          String.format("JCAConnectionManagerImpl:: allocateConnection : in transaction due to  %s",
+          String.format("JCAConnectionManagerImpl:: allocateConnection : in transaction due to %s",
               ex.getMessage()),
           ex);
     } catch (SystemException ex) {
       throw new ResourceException(
           String.format(
-              "JCAConnectionManagerImpl:: allocateConnection :system exception due to  %s",
+              "JCAConnectionManagerImpl:: allocateConnection :system exception due to %s",
               ex.getMessage()),
           ex);
     }

@@ -209,7 +209,7 @@ public class DLockService extends DistributedLockService {
    * @return the detail message that explains LockServiceDestroyedException
    */
   protected String generateLockServiceDestroyedMessage() {
-    return String.format("%s  has been destroyed", this);
+    return String.format("%s has been destroyed", this);
   }
 
   /**
@@ -1428,7 +1428,7 @@ public class DLockService extends DistributedLockService {
               reentrant = true;
               if (reentrant && disallowReentrant) {
                 throw new IllegalStateException(
-                    String.format("%s  attempted to reenter non-reentrant lock %s",
+                    String.format("%s attempted to reenter non-reentrant lock %s",
                         new Object[] {Thread.currentThread(), token}));
               }
               recursionBefore = token.getRecursion();
@@ -1750,7 +1750,7 @@ public class DLockService extends DistributedLockService {
           }
           throw new LockNotHeldException(
               String.format(
-                  "Attempting to unlock  %s  :  %s , but this thread does not own the lock.",
+                  "Attempting to unlock %s : %s , but this thread does not own the lock.",
                   new Object[] {this, name}));
         }
 
@@ -1765,7 +1765,7 @@ public class DLockService extends DistributedLockService {
             }
             throw new LockNotHeldException(
                 String.format(
-                    "Attempting to unlock  %s  :  %s , but this thread does not own the lock.  %s",
+                    "Attempting to unlock %s : %s , but this thread does not own the lock. %s",
                     new Object[] {this, name, token}));
           }
           // if recursion > 0 then token will still be locked after calling release

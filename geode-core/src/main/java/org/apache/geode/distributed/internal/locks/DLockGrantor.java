@@ -1753,7 +1753,7 @@ public class DLockGrantor {
         break;
     }
     if (stateDesc == null) {
-      throw new IllegalArgumentException(String.format("Unknown state for grantor:  %s",
+      throw new IllegalArgumentException(String.format("Unknown state for grantor: %s",
           Integer.valueOf(state)));
     }
     return stateDesc;
@@ -1768,7 +1768,7 @@ public class DLockGrantor {
     if (this.state != INITIALIZING) {
       String stateDesc = stateToString(this.state);
       throw new IllegalStateException(
-          String.format("DLockGrantor operation only allowed when initializing, not  %s",
+          String.format("DLockGrantor operation only allowed when initializing, not %s",
               stateDesc));
     }
   }

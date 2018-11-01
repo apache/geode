@@ -949,7 +949,7 @@ public class TCPConduit implements Runnable {
             if (conn == null) {
               // conduit may be closed - otherwise an ioexception would be thrown
               problem = new IOException(
-                  String.format("Unable to reconnect to server; possible shutdown:  %s",
+                  String.format("Unable to reconnect to server; possible shutdown: %s",
                       memberAddress));
             } else if (conn.isClosing() || !conn.getRemoteAddress().equals(memberAddress)) {
               if (logger.isDebugEnabled()) {

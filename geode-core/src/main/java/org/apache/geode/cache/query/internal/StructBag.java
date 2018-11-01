@@ -76,7 +76,7 @@ public class StructBag extends ResultsBag implements StructFields {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
       if (!(o instanceof Object[])) {
-        throw new ClassCastException(String.format("Expected an Object[], but actual is  %s",
+        throw new ClassCastException(String.format("Expected an Object[], but actual is %s",
             o.getClass().getName()));
       }
       Object[] oa = (Object[]) o;

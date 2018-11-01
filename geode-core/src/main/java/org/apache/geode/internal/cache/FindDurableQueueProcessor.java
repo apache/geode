@@ -41,7 +41,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * A processor for helping a locator find the durable queues for a given durable client id. Asks
- * each bridge server if they have the durable id and builds a list of matching servers.
+ * each cache server if they have the durable id and builds a list of matching servers.
  *
  * @since GemFire 5.7
  */

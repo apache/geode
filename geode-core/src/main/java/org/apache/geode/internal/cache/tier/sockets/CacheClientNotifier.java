@@ -389,7 +389,7 @@ public class CacheClientNotifier {
           new Object[] {this, e}),
           e);
       IOException io = new IOException(
-          String.format("Exception occurred while trying to register interest due to :  %s",
+          String.format("Exception occurred while trying to register interest due to : %s",
               e.getMessage()));
       io.initCause(e);
       throw io;
@@ -1097,7 +1097,7 @@ public class CacheClientNotifier {
       throws Exception {
     if (!supportsOperation(operation)) {
       throw new Exception(
-          String.format("The cache client notifier does not support operations of type  %s",
+          String.format("The cache client notifier does not support operations of type %s",
               operation));
     }
     // String regionName = event.getRegion().getFullPath();

@@ -1089,7 +1089,7 @@ public class TXState implements TXStateInterface {
       cleanup();
       proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
-          String.format("Conflict detected in GemFire transaction  %s",
+          String.format("Conflict detected in GemFire transaction %s",
               getTransactionId()),
           commitConflict);
     }

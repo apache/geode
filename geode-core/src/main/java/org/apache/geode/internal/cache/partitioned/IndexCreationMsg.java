@@ -276,7 +276,7 @@ public class IndexCreationMsg extends PartitionMessage {
       if (pr == null /* && failIfRegionMissing() */) {
         String msg =
             String.format(
-                "Could not get Partitioned Region from Id  %s  for message  %s  received on member= %s  map= %s",
+                "Could not get Partitioned Region from Id %s for message %s received on member= %s map= %s",
                 new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
                     PartitionedRegion.dumpPRId()});
         throw new PartitionedRegionException(msg, new RegionNotFoundException(msg));
@@ -312,7 +312,7 @@ public class IndexCreationMsg extends PartitionMessage {
           logger.info("Region is locally destroyed, throwing RegionDestroyedException for {}",
               pr);
           thr = new RegionDestroyedException(
-              String.format("Region is locally destroyed on  %s",
+              String.format("Region is locally destroyed on %s",
                   dm.getId()),
               pr.getFullPath());
         }

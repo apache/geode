@@ -606,18 +606,18 @@ public class PartitionedRegion extends LocalRegion
       Object o = super.get(key);
       if (o == DESTROYED) {
         throw new RegionDestroyedException(
-            String.format("Region for prId= %s  is destroyed",
+            String.format("Region for prId= %s is destroyed",
                 key),
             NO_PATH_FOUND);
       }
       if (o == LOCALLY_DESTROYED) {
         throw new PRLocallyDestroyedException(
-            String.format("Region with prId= %s  is locally destroyed on this node",
+            String.format("Region with prId= %s is locally destroyed on this node",
                 key));
       }
       if (o == FAILED_REGISTRATION) {
         throw new PRLocallyDestroyedException(
-            String.format("Region with prId= %s  failed initialization on this node",
+            String.format("Region with prId= %s failed initialization on this node",
                 key));
       }
       return o;
@@ -1175,7 +1175,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * receive notification that a bridge server or wan gateway has been created that requires
+   * receive notification that a cache server or wan gateway has been created that requires
    * notification of cache events from this region
    */
   public void cacheRequiresNotification() {
@@ -1948,7 +1948,7 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (QueryException qe) {
         throw new QueryInvocationTargetException(
-            String.format("Unexpected query exception occurred during query execution  %s",
+            String.format("Unexpected query exception occurred during query execution %s",
                 qe.getMessage()),
             qe);
       } finally {
@@ -3076,7 +3076,7 @@ public class PartitionedRegion extends LocalRegion
         int red = getRegionAdvisor().getBucketRedundancy(bucketId);
         final TimeoutException noTime = new TimeoutException(
             String.format(
-                "Attempt to acquire primary node for write on bucket  %s  timed out in  %s  ms. Current redundancy [ %s ] does not satisfy minimum [ %s ]",
+                "Attempt to acquire primary node for write on bucket %s timed out in %s ms. Current redundancy [ %s ] does not satisfy minimum [ %s ]",
                 new Object[] {bucketStringForLogs(bucketId),
                     localSnoozer.getRetryTime(), red, this.minimumWriteRedundancy}));
         checkReadiness();
@@ -3256,7 +3256,7 @@ public class PartitionedRegion extends LocalRegion
       } catch (CacheException ce) {
         // Fix for bug 36014
         throw new PartitionedRegionDistributionException(
-            String.format("Putting entry on  %s  failed",
+            String.format("Putting entry on %s failed",
                 recipient),
             ce);
       }
@@ -4330,7 +4330,7 @@ public class PartitionedRegion extends LocalRegion
             checkReadiness();
             throw new TimeoutException(
                 String.format(
-                    "Attempt to acquire primary node for read on bucket  %s  timed out in  %s  ms",
+                    "Attempt to acquire primary node for read on bucket %s timed out in %s ms",
                     new Object[] {getBucketName(buck), snoozer.getRetryTime()}));
           }
           snoozer.waitToRetryNode();
@@ -4837,8 +4837,8 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (Exception es) {
       logger.warn(String.format("releasePRIDLock: unlocking %s caught an exception",
-          Integer.valueOf(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID),
-          es));
+          Integer.valueOf(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID)),
+          es);
     }
   }
 
@@ -5197,11 +5197,11 @@ public class PartitionedRegion extends LocalRegion
           if (getRegionAdvisor().getBucket(bucketId).getBucketAdvisor()
               .basicGetPrimaryMember() == null) {
             throw new EntryNotFoundException(
-                String.format("Entry not found for key  %s",
+                String.format("Entry not found for key %s",
                     event.getKey()));
           }
           TimeoutException e = new TimeoutException(
-              String.format("Time out looking for target node for destroy; waited  %s  ms",
+              String.format("Time out looking for target node for destroy; waited %s ms",
                   retryTime.getRetryTime()));
           if (logger.isDebugEnabled()) {
             logger.debug(e.getMessage(), e);
@@ -5401,7 +5401,7 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            String.format("Destroy of entry on  %s  failed",
+            String.format("Destroy of entry on %s failed",
                 recipient),
             ce);
       } catch (RegionDestroyedException ignore) {
@@ -5660,7 +5660,7 @@ public class PartitionedRegion extends LocalRegion
           if (getRegionAdvisor().isStorageAssignedForBucket(bucketId)) {
             // bucket no longer exists
             throw new EntryNotFoundException(
-                String.format("Entry not found for key  %s",
+                String.format("Entry not found for key %s",
                     event.getKey()));
           }
           break; // fall out to failed exception
@@ -5771,7 +5771,7 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            String.format("Invalidation of entry on  %s  failed",
+            String.format("Invalidation of entry on %s failed",
                 recipient),
             ce);
       }
@@ -5825,7 +5825,7 @@ public class PartitionedRegion extends LocalRegion
         throw e;
       } catch (CacheException ce) {
         throw new PartitionedRegionException(
-            String.format("Create of entry on  %s  failed",
+            String.format("Create of entry on %s failed",
                 recipient),
             ce);
       } catch (RegionDestroyedException rde) {
@@ -6931,7 +6931,7 @@ public class PartitionedRegion extends LocalRegion
   public void checkClosed() {
     if (this.isClosed) {
       throw new RegionDestroyedException(
-          String.format("PR  %s  is locally closed", this),
+          String.format("PR %s is locally closed", this),
           getFullPath());
     }
   }
@@ -8222,7 +8222,7 @@ public class PartitionedRegion extends LocalRegion
       if (getLocalMaxMemory() != 0) {
         throw new IndexCreationException(
             String.format(
-                "Data Store on this vm is null and the local max Memory is not zero, the data policy is  %s  and the localMaxMemeory is :  %s",
+                "Data Store on this vm is null and the local max Memory is not zero, the data policy is %s and the localMaxMemeory is : %s",
                 getDataPolicy(), (long) getLocalMaxMemory()));
       }
       // Not have to do anything since the region is just an Accessor and
@@ -8362,7 +8362,7 @@ public class PartitionedRegion extends LocalRegion
       if (getLocalMaxMemory() != 0) {
         throw new IndexCreationException(
             String.format(
-                "Data Store on this vm is null and the local max Memory is not zero, the data policy is  %s  and the localMaxMemeory is :  %s",
+                "Data Store on this vm is null and the local max Memory is not zero, the data policy is %s and the localMaxMemeory is : %s",
                 getDataPolicy(), (long) getLocalMaxMemory()));
       }
       // Not have to do anything since the region is just an Accessor and
@@ -8594,7 +8594,7 @@ public class PartitionedRegion extends LocalRegion
               .setRemoteBucketesIndexed(remoteIndexBucketsMap.get(ind.getName()));
         }
       } catch (ForceReattemptException e) {
-        logger.info(String.format("ForceReattempt exception :  %s", e));
+        logger.info(String.format("ForceReattempt exception : %s", e));
       }
     }
   }
@@ -8686,7 +8686,7 @@ public class PartitionedRegion extends LocalRegion
     // Check if the returned value is instance of Index (this means the index is
     // not in create phase, its created successfully).
     if (prIndex == null || !(prIndex instanceof Index)) {
-      logger.info("This index  %s is not on this partitoned region :  {}",
+      logger.info("This index %s is not on this partitoned region :  {}",
           ind, this);
       return numBuckets;
     }
@@ -9788,7 +9788,7 @@ public class PartitionedRegion extends LocalRegion
           if (getRegionAdvisor().isStorageAssignedForBucket(bucketId)) {
             // bucket no longer exists
             throw new EntryNotFoundException(
-                String.format("Entry not found for key  %s",
+                String.format("Entry not found for key %s",
                     event.getKey()));
           }
           break; // fall out to failed exception

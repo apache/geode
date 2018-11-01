@@ -1661,7 +1661,7 @@ public abstract class ServerConnection implements Runnable {
         break;
       default:
         throw new IllegalArgumentException(
-            String.format("The ID passed is  %s  which does not correspond with any transient data",
+            String.format("The ID passed is %s which does not correspond with any transient data",
                 boolID));
     }
   }
@@ -1680,7 +1680,7 @@ public abstract class ServerConnection implements Runnable {
         break;
       default:
         throw new IllegalArgumentException(
-            String.format("The ID passed is  %s  which does not correspond with any transient data",
+            String.format("The ID passed is %s which does not correspond with any transient data",
                 boolID));
     }
     return retVal;

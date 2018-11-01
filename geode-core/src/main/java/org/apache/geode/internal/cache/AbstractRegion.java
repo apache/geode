@@ -1644,7 +1644,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
     if (result.size() > 1)
       throw new FunctionDomainException(
-          String.format("selectValue expects results of size 1, but found results of size  %s",
+          String.format("selectValue expects results of size 1, but found results of size %s",
               result.size()));
     return result.iterator().next();
   }

@@ -260,7 +260,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Wait for new value on bridge server to become visible in this cache
+   * Wait for new value on cache server to become visible in this cache
    */
   public static void waitForServerUpdate() {
     Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);

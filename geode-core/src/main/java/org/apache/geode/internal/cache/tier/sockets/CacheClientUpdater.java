@@ -1782,7 +1782,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
     // If this was a surprise, print a warning.
     if (unexpected && !(exception instanceof CancelException)) {
-      logger.warn(String.format("%s :  %s : %s",
+      logger.warn(String.format("%s : %s : %s",
           new Object[] {this, message, exception}), exception);
     }
     // We can't shutdown the client updater just because of an exception.

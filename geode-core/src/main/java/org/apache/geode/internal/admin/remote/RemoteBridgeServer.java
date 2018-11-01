@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
- * administration VMs and VMs that host caches with bridge servers.
+ * administration VMs and VMs that host caches with cache servers.
  *
  * @since GemFire 4.0
  */
@@ -47,10 +47,10 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   private static final long serialVersionUID = 8417391824652384959L;
 
-  /** Is this bridge server running? */
+  /** Is this cache server running? */
   private boolean isRunning;
 
-  /** The id of this bridge server */
+  /** The id of this cache server */
   private int id;
 
 
@@ -133,7 +133,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
   }
 
   /**
-   * Returns the cache that is served by this bridge server or <code>null</code> if this server is
+   * Returns the cache that is served by this cache server or <code>null</code> if this server is
    * not running.
    */
   @Override

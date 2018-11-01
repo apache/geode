@@ -135,7 +135,7 @@ public class RemoteAlert implements Alert {
 
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
-          String.format("Invalidate timestamp:  %s", sb.toString()));
+          String.format("Invalidate timestamp: %s", sb.toString()));
     }
 
     // Assume that the connection name is only one token...

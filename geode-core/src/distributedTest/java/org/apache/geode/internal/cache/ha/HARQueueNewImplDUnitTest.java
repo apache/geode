@@ -613,7 +613,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * This test verifies that two clients, connected to two bridge servers with different
+   * This test verifies that two clients, connected to two cache servers with different
    * notifyBySubscription values, on a single VM, receive updates/invalidates depending upon their
    * notifyBySubscription value.
    */
@@ -680,10 +680,10 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * This test verifies that client-messages-regions are not created for the bridge servers who have
-   * eviction policy as 'none'. Instead, such bridge servers will have simple HashMap structures.
+   * This test verifies that client-messages-regions are not created for the cache servers who have
+   * eviction policy as 'none'. Instead, such cache servers will have simple HashMap structures.
    * Also, it verifies that such a structure (referred to as haContainer, in general) is destroyed
-   * when its bridge server is stopped.
+   * when its cache server is stopped.
    */
   @Test
   public void testCMRNotCreatedForNoneEvictionPolicy() throws Exception {
@@ -728,9 +728,9 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * This test verifies that client-messages-regions are created for the bridge servers who have
+   * This test verifies that client-messages-regions are created for the cache servers who have
    * eviction policy either as 'mem' or as 'entry'. Also, it verifies that such a
-   * client-messages-region is destroyed when its bridge server is stopped.
+   * client-messages-region is destroyed when its cache server is stopped.
    */
   @Test
   public void testCMRCreatedForMemOrEntryEvictionPolicy() throws Exception {
@@ -767,7 +767,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * This test verifies that the Cache.rootRegions() method does not return the
-   * client-messages-region of any of the cache's attached bridge servers.
+   * client-messages-region of any of the cache's attached cache servers.
    */
   @Test
   public void testCMRNotReturnedByRootRegionsMethod() throws Exception {

@@ -62,7 +62,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
   /**
    * The number of connections that we can be off by in the balancing tests We need this little
-   * fudge factor, because the locator can receive an update from the bridge server after it has
+   * fudge factor, because the locator can receive an update from the cache server after it has
    * made incremented its counter for a client connection, but the client hasn't connected yet. This
    * wipes out the estimation on the locator. This means that we may be slighly off in our balance.
    * <p>
@@ -76,8 +76,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   }
 
   /**
-   * Test the locator discovers a bridge server and is initialized with the correct load for that
-   * bridge server.
+   * Test the locator discovers a cache server and is initialized with the correct load for that
+   * cache server.
    */
   @Test
   public void testDiscovery() {
@@ -167,8 +167,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   }
 
   /**
-   * Test to make sure the bridge servers communicate their updated load to the controller when the
-   * load on the bridge server changes.
+   * Test to make sure the cache servers communicate their updated load to the controller when the
+   * load on the cache server changes.
    *
    */
   @Test

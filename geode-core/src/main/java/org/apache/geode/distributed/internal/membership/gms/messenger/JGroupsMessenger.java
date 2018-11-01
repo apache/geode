@@ -196,7 +196,7 @@ public class JGroupsMessenger implements Messenger {
     is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), r);
     if (is == null) {
       throw new GemFireConfigException(
-          String.format("Cannot find  %s", r));
+          String.format("Cannot find %s", r));
     }
 
     String properties;

@@ -504,14 +504,14 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!locs[i].waitToStart(TIMEOUT_MS)) {
           throw new AdminException(
-              String.format("%s  did not start after  %s  ms",
+              String.format("%s did not start after %s ms",
                   new Object[] {locs[i], Integer.valueOf(TIMEOUT_MS)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            String.format("Interrupted while waiting for  %s  to start.",
+            String.format("Interrupted while waiting for %s to start.",
                 locs[i]),
             ex);
       }
@@ -525,14 +525,14 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!servers[i].waitToStart(TIMEOUT_MS)) {
           throw new AdminException(
-              String.format("%s  did not start after  %s  ms",
+              String.format("%s did not start after %s ms",
                   new Object[] {servers[i], Integer.valueOf(TIMEOUT_MS)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            String.format("Interrupted while waiting for  %s  to start.",
+            String.format("Interrupted while waiting for %s to start.",
                 servers[i]),
             ex);
       }
@@ -558,14 +558,14 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!servers[i].waitToStop(timeout * 1000)) {
           throw new AdminException(
-              String.format("%s  did not stop after  %s  seconds.",
+              String.format("%s did not stop after %s seconds.",
                   new Object[] {servers[i], Long.valueOf(timeout)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            String.format("Interrupted while waiting for  %s  to stop.",
+            String.format("Interrupted while waiting for %s to stop.",
                 servers[i]),
             ex);
       }
@@ -579,14 +579,14 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!locs[i].waitToStop(timeout * 1000)) {
           throw new AdminException(
-              String.format("%s  did not stop after  %s  seconds.",
+              String.format("%s did not stop after %s seconds.",
                   new Object[] {locs[i], Long.valueOf(timeout)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            String.format("Interrupted while waiting for  %s  to stop.",
+            String.format("Interrupted while waiting for %s to stop.",
                 locs[i]),
             ex);
       }

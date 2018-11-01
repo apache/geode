@@ -151,7 +151,7 @@ public class PRQueryProcessor {
 
           } catch (TimeoutException e) {
             throw new InternalGemFireException(
-                String.format("Timed out while executing query, time exceeded  %s",
+                String.format("Timed out while executing query, time exceeded %s",
                     BUCKET_QUERY_TIMEOUT),
                 e);
           } catch (ExecutionException ee) {

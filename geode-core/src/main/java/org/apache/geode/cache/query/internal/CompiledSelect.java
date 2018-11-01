@@ -660,7 +660,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          String.format("Region not found:  %s", regionPath));
+          String.format("Region not found: %s", regionPath));
     }
   }
 

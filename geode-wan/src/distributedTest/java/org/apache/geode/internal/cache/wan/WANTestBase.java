@@ -1012,7 +1012,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   /**
-   * Method that creates a bridge server
+   * Method that creates a cache server
    *
    * @return Integer Port on which the server is started.
    */
@@ -1031,7 +1031,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   /**
-   * Returns a Map that contains the count for number of bridge server and number of Receivers.
+   * Returns a Map that contains the count for number of cache server and number of Receivers.
    *
    */
   public static Map getCacheServers() {

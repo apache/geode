@@ -90,13 +90,13 @@ public class ArchiveSplitter implements StatArchiveFormat {
     byte archiveVersion = dataIn.readByte();
     if (archiveVersion <= 1) {
       throw new GemFireIOException(
-          String.format("Archive version:  %s  is no longer supported.",
+          String.format("Archive version: %s is no longer supported.",
               new Byte(archiveVersion)),
           null);
     }
     if (archiveVersion > ARCHIVE_VERSION) {
       throw new GemFireIOException(
-          String.format("Unsupported archive version:  %s .  The supported version is:  %s .",
+          String.format("Unsupported archive version: %s .  The supported version is: %s .",
 
               new Object[] {new Byte(archiveVersion), new Byte(ARCHIVE_VERSION)}),
           null);
@@ -241,7 +241,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
             instBits[i] = readCompactValue();
             break;
           default:
-            throw new IOException(String.format("unexpected typeCode value  %s",
+            throw new IOException(String.format("unexpected typeCode value %s",
                 new Byte(instTypeCodes[i])));
         }
       }
@@ -324,7 +324,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
             statDeltaBits = readCompactValue();
             break;
           default:
-            throw new IOException(String.format("unexpected typeCode value  %s",
+            throw new IOException(String.format("unexpected typeCode value %s",
                 new Byte(typeCodes[statOffset])));
         }
         bits[statOffset] += statDeltaBits;
@@ -364,7 +364,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
           this.myIs.putBytes(this.dataOut);
           break;
         default:
-          throw new IOException(String.format("Unexpected token byte value:  %s",
+          throw new IOException(String.format("Unexpected token byte value: %s",
               new Byte(token)));
       }
       return true;

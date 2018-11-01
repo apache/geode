@@ -73,7 +73,7 @@ public class PartitionRegionConfigValidator {
     }
     if (userPA.getRedundantCopies() != prconfPA.getRedundantCopies()) {
       throw new IllegalStateException(
-          String.format("Requested redundancy  %s  is incompatible with existing redundancy  %s",
+          String.format("Requested redundancy %s is incompatible with existing redundancy %s",
               new Object[] {Integer.valueOf(userPA.getRedundantCopies()),
                   Integer.valueOf(prconfPA.getRedundantCopies())}));
     }
@@ -87,7 +87,7 @@ public class PartitionRegionConfigValidator {
     if (!myScope.equals(prconfScope)) {
       throw new IllegalStateException(
           String.format(
-              "Scope in PartitionAttributes is incompatible with already set scope.Set the scope to  %s .",
+              "Scope in PartitionAttributes is incompatible with already set scope.Set the scope to %s .",
               prconfScope));
     }
 
@@ -95,7 +95,7 @@ public class PartitionRegionConfigValidator {
     if (userPA.getTotalNumBuckets() != prconfTotalNumBuckets) {
       throw new IllegalStateException(
           String.format(
-              "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to  %s",
+              "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
               new Object[] {Integer.valueOf(userPA.getTotalNumBuckets()),
                   Integer.valueOf(prconfTotalNumBuckets)}));
     }
@@ -188,25 +188,25 @@ public class PartitionRegionConfigValidator {
     if (!userRA.getRegionIdleTimeout().equals(prconf.getRegionIdleTimeout())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" region idle timout "}));
     }
     if (!userRA.getRegionTimeToLive().equals(prconf.getRegionTimeToLive())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" region time to live "}));
     }
     if (!userRA.getEntryIdleTimeout().equals(prconf.getEntryIdleTimeout())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" entry idle timout "}));
     }
     if (!userRA.getEntryTimeToLive().equals(prconf.getEntryTimeToLive())) {
       throw new IllegalStateException(
           String.format(
-              "The %s set in RegionAttributes is incompatible with %s used by other distributed members.",
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
               new Object[] {" entry time to live "}));
     }
   }
@@ -427,8 +427,6 @@ public class PartitionRegionConfigValidator {
         int numSecondaries = 0;
         for (FixedPartitionAttributes otherfpa : allSameFPAs) {
           if (fpa.getNumBuckets() != otherfpa.getNumBuckets()) {
-            Object[] prms = new Object[] {this.pr.getName(), fpa.getPartitionName(),
-                fpa.getNumBuckets(), otherfpa.getNumBuckets()};
             throw new IllegalStateException(
                 String.format(
                     "For region %s,for partition %s, num-buckets are not same (%s, %s)across nodes.",

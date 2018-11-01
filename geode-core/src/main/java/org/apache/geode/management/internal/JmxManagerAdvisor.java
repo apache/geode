@@ -201,7 +201,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
           logger.info(String.format("This member caught exception processing profile %s %s",
-              new Object[] {p, toString()}, thr));
+              p, toString()), thr);
         }
       }
     }

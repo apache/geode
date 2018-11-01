@@ -2029,7 +2029,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   public static byte[] serialize(Object obj, Version version) {
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
-          String.format("Must not serialize  %s  in this context.",
+          String.format("Must not serialize %s in this context.",
               obj));
     try {
       return BlobHelper.serializeToBlob(obj, version);

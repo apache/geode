@@ -491,7 +491,7 @@ public class DefaultQuery implements Query {
       if (rgn == null) {
         this.cache.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionNotFoundException(
-            String.format("Region not found:  %s", regionPath));
+            String.format("Region not found: %s", regionPath));
       }
       if (rgn instanceof QueryExecutor) {
         ((PartitionedRegion) rgn).checkPROffline();
@@ -508,7 +508,7 @@ public class DefaultQuery implements Query {
         throw new UnsupportedOperationException(
             String.format(
                 "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
-                prs.get(0).getName(), prs.get(1).getName()));
+                prs.get(0).getName()));
       }
 
       // If there are more than one PRs they have to be co-located.
@@ -531,7 +531,7 @@ public class DefaultQuery implements Query {
         if (!colocated) {
           throw new UnsupportedOperationException(
               String.format(
-                  "A query on a Partitioned Region ( %s ) may not reference any other region except Co-located Partitioned Region. PR region (1) is not collocated with other PR region in the query.",
+                  "A query on a Partitioned Region ( %s ) may not reference any other region except Co-located Partitioned Region. PR region %s is not collocated with other PR region in the query.",
                   eachPR.getName(), other.getName()));
         }
 

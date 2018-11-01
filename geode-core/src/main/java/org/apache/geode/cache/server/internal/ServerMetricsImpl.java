@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.cache.server.ServerMetrics;
 
 /**
- * Metrics describing the load on a bridge server.
+ * Metrics describing the load on a cache server.
  *
  * @since GemFire 5.7
  *

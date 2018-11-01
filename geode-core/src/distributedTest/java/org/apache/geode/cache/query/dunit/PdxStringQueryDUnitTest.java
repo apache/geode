@@ -328,7 +328,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(executeQueries);
 
     // Put Non Pdx objects on server execute queries locally
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -367,7 +367,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // test for readSerialized flag
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.setReadSerializedForTest(true);
@@ -570,7 +570,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(executeQueries);
 
     // Put Non Pdx objects on server execute queries locally
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -599,7 +599,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // test for readSerialized flag
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.setReadSerializedForTest(true);
@@ -794,7 +794,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(executeQueries);
 
     // Put Non Pdx objects on server execute queries locally
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -822,7 +822,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
       }
     });
     // test for readSerialized flag
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.setReadSerializedForTest(true);
@@ -1068,7 +1068,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(executeQueries);
 
     // Put Non Pdx objects on server execute queries locally
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -1107,7 +1107,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // test for readSerialized flag
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.setReadSerializedForTest(true);
@@ -1321,7 +1321,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
 
     client.invoke(executeQueries);
     // Put Non Pdx objects on server execute queries locally
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -1350,7 +1350,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // test for readSerialized flag
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.setReadSerializedForTest(true);
@@ -1566,7 +1566,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(executeQueries);
 
     // Put Non Pdx objects on server execute queries locally
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -1595,7 +1595,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // test for readSerialized flag
-    server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    server0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.setReadSerializedForTest(true);
@@ -2044,7 +2044,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription) throws IOException {
@@ -2057,7 +2057,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
     CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();

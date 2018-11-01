@@ -1321,7 +1321,7 @@ public abstract class DataSerializer {
           DataSerializer.writeObject(object, hdos);
         } catch (IOException e) {
           RuntimeException e2 = new IllegalArgumentException(
-              "Probelm while serializing.");
+              "Problem while serializing.");
           e2.initCause(e);
           throw e2;
         }

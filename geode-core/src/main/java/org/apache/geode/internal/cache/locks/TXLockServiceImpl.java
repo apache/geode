@@ -165,7 +165,7 @@ public class TXLockServiceImpl extends TXLockService {
     synchronized (this.txLockIdList) {
       if (!this.txLockIdList.contains(txLockId)) {
         IllegalArgumentException e = new IllegalArgumentException(
-            String.format("Invalid txLockId not found:  %s",
+            String.format("Invalid txLockId not found: %s",
                 txLockId));
         system.getDistributionManager().getCancelCriterion().checkCancelInProgress(e);
         Cache cache = system.getCache();
@@ -225,7 +225,7 @@ public class TXLockServiceImpl extends TXLockService {
         // which will have a new empty list (txLockIdList) and it will not
         // contain the originally added txLockId
         throw new IllegalArgumentException(
-            String.format("Invalid txLockId not found:  %s",
+            String.format("Invalid txLockId not found: %s",
                 txLockId));
       }
 

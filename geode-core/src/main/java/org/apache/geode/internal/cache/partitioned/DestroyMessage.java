@@ -378,7 +378,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   /**
-   * create a new EntryEvent to be used in notifying listeners, bridge servers, etc. Caller must
+   * create a new EntryEvent to be used in notifying listeners, cache servers, etc. Caller must
    * release result if it is != to sourceEvent
    */
   @Retained

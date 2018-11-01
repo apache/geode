@@ -351,7 +351,7 @@ public class ExecutionContext {
       if (mustBeMethod)
         throw new AmbiguousNameException(
             String.format(
-                "Method named ' %s ' with  %s  arguments is ambiguous because it can apply to more than one variable in scope.",
+                "Method named ' %s ' with %s arguments is ambiguous because it can apply to more than one variable in scope.",
                 name, numArgs));
       throw new AmbiguousNameException(
           String.format(

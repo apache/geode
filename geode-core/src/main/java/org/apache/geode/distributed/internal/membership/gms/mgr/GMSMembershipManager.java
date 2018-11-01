@@ -528,7 +528,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          logger.info(String.format("Membership: Fault while processing view addition of  %s",
+          logger.info(String.format("Membership: Fault while processing view addition of %s",
               m),
               t);
         }
@@ -561,7 +561,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          logger.info(String.format("Membership: Fault while processing view removal of  %s",
+          logger.info(String.format("Membership: Fault while processing view removal of %s",
               m),
               t);
         }
@@ -1221,7 +1221,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
     else // sanity
       throw new InternalGemFireError(
-          String.format("unknown startup event:  %s", o));
+          String.format("unknown startup event: %s", o));
   }
 
   /**

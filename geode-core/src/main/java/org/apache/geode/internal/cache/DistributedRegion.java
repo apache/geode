@@ -978,7 +978,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!this.scope.isGlobal()) {
       throw new IllegalStateException(
           String.format(
-              "Distribution locks are only supported for regions with GLOBAL scope, not  %s",
+              "Distribution locks are only supported for regions with GLOBAL scope, not %s",
               this.scope));
     }
     return new RegionDistributedLock();
@@ -992,7 +992,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!this.scope.isGlobal()) {
       throw new IllegalStateException(
           String.format(
-              "Distribution locks are only supported for regions with GLOBAL scope, not  %s",
+              "Distribution locks are only supported for regions with GLOBAL scope, not %s",
               this.scope));
     }
     if (isLockingSuspendedByCurrentThread()) {
@@ -2216,7 +2216,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!this.scope.isGlobal()) {
       throw new IllegalStateException(
           String.format(
-              "Distribution locks are only supported for regions with GLOBAL scope, not  %s",
+              "Distribution locks are only supported for regions with GLOBAL scope, not %s",
               this.scope));
     }
 

@@ -316,7 +316,7 @@ public class IndexManager {
         if (isOverFlowRegion()) {
           throw new UnsupportedOperationException(
               String.format(
-                  "The specified index conditions are not supported for regions which overflow to disk. The region involved is  %s",
+                  "The specified index conditions are not supported for regions which overflow to disk. The region involved is %s",
                   region.getFullPath()));
         }
         // OffHeap is not supported with range index.

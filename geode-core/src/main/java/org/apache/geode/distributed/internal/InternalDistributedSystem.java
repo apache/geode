@@ -702,7 +702,7 @@ public class InternalDistributedSystem extends DistributedSystem
             "This thread is initializing a new DistributedSystem in order to reconnect to other members");
       }
       // Note we need loners to load the license in case they are a
-      // bridge server and will need to enforce the member limit
+      // cache server and will need to enforce the member limit
       if (Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
         this.locatorDMTypeForced = true;
       }
@@ -2222,7 +2222,7 @@ public class InternalDistributedSystem extends DistributedSystem
         if (reason != null) {
           this.listeners.remove(listener); // don't leave in the list!
           throw new DistributedSystemDisconnectedException(
-              String.format("No listeners permitted after shutdown:  %s",
+              String.format("No listeners permitted after shutdown: %s",
                   reason),
               dm.getRootCause());
         }
@@ -2876,7 +2876,7 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       } catch (IOException ex) {
         throw new GemFireIOException(
-            String.format("While starting cache server  %s", server),
+            String.format("While starting cache server %s", server),
             ex);
       }
     }
