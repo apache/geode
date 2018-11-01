@@ -890,7 +890,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       Region<String, DeltaTestImpl> r = cache.getRegion("/" + regionName);
       assertThat(r).isNotNull();
       DeltaTestImpl val;
-      for (int i = 0; i < 1000; i++) {
+      for (int i = 0; i < 10000; i++) {
         val = new DeltaTestImpl();
         val.setStr("" + i);
         r.put(DELTA_KEY, val);
