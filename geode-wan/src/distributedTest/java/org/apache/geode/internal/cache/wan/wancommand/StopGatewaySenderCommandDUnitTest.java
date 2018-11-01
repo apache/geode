@@ -37,7 +37,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -127,10 +128,10 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-    List<String> status = resultData.retrieveAllValues("Result");
-    assertThat(status).hasSize(3);
-    assertThat(status).contains("OK");
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.STOP_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
@@ -167,9 +168,12 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     assertThat(cmdResult).isNotNull();
 
-    String strCmdResult = cmdResult.toString();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-    assertThat(strCmdResult).contains("is stopped on member");
+
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.STOP_GATEWAYSENDER);
+    List<String> messages = resultData.getValuesInColumn("Message");
+    assertThat(messages.get(0)).contains("is stopped on member");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
@@ -214,11 +218,10 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-    List<String> status = resultData.retrieveAllValues("Result");
-    assertThat(status).hasSize(3);
-    assertThat(status).doesNotContain("Error");
-    assertThat(status).contains("OK");
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.STOP_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
@@ -282,11 +285,10 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-    List<String> status = resultData.retrieveAllValues("Result");
-    assertThat(status).hasSize(4);
-    assertThat(status).doesNotContain("Error");
-    assertThat(status).contains("OK");
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.STOP_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));

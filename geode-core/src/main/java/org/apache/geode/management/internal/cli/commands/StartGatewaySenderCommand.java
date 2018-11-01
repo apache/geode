@@ -33,23 +33,24 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StartGatewaySenderCommand extends InternalGfshCommand {
+public class StartGatewaySenderCommand extends SingleGfshCommand {
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public Result startGatewaySender(@CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
+  public ResultModel startGatewaySender(@CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.START_GATEWAYSENDER__ID__HELP) String senderId,
 
@@ -61,18 +62,16 @@ public class StartGatewaySenderCommand extends InternalGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result;
     final String id = senderId.trim();
 
     final Cache cache = getCache();
-    final SystemManagementService service = (SystemManagementService) getManagementService();
-
-    TabularResultData resultData = ResultBuilder.createTabularResultData();
+    final SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     ExecutorService execService =
@@ -117,16 +116,20 @@ public class StartGatewaySenderCommand extends InternalGfshCommand {
     }
 
     Iterator<DistributedMember> memberIterator = dsMembers.iterator();
-    List<Future<List>> futures = null;
+    List<Future<List>> futures;
 
     try {
       futures = execService.invokeAll(callables);
     } catch (InterruptedException ite) {
-      GatewayCommandsUtils.accumulateStartResult(resultData, null, CliStrings.GATEWAY_ERROR,
+      return ResultModel.createError(
           CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
               ite.getMessage()));
+    } finally {
+      execService.shutdown();
     }
 
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel resultData = resultModel.addTable(CliStrings.START_GATEWAYSENDER);
     for (Future<List> future : futures) {
       DistributedMember member = memberIterator.next();
       List<String> memberStatus;
@@ -142,8 +145,7 @@ public class StartGatewaySenderCommand extends InternalGfshCommand {
       }
     }
     execService.shutdown();
-    result = ResultBuilder.buildResult(resultData);
 
-    return result;
+    return resultModel;
   }
 }

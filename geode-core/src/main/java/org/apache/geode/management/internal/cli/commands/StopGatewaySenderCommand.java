@@ -25,23 +25,24 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StopGatewaySenderCommand extends InternalGfshCommand {
+public class StopGatewaySenderCommand extends SingleGfshCommand {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public Result stopGatewaySender(@CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
+  public ResultModel stopGatewaySender(@CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STOP_GATEWAYSENDER__ID__HELP) String senderId,
 
@@ -53,24 +54,23 @@ public class StopGatewaySenderCommand extends InternalGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result;
     if (senderId != null) {
       senderId = senderId.trim();
     }
 
     InternalCache cache = (InternalCache) getCache();
-    SystemManagementService service = (SystemManagementService) getManagementService();
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(getCache());
 
     GatewaySenderMXBean bean;
 
-    TabularResultData resultData = ResultBuilder.createTabularResultData();
-
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
-
     if (dsMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel resultData = resultModel.addTable(CliStrings.STOP_GATEWAYSENDER);
     for (DistributedMember member : dsMembers) {
       if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
         bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -98,8 +98,7 @@ public class StopGatewaySenderCommand extends InternalGfshCommand {
                 member.getId()));
       }
     }
-    result = ResultBuilder.buildResult(resultData);
 
-    return result;
+    return resultModel;
   }
 }

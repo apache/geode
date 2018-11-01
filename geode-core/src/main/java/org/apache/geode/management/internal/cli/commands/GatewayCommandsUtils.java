@@ -16,9 +16,19 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class GatewayCommandsUtils {
   public static void accumulateStartResult(TabularResultData resultData, String member,
+      String Status, String message) {
+    if (member != null) {
+      resultData.accumulate("Member", member);
+    }
+    resultData.accumulate("Result", Status);
+    resultData.accumulate("Message", message);
+  }
+
+  public static void accumulateStartResult(TabularResultModel resultData, String member,
       String Status, String message) {
     if (member != null) {
       resultData.accumulate("Member", member);
