@@ -61,7 +61,6 @@ public class JDBCConnectorFunctionsSecurityTest {
 
   @BeforeClass
   public static void setupClass() {
-    functionStringMap.put(new AlterMappingFunction(), "*");
     functionStringMap.put(new CreateMappingFunction(), "*");
     functionStringMap.put(new DestroyMappingFunction(), "*");
     functionStringMap.put(new InheritsDefaultPermissionsJDBCFunction(), "*");
