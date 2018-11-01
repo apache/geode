@@ -16,6 +16,7 @@ package org.apache.geode.session.tests;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.IntSupplier;
 
 /**
  * Container install for a generic app server
@@ -68,28 +69,9 @@ public class GenericAppServerInstall extends ContainerInstall {
 
   private GenericAppServerVersion version;
 
-  public GenericAppServerInstall(GenericAppServerVersion version)
-      throws IOException, InterruptedException {
-    this(version, ConnectionType.PEER_TO_PEER, DEFAULT_INSTALL_DIR);
-  }
-
-  public GenericAppServerInstall(GenericAppServerVersion version, String installDir)
-      throws IOException, InterruptedException {
-    this(version, ConnectionType.PEER_TO_PEER, installDir);
-  }
-
-  public GenericAppServerInstall(GenericAppServerVersion version, ConnectionType cacheType)
-      throws IOException, InterruptedException {
-    this(version, cacheType, DEFAULT_INSTALL_DIR);
-  }
-
-  /**
-   * Download and setup container installation of a generic appserver using the
-   * {@link ContainerInstall} constructor and some hardcoded module values
-   */
-  public GenericAppServerInstall(GenericAppServerVersion version, ConnectionType connType,
-      String installDir) throws IOException, InterruptedException {
-    super(installDir, version.getDownloadURL(), connType, "appserver");
+  public GenericAppServerInstall(String name, GenericAppServerVersion version,
+      ConnectionType connType, IntSupplier portSupplier) throws IOException, InterruptedException {
+    super(name, version.getDownloadURL(), connType, "appserver", portSupplier);
 
     this.version = version;
   }
@@ -105,7 +87,8 @@ public class GenericAppServerInstall extends ContainerInstall {
   @Override
   public GenericAppServerContainer generateContainer(File containerConfigHome,
       String containerDescriptors) throws IOException {
-    return new GenericAppServerContainer(this, containerConfigHome, containerDescriptors);
+    return new GenericAppServerContainer(this, containerConfigHome, containerDescriptors,
+        portSupplier());
   }
 
   /**
