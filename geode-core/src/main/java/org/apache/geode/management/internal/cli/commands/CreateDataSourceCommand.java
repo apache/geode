@@ -20,6 +20,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -37,9 +38,10 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class CreateDataSourceCommand extends SingleGfshCommand {
   static final String CREATE_DATA_SOURCE = "create data-source";
-  static final String CREATE_DATA_SOURCE__HELP = "Create a JDBC data source.";
+  static final String CREATE_DATA_SOURCE__HELP = EXPERIMENTAL + "Create a JDBC data source.";
   static final String POOLED_DATA_SOURCE_FACTORY_CLASS = "pooled-data-source-factory-class";
   private static final String DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS =
       "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
@@ -131,7 +133,8 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       Object[] arguments = new Object[] {configuration, true};
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
           new CreateJndiBindingFunction(), arguments, targetMembers);
-      ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
+      ResultModel result =
+          ResultModel.createMemberStatusResult(jndiCreationResult, EXPERIMENTAL, null, false, true);
       result.setConfigObject(configuration);
       return result;
     } else {
