@@ -17,18 +17,17 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -61,34 +60,26 @@ public class CreateDataSourceCommandDUnitTest {
     VMProvider.invokeInEveryMember(
         () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
 
+    String URL = "jdbc:derby:newDB;create=true";
     // create the data-source
     gfsh.executeAndAssertThat(
-        "create data-source --name=jndi1 --username=myuser --password=mypass --pooled=false --url=\"jdbc:derby:newDB;create=true\"")
+        "create data-source --name=jndi1 --username=myuser --password=mypass --pooled=false --url=\""
+            + URL + "\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated
     locator.invoke(() -> {
       InternalConfigurationPersistenceService ccService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      Configuration configuration = ccService.getConfiguration("cluster");
-      String xmlContent = configuration.getCacheXmlContent();
-
-      Document document = XmlUtils.createDocumentFromXml(xmlContent);
-      NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
-
-      assertThat(jndiBindings.getLength()).isEqualTo(1);
-      assertThat(xmlContent).contains("user-name=\"myuser\"");
-      assertThat(xmlContent).contains("password=\"mypass\"");
-
-      boolean found = false;
-      for (int i = 0; i < jndiBindings.getLength(); i++) {
-        Element eachBinding = (Element) jndiBindings.item(i);
-        if (eachBinding.getAttribute("jndi-name").equals("jndi1")) {
-          found = true;
-          break;
-        }
-      }
-      assertThat(found).isTrue();
+      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+      List<JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
+      assertThat(jndiBindings.size()).isEqualTo(1);
+      JndiBinding jndiBinding = jndiBindings.get(0);
+      assertThat(jndiBinding.getJndiName()).isEqualTo("jndi1");
+      assertThat(jndiBinding.getUserName()).isEqualTo("myuser");
+      assertThat(jndiBinding.getPassword()).isEqualTo("mypass");
+      assertThat(jndiBinding.getConnectionUrl()).isEqualTo(URL);
+      assertThat(jndiBinding.getType()).isEqualTo("SimpleDataSource");
     });
 
     // verify datasource exists
