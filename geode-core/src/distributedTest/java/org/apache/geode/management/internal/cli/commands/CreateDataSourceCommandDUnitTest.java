@@ -93,6 +93,7 @@ public class CreateDataSourceCommandDUnitTest {
     // verify it has recreated the datasource from cluster config
     server1.invoke(() -> {
       assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1);
+      assertThat(JNDIInvoker.getDataSource("jndi1")).isNotNull();
     });
 
     verifyThatNonExistentClassCausesGfshToError();
