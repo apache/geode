@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
@@ -78,7 +78,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
-    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
@@ -96,7 +96,7 @@ public class CreateMappingCommandDUnitTest {
           cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
-      assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(true);
       List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
       assertThat(fieldMappings).hasSize(2);
@@ -113,7 +113,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
-    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -136,7 +136,7 @@ public class CreateMappingCommandDUnitTest {
           cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
-      assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(false);
       List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
       assertThat(fieldMappings).hasSize(2);
@@ -153,7 +153,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
-    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "false");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();

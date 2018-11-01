@@ -42,7 +42,7 @@ public class AlterMappingCommand extends SingleGfshCommand {
   static final String ALTER_MAPPING__REGION_NAME = "region";
   static final String ALTER_MAPPING__REGION_NAME__HELP =
       "Name of the region the mapping to be altered.";
-  static final String ALTER_MAPPING__PDX_CLASS_NAME = "pdx-class-name";
+  static final String ALTER_MAPPING__PDX_CLASS_NAME = "pdx-name";
   static final String ALTER_MAPPING__PDX_CLASS_NAME__HELP =
       "Name of new pdx class for which values with be written to the database.";
   static final String ALTER_MAPPING__TABLE_NAME = "table";

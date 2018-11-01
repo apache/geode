@@ -79,7 +79,7 @@ public class AlterMappingCommandIntegrationTest {
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("newConnection");
     assertThat(regionMapping.getTableName()).isEqualTo("newTable");
-    assertThat(regionMapping.getPdxClassName()).isEqualTo("newPdxClass");
+    assertThat(regionMapping.getPdxName()).isEqualTo("newPdxClass");
     assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
   }
 

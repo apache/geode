@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
@@ -74,7 +74,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "testTable");
-    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
@@ -89,7 +89,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__CONNECTION_NAME, "connection");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     commandResultAssert.containsOutput("field1");
     commandResultAssert.containsOutput("field2");
@@ -134,7 +134,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__CONNECTION_NAME, "connection");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
   }
 
