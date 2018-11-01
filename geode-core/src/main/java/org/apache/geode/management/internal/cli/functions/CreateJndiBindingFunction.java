@@ -31,7 +31,7 @@ import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
 public class CreateJndiBindingFunction extends CliFunction<JndiBindingsType.JndiBinding> {
 
@@ -64,9 +64,9 @@ public class CreateJndiBindingFunction extends CliFunction<JndiBindingsType.Jndi
 
     }
 
-    return new CliFunctionResult(context.getMemberName(), true,
-        CliStrings.format("Created " + TYPE_NAME + " \"{0}\" on \"{1}\".",
-            configuration.getJndiName(), context.getMemberName()));
+    return new CliFunctionResult(context.getMemberName(), StatusState.OK,
+        String.format("Created %s \"%s\" on \"%s\".", TYPE_NAME, configuration.getJndiName(),
+            context.getMemberName()));
   }
 
   static Map getParamsAsMap(JndiBindingsType.JndiBinding binding) {

@@ -94,12 +94,14 @@ public class CreateJndiBindingFunctionTest {
   public void createDataSourceIsSuccessful() throws Exception {
     JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
     config.setCreatedByDataSourceCommand(true);
-    config.setJndiName("jndi1");
+    final String NAME = "jndi1";
+    final String MEMBER = "mock-member";
+    config.setJndiName(NAME);
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     when(context.getArguments()).thenReturn(config);
-    when(context.getMemberName()).thenReturn("mock-member");
+    when(context.getMemberName()).thenReturn(MEMBER);
     when(context.getResultSender()).thenReturn(resultSender);
 
     createBindingFunction.execute(context);
@@ -107,7 +109,8 @@ public class CreateJndiBindingFunctionTest {
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.toString()).contains("data-source");
+    assertThat(result.toString())
+        .contains("Created data-source \"" + NAME + "\" on \"" + MEMBER + "\".");
 
     Context ctx = JNDIInvoker.getJNDIContext();
     Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
