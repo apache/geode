@@ -59,7 +59,7 @@ public class CreateDataSourceCommandDUnitTest {
   @Test
   public void testCreateDataSource() throws Exception {
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
 
     // create the data-source
     gfsh.executeAndAssertThat(
@@ -93,7 +93,7 @@ public class CreateDataSourceCommandDUnitTest {
 
     // verify datasource exists
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1), server1, server2);
 
     // bounce server1
     server1.stop(false);
