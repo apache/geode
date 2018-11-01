@@ -312,14 +312,9 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-
-  // Distributed Tests
-  distributedTestCompile(sourceSets.test.output)            // To be removed by GEODE-5803
-  distributedTestCompile(sourceSets.integrationTest.output) // To be removed by GEODE-5803
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
