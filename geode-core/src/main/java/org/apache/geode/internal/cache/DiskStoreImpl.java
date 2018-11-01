@@ -2833,20 +2833,17 @@ public class DiskStoreImpl implements DiskStore {
       long compactionStart = getStats().startCompaction();
       long start = System.nanoTime();
       try {
-        for (int i = 0; i < oplogs.length && keepCompactorRunning() /*
-                                                                     * @todo && !owner. isDestroyed
-                                                                     */; i++) {
+        for (int i = 0; i < oplogs.length && keepCompactorRunning(); i++) {
           totalCount += oplogs[i].compact(this);
         }
 
-        // TODO:Asif : DiskRegion: How do we tackle
       } finally {
         getStats().endCompaction(compactionStart);
       }
       long endTime = System.nanoTime();
       logger.info("compaction did {} creates and updates in {} ms",
           totalCount, ((endTime - start) / 1000000));
-      return true /* @todo !owner.isDestroyed */;
+      return true;
     }
 
     private boolean isClosing() {

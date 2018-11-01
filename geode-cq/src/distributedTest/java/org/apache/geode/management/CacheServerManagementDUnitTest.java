@@ -487,10 +487,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
               assertTrue(bean.showAllClientStats()[0].getClientCQCount() == 1);
               int numQueues = bean.getNumSubscriptions();
               assertEquals(numQueues, 1);
-              // test for client connection Count
-
-              /* @TODO */
-              // assertTrue(bean.getClientConnectionCount() > 0);
 
               bean.getContinuousQueryList();
               // Only temporarily stops the query

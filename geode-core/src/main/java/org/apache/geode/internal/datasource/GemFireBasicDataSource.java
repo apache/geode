@@ -16,6 +16,7 @@ package org.apache.geode.internal.datasource;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -127,8 +128,11 @@ public class GemFireBasicDataSource extends AbstractDataSource {
 
   private void loadDriver() throws SQLException {
     try {
-      Class driverClass = ClassPathLoader.getLatest().forName(jdbcDriver);
-      driverObject = (Driver) driverClass.newInstance();
+      if (jdbcDriver != null && jdbcDriver.length() > 0) {
+        loadDriverUsingClassName();
+      } else {
+        loadDriverUsingURL();
+      }
     } catch (Exception ex) {
       String msg =
           "An Exception was caught while trying to load the driver. %s";
@@ -136,5 +140,15 @@ public class GemFireBasicDataSource extends AbstractDataSource {
       logger.error(String.format(msg, msgArg), ex);
       throw new SQLException(String.format(msg, msgArg));
     }
+  }
+
+  private void loadDriverUsingURL() throws SQLException {
+    driverObject = DriverManager.getDriver(this.url);
+  }
+
+  private void loadDriverUsingClassName()
+      throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    Class<?> driverClass = ClassPathLoader.getLatest().forName(jdbcDriver);
+    driverObject = (Driver) driverClass.newInstance();
   }
 }

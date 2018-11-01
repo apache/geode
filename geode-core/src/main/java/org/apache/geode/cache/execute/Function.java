@@ -167,7 +167,7 @@ public interface Function<T> extends Identifiable<String> {
    *        will only be present when the function is executed by an onRegion() executor. In other
    *        cases, it will be null. This method returns permissions appropriate to the context,
    *        independent of the presence of the regionName parameter.
-   * @param args the arguments this function will be executed.
+   * @param args the arguments to the function.
    * @return a collection of {@link ResourcePermission}s indicating the permissions required to
    *         execute the function.
    */

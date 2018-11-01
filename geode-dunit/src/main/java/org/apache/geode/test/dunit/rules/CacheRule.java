@@ -210,7 +210,7 @@ public class CacheRule extends AbstractDistributedRule {
     return cache;
   }
 
-  private void closeAndNullCache() {
+  public void closeAndNullCache() {
     closeCache();
     nullCache();
   }

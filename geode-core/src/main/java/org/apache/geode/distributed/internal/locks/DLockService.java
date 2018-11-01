@@ -1727,14 +1727,6 @@ public class DLockService extends DistributedLockService {
   public void unlock(Object name) throws LockNotHeldException, LeaseExpiredException {
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
 
-    if (this.ds.isDisconnectListenerThread()) {
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE,
-            "{}, name: {} - disconnect listener thread is exiting unlock()", this, name);
-      }
-      return;
-    }
-
     if (isDebugEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - entering unlock()", this, name);
     }
@@ -2292,7 +2284,7 @@ public class DLockService extends DistributedLockService {
     }
 
     // if hasActiveLocks, tell grantor we're destroying...
-    if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !this.ds.isDisconnectListenerThread()) {
+    if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !this.ds.isDisconnectThread()) {
       boolean retry;
       int nonGrantorDestroyLoopCount = 0;
       do {
@@ -2324,12 +2316,10 @@ public class DLockService extends DistributedLockService {
       } while (retry);
     }
 
-    // KIRK: probably don't need to do the following if isMakingLockGrantor
     if (isCurrentlyLockGrantor || isMakingLockGrantor) {
       // If forcedDisconnect is in progress, the membership view will not
       // change and no-one else can contact this member, so don't wait for a grantor
       if (this.ds.getCancelCriterion().isCancelInProgress()) {
-        // KIRK: probably don't need to waitForGrantor
         try {
           DLockGrantor.waitForGrantor(this);
         } catch (InterruptedException e) {

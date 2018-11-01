@@ -1277,7 +1277,7 @@ public class Connection implements Runnable {
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Connection: connected to {} with stub {}", remoteAddr, addr);
+      logger.debug("Connection: connected to {} with IP address {}", remoteAddr, addr);
     }
     try {
       getSocket().setTcpNoDelay(true);

@@ -614,7 +614,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         50, // 5
     };
 
-    assertNotNull(this.regionName);// KIRK
+    assertNotNull(this.regionName);
 
     // Start server
     final int port = vm0.invoke("Create Bridge Server", () -> {

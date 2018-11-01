@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -58,6 +58,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     String mapping = "create jdbc-mapping --region=testRegion --connection=connection "
         + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
@@ -80,6 +82,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0, properties);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     server.invoke(() -> createNRegionMappings(3));
 
@@ -97,6 +101,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
 
@@ -111,7 +117,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     for (int i = 1; i <= N; i++) {
       String name = regionName + "-" + i;
       service.createRegionMapping(
-          new ConnectorService.RegionMapping(name, "x.y.MyPdxClass", "table", "connection", true));
+          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", true));
       assertThat(service.getMappingForRegion(name)).isNotNull();
     }
   }

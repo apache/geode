@@ -24,10 +24,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -58,6 +59,7 @@ public class CreateMappingCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache.createRegionFactory(RegionShortcut.LOCAL).create(regionName);
 
     createRegionMappingCommand = new CreateMappingCommand();
     createRegionMappingCommand.setCache(cache);
@@ -76,7 +78,7 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    ConnectorService.RegionMapping regionMapping = service.getMappingForRegion(regionName);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
@@ -92,16 +94,16 @@ public class CreateMappingCommandIntegrationTest {
 
   @Test
   public void createsRegionMappingOnceOnly() {
-    createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
-        keyInValue, fieldMappings);
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-
-    ConnectorService.Connection connectionConfig = service.getConnectionConfig(regionName);
+    ResultModel result;
+    result =
+        createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
+            keyInValue, fieldMappings);
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     IgnoredException ignoredException =
         IgnoredException.addIgnoredException(RegionMappingExistsException.class.getName());
 
-    ResultModel result;
     try {
       result = createRegionMappingCommand.createMapping(regionName, connectionName, tableName,
           pdxClass, keyInValue, fieldMappings);
@@ -110,8 +112,6 @@ public class CreateMappingCommandIntegrationTest {
     }
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
-
-    assertThat(service.getConnectionConfig(regionName)).isSameAs(connectionConfig);
   }
 
   @Test
@@ -122,7 +122,7 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    ConnectorService.RegionMapping regionMapping = service.getMappingForRegion(regionName);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);

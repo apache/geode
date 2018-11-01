@@ -157,11 +157,6 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     return size;
   }
 
-  /*
-   * @Override public void release() { for(int i =0; i< processors.length; i++){
-   * processors[i].getQueue().release(); } }
-   */
-
   public void removeShadowPR(String prRegionName) {
     for (int i = 0; i < processors.length; i++) {
       processors[i].removeShadowPR(prRegionName);

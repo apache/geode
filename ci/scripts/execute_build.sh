@@ -90,6 +90,7 @@ fi
 
 GRADLE_COMMAND="./gradlew \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
+    ${GRADLE_GLOBAL_ARGS} \
     build install -x test"
 
 echo "${GRADLE_COMMAND}"

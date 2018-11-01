@@ -89,6 +89,7 @@ resources:
     - ci/pipelines/pull-request/*
     - ci/pipelines/shared/*
     - ci/pipelines/render.py
+{% endif %}
 - name: geode-metrics-pipeline
   type: git
   source:
@@ -96,7 +97,6 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/metrics/*
-{% endif %}
 
 jobs:
 - name: set-images-pipeline
@@ -175,6 +175,8 @@ jobs:
         SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        GRADLE_GLOBAL_ARGS: ((gradle-global-args))
+        MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
       run:
         path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
   - put: concourse
@@ -263,6 +265,7 @@ jobs:
         PIPELINE_PREFIX: ((pipeline-prefix))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        GRADLE_GLOBAL_ARGS: ((gradle-global-args))
       run:
         path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
   - put: concourse
@@ -274,6 +277,7 @@ jobs:
         vars_files:
         - results/pipeline-vars.yml
 
+{% endif %}
 
 - name: set-metrics-pipeline
   serial: true
@@ -322,7 +326,6 @@ jobs:
 
 
 
-{% endif %}
 
 - name: set-reaper-pipeline
   serial: true

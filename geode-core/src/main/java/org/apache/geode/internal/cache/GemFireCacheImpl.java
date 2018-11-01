@@ -62,7 +62,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -283,6 +285,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Name of the default pool.
    */
   public static final String DEFAULT_POOL_NAME = "DEFAULT";
+
+
+  /**
+   * The number of threads that the QueryMonitor will use to mark queries as cancelled
+   * (see QueryMonitor class for reasons why a query might be cancelled).
+   * That processing is very efficient, so we don't foresee needing to raise this above 1.
+   */
+  private static final int QUERY_MONITOR_THREAD_POOL_SIZE = 1;
 
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
@@ -863,7 +873,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         // We only support management on members of a distributed system
         // Should do this: if (!getSystem().isLoner()) {
         // but it causes quickstart.CqClientTest to hang
-        this.resourceEventsListener = new ManagementListener();
+        this.resourceEventsListener = new ManagementListener(this.system);
         this.system.addResourceListener(this.resourceEventsListener);
         if (this.system.isLoner()) {
           this.system.getInternalLogWriter()
@@ -4276,7 +4286,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private static void closeQuietly(Closeable closeable) { // KIRK
+  private static void closeQuietly(Closeable closeable) {
     try {
       if (closeable != null) {
         closeable.close();
@@ -4457,9 +4467,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             maxTime = FIVE_HOURS;
           }
 
-          this.queryMonitor = new QueryMonitor(this, maxTime);
-          Thread qmThread = new LoggingThread("QueryMonitor Thread", this.queryMonitor);
-          qmThread.start();
+          this.queryMonitor =
+              new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
+                  QUERY_MONITOR_THREAD_POOL_SIZE,
+                  (runnable) -> new LoggingThread("QueryMonitor Thread", runnable)),
+                  this,
+                  maxTime);
           if (logger.isDebugEnabled()) {
             logger.debug("QueryMonitor thread started.");
           }

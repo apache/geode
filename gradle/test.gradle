@@ -196,6 +196,12 @@ subprojects {
     // default classpath works for this one.
   }
 
+  configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+    if (project.hasProperty('excludeTest')) {
+      exclude project.getProperty('excludeTest').split(',')
+    }
+  }
+
   configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
     times = Integer.parseInt(repeat)
     useJUnit {}

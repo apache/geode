@@ -118,13 +118,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
         return TEMPORAL;
       } else if (object1Class != object2Class && (isAssignableFrom(object1Class, Number.class)
           && isAssignableFrom(object2Class, Number.class))) {
-        /*
-         * @todo check for NaN, in which case we should not call compareTo Must also handle this in
-         * the index lookup code to be consistent See bug 37716 NumericComparator cmprtr =
-         * getNumericComparator(); boolean b; if (obj1.equals(Float.NaN) || obj1.equals(Double.NaN))
-         * { return new Boolean(cmprtr.compareWithNaN(obj2)); } else if (obj2.equals(Float.NaN) ||
-         * obj2.equals(Float.NaN)) { return new Boolean(cmprtr.compareWithNaN(obj1)); }
-         */
         return NUMERIC;
       } else if (isAssignableFrom(object1Class, Boolean.class)
           || isAssignableFrom(object2Class, Boolean.class)) {

@@ -200,8 +200,8 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Clean up the resources before restart of Cache
    */
   @Override
-  public void clearUp() {
-    super.clearUp();
+  public void close() {
+    super.close();
     provider.clearUp();
   }
 }

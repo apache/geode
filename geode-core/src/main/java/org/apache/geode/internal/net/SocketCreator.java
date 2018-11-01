@@ -38,7 +38,6 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -69,7 +68,6 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLProtocolException;
 import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -976,12 +974,6 @@ public class SocketCreator {
       SSLSocket sslSocket = (SSLSocket) socket;
       try {
         sslSocket.startHandshake();
-        SSLSession session = sslSocket.getSession();
-        Certificate[] peer = session.getPeerCertificates();
-        if (logger.isDebugEnabled()) {
-          logger.debug("SSL Connection from peer {}",
-              ((X509Certificate) peer[0]).getSubjectDN());
-        }
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
           logger.fatal(
@@ -1055,7 +1047,8 @@ public class SocketCreator {
         sslSocket.setSSLParameters(sslParameters);
       } else {
         logger.warn("Your SSL configuration disables hostname validation. "
-            + "Future releases will mandate hostname validation.");
+            + "Future releases of Apache GEODE will mandate hostname validation. "
+            + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
@@ -1074,12 +1067,6 @@ public class SocketCreator {
           sslSocket.setSoTimeout(timeout);
         }
         sslSocket.startHandshake();
-        SSLSession session = sslSocket.getSession();
-        Certificate[] peer = session.getPeerCertificates();
-        if (logger.isDebugEnabled()) {
-          logger.debug("SSL Connection from peer []",
-              ((X509Certificate) peer[0]).getSubjectDN());
-        }
       }
       // Pre jkd11, startHandshake is throwing SocketTimeoutException.
       // in jdk 11 it is throwing SSLProtocolException with a cause of SocketTimeoutException.
