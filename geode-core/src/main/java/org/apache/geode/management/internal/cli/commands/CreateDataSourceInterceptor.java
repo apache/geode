@@ -17,11 +17,15 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CreateDataSourceInterceptor extends UsernamePasswordInterceptor {
+
+  static final String POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE =
+      "The --pool-properties option is only valid on --pooled data sources.";
+  static final String POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE =
+      "The --pooled-data-source-factory-class option is only valid on --pooled data sources.";
 
   public CreateDataSourceInterceptor() {
     super();
@@ -39,13 +43,13 @@ public class CreateDataSourceInterceptor extends UsernamePasswordInterceptor {
       String poolProperties =
           parseResult.getParamValueAsString(CreateDataSourceCommand.POOL_PROPERTIES);
       if (poolProperties != null && poolProperties.length() > 0) {
-        return ResultModel.createError(CliStrings.POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE);
+        return ResultModel.createError(POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE);
       }
       String pooledDataSourceFactoryClass = parseResult
           .getParamValueAsString(CreateDataSourceCommand.POOLED_DATA_SOURCE_FACTORY_CLASS);
       if (pooledDataSourceFactoryClass != null && pooledDataSourceFactoryClass.length() > 0) {
         return ResultModel.createError(
-            CliStrings.POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE);
+            POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE);
       }
     }
 

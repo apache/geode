@@ -3185,12 +3185,6 @@ public class CliStrings {
   public static final String START_SERVER__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file.";
 
-
-  public static final String POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE =
-      "The --pool-properties option is only valid on --pooled data sources.";
-  public static final String POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE =
-      "The --pooled-data-source-factory-class option is only valid on --pooled data sources.";
-
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.
    *

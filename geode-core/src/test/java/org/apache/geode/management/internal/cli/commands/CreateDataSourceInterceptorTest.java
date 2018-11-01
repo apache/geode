@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -120,7 +119,7 @@ public class CreateDataSourceInterceptorTest {
 
     assertThat(result.getStatus()).isEqualTo(Status.ERROR);
     assertThat(result.getInfoSection("info").getContent().get(0))
-        .contains(CliStrings.POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE);
+        .contains(CreateDataSourceInterceptor.POOL_PROPERTIES_ONLY_VALID_ON_POOLED_DATA_SOURCE);
   }
 
   @Test
@@ -134,6 +133,7 @@ public class CreateDataSourceInterceptorTest {
 
     assertThat(result.getStatus()).isEqualTo(Status.ERROR);
     assertThat(result.getInfoSection("info").getContent().get(0))
-        .contains(CliStrings.POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE);
+        .contains(
+            CreateDataSourceInterceptor.POOLED_DATA_SOURCE_FACTORY_CLASS_ONLY_VALID_ON_POOLED_DATA_SOURCE);
   }
 }
