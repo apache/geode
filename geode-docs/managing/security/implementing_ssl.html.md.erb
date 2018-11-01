@@ -72,12 +72,15 @@ protocols, and to provide the location and credentials for key and trust stores.
 <dd>List of components for which to enable SSL. Component list can be "" (disable SSL), "all", or a comma-separated list of components.</dd>
 
 <dt>**ssl-endpoint-identification-enabled**</dt>
-<dd> A boolean value that, when set to true, 
-causes clients to validate the server's hostname using
-the server's certificate.
+<dd>A boolean value that, when set to true, causes clients to validate the server's hostname using the server's certificate.
 The default value is false.
-Enabling endpoint identification guards against DNS man-in-the-middle
-attacks when trusting certificates that are not self-signed.</dd>
+Enabling endpoint identification guards against DNS man-in-the-middle attacks when trusting certificates that are not self-signed.</dd>
+
+<dt>**ssl-use-default-context**</dt>
+<dd>A boolean value that, when set to true, allows <%=vars.product_name%> to use the default SSL context as returned by
+SSLContext.getInstance('Default') or set by using SSLContext.setDefault().
+When enabled, also causes ssl-endpoint-identification-enabled to be set to true.
+</dd>
 
 <dt>**ssl-require-authentication**</dt>
 <dd>Requires two-way authentication, applies to all components except web. Boolean - if true (the default), two-way authentication is required.</dd>
