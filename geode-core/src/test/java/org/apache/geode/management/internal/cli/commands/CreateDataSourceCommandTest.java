@@ -43,6 +43,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -256,16 +257,20 @@ public class CreateDataSourceCommandTest {
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
-    ArgumentCaptor<JndiBindingsType.JndiBinding> jndiConfig =
-        ArgumentCaptor.forClass(JndiBindingsType.JndiBinding.class);
+    ArgumentCaptor<Object[]> arguments =
+        ArgumentCaptor.forClass(Object[].class);
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
-    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), jndiConfig.capture(),
+    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
 
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
-    assertThat(jndiConfig.getValue()).isNotNull();
-    assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
-    assertThat(jndiConfig.getValue().getConfigProperties().get(0).getName()).isEqualTo("name1");
+    assertThat(arguments.getValue()).isNotNull();
+    Object[] actualArguments = arguments.getValue();
+    JndiBinding jndiConfig = (JndiBinding) actualArguments[0];
+    boolean creatingDataSource = (Boolean) actualArguments[1];
+    assertThat(creatingDataSource).isTrue();
+    assertThat(jndiConfig.getJndiName()).isEqualTo("name");
+    assertThat(jndiConfig.getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
@@ -304,16 +309,22 @@ public class CreateDataSourceCommandTest {
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
-    ArgumentCaptor<JndiBindingsType.JndiBinding> jndiConfig =
-        ArgumentCaptor.forClass(JndiBindingsType.JndiBinding.class);
+    ArgumentCaptor<Object[]> arguments =
+        ArgumentCaptor.forClass(Object[].class);
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
-    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), jndiConfig.capture(),
+    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
 
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
-    assertThat(jndiConfig.getValue()).isNotNull();
-    assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
-    assertThat(jndiConfig.getValue().getConfigProperties().get(0).getName()).isEqualTo("name1");
+    assertThat(arguments.getValue()).isNotNull();
+    Object[] actualArguments = arguments.getValue();
+    JndiBinding jndiConfig = (JndiBinding) actualArguments[0];
+    boolean creatingDataSource = (Boolean) actualArguments[1];
+
+    assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
+    assertThat(creatingDataSource).isTrue();
+    assertThat(jndiConfig.getJndiName()).isEqualTo("name");
+    assertThat(jndiConfig.getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 }
