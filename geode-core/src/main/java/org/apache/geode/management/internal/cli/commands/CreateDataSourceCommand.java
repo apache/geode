@@ -88,7 +88,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       @CliOption(key = POOLED, help = POOLED__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean pooled,
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = POOL_PROPERTIES_HELP) DataSourceProperty[] poolProperties) {
+          help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
     configuration.setCreatedByDataSourceCommand(true);
@@ -104,7 +104,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     configuration.setUserName(username);
     if (poolProperties != null && poolProperties.length > 0) {
       List<ConfigProperty> configProperties = configuration.getConfigProperties();
-      for (DataSourceProperty dataSourceProperty : poolProperties) {
+      for (PoolProperty dataSourceProperty : poolProperties) {
         String propName = dataSourceProperty.getName();
         String propValue = dataSourceProperty.getValue();
         configProperties.add(new ConfigProperty(propName, "type", propValue));
@@ -144,11 +144,11 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     config.getJndiBindings().add((JndiBindingsType.JndiBinding) element);
   }
 
-  public static class DataSourceProperty {
+  public static class PoolProperty {
     private String name;
     private String value;
 
-    public DataSourceProperty() {}
+    public PoolProperty() {}
 
     public String getName() {
       return name;
@@ -168,7 +168,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
 
     @Override
     public String toString() {
-      return "DataSourceProperty [name=" + name + ", value=" + value + "]";
+      return "PoolProperty [name=" + name + ", value=" + value + "]";
     }
   }
 }

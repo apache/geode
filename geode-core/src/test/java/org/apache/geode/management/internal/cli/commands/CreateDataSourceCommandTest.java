@@ -48,7 +48,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.commands.CreateDataSourceCommand.DataSourceProperty;
+import org.apache.geode.management.internal.cli.commands.CreateDataSourceCommand.PoolProperty;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -100,8 +100,8 @@ public class CreateDataSourceCommandTest {
         + " --pooled --name=name --url=url "
         + "--pool-properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}");
 
-    DataSourceProperty[] poolProperties =
-        (DataSourceProperty[]) result
+    PoolProperty[] poolProperties =
+        (PoolProperty[]) result
             .getParamValue("pool-properties");
     assertThat(poolProperties).hasSize(2);
     assertThat(poolProperties[0].getName()).isEqualTo("name1");
