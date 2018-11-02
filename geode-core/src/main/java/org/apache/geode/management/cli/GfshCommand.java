@@ -32,6 +32,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -76,6 +77,10 @@ public abstract class GfshCommand implements CommandMarker {
 
   public Cache getCache() {
     return cache;
+  }
+
+  public <T extends ManagementService> T getManagementService() {
+    return (T) ManagementService.getExistingManagementService(cache);
   }
 
   public ConfigurationPersistenceService getConfigurationPersistenceService() {

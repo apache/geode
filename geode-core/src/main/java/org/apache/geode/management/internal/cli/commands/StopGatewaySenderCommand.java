@@ -25,7 +25,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -59,8 +58,7 @@ public class StopGatewaySenderCommand extends SingleGfshCommand {
     }
 
     InternalCache cache = (InternalCache) getCache();
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(getCache());
+    SystemManagementService service = getManagementService();
 
     GatewaySenderMXBean bean;
 

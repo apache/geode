@@ -24,7 +24,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -50,8 +49,7 @@ public class StatusGatewayReceiverCommand extends SingleGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(getCache());
+    SystemManagementService service = getManagementService();
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
     if (dsMembers.isEmpty()) {

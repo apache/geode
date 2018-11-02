@@ -24,7 +24,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -50,8 +49,7 @@ public class StopGatewayReceiverCommand extends SingleGfshCommand {
           help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember)
       throws Exception {
 
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(getCache());
+    SystemManagementService service = getManagementService();
 
     GatewayReceiverMXBean receiverBean;
 

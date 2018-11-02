@@ -33,7 +33,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -65,8 +64,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
     final String id = senderId.trim();
 
     final Cache cache = getCache();
-    final SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    final SystemManagementService service = getManagementService();
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
