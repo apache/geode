@@ -474,7 +474,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName());
     server.invoke(() -> {
       String key = "id1";
       Employee value = new Employee("Emp1", 55);
@@ -496,7 +496,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     client.invoke(() -> {
       String key = "id1";
       ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
@@ -519,7 +519,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     client.invoke(() -> {
       String key = "id1";
       ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields();
@@ -540,7 +540,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createClientRegion(client);
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     String key = "id1";
     ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
         3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
@@ -568,7 +568,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createClientRegion(client);
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     String key = "id1";
     ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields();
 
@@ -640,14 +640,8 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName, String pdxClassName) {
-    createMapping(regionName, connectionName, pdxClassName, true);
-  }
-
-  private void createMapping(String regionName, String connectionName, String pdxClassName,
-      boolean valueContainsPrimaryKey) {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
-        + connectionName + (valueContainsPrimaryKey ? " --value-contains-primary-key" : "")
-        + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
+        + connectionName + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

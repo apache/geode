@@ -78,7 +78,7 @@ public class AlterMappingCommand extends SingleGfshCommand {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping newMapping = new RegionMapping(regionName,
-        pdxClassName, table, connectionName, keyInValue);
+        pdxClassName, table, connectionName);
     newMapping.setFieldMapping(fieldMappings);
 
     // action

@@ -62,14 +62,14 @@ public class ListMappingCommandTest {
         null);
 
     RegionMapping mapping1 =
-        new RegionMapping("region1", "class1", "table1", "name1", true);
+        new RegionMapping("region1", "class1", "table1", "name1");
     mapping1.getFieldMapping()
         .add(new RegionMapping.FieldMapping("field1", "value1"));
     mapping1.getFieldMapping()
         .add(new RegionMapping.FieldMapping("field2", "value2"));
 
     RegionMapping mapping2 =
-        new RegionMapping("region2", "class2", "table2", "name2", true);
+        new RegionMapping("region2", "class2", "table2", "name2");
     mapping2.getFieldMapping()
         .add(new RegionMapping.FieldMapping("field3", "value3"));
     mapping2.getFieldMapping()

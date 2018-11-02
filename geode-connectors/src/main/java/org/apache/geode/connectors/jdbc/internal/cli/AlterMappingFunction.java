@@ -54,8 +54,6 @@ public class AlterMappingFunction extends CliFunction<RegionMapping> {
     String table = getValue(regionMapping.getTableName(), existingMapping.getTableName());
     String pdxClassName =
         getValue(regionMapping.getPdxClassName(), existingMapping.getPdxClassName());
-    Boolean keyInValue = regionMapping.isPrimaryKeyInValue() == null
-        ? existingMapping.isPrimaryKeyInValue() : regionMapping.isPrimaryKeyInValue();
 
     List<RegionMapping.FieldMapping> fieldMappings =
         regionMapping.getFieldMapping();
@@ -63,7 +61,7 @@ public class AlterMappingFunction extends CliFunction<RegionMapping> {
       fieldMappings = existingMapping.getFieldMapping();
     }
     RegionMapping alteredMapping = new RegionMapping(
-        existingMapping.getRegionName(), pdxClassName, table, connectionName, keyInValue);
+        existingMapping.getRegionName(), pdxClassName, table, connectionName);
     alteredMapping.getFieldMapping().addAll(fieldMappings);
     return alteredMapping;
   }

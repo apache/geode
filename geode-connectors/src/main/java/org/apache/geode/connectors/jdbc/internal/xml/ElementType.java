@@ -37,8 +37,6 @@ public enum ElementType {
           attributes.getValue(JdbcConnectorServiceXmlParser.CONNECTION_NAME));
       mapping.setTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE));
       mapping.setPdxClassName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_CLASS));
-      mapping.setPrimaryKeyInValue(
-          Boolean.valueOf(attributes.getValue(JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE)));
       stack.push(mapping);
     }
 

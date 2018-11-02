@@ -53,6 +53,6 @@ public class TestConfigService {
   private static RegionMapping createRegionMapping(String pdxClassName,
       boolean primaryKeyInValue) {
     return new RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
-        CONNECTION_CONFIG_NAME, primaryKeyInValue);
+        CONNECTION_CONFIG_NAME);
   }
 }

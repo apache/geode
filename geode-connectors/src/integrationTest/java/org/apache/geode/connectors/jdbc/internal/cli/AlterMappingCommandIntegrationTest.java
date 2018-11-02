@@ -45,7 +45,6 @@ public class AlterMappingCommandIntegrationTest {
     String connectionName = "connection";
     String tableName = "testTable";
     String pdxClass = "myPdxClass";
-    Boolean keyInValue = true;
     String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
@@ -53,7 +52,7 @@ public class AlterMappingCommandIntegrationTest {
     cache.createRegionFactory(RegionShortcut.LOCAL).create(regionName);
     CreateMappingCommand create = new CreateMappingCommand();
     create.setCache(cache);
-    assertThat(create.createMapping(regionName, connectionName, tableName, pdxClass, keyInValue,
+    assertThat(create.createMapping(regionName, connectionName, tableName, pdxClass,
         fieldMappings).isSuccessful()).isTrue();
 
     alterRegionMappingCommand = new AlterMappingCommand();
@@ -80,7 +79,6 @@ public class AlterMappingCommandIntegrationTest {
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("newConnection");
     assertThat(regionMapping.getTableName()).isEqualTo("newTable");
     assertThat(regionMapping.getPdxClassName()).isEqualTo("newPdxClass");
-    assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
   }
 
 }

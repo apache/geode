@@ -62,7 +62,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
         .statusIsSuccess();
 
     String mapping = "create jdbc-mapping --region=testRegion --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--table=myTable --pdx-class-name=myPdxClass "
         + "--field-mapping=field1:column1,field2:column2";
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
@@ -117,7 +117,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     for (int i = 1; i <= N; i++) {
       String name = regionName + "-" + i;
       service.createRegionMapping(
-          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", true));
+          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection"));
       assertThat(service.getMappingForRegion(name)).isNotNull();
     }
   }

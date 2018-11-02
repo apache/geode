@@ -27,7 +27,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -77,7 +76,6 @@ public class AlterMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -108,7 +106,6 @@ public class AlterMappingCommandDUnitTest {
       assertThat(mapping.getConnectionConfigName()).isEqualTo("newConnection");
       assertThat(mapping.getTableName()).isEqualTo("newTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("newPdxClass");
-      assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(false);
       List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
       assertThat(fieldMappings).hasSize(2);
       assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field3");
