@@ -12,17 +12,39 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.alerting;
 
-package org.apache.geode.annotations;
+import org.apache.geode.distributed.DistributedMember;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+class NullAlertingProvider implements AlertingProvider {
 
-@Documented
-@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
-public @interface TestingOnly {
+  @Override
+  public void addAlertListener(DistributedMember member, AlertLevel alertLevel) {
+    // nothing
+  }
 
-  /** Optional description */
-  String value() default "";
+  @Override
+  public boolean removeAlertListener(DistributedMember member) {
+    return false;
+  }
+
+  @Override
+  public boolean hasAlertListener(DistributedMember member, AlertLevel alertLevel) {
+    return false;
+  }
+
+  @Override
+  public void createSession(AlertMessaging alertMessaging) {
+    // nothing
+  }
+
+  @Override
+  public void startSession() {
+    // nothing
+  }
+
+  @Override
+  public void stopSession() {
+    // nothing
+  }
 }

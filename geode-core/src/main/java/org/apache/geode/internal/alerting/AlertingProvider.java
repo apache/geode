@@ -12,17 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.alerting;
 
-package org.apache.geode.annotations;
+import org.apache.geode.distributed.DistributedMember;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+/**
+ * Handles {@code Alert} listeners for local and remote members. The implementation is responsible
+ * for maintaining registration of {@code Alert} listeners. Listeners are typically managing members
+ * that will receive a notification anytime an {@code Alert} is raised.
+ */
+public interface AlertingProvider extends AlertingSessionListener {
 
-@Documented
-@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
-public @interface TestingOnly {
+  void addAlertListener(DistributedMember member, AlertLevel alertLevel);
 
-  /** Optional description */
-  String value() default "";
+  boolean removeAlertListener(DistributedMember member);
+
+  boolean hasAlertListener(DistributedMember member, AlertLevel alertLevel);
 }

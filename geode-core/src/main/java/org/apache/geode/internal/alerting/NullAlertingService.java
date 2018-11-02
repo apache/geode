@@ -12,17 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.alerting;
 
-package org.apache.geode.annotations;
+import org.apache.geode.distributed.DistributedMember;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+/**
+ * Null implementation of {@link AlertingService} that does nothing.
+ */
+public class NullAlertingService extends AlertingService {
 
-@Documented
-@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
-public @interface TestingOnly {
+  private static final NullAlertingService INSTANCE = new NullAlertingService();
 
-  /** Optional description */
-  String value() default "";
+  public static NullAlertingService get() {
+    return INSTANCE;
+  }
+
+  public NullAlertingService() {
+    // nothing
+  }
+
+  public void addAlertListener(final DistributedMember member, final AlertLevel alertLevel) {
+    // nothing
+  }
+
+  public boolean removeAlertListener(final DistributedMember member) {
+    return false;
+  }
+
+  public boolean hasAlertListener(final DistributedMember member, final AlertLevel alertLevel) {
+    return false;
+  }
 }
