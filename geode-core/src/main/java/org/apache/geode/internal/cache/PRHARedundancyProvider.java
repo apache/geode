@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -743,7 +742,7 @@ public class PRHARedundancyProvider {
                 bucketPrimary, partitionName);
           } catch (Exception e) {
             // if region is going down, then no warning level logs
-            if (e instanceof CancelException || e instanceof CacheClosedException
+            if (e instanceof CancelException
                 || (prRegion.getCancelCriterion().isCancelInProgress())) {
               logger.debug("Exception trying choose a primary after bucket creation failure", e);
             } else {
