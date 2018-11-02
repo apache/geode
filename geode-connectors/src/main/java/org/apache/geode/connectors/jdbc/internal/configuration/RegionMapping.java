@@ -47,8 +47,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;attribute name="connection-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="pdx-class" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="primary-key-in-value" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -69,10 +68,8 @@ public class RegionMapping implements CacheElement {
   protected String connectionConfigName;
   @XmlAttribute(name = "table")
   protected String tableName;
-  @XmlAttribute(name = "pdx-class")
-  protected String pdxClassName;
-  @XmlAttribute(name = "primary-key-in-value")
-  protected Boolean primaryKeyInValue;
+  @XmlAttribute(name = "pdx-name")
+  protected String pdxName;
 
   @XmlTransient
   protected String regionName;
@@ -81,13 +78,12 @@ public class RegionMapping implements CacheElement {
 
   public RegionMapping() {}
 
-  public RegionMapping(String regionName, String pdxClassName, String tableName,
-      String connectionConfigName, Boolean primaryKeyInValue) {
+  public RegionMapping(String regionName, String pdxName, String tableName,
+      String connectionConfigName) {
     this.regionName = regionName;
-    this.pdxClassName = pdxClassName;
+    this.pdxName = pdxName;
     this.tableName = tableName;
     this.connectionConfigName = connectionConfigName;
-    this.primaryKeyInValue = primaryKeyInValue;
   }
 
   public void setConnectionConfigName(String connectionConfigName) {
@@ -102,12 +98,8 @@ public class RegionMapping implements CacheElement {
     this.tableName = tableName;
   }
 
-  public void setPdxClassName(String pdxClassName) {
-    this.pdxClassName = pdxClassName;
-  }
-
-  public void setPrimaryKeyInValue(Boolean primaryKeyInValue) {
-    this.primaryKeyInValue = primaryKeyInValue;
+  public void setPdxName(String pdxName) {
+    this.pdxName = pdxName;
   }
 
   public String getConnectionConfigName() {
@@ -118,20 +110,12 @@ public class RegionMapping implements CacheElement {
     return regionName;
   }
 
-  public String getPdxClassName() {
-    return pdxClassName;
+  public String getPdxName() {
+    return pdxName;
   }
 
   public String getTableName() {
     return tableName;
-  }
-
-  public Boolean getPrimaryKeyInValue() {
-    return primaryKeyInValue;
-  }
-
-  public Boolean isPrimaryKeyInValue() {
-    return primaryKeyInValue;
   }
 
   public String getRegionToTableName() {
@@ -164,7 +148,7 @@ public class RegionMapping implements CacheElement {
 
   public String getFieldNameForColumn(String columnName, TypeRegistry typeRegistry) {
     String fieldName = null;
-    if (getPdxClassName() == null) {
+    if (getPdxName() == null) {
       if (columnName.equals(columnName.toUpperCase())) {
         fieldName = columnName.toLowerCase();
       } else {
@@ -183,10 +167,10 @@ public class RegionMapping implements CacheElement {
   }
 
   private Set<PdxType> getPdxTypesForClassName(TypeRegistry typeRegistry) {
-    Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxClassName());
+    Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxName());
     if (pdxTypes.isEmpty()) {
       throw new JdbcConnectorException(
-          "The class " + getPdxClassName() + " has not been pdx serialized.");
+          "The class " + getPdxName() + " has not been pdx serialized.");
     }
     return pdxTypes;
   }
@@ -209,7 +193,7 @@ public class RegionMapping implements CacheElement {
       }
     }
     if (matchingFieldNames.isEmpty()) {
-      throw new JdbcConnectorException("The class " + getPdxClassName()
+      throw new JdbcConnectorException("The class " + getPdxName()
           + " does not have a field that matches the column " + columnName);
     } else if (matchingFieldNames.size() > 1) {
       throw new JdbcConnectorException(
@@ -245,14 +229,11 @@ public class RegionMapping implements CacheElement {
 
     RegionMapping that = (RegionMapping) o;
 
-    if (primaryKeyInValue != that.primaryKeyInValue) {
-      return false;
-    }
     if (regionName != null ? !regionName.equals(that.regionName) : that.regionName != null) {
       return false;
     }
-    if (pdxClassName != null ? !pdxClassName.equals(that.pdxClassName)
-        : that.pdxClassName != null) {
+    if (pdxName != null ? !pdxName.equals(that.pdxName)
+        : that.pdxName != null) {
       return false;
     }
     if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
@@ -268,18 +249,17 @@ public class RegionMapping implements CacheElement {
   @Override
   public int hashCode() {
     int result = regionName != null ? regionName.hashCode() : 0;
-    result = 31 * result + (pdxClassName != null ? pdxClassName.hashCode() : 0);
+    result = 31 * result + (pdxName != null ? pdxName.hashCode() : 0);
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (connectionConfigName != null ? connectionConfigName.hashCode() : 0);
-    result = 31 * result + (primaryKeyInValue ? 1 : 0);
     return result;
   }
 
   @Override
   public String toString() {
-    return "RegionMapping{" + "regionName='" + regionName + '\'' + ", pdxClassName='"
-        + pdxClassName + '\'' + ", tableName='" + tableName + '\'' + ", connectionConfigName='"
-        + connectionConfigName + '\'' + ", primaryKeyInValue=" + primaryKeyInValue + '}';
+    return "RegionMapping{" + "regionName='" + regionName + '\'' + ", pdxName='"
+        + pdxName + '\'' + ", tableName='" + tableName + '\'' + ", connectionConfigName='"
+        + connectionConfigName + '\'' + '}';
   }
 
   @Override

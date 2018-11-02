@@ -44,7 +44,7 @@ public class DestroyMappingCommandIntegrationTest {
     regionName = "testRegion";
 
     String[] params = new String[] {"param1:value1", "param2:value2"};
-    mapping = new RegionMapping(regionName, null, null, null, null);
+    mapping = new RegionMapping(regionName, null, null, null);
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();

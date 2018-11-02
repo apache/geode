@@ -40,17 +40,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__REGION_NAME = "region";
   static final String CREATE_MAPPING__REGION_NAME__HELP =
       "Name of the region the mapping is being created for.";
-  static final String CREATE_MAPPING__PDX_CLASS_NAME = "pdx-class-name";
-  static final String CREATE_MAPPING__PDX_CLASS_NAME__HELP =
+  static final String CREATE_MAPPING__PDX_NAME = "pdx-name";
+  static final String CREATE_MAPPING__PDX_NAME__HELP =
       "Name of pdx class for which values will be written to the database.";
   static final String CREATE_MAPPING__TABLE_NAME = "table";
   static final String CREATE_MAPPING__TABLE_NAME__HELP =
       "Name of database table for values to be written to.";
   static final String CREATE_MAPPING__CONNECTION_NAME = "connection";
   static final String CREATE_MAPPING__CONNECTION_NAME__HELP = "Name of JDBC connection to use.";
-  static final String CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY = "value-contains-primary-key";
-  static final String CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP =
-      "If true, the primary key is contained in the PDX object, otherwise the region entry key is used for the primary key column value.";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -63,15 +60,12 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__CONNECTION_NAME__HELP) String connectionName,
       @CliOption(key = CREATE_MAPPING__TABLE_NAME,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
-      @CliOption(key = CREATE_MAPPING__PDX_CLASS_NAME,
-          help = CREATE_MAPPING__PDX_CLASS_NAME__HELP) String pdxClassName,
-      @CliOption(key = CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY,
-          help = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true") boolean keyInValue) {
+      @CliOption(key = CREATE_MAPPING__PDX_NAME,
+          help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName,
-        pdxClassName, table, connectionName, keyInValue);
+        pdxName, table, connectionName);
 
     // action
     List<CliFunctionResult> results =

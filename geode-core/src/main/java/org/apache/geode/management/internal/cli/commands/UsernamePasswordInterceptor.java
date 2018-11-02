@@ -23,9 +23,19 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class UsernamePasswordInterceptor extends AbstractCliAroundInterceptor {
+  private final Gfsh gfsh;
+
+  public UsernamePasswordInterceptor() {
+    this(Gfsh.getCurrentInstance());
+  }
+
+  // Constructor for unit test
+  UsernamePasswordInterceptor(Gfsh gfsh) {
+    this.gfsh = gfsh;
+  }
+
   @Override
   public ResultModel preExecution(GfshParseResult parseResult) {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
     if (gfsh == null || !gfsh.isConnectedAndReady()) {
       return new ResultModel();
     }

@@ -49,27 +49,28 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.commands.CreateDataSourceCommand.PoolProperty;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-public class CreateJndiBindingCommandTest {
+public class CreateDataSourceCommandTest {
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
-  private CreateJndiBindingCommand command;
+  private CreateDataSourceCommand command;
   private InternalCache cache;
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
 
-  private static String COMMAND = "create jndi-binding ";
+  private static String COMMAND = "create data-source ";
 
   @Before
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
     when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
-    command = spy(CreateJndiBindingCommand.class);
+    command = spy(CreateDataSourceCommand.class);
     command.setCache(cache);
 
     binding = new JndiBindingsType.JndiBinding();
@@ -83,46 +84,52 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void wrongType() {
-    gfsh.executeAndAssertThat(command,
-        COMMAND
-            + " --type=NOTSOSIMPLE --name=name --jdbc-driver-class=driver --connection-url=url ")
-        .statusIsError().containsOutput("Invalid command");
+  public void nonPooledWorks() {
+    gfsh.executeAndAssertThat(command, COMMAND + " --pooled=false --url=url --name=name")
+        .statusIsSuccess();
   }
 
   @Test
-  public void configPropertyIsProperlyParsed() {
+  public void pooledWorks() {
+    gfsh.executeAndAssertThat(command, COMMAND + " --pooled=true --url=url --name=name")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void poolPropertiesIsProperlyParsed() {
     GfshParseResult result = gfsh.parse(COMMAND
-        + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url "
-        + "--datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}");
+        + " --pooled --name=name --url=url "
+        + "--pool-properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}");
 
-    JndiBindingsType.JndiBinding.ConfigProperty[] configProperties =
-        (JndiBindingsType.JndiBinding.ConfigProperty[]) result
-            .getParamValue("datasource-config-properties");
-    assertThat(configProperties).hasSize(2);
-    assertThat(configProperties[0].getValue()).isEqualTo("value1");
-    assertThat(configProperties[1].getValue()).isEqualTo("value2");
+    PoolProperty[] poolProperties =
+        (PoolProperty[]) result
+            .getParamValue("pool-properties");
+    assertThat(poolProperties).hasSize(2);
+    assertThat(poolProperties[0].getName()).isEqualTo("name1");
+    assertThat(poolProperties[1].getName()).isEqualTo("name2");
+    assertThat(poolProperties[0].getValue()).isEqualTo("value1");
+    assertThat(poolProperties[1].getValue()).isEqualTo("value2");
   }
 
   @Test
-  public void verifyJdbcDriverClassNotRequired() {
-    gfsh.executeAndAssertThat(command, COMMAND + " --type=SIMPLE --name=name --connection-url=url")
-        .statusIsSuccess();
+  public void poolPropertiesRequiresPooled() {
+    gfsh.executeAndAssertThat(command,
+        COMMAND + " --pooled=false --name=name --url=url "
+            + "--pool-properties={'name':'name1','value':'value1'}")
+        .statusIsError().containsOutput("pool-properties option is only valid on --pooled");
   }
 
   @Test
-  public void verifyJdbcTypeDefaultsToSimple() {
-    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --connection-url=url")
-        .statusIsSuccess();
+  public void poolFactoryRequiresPooled() {
+    gfsh.executeAndAssertThat(command,
+        COMMAND + " --pooled=false --name=name --url=url "
+            + "--pooled-data-source-factory-class=factoryClassValue")
+        .statusIsError()
+        .containsOutput("pooled-data-source-factory-class option is only valid on --pooled");
   }
 
   @Test
-  public void verifyUrlAllowedAsAliasForConnectionUrl() {
-    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --url=url").statusIsSuccess();
-  }
-
-  @Test
-  public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
+  public void returnsErrorIfDataSourceAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
@@ -134,12 +141,12 @@ public class CreateJndiBindingCommandTest {
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
 
     gfsh.executeAndAssertThat(command,
-        COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
+        COMMAND + " --name=name  --url=url")
         .statusIsError().containsOutput("already exists.");
   }
 
   @Test
-  public void skipsIfBindingAlreadyExistsAndIfSpecified()
+  public void skipsIfDataSourceAlreadyExistsAndIfSpecified()
       throws ParserConfigurationException, SAXException, IOException {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
@@ -152,12 +159,12 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists")
+            + " --name=name  --url=url --if-not-exists")
         .statusIsSuccess().containsOutput("Skipping");
   }
 
   @Test
-  public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue() {
+  public void skipsIfDataSourceAlreadyExistsAndIfSpecifiedTrue() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -169,12 +176,12 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists=true")
+            + " --name=name  --url=url --if-not-exists=true")
         .statusIsSuccess().containsOutput("Skipping");
   }
 
   @Test
-  public void returnsErrorIfBindingAlreadyExistsAndIfSpecifiedFalse() {
+  public void returnsErrorIfDataSourceAlreadyExistsAndIfSpecifiedFalse() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -186,7 +193,7 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists=false")
+            + " --name=name  --url=url --if-not-exists=false")
         .statusIsError().containsOutput("already exists.");
   }
 
@@ -197,7 +204,7 @@ public class CreateJndiBindingCommandTest {
     doReturn(null).when(command).getConfigurationPersistenceService();
 
     gfsh.executeAndAssertThat(command,
-        COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
+        COMMAND + " --name=name  --url=url")
         .statusIsSuccess().containsOutput("No members found").containsOutput(
             "Cluster configuration service is not running. Configuration change is not persisted.");
   }
@@ -219,7 +226,7 @@ public class CreateJndiBindingCommandTest {
     }).when(clusterConfigService).updateCacheConfig(any(), any());
 
     gfsh.executeAndAssertThat(command,
-        COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
+        COMMAND + " --name=name  --url=url")
         .statusIsSuccess().containsOutput("No members found.")
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
@@ -243,7 +250,7 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
+            + " --pooled --name=name  --url=url --pool-properties={'name':'name1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status", "OK").tableHasColumnOnlyWithValues("Message",
             "Tried creating jndi binding \"name\" on \"server1\"");
@@ -255,12 +262,13 @@ public class CreateJndiBindingCommandTest {
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
+
+    assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
+    assertThat(arguments.getValue()).isNotNull();
     Object[] actualArguments = arguments.getValue();
     JndiBinding jndiConfig = (JndiBinding) actualArguments[0];
     boolean creatingDataSource = (Boolean) actualArguments[1];
-
-    assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
-    assertThat(creatingDataSource).isFalse();
+    assertThat(creatingDataSource).isTrue();
     assertThat(jndiConfig.getJndiName()).isEqualTo("name");
     assertThat(jndiConfig.getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
@@ -291,7 +299,7 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
+            + " --pooled --name=name  --url=url --pool-properties={'name':'name1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status", "OK").tableHasColumnOnlyWithValues("Message",
             "Tried creating jndi binding \"name\" on \"server1\"");
@@ -306,12 +314,15 @@ public class CreateJndiBindingCommandTest {
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
+
+    assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
+    assertThat(arguments.getValue()).isNotNull();
     Object[] actualArguments = arguments.getValue();
     JndiBinding jndiConfig = (JndiBinding) actualArguments[0];
     boolean creatingDataSource = (Boolean) actualArguments[1];
 
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
-    assertThat(creatingDataSource).isFalse();
+    assertThat(creatingDataSource).isTrue();
     assertThat(jndiConfig.getJndiName()).isEqualTo("name");
     assertThat(jndiConfig.getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);

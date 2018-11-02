@@ -15,10 +15,9 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 
 import java.util.Set;
 
@@ -84,7 +83,6 @@ public class DescribeMappingCommand extends GfshCommand {
     sectionModel.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
     sectionModel.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
-    sectionModel.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
-    sectionModel.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, mapping.isPrimaryKeyInValue());
+    sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
   }
 }

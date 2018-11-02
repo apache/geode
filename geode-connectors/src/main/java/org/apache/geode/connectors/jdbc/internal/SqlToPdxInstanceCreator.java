@@ -55,12 +55,9 @@ class SqlToPdxInstanceCreator {
     final int columnCount = metaData.getColumnCount();
     for (int i = 1; i <= columnCount; i++) {
       String columnName = metaData.getColumnName(i);
-      if (regionMapping.isPrimaryKeyInValue()
-          || !tableMetaData.getKeyColumnName().equals(columnName)) {
-        String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
-        FieldType fieldType = getFieldType(typeRegistry, fieldName);
-        writeField(columnName, i, fieldName, fieldType);
-      }
+      String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
+      FieldType fieldType = getFieldType(typeRegistry, fieldName);
+      writeField(columnName, i, fieldName, fieldType);
     }
     if (resultSet.next()) {
       throw new JdbcConnectorException(
@@ -70,7 +67,7 @@ class SqlToPdxInstanceCreator {
   }
 
   private PdxInstanceFactory createPdxInstanceFactory() {
-    String valueClassName = regionMapping.getPdxClassName();
+    String valueClassName = regionMapping.getPdxName();
     if (valueClassName != null) {
       return cache.createPdxInstanceFactory(valueClassName);
     } else {
@@ -250,7 +247,7 @@ class SqlToPdxInstanceCreator {
   }
 
   private FieldType getFieldType(TypeRegistry typeRegistry, String fieldName) {
-    String pdxClassName = regionMapping.getPdxClassName();
+    String pdxClassName = regionMapping.getPdxName();
     if (pdxClassName == null) {
       return FieldType.OBJECT;
     }
