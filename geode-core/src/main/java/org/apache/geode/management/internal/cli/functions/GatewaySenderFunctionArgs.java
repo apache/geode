@@ -24,7 +24,7 @@ import org.apache.geode.cache.configuration.DeclarableType;
 
 
 public class GatewaySenderFunctionArgs implements Serializable {
-  private static final long serialVersionUID = -5158224572470173267L;
+  private static final long serialVersionUID = 4636678328980816780L;
 
   private final String id;
   private final Integer remoteDSId;
