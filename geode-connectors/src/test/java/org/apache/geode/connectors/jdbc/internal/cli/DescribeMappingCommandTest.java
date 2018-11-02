@@ -79,7 +79,7 @@ public class DescribeMappingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
         .containsOutput("connection", "name1").containsOutput("table", "table1")
-        .containsOutput("pdx-class-name", "class1")
+        .containsOutput("pdx-name", "class1")
         .containsOutput("field1", "value1")
         .containsOutput("field2", "value2");
   }

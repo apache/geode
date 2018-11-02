@@ -418,7 +418,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
           if (ex.getCause() instanceof GemFireSecurityException) {
             if (securityLogWriter.warningEnabled()) {
               securityLogWriter.warning(
-                  String.format("Exception while executing cq Exception: %s", ex, null));
+                  String.format("Exception while executing cq Exception: %s", ex));
             }
             throw new CqException(ex.getCause().getMessage(), ex.getCause());
           } else if (ex instanceof CqException) {

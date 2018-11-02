@@ -182,7 +182,7 @@ public class ManagerInfo implements DataSerializable {
       }
     }
     throw new IllegalArgumentException(
-        String.format("Unknown statusName  %s", statusName));
+        String.format("Unknown statusName %s", statusName));
   }
 
   public static ManagerInfo loadLocatorInfo(File directory) {

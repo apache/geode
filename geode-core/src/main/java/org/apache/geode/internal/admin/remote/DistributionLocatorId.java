@@ -136,7 +136,7 @@ public class DistributionLocatorId implements java.io.Serializable {
       this.port = Integer.parseInt(marshalled.substring(portStartIdx + 1, portEndIdx));
     } catch (NumberFormatException nfe) {
       throw new IllegalArgumentException(
-          String.format("%s  does not contain a valid port number",
+          String.format("%s does not contain a valid port number",
               marshalled));
     }
 

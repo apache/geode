@@ -97,7 +97,7 @@ import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.ArrayUtils;
 
 /**
- * Implements the acceptor thread on the bridge server. Accepts connections from the edge and starts
+ * Implements the acceptor thread on the cache server. Accepts connections from the edge and starts
  * up threads to process requests from these.
  *
  * @since GemFire 2.0.2
@@ -151,7 +151,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private final Object syncLock = new Object();
 
   /**
-   * THE selector for the bridge server; null if no selector.
+   * THE selector for the cache server; null if no selector.
    */
   private final Selector selector;
   // private final Selector tmpSel;
@@ -1373,7 +1373,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       return;
     }
 
-    logger.debug("Bridge server: Initializing {} communication socket: {}", communicationMode,
+    logger.debug("cache server: Initializing {} communication socket: {}", communicationMode,
         socket);
     boolean notForQueue = (communicationMode != ClientToServerForQueue);
     if (notForQueue) {
@@ -1683,7 +1683,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   /**
-   * Gets the address that this bridge server can be contacted on from external processes.
+   * Gets the address that this cache server can be contacted on from external processes.
    *
    * @since GemFire 5.7
    */

@@ -62,7 +62,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
         .statusIsSuccess();
 
     String mapping = "create jdbc-mapping --region=testRegion --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass "
+        + "--table=myTable --pdx-name=myPdxClass "
         + "--field-mapping=field1:column1,field2:column2";
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 

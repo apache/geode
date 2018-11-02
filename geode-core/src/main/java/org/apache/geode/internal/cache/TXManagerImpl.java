@@ -322,7 +322,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       TransactionId tid = getTransactionId();
       if (tid != null) {
         throw new java.lang.IllegalStateException(
-            String.format("Transaction  %s  already in progress",
+            String.format("Transaction %s already in progress",
                 tid));
       }
     }
@@ -774,7 +774,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       TransactionId tid = getTransactionId();
       if (tid != null) {
         throw new java.lang.IllegalStateException(
-            String.format("Transaction  %s  already in progress",
+            String.format("Transaction %s already in progress",
                 tid));
       }
       if (needToResumeBySameThread) {
@@ -1318,7 +1318,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public RuntimeException getExceptionForToken(TXCommitMessage msg, TXId txId) {
     if (msg == TXCommitMessage.CMT_CONFLICT_MSG) {
       return new CommitConflictException(
-          String.format("Conflict detected in GemFire transaction  %s",
+          String.format("Conflict detected in GemFire transaction %s",
               txId));
     }
     if (msg == TXCommitMessage.REBALANCE_MSG) {

@@ -110,7 +110,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private volatile CacheServerAdvisor advisor;
 
   /**
-   * The monitor used to monitor load on this bridge server and distribute load to the locators
+   * The monitor used to monitor load on this cache server and distribute load to the locators
    *
    * @since GemFire 5.7
    */
@@ -157,7 +157,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Checks to see whether or not this bridge server is running. If so, an
+   * Checks to see whether or not this cache server is running. If so, an
    * {@link IllegalStateException} is thrown.
    */
   private void checkRunning() {
@@ -363,10 +363,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // Force initialization on current cache
     ClientHealthMonitoringRegion.getInstance(this.cache);
     this.cache.getLogger()
-        .config(String.format("CacheServer Configuration:   %s", getConfig()));
+        .config(String.format("CacheServer Configuration:  %s", getConfig()));
 
     /*
-     * If the stopped bridge server is restarted, we'll need to re-register the client membership
+     * If the stopped cache server is restarted, we'll need to re-register the client membership
      * listener. If the listener is already registered it won't be registered as would the case when
      * start() is invoked for the first time.
      */
@@ -395,7 +395,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
 
   /**
-   * Gets the address that this bridge server can be contacted on from external processes.
+   * Gets the address that this cache server can be contacted on from external processes.
    *
    * @since GemFire 5.7
    */
@@ -406,7 +406,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public String getExternalAddress(boolean checkServerRunning) {
     if (checkServerRunning) {
       if (!this.isRunning()) {
-        String s = "A bridge server's bind address is only available if it has been started";
+        String s = "A cache server's bind address is only available if it has been started";
         this.cache.getCancelCriterion().checkCancelInProgress(null);
         throw new IllegalStateException(s);
       }
@@ -711,7 +711,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Returns an array of all the groups of this bridge server. This includes those from the groups
+   * Returns an array of all the groups of this cache server. This includes those from the groups
    * gemfire property and those explicitly added to this server.
    */
   public String[] getCombinedGroups() {

@@ -1596,7 +1596,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         properties.load(url.openStream());
       } catch (IOException io) {
         throw new GemFireIOException(
-            String.format("Failed reading  %s", url), io);
+            String.format("Failed reading %s", url), io);
       }
     }
   }

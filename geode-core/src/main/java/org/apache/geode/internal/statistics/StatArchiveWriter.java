@@ -428,7 +428,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     if (delta > MAX_SHORT_TIMESTAMP) {
       if (delta > Integer.MAX_VALUE) {
         throw new InternalGemFireException(
-            String.format("timeStamp delta  %s  was greater than  %s",
+            String.format("timeStamp delta %s was greater than %s",
 
                 new Object[] {Long.valueOf(delta), Integer.valueOf(Integer.MAX_VALUE)}));
       }
@@ -685,7 +685,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
       if (idx <= 2) {
         throw new InternalGemFireException(
-            String.format("Expected idx to be greater than 2. It was  %s  for the value  %s",
+            String.format("Expected idx to be greater than 2. It was %s for the value %s",
 
                 new Object[] {Integer.valueOf(idx), Long.valueOf(originalValue)}));
       }
@@ -747,7 +747,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         writeCompactValue(v, dataOut);
         break;
       default:
-        throw new InternalGemFireException(String.format("Unexpected type code  %s",
+        throw new InternalGemFireException(String.format("Unexpected type code %s",
             Byte.valueOf(typeCode)));
     }
   }

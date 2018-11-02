@@ -99,7 +99,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
         return "double";
       default:
         throw new IllegalArgumentException(
-            String.format("Unknown type code:  %s",
+            String.format("Unknown type code: %s",
                 Integer.valueOf(code)));
     }
   }
@@ -125,7 +125,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
         return 64;
       default:
         throw new IllegalArgumentException(
-            String.format("Unknown type code:  %s",
+            String.format("Unknown type code: %s",
                 Integer.valueOf(code)));
     }
   }
@@ -151,7 +151,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
         return double.class;
       default:
         throw new IllegalArgumentException(
-            String.format("Unknown type code:  %s",
+            String.format("Unknown type code: %s",
                 Integer.valueOf(code)));
     }
   }
@@ -276,7 +276,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
         return Double.longBitsToDouble(bits);
       default:
         throw new RuntimeException(
-            String.format("unexpected stat descriptor type code:  %s",
+            String.format("unexpected stat descriptor type code: %s",
                 Byte.valueOf(this.typeCode)));
     }
   }
@@ -314,7 +314,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
     if (this.typeCode != INT) {
       throw new IllegalArgumentException(
           String.format(
-              "The statistic  %s  with id  %s  is of type  %s  and it was expected to be an int.",
+              "The statistic %s with id %s is of type %s and it was expected to be an int.",
               new Object[] {getName(), Integer.valueOf(getId()),
                   StatisticDescriptorImpl.getTypeCodeName(getTypeCode())}));
     }
@@ -339,7 +339,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
     if (this.typeCode != DOUBLE) {
       throw new IllegalArgumentException(
           String.format(
-              "The statistic  %s  with id  %s  is of type  %s  and it was expected to be a double.",
+              "The statistic %s with id %s is of type %s and it was expected to be a double.",
               new Object[] {getName(), Integer.valueOf(getId()),
                   StatisticDescriptorImpl.getTypeCodeName(getTypeCode())}));
     }

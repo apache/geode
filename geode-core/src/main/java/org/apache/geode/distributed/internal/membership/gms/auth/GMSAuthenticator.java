@@ -125,7 +125,7 @@ public class GMSAuthenticator implements Authenticator {
       }
     } catch (Exception ex) {
       securityLogWriter.warning(String.format("Security check failed for [%s]. %s",
-          new Object[] {member, ex.getLocalizedMessage()}, ex));
+          member, ex.getLocalizedMessage()), ex);
       failMsg = String.format("Security check failed. %s", ex.getLocalizedMessage());
     }
 

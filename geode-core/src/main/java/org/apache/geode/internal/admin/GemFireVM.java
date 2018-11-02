@@ -300,21 +300,21 @@ public interface GemFireVM {
   CacheInfo setCacheSearchTimeout(CacheInfo c, int v) throws AdminException;
 
   /**
-   * Adds a bridge server a cache in this VM
+   * Adds a cache server a cache in this VM
    *
    * @since GemFire 4.0
    */
   AdminBridgeServer addCacheServer(CacheInfo cache) throws AdminException;
 
   /**
-   * Returns information about a bridge server that runs in this VM
+   * Returns information about a cache server that runs in this VM
    *
-   * @param id The unique {@link AdminBridgeServer#getId id} of the bridge server
+   * @param id The unique {@link AdminBridgeServer#getId id} of the cache server
    */
   AdminBridgeServer getBridgeInfo(CacheInfo cache, int id) throws AdminException;
 
   /**
-   * Starts a bridge server in this VM
+   * Starts a cache server in this VM
    *
    * @since GemFire 4.0
    */
@@ -322,7 +322,7 @@ public interface GemFireVM {
       throws AdminException;
 
   /**
-   * Stops a bridge server in this VM
+   * Stops a cache server in this VM
    *
    * @since GemFire 4.0
    */

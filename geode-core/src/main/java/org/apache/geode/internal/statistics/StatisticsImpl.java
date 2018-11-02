@@ -556,7 +556,7 @@ public abstract class StatisticsImpl implements Statistics {
         return Double.valueOf(_getDouble(stat.getId()));
       default:
         throw new RuntimeException(
-            String.format("unexpected stat descriptor type code:  %s",
+            String.format("unexpected stat descriptor type code: %s",
                 Byte.valueOf(stat.getTypeCode())));
     }
   }
@@ -574,7 +574,7 @@ public abstract class StatisticsImpl implements Statistics {
         return Double.doubleToRawLongBits(_getDouble(stat.getId()));
       default:
         throw new RuntimeException(
-            String.format("unexpected stat descriptor type code:  %s",
+            String.format("unexpected stat descriptor type code: %s",
                 Byte.valueOf(stat.getTypeCode())));
     }
   }

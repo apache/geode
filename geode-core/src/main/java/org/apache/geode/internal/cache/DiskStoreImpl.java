@@ -922,7 +922,7 @@ public class DiskStoreImpl implements DiskStore {
       }
       throw new DiskAccessException(
           String.format(
-              "Data  for DiskEntry having DiskId as  %s  could not be obtained from Disk. A clear operation may have deleted the oplogs",
+              "Data  for DiskEntry having DiskId as %s could not be obtained from Disk. A clear operation may have deleted the oplogs",
               id),
           dr.getName());
     }
@@ -3307,14 +3307,15 @@ public class DiskStoreImpl implements DiskStore {
     }
 
     // log the error
-    final String message =
-        "A DiskAccessException has occurred while writing to the disk for disk store {}. The cache will be closed.";
-    logger.error(message, DiskStoreImpl.this.getName(), dae);
+    final String message = String.format(
+        "A DiskAccessException has occurred while writing to the disk for disk store %s. The cache will be closed.",
+        getName());
+    logger.error(message, dae);
 
     Thread thread = new LoggingThread("Disk store exception handler", false, () -> {
       try {
         // now close the cache
-        getCache().close(String.format(message, DiskStoreImpl.this.getName(), dae), dae);
+        getCache().close(message, dae);
         _testHandleDiskAccessException.countDown();
       } catch (Exception e) {
         logger.error("An Exception occurred while closing the cache.", e);

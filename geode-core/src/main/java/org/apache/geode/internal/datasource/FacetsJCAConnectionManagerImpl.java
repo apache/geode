@@ -105,7 +105,7 @@ public class FacetsJCAConnectionManagerImpl
       ex.printStackTrace();
       throw new ResourceException(
           String.format(
-              "FacetsJCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to  %s",
+              "FacetsJCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to %s",
               ex.getMessage()),
           ex);
     }
@@ -147,7 +147,7 @@ public class FacetsJCAConnectionManagerImpl
     } catch (SystemException ex) {
       throw new ResourceException(
           String.format(
-              "FacetsJCAConnectionManagerImpl:: allocateConnection :system exception due to  %s",
+              "FacetsJCAConnectionManagerImpl:: allocateConnection :system exception due to %s",
               ex.getMessage()),
           ex);
     }

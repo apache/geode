@@ -29,7 +29,7 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String PARAMETERS = "parameters";
   static final String CONNECTION_NAME = "connection-name";
   static final String TABLE = "table";
-  static final String PDX_CLASS = "pdx-class";
+  static final String PDX_NAME = "pdx-name";
   static final String FIELD_NAME = "field-name";
   static final String COLUMN_NAME = "column-name";
 

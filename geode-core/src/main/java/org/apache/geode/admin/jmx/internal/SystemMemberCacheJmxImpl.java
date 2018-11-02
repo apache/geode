@@ -309,7 +309,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   }
 
   /**
-   * Returns the MBean <code>ObjectName</code>s for all bridge servers that serve this cache.
+   * Returns the MBean <code>ObjectName</code>s for all cache servers that serve this cache.
    *
    * @since GemFire 4.0
    * @deprecated as of 5.7

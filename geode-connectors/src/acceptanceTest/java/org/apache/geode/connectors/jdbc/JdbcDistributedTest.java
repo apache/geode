@@ -641,7 +641,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void createMapping(String regionName, String connectionName, String pdxClassName) {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
-        + connectionName + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
+        + connectionName + (pdxClassName != null ? " --pdx-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

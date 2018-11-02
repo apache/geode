@@ -92,7 +92,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
       }
     }
     throw new IllegalArgumentException(
-        String.format("fieldName %s  not found", fieldName));
+        String.format("fieldName %s not found", fieldName));
   }
 
   @Override

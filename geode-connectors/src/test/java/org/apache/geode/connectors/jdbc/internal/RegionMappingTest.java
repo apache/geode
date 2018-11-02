@@ -70,7 +70,7 @@ public class RegionMappingTest {
     assertThat(mapping.getTableName()).isNull();
     assertThat(mapping.getRegionName()).isNull();
     assertThat(mapping.getConnectionConfigName()).isNull();
-    assertThat(mapping.getPdxClassName()).isNull();
+    assertThat(mapping.getPdxName()).isNull();
     assertThat(mapping.getRegionToTableName()).isNull();
     assertThat(mapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
         .isEqualTo("fieldName");
@@ -114,7 +114,7 @@ public class RegionMappingTest {
   public void hasCorrectPdxClassName() {
     mapping = new RegionMapping(null, name, null, null);
 
-    assertThat(mapping.getPdxClassName()).isEqualTo(name);
+    assertThat(mapping.getPdxName()).isEqualTo(name);
   }
 
   @Test

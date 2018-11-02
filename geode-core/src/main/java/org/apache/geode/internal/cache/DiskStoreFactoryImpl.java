@@ -106,7 +106,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     if (timeInterval < 0) {
       throw new IllegalArgumentException(
           String.format(
-              "Time Interval specified has to be a non-negative number and the value given  %s  is not acceptable",
+              "Time Interval specified has to be a non-negative number and the value given %s is not acceptable",
               timeInterval));
     }
     this.attrs.timeInterval = timeInterval;
@@ -261,7 +261,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     } else if (maxOplogSize < 0) {
       throw new IllegalArgumentException(
           String.format(
-              "Maximum Oplog size specified has to be a non-negative number and the value given  %s  is not acceptable",
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
               maxOplogSize));
     }
     this.attrs.maxOplogSizeInBytes = maxOplogSize * (1024 * 1024);
@@ -275,7 +275,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     if (maxOplogSizeInBytes < 0) {
       throw new IllegalArgumentException(
           String.format(
-              "Maximum Oplog size specified has to be a non-negative number and the value given  %s  is not acceptable",
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
               maxOplogSizeInBytes));
     }
     this.attrs.maxOplogSizeInBytes = maxOplogSizeInBytes;

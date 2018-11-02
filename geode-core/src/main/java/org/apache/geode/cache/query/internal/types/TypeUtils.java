@@ -106,7 +106,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
         case TOK_NE:
           return temporalResult != 0;
         default:
-          throw new IllegalArgumentException(String.format("Unknown operator:  %s",
+          throw new IllegalArgumentException(String.format("Unknown operator: %s",
               Integer.valueOf(comparator)));
       }
     }
@@ -194,7 +194,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     }
 
     if (!castClass.isInstance(castTarget)) {
-      throw new InternalGemFireError(String.format("expected instance of  %s  but was  %s",
+      throw new InternalGemFireError(String.format("expected instance of %s but was %s",
           new Object[] {castClass.getName(), castTarget.getClass().getName()}));
     }
 

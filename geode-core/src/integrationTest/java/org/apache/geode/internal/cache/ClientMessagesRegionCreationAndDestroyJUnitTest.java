@@ -47,7 +47,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
 
   /** The cache instance */
   private Cache cache = null;
-  // max number of bridge server can attached to the cache
+  // max number of cache server can attached to the cache
   private int brigeNum = 5;
   // stores corresponding names of client messages region created by bridge
   // server
@@ -64,7 +64,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
   }
 
   /**
-   * Create and attach bridge server to cache
+   * Create and attach cache server to cache
    *
    */
 
@@ -110,12 +110,12 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
   }
 
   /**
-   * Attach bridge server
+   * Attach cache server
    */
   private void attachmentOfBridgeServer() {
     if (cache.getCacheServers().size() < brigeNum) {
       try {
-        // attaching and starting bridge server
+        // attaching and starting cache server
         attachBridgeServer();
       } catch (IOException e) {
         e.printStackTrace();
@@ -124,10 +124,10 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
   }
 
   /**
-   * Stop's all bridge servers attached
+   * Stop's all cache servers attached
    */
   private void dettachmentOfBridgeServer() {
-    // detach all bridge server to test destroy of client_messages_region
+    // detach all cache server to test destroy of client_messages_region
     for (Iterator itr = cache.getCacheServers().iterator(); itr.hasNext();) {
       CacheServerImpl server = (CacheServerImpl) itr.next();
       String rName =

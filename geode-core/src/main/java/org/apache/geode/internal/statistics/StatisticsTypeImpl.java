@@ -109,7 +109,7 @@ public class StatisticsTypeImpl implements StatisticsType {
     }
     if (stats.length > StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE) {
       throw new IllegalArgumentException(
-          String.format("The requested descriptor count  %s  exceeds the maximum which is   %s .",
+          String.format("The requested descriptor count %s exceeds the maximum which is  %s .",
               new Object[] {Integer.valueOf(stats.length),
                   Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)}));
     }
@@ -142,7 +142,7 @@ public class StatisticsTypeImpl implements StatisticsType {
       Object previousValue = statsMap.put(stats[i].getName(), sd);
       if (previousValue != null) {
         throw new IllegalArgumentException(
-            String.format("Duplicate StatisticDescriptor named  %s",
+            String.format("Duplicate StatisticDescriptor named %s",
                 stats[i].getName()));
       }
     }

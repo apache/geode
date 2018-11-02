@@ -216,7 +216,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           badIds.append(", ");
       }
       throw new IllegalStateException(
-          String.format("Illegal Region Configuration for members:  %s",
+          String.format("Illegal Region Configuration for members: %s",
               badIds.toString()));
     }
   }

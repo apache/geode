@@ -274,11 +274,11 @@ public final class CopyHelper {
       return (T) DataSerializer.readObject(new DataInputStream(hdos.getInputStream()));
     } catch (ClassNotFoundException ex) {
       throw new CopyException(
-          String.format("Copy failed on instance of  %s", o.getClass()),
+          String.format("Copy failed on instance of %s", o.getClass()),
           ex);
     } catch (IOException ex) {
       throw new CopyException(
-          String.format("Copy failed on instance of  %s", o.getClass()),
+          String.format("Copy failed on instance of %s", o.getClass()),
           ex);
     }
 

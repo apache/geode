@@ -274,7 +274,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
   }
 
   static void verifyInterestRegistration() {
-    await("Number of bridge servers (" + cache.getCacheServers().size() + ") never became 1")
+    await("Number of cache servers (" + cache.getCacheServers().size() + ") never became 1")
         .until(() -> cache.getCacheServers().size(), equalTo(1));
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();

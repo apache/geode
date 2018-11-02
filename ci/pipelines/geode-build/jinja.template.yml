@@ -77,10 +77,8 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
 {% macro all_gating_jobs(test) %}
-{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK11") %}
-- {{test.name}}Test{{java_test_version.name}}
-  {%- endfor -%}
+{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") %}
+- {{test.name}}Test
 {%- endfor -%}
 {% endmacro %}
 
@@ -88,7 +86,7 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-  {{ all_gating_jobs() | indent(2) }}
+  {{- all_gating_jobs() | indent(2) }}
   {%- if repository.sanitized_fork == repository.upstream_fork %}
   - UpdatePassingRef
   - PublishArtifacts
@@ -96,39 +94,19 @@ groups:
 - name: complete
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if not test.name=="StressNew" -%}
-    {%- for java_test_version in (java_test_versions) %}
-  - {{test.name}}Test{{java_test_version.name}}
-    {%- endfor -%}
+  {%- for test in (tests) if not test.name=="StressNew" %}
+  - {{test.name}}Test
   {%- endfor -%}
   {%- if repository.sanitized_fork == repository.upstream_fork %}
   - UpdatePassingRef
   - PublishArtifacts
   {%- endif %}
-- name: linux
-  jobs:
-  - {{ build_test.name }}
-  {%- for test in (tests) if not test.name.startswith("Windows") and not test.name=="StressNew" -%}
-    {% for java_test_version in (java_test_versions) %}
-  - {{test.name}}Test{{java_test_version.name}}
-    {%- endfor -%}
-  {%- endfor %}
 - name: windows
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if test.name.startswith("Windows") -%}
-    {% for java_test_version in (java_test_versions) %}
-  - {{test.name}}Test{{java_test_version.name}}
-    {%- endfor -%}
+  {%- for test in (tests) if test.name.startswith("Windows") %}
+  - {{test.name}}Test
   {%- endfor %}
-{%- for java_test_version in (java_test_versions) %}
-- name: {{java_test_version.name}}
-  jobs:
-  - {{ build_test.name }}
-  {%- for test in (tests) if not test.name=="StressNew" %}
-  - {{test.name}}Test{{java_test_version.name}}
-  {%- endfor -%}
-{%- endfor %}
 
 resources:
 {% if repository.sanitized_fork == repository.upstream_fork %}
@@ -206,11 +184,12 @@ jobs:
     - do:
       - put: concourse-metadata-resource
       - task: create_instance
-        {{ alpine_tools_config()|indent(8) }}
+        {{- alpine_tools_config()|indent(8) }}
           params:
             {{ common_instance_params(build_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
           run:
             path: geode-ci/ci/scripts/create_instance.sh
           inputs:
@@ -221,7 +200,7 @@ jobs:
         timeout: 15m
         attempts: 10
   - task: rsync_code_up
-    {{ alpine_tools_config()|indent(4) }}
+    {{- alpine_tools_config()|indent(4) }}
       run:
         path: geode-ci/ci/scripts/rsync_code_up.sh
       inputs:
@@ -232,7 +211,7 @@ jobs:
     on_failure:
       do:
       - task: delete_instance
-        {{ alpine_tools_config()|indent(8) }}
+        {{- alpine_tools_config()|indent(8) }}
           run:
             path: geode-ci/ci/scripts/delete_instance.sh
           inputs:
@@ -240,7 +219,7 @@ jobs:
           - name: instance-data
         timeout: 1h
   - task: build
-    {{ alpine_tools_config()|indent(4) }}
+    {{- alpine_tools_config()|indent(4) }}
       params:
         JAVA_BUILD_VERSION: {{ java_build_version.version }}
         GRADLE_TASK: {{ build_test.GRADLE_TASK }}
@@ -266,7 +245,7 @@ jobs:
     ensure:
       do:
       - task: rsync_code_down
-        {{ alpine_tools_config()|indent(8) }}
+        {{- alpine_tools_config()|indent(8) }}
           params:
             JAVA_BUILD_VERSION: {{ java_build_version.version }}
           run:
@@ -284,7 +263,7 @@ jobs:
         do:
         - aggregate:
           - task: archive_results
-            {{ alpine_tools_config()|indent(12) }}
+            {{- alpine_tools_config()|indent(12) }}
               params:
                 ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}-{{java_build_version.name}}
                 GRADLE_TASK: {{build_test.GRADLE_TASK}}
@@ -301,7 +280,7 @@ jobs:
               - name: geode-results
             timeout: 1h
           - task: delete_instance
-            {{ alpine_tools_config()|indent(12) }}
+            {{- alpine_tools_config()|indent(12) }}
               run:
                 path: geode-ci/ci/scripts/delete_instance.sh
               inputs:
@@ -320,7 +299,7 @@ jobs:
     trigger: true
   - get: geode-ci
   - task: updatepassingref
-    {{ alpine_tools_config()|indent(4) }}
+    {{- alpine_tools_config()|indent(4) }}
       params:
         MAINTENANCE_VERSION: ((geode-build-branch))
         ARTIFACT_BUCKET: ((artifact-bucket))
@@ -347,11 +326,12 @@ jobs:
     - do:
       - put: concourse-metadata-resource
       - task: create_instance
-        {{ alpine_tools_config()|indent(8) }}
+        {{- alpine_tools_config()|indent(8) }}
           params:
             {{ common_instance_params(publish_artifacts) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
           run:
             path: geode-ci/ci/scripts/create_instance.sh
           inputs:
@@ -362,7 +342,7 @@ jobs:
         timeout: 15m
         attempts: 10
   - task: rsync_code_up
-    {{ alpine_tools_config()|indent(4) }}
+    {{- alpine_tools_config()|indent(4) }}
       run:
         path: geode-ci/ci/scripts/rsync_code_up.sh
       inputs:
@@ -371,7 +351,7 @@ jobs:
       - name: instance-data
     timeout: 5m
   - task: publish
-    {{ alpine_tools_config()|indent(4) }}
+    {{- alpine_tools_config()|indent(4) }}
       params:
         MAINTENANCE_VERSION: ((geode-build-branch))
         ARTIFACT_BUCKET: ((artifact-bucket))
@@ -389,7 +369,7 @@ jobs:
     ensure:
       do:
       - task: delete_instance
-        {{ alpine_tools_config()|indent(8) }}
+        {{- alpine_tools_config()|indent(8) }}
           run:
             path: geode-ci/ci/scripts/delete_instance.sh
           inputs:
@@ -402,99 +382,106 @@ jobs:
 {%- for test in tests if not test.name=="StressNew" %}
   {%- set parameters = {} %}
   {%- do deep_merge(parameters, test) %}
-  {%- for java_test_version in (java_test_versions) %}
-    {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
-      {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
-    {%- endif %}
-- name: {{test.name}}Test{{java_test_version.name}}
+- name: {{test.name}}Test
   public: true
   plan:
   - do:
-    {{ plan_resource_gets() |indent(4) }}
+    {{- plan_resource_gets() |indent(4) }}
+      - put: concourse-metadata-resource
+    - aggregate:
+  {%- for java_test_version in (java_test_versions) %}
       - do:
-        - put: concourse-metadata-resource
-        - task: create_instance
-          {{ alpine_tools_config()|indent(10) }}
+        - task: create_instance-{{java_test_version.name}}
+          {{- alpine_tools_config()|indent(10) }}
             params:
               {{ common_instance_params(parameters) | indent(14) }}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
+              JAVA_BUILD_VERSION: {{ java_build_version.version }}
+              JAVA_TEST_VERSION: {{ java_test_version.version }}
             run:
               path: geode-ci/ci/scripts/create_instance.sh
             inputs:
             - name: concourse-metadata-resource
             - name: geode-ci
             outputs:
-            - name: instance-data
+            - name: instance-data-{{java_test_version.name}}
+              path: instance-data
           timeout: 15m
           attempts: 10
-    - task: rsync_code_up
-      {{ alpine_tools_config()|indent(6) }}
-        run:
-          path: geode-ci/ci/scripts/rsync_code_up.sh
-        inputs:
-        - name: geode-ci
-        - name: geode
-        - name: instance-data
-      timeout: 15m
-      attempts: 10
-    - task: execute_tests
-      {{ alpine_tools_config()|indent(6) }}
-        params:
-          ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
-          JAVA_BUILD_VERSION: {{ java_build_version.version }}
-          JAVA_TEST_VERSION: {{ java_test_version.version }}
-          GRADLE_TASK: {{test.GRADLE_TASK}}
-          {{ common_test_params(parameters) | indent(10) }}
-        run:
-          path: geode-ci/ci/scripts/execute_tests.sh
-        inputs:
-        - name: geode-ci
-        - name: geode
-        - name: instance-data
-      timeout: {{parameters.execute_test_timeout}}
-    ensure:
-      do:
-      - task: rsync_code_down
-        {{ alpine_tools_config()|indent(8) }}
-          params:
-            JAVA_BUILD_VERSION: {{ java_build_version.version }}
-            ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
-          run:
-            path: geode-ci/ci/scripts/rsync_code_down.sh
-          inputs:
-          - name: geode-ci
-          - name: instance-data
-          outputs:
-          - name: geode-results
-        timeout: 15m
-        attempts: 10
-      ensure:
-        do:
-        - aggregate:
-          - task: archive_results
-            {{ alpine_tools_config()|indent(12) }}
+        - task: rsync_code_up-{{java_test_version.name}}
+          {{- alpine_tools_config()|indent(10) }}
+            run:
+              path: geode-ci/ci/scripts/rsync_code_up.sh
+            inputs:
+            - name: geode-ci
+            - name: geode
+            - name: instance-data-{{java_test_version.name}}
+              path: instance-data
+          timeout: 15m
+          attempts: 10
+        - task: execute_tests-{{java_test_version.name}}
+          {{- alpine_tools_config()|indent(10) }}
+            params:
+              ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
+              JAVA_BUILD_VERSION: {{ java_build_version.version }}
+              JAVA_TEST_VERSION: {{ java_test_version.version }}
+              GRADLE_TASK: {{test.GRADLE_TASK}}
+              {{ common_test_params(parameters) | indent(14) }}
+            run:
+              path: geode-ci/ci/scripts/execute_tests.sh
+            inputs:
+            - name: geode-ci
+            - name: geode
+            - name: instance-data-{{java_test_version.name}}
+              path: instance-data
+          timeout: {{parameters.execute_test_timeout}}
+        ensure:
+          do:
+          - task: rsync_code_down-{{java_test_version.name}}
+            {{- alpine_tools_config()|indent(12) }}
               params:
+                JAVA_BUILD_VERSION: {{ java_build_version.version }}
                 ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
-                GRADLE_TASK: {{test.GRADLE_TASK}}
-                MAINTENANCE_VERSION: ((geode-build-branch))
-                ARTIFACT_BUCKET: ((artifact-bucket))
-                SERVICE_ACCOUNT: ((!concourse-gcp-account))
               run:
-                path: geode-ci/ci/scripts/archive_results.sh
-              inputs:
-              - name: concourse-metadata-resource
-              - name: geode-ci
-              - name: geode-build-version
-              - name: geode-results
-            timeout: 1h
-          - task: delete_instance
-            {{ alpine_tools_config()|indent(12) }}
-              run:
-                path: geode-ci/ci/scripts/delete_instance.sh
+                path: geode-ci/ci/scripts/rsync_code_down.sh
               inputs:
               - name: geode-ci
-              - name: instance-data
-            timeout: 1h
+              - name: instance-data-{{java_test_version.name}}
+                path: instance-data
+              outputs:
+              - name: geode-results-{{java_test_version.name}}
+                path: geode-results
+            timeout: 15m
+            attempts: 10
+          ensure:
+            do:
+            - aggregate:
+              - task: archive_results-{{java_test_version.name}}
+                {{- alpine_tools_config()|indent(16) }}
+                  params:
+                    ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
+                    GRADLE_TASK: {{test.GRADLE_TASK}}
+                    MAINTENANCE_VERSION: ((geode-build-branch))
+                    ARTIFACT_BUCKET: ((artifact-bucket))
+                    SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                  run:
+                    path: geode-ci/ci/scripts/archive_results.sh
+                  inputs:
+                  - name: concourse-metadata-resource
+                  - name: geode-ci
+                  - name: geode-build-version
+                  - name: geode-results-{{java_test_version.name}}
+                    path: geode-results
+                timeout: 1h
+              - task: delete_instance-{{java_test_version.name}}
+                {{- alpine_tools_config()|indent(16) }}
+                  run:
+                    path: geode-ci/ci/scripts/delete_instance.sh
+                  inputs:
+                  - name: geode-ci
+                  - name: instance-data-{{java_test_version.name}}
+                    path: instance-data
+                timeout: 1h
 {% endfor -%}
 {% endfor -%}

@@ -707,7 +707,7 @@ public abstract class DistributedCacheOperation {
       }
       throw e;
     } catch (RuntimeException e) {
-      logger.info(String.format("Exception occurred while processing  %s", this),
+      logger.info(String.format("Exception occurred while processing %s", this),
           e);
       throw e;
     } finally {
@@ -1264,7 +1264,7 @@ public abstract class DistributedCacheOperation {
           }
           sendReply(getSender(), processorId, rex, getReplySender(dm));
         } else if (thr != null) {
-          logger.error(String.format("Exception occurred while processing  %s",
+          logger.error(String.format("Exception occurred while processing %s",
               this),
               thr);
         }

@@ -174,7 +174,7 @@ public class HostStatHelper {
     } else if ((flags & SYSTEM_STAT_FLAG) != 0) {
       HostStatHelper.refreshSystem(stats);
     } else {
-      throw new RuntimeException(String.format("Unexpected os stats flags  %s",
+      throw new RuntimeException(String.format("Unexpected os stats flags %s",
           Integer.valueOf(flags)));
     }
   }
@@ -200,7 +200,7 @@ public class HostStatHelper {
         break;
       default:
         throw new InternalGemFireException(
-            String.format("unhandled osCode= %s  HostStatHelper:newProcess",
+            String.format("unhandled osCode= %s HostStatHelper:newProcess",
                 Integer.valueOf(osCode)));
     }
     // Note we don't call refreshProcess since we only want the manager to do that
@@ -229,7 +229,7 @@ public class HostStatHelper {
 
       default:
         throw new InternalGemFireException(
-            String.format("unhandled osCode= %s  HostStatHelper:newProcessStats",
+            String.format("unhandled osCode= %s HostStatHelper:newProcessStats",
                 Integer.valueOf(osCode)));
     }
   }
@@ -259,7 +259,7 @@ public class HostStatHelper {
         break;
       default:
         throw new InternalGemFireException(
-            String.format("unhandled osCode= %s  HostStatHelper:newSystem",
+            String.format("unhandled osCode= %s HostStatHelper:newSystem",
                 Integer.valueOf(osCode)));
     }
     if (stats instanceof LocalStatisticsImpl) {

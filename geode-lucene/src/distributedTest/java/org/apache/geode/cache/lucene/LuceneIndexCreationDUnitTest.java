@@ -450,7 +450,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     // Attempt to create a Cache in dataStore2 with a PR defining 20 buckets. This will fail.
     String exceptionMessage =
         String.format(
-            "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to  %s",
+            "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
             new Object[] {NUM_BUCKETS * 2, NUM_BUCKETS});
     dataStore2.invoke(() -> initDataStore(createIndex,
         RegionTestableType.PARTITION_WITH_DOUBLE_BUCKETS, exceptionMessage));

@@ -507,7 +507,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // Entry (Put/Create) rules
   // If this is a primary for the bucket
   // 1) apply op locally, aka update or create entry
-  // 2) distribute op to bucket secondaries and bridge servers with synchrony on local entry
+  // 2) distribute op to bucket secondaries and cache servers with synchrony on local entry
   // 3) cache listener with synchrony on entry
   // Else not a primary
   // 1) apply op locally
@@ -892,7 +892,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // Entry Invalidation rules
   // If this is a primary for the bucket
   // 1) apply op locally, aka update entry
-  // 2) distribute op to bucket secondaries and bridge servers with synchrony on local entry
+  // 2) distribute op to bucket secondaries and cache servers with synchrony on local entry
   // 3) cache listener with synchrony on entry
   // 4) update local bs, gateway
   // Else not a primary
@@ -1162,7 +1162,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // Entry Destruction rules
   // If this is a primary for the bucket
   // 1) apply op locally, aka destroy entry (REMOVED token)
-  // 2) distribute op to bucket secondaries and bridge servers with synchrony on local entry
+  // 2) distribute op to bucket secondaries and cache servers with synchrony on local entry
   // 3) cache listener with synchrony on local entry
   // 4) update local bs, gateway
   // Else not a primary
@@ -1392,7 +1392,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   public boolean isPrimary() {
     throw new UnsupportedOperationException(
-        String.format("This should never be called on  %s",
+        String.format("This should never be called on %s",
             getClass()));
   }
 

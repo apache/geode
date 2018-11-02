@@ -1296,7 +1296,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb);
     } catch (IOException ex) {
       throw new DiskAccessException(
-          String.format("Failed saving instantiator to disk because:  %s",
+          String.format("Failed saving instantiator to disk because: %s",
               ex),
           this.parent);
     } finally {
@@ -1350,7 +1350,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb);
     } catch (IOException ex) {
       throw new DiskAccessException(
-          String.format("Failed saving data serializer to disk because:  %s",
+          String.format("Failed saving data serializer to disk because: %s",
               ex),
           this.parent);
     } finally {

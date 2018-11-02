@@ -50,7 +50,7 @@ public class ListenerIdMap {
     }
 
     if (loadFactor <= 0 || Float.isNaN(loadFactor)) {
-      throw new IllegalArgumentException(String.format("Illegal Load factor:  %s",
+      throw new IllegalArgumentException(String.format("Illegal Load factor: %s",
           new Float(loadFactor)));
     }
 

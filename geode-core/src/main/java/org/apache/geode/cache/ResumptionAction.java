@@ -74,7 +74,7 @@ public class ResumptionAction implements java.io.Serializable {
   public static ResumptionAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          String.format("Invalid ResumptionAction name:  %s",
+          String.format("Invalid ResumptionAction name: %s",
               name));
     }
     for (int i = 0; i < PRIVATE_VALUES.length; i++) {
@@ -83,7 +83,7 @@ public class ResumptionAction implements java.io.Serializable {
       }
     }
     throw new IllegalArgumentException(
-        String.format("Invalid ResumptionAction name:  %s", name));
+        String.format("Invalid ResumptionAction name: %s", name));
   }
 
   /** Returns true if this is <code>NONE</code>. */

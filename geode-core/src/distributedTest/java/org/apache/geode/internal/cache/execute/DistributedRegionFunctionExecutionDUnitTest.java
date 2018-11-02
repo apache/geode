@@ -1326,10 +1326,10 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     Wait.pause(2000);
     Collection bridgeServers = cache.getCacheServers();
     LogWriterUtils.getLogWriter()
-        .info("Start Server Bridge Servers list : " + bridgeServers.size());
+        .info("Start Server cache servers list : " + bridgeServers.size());
     Iterator bridgeIterator = bridgeServers.iterator();
     CacheServer bridgeServer = (CacheServer) bridgeIterator.next();
-    LogWriterUtils.getLogWriter().info("start Server Bridge Server" + bridgeServer);
+    LogWriterUtils.getLogWriter().info("start Server cache server" + bridgeServer);
     try {
       bridgeServer.start();
     } catch (IOException e) {

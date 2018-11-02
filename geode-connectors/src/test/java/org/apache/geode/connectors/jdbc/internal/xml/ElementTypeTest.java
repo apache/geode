@@ -20,7 +20,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAP
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.COLUMN_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CONNECTION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.FIELD_NAME;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_CLASS;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -77,7 +77,7 @@ public class ElementTypeTest {
   public void startElementRegionMapping() {
     when(attributes.getValue(CONNECTION_NAME)).thenReturn("connectionName");
     when(attributes.getValue(TABLE)).thenReturn("table");
-    when(attributes.getValue(PDX_CLASS)).thenReturn("pdxClass");
+    when(attributes.getValue(PDX_NAME)).thenReturn("pdxClass");
     when(regionCreation.getFullPath()).thenReturn("/region");
     stack.push(regionCreation);
 
@@ -87,7 +87,7 @@ public class ElementTypeTest {
     assertThat(regionMapping.getRegionName()).isEqualTo("region");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connectionName");
     assertThat(regionMapping.getTableName()).isEqualTo("table");
-    assertThat(regionMapping.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(regionMapping.getPdxName()).isEqualTo("pdxClass");
   }
 
   @Test

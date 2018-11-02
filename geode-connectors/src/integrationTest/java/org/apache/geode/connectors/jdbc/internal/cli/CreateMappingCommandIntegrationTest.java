@@ -82,7 +82,7 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
-    assertThat(regionMapping.getPdxClassName()).isEqualTo(pdxClass);
+    assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
     assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
         .isEqualTo("column1");
     assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
@@ -125,7 +125,7 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
     assertThat(regionMapping.getTableName()).isNull();
-    assertThat(regionMapping.getPdxClassName()).isNull();
+    assertThat(regionMapping.getPdxName()).isNull();
     assertThat(regionMapping.getFieldMapping()).isEmpty();
   }
 }

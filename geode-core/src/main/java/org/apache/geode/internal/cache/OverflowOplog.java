@@ -137,7 +137,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
       createCrf(parent.getActiveOverflowOplog());
     } catch (IOException ex) {
       throw new DiskAccessException(
-          String.format("Failed creating operation log because:  %s", ex),
+          String.format("Failed creating operation log because: %s", ex),
           this.parent);
     }
   }
@@ -295,7 +295,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
     if (bb == null) {
       throw new EntryDestroyedException(
           String.format(
-              "No value was found for entry with disk Id  %s on a region  with synchronous writing set to %s",
+              "No value was found for entry with disk Id %s on a region  with synchronous writing set to %s",
               new Object[] {id, dr.isSync()}));
     }
     if (bitOnly) {
@@ -903,7 +903,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
       } catch (IOException ex) {
         throw new DiskAccessException(
             String.format(
-                "Failed reading from %s.  oplogID, %s  Offset being read= %s Current Oplog Size= %s Actual File Size, %s IS ASYNCH MODE, %s IS ASYNCH WRITER ALIVE= %s",
+                "Failed reading from %s.  oplogID, %s Offset being read= %s Current Oplog Size= %s Actual File Size, %s IS ASYNCH MODE, %s IS ASYNCH WRITER ALIVE= %s",
                 this.diskFile.getPath(), (long) this.oplogId, offsetInOplog,
                 this.crf.currSize, this.crf.bytesFlushed, !dr.isSync(), false),
             ex, dr.getName());
@@ -1437,7 +1437,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
                 getParent().getName());
           } else if (offsetInOplog < 0) {
             throw new DiskAccessException(
-                String.format("Cannot find record  %s  when reading from %s",
+                String.format("Cannot find record %s when reading from %s",
                     offsetInOplog, this.diskFile.getPath()),
                 getParent().getName());
           }
@@ -1470,7 +1470,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
       } catch (IOException ex) {
         throw new DiskAccessException(
             String.format(
-                "Failed reading from %s.  oplogID, %s Offset being read=%s Current Oplog Size=%s  Actual File Size,%s IS ASYNCH MODE,%s IS ASYNCH WRITER ALIVE=%s",
+                "Failed reading from %s.  oplogID, %s Offset being read=%s Current Oplog Size=%s Actual File Size,%s IS ASYNCH MODE,%s IS ASYNCH WRITER ALIVE=%s",
                 this.diskFile.getPath(), (long) this.oplogId, offsetInOplog,
                 this.crf.currSize, this.crf.bytesFlushed, false, false),
             ex, getParent().getName());

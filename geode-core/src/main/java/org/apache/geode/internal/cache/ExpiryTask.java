@@ -292,7 +292,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     if (action.isLocalDestroy())
       return localDestroy();
     throw new InternalGemFireError(
-        String.format("unrecognized expiration action:  %s", action));
+        String.format("unrecognized expiration action: %s", action));
   }
 
   /**

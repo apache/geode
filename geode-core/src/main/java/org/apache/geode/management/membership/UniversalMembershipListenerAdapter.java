@@ -162,7 +162,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
   public UniversalMembershipListenerAdapter(int historySize) {
     if (historySize < 10) {
       throw new IllegalArgumentException(
-          String.format("Argument historySize must be between 10 and Integer.MAX_INT:  %s .",
+          String.format("Argument historySize must be between 10 and Integer.MAX_INT: %s .",
               Integer.valueOf(historySize)));
     }
     this.historySize = historySize;

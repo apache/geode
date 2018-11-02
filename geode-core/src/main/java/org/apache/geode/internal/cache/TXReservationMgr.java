@@ -103,7 +103,7 @@ public class TXReservationMgr {
         release(localLocks, true);
         throw new CommitConflictException(
             String.format(
-                "The key  %s  in region  %s  was being modified by another transaction locally.",
+                "The key %s in region %s was being modified by another transaction locally.",
                 new Object[] {keys[i], rr.getRegionFullPath()}));
       }
     }

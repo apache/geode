@@ -695,7 +695,7 @@ public class SocketCreator {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
         BindException throwMe =
-            new BindException(String.format("Failed to create server socket on  %s[%s]",
+            new BindException(String.format("Failed to create server socket on %s[%s]",
                 bindAddr, Integer.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
@@ -752,7 +752,7 @@ public class SocketCreator {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
         BindException throwMe =
-            new BindException(String.format("Failed to create server socket on  %s[%s]",
+            new BindException(String.format("Failed to create server socket on %s[%s]",
                 bindAddr == null ? InetAddress.getLocalHost() : bindAddr,
                 String.valueOf(nport)));
         throwMe.initCause(e);

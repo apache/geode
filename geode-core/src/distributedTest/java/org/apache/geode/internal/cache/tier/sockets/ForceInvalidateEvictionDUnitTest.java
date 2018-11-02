@@ -367,7 +367,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
 
   private int addCacheServer(VM vm) {
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    vm.invoke(new SerializableRunnable("add bridge server") {
+    vm.invoke(new SerializableRunnable("add cache server") {
       public void run() {
         Cache cache = getCache();
         CacheServer server = cache.addCacheServer();

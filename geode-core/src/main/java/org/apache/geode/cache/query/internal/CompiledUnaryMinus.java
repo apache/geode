@@ -71,7 +71,7 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
         return Short.valueOf((short) (((Short) obj).shortValue() * -1));
     } else if (obj == null || obj == QueryService.UNDEFINED)
       return QueryService.UNDEFINED;
-    throw new TypeMismatchException(String.format("%s  cannot be unary minus",
+    throw new TypeMismatchException(String.format("%s cannot be unary minus",
         obj.getClass()));
   }
 

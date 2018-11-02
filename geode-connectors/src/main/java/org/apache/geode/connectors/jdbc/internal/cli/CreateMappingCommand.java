@@ -40,8 +40,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__REGION_NAME = "region";
   static final String CREATE_MAPPING__REGION_NAME__HELP =
       "Name of the region the mapping is being created for.";
-  static final String CREATE_MAPPING__PDX_CLASS_NAME = "pdx-class-name";
-  static final String CREATE_MAPPING__PDX_CLASS_NAME__HELP =
+  static final String CREATE_MAPPING__PDX_NAME = "pdx-name";
+  static final String CREATE_MAPPING__PDX_NAME__HELP =
       "Name of pdx class for which values will be written to the database.";
   static final String CREATE_MAPPING__TABLE_NAME = "table";
   static final String CREATE_MAPPING__TABLE_NAME__HELP =
@@ -63,14 +63,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__CONNECTION_NAME__HELP) String connectionName,
       @CliOption(key = CREATE_MAPPING__TABLE_NAME,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
-      @CliOption(key = CREATE_MAPPING__PDX_CLASS_NAME,
-          help = CREATE_MAPPING__PDX_CLASS_NAME__HELP) String pdxClassName,
+      @CliOption(key = CREATE_MAPPING__PDX_NAME,
+          help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
       @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
           help = CREATE_MAPPING__FIELD_MAPPING__HELP) String[] fieldMappings) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName,
-        pdxClassName, table, connectionName);
+        pdxName, table, connectionName);
     mapping.setFieldMapping(fieldMappings);
 
     // action

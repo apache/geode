@@ -84,7 +84,7 @@ public class CompiledRegion extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          String.format("Region not found:  %s", this.regionPath));
+          String.format("Region not found: %s", this.regionPath));
     }
 
     if (context.isCqQueryContext()) {

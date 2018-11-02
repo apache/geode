@@ -104,11 +104,12 @@ public class GlobalTransaction {
         writer.severe(
             String.format(
                 "GlobalTransaction::Constructor::Error while trying to create Xid due to %s",
-                e, e));
+                e),
+            e);
       String exception =
           String.format(
               "GlobalTransaction::Constructor::Error while trying to create Xid due to %s",
-              new Object[] {e});
+              e);
       throw new SystemException(exception);
     }
   }
@@ -184,8 +185,7 @@ public class GlobalTransaction {
             }
           } catch (Exception e) {
             if (VERBOSE)
-              writer.info(String.format("%s",
-                  "GlobalTransaction::commit:Exception in delisting XAResource", e));
+              writer.info("GlobalTransaction::commit:Exception in delisting XAResource", e);
           }
         }
       }
@@ -283,8 +283,7 @@ public class GlobalTransaction {
             }
           } catch (Exception e) {
             if (VERBOSE)
-              writer.info(String.format("%s",
-                  "GlobalTransaction::rollback:Exception in delisting XAResource", e));
+              writer.info("GlobalTransaction::rollback:Exception in delisting XAResource", e);
           }
         }
       }
@@ -299,8 +298,8 @@ public class GlobalTransaction {
       String exception =
           String.format(
               "GlobalTransaction::rollback:Rollback not successful due to exception %s %s",
-              new Object[] {e, " " + (e instanceof XAException
-                  ? ("Error Code =" + ((XAException) e).errorCode) : "")});
+              e, " " + (e instanceof XAException
+                  ? ("Error Code =" + ((XAException) e).errorCode) : ""));
       if (VERBOSE)
         writer.fine(exception);
       SystemException sysEx = new SystemException(exception);
@@ -625,7 +624,8 @@ public class GlobalTransaction {
         writer.severe(
             String.format(
                 "GlobaTransaction::expireGTX:Error occurred while removing transactional mappings %s",
-                e, e));
+                e),
+            e);
     }
   }
 
@@ -651,7 +651,7 @@ public class GlobalTransaction {
             String exception =
                 String.format(
                     "Exception occurred while trying to set the XAResource TimeOut due to %s Error code, %s",
-                    new Object[] {e, Integer.valueOf(e.errorCode)});
+                    e, Integer.valueOf(e.errorCode));
             LogWriter writer = TransactionUtils.getLogWriter();
             if (VERBOSE)
               writer.fine(exception);

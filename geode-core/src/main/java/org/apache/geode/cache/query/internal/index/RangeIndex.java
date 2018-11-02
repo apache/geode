@@ -230,7 +230,7 @@ public class RangeIndex extends AbstractIndex {
           }
         }
       } catch (Exception ex) {
-        throw new IMQException(String.format("Could not add object of type  %s",
+        throw new IMQException(String.format("Could not add object of type %s",
             oldkeys.getClass().getName()), ex);
       }
 
@@ -280,7 +280,7 @@ public class RangeIndex extends AbstractIndex {
             }
           } while (retry);
         } catch (TypeMismatchException ex) {
-          throw new IMQException(String.format("Could not add object of type  %s",
+          throw new IMQException(String.format("Could not add object of type %s",
               key.getClass().getName()), ex);
         }
       } else {
@@ -328,7 +328,7 @@ public class RangeIndex extends AbstractIndex {
               }
             } while (retry);
           } catch (TypeMismatchException ex) {
-            throw new IMQException(String.format("Could not add object of type  %s",
+            throw new IMQException(String.format("Could not add object of type %s",
                 key.getClass().getName()), ex);
           }
         } // for loop for keys
@@ -482,7 +482,7 @@ public class RangeIndex extends AbstractIndex {
         this.entryToValuesMap.add(entry, newKey);
         this.internalIndexStats.incNumValues(1);
       } catch (TypeMismatchException ex) {
-        throw new IMQException(String.format("Could not add object of type  %s",
+        throw new IMQException(String.format("Could not add object of type %s",
             key.getClass().getName()), ex);
       }
     }
@@ -840,7 +840,7 @@ public class RangeIndex extends AbstractIndex {
         }
         default: {
           throw new IllegalArgumentException(
-              String.format("Operator,  %s", valueOf(operator)));
+              String.format("Operator, %s", valueOf(operator)));
         }
       } // end switch
     } catch (ClassCastException ex) {

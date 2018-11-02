@@ -408,7 +408,8 @@ public abstract class DynamicRegionFactory {
         SystemFailure.checkFailure();
         this.cache.getLogger().warning(
             String.format("DynamicRegionListener %s threw exception on beforeRegionCreated",
-                listener, t));
+                listener),
+            t);
       }
     }
   }
@@ -435,7 +436,8 @@ public abstract class DynamicRegionFactory {
         SystemFailure.checkFailure();
         this.cache.getLogger().warning(
             String.format("DynamicRegionListener %s threw exception on afterRegionCreated",
-                listener, t));
+                listener),
+            t);
       }
     }
   }
@@ -467,7 +469,8 @@ public abstract class DynamicRegionFactory {
         SystemFailure.checkFailure();
         this.cache.getLogger().warning(
             String.format("DynamicRegionListener %s threw exception on beforeRegionDestroyed",
-                listener, t));
+                listener),
+            t);
       }
     }
   }
@@ -499,7 +502,8 @@ public abstract class DynamicRegionFactory {
         SystemFailure.checkFailure();
         this.cache.getLogger().warning(
             String.format("DynamicRegionListener %s threw exception on afterRegionDestroyed",
-                listener, t));
+                listener),
+            t);
       }
     }
   }
@@ -577,7 +581,8 @@ public abstract class DynamicRegionFactory {
       RegionDestroyedException e = new RegionDestroyedException(errMsg, parentRegionName);
       this.cache.getLogger().warning(
           String.format("Error -- Could not find a region named: '%s'",
-              parentRegionName, e));
+              parentRegionName),
+          e);
       throw e;
     }
 
@@ -663,8 +668,8 @@ public abstract class DynamicRegionFactory {
       this.dynamicRegionList.destroy(fullRegionName);
     } catch (CacheException e) {
       this.cache.getLogger().warning(
-          String.format("Error destroying Dynamic Region '%s'", fullRegionName,
-              e));
+          String.format("Error destroying Dynamic Region '%s'", fullRegionName),
+          e);
       throw e;
     }
 
@@ -828,7 +833,8 @@ public abstract class DynamicRegionFactory {
     } catch (Exception e) {
       cache.getLogger().warning(
           String.format("Error attempting to locally create Dynamic Region: %s",
-              newRegionName, e));
+              newRegionName),
+          e);
     }
   }
 
@@ -856,7 +862,8 @@ public abstract class DynamicRegionFactory {
       } catch (Exception e) {
         cache.getLogger().warning(
             String.format("Error attempting to locally destroy Dynamic Region: %s",
-                fullRegionName, e));
+                fullRegionName),
+            e);
       }
     }
   }

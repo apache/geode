@@ -307,13 +307,13 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
 
     if (!this.getName().equals(other.getName())) {
-      throw new RuntimeException(String.format("region names differ: this:  %s  other:  %s",
+      throw new RuntimeException(String.format("region names differ: this: %s other: %s",
           new Object[] {this.getName(), other.getName()}));
     }
 
     if (!this.attrs.sameAs(other.getAttributes())) {
       throw new RuntimeException(
-          String.format("region attributes differ this:  %s  other:  %s",
+          String.format("region attributes differ this: %s other: %s",
               new Object[] {this.attrs, other.getAttributes()}));
     }
 

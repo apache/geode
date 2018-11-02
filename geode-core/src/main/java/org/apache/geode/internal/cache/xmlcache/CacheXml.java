@@ -837,7 +837,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
       result = new InputSource(stream);
     } else {
       throw new SAXNotRecognizedException(
-          String.format("DTD not found:  %s", location));
+          String.format("DTD not found: %s", location));
     }
     return result;
   }

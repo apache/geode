@@ -63,9 +63,10 @@ if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
 fi
 
 ZONE=us-central1-f
-INSTANCE_NAME_STRING="${WINDOWS_PREFIX}${GEODE_FORK}-${GEODE_BRANCH}-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
+INSTANCE_NAME_STRING="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-build${JAVA_BUILD_VERSION}-test${JAVA_TEST_VERSION}-job#${BUILD_NAME}"
+
 INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING}")"
-echo "Hashed ${INSTANCE_NAME_STRING} into ${INSTANCE_NAME}"
+echo "Hashed ${INSTANCE_NAME_STRING} (${#INSTANCE_NAME_STRING} chars) -> ${INSTANCE_NAME} (${#INSTANCE_NAME} chars)"
 
 MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
@@ -76,6 +77,8 @@ GCP_NETWORK=${GCP_NETWORK##*/}
 GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
 GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
 
+#in a retry loop we intentionally generate the same instance name, so make sure prior attempt is cleaned up
+gcloud compute instances delete ${INSTANCE_NAME} --zone=${ZONE} --quiet &>/dev/null || true
 
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
 echo "${GCP_PROJECT}" > "instance-data/project"

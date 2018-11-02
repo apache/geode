@@ -148,7 +148,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -174,7 +174,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -193,7 +193,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final int numExpectedResults = numberOfEntries / 2;
     final String queryString = "select * from " + regName + " where getMapField['1'] in SET ($1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -214,7 +214,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final int numExpectedResults = numberOfEntries / 2;
     final String queryString = "select * from " + regName + " where getMapField['1'] in SET ($1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -235,7 +235,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2,$3)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -257,7 +257,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -278,7 +278,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -297,7 +297,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final int numExpectedResults = numberOfEntries / 2;
     final String queryString = "select * from " + regName + " where getMapField['1'] in SET ($1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -317,7 +317,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final int numExpectedResults = numberOfEntries / 2;
     final String queryString = "select * from " + regName + " where getMapField['1'] in SET ($1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -338,7 +338,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2,$3)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -359,7 +359,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
 
     final String queryString = "select * from " + regName + " where $1 in SET (getMapField['1'])";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -382,7 +382,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where $1 in SET (getMapField['1'], getMapField['0'])";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -405,7 +405,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString = "select * from " + regName
         + " where getMapField['1'] in SET (getMapField['1'], getMapField['2'], 'asdfasdf', getMapField['0'])";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -427,7 +427,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString = "select * from " + regName
         + " where getMapField['1'] in SET ($1, $2) AND getMapField['1'] in SET($3)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -449,7 +449,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString = "select * from " + regName
         + " where getMapField['1'] in SET ($1, $2) AND getMapField['2'] in SET($3)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -478,7 +478,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET($1, $1, $1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -500,7 +500,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString = "select * from " + regName
         + " where getMapField['1'] in SET ($1) OR getMapField['0'] in SET($2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createReplicateRegion();
@@ -522,7 +522,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -543,7 +543,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -562,7 +562,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final int numExpectedResults = numberOfEntries / 2;
     final String queryString = "select * from " + regName + " where getMapField['1'] in SET ($1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -582,7 +582,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final int numExpectedResults = numberOfEntries / 2;
     final String queryString = "select * from " + regName + " where getMapField['1'] in SET ($1)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);
@@ -603,7 +603,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     final String queryString =
         "select * from " + regName + " where getMapField['1'] in SET ($1,$2,$3)";
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         createPartitionRegion(false);

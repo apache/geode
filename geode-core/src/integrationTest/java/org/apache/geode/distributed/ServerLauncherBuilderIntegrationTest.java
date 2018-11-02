@@ -269,7 +269,7 @@ public class ServerLauncherBuilderIntegrationTest {
 
   private String workingDirectoryNotFoundErrorMessage() {
     return String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
-        "Server", "Server");
+        "Server");
   }
 
   private File getWorkingDirectory() {

@@ -250,7 +250,7 @@ public class PartitionedRegionHelper {
             if (newConf != oldConf && !newConf.isGreaterNodeListVersion(oldConf)) {
               throw new CacheWriterException(
                   String.format(
-                      "New PartitionedRegionConfig  %s  does not have newer version than previous  %s",
+                      "New PartitionedRegionConfig %s does not have newer version than previous %s",
                       new Object[] {newConf, oldConf}));
             }
           }

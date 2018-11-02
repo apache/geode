@@ -97,7 +97,7 @@ public class LossAction implements Serializable {
   public static LossAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          String.format("Invalid LossAction name:  %s", name));
+          String.format("Invalid LossAction name: %s", name));
     }
     for (int i = 0; i < PRIVATE_VALUES.length; i++) {
       if (name.equals(PRIVATE_VALUES[i].name)) {
@@ -105,7 +105,7 @@ public class LossAction implements Serializable {
       }
     }
     throw new IllegalArgumentException(
-        String.format("Invalid LossAction name:  %s", name));
+        String.format("Invalid LossAction name: %s", name));
   }
 
   /** Returns true if this is <code>NO_ACCESS</code>. */

@@ -82,7 +82,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          String.format("Syntax error in query:  %s", ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize());
@@ -103,7 +103,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          String.format("Syntax error in query:  %s", ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize());
@@ -129,7 +129,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          String.format("Syntax error in query:  %s", ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize() + ";stack=" + this.stack);
@@ -194,7 +194,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          String.format("Syntax error in query:  %s", ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 0, "stack size = " + stackSize() + ";stack=" + this.stack);
@@ -433,7 +433,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       }
     } else {
       if (!this.isForIndexCompilation) {
-        throw new QueryInvalidException(String.format("Syntax error in query:  %s",
+        throw new QueryInvalidException(String.format("Syntax error in query: %s",
             "* use incorrect"));
       }
       push(new CompiledIndexOperation(rcvr, indexExpr));
@@ -691,7 +691,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       resultClass = InternalDataSerializer.getCachedClass(typeName);
     } catch (ClassNotFoundException e) {
       throw new QueryInvalidException(
-          String.format("Type not found:  %s", typeName), e);
+          String.format("Type not found: %s", typeName), e);
     }
     if (logger.isTraceEnabled()) {
       logger.trace("QCompiler.resolveType= {}", resultClass.getName());

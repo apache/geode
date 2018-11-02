@@ -81,7 +81,7 @@ public class SqlToPdxInstanceCreatorTest {
   @Test
   public void usesPdxFactoryForClassWhenExists() throws Exception {
     String pdxClassName = "classname";
-    when(regionMapping.getPdxClassName()).thenReturn(pdxClassName);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
     when(resultSet.next()).thenReturn(false);
 
     createPdxInstance();
@@ -498,7 +498,7 @@ public class SqlToPdxInstanceCreatorTest {
     TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
     PdxType pdxType = mock(PdxType.class);
-    when(regionMapping.getPdxClassName()).thenReturn(pdxClassName);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
     when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
     when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(null);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
@@ -518,7 +518,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
     TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
-    when(regionMapping.getPdxClassName()).thenReturn(pdxClassName);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
     when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(null);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
         .thenReturn(PDX_FIELD_NAME_1);
@@ -692,7 +692,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
     PdxType pdxType = mock(PdxType.class);
 
-    when(regionMapping.getPdxClassName()).thenReturn(pdxClassName);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
     when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
     PdxField pdxField = mock(PdxField.class);
     when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);

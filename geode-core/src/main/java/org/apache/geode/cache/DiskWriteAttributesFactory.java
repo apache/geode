@@ -145,7 +145,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
     if (maxOplogSize < 0) {
       throw new IllegalArgumentException(
           String.format(
-              "Maximum Oplog size specified has to be a non-negative number and the value given  %s  is not acceptable",
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
               Long.valueOf(maxOplogSize)));
     }
     this.props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSize));
@@ -168,7 +168,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
     if (maxOplogSize < 0) {
       throw new IllegalArgumentException(
           String.format(
-              "Maximum Oplog size specified has to be a non-negative number and the value given  %s  is not acceptable",
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
               Integer.valueOf(maxOplogSize)));
     }
     long maxOplogSizeInBytes = convertToBytes(maxOplogSize);
@@ -200,7 +200,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
     if (timeInterval < 0) {
       throw new IllegalArgumentException(
           String.format(
-              "Time Interval specified has to be a non-negative number and the value given  %s  is not acceptable",
+              "Time Interval specified has to be a non-negative number and the value given %s is not acceptable",
               Long.valueOf(timeInterval)));
     }
 

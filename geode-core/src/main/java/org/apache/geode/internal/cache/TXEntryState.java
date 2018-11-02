@@ -648,7 +648,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_CREATE;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op  %s  >", Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
     }
   }
 
@@ -887,7 +887,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_UPDATE;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op  %s  >", Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
     }
   }
 
@@ -1084,7 +1084,7 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
           case OP_D_DESTROY:
             throw new IllegalStateException(
-                String.format("Unexpected current op  %s  for requested op  %s",
+                String.format("Unexpected current op %s for requested op %s",
                     new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
@@ -1139,7 +1139,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                String.format("Unhandled  %s", opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_D_DESTROY:
@@ -1161,7 +1161,7 @@ public class TXEntryState implements Releasable {
           case OP_D_DESTROY:
           case OP_D_INVALIDATE_LD:
             throw new IllegalStateException(
-                String.format("Unexpected current op  %s  for requested op  %s",
+                String.format("Unexpected current op %s for requested op %s",
                     new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
@@ -1211,7 +1211,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                String.format("Unhandled  %s", opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_D_INVALIDATE:
@@ -1229,7 +1229,7 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
           case OP_D_DESTROY:
             throw new IllegalStateException(
-                String.format("Unexpected current op  %s  for requested op  %s",
+                String.format("Unexpected current op %s for requested op %s",
                     new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_D_INVALIDATE:
           case OP_L_INVALIDATE:
@@ -1275,7 +1275,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                String.format("Unhandled  %s", opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_CREATE:
@@ -1346,7 +1346,7 @@ public class TXEntryState implements Releasable {
             // Note that OP_D_INVALIDATE followed by OP_SEARCH_PUT is not
             // possible since the netsearch will alwsys "miss" in this case.
             throw new IllegalStateException(
-                String.format("Previous op  %s  unexpected for requested op  %s",
+                String.format("Previous op %s unexpected for requested op %s",
                     new Object[] {opToString(), opToString(requestedOpCode)}));
         }
         break;
@@ -1377,13 +1377,13 @@ public class TXEntryState implements Releasable {
             // case because they should have caused a OP_SEARCH_PUT
             // to be requested.
             throw new IllegalStateException(
-                String.format("Previous op  %s  unexpected for requested op  %s",
+                String.format("Previous op %s unexpected for requested op %s",
                     new Object[] {opToString(), opToString(requestedOpCode)}));
         }
         break;
       default:
         throw new IllegalStateException(
-            String.format("OpCode  %s  should never be requested",
+            String.format("OpCode %s should never be requested",
                 opToString(requestedOpCode)));
     }
     return advisedOpCode;
@@ -1446,13 +1446,13 @@ public class TXEntryState implements Releasable {
             if (!fromString.equals(toString)) {
               throw new CommitConflictException(
                   String.format(
-                      "Entry for key  %s  on region  %s  had already been changed from  %s  to  %s",
+                      "Entry for key %s on region %s had already been changed from %s to %s",
 
                       new Object[] {key, r.getDisplayName(), fromString, toString}));
             }
           }
           throw new CommitConflictException(
-              String.format("Entry for key  %s  on region  %s  had a state change",
+              String.format("Entry for key %s on region %s had a state change",
                   new Object[] {key, r.getDisplayName()}));
         }
       } finally {
@@ -1799,7 +1799,7 @@ public class TXEntryState implements Releasable {
         break;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op  %s  >", opToString()));
+            String.format("<unhandled op %s >", opToString()));
     }
   }
 
