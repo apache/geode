@@ -67,7 +67,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) Boolean parallel,
+          help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) boolean parallel,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
           help = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART__HELP) Boolean manualStart,
