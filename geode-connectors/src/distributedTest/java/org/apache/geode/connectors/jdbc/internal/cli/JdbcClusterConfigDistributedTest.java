@@ -15,7 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -24,7 +23,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -81,10 +79,6 @@ public class JdbcClusterConfigDistributedTest {
     assertThat(regionMapping.getTableName()).isEqualTo("testTable");
     assertThat(regionMapping.getPdxClassName()).isEqualTo("myPdxClass");
     assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(true);
-    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
-        .isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
-        .isEqualTo("column2");
   }
 
 }
