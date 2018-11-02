@@ -358,6 +358,7 @@ public class PoolFactoryImpl implements PoolFactory {
             PoolImpl
                 .create(this.pm, name, this.attributes, this.locatorAddresses, distributedSystem,
                     cache, threadMonitoring);
+        logger.info(" **** Did we retry?");
       } catch (NoSubscriptionServersAvailableException nsa) {
         retries++;
         try {

@@ -24,6 +24,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -621,11 +622,11 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     /*
      * 1. Create a cache server with slow dispatcher
      * 2. Start a durable client with a custom cache listener which shuts itself down
-     *    as soon as it receives a marker message.
+     * as soon as it receives a marker message.
      * 3. Do some puts on the server region
      * 4. Let the dispatcher start dispatching
      * 5. Verify that durable client is disconnected as soon as it processes the marker.
-     *    Server will retain its queue which has some events (containing deltas) in it.
+     * Server will retain its queue which has some events (containing deltas) in it.
      * 6. Restart the durable client without the self-destructing listener.
      * 7. Wait till the durable client processes all its events.
      * 8. Verify that no deltas are received by it.
@@ -649,7 +650,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       Properties properties = new Properties();
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(LOCATORS, "");
-      properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+      SecureRandom sr = new SecureRandom();
+
+      properties.setProperty(DURABLE_CLIENT_ID, durableClientId + sr.nextInt());
       properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
 
       createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), properties,
@@ -657,9 +660,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
       // Step 3
       vm0.invoke(this::doPuts);
-//
-//      // Step 3a
-//      vm0.invoke(this::doPutLast);
+      //
+      // // Step 3a
+      // vm0.invoke(this::doPutLast);
 
       // Step 4
       vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
@@ -911,14 +914,14 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private void doPutLast() {
     try {
-//      final int AbsurdlyLongTime = 10000;
-//      Thread.sleep(AbsurdlyLongTime);
+      // final int AbsurdlyLongTime = 10000;
+      // Thread.sleep(AbsurdlyLongTime);
       Region<String, DeltaTestImpl> r = cache.getRegion("/" + regionName);
       assertThat(r).isNotNull();
-//      assertThat(cache).isInstanceOf(GemFireCacheImpl.class);
-//      GemFireCacheImpl cacheAsProxy = (GemFireCacheImpl) cache;
-//      System.out.println("The Cow says: ");
-//      System.out.println(cacheAsProxy.iss ? "NOTHING!" : "Moo.");
+      // assertThat(cache).isInstanceOf(GemFireCacheImpl.class);
+      // GemFireCacheImpl cacheAsProxy = (GemFireCacheImpl) cache;
+      // System.out.println("The Cow says: ");
+      // System.out.println(cacheAsProxy.iss ? "NOTHING!" : "Moo.");
       DeltaTestImpl val = new DeltaTestImpl();
       val.setStr("");
       r.put(LAST_KEY, val);
