@@ -144,7 +144,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("newClassName");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("newClassName");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
@@ -171,7 +171,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("newTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
@@ -187,7 +187,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isFalse();
@@ -203,7 +203,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("newConnection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
@@ -221,7 +221,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
@@ -243,7 +243,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
@@ -261,7 +261,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();
@@ -279,7 +279,7 @@ public class AlterMappingFunctionTest {
         function.alterRegionMapping(newConfigValues, mappingToAlter);
 
     assertThat(alteredConfig.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(alteredConfig.getPdxClassName()).isEqualTo("pdxClass");
+    assertThat(alteredConfig.getPdxName()).isEqualTo("pdxClass");
     assertThat(alteredConfig.getTableName()).isEqualTo("myTable");
     assertThat(alteredConfig.getConnectionConfigName()).isEqualTo("connection");
     assertThat(alteredConfig.isPrimaryKeyInValue()).isTrue();

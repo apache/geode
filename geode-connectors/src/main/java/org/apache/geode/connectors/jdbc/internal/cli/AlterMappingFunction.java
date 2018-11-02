@@ -53,7 +53,7 @@ public class AlterMappingFunction extends CliFunction<RegionMapping> {
         existingMapping.getConnectionConfigName());
     String table = getValue(regionMapping.getTableName(), existingMapping.getTableName());
     String pdxClassName =
-        getValue(regionMapping.getPdxClassName(), existingMapping.getPdxClassName());
+        getValue(regionMapping.getPdxName(), existingMapping.getPdxName());
     Boolean keyInValue = regionMapping.isPrimaryKeyInValue() == null
         ? existingMapping.isPrimaryKeyInValue() : regionMapping.isPrimaryKeyInValue();
 

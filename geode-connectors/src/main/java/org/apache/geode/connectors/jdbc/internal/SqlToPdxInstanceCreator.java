@@ -70,7 +70,7 @@ class SqlToPdxInstanceCreator {
   }
 
   private PdxInstanceFactory createPdxInstanceFactory() {
-    String valueClassName = regionMapping.getPdxClassName();
+    String valueClassName = regionMapping.getPdxName();
     if (valueClassName != null) {
       return cache.createPdxInstanceFactory(valueClassName);
     } else {
@@ -250,7 +250,7 @@ class SqlToPdxInstanceCreator {
   }
 
   private FieldType getFieldType(TypeRegistry typeRegistry, String fieldName) {
-    String pdxClassName = regionMapping.getPdxClassName();
+    String pdxClassName = regionMapping.getPdxName();
     if (pdxClassName == null) {
       return FieldType.OBJECT;
     }

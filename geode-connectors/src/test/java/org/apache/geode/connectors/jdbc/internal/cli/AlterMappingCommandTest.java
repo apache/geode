@@ -70,7 +70,7 @@ public class AlterMappingCommandTest {
   @Test
   public void valuesAreParsedAsExpected() {
     GfshParseResult parseResult = gfsh.parse("alter jdbc-mapping --region='region' --connection='' "
-        + "--table='' --pdx-class-name='' " + "--field-mapping=''");
+        + "--table='' --pdx-name='' " + "--field-mapping=''");
 
     String[] mappings = (String[]) parseResult.getParamValue("field-mapping");
     assertThat(mappings).hasSize(1);
@@ -78,16 +78,16 @@ public class AlterMappingCommandTest {
     assertThat(parseResult.getParamValue("region")).isEqualTo("region");
     assertThat(parseResult.getParamValue("connection")).isEqualTo("");
     assertThat(parseResult.getParamValue("table")).isEqualTo("");
-    assertThat(parseResult.getParamValue("pdx-class-name")).isEqualTo("");
+    assertThat(parseResult.getParamValue("pdx-name")).isEqualTo("");
 
     parseResult = gfsh.parse("alter jdbc-mapping --region=testRegion-1 --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass " + "--field-mapping");
+        + "--table=myTable --pdx-name=myPdxClass " + "--field-mapping");
     mappings = (String[]) parseResult.getParamValue("field-mapping");
     assertThat(mappings).hasSize(1);
     assertThat(mappings[0]).isEqualTo("");
 
     parseResult = gfsh.parse("alter jdbc-mapping --region=testRegion-1 --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass ");
+        + "--table=myTable --pdx-name=myPdxClass ");
     mappings = (String[]) parseResult.getParamValue("field-mapping");
     assertThat(mappings).isNull();
   }
