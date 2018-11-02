@@ -60,8 +60,7 @@ public class LoadBalanceGatewaySenderCommand extends SingleGfshCommand {
     }
 
     ResultModel resultModel = new ResultModel();
-    TabularResultModel resultData = resultModel
-        .getTableSection(CliStrings.LOAD_BALANCE_GATEWAYSENDER);
+    TabularResultModel resultData = resultModel.addTable(CliStrings.LOAD_BALANCE_GATEWAYSENDER);
 
     boolean gatewaySenderExists = false;
     for (DistributedMember member : dsMembers) {
