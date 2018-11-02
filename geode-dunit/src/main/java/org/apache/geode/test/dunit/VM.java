@@ -46,7 +46,7 @@ public class VM implements Serializable {
   private final Host host;
 
   /** The sequential id of this VM */
-  private int myId;
+  private int id;
 
   /** The version of Geode used in this VM */
   private String version;
@@ -147,13 +147,13 @@ public class VM implements Serializable {
   /**
    * Creates a new {@code VM} that runs on a given host with a given process id.
    */
-  public VM(final Host host, final int myId, final RemoteDUnitVMIF client) {
-    this(host, VersionManager.CURRENT_VERSION, myId, client);
+  public VM(final Host host, final int id, final RemoteDUnitVMIF client) {
+    this(host, VersionManager.CURRENT_VERSION, id, client);
   }
 
-  public VM(final Host host, final String version, final int myId, final RemoteDUnitVMIF client) {
+  public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client) {
     this.host = host;
-    this.myId = myId;
+    this.id = id;
     this.version = version;
     this.client = client;
     available = true;
@@ -180,7 +180,7 @@ public class VM implements Serializable {
    * Returns the VM id of this {@code VM}.
    */
   public int getId() {
-    return myId;
+    return id;
   }
 
   /**
@@ -490,8 +490,8 @@ public class VM implements Serializable {
     available = false;
 
     try {
-      BounceResult result = DUnitEnv.get().bounce(targetVersion, myId, force);
-      myId = result.getNewId();
+      BounceResult result = DUnitEnv.get().bounce(targetVersion, id, force);
+      id = result.getNewId();
       client = result.getNewClient();
       version = targetVersion;
       available = true;
