@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.alerting.AlertLevel;
 
 /**
  * Sent by JMX manager to all other members to notify them that it has started.
@@ -45,7 +45,7 @@ public class ManagerStartupMessage extends PooledDistributionMessage {
   @Override
   public void process(ClusterDistributionManager dm) {
     if (alertLevel != Alert.OFF) {
-      AlertAppender.getInstance().addAlertListener(getSender(), alertLevel);
+      dm.getAlertingService().addAlertListener(getSender(), AlertLevel.find(alertLevel));
     }
   }
 

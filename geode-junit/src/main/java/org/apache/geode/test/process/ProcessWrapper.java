@@ -342,7 +342,7 @@ public class ProcessWrapper {
         }
 
         final String commandString = processCommand.toString();
-        logger.debug("Starting " + commandString);
+        logger.info("Starting " + commandString);
 
         final ProcessStreamReader stdOut = new ProcessStreamReader(commandString,
             this.process.getInputStream(), this.lineBuffer, this.allLines);

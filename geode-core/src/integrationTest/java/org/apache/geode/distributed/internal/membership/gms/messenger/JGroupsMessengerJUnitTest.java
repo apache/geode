@@ -101,8 +101,8 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -243,14 +243,11 @@ public class JGroupsMessengerJUnitTest {
     messenger.setMessageFlags(dmsg, jgmsg);
     assertFalse("expected no_fc to not be set in " + jgmsg.getFlags(),
         jgmsg.isFlagSet(Message.Flag.NO_FC));
-    AlertAppender.setIsAlerting(true);
-    try {
+    AlertingAction.execute(() -> {
       messenger.setMessageFlags(dmsg, jgmsg);
       assertTrue("expected no_fc to be set in " + jgmsg.getFlags(),
           jgmsg.isFlagSet(Message.Flag.NO_FC));
-    } finally {
-      AlertAppender.setIsAlerting(false);
-    }
+    });
   }
 
   @Test

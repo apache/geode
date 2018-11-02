@@ -14,97 +14,118 @@
  */
 package org.apache.geode.internal.logging;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URL;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import org.apache.logging.log4j.Level;
-import org.junit.Before;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.MessageFactory;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.rules.TestName;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.log4j.AppenderContext;
+import org.apache.geode.LogWriter;
+import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Unit tests for LogService
+ * Unit tests for {@link LogService}.
  */
-@RunWith(JUnitParamsRunner.class)
 @Category(LoggingTest.class)
 public class LogServiceTest {
 
-  private URL defaultConfigUrl;
-  private URL cliConfigUrl;
+  private static final String APPLICATION_LOGGER_NAME = "com.application";
 
   @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public TestName testName = new TestName();
 
-  @Before
-  public void setUp() {
-    defaultConfigUrl = LogService.class.getResource(LogService.DEFAULT_CONFIG);
-    cliConfigUrl = LogService.class.getResource(LogService.CLI_CONFIG);
+  @Test
+  public void getLoggerReturnsFastLogger() {
+    assertThat(LogService.getLogger()).isInstanceOf(FastLogger.class);
   }
 
   @Test
-  public void getAppenderContextShouldHaveEmptyName() {
-    final AppenderContext appenderContext = LogService.getAppenderContext();
-
-    assertThat(appenderContext.getName()).isEmpty();
+  public void getLoggerReturnsLoggerWithCallerClassName() {
+    assertThat(LogService.getLogger().getName()).isEqualTo(getClass().getName());
   }
 
   @Test
-  public void getAppenderContextWithNameShouldHaveName() {
-    final String name = "someName";
-    final AppenderContext appenderContext = LogService.getAppenderContext(name);
+  public void getLoggerReturnsLoggerWithGeodeMessageFactory() {
+    Logger logger = LogService.getLogger();
 
-    assertThat(appenderContext.getName()).isEqualTo(name);
+    MessageFactory messageFactory = logger.getMessageFactory();
+    assertThat(messageFactory).isInstanceOf(GemFireParameterizedMessageFactory.class);
   }
 
   @Test
-  @Parameters(method = "getToLevelParameters")
-  public void toLevelShouldReturnMatchingLog4jLevel(final int intLevel, final Level level) {
-    assertThat(LogService.toLevel(intLevel)).isSameAs(level);
+  public void getLoggerNameReturnsLoggerWithSpecifiedName() {
+    assertThat(LogService.getLogger(APPLICATION_LOGGER_NAME).getName())
+        .isEqualTo(APPLICATION_LOGGER_NAME);
   }
 
   @Test
-  public void cliConfigLoadsAsResource() {
-    assertThat(cliConfigUrl).isNotNull();
-    assertThat(cliConfigUrl.toString()).contains(LogService.CLI_CONFIG);
+  public void getLoggerNameReturnsLoggerWithGeodeMessageFactory() {
+    Logger logger = LogService.getLogger(APPLICATION_LOGGER_NAME);
+
+    MessageFactory messageFactory = logger.getMessageFactory();
+    assertThat(messageFactory).isInstanceOf(GemFireParameterizedMessageFactory.class);
   }
 
   @Test
-  public void defaultConfigLoadsAsResource() {
-    assertThat(defaultConfigUrl).isNotNull();
-    assertThat(defaultConfigUrl.toString()).contains(LogService.DEFAULT_CONFIG);
+  public void createLogWriterLoggerReturnsFastLogger() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+
+    assertThat(logWriterLogger).isInstanceOf(FastLogger.class);
   }
 
   @Test
-  public void defaultConfigShouldBeLoadableAsResource() {
-    final URL configUrlFromLogService = LogService.class.getResource(LogService.DEFAULT_CONFIG);
-    final URL configUrlFromClassLoader =
-        getClass().getClassLoader().getResource(LogService.DEFAULT_CONFIG.substring(1));
-    final URL configUrlFromClassPathLoader =
-        ClassPathLoader.getLatest().getResource(LogService.DEFAULT_CONFIG.substring(1));
+  public void createLogWriterLoggerReturnsLogWriter() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
-    assertThat(configUrlFromLogService).isNotNull();
-    assertThat(configUrlFromClassLoader).isNotNull();
-    assertThat(configUrlFromClassPathLoader).isNotNull();
-    assertThat(configUrlFromLogService).isEqualTo(configUrlFromClassLoader)
-        .isEqualTo(configUrlFromClassPathLoader);
+    assertThat(logWriterLogger).isInstanceOf(LogWriter.class);
   }
 
-  @SuppressWarnings("unused")
-  private static Object[] getToLevelParameters() {
-    return $(new Object[] {0, Level.OFF}, new Object[] {100, Level.FATAL},
-        new Object[] {200, Level.ERROR}, new Object[] {300, Level.WARN},
-        new Object[] {400, Level.INFO}, new Object[] {500, Level.DEBUG},
-        new Object[] {600, Level.TRACE}, new Object[] {Integer.MAX_VALUE, Level.ALL});
+  @Test
+  public void createLogWriterLoggerReturnsLoggerWithSpecifiedName() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+
+    assertThat(logWriterLogger.getName()).isEqualTo(getClass().getName());
+  }
+
+  @Test
+  public void createLogWriterLoggerReturnsLoggerWithSpecifiedConnectionName() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+
+    assertThat(logWriterLogger.getConnectionName()).isEqualTo(testName.getMethodName());
+  }
+
+  @Test
+  public void createLogWriterLoggerReturnsLoggerWithGeodeMessageFactory() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+
+    MessageFactory messageFactory = logWriterLogger.getMessageFactory();
+    assertThat(messageFactory).isInstanceOf(GemFireParameterizedMessageFactory.class);
+  }
+
+  @Test
+  public void createLogWriterLoggerWithSecureFalseReturnsSecureLogWriter() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+
+    assertThat(logWriterLogger.isSecure()).isFalse();
+  }
+
+  @Test
+  public void createLogWriterLoggerWithSecureTrueReturnsSecureLogWriter() {
+    LogWriterLogger logWriterLogger =
+        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), true);
+
+    assertThat(logWriterLogger.isSecure()).isTrue();
   }
 }

@@ -53,7 +53,7 @@ public class GemFireParameterizedMessageFactory extends AbstractMessageFactory {
    */
   @Override
   public Message newMessage(final String message, final Object... params) {
-    return new GemFireParameterizedMessage(message, params); // GEODE: change to construct
-                                                             // GemFireParameterizedMessage
+    // GEODE: change to construct GemFireParameterizedMessage
+    return new GemFireParameterizedMessage(message, params);
   }
 }

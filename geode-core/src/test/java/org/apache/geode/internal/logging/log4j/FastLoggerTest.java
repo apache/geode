@@ -73,7 +73,7 @@ public class FastLoggerTest {
    * FastLogger should return isDelegating after setDelegating
    */
   @Test
-  public void returnIsDelegatingAfterSetDelegating() {
+  public void isDelegatingIsTrueAfterSetDelegating() {
     assertThat(fastLogger.isDelegating()).isTrue();
 
     FastLogger.setDelegating(false);

@@ -73,11 +73,10 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
+import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.logging.log4j.LogWriterAppender;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapMemoryStats;
@@ -914,9 +913,9 @@ public class MemberMBeanBridge {
     try {
       InternalDistributedSystem sys = system;
 
-      LogWriterAppender lwa = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
-      if (lwa != null) {
-        childTail = BeanUtilFuncs.tailSystemLog(lwa.getChildLogFile(), numLines);
+      if (sys.getLogFile().isPresent()) {
+        LogFile logFile = sys.getLogFile().get();
+        childTail = BeanUtilFuncs.tailSystemLog(logFile.getChildLogFile(), numLines);
         mainTail = BeanUtilFuncs.tailSystemLog(sys.getConfig(), numLines);
         if (mainTail == null) {
           mainTail =
