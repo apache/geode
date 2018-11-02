@@ -21,6 +21,7 @@ import static org.apache.geode.internal.AvailablePort.getAddress;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
@@ -33,8 +34,23 @@ import org.apache.geode.internal.AvailablePort.Keeper;
  * further calls to getRandomAvailablePort.
  */
 public class AvailablePortHelper {
-  static AtomicInteger currentMembershipPort = new AtomicInteger(DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
-  static AtomicInteger currentAvailablePort = new AtomicInteger(AVAILABLE_PORTS_LOWER_BOUND);
+  static AtomicInteger currentMembershipPort;
+  static AtomicInteger currentAvailablePort;
+
+  static {
+    Random rand;
+    boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
+    if (fast)
+      rand = new Random();
+    else
+      rand = new java.security.SecureRandom();
+    currentMembershipPort = new AtomicInteger(
+        rand.nextInt(DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0])
+            + DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+    currentAvailablePort =
+        new AtomicInteger(rand.nextInt(AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND)
+            + AVAILABLE_PORTS_LOWER_BOUND);
+  }
 
   /**
    * Returns array of unique randomly available tcp ports of specified count.
@@ -208,9 +224,16 @@ public class AvailablePortHelper {
       int protocol, int rangeSize) {
     AtomicInteger targetRange =
         useMembershipPortRange ? currentMembershipPort : currentAvailablePort;
+    int targetBound =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
 
     while (true) {
       int uniquePort = targetRange.getAndAdd(rangeSize);
+      if (uniquePort + rangeSize > targetBound) {
+        targetRange.set(useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0]
+            : AVAILABLE_PORTS_LOWER_BOUND);
+        continue;
+      }
       List<Keeper> keepers = new ArrayList<>();
       int validPortsFound = 0;
 
