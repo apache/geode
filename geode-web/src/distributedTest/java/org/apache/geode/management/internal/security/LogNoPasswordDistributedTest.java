@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class, SecurityTest.class, LoggingTest.class})
-public class LogNoPasswordIntegrationTest {
+public class LogNoPasswordDistributedTest {
 
   private static final String PASSWORD = "abcdefghijklmn";
 

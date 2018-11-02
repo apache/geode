@@ -27,10 +27,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.FailureSettor;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.FailureSetter;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.Implementation;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
+/**
+ * Unit tests for {@link LoggingUncaughtExceptionHandler}.
+ */
 @Category(LoggingTest.class)
 public class LoggingUncaughtExceptionHandlerTest {
 
@@ -106,7 +109,7 @@ public class LoggingUncaughtExceptionHandlerTest {
     Logger logger = mock(Logger.class);
     Thread thread = mock(Thread.class);
     VirtualMachineError error = mock(VirtualMachineError.class);
-    FailureSettor failureSettor = mock(FailureSettor.class);
+    FailureSetter failureSettor = mock(FailureSetter.class);
     Implementation handler = new Implementation(logger, failureSettor);
 
     handler.uncaughtException(thread, error);
