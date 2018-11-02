@@ -46,8 +46,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__TABLE_NAME = "table";
   static final String CREATE_MAPPING__TABLE_NAME__HELP =
       "Name of database table for values to be written to.";
-  static final String CREATE_MAPPING__CONNECTION_NAME = "connection";
-  static final String CREATE_MAPPING__CONNECTION_NAME__HELP = "Name of JDBC connection to use.";
+  static final String CREATE_MAPPING__DATA_SOURCE_NAME = "data-source";
+  static final String CREATE_MAPPING__DATA_SOURCE_NAME__HELP = "Name of JDBC data source to use.";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -56,8 +56,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
   public ResultModel createMapping(
       @CliOption(key = CREATE_MAPPING__REGION_NAME, mandatory = true,
           help = CREATE_MAPPING__REGION_NAME__HELP) String regionName,
-      @CliOption(key = CREATE_MAPPING__CONNECTION_NAME, mandatory = true,
-          help = CREATE_MAPPING__CONNECTION_NAME__HELP) String connectionName,
+      @CliOption(key = CREATE_MAPPING__DATA_SOURCE_NAME, mandatory = true,
+          help = CREATE_MAPPING__DATA_SOURCE_NAME__HELP) String dataSourceName,
       @CliOption(key = CREATE_MAPPING__TABLE_NAME,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
       @CliOption(key = CREATE_MAPPING__PDX_NAME,
@@ -65,7 +65,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName,
-        pdxName, table, connectionName);
+        pdxName, table, dataSourceName);
 
     // action
     List<CliFunctionResult> results =

@@ -45,7 +45,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="connection-name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="data-source" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
@@ -64,8 +64,8 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 public class RegionMapping implements CacheElement {
   private static final String MAPPINGS_DELIMITER = ":";
 
-  @XmlAttribute(name = "connection-name")
-  protected String connectionConfigName;
+  @XmlAttribute(name = "data-source")
+  protected String dataSourceName;
   @XmlAttribute(name = "table")
   protected String tableName;
   @XmlAttribute(name = "pdx-name")
@@ -79,15 +79,15 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxName, String tableName,
-      String connectionConfigName) {
+      String dataSourceName) {
     this.regionName = regionName;
     this.pdxName = pdxName;
     this.tableName = tableName;
-    this.connectionConfigName = connectionConfigName;
+    this.dataSourceName = dataSourceName;
   }
 
-  public void setConnectionConfigName(String connectionConfigName) {
-    this.connectionConfigName = connectionConfigName;
+  public void setDataSourceName(String dataSourceName) {
+    this.dataSourceName = dataSourceName;
   }
 
   public void setRegionName(String regionName) {
@@ -102,8 +102,8 @@ public class RegionMapping implements CacheElement {
     this.pdxName = pdxName;
   }
 
-  public String getConnectionConfigName() {
-    return connectionConfigName;
+  public String getDataSourceName() {
+    return dataSourceName;
   }
 
   public String getRegionName() {
@@ -239,8 +239,8 @@ public class RegionMapping implements CacheElement {
     if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
       return false;
     }
-    if (connectionConfigName != null ? !connectionConfigName.equals(that.connectionConfigName)
-        : that.connectionConfigName != null) {
+    if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName)
+        : that.dataSourceName != null) {
       return false;
     }
     return true;
@@ -251,15 +251,15 @@ public class RegionMapping implements CacheElement {
     int result = regionName != null ? regionName.hashCode() : 0;
     result = 31 * result + (pdxName != null ? pdxName.hashCode() : 0);
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
-    result = 31 * result + (connectionConfigName != null ? connectionConfigName.hashCode() : 0);
+    result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
     return result;
   }
 
   @Override
   public String toString() {
     return "RegionMapping{" + "regionName='" + regionName + '\'' + ", pdxName='"
-        + pdxName + '\'' + ", tableName='" + tableName + '\'' + ", connectionConfigName='"
-        + connectionConfigName + '\'' + '}';
+        + pdxName + '\'' + ", tableName='" + tableName + '\'' + ", dataSourceName='"
+        + dataSourceName + '\'' + '}';
   }
 
   @Override

@@ -73,7 +73,7 @@ public class SqlHandler {
 
     RegionMapping regionMapping = getMappingForRegion(region.getName());
     PdxInstance result;
-    try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
+    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
       EntryColumnData entryColumnData =
@@ -160,7 +160,7 @@ public class SqlHandler {
     }
     RegionMapping regionMapping = getMappingForRegion(region.getName());
 
-    try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
+    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
       EntryColumnData entryColumnData =

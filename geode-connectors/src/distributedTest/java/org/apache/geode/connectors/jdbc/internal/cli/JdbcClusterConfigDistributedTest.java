@@ -53,7 +53,7 @@ public class JdbcClusterConfigDistributedTest {
     gfsh.executeAndAssertThat("create region --name=regionName --type=PARTITION").statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-name=myPdxClass")
+        "create jdbc-mapping --region=regionName --data-source=myDataSource --table=testTable --pdx-name=myPdxClass")
         .statusIsSuccess();
 
     server.invoke(() -> {
@@ -75,7 +75,7 @@ public class JdbcClusterConfigDistributedTest {
   private static void validateRegionMapping(RegionMapping regionMapping) {
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
-    assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connection");
+    assertThat(regionMapping.getDataSourceName()).isEqualTo("myDataSource");
     assertThat(regionMapping.getTableName()).isEqualTo("testTable");
     assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
   }

@@ -33,8 +33,8 @@ public enum ElementType {
       RegionCreation regionCreation = (RegionCreation) stack.peek();
       RegionMapping mapping = new RegionMapping();
       mapping.setRegionName(regionCreation.getFullPath().substring(1));
-      mapping.setConnectionConfigName(
-          attributes.getValue(JdbcConnectorServiceXmlParser.CONNECTION_NAME));
+      mapping.setDataSourceName(
+          attributes.getValue(JdbcConnectorServiceXmlParser.DATA_SOURCE));
       mapping.setTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE));
       mapping.setPdxName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_NAME));
       stack.push(mapping);
