@@ -671,11 +671,14 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), properties,
           false);
 
-//      await().until(markerReceived::get);
 
       // Step 7
-      waitForLastKey();
-
+      try {
+        waitForLastKey();
+      } catch (org.awaitility.core.ConditionTimeoutException conditionTimeoutException) {
+        logger.info("******** MLH ******");
+        throw conditionTimeoutException;
+      }
       // Step 8
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvocations();
       assertThat(fromDeltasOnClient < 1)
