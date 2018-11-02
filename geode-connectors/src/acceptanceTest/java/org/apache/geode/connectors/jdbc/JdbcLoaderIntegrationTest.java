@@ -110,7 +110,8 @@ public abstract class JdbcLoaderIntegrationTest {
     Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
 
-    assertThat(pdx.getFieldNames()).hasSize(2);
+    assertThat(pdx.getFieldNames()).hasSize(3);
+    assertThat(pdx.getField("id")).isEqualTo("1");
     assertThat(pdx.getField("name")).isEqualTo("Emp1");
     assertThat(pdx.getField("age")).isEqualTo(21);
   }
@@ -148,7 +149,7 @@ public abstract class JdbcLoaderIntegrationTest {
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
     createClassWithSupportedPdxFieldsTable(statement, REGION_TABLE_NAME);
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
-        createClassWithSupportedPdxFieldsForInsert();
+        createClassWithSupportedPdxFieldsForInsert("1");
     insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
     Region<String, ClassWithSupportedPdxFields> region = createRegionWithJDBCLoader(
         REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName(), false);
@@ -160,7 +161,7 @@ public abstract class JdbcLoaderIntegrationTest {
   }
 
   private void createPdxType() throws IOException {
-    createPdxType(new Employee("name", 45));
+    createPdxType(new Employee("id", "name", 45));
   }
 
   private void createPdxType(Object value) throws IOException {
@@ -194,9 +195,9 @@ public abstract class JdbcLoaderIntegrationTest {
     return regionFactory.create(regionName);
   }
 
-  private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
+  private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert(String key) {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
-        new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
+        new ClassWithSupportedPdxFields(key, true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
             new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     return classWithSupportedPdxFields;

@@ -474,10 +474,10 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName());
     server.invoke(() -> {
       String key = "id1";
-      Employee value = new Employee("Emp1", 55);
+      Employee value = new Employee(key, "Emp1", 55);
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, value);
       region.invalidate(key);
@@ -496,11 +496,12 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     client.invoke(() -> {
       String key = "id1";
-      ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
-          3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
+      ClassWithSupportedPdxFields value =
+          new ClassWithSupportedPdxFields(key, true, (byte) 1, (short) 2,
+              3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
       Region<String, ClassWithSupportedPdxFields> region =
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
       region.put(key, value);
@@ -519,10 +520,10 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     client.invoke(() -> {
       String key = "id1";
-      ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields();
+      ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(key);
       Region<String, ClassWithSupportedPdxFields> region =
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
       region.put(key, value);
@@ -540,10 +541,11 @@ public abstract class JdbcDistributedTest implements Serializable {
     createClientRegion(client);
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     String key = "id1";
-    ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
-        3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
+    ClassWithSupportedPdxFields value =
+        new ClassWithSupportedPdxFields(key, true, (byte) 1, (short) 2,
+            3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     server.invoke(() -> {
       insertDataForAllSupportedFieldsTable(key, value);
@@ -568,9 +570,9 @@ public abstract class JdbcDistributedTest implements Serializable {
     createClientRegion(client);
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
     String key = "id1";
-    ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields();
+    ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(key);
 
     server.invoke(() -> {
       insertNullDataForAllSupportedFieldsTable(key);
@@ -640,14 +642,8 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName, String pdxClassName) {
-    createMapping(regionName, connectionName, pdxClassName, true);
-  }
-
-  private void createMapping(String regionName, String connectionName, String pdxClassName,
-      boolean valueContainsPrimaryKey) {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
-        + connectionName + (valueContainsPrimaryKey ? " --value-contains-primary-key" : "")
-        + (pdxClassName != null ? " --pdx-name=" + pdxClassName : "");
+        + connectionName + (pdxClassName != null ? " --pdx-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

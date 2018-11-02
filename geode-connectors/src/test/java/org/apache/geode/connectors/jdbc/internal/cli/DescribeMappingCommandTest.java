@@ -66,7 +66,7 @@ public class DescribeMappingCommandTest {
         null);
 
     RegionMapping mapping =
-        new RegionMapping("region", "class1", "table1", "name1", true);
+        new RegionMapping("region", "class1", "table1", "name1");
     mapping.getFieldMapping()
         .add(new RegionMapping.FieldMapping("field1", "value1"));
     mapping.getFieldMapping()
@@ -80,7 +80,7 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
         .containsOutput("connection", "name1").containsOutput("table", "table1")
         .containsOutput("pdx-name", "class1")
-        .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
+        .containsOutput("field1", "value1")
         .containsOutput("field2", "value2");
   }
 

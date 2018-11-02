@@ -20,7 +20,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING__REGION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,7 +75,6 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();

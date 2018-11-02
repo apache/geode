@@ -32,7 +32,6 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String PDX_NAME = "pdx-name";
   static final String FIELD_NAME = "field-name";
   static final String COLUMN_NAME = "column-name";
-  static final String PRIMARY_KEY_IN_VALUE = "primary-key-in-value";
 
   @Override
   public String getNamespaceUri() {

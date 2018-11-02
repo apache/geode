@@ -65,7 +65,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *       &lt;attribute name="connection-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="primary-key-in-value" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -92,8 +91,6 @@ public class RegionMapping implements CacheElement {
   protected String tableName;
   @XmlAttribute(name = "pdx-name")
   protected String pdxName;
-  @XmlAttribute(name = "primary-key-in-value")
-  protected Boolean primaryKeyInValue;
 
   @XmlTransient
   protected String regionName;
@@ -103,12 +100,11 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxName, String tableName,
-      String connectionConfigName, Boolean primaryKeyInValue) {
+      String connectionConfigName) {
     this.regionName = regionName;
     this.pdxName = pdxName;
     this.tableName = tableName;
     this.connectionConfigName = connectionConfigName;
-    this.primaryKeyInValue = primaryKeyInValue;
   }
 
   public void setFieldMapping(String[] mappings) {
@@ -149,10 +145,6 @@ public class RegionMapping implements CacheElement {
     this.pdxName = pdxName;
   }
 
-  public void setPrimaryKeyInValue(Boolean primaryKeyInValue) {
-    this.primaryKeyInValue = primaryKeyInValue;
-  }
-
   public boolean isFieldMappingModified() {
     return fieldMappingModified;
   }
@@ -178,14 +170,6 @@ public class RegionMapping implements CacheElement {
 
   public String getTableName() {
     return tableName;
-  }
-
-  public Boolean getPrimaryKeyInValue() {
-    return primaryKeyInValue;
-  }
-
-  public Boolean isPrimaryKeyInValue() {
-    return primaryKeyInValue;
   }
 
   public String getRegionToTableName() {
@@ -313,9 +297,6 @@ public class RegionMapping implements CacheElement {
 
     RegionMapping that = (RegionMapping) o;
 
-    if (primaryKeyInValue != that.primaryKeyInValue) {
-      return false;
-    }
     if (regionName != null ? !regionName.equals(that.regionName) : that.regionName != null) {
       return false;
     }
@@ -343,7 +324,6 @@ public class RegionMapping implements CacheElement {
     result = 31 * result + (pdxName != null ? pdxName.hashCode() : 0);
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (connectionConfigName != null ? connectionConfigName.hashCode() : 0);
-    result = 31 * result + (primaryKeyInValue ? 1 : 0);
     return result;
   }
 
@@ -351,7 +331,7 @@ public class RegionMapping implements CacheElement {
   public String toString() {
     return "RegionMapping{" + "regionName='" + regionName + '\'' + ", pdxName='"
         + pdxName + '\'' + ", tableName='" + tableName + '\'' + ", connectionConfigName='"
-        + connectionConfigName + '\'' + ", primaryKeyInValue=" + primaryKeyInValue + '}';
+        + connectionConfigName + '\'' + '}';
   }
 
   @Override
