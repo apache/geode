@@ -1003,14 +1003,14 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           .describedAs("Distributed system should not have disconnected").isTrue();
 
       GeodeAwaitility.await().until(() -> {
-            assertThat(sys.getDistributedMember())
-                .isEqualTo(MembershipManagerHelper.getCoordinator(sys));
-            return true;
-          });
+        assertThat(sys.getDistributedMember())
+            .isEqualTo(MembershipManagerHelper.getCoordinator(sys));
+        return true;
+      });
       GeodeAwaitility.await().until(() -> {
-            assertThat(mem2).isEqualTo(MembershipManagerHelper.getLeadMember(sys));
-            return true;
-          });
+        assertThat(mem2).isEqualTo(MembershipManagerHelper.getLeadMember(sys));
+        return true;
+      });
 
     } finally {
       vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
@@ -1116,7 +1116,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       // now ensure that one of the remaining members became the coordinator
 
-      GeodeAwaitility.await().until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
+      GeodeAwaitility.await()
+          .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
       logger.info("coordinator after shutdown of locator was " + newCoord);
@@ -1184,7 +1185,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm0.invoke(LocatorDUnitTest::stopLocator);
 
       // now ensure that one of the remaining members became the coordinator
-      GeodeAwaitility.await().until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
+      GeodeAwaitility.await()
+          .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
       logger.info("coordinator after shutdown of locator was " + newCoord);
@@ -1200,7 +1202,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       final DistributedMember tempCoord = newCoord;
 
-      GeodeAwaitility.await().until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
+      GeodeAwaitility.await()
+          .until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       system.disconnect();
       LogWriter bgexecLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
@@ -1280,7 +1283,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private void waitUntilLocatorBecomesCoordinator() {
     GeodeAwaitility.await().until(() -> GMSJoinLeaveTestHelper.getCurrentCoordinator()
-            .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
+        .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
   }
 
   /**
@@ -1337,7 +1340,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm1.invoke(LocatorDUnitTest::stopLocator);
       vm2.invoke(LocatorDUnitTest::stopLocator);
 
-      GeodeAwaitility.await().until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
+      GeodeAwaitility.await()
+          .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
 
       final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
       dsProps.setProperty(LOCATORS, newLocators);
@@ -1352,7 +1356,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       startLocator(vm1, dsProps, port2);
       startLocator(vm2, dsProps, port3);
 
-      GeodeAwaitility.await().until(() -> !GMSJoinLeaveTestHelper.getCurrentCoordinator().equals(currentCoordinator)
+      GeodeAwaitility.await()
+          .until(() -> !GMSJoinLeaveTestHelper.getCurrentCoordinator().equals(currentCoordinator)
               && system.getDM().getAllHostedLocators().size() == 2);
 
       vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
@@ -1430,7 +1435,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm4.invoke(() -> {
         getConnectedDistributedSystem(dsProps);
 
-        GeodeAwaitility.await().until(() -> InternalDistributedSystem.getConnectedInstance().getDM().getViewMembers()
+        GeodeAwaitility.await()
+            .until(() -> InternalDistributedSystem.getConnectedInstance().getDM().getViewMembers()
                 .size() == 5);
         return true;
       });
@@ -1441,7 +1447,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
         public void run() {
-          GeodeAwaitility.await().until(() -> InternalDistributedSystem.getConnectedInstance() == null);
+          GeodeAwaitility.await()
+              .until(() -> InternalDistributedSystem.getConnectedInstance() == null);
         }
       };
       vm0.invoke(() -> waitForDisconnect);
@@ -1744,12 +1751,12 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private void assertLeadMember(final DistributedMember member, final DistributedSystem sys) {
     GeodeAwaitility.await().until(() -> {
-          DistributedMember lead = MembershipManagerHelper.getLeadMember(sys);
-          if (member != null) {
-            return member.equals(lead);
-          }
-          return (lead == null);
-        });
+      DistributedMember lead = MembershipManagerHelper.getLeadMember(sys);
+      if (member != null) {
+        return member.equals(lead);
+      }
+      return (lead == null);
+    });
   }
 
   private int startLocatorGetPort(VM vm, Properties properties, int port) {
@@ -1843,13 +1850,13 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   private void checkSystemConnected(VM vm2, VM locatorVM) {
 
     GeodeAwaitility.await().until(() -> {
-          assertThat(isSystemConnected())
-              .describedAs("Distributed system should not have disconnected")
-              .isTrue();
+      assertThat(isSystemConnected())
+          .describedAs("Distributed system should not have disconnected")
+          .isTrue();
 
-          checkSystemConnectedInVMs(vm2, locatorVM);
-          return true;
-        });
+      checkSystemConnectedInVMs(vm2, locatorVM);
+      return true;
+    });
   }
 
 
