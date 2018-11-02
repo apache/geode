@@ -25,50 +25,44 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.internal.ExitCode;
 
 /**
- * This program sorts the entries in a GemFire log file (one written using a
- * {@link org.apache.geode.LogWriter}) by their timestamps. Note that in order to do so, we
- * have to read the entire file into memory.
+ * This program sorts the entries in a GemFire log file (one written using a {@link LogWriter}) by
+ * their timestamps. Note that in order to do so, we have to read the entire file into memory.
  *
  * @see MergeLogFiles
  * @see LogFileParser
  *
- *
  * @since GemFire 3.0
  */
 public class SortLogFile {
-  private static PrintStream out = System.out;
-  private static PrintStream err = System.err;
+
+  private static final PrintStream out = System.out;
+  private static final PrintStream err = System.err;
 
   /**
    * Parses a log file from a given source and writes the sorted entries to a given destination.
    */
   public static void sortLogFile(InputStream logFile, PrintWriter sortedFile) throws IOException {
 
-    SortedSet sorted = new TreeSet(new Comparator() {
-      public int compare(Object o1, Object o2) {
-        LogFileParser.LogEntry entry1 = (LogFileParser.LogEntry) o1;
-        LogFileParser.LogEntry entry2 = (LogFileParser.LogEntry) o2;
-        String stamp1 = entry1.getTimestamp();
-        String stamp2 = entry2.getTimestamp();
+    SortedSet<LogFileParser.LogEntry> sorted = new TreeSet<>((entry1, entry2) -> {
+      String stamp1 = entry1.getTimestamp();
+      String stamp2 = entry2.getTimestamp();
 
-        if (stamp1.equals(stamp2)) {
-          if (entry1.getContents().equals(entry2.getContents())) {
-            // Timestamps and contents are both equal - compare hashCode()
-            return Integer.valueOf(entry1.hashCode()).compareTo(Integer.valueOf(entry2.hashCode()));
-          } else {
-            return entry1.getContents().compareTo(entry2.getContents());
-          }
+      if (stamp1.equals(stamp2)) {
+        if (entry1.getContents().equals(entry2.getContents())) {
+          // Timestamps and contents are both equal - compare hashCode()
+          return Integer.valueOf(entry1.hashCode()).compareTo(entry2.hashCode());
         } else {
-          return stamp1.compareTo(stamp2);
+          return entry1.getContents().compareTo(entry2.getContents());
         }
+      } else {
+        return stamp1.compareTo(stamp2);
       }
     });
 
@@ -78,34 +72,28 @@ public class SortLogFile {
       sorted.add(parser.getNextEntry());
     }
 
-    for (Iterator iter = sorted.iterator(); iter.hasNext();) {
-      LogFileParser.LogEntry entry = (LogFileParser.LogEntry) iter.next();
+    for (LogFileParser.LogEntry entry : sorted) {
       entry.writeTo(sortedFile);
     }
   }
-
-  //////////////////// Main Program ////////////////////
 
   /**
    * Prints usage information about this program
    */
   private static void usage(String s) {
     err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
-    err.println(
-        "Usage: java SortLogFile logFile");
-    err.println("-sortedFile file "
-        + "File in which to put sorted log");
-    err.println("");
+    err.println("Usage: java SortLogFile logFile");
+    err.println("-sortedFile file " + "File in which to put sorted log");
+    err.println();
     err.println(
         "Sorts a GemFire log file by timestamp. The merged log file is written to System.out (or a file).");
-    err.println("");
+    err.println();
     ExitCode.FATAL.doSystemExit();
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String... args) throws IOException {
     File logFile = null;
     File sortedFile = null;
-    // int dirCount = 0;
 
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("-sortedFile")) {
@@ -148,5 +136,4 @@ public class SortLogFile {
 
     ExitCode.NORMAL.doSystemExit();
   }
-
 }

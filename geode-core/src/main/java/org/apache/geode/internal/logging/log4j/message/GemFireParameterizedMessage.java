@@ -468,8 +468,8 @@ public class GemFireParameterizedMessage implements Message {
         }
         // str.append(Arrays.deepToString((Object[]) o));
       }
-    } else if (o instanceof Map && !(o instanceof Region)) { // GEODE: do NOT use Map handling if
-                                                             // instanceof Geode Region
+    } else if (o instanceof Map && !(o instanceof Region)) {
+      // GEODE: do NOT use Map handling if instanceof Geode Region
       // special handling of container Map
       final String id = identityToString(o);
       if (dejaVu.contains(id)) {
@@ -494,10 +494,8 @@ public class GemFireParameterizedMessage implements Message {
         }
         str.append('}');
       }
-    } else if (o instanceof Collection && !(o instanceof EntriesSet)) { // GEODE: do NOT use
-                                                                        // Colleciton handling if
-                                                                        // instanceof Geode
-                                                                        // EntriesSet
+    } else if (o instanceof Collection && !(o instanceof EntriesSet)) {
+      // GEODE: do NOT use Collection handling if instanceof Geode EntriesSet
       // special handling of container Collection
       final String id = identityToString(o);
       if (dejaVu.contains(id)) {
@@ -569,9 +567,8 @@ public class GemFireParameterizedMessage implements Message {
 
   @Override
   public String toString() {
+    // GEODE: adjust toString to GemFireParameterizedMessage
     return "GemFireParameterizedMessage[messagePattern=" + messagePattern + ", stringArgs="
-        + Arrays.toString(stringArgs) + ", throwable=" + throwable + ']'; // GEODE: adjust toString
-                                                                          // to
-                                                                          // GemFireParameterizedMessage
+        + Arrays.toString(stringArgs) + ", throwable=" + throwable + ']';
   }
 }
