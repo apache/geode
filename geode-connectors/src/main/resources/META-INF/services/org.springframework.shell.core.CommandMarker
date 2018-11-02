@@ -16,7 +16,6 @@
 #
 # JDBC Connector Extension commands
 org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
-org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand
