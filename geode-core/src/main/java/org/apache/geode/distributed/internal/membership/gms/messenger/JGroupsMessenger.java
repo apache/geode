@@ -98,12 +98,11 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.MemberShunnedException;
-
 
 @SuppressWarnings("StatementWithEmptyBody")
 public class JGroupsMessenger implements Messenger {
@@ -947,7 +946,7 @@ public class JGroupsMessenger implements Messenger {
     msg.setFlag(Flag.DONT_BUNDLE);
 
     if (gfmsg.getProcessorType() == ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR
-        || gfmsg instanceof HighPriorityDistributionMessage || AlertAppender.isThreadAlerting()) {
+        || gfmsg instanceof HighPriorityDistributionMessage || AlertingAction.isThreadAlerting()) {
       msg.setFlag(Flag.OOB);
       msg.setFlag(Flag.NO_FC);
       msg.setFlag(Flag.SKIP_BARRIER);
