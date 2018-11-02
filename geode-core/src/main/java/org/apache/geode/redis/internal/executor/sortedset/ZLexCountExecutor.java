@@ -103,21 +103,21 @@ public class ZLexCountExecutor extends SortedSetExecutor {
   private int getCount(ByteArrayWrapper key, Region<ByteArrayWrapper, DoubleWrapper> keyRegion,
       ExecutionHandlerContext context, ByteArrayWrapper start, ByteArrayWrapper stop,
       boolean startInclusive, boolean stopInclusive) throws Exception {
-    if (start.equals("-") && stop.equals("+"))
+    if (start.equals(minus) && stop.equals(plus))
       return keyRegion.size();
-    else if (start.equals("+") || stop.equals("-"))
+    else if (start.equals(plus) || stop.equals(minus))
       return 0;
 
     Query query;
     Object[] params;
-    if (start.equals("-")) {
+    if (start.equals(minus)) {
       if (stopInclusive) {
         query = getQuery(key, SortedSetQuery.ZLEXCOUNTNINFI, context);
       } else {
         query = getQuery(key, SortedSetQuery.ZLEXCOUNTNINF, context);
       }
       params = new Object[] {stop};
-    } else if (stop.equals("+")) {
+    } else if (stop.equals(plus)) {
       if (startInclusive) {
         query = getQuery(key, SortedSetQuery.ZLEXCOUNTPINFI, context);
       } else {
