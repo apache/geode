@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,7 +26,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
@@ -84,10 +82,6 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxClassName()).isEqualTo(pdxClass);
     assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(keyInValue);
-    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
-        .isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
-        .isEqualTo("column2");
   }
 
   @Test
