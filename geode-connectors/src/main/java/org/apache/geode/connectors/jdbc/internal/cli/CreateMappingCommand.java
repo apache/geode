@@ -48,9 +48,6 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "Name of database table for values to be written to.";
   static final String CREATE_MAPPING__CONNECTION_NAME = "connection";
   static final String CREATE_MAPPING__CONNECTION_NAME__HELP = "Name of JDBC connection to use.";
-  static final String CREATE_MAPPING__FIELD_MAPPING = "field-mapping";
-  static final String CREATE_MAPPING__FIELD_MAPPING__HELP =
-      "Key value pairs of PDX field names to database column names formatted like \"key:value(,key:value)*\".";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -64,14 +61,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_MAPPING__TABLE_NAME,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
       @CliOption(key = CREATE_MAPPING__PDX_NAME,
-          help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
-      @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
-          help = CREATE_MAPPING__FIELD_MAPPING__HELP) String[] fieldMappings) {
+          help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName,
         pdxName, table, connectionName);
-    mapping.setFieldMapping(fieldMappings);
 
     // action
     List<CliFunctionResult> results =

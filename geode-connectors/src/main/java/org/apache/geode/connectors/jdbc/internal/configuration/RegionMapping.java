@@ -14,19 +14,14 @@
  */
 package org.apache.geode.connectors.jdbc.internal.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -50,18 +45,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="field-mapping" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;simpleContent>
- *               &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
- *                 &lt;attribute name="field-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="column-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/extension>
- *             &lt;/simpleContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
  *       &lt;attribute name="connection-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -74,17 +57,13 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 @Experimental
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {"fieldMapping"})
+@XmlType(name = "")
 @XmlRootElement(name = "mapping", namespace = "http://geode.apache.org/schema/jdbc")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
 public class RegionMapping implements CacheElement {
   private static final String MAPPINGS_DELIMITER = ":";
 
-  @XmlElement(name = "field-mapping", namespace = "http://geode.apache.org/schema/jdbc")
-  protected List<FieldMapping> fieldMapping;
-  @XmlTransient
-  protected boolean fieldMappingModified = false;
   @XmlAttribute(name = "connection-name")
   protected String connectionConfigName;
   @XmlAttribute(name = "table")
@@ -107,28 +86,6 @@ public class RegionMapping implements CacheElement {
     this.connectionConfigName = connectionConfigName;
   }
 
-  public void setFieldMapping(String[] mappings) {
-    if (mappings != null) {
-      this.fieldMapping =
-          Arrays.stream(mappings).filter(Objects::nonNull).filter(s -> !s.isEmpty()).map(s -> {
-            String[] keyValuePair = s.split(MAPPINGS_DELIMITER);
-            validateParam(keyValuePair, s);
-            return new FieldMapping(keyValuePair[0],
-                keyValuePair[1]);
-          }).collect(Collectors.toList());
-      fieldMappingModified = true;
-    }
-  }
-
-  private void validateParam(String[] paramKeyValue, String mapping) {
-    // paramKeyValue is produced by split which will never give us
-    // an empty second element
-    if (paramKeyValue.length != 2 || paramKeyValue[0].isEmpty()) {
-      throw new IllegalArgumentException("Field to column mapping '" + mapping
-          + "' is not of the form 'Field" + MAPPINGS_DELIMITER + "Column'");
-    }
-  }
-
   public void setConnectionConfigName(String connectionConfigName) {
     this.connectionConfigName = connectionConfigName;
   }
@@ -143,17 +100,6 @@ public class RegionMapping implements CacheElement {
 
   public void setPdxName(String pdxName) {
     this.pdxName = pdxName;
-  }
-
-  public boolean isFieldMappingModified() {
-    return fieldMappingModified;
-  }
-
-  public List<FieldMapping> getFieldMapping() {
-    if (fieldMapping == null) {
-      fieldMapping = new ArrayList<>();
-    }
-    return fieldMapping;
   }
 
   public String getConnectionConfigName() {
@@ -180,12 +126,6 @@ public class RegionMapping implements CacheElement {
   }
 
   public String getColumnNameForField(String fieldName, TableMetaDataView tableMetaDataView) {
-    FieldMapping configured = getFieldMapping().stream()
-        .filter(m -> m.getFieldName().equals(fieldName)).findAny().orElse(null);
-    if (configured != null) {
-      return configured.getColumnName();
-    }
-
     Set<String> columnNames = tableMetaDataView.getColumnNames();
     if (columnNames.contains(fieldName)) {
       return fieldName;
@@ -208,14 +148,6 @@ public class RegionMapping implements CacheElement {
 
   public String getFieldNameForColumn(String columnName, TypeRegistry typeRegistry) {
     String fieldName = null;
-
-    FieldMapping configured = getFieldMapping().stream()
-        .filter(m -> m.getColumnName().equals(columnName)).findAny().orElse(null);
-
-    if (configured != null) {
-      return configured.getFieldName();
-    }
-
     if (getPdxName() == null) {
       if (columnName.equals(columnName.toUpperCase())) {
         fieldName = columnName.toLowerCase();
@@ -311,10 +243,6 @@ public class RegionMapping implements CacheElement {
         : that.connectionConfigName != null) {
       return false;
     }
-    if (fieldMapping != null ? !fieldMapping.equals(that.fieldMapping)
-        : that.fieldMapping != null) {
-      return false;
-    }
     return true;
   }
 
@@ -337,83 +265,5 @@ public class RegionMapping implements CacheElement {
   @Override
   public String getId() {
     return ELEMENT_ID;
-  }
-
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class FieldMapping implements Serializable {
-    @XmlAttribute(name = "field-name")
-    protected String fieldName;
-    @XmlAttribute(name = "column-name")
-    protected String columnName;
-
-    public FieldMapping() {}
-
-    public FieldMapping(String fieldName, String columnName) {
-      this.fieldName = fieldName;
-      this.columnName = columnName;
-    }
-
-    /**
-     * Gets the value of the fieldName property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getFieldName() {
-      return fieldName;
-    }
-
-    /**
-     * Sets the value of the fieldName property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setFieldName(String value) {
-      this.fieldName = value;
-    }
-
-    /**
-     * Gets the value of the columnName property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getColumnName() {
-      return columnName;
-    }
-
-    /**
-     * Sets the value of the columnName property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setColumnName(String value) {
-      this.columnName = value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o)
-        return true;
-      if (o == null || getClass() != o.getClass())
-        return false;
-      FieldMapping that = (FieldMapping) o;
-      return Objects.equals(fieldName, that.fieldName)
-          && Objects.equals(columnName, that.columnName);
-    }
-
-    @Override
-    public int hashCode() {
-      int result = fieldName != null ? fieldName.hashCode() : 0;
-      result = 31 * result + (columnName != null ? columnName.hashCode() : 0);
-
-      return result;
-    }
   }
 }

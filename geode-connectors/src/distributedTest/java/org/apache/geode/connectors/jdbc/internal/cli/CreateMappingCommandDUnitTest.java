@@ -16,13 +16,10 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,14 +73,13 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:mapping").contains("jdbc:field-mapping");
+      assertThat(xml).isNotNull().contains("jdbc:mapping");
     });
 
     server.invoke(() -> {
@@ -93,17 +89,11 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
-      assertThat(fieldMappings).hasSize(2);
-      assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field1");
-      assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column1");
-      assertThat(fieldMappings.get(1).getFieldName()).isEqualTo("field2");
-      assertThat(fieldMappings.get(1).getColumnName()).isEqualTo("column2");
     });
   }
 
   @Test
-  public void createsRegionMappingWithoutFieldMap() {
+  public void createsRegionMappingUpdatesClusterConfig() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
@@ -116,7 +106,6 @@ public class CreateMappingCommandDUnitTest {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:mapping");
-      assertThat(xml).isNotNull().doesNotContain("jdbc:field-mapping");
     });
   }
 

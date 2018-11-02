@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,7 +26,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
@@ -45,7 +43,6 @@ public class CreateMappingCommandIntegrationTest {
   private String connectionName;
   private String tableName;
   private String pdxClass;
-  private String[] fieldMappings;
 
   @Before
   public void setup() {
@@ -53,7 +50,6 @@ public class CreateMappingCommandIntegrationTest {
     connectionName = "connection";
     tableName = "testTable";
     pdxClass = "myPdxClass";
-    fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
@@ -71,7 +67,7 @@ public class CreateMappingCommandIntegrationTest {
   @Test
   public void createsRegionMappingInService() {
     ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName,
-        tableName, pdxClass, fieldMappings);
+        tableName, pdxClass);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -83,10 +79,6 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
-    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
-        .isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
-        .isEqualTo("column2");
   }
 
   @Test
@@ -94,16 +86,15 @@ public class CreateMappingCommandIntegrationTest {
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ResultModel result;
     result =
-        createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
-            fieldMappings);
+        createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass);
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     IgnoredException ignoredException =
         IgnoredException.addIgnoredException(RegionMappingExistsException.class.getName());
 
     try {
-      result = createRegionMappingCommand.createMapping(regionName, connectionName, tableName,
-          pdxClass, fieldMappings);
+      result =
+          createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass);
     } finally {
       ignoredException.remove();
     }
@@ -113,8 +104,8 @@ public class CreateMappingCommandIntegrationTest {
 
   @Test
   public void createsRegionMappingWithMinimumParams() {
-    ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName, null,
-        null, null);
+    ResultModel result =
+        createRegionMappingCommand.createMapping(regionName, connectionName, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -126,6 +117,5 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
     assertThat(regionMapping.getTableName()).isNull();
     assertThat(regionMapping.getPdxName()).isNull();
-    assertThat(regionMapping.getFieldMapping()).isEmpty();
   }
 }

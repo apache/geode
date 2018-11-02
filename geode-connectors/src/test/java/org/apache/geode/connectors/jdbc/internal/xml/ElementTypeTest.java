@@ -15,17 +15,13 @@
 package org.apache.geode.connectors.jdbc.internal.xml;
 
 
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.COLUMN_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.FIELD_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Stack;
@@ -36,7 +32,6 @@ import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
@@ -99,40 +94,5 @@ public class ElementTypeTest {
     ElementType.JDBC_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(1);
-  }
-
-  @Test
-  public void startElementFieldMappingThrowsWithoutRegionMappingBuilder() {
-    stack.push(new Object());
-
-    assertThatThrownBy(() -> FIELD_MAPPING.startElement(stack, attributes))
-        .isInstanceOf(CacheXmlException.class);
-  }
-
-  @Test
-  public void startElementFieldMapping() {
-    RegionMapping mapping = new RegionMapping();
-    stack.push(mapping);
-    when(attributes.getValue(FIELD_NAME)).thenReturn("fieldName");
-    when(attributes.getValue(COLUMN_NAME)).thenReturn("columnName");
-
-    ElementType.FIELD_MAPPING.startElement(stack, attributes);
-
-    RegionMapping mapping1 = (RegionMapping) stack.pop();
-    assertThat(mapping1.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
-        .isEqualTo("columnName");
-  }
-
-  @Test
-  public void endElementFieldMapping() {
-    RegionMapping mapping = mock(RegionMapping.class);
-    RegionMappingConfiguration regionMappingConfiguration = mock(RegionMappingConfiguration.class);
-    stack.push(regionMappingConfiguration);
-    stack.push(mapping);
-
-    ElementType.FIELD_MAPPING.endElement(stack);
-
-    assertThat(stack.size()).isEqualTo(2);
-    verifyZeroInteractions(mapping);
   }
 }
