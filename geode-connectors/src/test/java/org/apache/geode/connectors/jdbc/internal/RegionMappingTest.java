@@ -50,9 +50,9 @@ public class RegionMappingTest {
   public void setUp() {
     name = "name";
     fieldName1 = "myField1";
-    columnName1 = "myColumn1";
+    columnName1 = "myfield1";
     fieldName2 = "myField2";
-    columnName2 = "myColumn2";
+    columnName2 = "MYFIELD2";
   }
 
   @Test
@@ -266,53 +266,6 @@ public class RegionMappingTest {
     when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
 
     assertThat(mapping.getFieldNameForColumn(columnName, typeRegistry)).isEqualTo(columnName);
-  }
-
-  @Test
-  public void returnsMappedColumnNameForField() {
-    mapping = new RegionMapping(null, null, null, null, true);
-
-    assertThat(mapping.getColumnNameForField(fieldName1, mock(TableMetaDataView.class)))
-        .isEqualTo(columnName1);
-  }
-
-  @Test
-  public void returnsMappedColumnNameForFieldEvenIfMetaDataMatches() {
-    mapping = new RegionMapping(null, null, null, null, true);
-
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton(fieldName1));
-
-    assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView)).isEqualTo(columnName1);
-  }
-
-  @Test
-  public void returnsMappedFieldNameForColumn() {
-    mapping = new RegionMapping(null, null, null, null, true);
-
-    assertThat(mapping.getFieldNameForColumn(columnName1, null)).isEqualTo(fieldName1);
-  }
-
-  @Test
-  public void returnsCachedFieldNameForColumn() {
-    mapping = new RegionMapping(null, null, null, null, true);
-
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-
-    mapping.getColumnNameForField(fieldName1, tableMetaDataView);
-
-    assertThat(mapping.getFieldNameForColumn(columnName1, null)).isEqualTo(fieldName1);
-  }
-
-  @Test
-  public void returnsCachedColumnNameForField() {
-    mapping = new RegionMapping(null, null, null, null, true);
-
-    mapping.getFieldNameForColumn(columnName1, null);
-
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-
-    assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView)).isEqualTo(columnName1);
   }
 
   @Test
