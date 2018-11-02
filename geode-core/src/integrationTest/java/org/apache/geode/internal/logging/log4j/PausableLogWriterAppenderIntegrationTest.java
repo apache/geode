@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.commons.io.FileUtils.readLines;
+import static org.apache.geode.internal.logging.NonBlankStrings.nonBlankStrings;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -44,6 +46,7 @@ import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogMessageRegex;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.SessionContext;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -58,10 +61,10 @@ public class PausableLogWriterAppenderIntegrationTest {
 
   private static String configFilePath;
 
-  private PausableLogWriterAppender pausableLogWriterAppender;
   private File logFile;
   private Logger logger;
   private String logMessage;
+  private PausableLogWriterAppender pausableLogWriterAppender;
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -81,9 +84,6 @@ public class PausableLogWriterAppenderIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    pausableLogWriterAppender =
-        loggerContextRule.getAppender(APPENDER_NAME, PausableLogWriterAppender.class);
-
     String name = testName.getMethodName();
     logFile = new File(temporaryFolder.getRoot(), name + ".log");
 
@@ -94,10 +94,15 @@ public class PausableLogWriterAppenderIntegrationTest {
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
     when(logConfigSupplier.getLogConfig()).thenReturn(config);
 
+    SessionContext sessionContext = mock(SessionContext.class);
+    when(sessionContext.getLogConfigSupplier()).thenReturn(logConfigSupplier);
+
     logger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
 
-    pausableLogWriterAppender.createSession(logConfigSupplier);
+    pausableLogWriterAppender =
+        loggerContextRule.getAppender(APPENDER_NAME, PausableLogWriterAppender.class);
+    pausableLogWriterAppender.createSession(sessionContext);
     pausableLogWriterAppender.startSession();
   }
 
@@ -182,7 +187,7 @@ public class PausableLogWriterAppenderIntegrationTest {
     logger.info(logMessage);
 
     assertThat(logFile).exists();
-    String content = FileUtils.readFileToString(logFile, Charset.defaultCharset()).trim();
+    String content = FileUtils.readFileToString(logFile, defaultCharset()).trim();
     assertThat(content).contains(logMessage);
   }
 
@@ -192,16 +197,11 @@ public class PausableLogWriterAppenderIntegrationTest {
 
     assertThat(logFile).exists();
 
-    List<String> lines = FileUtils.readLines(logFile, Charset.defaultCharset());
-    int logLines = 0;
-    for (String line : lines) {
-      if (!line.isEmpty()) {
-        assertThat(line).matches(LogMessageRegex.getRegex());
-        logLines++;
-      }
-    }
+    List<String> lines = nonBlankStrings(readLines(logFile, defaultCharset()));
+    assertThat(lines).hasSize(1);
 
-    // make sure there was at least 1 line in the log file
-    assertThat(logLines).isGreaterThanOrEqualTo(1);
+    for (String line : lines) {
+      assertThat(line).matches(LogMessageRegex.getRegex());
+    }
   }
 }

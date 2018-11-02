@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
@@ -28,7 +29,7 @@ import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.util.LogFileUtils;
 
 /**
- * Implementation of {@code LogWriter} for distributed system members. It's just like
+ * Implementation of {@link LogWriter} for distributed system members. It's just like
  * {@link LocalLogWriter} except it has support for rolling and alerts.
  *
  * @since Geode 1.0
@@ -72,7 +73,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
    *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public ManagerLogWriter(int level, PrintStream printStream, boolean loner) {
+  public ManagerLogWriter(final int level, final PrintStream printStream, final boolean loner) {
     this(level, printStream, null, loner);
   }
 
@@ -88,8 +89,8 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
    *
    * @since GemFire 3.5
    */
-  public ManagerLogWriter(int level, PrintStream printStream, String connectionName,
-      boolean loner) {
+  public ManagerLogWriter(final int level, final PrintStream printStream,
+      final String connectionName, final boolean loner) {
     super(level, printStream, connectionName);
     fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
     rollingFileHandler = new MainWithChildrenRollingFileHandler();
@@ -99,7 +100,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
   /**
    * Sets the config that should be used by this manager to decide how to manage its logging.
    */
-  public void setConfig(LogConfig config) {
+  public void setConfig(final LogConfig config) {
     this.config = config;
     configChanged();
   }
@@ -197,7 +198,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
     return result * (1024 * 1024);
   }
 
-  private String getMetaLogFileName(String baseLogFileName, int mainLogId) {
+  private String getMetaLogFileName(final String baseLogFileName, final int mainLogId) {
     String metaLogFile = null;
     int extIndex = baseLogFileName.lastIndexOf('.');
     String ext = "";
@@ -215,7 +216,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
     return metaLogFile;
   }
 
-  private synchronized void switchLogs(File newLog, boolean newIsMain) {
+  private synchronized void switchLogs(final File newLog, final boolean newIsMain) {
     rolling = true;
     try {
       try {
@@ -324,7 +325,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
     }
   }
 
-  public static File getLogNameForOldMainLog(File log, boolean useOldFile) {
+  public static File getLogNameForOldMainLog(final File log, final boolean useOldFile) {
     // this is just searching for the existing logfile name we need to search for meta log file name
     RollingFileHandler rollingFileHandler = new MainWithChildrenRollingFileHandler();
     File dir = rollingFileHandler.getParentFile(log.getAbsoluteFile());
@@ -351,7 +352,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
     return new File(sb.toString());
   }
 
-  private void checkDiskSpace(File newLog) {
+  private void checkDiskSpace(final File newLog) {
     rollingFileHandler.checkDiskSpace("log", newLog, getLogDiskSpaceLimit(), logDir, mainLogWriter);
   }
 
@@ -363,7 +364,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
     rollLog(true);
   }
 
-  private void rollLog(boolean ifFull) {
+  private void rollLog(final boolean ifFull) {
     if (!useChildLogging()) {
       return;
     }
@@ -405,7 +406,7 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
   }
 
   @Override
-  public void writeFormattedMessage(String message) {
+  public void writeFormattedMessage(final String message) {
     rollLogIfFull();
     super.writeFormattedMessage(message);
   }

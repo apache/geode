@@ -17,8 +17,7 @@ package org.apache.geode.internal.logging;
 import java.io.File;
 
 /**
- * LogConfig implementation for Security logging configuration that delegates to a
- * DistributionConfig.
+ * Wraps a {@link LogConfig} and overrides configuration for Security.
  */
 public class SecurityLogConfig implements LogConfig {
 

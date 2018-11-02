@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.commons.io.FileUtils.readFileToString;
+import static org.apache.commons.io.FileUtils.readLines;
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group;
 import static org.apache.geode.internal.logging.LogMessageRegex.getPattern;
+import static org.apache.geode.internal.logging.NonBlankStrings.nonBlankStrings;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,13 +29,13 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.junit.LoggerContextRule;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -41,8 +47,8 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
-import org.apache.geode.internal.logging.LogMessageRegex.Groups;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.SessionContext;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -82,9 +88,6 @@ public class PausableLogWriterAppenderWithMemberNameInXmlIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    pausableLogWriterAppender = loggerContextRule.getAppender(APPENDER_NAME,
-        PausableLogWriterAppender.class);
-
     String logFileName = MEMBER_NAME + ".log";
     logFile = new File(temporaryFolder.newFolder(testName.getMethodName()), logFileName);
 
@@ -95,22 +98,29 @@ public class PausableLogWriterAppenderWithMemberNameInXmlIntegrationTest {
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
     when(logConfigSupplier.getLogConfig()).thenReturn(config);
 
-    pausableLogWriterAppender.createSession(logConfigSupplier);
+    SessionContext sessionContext = mock(SessionContext.class);
+    when(sessionContext.getLogConfigSupplier()).thenReturn(logConfigSupplier);
+
+    pausableLogWriterAppender =
+        loggerContextRule.getAppender(APPENDER_NAME, PausableLogWriterAppender.class);
+    pausableLogWriterAppender.createSession(sessionContext);
     pausableLogWriterAppender.startSession();
 
     logger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
+  }
 
-    pausableLogWriterAppender.clearLogEvents();
+  @After
+  public void tearDown() {
+    pausableLogWriterAppender.stopSession();
   }
 
   @Test
   public void logsToSpecifiedFile() throws Exception {
     logger.info(logMessage);
 
-    assertThat(pausableLogWriterAppender.getLogEvents()).hasSize(1);
     assertThat(logFile).exists();
-    String content = FileUtils.readFileToString(logFile, Charset.defaultCharset()).trim();
+    String content = readFileToString(logFile, defaultCharset()).trim();
     assertThat(content).contains(logMessage);
   }
 
@@ -118,23 +128,21 @@ public class PausableLogWriterAppenderWithMemberNameInXmlIntegrationTest {
   public void logLinesInFileShouldContainMemberName() throws Exception {
     logger.info(logMessage);
 
-    assertThat(pausableLogWriterAppender.getLogEvents()).hasSize(1);
     assertThat(logFile).exists();
 
-    // ManagerLogWriter writes some white space lines so we'll need to skip white space lines
-    List<String> allLines = FileUtils.readLines(logFile, Charset.defaultCharset());
-    int logLineCount = 0;
-    for (String line : allLines) {
-      if (!line.isEmpty()) {
-        Matcher matcher = getPattern().matcher(line);
-        assertThat(matcher.matches()).as("Line does not match regex: " + line).isTrue();
-        assertThat(matcher.group(Groups.MEMBER_NAME.getName()))
-            .as("Line does not match member name regex: " + line).isEqualTo(MEMBER_NAME);
+    List<String> lines = nonBlankStrings(readLines(logFile, defaultCharset()));
+    assertThat(lines).hasSize(1);
 
-        logLineCount++;
-      }
+    for (String line : lines) {
+      Matcher matcher = getPattern().matcher(line);
+      assertThat(matcher.matches()).as(failedToMatchRegex(line, getPattern())).isTrue();
+      assertThat(matcher.group(Group.MEMBER_NAME.getName())).isEqualTo(MEMBER_NAME);
     }
 
-    assertThat(logLineCount).as("Expected one log line: " + allLines).isEqualTo(1);
+  }
+
+  private String failedToMatchRegex(String line, Pattern pattern) {
+    String $ = LINE_SEPARATOR;
+    return $ + "Line:" + $ + " " + line + $ + "failed to match regex:" + $ + " " + pattern + $;
   }
 }

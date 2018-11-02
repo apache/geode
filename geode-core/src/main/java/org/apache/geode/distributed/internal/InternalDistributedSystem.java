@@ -685,13 +685,15 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       }
 
-      loggingSession.createSession(this);
+      boolean logBanner = !attemptingToReconnect;
+      boolean logConfiguration = !attemptingToReconnect;
+      loggingSession.createSession(this, logBanner, logConfiguration);
 
       // LOG: create LogWriterLogger(s) for backwards compatibility of getLogWriter and
       // getSecurityLogWriter
       if (this.logWriter == null) {
         this.logWriter =
-            LogWriterFactory.createLogWriterLogger(this.isLoner, false, this.config, true);
+            LogWriterFactory.createLogWriterLogger(this.config, false);
         this.logWriter.fine("LogWriter is created.");
       }
 
@@ -700,7 +702,7 @@ public class InternalDistributedSystem extends DistributedSystem
       if (this.securityLogWriter == null) {
         // LOG: whole new LogWriterLogger instance for security
         this.securityLogWriter =
-            LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
+            LogWriterFactory.createLogWriterLogger(this.config, true);
         this.securityLogWriter.fine("SecurityLogWriter is created.");
       }
 

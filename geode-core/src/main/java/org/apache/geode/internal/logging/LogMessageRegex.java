@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.DATE;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.LOG_LEVEL;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.MEMBER_NAME;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.MESSAGE;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.THREAD_ID;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.THREAD_NAME;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.TIME;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.TIME_ZONE;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.DATE;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.LOG_LEVEL;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.MEMBER_NAME;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.MESSAGE;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.THREAD_ID;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.THREAD_NAME;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.TIME;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.TIME_ZONE;
 
 import java.util.regex.Pattern;
 
@@ -66,7 +66,7 @@ public class LogMessageRegex {
     return Pattern.compile(REGEX);
   }
 
-  public enum Groups {
+  public enum Group {
     LOG_LEVEL(1, "logLevel", "(?<logLevel>[a-z]+)"),
     DATE(2, "date", "(?<date>\\d{4}\\/\\d{2}\\/\\d{2})"),
     TIME(3, "time", "(?<time>\\d{2}:\\d{2}:\\d{2}\\.\\d{3})"),
@@ -80,7 +80,7 @@ public class LogMessageRegex {
     private final String name;
     private final String regex;
 
-    Groups(int index, String name, String regex) {
+    Group(final int index, final String name, final String regex) {
       this.index = index;
       this.name = name;
       this.regex = regex;

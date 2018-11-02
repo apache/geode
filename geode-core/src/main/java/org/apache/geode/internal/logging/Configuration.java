@@ -26,7 +26,7 @@ import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.internal.ClassPathLoader;
 
 /**
- * Provides logging configuration by managing an {@code AgentProvider} for the logging backend
+ * Provides logging configuration by managing an {@link ProviderAgent} for the logging backend
  * provider.
  */
 public class Configuration implements LogConfigListener {
@@ -80,6 +80,16 @@ public class Configuration implements LogConfigListener {
    */
   private static final LogLevelUpdateScope DEFAULT_LOG_LEVEL_UPDATE_SCOPE = GEODE_LOGGERS;
 
+  private final LogLevelUpdateOccurs logLevelUpdateOccurs;
+  private final LogLevelUpdateScope logLevelUpdateScope;
+
+  private final ProviderAgent providerAgent;
+
+  /**
+   * Protected by synchronization on Configuration instance.
+   */
+  private LogConfigSupplier logConfigSupplier;
+
   public static Configuration create() {
     return create(getLogLevelUpdateOccurs(), getLogLevelUpdateScope(), createProviderAgent());
   }
@@ -99,6 +109,13 @@ public class Configuration implements LogConfigListener {
   public static Configuration create(final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope, final ProviderAgent providerAgent) {
     return new Configuration(logLevelUpdateOccurs, logLevelUpdateScope, providerAgent);
+  }
+
+  private Configuration(final LogLevelUpdateOccurs logLevelUpdateOccurs,
+      final LogLevelUpdateScope logLevelUpdateScope, final ProviderAgent providerAgent) {
+    this.logLevelUpdateOccurs = logLevelUpdateOccurs;
+    this.logLevelUpdateScope = logLevelUpdateScope;
+    this.providerAgent = providerAgent;
   }
 
   static LogLevelUpdateOccurs getLogLevelUpdateOccurs() {
@@ -131,23 +148,6 @@ public class Configuration implements LogConfigListener {
       LOGGER.warn("Unable to create ProviderAgent of type {}", agentClassName, e);
     }
     return new NullProviderAgent();
-  }
-
-  private final LogLevelUpdateOccurs logLevelUpdateOccurs;
-  private final LogLevelUpdateScope logLevelUpdateScope;
-
-  private final ProviderAgent providerAgent;
-
-  /**
-   * Protected by synchronization on Configuration instance.
-   */
-  private LogConfigSupplier logConfigSupplier;
-
-  private Configuration(final LogLevelUpdateOccurs logLevelUpdateOccurs,
-      final LogLevelUpdateScope logLevelUpdateScope, final ProviderAgent providerAgent) {
-    this.logLevelUpdateOccurs = logLevelUpdateOccurs;
-    this.logLevelUpdateScope = logLevelUpdateScope;
-    this.providerAgent = providerAgent;
   }
 
   /**

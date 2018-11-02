@@ -202,5 +202,4 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
   private static List<String> nonBlankStrings(List<String> values) {
     return values.stream().filter(s -> isNotBlank(s)).collect(Collectors.toList());
   }
-
 }

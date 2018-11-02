@@ -36,7 +36,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
@@ -59,12 +58,10 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
 
   private Logger logger;
   private String logMessage;
+  private ConsoleAppender consoleAppender;
 
   @ClassRule
   public static SystemOutRule systemOutRule = new SystemOutRule().enableLog();
-
-  @ClassRule
-  public static SystemErrRule systemErrRule = new SystemErrRule().enableLog();
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -85,20 +82,14 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
   @Before
   public void setUp() throws Exception {
     logger = LogManager.getLogger();
+    logMessage = "Logging in " + testName.getMethodName();
+    consoleAppender = loggerContextRule.getAppender(APPENDER_NAME, ConsoleAppender.class);
 
     systemOutRule.clearLog();
-    systemErrRule.clearLog();
-
-    logMessage = "Logging in " + testName.getMethodName();
   }
 
   @Test
   public void consoleAppenderIsConfigured() {
-    ConsoleAppender consoleAppender =
-        loggerContextRule.getAppender(APPENDER_NAME, ConsoleAppender.class);
-
-    assertThat(consoleAppender).isNotNull();
-
     assertThat(consoleAppender.getFilter()).isNull();
     assertThat(consoleAppender.getHandler()).isInstanceOf(DefaultErrorHandler.class);
     assertThat(consoleAppender.getImmediateFlush()).isTrue();
@@ -123,7 +114,5 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
 
     assertThat(systemOutRule.getLog()).contains(Level.INFO.name().toLowerCase());
     assertThat(systemOutRule.getLog()).contains(logMessage);
-
-    assertThat(systemErrRule.getLog()).isEmpty();
   }
 }

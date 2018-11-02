@@ -17,12 +17,14 @@ package org.apache.geode.internal.logging;
 import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
 import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 
+/**
+ * {@link ProviderAgent} that does nothing.
+ */
 public class NullProviderAgent implements ProviderAgent {
 
   @Override
-  public void configure(LogConfig logConfig,
-      LogLevelUpdateOccurs logLevelUpdateOccurs,
-      LogLevelUpdateScope logLevelUpdateScope) {
+  public void configure(final LogConfig logConfig, final LogLevelUpdateOccurs logLevelUpdateOccurs,
+      final LogLevelUpdateScope logLevelUpdateScope) {
     // nothing
   }
 

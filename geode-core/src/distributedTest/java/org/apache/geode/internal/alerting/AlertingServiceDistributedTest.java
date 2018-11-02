@@ -17,13 +17,11 @@
 package org.apache.geode.internal.alerting;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
 import static org.apache.geode.internal.alerting.AlertLevel.NONE;
@@ -345,8 +343,6 @@ public class AlertingServiceDistributedTest implements Serializable {
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
     config.setProperty(HTTP_SERVICE_PORT, "0");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
     alertingService = cache.getInternalDistributedSystem().getAlertingService();
@@ -366,8 +362,6 @@ public class AlertingServiceDistributedTest implements Serializable {
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, memberName);
     config.setProperty(JMX_MANAGER, "false");
-    config.setProperty(ENABLE_TIME_STATISTICS, "true");
-    config.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     cache = (InternalCache) new CacheFactory(config).create();
     alertingService = cache.getInternalDistributedSystem().getAlertingService();

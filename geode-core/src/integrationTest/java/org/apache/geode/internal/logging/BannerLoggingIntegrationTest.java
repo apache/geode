@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.logging;
 
+import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.BannerHeader.displayValues;
+import static org.apache.geode.internal.Banner.BannerHeader.displayValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -96,26 +96,26 @@ public class BannerLoggingIntegrationTest {
   public void bannerIsLoggedToFileBeforeLogMessage() throws Exception {
     geodeLogger.info(logMessage);
 
-    List<String> logLines = FileUtils.readLines(mainLogFile, Charset.defaultCharset());
+    List<String> lines = readLines(mainLogFile, defaultCharset());
 
     boolean foundBanner = false;
     boolean foundLogMessage = false;
 
-    for (String line : logLines) {
+    for (String line : lines) {
       if (containsAny(line, displayValues())) {
-        assertThat(foundLogMessage).as("Banner should be logged before log message: " + logLines)
+        assertThat(foundLogMessage).as("Banner should be logged before log message: " + lines)
             .isFalse();
         foundBanner = true;
       }
       if (line.contains(logMessage)) {
-        assertThat(foundBanner).as("Log message should be logged after banner: " + logLines)
+        assertThat(foundBanner).as("Log message should be logged after banner: " + lines)
             .isTrue();
         foundLogMessage = true;
       }
     }
 
-    assertThat(foundBanner).as("Banner not found in: " + logLines).isTrue();
-    assertThat(foundLogMessage).as("Log message not found in: " + logLines).isTrue();
+    assertThat(foundBanner).as("Banner not found in: " + lines).isTrue();
+    assertThat(foundLogMessage).as("Log message not found in: " + lines).isTrue();
   }
 
   private boolean containsAny(String string, String... values) {

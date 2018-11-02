@@ -17,79 +17,30 @@ package org.apache.geode.internal.logging;
 import static org.apache.geode.internal.logging.Configuration.MAIN_LOGGER_NAME;
 import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
- * Creates {@code LogWriterLogger}s.
+ * Factory for creating {@link LogWriterLogger}s.
  */
 public class LogWriterFactory {
-
-  // LOG: RemoteGfManagerAgent and CacheCreation use this when there's no InternalDistributedSystem
-  public static InternalLogWriter toSecurityLogWriter(final InternalLogWriter logWriter) {
-    return new SecurityLogWriter(logWriter.getLogWriterLevel(), logWriter);
-  }
 
   /**
    * Creates the log writer for a distributed system based on the system's parsed configuration. The
    * initial banner and messages are also entered into the log by this method.
    *
-   * @param isLoner Whether the distributed system is a loner or not
-   * @param isSecure Whether a logger for security related messages has to be created
-   * @param config The DistributionConfig for the target distributed system
-   * @param logConfig if true log the configuration
+   * @param logConfig geode configuration for the logger
+   * @param secure indicates if the logger is for security related messages
    */
-  public static InternalLogWriter createLogWriterLogger(final boolean isLoner,
-      final boolean isSecure, final LogConfig config, final boolean logConfig) {
+  public static InternalLogWriter createLogWriterLogger(final LogConfig logConfig,
+      final boolean secure) {
+    String name = secure ? SECURITY_LOGGER_NAME : MAIN_LOGGER_NAME;
+    return LogService.createLogWriterLogger(name, logConfig.getName(), secure);
+  }
 
-    // if isSecurity then use "org.apache.geode.security" else use "org.apache.geode"
-    String name;
-    if (isSecure) {
-      name = SECURITY_LOGGER_NAME;
-    } else {
-      name = MAIN_LOGGER_NAME;
-    }
-
-    // create the LogWriterLogger
-    final LogWriterLogger logger =
-        LogService.createLogWriterLogger(name, config.getName(), isSecure);
-
-    // if (isSecure) {
-    // logger.setLogWriterLevel(((DistributionConfig) config).getSecurityLogLevel());
-    // } else {
-    // boolean defaultSource = false;
-    // if (config instanceof DistributionConfig) {
-    // ConfigSource source = ((DistributionConfig) config).getConfigSource(LOG_LEVEL);
-    // if (source == null) {
-    // defaultSource = true;
-    // }
-    // }
-    // if (!defaultSource) {
-    // // LOG: fix bug #51709 by not setting if log-level was not specified
-    // // LOG: let log4j2.xml specify log level which defaults to INFO
-    // logger.setLogWriterLevel(config.getLogLevel());
-    // }
-    // }
-
-    // log the banner
-    if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)
-        && InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs
-                                                                       // during auto-reconnect
-        && !isSecure // && !isLoner /* do this on a loner to fix bug 35602 */
-        && logConfig) {
-      logger.info(LogMarker.CONFIG_MARKER, Banner.getString(null));
-    } else {
-      logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
-    }
-
-    // log the config
-    if (logConfig && !isLoner) {
-      logger.info(LogMarker.CONFIG_MARKER, "Startup Configuration: {}",
-          config.toLoggerString());
-    }
-    return logger;
+  /**
+   * Wraps the {@code logWriter} within a {@link SecurityLogWriter}.
+   */
+  public static InternalLogWriter toSecurityLogWriter(final InternalLogWriter logWriter) {
+    return new SecurityLogWriter(logWriter.getLogWriterLevel(), logWriter);
   }
 }

@@ -61,11 +61,10 @@ public class CacheWithCustomLogConfigIntegrationTest {
 
   private static String configFilePath;
 
+  private Cache cache;
   private LogWriterLogger logWriterLogger;
   private String logMessage;
   private ListAppender listAppender;
-
-  private Cache cache;
 
   @ClassRule
   public static SystemOutRule systemOutRule = new SystemOutRule().enableLog();
@@ -97,24 +96,18 @@ public class CacheWithCustomLogConfigIntegrationTest {
     config.setProperty(LOG_LEVEL, "info");
 
     cache = new CacheFactory(config).create();
+
     logWriterLogger = (LogWriterLogger) cache.getLogger();
-
-    assertThat(Log4jAgent.isUsingGemFireDefaultConfig()).as(Log4jAgent.getConfigurationInfo())
-        .isFalse();
-
+    logMessage = "Logging in " + testName.getMethodName();
     listAppender = loggerContextRule.getListAppender("CUSTOM");
 
     systemOutRule.clearLog();
     systemErrRule.clearLog();
-
-    logMessage = "Logging in " + testName.getMethodName();
   }
 
   @After
   public void tearDown() throws Exception {
-    if (cache != null) {
-      cache.close();
-    }
+    cache.close();
   }
 
   @Test

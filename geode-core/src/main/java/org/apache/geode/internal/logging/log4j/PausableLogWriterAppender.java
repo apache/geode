@@ -34,8 +34,6 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 
-import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.logging.Configuration;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigListener;
 import org.apache.geode.internal.logging.LogConfigSupplier;
@@ -46,6 +44,7 @@ import org.apache.geode.internal.logging.ManagerLogWriter;
 import org.apache.geode.internal.logging.ManagerLogWriterFactory;
 import org.apache.geode.internal.logging.ManagerLogWriterFactory.LogFileRolloverDetails;
 import org.apache.geode.internal.logging.NullLogWriter;
+import org.apache.geode.internal.logging.SessionContext;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 
 @Plugin(name = PausableLogWriterAppender.PLUGIN_NAME, category = Core.CATEGORY_NAME,
@@ -58,7 +57,9 @@ public class PausableLogWriterAppender extends AbstractAppender
 
   private static final boolean START_PAUSED_BY_DEFAULT = true;
 
-  /** Is this thread in the process of appending? */
+  /**
+   * True if this thread is in the process of appending.
+   */
   private static final ThreadLocal<Boolean> APPENDING = ThreadLocal.withInitial(() -> FALSE);
 
   private final String eagerMemberName;
@@ -69,8 +70,6 @@ public class PausableLogWriterAppender extends AbstractAppender
    * appendLog used to be controlled by undocumented system property gemfire.append-log
    */
   private final boolean appendLog;
-  private final boolean logBanner;
-  private final boolean logConfiguration;
   private final boolean security;
   private final boolean debug;
   private final List<LogEvent> events;
@@ -82,10 +81,11 @@ public class PausableLogWriterAppender extends AbstractAppender
   private volatile boolean paused;
 
   protected PausableLogWriterAppender(final String name,
-      final Layout<? extends Serializable> layout, final Filter filter,
+      final Layout<? extends Serializable> layout,
+      final Filter filter,
       final ManagerLogWriter logWriter) {
     this(name, layout, filter, MemberNamePatternConverter.INSTANCE.getMemberNameSupplier(), null,
-        true, true, true, false, START_PAUSED_BY_DEFAULT, false, LoggingSessionListeners.get());
+        true, false, START_PAUSED_BY_DEFAULT, false, LoggingSessionListeners.get());
   }
 
   protected PausableLogWriterAppender(final String name,
@@ -94,8 +94,6 @@ public class PausableLogWriterAppender extends AbstractAppender
       final MemberNameSupplier memberNameSupplier,
       final String eagerMemberName,
       final boolean appendLog,
-      final boolean logBanner,
-      final boolean logConfiguration,
       final boolean security,
       final boolean startPaused,
       final boolean debug,
@@ -107,8 +105,6 @@ public class PausableLogWriterAppender extends AbstractAppender
     }
     this.eagerMemberName = eagerMemberName;
     this.appendLog = appendLog;
-    this.logBanner = logBanner;
-    this.logConfiguration = logConfiguration;
     this.security = security;
     this.debug = debug;
     if (debug) {
@@ -141,12 +137,6 @@ public class PausableLogWriterAppender extends AbstractAppender
 
     @PluginBuilderAttribute
     private boolean appendLog = true;
-
-    @PluginBuilderAttribute
-    private boolean logBanner = true;
-
-    @PluginBuilderAttribute
-    private boolean logConfiguration = true;
 
     @PluginBuilderAttribute
     private boolean startPaused = START_PAUSED_BY_DEFAULT;
@@ -183,24 +173,6 @@ public class PausableLogWriterAppender extends AbstractAppender
       return appendLog;
     }
 
-    public B setLogBanner(final boolean shouldLogBanner) {
-      logBanner = shouldLogBanner;
-      return asBuilder();
-    }
-
-    public boolean isLogBanner() {
-      return logBanner;
-    }
-
-    public B setLogConfiguration(final boolean shouldLogConfiguration) {
-      logConfiguration = shouldLogConfiguration;
-      return asBuilder();
-    }
-
-    public boolean isLogConfiguration() {
-      return logConfiguration;
-    }
-
     public B setStartPaused(final boolean shouldStartPaused) {
       startPaused = shouldStartPaused;
       return asBuilder();
@@ -224,7 +196,7 @@ public class PausableLogWriterAppender extends AbstractAppender
       Layout<? extends Serializable> layout = getOrCreateLayout();
       return new PausableLogWriterAppender(getName(), layout, getFilter(),
           MemberNamePatternConverter.INSTANCE.getMemberNameSupplier(), memberName, appendLog,
-          logBanner, logConfiguration, security, startPaused, debug, LoggingSessionListeners.get());
+          security, startPaused, debug, LoggingSessionListeners.get());
     }
   }
 
@@ -285,14 +257,12 @@ public class PausableLogWriterAppender extends AbstractAppender
     return events;
   }
 
-  /**
-   * TODO:KIRK: createSession might be called more than once for reconnect
-   */
   @Override
-  public synchronized void createSession(final LogConfigSupplier logConfigSupplier) {
+  public synchronized void createSession(final SessionContext sessionContext) {
+    logConfigSupplier = sessionContext.getLogConfigSupplier();
+
     LOGGER.info("Creating session in {} with {}.", this, logConfigSupplier);
 
-    this.logConfigSupplier = logConfigSupplier;
     logConfigSupplier.addLogConfigListener(this);
 
     LogConfig logConfig = logConfigSupplier.getLogConfig();
@@ -315,34 +285,22 @@ public class PausableLogWriterAppender extends AbstractAppender
     logFileRolloverDetails = managerLogWriterFactory.getLogFileRolloverDetails();
   }
 
-  /**
-   * TODO:KIRK: startSession might be called more than once for reconnect
-   */
   @Override
-  public void startSession() {
+  public synchronized void startSession() {
     LOGGER.info("Starting session in {}.", this);
 
     logWriter.startupComplete();
 
     resume();
 
-    if (logBanner) {
-      // TODO:KIRK: add ability to skip for reconnect
-      logBanner();
-    }
-
     logRolloverDetails(logFileRolloverDetails);
-
-    if (logConfiguration) {
-      logConfiguration(logConfigSupplier.getLogConfig());
-    }
 
     logFileRolloverDetails = null;
     logConfigSupplier = null;
   }
 
   @Override
-  public void stopSession() {
+  public synchronized void stopSession() {
     LOGGER.info("Stopping session in {}.", this);
     logWriter.shuttingDown();
     pause();
@@ -363,8 +321,7 @@ public class PausableLogWriterAppender extends AbstractAppender
   public String toString() {
     return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ":" + getName()
         + " {eagerMemberName=" + eagerMemberName + ", lazyMemberName=" + lazyMemberName
-        + "appendLog=" + appendLog + ", logBanner=" + logBanner + ", logConfiguration="
-        + logConfiguration + ", security=" + security + ", paused=" + paused
+        + "appendLog=" + appendLog + ", security=" + security + ", paused=" + paused
         + ", loggingSessionListeners=" + loggingSessionListeners + ", logWriter=" + logWriter
         + ", debug=" + debug + "}";
   }
@@ -409,20 +366,6 @@ public class PausableLogWriterAppender extends AbstractAppender
       } else {
         LogManager.getLogger().info(logFileRolloverDetails.getMessage());
       }
-    }
-  }
-
-  private void logBanner() {
-    LogManager.getLogger().info(LogMarker.CONFIG_MARKER, Banner.getString(null));
-  }
-
-  /**
-   * TODO:KIRK: loner and stand-alone locator previously suppressed logConfiguration
-   */
-  private void logConfiguration(final LogConfig logConfig) {
-    boolean logTheConfig = !security;
-    if (logTheConfig) {
-      LogManager.getLogger().info(Configuration.STARTUP_CONFIGURATION + logConfig.toLoggerString());
     }
   }
 }

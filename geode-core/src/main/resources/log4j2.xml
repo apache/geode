@@ -27,7 +27,7 @@
     <GeodeLogWriter name="LOGWRITER">
       <PatternLayout pattern="${geode-pattern}"/>
     </GeodeLogWriter>
-    <GeodeLogWriter name="SECURITYLOGWRITER" security="true" logBanner="false">
+    <GeodeLogWriter name="SECURITYLOGWRITER" security="true">
       <PatternLayout pattern="${geode-pattern}"/>
     </GeodeLogWriter>
     <GeodeAlert name="ALERT"/>

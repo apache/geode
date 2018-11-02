@@ -888,7 +888,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       this.logWriter = existingLogWriter;
     } else {
       // LOG: create LogWriterLogger
-      this.logWriter = LogWriterFactory.createLogWriterLogger(false, false, logConfig, false);
+      this.logWriter = LogWriterFactory.createLogWriterLogger(logConfig, false);
       // LOG: changed statement from config to info
       this.logWriter.info(Banner.getString(null));
       // Set this log writer in AgentConfigImpl
@@ -896,7 +896,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     }
 
     // LOG: create logWriter here
-    this.logWriter = LogWriterFactory.createLogWriterLogger(false, false, logConfig, false);
+    this.logWriter = LogWriterFactory.createLogWriterLogger(logConfig, false);
 
     // Set this log writer in AgentConfig
     this.agentConfig.setInternalLogWriter(this.logWriter);

@@ -59,14 +59,13 @@ public class DistributedSystemWithBothLogWriterAppendersIntegrationTest {
 
   private static String configFilePath;
 
+  private File mainLogFile;
+  private File securityLogFile;
   private InternalDistributedSystem system;
-
   private Logger mainLogger;
   private Logger securityLogger;
   private LogWriter mainLogWriter;
   private LogWriter securityLogWriter;
-  private File mainLogFile;
-  private File securityLogFile;
   private String logMessage;
 
   @ClassRule

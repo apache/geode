@@ -98,7 +98,7 @@ public class LoggingSessionTest {
     InOrder inOrder = inOrder(configuration, loggingSessionListeners);
     inOrder.verify(configuration).initialize(eq(logConfigSupplier));
     inOrder.verify(configuration).configChanged();
-    inOrder.verify(loggingSessionListeners).createSession(eq(logConfigSupplier));
+    inOrder.verify(loggingSessionListeners).createSession(eq(loggingSession));
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -113,7 +113,7 @@ public class LoggingSessionTest {
   public void createSessionNotifiesLoggingSessionListeners() {
     loggingSession.createSession(logConfigSupplier);
 
-    verify(loggingSessionListeners).createSession(eq(logConfigSupplier));
+    verify(loggingSessionListeners).createSession(eq(loggingSession));
   }
 
   @Test

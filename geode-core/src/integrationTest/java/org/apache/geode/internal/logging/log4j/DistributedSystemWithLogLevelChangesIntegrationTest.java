@@ -65,12 +65,11 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
   private static String configFilePath;
 
   private InternalDistributedSystem system;
-
-  private PausableConsoleAppender pausableConsoleAppender;
   private DistributionConfig distributionConfig;
   private Logger geodeLogger;
   private Logger applicationLogger;
   private String logMessage;
+  private PausableConsoleAppender pausableConsoleAppender;
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -93,22 +92,19 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    pausableConsoleAppender =
-        loggerContextRule.getAppender(APPENDER_NAME, PausableConsoleAppender.class);
-    assertThat(pausableConsoleAppender).isNotNull();
-
     System.setProperty(LOG_LEVEL_UPDATE_OCCURS_PROPERTY, LogLevelUpdateOccurs.ALWAYS.name());
 
     Properties config = new Properties();
     config.setProperty(LOCATORS, "");
+
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
     distributionConfig = system.getConfig();
-
     geodeLogger = LogService.getLogger();
     applicationLogger = LogService.getLogger(APPLICATION_LOGGER_NAME);
-
     logMessage = "Logging in " + testName.getMethodName();
+    pausableConsoleAppender =
+        loggerContextRule.getAppender(APPENDER_NAME, PausableConsoleAppender.class);
   }
 
   @After
@@ -188,11 +184,11 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   private void assertThatLogEventsContains(String message, String loggerName, Level level) {
     List<LogEvent> logEvents = pausableConsoleAppender.getLogEvents();
-    for (LogEvent event : logEvents) {
-      if (event.getMessage().getFormattedMessage().contains(message)) {
-        assertThat(event.getMessage().getFormattedMessage()).isEqualTo(message);
-        assertThat(event.getLoggerName()).isEqualTo(loggerName);
-        assertThat(event.getLevel()).isEqualTo(level);
+    for (LogEvent logEvent : logEvents) {
+      if (logEvent.getMessage().getFormattedMessage().contains(message)) {
+        assertThat(logEvent.getMessage().getFormattedMessage()).isEqualTo(message);
+        assertThat(logEvent.getLoggerName()).isEqualTo(loggerName);
+        assertThat(logEvent.getLevel()).isEqualTo(level);
         return;
       }
     }
@@ -201,9 +197,9 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   private void assertThatLogEventsDoesNotContain(String message, String loggerName, Level level) {
     List<LogEvent> logEvents = pausableConsoleAppender.getLogEvents();
-    for (LogEvent event : logEvents) {
-      if (event.getMessage().getFormattedMessage().contains(message) &&
-          event.getLoggerName().equals(loggerName) && event.getLevel().equals(level)) {
+    for (LogEvent logEvent : logEvents) {
+      if (logEvent.getMessage().getFormattedMessage().contains(message) &&
+          logEvent.getLoggerName().equals(loggerName) && logEvent.getLevel().equals(level)) {
         fail("Expected message " + message + " should not be contained in " + logEvents);
       }
     }

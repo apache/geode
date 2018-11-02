@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.logging;
 
+import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
+
 /**
  * Provides custom configuration of the logging backend for Geode logging.
  */
@@ -22,9 +25,8 @@ public interface ProviderAgent {
   /**
    * Updates the logging backend with custom configuration.
    */
-  void configure(final LogConfig logConfig,
-      final Configuration.LogLevelUpdateOccurs logLevelUpdateOccurs,
-      final Configuration.LogLevelUpdateScope logLevelUpdateScope);
+  void configure(final LogConfig logConfig, final LogLevelUpdateOccurs logLevelUpdateOccurs,
+      final LogLevelUpdateScope logLevelUpdateScope);
 
   /**
    * Removes any custom configuration from the logging backend.

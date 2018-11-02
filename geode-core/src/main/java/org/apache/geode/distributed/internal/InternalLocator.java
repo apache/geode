@@ -473,14 +473,14 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
     if (logWriter == null) {
-      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config, false);
+      logWriter = LogWriterFactory.createLogWriterLogger(this.config, false);
       if (logger.isDebugEnabled()) {
         logger.debug("LogWriter for locator is created.");
       }
     }
 
     if (securityLogWriter == null) {
-      securityLogWriter = LogWriterFactory.createLogWriterLogger(false, true, this.config, false);
+      securityLogWriter = LogWriterFactory.createLogWriterLogger(this.config, true);
       securityLogWriter.fine("SecurityLogWriter for locator is created.");
     }
 

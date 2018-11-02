@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.logging;
 
+/**
+ * {@link LoggingSession} that does nothing.
+ */
 public class NullLoggingSession extends LoggingSession {
 
   public static LoggingSession create() {

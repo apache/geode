@@ -62,12 +62,12 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
 
   private static String configFilePath;
 
-  private PausableConsoleAppender pausableConsoleAppender;
   private LogConfig config;
   private Configuration configuration;
   private Logger geodeLogger;
   private Logger applicationLogger;
   private String logMessage;
+  private PausableConsoleAppender pausableConsoleAppender;
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -87,9 +87,6 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    pausableConsoleAppender =
-        loggerContextRule.getAppender(APPENDER_NAME, PausableConsoleAppender.class);
-
     config = mock(LogConfig.class);
     when(config.getLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
     when(config.getSecurityLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
@@ -104,6 +101,9 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
     applicationLogger = LogService.getLogger(APPLICATION_LOGGER_NAME);
 
     logMessage = "Logging in " + testName.getMethodName();
+
+    pausableConsoleAppender =
+        loggerContextRule.getAppender(APPENDER_NAME, PausableConsoleAppender.class);
   }
 
   @After

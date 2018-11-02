@@ -14,36 +14,35 @@
  */
 package org.apache.geode.internal.logging;
 
-import java.io.File;
+public interface SessionContext {
 
-/**
- * Provides details about the system log file.
- */
-public class LogFile implements LogFileDetails {
+  State getState();
 
-  private final LogFileDetails logFileDetails;
+  LogConfigSupplier getLogConfigSupplier();
 
-  public LogFile(final LogFileDetails logFileDetails) {
-    this.logFileDetails = logFileDetails;
-  }
+  enum State {
+    CREATED,
+    STARTED,
+    STOPPED;
 
-  @Override
-  public File getChildLogFile() {
-    return logFileDetails.getChildLogFile();
-  }
-
-  @Override
-  public File getLogDir() {
-    return logFileDetails.getLogDir();
-  }
-
-  @Override
-  public int getMainLogId() {
-    return logFileDetails.getMainLogId();
-  }
-
-  @Override
-  public boolean useChildLogging() {
-    return logFileDetails.useChildLogging();
+    State changeTo(final State newState) {
+      switch (newState) {
+        case CREATED:
+          if (this != STOPPED) {
+            throw new IllegalStateException("Session must not exist before creating");
+          }
+          return CREATED;
+        case STARTED:
+          if (this != CREATED) {
+            throw new IllegalStateException("Session must be created before starting");
+          }
+          return STARTED;
+        case STOPPED:
+          if (this != STARTED) {
+            throw new IllegalStateException("Session must be started before stopping");
+          }
+      }
+      return STOPPED;
+    }
   }
 }

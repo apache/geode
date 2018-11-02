@@ -18,17 +18,21 @@ import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
 
 import java.io.PrintStream;
 
+/**
+ * {@link ManagerLogWriter} that does nothing.
+ */
 public class NullLogWriter extends ManagerLogWriter {
 
   public NullLogWriter() {
     this(LogWriterLevel.NONE.intLevel(), new PrintStream(NULL_OUTPUT_STREAM), true);
   }
 
-  public NullLogWriter(int level, PrintStream printStream, boolean loner) {
+  public NullLogWriter(final int level, final PrintStream printStream, final boolean loner) {
     super(level, printStream, loner);
   }
 
-  public NullLogWriter(int level, PrintStream printStream, String connectionName, boolean loner) {
+  public NullLogWriter(final int level, final PrintStream printStream, final String connectionName,
+      final boolean loner) {
     super(level, printStream, connectionName, loner);
   }
 

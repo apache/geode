@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.BannerHeader.CLASS_PATH;
-import static org.apache.geode.internal.BannerHeader.COMMAND_LINE_PARAMETERS;
-import static org.apache.geode.internal.BannerHeader.COMMUNICATIONS_VERSION;
-import static org.apache.geode.internal.BannerHeader.CURRENT_DIR;
-import static org.apache.geode.internal.BannerHeader.HOME_DIR;
-import static org.apache.geode.internal.BannerHeader.LIBRARY_PATH;
-import static org.apache.geode.internal.BannerHeader.LOG4J2_CONFIGURATION;
-import static org.apache.geode.internal.BannerHeader.PROCESS_ID;
-import static org.apache.geode.internal.BannerHeader.SYSTEM_PROPERTIES;
-import static org.apache.geode.internal.BannerHeader.USER;
+import static org.apache.geode.internal.Banner.BannerHeader.CLASS_PATH;
+import static org.apache.geode.internal.Banner.BannerHeader.COMMAND_LINE_PARAMETERS;
+import static org.apache.geode.internal.Banner.BannerHeader.COMMUNICATIONS_VERSION;
+import static org.apache.geode.internal.Banner.BannerHeader.CURRENT_DIR;
+import static org.apache.geode.internal.Banner.BannerHeader.HOME_DIR;
+import static org.apache.geode.internal.Banner.BannerHeader.LIBRARY_PATH;
+import static org.apache.geode.internal.Banner.BannerHeader.LOG4J2_CONFIGURATION;
+import static org.apache.geode.internal.Banner.BannerHeader.PROCESS_ID;
+import static org.apache.geode.internal.Banner.BannerHeader.SYSTEM_PROPERTIES;
+import static org.apache.geode.internal.Banner.BannerHeader.USER;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -189,7 +189,7 @@ public class Banner {
    *
    * @param args possibly null list of command line arguments
    */
-  public static String getString(String args[]) {
+  public static String getString(String[] args) {
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     print(pw, args);
@@ -197,4 +197,52 @@ public class Banner {
     return sw.toString();
   }
 
+  /**
+   * The headers of the log {@link Banner}.
+   */
+  public enum BannerHeader {
+
+    LICENSE_START("Licensed to the Apache Software Foundation (ASF) under one or more"),
+    BUILD_DATE(VersionDescription.BUILD_DATE),
+    BUILD_ID(VersionDescription.BUILD_ID),
+    BUILD_JAVA_VERSION(VersionDescription.BUILD_JAVA_VERSION),
+    BUILD_PLATFORM(VersionDescription.BUILD_PLATFORM),
+    PRODUCT_NAME(VersionDescription.PRODUCT_NAME),
+    PRODUCT_VERSION(VersionDescription.PRODUCT_VERSION),
+    SOURCE_DATE(VersionDescription.SOURCE_DATE),
+    SOURCE_REPOSITORY(VersionDescription.SOURCE_REPOSITORY),
+    SOURCE_REVISION(VersionDescription.SOURCE_REVISION),
+    NATIVE_VERSION(VersionDescription.NATIVE_VERSION),
+    RUNNING_ON(VersionDescription.RUNNING_ON),
+    COMMUNICATIONS_VERSION("Communications version"),
+    PROCESS_ID("Process ID"),
+    USER("User"),
+    CURRENT_DIR("Current dir"),
+    HOME_DIR("Home dir"),
+    COMMAND_LINE_PARAMETERS("Command Line Parameters"),
+    CLASS_PATH("Class Path"),
+    LIBRARY_PATH("Library Path"),
+    SYSTEM_PROPERTIES("System Properties"),
+    LOG4J2_CONFIGURATION("Log4J 2 Configuration");
+
+    private final String displayValue;
+
+    BannerHeader(String displayValue) {
+      this.displayValue = displayValue;
+    }
+
+    public String displayValue() {
+      return displayValue;
+    }
+
+    public static String[] displayValues() {
+      String[] headerValues = new String[BannerHeader.values().length];
+      int i = 0;
+      for (BannerHeader bannerHeader : BannerHeader.values()) {
+        headerValues[i] = bannerHeader.displayValue();
+        i++;
+      }
+      return headerValues;
+    }
+  }
 }

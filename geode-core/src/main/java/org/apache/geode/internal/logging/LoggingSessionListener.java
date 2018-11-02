@@ -39,7 +39,7 @@ public interface LoggingSessionListener {
   /**
    * Notifies listeners of a new logging session with new {@code LogConfig}.
    */
-  void createSession(final LogConfigSupplier logConfigSupplier);
+  void createSession(SessionContext sessionContext);
 
   /**
    * Starts the new logging session.

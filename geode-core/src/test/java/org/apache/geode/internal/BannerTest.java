@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link Banner} and {@link BannerHeader}.
+ * Unit tests for {@link Banner} and {@link Banner.BannerHeader}.
  */
 public class BannerTest {
 
@@ -33,23 +33,23 @@ public class BannerTest {
 
   @Test
   public void moreThanZeroBannerHeaderValues() {
-    assertThat(BannerHeader.values().length).isGreaterThan(0);
+    assertThat(Banner.BannerHeader.values().length).isGreaterThan(0);
   }
 
   @Test
   public void moreThanZeroBannerHeaderDisplayValues() {
-    assertThat(BannerHeader.displayValues().length).isGreaterThan(0);
+    assertThat(Banner.BannerHeader.displayValues().length).isGreaterThan(0);
   }
 
   @Test
   public void displayValuesReturnsDisplayValueForEveryBannerHeader() {
-    for (BannerHeader bannerHeader : BannerHeader.values()) {
-      assertThat(BannerHeader.displayValues()).contains(bannerHeader.displayValue());
+    for (Banner.BannerHeader bannerHeader : Banner.BannerHeader.values()) {
+      assertThat(Banner.BannerHeader.displayValues()).contains(bannerHeader.displayValue());
     }
   }
 
   @Test
   public void bannerContainsEveryBannerHeader() {
-    assertThat(banner).contains(BannerHeader.displayValues());
+    assertThat(banner).contains(Banner.BannerHeader.displayValues());
   }
 }

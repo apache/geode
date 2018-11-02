@@ -38,6 +38,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
+import org.apache.geode.internal.logging.SessionContext;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -95,7 +96,10 @@ public class PausableLogWriterAppenderWithLimitsIntegrationTest {
     when(logConfigSupplier.getLogConfig()).thenReturn(config);
     when(logConfigSupplier.getStatisticsConfig()).thenReturn(mock(StatisticsConfig.class));
 
-    pausableLogWriterAppender.createSession(logConfigSupplier);
+    SessionContext sessionContext = mock(SessionContext.class);
+    when(sessionContext.getLogConfigSupplier()).thenReturn(logConfigSupplier);
+
+    pausableLogWriterAppender.createSession(sessionContext);
   }
 
   @After

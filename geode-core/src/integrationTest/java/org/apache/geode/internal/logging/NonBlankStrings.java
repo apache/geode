@@ -14,36 +14,14 @@
  */
 package org.apache.geode.internal.logging;
 
-import java.io.File;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-/**
- * Provides details about the system log file.
- */
-public class LogFile implements LogFileDetails {
+import java.util.List;
+import java.util.stream.Collectors;
 
-  private final LogFileDetails logFileDetails;
+public class NonBlankStrings {
 
-  public LogFile(final LogFileDetails logFileDetails) {
-    this.logFileDetails = logFileDetails;
-  }
-
-  @Override
-  public File getChildLogFile() {
-    return logFileDetails.getChildLogFile();
-  }
-
-  @Override
-  public File getLogDir() {
-    return logFileDetails.getLogDir();
-  }
-
-  @Override
-  public int getMainLogId() {
-    return logFileDetails.getMainLogId();
-  }
-
-  @Override
-  public boolean useChildLogging() {
-    return logFileDetails.useChildLogging();
+  public static List<String> nonBlankStrings(List<String> values) {
+    return values.stream().filter(s -> isNotBlank(s)).collect(Collectors.toList());
   }
 }

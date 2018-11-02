@@ -14,18 +14,32 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.geode.internal.logging.Configuration.STARTUP_CONFIGURATION;
+import static org.apache.geode.internal.logging.SessionContext.State.CREATED;
+import static org.apache.geode.internal.logging.SessionContext.State.STARTED;
+import static org.apache.geode.internal.logging.SessionContext.State.STOPPED;
+
 import java.util.Optional;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.internal.Banner;
 
 /**
  * Configures the logging {@code Configuration} and provides lifecycle to Geode logging.
  */
-public class LoggingSession {
+public class LoggingSession implements SessionContext {
+
+  private static final Logger logger = LogService.getLogger();
 
   private final Configuration configuration;
   private final LoggingSessionListeners loggingSessionListeners;
-  private State state = State.STOPPED;
+
+  private volatile boolean logBanner;
+  private volatile boolean logConfiguration;
+
+  private State state = STOPPED;
 
   public static LoggingSession create() {
     return create(Configuration.create(), LoggingSessionListeners.get());
@@ -44,22 +58,40 @@ public class LoggingSession {
   }
 
   public synchronized void createSession(final LogConfigSupplier logConfigSupplier) {
-    configuration.initialize(logConfigSupplier);
-    changeStateTo(State.CREATED);
-    loggingSessionListeners.createSession(logConfigSupplier);
+    createSession(logConfigSupplier, true, true);
   }
 
+  public synchronized void createSession(final LogConfigSupplier logConfigSupplier,
+      final boolean logBanner, final boolean logConfiguration) {
+    configuration.initialize(logConfigSupplier);
+    state = state.changeTo(CREATED);
+    loggingSessionListeners.createSession(this);
+
+    this.logBanner = logBanner;
+    this.logConfiguration = logConfiguration;
+  }
+
+  /**
+   * Note: nothing checks Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER anymore.
+   */
   public synchronized void startSession() {
-    changeStateTo(State.STARTED);
+    state = state.changeTo(STARTED);
     loggingSessionListeners.startSession();
+
+    if (logBanner) {
+      logger.info(Banner.getString(null));
+    }
+    if (logConfiguration) {
+      String configInfo = configuration.getLogConfigSupplier().getLogConfig().toLoggerString();
+      logger.info(STARTUP_CONFIGURATION + configInfo);
+    }
   }
 
   public synchronized void stopSession() {
-    changeStateTo(State.STOPPED);
+    state = state.changeTo(STOPPED);
     loggingSessionListeners.stopSession();
   }
 
-  // TODO:KIRK: consider combining stopSession and shutdown
   public synchronized void shutdown() {
     configuration.shutdown();
   }
@@ -68,43 +100,18 @@ public class LoggingSession {
     return loggingSessionListeners.getLogFile();
   }
 
-  @TestingOnly
-  LoggingSessionListeners getLoggingSessionListeners() {
-    return loggingSessionListeners;
-  }
-
-  @TestingOnly
-  synchronized State getState() {
+  @Override
+  public State getState() {
     return state;
   }
 
-  void changeStateTo(final State newState) {
-    state = state.changeTo(newState);
+  @Override
+  public LogConfigSupplier getLogConfigSupplier() {
+    return configuration.getLogConfigSupplier();
   }
 
-  enum State {
-    CREATED,
-    STARTED,
-    STOPPED;
-
-    State changeTo(final State newState) {
-      switch (newState) {
-        case CREATED:
-          if (this != STOPPED) {
-            throw new IllegalStateException("Session must not exist before creating");
-          }
-          return CREATED;
-        case STARTED:
-          if (this != CREATED) {
-            throw new IllegalStateException("Session must be created before starting");
-          }
-          return STARTED;
-        case STOPPED:
-          if (this != STARTED) {
-            throw new IllegalStateException("Session must be started before stopping");
-          }
-      }
-      return STOPPED;
-    }
+  @TestingOnly
+  LoggingSessionListeners getLoggingSessionListeners() {
+    return loggingSessionListeners;
   }
 }

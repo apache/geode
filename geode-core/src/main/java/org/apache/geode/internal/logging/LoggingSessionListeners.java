@@ -21,7 +21,7 @@ import java.util.Set;
 import org.apache.geode.annotations.TestingOnly;
 
 /**
- * Manages registration of {@code LoggingSessionListener}s and provides notifications to them.
+ * Manages registration of {@link LoggingSessionListener}s and provides notifications to them.
  */
 public class LoggingSessionListeners {
 
@@ -41,16 +41,15 @@ public class LoggingSessionListeners {
   /**
    * Adds the {@code LoggingSessionListener}.
    */
-  public void addLoggingLifecycleListener(final LoggingSessionListener loggingLifecycleListener) {
-    listeners.add(loggingLifecycleListener);
+  public void addLoggingLifecycleListener(final LoggingSessionListener listener) {
+    listeners.add(listener);
   }
 
   /**
    * Removes the {@code LoggingSessionListener}.
    */
-  public void removeLoggingLifecycleListener(
-      final LoggingSessionListener loggingLifecycleListener) {
-    listeners.remove(loggingLifecycleListener);
+  public void removeLoggingLifecycleListener(final LoggingSessionListener listener) {
+    listeners.remove(listener);
   }
 
   /**
@@ -63,9 +62,9 @@ public class LoggingSessionListeners {
   /**
    * Provides {@code createSession} notification to all registered listeners.
    */
-  public void createSession(final LogConfigSupplier logConfigSupplier) {
+  public void createSession(final SessionContext sessionContext) {
     for (LoggingSessionListener listener : listeners) {
-      listener.createSession(logConfigSupplier);
+      listener.createSession(sessionContext);
     }
   }
 

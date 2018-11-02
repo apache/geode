@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.BannerHeader.displayValues;
+import static org.apache.geode.internal.Banner.BannerHeader.displayValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;

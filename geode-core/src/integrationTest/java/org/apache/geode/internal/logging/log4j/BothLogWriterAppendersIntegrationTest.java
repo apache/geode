@@ -41,6 +41,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.SessionContext;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -59,12 +60,12 @@ public class BothLogWriterAppendersIntegrationTest {
 
   private static String configFilePath;
 
-  private PausableLogWriterAppender mainLogWriterAppender;
-  private PausableLogWriterAppender securityLogWriterAppender;
+  private File securityLogFile;
   private Logger mainGeodeLogger;
   private Logger securityGeodeLogger;
-  private File securityLogFile;
   private String logMessage;
+  private PausableLogWriterAppender mainLogWriterAppender;
+  private PausableLogWriterAppender securityLogWriterAppender;
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -84,46 +85,38 @@ public class BothLogWriterAppendersIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+    String name = testName.getMethodName();
+    File mainLogFile = new File(temporaryFolder.getRoot(), name + ".log");
+    securityLogFile = new File(temporaryFolder.getRoot(), name + "-security.log");
+
+    LogConfig logConfig = mock(LogConfig.class);
+    when(logConfig.getName()).thenReturn(name);
+    when(logConfig.getLogFile()).thenReturn(mainLogFile);
+    when(logConfig.getSecurityLogFile()).thenReturn(securityLogFile);
+
+    LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
+    when(logConfigSupplier.getLogConfig()).thenReturn(logConfig);
+    when(logConfigSupplier.getStatisticsConfig()).thenReturn(mock(StatisticsConfig.class));
+
+    SessionContext sessionContext = mock(SessionContext.class);
+    when(sessionContext.getLogConfigSupplier()).thenReturn(logConfigSupplier);
+
+    mainGeodeLogger = LogService.getLogger(MAIN_LOGGER_NAME);
+    securityGeodeLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
+
+    logMessage = "Logging in " + testName.getMethodName();
+
     mainLogWriterAppender = loggerContextRule.getAppender(MAIN_APPENDER_NAME,
         PausableLogWriterAppender.class);
     securityLogWriterAppender = loggerContextRule.getAppender(SECURITY_APPENDER_NAME,
         PausableLogWriterAppender.class);
 
-    String name = testName.getMethodName();
-    File mainLogFile = new File(temporaryFolder.getRoot(), name + ".log");
-    securityLogFile = new File(temporaryFolder.getRoot(), name + "-security.log");
-
-    LogConfig mainLogConfig = mock(LogConfig.class);
-    when(mainLogConfig.getName()).thenReturn(name);
-    when(mainLogConfig.getLogFile()).thenReturn(mainLogFile);
-
-    LogConfigSupplier mainLogConfigSupplier = mock(LogConfigSupplier.class);
-    when(mainLogConfigSupplier.getLogConfig()).thenReturn(mainLogConfig);
-    when(mainLogConfigSupplier.getStatisticsConfig()).thenReturn(mock(StatisticsConfig.class));
-
-    LogConfig securityLogConfig = mock(LogConfig.class);
-    when(securityLogConfig.getName()).thenReturn(name);
-    when(securityLogConfig.getLogFile()).thenReturn(securityLogFile);
-
-    LogConfigSupplier securityLogConfigSupplier = mock(LogConfigSupplier.class);
-    when(securityLogConfigSupplier.getLogConfig()).thenReturn(securityLogConfig);
-    when(securityLogConfigSupplier.getStatisticsConfig()).thenReturn(mock(StatisticsConfig.class));
-
-    mainLogWriterAppender.createSession(mainLogConfigSupplier);
-    securityLogWriterAppender.createSession(securityLogConfigSupplier);
-
-    mainGeodeLogger = LogService.getLogger(MAIN_LOGGER_NAME);
-    securityGeodeLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
-
-    mainLogWriterAppender.createSession(mainLogConfigSupplier);
+    mainLogWriterAppender.createSession(sessionContext);
     mainLogWriterAppender.startSession();
-
-    securityLogWriterAppender.createSession(securityLogConfigSupplier);
-    securityLogWriterAppender.startSession();
-
-    logMessage = "Logging in " + testName.getMethodName();
-
     mainLogWriterAppender.clearLogEvents();
+
+    securityLogWriterAppender.createSession(sessionContext);
+    securityLogWriterAppender.startSession();
     securityLogWriterAppender.clearLogEvents();
   }
 
@@ -174,8 +167,6 @@ public class BothLogWriterAppendersIntegrationTest {
   @Test
   public void securityGeodeLoggerLogsToSecurityLogFile() {
     securityGeodeLogger.info(logMessage);
-
-    assertThat(securityLogWriterAppender.getLogEvents()).hasSize(1);
 
     LogFileAssert.assertThat(securityLogFile).exists().contains(logMessage);
   }

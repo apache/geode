@@ -27,7 +27,7 @@ public class LoggingThread extends Thread {
    *
    * @param name the name of the thread
    */
-  public LoggingThread(String name) {
+  public LoggingThread(final String name) {
     this(name, null);
   }
 
@@ -38,7 +38,7 @@ public class LoggingThread extends Thread {
    * @param name the name of the thread
    * @param runnable what the thread will run
    */
-  public LoggingThread(String name, Runnable runnable) {
+  public LoggingThread(final String name, final Runnable runnable) {
     this(name, true, runnable);
   }
 
@@ -50,9 +50,10 @@ public class LoggingThread extends Thread {
    * @param isDaemon true if thread will be marked as a daemon
    * @param runnable what the thread will run
    */
-  public LoggingThread(String name, boolean isDaemon, Runnable runnable) {
+  public LoggingThread(final String name, final boolean isDaemon, final Runnable runnable) {
     super(runnable, name);
     setDaemon(isDaemon);
+    // TODO: fix escaping reference of this
     LoggingUncaughtExceptionHandler.setOnThread(this);
   }
 }

@@ -230,8 +230,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       this.logWriter = existingLogWriter;
     } else {
       // LOG: create LogWriterLogger
-      this.logWriter = LogWriterFactory.createLogWriterLogger(false, false,
-          this.config.createLogConfig(), false);
+      this.logWriter = LogWriterFactory.createLogWriterLogger(this.config.createLogConfig(), false);
       if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
         // LOG: changed statement from config to info
         this.logWriter.info(Banner.getString(null));

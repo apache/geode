@@ -14,6 +14,27 @@
  */
 package org.apache.geode.internal.logging;
 
+import org.apache.geode.LogWriter;
+
+/**
+ * Levels used for identifying the severity of a {@link LogWriter} event. From least specific to
+ * most:
+ * <ul>
+ * <li>{@link #ALL} (least specific, all logging)</li>
+ * <li>{@link #FINEST} (least specific, a lot of logging)</li>
+ * <li>{@link #FINER}</li>
+ * <li>{@link #FINE}</li>
+ * <li>{@link #CONFIG}</li>
+ * <li>{@link #INFO}</li>
+ * <li>{@link #WARNING}</li>
+ * <li>{@link #ERROR}</li>
+ * <li>{@link #SEVERE} (most specific, a little logging)</li>
+ * <li>{@link #NONE} (most specific, no logging)</li>
+ * </ul>
+ *
+ * <p>
+ * Default level in Geode is {@link #INFO}.
+ */
 public enum LogWriterLevel {
 
   ALL(InternalLogWriter.ALL_LEVEL),
@@ -27,7 +48,7 @@ public enum LogWriterLevel {
   SEVERE(InternalLogWriter.SEVERE_LEVEL),
   NONE(InternalLogWriter.NONE_LEVEL);
 
-  public static LogWriterLevel find(int intLevel) {
+  public static LogWriterLevel find(final int intLevel) {
     for (LogWriterLevel logWriterLevel : values()) {
       if (logWriterLevel.intLevel == intLevel) {
         return logWriterLevel;
@@ -38,7 +59,7 @@ public enum LogWriterLevel {
 
   private final int intLevel;
 
-  LogWriterLevel(int intLevel) {
+  LogWriterLevel(final int intLevel) {
     this.intLevel = intLevel;
   }
 

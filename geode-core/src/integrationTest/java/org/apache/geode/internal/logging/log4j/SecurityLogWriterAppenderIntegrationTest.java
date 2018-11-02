@@ -39,6 +39,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.SessionContext;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -58,7 +59,8 @@ public class SecurityLogWriterAppenderIntegrationTest {
 
   private PausableLogWriterAppender securityLogWriterAppender;
   private File securityLogFile;
-  private LogConfigSupplier securityLogConfigSupplier;
+  private SessionContext sessionContext;
+  private LogConfigSupplier logConfigSupplier;
   private Logger securityGeodeLogger;
   private String logMessage;
 
@@ -86,12 +88,15 @@ public class SecurityLogWriterAppenderIntegrationTest {
     String name = testName.getMethodName();
     securityLogFile = new File(temporaryFolder.getRoot(), name + "-security.log");
 
-    LogConfig securityLogConfig = mock(LogConfig.class);
-    when(securityLogConfig.getName()).thenReturn(name);
-    when(securityLogConfig.getLogFile()).thenReturn(securityLogFile);
+    LogConfig logConfig = mock(LogConfig.class);
+    when(logConfig.getName()).thenReturn(name);
+    when(logConfig.getSecurityLogFile()).thenReturn(securityLogFile);
 
-    securityLogConfigSupplier = mock(LogConfigSupplier.class);
-    when(securityLogConfigSupplier.getLogConfig()).thenReturn(securityLogConfig);
+    logConfigSupplier = mock(LogConfigSupplier.class);
+    when(logConfigSupplier.getLogConfig()).thenReturn(logConfig);
+
+    sessionContext = mock(SessionContext.class);
+    when(sessionContext.getLogConfigSupplier()).thenReturn(logConfigSupplier);
 
     securityGeodeLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
     logMessage = "Logging in " + testName.getMethodName();
@@ -104,7 +109,7 @@ public class SecurityLogWriterAppenderIntegrationTest {
 
   @Test
   public void geodeSecurityLoggerAppendsToSecurityLogWriterAppender() {
-    securityLogWriterAppender.createSession(securityLogConfigSupplier);
+    securityLogWriterAppender.createSession(sessionContext);
     securityLogWriterAppender.startSession();
 
     securityGeodeLogger.info(logMessage);
@@ -121,7 +126,7 @@ public class SecurityLogWriterAppenderIntegrationTest {
 
   @Test
   public void securityGeodeLoggerLogsToSecurityLogFile() {
-    securityLogWriterAppender.createSession(securityLogConfigSupplier);
+    securityLogWriterAppender.createSession(sessionContext);
     securityLogWriterAppender.startSession();
 
     securityGeodeLogger.info(logMessage);

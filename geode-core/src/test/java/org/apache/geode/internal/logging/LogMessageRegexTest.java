@@ -14,15 +14,15 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.DATE;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.LOG_LEVEL;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.MEMBER_NAME;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.MESSAGE;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.THREAD_ID;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.THREAD_NAME;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.TIME;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.TIME_ZONE;
-import static org.apache.geode.internal.logging.LogMessageRegex.Groups.values;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.DATE;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.LOG_LEVEL;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.MEMBER_NAME;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.MESSAGE;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.THREAD_ID;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.THREAD_NAME;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.TIME;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.TIME_ZONE;
+import static org.apache.geode.internal.logging.LogMessageRegex.Group.values;
 import static org.apache.geode.internal.logging.LogMessageRegex.getPattern;
 import static org.apache.geode.internal.logging.LogMessageRegex.getRegex;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.BannerHeader.displayValues;
+import static org.apache.geode.internal.Banner.BannerHeader.displayValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
@@ -24,7 +24,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.ServerLauncherIntegrationTestCase;
-import org.apache.geode.internal.BannerHeader;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.test.assertj.LogFileAssert;
@@ -61,6 +60,6 @@ public class LoggingWithServerLauncherIntegrationTest extends ServerLauncherInte
 
   @Test
   public void logFileContainsBannerOnlyOnce() {
-    LogFileAssert.assertThat(getLogFile()).containsOnlyOnce(BannerHeader.displayValues());
+    LogFileAssert.assertThat(getLogFile()).containsOnlyOnce(displayValues());
   }
 }

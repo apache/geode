@@ -18,7 +18,7 @@
         <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} %memberName &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
     </Properties>
     <Appenders>
-        <GeodeLogWriter name="LOGWRITER" logBanner="false" debug="true">
+        <GeodeLogWriter name="LOGWRITER" debug="true">
             <PatternLayout pattern="${geode-pattern}"/>
         </GeodeLogWriter>
     </Appenders>

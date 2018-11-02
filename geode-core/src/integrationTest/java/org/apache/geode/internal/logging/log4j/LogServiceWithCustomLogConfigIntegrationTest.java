@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static org.apache.geode.internal.logging.log4j.Log4jAgent.getConfigurationInfo;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,16 +84,17 @@ public class LogServiceWithCustomLogConfigIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    listAppender = loggerContextRule.getListAppender("CUSTOM");
-
-    assertThat(Log4jAgent.isUsingGemFireDefaultConfig()).as(Log4jAgent.getConfigurationInfo())
-        .isFalse();
-
     systemOutRule.clearLog();
     systemErrRule.clearLog();
 
     logger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
+    listAppender = loggerContextRule.getListAppender("CUSTOM");
+  }
+
+  @Test
+  public void isUsingGemFireDefaultConfigIsFalse() {
+    assertThat(Log4jAgent.isUsingGemFireDefaultConfig()).as(getConfigurationInfo()).isFalse();
   }
 
   @Test

@@ -32,24 +32,28 @@ import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.util.LogFileUtils;
 
+/**
+ * Factory for creating a {@link ManagerLogWriter}.
+ */
 public class ManagerLogWriterFactory {
 
   private static final Logger LOGGER = StatusLogger.getLogger();
 
+  private final LogFileRolloverDetails logFileRolloverDetails;
+
   private boolean security;
   private boolean appendLog;
-  private LogFileRolloverDetails logFileRolloverDetails;
 
   public ManagerLogWriterFactory() {
     logFileRolloverDetails = new LogFileRolloverDetails();
   }
 
-  public ManagerLogWriterFactory setSecurity(boolean value) {
+  public ManagerLogWriterFactory setSecurity(final boolean value) {
     security = value;
     return this;
   }
 
-  public ManagerLogWriterFactory setAppendLog(boolean value) {
+  public ManagerLogWriterFactory setAppendLog(final boolean value) {
     appendLog = value;
     return this;
   }

@@ -23,7 +23,7 @@ import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.geode.internal.ClassPathLoader;
 
 /**
- * Fetches the configuration info from Log4jAgent without direct class dependency.
+ * Fetches the configuration info from {@code Log4jAgent} without direct class dependency.
  *
  * <p>
  * This could potentially be modified to support any logging backend but currently the only caller

@@ -57,6 +57,10 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category(LoggingTest.class)
 public class FastLoggerIntegrationTest {
 
+  /**
+   * This config file is generated dynamically by the test class.
+   */
+  private static final String CONFIG_FILE_NAME = "FastLoggerIntegrationTest_log4j2.xml";
   private static final String TEST_LOGGER_NAME = FastLogger.class.getPackage().getName();
   private static final String ENABLED_MARKER_NAME = "ENABLED";
   private static final String UNUSED_MARKER_NAME = "UNUSED";
@@ -77,8 +81,7 @@ public class FastLoggerIntegrationTest {
 
   @BeforeClass
   public static void setUpLogConfigFile() throws Exception {
-    String configFileName = FastLoggerIntegrationTest.class.getSimpleName() + "_log4j2.xml";
-    configFile = new File(temporaryFolder.getRoot(), configFileName);
+    configFile = new File(temporaryFolder.getRoot(), CONFIG_FILE_NAME);
     configFilePath = configFile.getAbsolutePath();
     writeSimpleConfigFile(configFile, Level.WARN);
   }
