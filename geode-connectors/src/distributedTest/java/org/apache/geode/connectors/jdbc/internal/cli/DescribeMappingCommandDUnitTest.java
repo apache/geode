@@ -89,10 +89,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
-    commandResultAssert.containsOutput("field1");
-    commandResultAssert.containsOutput("field2");
-    commandResultAssert.containsOutput("column1");
-    commandResultAssert.containsOutput("column2");
   }
 
   @Test
