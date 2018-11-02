@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 public class CreateJndiBindingFunctionTest {
 
   private CreateJndiBindingFunction createBindingFunction;
-  private FunctionContext<JndiBindingsType.JndiBinding> context;
+  private FunctionContext<Object[]> context;
   private DistributedSystem distributedSystem;
   private ResultSender resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
@@ -72,7 +72,8 @@ public class CreateJndiBindingFunctionTest {
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    when(context.getArguments()).thenReturn(config);
+    Object[] arguments = new Object[] {config, false};
+    when(context.getArguments()).thenReturn(arguments);
     when(context.getMemberName()).thenReturn("mock-member");
     when(context.getResultSender()).thenReturn(resultSender);
 
@@ -81,6 +82,36 @@ public class CreateJndiBindingFunctionTest {
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
     assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.toString()).contains("jndi-binding");
+
+    Context ctx = JNDIInvoker.getJNDIContext();
+    Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
+
+    assertThat(bindings.keySet()).containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
+        "java:TransactionManager");
+  }
+
+  @Test
+  public void createDataSourceIsSuccessful() throws Exception {
+    JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
+    final String NAME = "jndi1";
+    final String MEMBER = "mock-member";
+    config.setJndiName(NAME);
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setConnectionUrl("jdbc:derby:newDB;create=true");
+    Object[] arguments = new Object[] {config, true};
+    when(context.getArguments()).thenReturn(arguments);
+    when(context.getMemberName()).thenReturn(MEMBER);
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    createBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.toString())
+        .contains("Created data-source \"" + NAME + "\" on \"" + MEMBER + "\".");
 
     Context ctx = JNDIInvoker.getJNDIContext();
     Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
