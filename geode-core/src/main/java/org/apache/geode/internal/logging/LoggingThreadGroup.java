@@ -273,12 +273,12 @@ public class LoggingThreadGroup extends ThreadGroup {
           this.logWriter.info(String.format(msg, msgArgs));
         }
       } else {
-        stderr.severe(String.format("Uncaught exception in thread %s", t, ex));
+        stderr.severe(String.format("Uncaught exception in thread %s", t), ex);
         if (this.logger != null) {
           this.logger.fatal(String.format("Uncaught exception in thread %s", t), ex);
         }
         if (this.logWriter != null) {
-          this.logWriter.severe(String.format("Uncaught exception in thread %s", t, ex));
+          this.logWriter.severe(String.format("Uncaught exception in thread %s", t), ex);
         }
       }
       // if (!(ex instanceof RuntimeException) && (ex instanceof Exception)) {

@@ -94,7 +94,7 @@ public abstract class BaseCommand implements Command {
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "bridge.suppressIOExceptionLogging");
 
   /**
-   * Maximum number of concurrent incoming client message bytes that a bridge server will allow.
+   * Maximum number of concurrent incoming client message bytes that a cache server will allow.
    * Once a server is working on this number additional incoming client messages will wait until one
    * of them completes or fails. The bytes are computed based in the size sent in the incoming msg
    * header.
@@ -103,7 +103,7 @@ public abstract class BaseCommand implements Command {
       Integer.getInteger("BridgeServer.MAX_INCOMING_DATA", -1);
 
   /**
-   * Maximum number of concurrent incoming client messages that a bridge server will allow. Once a
+   * Maximum number of concurrent incoming client messages that a cache server will allow. Once a
    * server is working on this number additional incoming client messages will wait until one of
    * them completes or fails.
    */

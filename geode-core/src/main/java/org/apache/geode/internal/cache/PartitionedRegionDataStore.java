@@ -1774,7 +1774,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             this.partitionedRegion);
       }
       ForceReattemptException fre = new BucketNotFoundException(
-          String.format("Bucket id  %s  not found on VM  %s",
+          String.format("Bucket id %s not found on VM %s",
 
               new Object[] {this.partitionedRegion.bucketStringForLogs(bucketId.intValue()),
                   this.partitionedRegion.getMyId()}));

@@ -154,7 +154,7 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
 
     if (port < MIN_PORT || port > MAX_PORT) {
       throw new IllegalArgumentException(
-          String.format("Port ( %s ) must be an integer between  %s  and  %s",
+          String.format("Port ( %s ) must be an integer between %s and %s",
               new Object[] {Integer.valueOf(port), Integer.valueOf(MIN_PORT),
                   Integer.valueOf(MAX_PORT)}));
     }

@@ -38,7 +38,7 @@ fi
 
 
 echo "Sanitized Geode Fork = ${SANITIZED_GEODE_FORK}"
-echo "Sanitized Goede Branch = ${SANITIZED_GEODE_BRANCH}"
+echo "Sanitized Geode Branch = ${SANITIZED_GEODE_BRANCH}"
 
 
 #echo "DEBUG INFO *****************************"

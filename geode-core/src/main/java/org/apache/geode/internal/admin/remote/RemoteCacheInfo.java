@@ -49,7 +49,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   private String[] rootRegionNames;
   private RemoteStatResource perfStats;
 
-  /** The ids of the bridge servers associated with this cache */
+  /** The ids of the cache servers associated with this cache */
   private int[] bridgeServerIds;
 
   /** Is this is a cache server? */
@@ -217,7 +217,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
 
   @Override
   public String toString() {
-    return String.format("Information about the cache %s with %s bridge servers",
+    return String.format("Information about the cache %s with %s cache servers",
         this.name, this.bridgeServerIds.length);
   }
 }

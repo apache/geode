@@ -75,7 +75,7 @@ public class QueuedOperation {
         lr.cmnClearRegion(re, false/* cacheWrite */, false/* useRVV */);
       } else {
         throw new IllegalStateException(
-            String.format("The  %s  should not have been queued.",
+            String.format("The %s should not have been queued.",
                 this.op));
       }
     } else {
@@ -126,7 +126,7 @@ public class QueuedOperation {
           }
         } else {
           throw new IllegalStateException(
-              String.format("The  %s  should not have been queued.",
+              String.format("The %s should not have been queued.",
                   this.op));
         }
       } finally {

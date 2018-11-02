@@ -475,7 +475,7 @@ public class DiskInitFileParser {
           break;
         default:
           throw new DiskAccessException(
-              String.format("Unknown opCode  %s  found in disk initialization file.", opCode),
+              String.format("Unknown opCode %s found in disk initialization file.", opCode),
               this.interpreter.getNameForError());
       }
       if (interpreter.isClosing()) {

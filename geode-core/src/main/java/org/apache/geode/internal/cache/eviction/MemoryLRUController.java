@@ -70,7 +70,7 @@ public class MemoryLRUController extends SizeLRUController {
   private void setMaximumMegabytes(int megabytes) {
     if (megabytes <= 0) {
       throw new IllegalArgumentException(
-          String.format("MemLRUController limit must be postive:  %s",
+          String.format("MemLRUController limit must be postive: %s",
               megabytes));
     }
     this.limit = megabytes * ONE_MEG;

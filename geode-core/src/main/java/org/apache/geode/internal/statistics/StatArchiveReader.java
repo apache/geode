@@ -210,7 +210,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       case DOUBLE_CODE:
         return Double.longBitsToDouble(bits);
       default:
-        throw new InternalGemFireException(String.format("Unexpected typecode  %s",
+        throw new InternalGemFireException(String.format("Unexpected typecode %s",
             Integer.valueOf(type)));
     }
   }
@@ -1884,7 +1884,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       // assert
       if (idx != resultSize) {
         throw new InternalGemFireException(
-            String.format("getValuesEx did not fill the last  %s  entries of its result.",
+            String.format("getValuesEx did not fill the last %s entries of its result.",
                 Integer.valueOf(resultSize - idx)));
       }
       return result;
@@ -2948,13 +2948,13 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       String machine = dataIn.readUTF();
       if (archiveVersion <= 1) {
         throw new GemFireIOException(
-            String.format("Archive version:  %s  is no longer supported.",
+            String.format("Archive version: %s is no longer supported.",
                 Byte.valueOf(archiveVersion)),
             null);
       }
       if (archiveVersion > ARCHIVE_VERSION) {
         throw new GemFireIOException(
-            String.format("Unsupported archive version:  %s .  The supported version is:  %s .",
+            String.format("Unsupported archive version: %s .  The supported version is: %s .",
 
                 new Object[] {Byte.valueOf(archiveVersion), Byte.valueOf(ARCHIVE_VERSION)}),
             null);
@@ -3146,7 +3146,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               v = readCompactValue();
               break;
             default:
-              throw new IOException(String.format("unexpected typeCode value  %s",
+              throw new IOException(String.format("unexpected typeCode value %s",
                   Byte.valueOf(stats[i].getTypeCode())));
           }
           resourceInstTable[resourceInstId].initialValue(i, v);
@@ -3223,7 +3223,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               statDeltaBits = readCompactValue();
               break;
             default:
-              throw new IOException(String.format("unexpected typeCode value  %s",
+              throw new IOException(String.format("unexpected typeCode value %s",
                   Byte.valueOf(stats[statOffset].getTypeCode())));
           }
           if (resourceInstTable[resourceInstId].addValueSample(statOffset, statDeltaBits)) {
@@ -3277,7 +3277,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
             readSampleToken();
             break;
           default:
-            throw new IOException(String.format("Unexpected token byte value:  %s",
+            throw new IOException(String.format("Unexpected token byte value: %s",
                 Byte.valueOf(token)));
         }
         return true;

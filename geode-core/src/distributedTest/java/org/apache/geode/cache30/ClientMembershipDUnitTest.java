@@ -732,7 +732,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final int[] ports = new int[1];
 
     // create BridgeServer in vm0...
-    vm0.invoke("create Bridge Server", () -> {
+    vm0.invoke("create cache server", () -> {
       try {
         System.out.println("[testClientMembershipEventsInClient] Create BridgeServer");
         getSystem();
@@ -864,7 +864,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertFalse(isClient[CRASHED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
-    // now test that we redisover the bridge server
+    // now test that we redisover the cache server
     vm0.invoke("Recreate BridgeServer", () -> {
       try {
         System.out.println("[testClientMembershipEventsInClient] restarting BridgeServer");
@@ -894,7 +894,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Tests notification of events in server process. Bridge servers detect client joins when the
+   * Tests notification of events in server process. cache servers detect client joins when the
    * client connects to the server.
    */
   @Test
@@ -1317,7 +1317,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     for (int i = 0; i < host.getVMCount(); i++) {
       final int whichVM = i;
       final VM vm = Host.getHost(0).getVM(i);
-      vm.invoke("Create bridge server", () -> {
+      vm.invoke("Create cache server", () -> {
         // create BridgeServer in controller vm...
         System.out.println("[testGetConnectedServers] Create BridgeServer");
         getSystem();
@@ -1423,7 +1423,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     for (int i = 0; i < host.getVMCount(); i++) {
       final int whichVM = i;
       final VM vm = Host.getHost(0).getVM(i);
-      vm.invoke(new CacheSerializableRunnable("Create bridge server") {
+      vm.invoke(new CacheSerializableRunnable("Create cache server") {
         public void run2() throws CacheException {
           // create BridgeServer in controller vm...
           System.out.println("[testGetNotifiedClients] Create BridgeServer");
@@ -1483,7 +1483,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     for (int i = 0; i < host.getVMCount(); i++) {
       final int whichVM = i;
       final VM vm = Host.getHost(0).getVM(i);
-      vm.invoke("Create bridge server", () -> {
+      vm.invoke("Create cache server", () -> {
         Map clients = InternalClientMembership.getConnectedClients(true, getCache());
         assertNotNull(clients);
         testGetNotifiedClients_clientCount = clients.size();

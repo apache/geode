@@ -357,7 +357,7 @@ public class StateFlushOperation {
           // cache is closed - no distribution advisor available for the region so nothing to do but
           // send the stabilization message
         } catch (Exception e) {
-          logger.fatal(String.format("%s  Exception caught while determining channel state",
+          logger.fatal(String.format("%s Exception caught while determining channel state",
               this),
               e);
         } finally {
@@ -421,7 +421,7 @@ public class StateFlushOperation {
           // cache is closed - no distribution advisor available for the region so nothing to do but
           // send the stabilization message
         } catch (Exception e) {
-          logger.fatal(String.format("%s  Exception caught while determining channel state",
+          logger.fatal(String.format("%s Exception caught while determining channel state",
               this),
               e);
         } finally {

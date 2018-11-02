@@ -300,7 +300,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
 
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown eviction action:  %s", action));
+          String.format("Unknown eviction action: %s", action));
     }
   }
 

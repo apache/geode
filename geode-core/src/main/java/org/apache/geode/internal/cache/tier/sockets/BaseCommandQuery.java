@@ -230,7 +230,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           writeQueryResponseChunk(result, null, true, servConn);
         }
       } else {
-        throw new QueryInvalidException(String.format("Unknown result type:  %s",
+        throw new QueryInvalidException(String.format("Unknown result type: %s",
             result.getClass()));
       }
       msg.clearParts();

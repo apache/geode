@@ -911,7 +911,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
     final Host host = Host.getHost(0);
     for (int i = 0; i < 4; i++) {
       VM vm = host.getVM(i);
-      vm.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+      vm.invoke(new CacheSerializableRunnable("Create cache server") {
         public void run2() throws CacheException {
           TestObject.numInstance = 0;
           PortfolioPdx.numInstance = 0;

@@ -150,18 +150,18 @@ public class CacheServerLauncher {
     out.println("\t"
         + "<classpath> Location of user classes required by the cache server.  This path is appended to the current classpath.");
     out.println(
-        "\t" + "<attName> Distributed system attribute such as mcast-port or cache-xml-file.");
-    out.println("\t" + "-rebalance  Indicates that the Cache should immediately be rebalanced");
+        "\t<attName> Distributed system attribute such as mcast-port or cache-xml-file.");
+    out.println("\t-rebalance  Indicates that the Cache should immediately be rebalanced");
     out.println(
-        "\t" + "-disable-default-server  Do not add a default <cache-server>");
+        "\t-disable-default-server  Do not add a default <cache-server>");
     out.println("\t"
         + "<server-port>  Port the server is to listen on for client connections. This overrides the port set in the <cache-server> element of the cache-xml-file");
     out.println(
-        "\t" + "<server-bind-address>  Address the server is to listen on for client connections. This overrides the bind-address set in the <cache-server> element of the cache-xml-file");
+        "\t<server-bind-address>  Address the server is to listen on for client connections. This overrides the bind-address set in the <cache-server> element of the cache-xml-file");
     out.println(
-        "\t" + "<critical-heap-percentage>  Sets the critical heap threshold limit of the Resource Manager. This best works with parallel young generation collector (UseParNewGC) and concurrent low pause collector (UseConcMarkSweepGC) with appropriate CMSInitiatingOccupancyFraction like 50%. This overrides the critical-heap-percentage set in the <resource-manager> element of the cache-xml-file");
+        "\t<critical-heap-percentage>  Sets the critical heap threshold limit of the Resource Manager. This best works with parallel young generation collector (UseParNewGC) and concurrent low pause collector (UseConcMarkSweepGC) with appropriate CMSInitiatingOccupancyFraction like 50%. This overrides the critical-heap-percentage set in the <resource-manager> element of the cache-xml-file");
     out.println(
-        "\t" + "<eviction-heap-percentage>  Sets the eviction heap threshold limit of the Resource Manager above which the eviction should begin on Regions configured for eviction by heap LRU. This overrides the eviction-heap-percentage set in the resource-manager> element of the cache-xml-file");
+        "\t<eviction-heap-percentage>  Sets the eviction heap threshold limit of the Resource Manager above which the eviction should begin on Regions configured for eviction by heap LRU. This overrides the eviction-heap-percentage set in the resource-manager> element of the cache-xml-file");
     out.println("\t"
         + "<critical-Off-heap-percentage>  Sets the critical off-heap threshold limit of the Resource Manager. This overrides the critical-off-heap-percentage set in the <resource-manager> element of the cache-xml-file");
     out.println("\t"
@@ -177,7 +177,7 @@ public class CacheServerLauncher {
         + "<workingdir> Directory in which cacheserver runs, default is the current directory");
     out.println();
     out.println("cacheserver status [-dir=<workingdir>]");
-    out.println("\t" + "Reports the status and process id of a GemFire CacheServer VM");
+    out.println("\tReports the status and process id of a GemFire CacheServer VM");
     out.println("\t"
         + "<workingdir> Directory in which cacheserver runs, default is the current directory");
   }
@@ -292,7 +292,7 @@ public class CacheServerLauncher {
 
     if (!inputWorkingDirectory.exists()) {
       throw new FileNotFoundException(
-          String.format("The input working directory does not exist:  %s",
+          String.format("The input working directory does not exist: %s",
               dirValue));
     }
 
@@ -367,7 +367,7 @@ public class CacheServerLauncher {
         }
       } else {
         throw new IllegalArgumentException(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -407,7 +407,7 @@ public class CacheServerLauncher {
   protected void processUnknownStartOption(final String key, final String value,
       final Map<String, Object> options, final List<String> vmArgs, final Properties props) {
     throw new IllegalArgumentException(
-        String.format("Unknown argument:  %s", key));
+        String.format("Unknown argument: %s", key));
   }
 
   /**
@@ -456,7 +456,7 @@ public class CacheServerLauncher {
         }
       } else {
         throw new IllegalArgumentException(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -478,7 +478,7 @@ public class CacheServerLauncher {
         processDirOption(options, arg.substring(arg.indexOf("=") + 1));
       } else {
         throw new IllegalArgumentException(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -573,7 +573,7 @@ public class CacheServerLauncher {
 
   protected void printStartMessage(final Map<String, Object> options, final int pid)
       throws Exception {
-    System.out.println(String.format("Starting %s with pid: {1,number,#}",
+    System.out.println(String.format("Starting %s with pid: %s",
         this.baseName, pid));
   }
 
@@ -1143,7 +1143,7 @@ public class CacheServerLauncher {
                 && !lastReadMessage.equals(lastReportedMessage)) {
               long elapsedSec = TimeUnit.NANOSECONDS.toSeconds(elapsed);
               System.out.println(String.format(
-                  "The server is still starting. %s seconds have elapsed since the last log message:  %s",
+                  "The server is still starting. %s seconds have elapsed since the last log message: %s",
                   elapsedSec, status.dsMsg));
               lastReportedMessage = lastReadMessage;
             }

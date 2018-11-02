@@ -119,7 +119,7 @@ public class InternalInstantiator {
       if (oldId != 0 && oldId != classId) {
         throw new IllegalStateException(
             String.format(
-                "Class  %s  is already registered with id %s so it can not be registered with id %s",
+                "Class %s is already registered with id %s so it can not be registered with id %s",
 
                 new Object[] {c.getName(), Integer.valueOf(oldId), Integer.valueOf(classId)}));
       }
@@ -177,7 +177,7 @@ public class InternalInstantiator {
       sendRegistrationMessageToServers(instantiator);
     }
     // send it to all cache clients irrelevant of distribute
-    // bridge servers send it all the clients irrelevant of
+    // cache servers send it all the clients irrelevant of
     // originator VM
     sendRegistrationMessageToClients(instantiator);
 
@@ -346,7 +346,7 @@ public class InternalInstantiator {
         if (iah != null && iah.getId() != holder.getId()) {
           throw new IllegalStateException(
               String.format(
-                  "Class  %s  is already registered with id %s so it can not be registered with id %s",
+                  "Class %s is already registered with id %s so it can not be registered with id %s",
 
                   new Object[] {instantiatorClassName, iah.getId(), holder.getId()}));
         }
@@ -465,7 +465,7 @@ public class InternalInstantiator {
     final Instantiator i = (Instantiator) idsToInstantiators.remove(idx);
     if (i == null) {
       throw new IllegalArgumentException(
-          String.format("Class  %s  was not registered with id  %s",
+          String.format("Class %s was not registered with id %s",
               new Object[] {c.getName(), Integer.valueOf(classId)}));
     } else {
       dsMap.remove(c.getName(), i);
@@ -592,7 +592,7 @@ public class InternalInstantiator {
       int id) {
     if (!Instantiator.class.isAssignableFrom(instantiatorClass)) {
       throw new IllegalArgumentException(
-          String.format("%s  does not extend Instantiator.",
+          String.format("%s does not extend Instantiator.",
               instantiatorClass.getName()));
     }
 
@@ -631,19 +631,19 @@ public class InternalInstantiator {
 
     } catch (IllegalAccessException ex) {
       throw new IllegalArgumentException(
-          String.format("Could not access zero-argument constructor of  %s",
+          String.format("Could not access zero-argument constructor of %s",
               instantiatorClass.getName()));
 
     } catch (InstantiationException ex) {
       RuntimeException ex2 = new IllegalArgumentException(
-          String.format("Could not instantiate an instance of  %s",
+          String.format("Could not instantiate an instance of %s",
               instantiatorClass.getName()));
       ex2.initCause(ex);
       throw ex2;
 
     } catch (InvocationTargetException ex) {
       RuntimeException ex2 = new IllegalArgumentException(
-          String.format("While instantiating an instance of  %s",
+          String.format("While instantiating an instance of %s",
               instantiatorClass.getName()));
       ex2.initCause(ex);
       throw ex2;

@@ -169,11 +169,11 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             if (dm.getCache() == null) {
               thr = new CacheClosedException(
-                  String.format("Remote cache is closed:  %s",
+                  String.format("Remote cache is closed: %s",
                       dm.getId()));
             } else {
               dm.getCache().getCacheClosedException(
-                  String.format("Remote cache is closed:  %s",
+                  String.format("Remote cache is closed: %s",
                       dm.getId()));
             }
             return;

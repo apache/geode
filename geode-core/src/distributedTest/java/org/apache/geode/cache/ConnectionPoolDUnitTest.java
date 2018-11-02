@@ -92,7 +92,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @FixMethodOrder(NAME_ASCENDING)
 public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
 
   protected static int port = 0;
@@ -154,7 +154,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Create a bridge server on the given port without starting it.
+   * Create a cache server on the given port without starting it.
    *
    * @since GemFire 5.0.2
    */
@@ -166,7 +166,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 4.0
@@ -205,7 +205,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    *
    * @since GemFire 4.0
    */
@@ -704,7 +704,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests for bug 36684 by having two bridge servers with cacheloaders that should always return a
+   * Tests for bug 36684 by having two cache servers with cacheloaders that should always return a
    * value and one client connected to each server reading values. If the bug exists, the clients
    * will get null sometimes.
    *
@@ -1052,7 +1052,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    // Create two bridge servers
+    // Create two cache servers
     SerializableRunnable createCacheServer = new CacheSerializableRunnable("Create Cache Server") {
       public void run2() throws CacheException {
         AttributesFactory factory = getBridgeServerRegionAttributes(null, null);
@@ -1259,7 +1259,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     try {
 
-      // Create two bridge servers
+      // Create two cache servers
       SerializableRunnable createCacheServer =
           new CacheSerializableRunnable("Create Cache Server") {
             public void run2() throws CacheException {
@@ -4321,9 +4321,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test dynamic region creation instantiated from a bridge client causing regions to be created on
-   * two different bridge servers.
+   * two different cache servers.
    *
-   * Also tests the reverse situation, a dynamic region is created on the bridge server expecting
+   * Also tests the reverse situation, a dynamic region is created on the cache server expecting
    * the same region to be created on the client.
    *
    * Note: This test re-creates Distributed Systems for its own purposes and uses a Loner
@@ -4358,7 +4358,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (IOException ugh) {
-            fail("Bridge Server startup failed");
+            fail("cache server startup failed");
           }
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);

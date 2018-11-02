@@ -955,7 +955,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // uncomment following line when debugging CacheExistsException
       if (DEBUG_CREATION_STACK) {
         this.creationStack = new Exception(
-            String.format("Created GemFireCache  %s", toString()));
+            String.format("Created GemFireCache %s", toString()));
       }
 
       this.txEntryStateFactory = TXEntryState.getFactory();
@@ -3499,7 +3499,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Object old = this.reinitializingRegions.putIfAbsent(fullPath, new FutureResult(this.stopper));
     if (old != null) {
       throw new IllegalStateException(
-          String.format("Found an existing reinitalizing region named  %s",
+          String.format("Found an existing reinitalizing region named %s",
               fullPath));
     }
   }
@@ -3515,7 +3515,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     FutureResult future = (FutureResult) this.reinitializingRegions.get(regionName);
     if (future == null) {
       throw new IllegalStateException(
-          String.format("Could not find a reinitializing region named  %s",
+          String.format("Could not find a reinitializing region named %s",
               regionName));
     }
     future.set(region);
@@ -3789,7 +3789,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.allGatewaySenders = Collections.unmodifiableSet(newSenders);
       } else {
         throw new IllegalStateException(
-            String.format("A GatewaySender with id  %s  is already defined in this cache.",
+            String.format("A GatewaySender with id %s is already defined in this cache.",
                 sender.getId()));
       }
     }

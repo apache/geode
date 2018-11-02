@@ -153,7 +153,7 @@ public class AvailablePort {
     }
 
     else {
-      throw new IllegalArgumentException(String.format("Unknown protocol:  %s",
+      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
           Integer.valueOf(protocol)));
     }
   }
@@ -169,7 +169,7 @@ public class AvailablePort {
     } else if (protocol == MULTICAST) {
       throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
     } else {
-      throw new IllegalArgumentException(String.format("Unknown protocol:  %s",
+      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
           Integer.valueOf(protocol)));
     }
   }

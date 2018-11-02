@@ -846,7 +846,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   static DataSerializer newInstance(Class c) {
     if (!DataSerializer.class.isAssignableFrom(c)) {
       throw new IllegalArgumentException(
-          String.format("%s  does not extend DataSerializer.",
+          String.format("%s does not extend DataSerializer.",
               c.getName()));
     }
 
@@ -872,18 +872,18 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     } catch (IllegalAccessException ignored) {
       throw new IllegalArgumentException(
-          String.format("Could not instantiate an instance of  %s",
+          String.format("Could not instantiate an instance of %s",
               c.getName()));
 
     } catch (InstantiationException ex) {
       throw new IllegalArgumentException(
-          String.format("Could not instantiate an instance of  %s",
+          String.format("Could not instantiate an instance of %s",
               c.getName()),
           ex);
 
     } catch (InvocationTargetException ex) {
       throw new IllegalArgumentException(
-          String.format("While instantiating an instance of  %s",
+          String.format("While instantiating an instance of %s",
               c.getName()),
           ex);
     }
@@ -961,7 +961,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           DataSerializer other = (DataSerializer) oldSerializer;
           throw new IllegalStateException(
               String.format(
-                  "A DataSerializer of class %s is already registered with id %s so the DataSerializer of class %s could not be registered.",
+                  "A DataSerializer of class %s is already registered with id %s.",
                   new Object[] {other.getClass().getName(), other.getId()}));
         }
       }
@@ -1023,7 +1023,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       sendRegistrationMessageToServers(s);
     }
     // send it to all cache clients irrelevant of distribute
-    // bridge servers send it all the clients irrelevant of
+    // cache servers send it all the clients irrelevant of
     // originator VM
     sendRegistrationMessageToClients(s);
 
@@ -1070,7 +1070,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       if (oldValue.getId() != 0 && holder.getId() != 0 && oldValue.getId() != holder.getId()) {
         throw new IllegalStateException(
             String.format(
-                "A DataSerializer of class %s is already registered with id %s so the DataSerializer of class %s could not be registered.",
+                "A DataSerializer of class %s is already registered with id %s.",
                 new Object[] {oldValue.getClass().getName(), oldValue.getId()}));
       }
     }
@@ -1618,7 +1618,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       } else {
         throw new ToDataException(
             String.format(
-                "Serializer  %s  (a  %s ) said that it could serialize an instance of  %s , but its toData() method returned false.",
+                "Serializer %s (a %s ) said that it could serialize an instance of %s , but its toData() method returned false.",
                 serializer.getId(), serializer.getClass().getName(),
                 o.getClass().getName()));
       }
@@ -2013,7 +2013,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         break;
       default:
         throw new IOException(
-            String.format("Unknown TimeUnit type:  %s", type));
+            String.format("Unknown TimeUnit type: %s", type));
     }
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
@@ -2213,7 +2213,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
        */
       if (disallowJavaSerialization() && o instanceof Serializable) {
         throw new NotSerializableException(
-            String.format("%s  is not DataSerializable and Java Serialization is disallowed",
+            String.format("%s is not DataSerializable and Java Serialization is disallowed",
                 o.getClass().getName()));
       }
 
@@ -2483,7 +2483,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       throw ex;
     } catch (Exception ex) {
       throw new SerializationException(
-          String.format("Could not create an instance of  %s .",
+          String.format("Could not create an instance of %s .",
               ds.getClass().getName()),
           ex);
     }
@@ -2505,7 +2505,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       throw ex;
     } catch (Exception ex) {
       throw new SerializationException(
-          String.format("Could not create an instance of  %s .",
+          String.format("Could not create an instance of %s .",
               c.getName()),
           ex);
     }
@@ -2950,7 +2950,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           "No Instantiator has been registered for class with id {}",
           classId);
       throw new IOException(
-          String.format("No Instantiator has been registered for class with id  %s",
+          String.format("No Instantiator has been registered for class with id %s",
               classId));
 
     } else {
@@ -2967,7 +2967,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
       } catch (Exception ex) {
         throw new SerializationException(
-            String.format("Could not deserialize an instance of  %s",
+            String.format("Could not deserialize an instance of %s",
                 instantiator.getInstantiatedClass().getName()),
             ex);
       }

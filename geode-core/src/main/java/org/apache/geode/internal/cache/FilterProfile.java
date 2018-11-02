@@ -305,10 +305,10 @@ public class FilterProfile implements DataSerializableFixedID {
       filterClass = ClassLoadUtil.classFromName((String) interest);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException cnfe) {
-      throw new RuntimeException(String.format("Class  %s  not found in classpath.",
+      throw new RuntimeException(String.format("Class %s not found in classpath.",
           interest), cnfe);
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Class  %s  could not be instantiated.",
+      throw new RuntimeException(String.format("Class %s could not be instantiated.",
           interest), e);
     }
     Map interestMap = filts.get(clientID);

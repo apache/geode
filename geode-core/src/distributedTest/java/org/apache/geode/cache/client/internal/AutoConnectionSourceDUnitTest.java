@@ -349,7 +349,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
     String locators = getLocatorString(getServerHostName(), locatorPort);
 
-    // start a bridge server with a listener
+    // start a cache server with a listener
     addBridgeListener(bridge1VM);
     int serverPort1 =
         bridge1VM.invoke("Start BridgeServer", () -> startBridgeServer(null, locators));
@@ -362,7 +362,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     // wait for client to connect
     checkEndpoints(clientVM, serverPort1);
 
-    // make sure the client and bridge server both noticed each other
+    // make sure the client and cache server both noticed each other
     waitForJoin(bridge1VM);
     MyListener serverListener = getBridgeListener(bridge1VM);
     Assert.assertEquals(0, serverListener.getCrashes());
@@ -379,7 +379,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
     checkEndpoints(clientVM, serverPort1);
 
-    // start another bridge server and make sure it is detected by the client
+    // start another cache server and make sure it is detected by the client
     int serverPort2 =
         bridge2VM.invoke("Start BridgeServer", () -> startBridgeServer(null, locators));
 
@@ -396,7 +396,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals(1, clientListener.getJoins());
     resetBridgeListener(clientVM);
 
-    // stop the second bridge server and make sure it is detected by the client
+    // stop the second cache server and make sure it is detected by the client
     stopBridgeMemberVM(bridge2VM);
 
     checkEndpoints(clientVM, serverPort1);
@@ -411,7 +411,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals(1, clientListener.getDepartures() + clientListener.getCrashes());
     resetBridgeListener(clientVM);
 
-    // stop the client and make sure the bridge server notices
+    // stop the client and make sure the cache server notices
     stopBridgeMemberVM(clientVM);
     waitForDeparture(bridge1VM);
     serverListener = getBridgeListener(bridge1VM);

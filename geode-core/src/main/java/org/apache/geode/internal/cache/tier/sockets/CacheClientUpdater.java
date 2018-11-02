@@ -227,7 +227,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         return false;
       }
       if (System.currentTimeMillis() > tilt) {
-        logger.warn("{}: wait timed out (more than %s seconds)",
+        logger.warn("{}: wait timed out (more than {} seconds)",
             new Object[] {this, MAX_CACHE_WAIT});
         return false;
       }
@@ -1782,7 +1782,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
     // If this was a surprise, print a warning.
     if (unexpected && !(exception instanceof CancelException)) {
-      logger.warn(String.format("%s :  %s : %s",
+      logger.warn(String.format("%s : %s : %s",
           new Object[] {this, message, exception}), exception);
     }
     // We can't shutdown the client updater just because of an exception.

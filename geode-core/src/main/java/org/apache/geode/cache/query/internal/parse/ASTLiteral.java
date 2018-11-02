@@ -75,7 +75,7 @@ public class ASTLiteral extends GemFireAST {
       return Integer.valueOf(s);
     } catch (NumberFormatException e) {
       throw new QueryInvalidException(
-          String.format("unable to parse integer:  %s", s), e);
+          String.format("unable to parse integer: %s", s), e);
     }
   }
 
@@ -89,7 +89,7 @@ public class ASTLiteral extends GemFireAST {
       return Long.valueOf(s);
     } catch (NumberFormatException e) {
       throw new QueryInvalidException(
-          String.format("Unable to parse float  %s", s));
+          String.format("Unable to parse float %s", s));
     }
   }
 
@@ -116,7 +116,7 @@ public class ASTLiteral extends GemFireAST {
       return Double.valueOf(s);
     } catch (NumberFormatException e) {
       throw new QueryInvalidException(
-          String.format("Unable to parse double  %s", s));
+          String.format("Unable to parse double %s", s));
     }
   }
 
@@ -165,7 +165,7 @@ public class ASTLiteral extends GemFireAST {
       return date;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
-          String.format("Illegal format for DATE literal:  %s . Expected format is yyyy-mm-dd",
+          String.format("Illegal format for DATE literal: %s . Expected format is yyyy-mm-dd",
               s));
     }
   }
@@ -192,7 +192,7 @@ public class ASTLiteral extends GemFireAST {
       return time;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
-          String.format("Illegal format for TIME literal:  %s . Expected format is hh:mm:ss",
+          String.format("Illegal format for TIME literal: %s . Expected format is hh:mm:ss",
               s));
     }
   }
@@ -245,7 +245,7 @@ public class ASTLiteral extends GemFireAST {
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
           String.format(
-              "Illegal format for TIMESTAMP literal:  %s . Expected format is yyyy-mm-dd hh:mm:ss.fffffffff",
+              "Illegal format for TIMESTAMP literal: %s . Expected format is yyyy-mm-dd hh:mm:ss.fffffffff",
               s));
     }
   }

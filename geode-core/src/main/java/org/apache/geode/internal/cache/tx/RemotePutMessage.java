@@ -227,7 +227,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       assert this.deserializationPolicy == DistributedCacheOperation.DESERIALIZATION_POLICY_NONE : this.deserializationPolicy;
     }
 
-    // added for cqs on Bridge Servers. rdubey
+    // added for cqs on cache servers. rdubey
 
 
     if (event.hasOldValue()) {

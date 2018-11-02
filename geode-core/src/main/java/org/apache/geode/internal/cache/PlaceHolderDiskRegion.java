@@ -104,7 +104,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion
     RegionEntry re = getRecoveredEntryMap().initRecoveredEntry(key, value);
     if (re == null) {
       throw new InternalGemFireError(
-          String.format("Entry already existed:  %s", key));
+          String.format("Entry already existed: %s", key));
     }
     return (DiskEntry) re;
   }
@@ -181,7 +181,8 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion
     getDiskStore().getCache().getLogger().error(
         String.format(
             "A DiskAccessException has occurred while recovering values asynchronously from disk for region %s.",
-            getName(), dae));
+            getName()),
+        dae);
 
   }
 

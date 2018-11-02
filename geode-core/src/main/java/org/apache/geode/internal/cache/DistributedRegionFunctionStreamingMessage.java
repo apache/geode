@@ -140,10 +140,10 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
         InternalCache cache = dm.getCache();
         if (cache != null) {
           thr = cache
-              .getCacheClosedException(String.format("Remote cache is closed:  %s",
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
                   dm.getId()));
         } else {
-          thr = new CacheClosedException(String.format("Remote cache is closed:  %s",
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
               dm.getId()));
         }
         return;

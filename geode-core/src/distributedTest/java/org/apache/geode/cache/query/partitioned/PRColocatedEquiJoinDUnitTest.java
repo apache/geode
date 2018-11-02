@@ -773,7 +773,7 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
         if (!e.getMessage().equalsIgnoreCase(
             String.format(
                 "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
-                name, "/" + coloName))) {
+                name))) {
           throw e;
         }
       }

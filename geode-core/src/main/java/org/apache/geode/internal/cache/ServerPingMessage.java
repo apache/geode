@@ -93,7 +93,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
       }
     } catch (Throwable e) {
       cache.getLogger().error(
-          String.format("Could not ping one of the following servers: %s", filteredRecipients, e));
+          String.format("Could not ping one of the following servers: %s", filteredRecipients), e);
       return false;
     }
 

@@ -591,7 +591,7 @@ public class Oplog implements CompactableOplog, Flushable {
         throw (DiskAccessException) ex;
       }
       throw new DiskAccessException(
-          String.format("Failed creating operation log because:  %s", ex),
+          String.format("Failed creating operation log because: %s", ex),
           getParent());
     }
   }
@@ -655,7 +655,7 @@ public class Oplog implements CompactableOplog, Flushable {
         throw (DiskAccessException) ex;
       }
       throw new DiskAccessException(
-          String.format("Failed creating operation log because:  %s", ex),
+          String.format("Failed creating operation log because: %s", ex),
           getParent());
     }
   }
@@ -948,7 +948,7 @@ public class Oplog implements CompactableOplog, Flushable {
     } catch (IOException ex) {
       getParent().getCancelCriterion().checkCancelInProgress(ex);
       throw new DiskAccessException(
-          String.format("Failed creating operation log because:  %s", ex),
+          String.format("Failed creating operation log because: %s", ex),
           getParent());
     }
     if (hasNoLiveValues() && !offline) {
@@ -1254,7 +1254,7 @@ public class Oplog implements CompactableOplog, Flushable {
     if (bb == null) {
       throw new EntryDestroyedException(
           String.format(
-              "No value was found for entry with disk Id  %s on a region  with synchronous writing set to %s",
+              "No value was found for entry with disk Id %s on a region  with synchronous writing set to %s",
               new Object[] {id, dr.isSync()}));
     }
     if (bitOnly) {
@@ -1520,7 +1520,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
               default:
                 throw new DiskAccessException(
-                    String.format("Unknown opCode  %s  found in disk operation log.",
+                    String.format("Unknown opCode %s found in disk operation log.",
                         opCode),
                     getParent());
             }
@@ -1742,7 +1742,7 @@ public class Oplog implements CompactableOplog, Flushable {
               if (oldValue != null) {
                 throw new AssertionError(
                     String.format(
-                        "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is {0,number,#}.",
+                        "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is %s.",
                         oplogKeyId));
               }
             }
@@ -1922,7 +1922,7 @@ public class Oplog implements CompactableOplog, Flushable {
               break;
             default:
               throw new DiskAccessException(
-                  String.format("Unknown opCode  %s  found in disk operation log.",
+                  String.format("Unknown opCode %s found in disk operation log.",
                       opCode),
                   getParent());
           }
@@ -2040,7 +2040,7 @@ public class Oplog implements CompactableOplog, Flushable {
       byte opCode = dis.readByte();
       if (opCode != OPLOG_GEMFIRE_VERSION) {
         throw new DiskAccessException(
-            String.format("Unknown opCode  %s  found in disk operation log.",
+            String.format("Unknown opCode %s found in disk operation log.",
                 opCode),
             getParent());
       }
@@ -2055,7 +2055,7 @@ public class Oplog implements CompactableOplog, Flushable {
       byte opCode = dis.readByte();
       if (opCode != OPLOG_GEMFIRE_VERSION) {
         throw new DiskAccessException(
-            String.format("Unknown opCode  %s  found in disk operation log.",
+            String.format("Unknown opCode %s found in disk operation log.",
                 opCode),
             getParent());
       }
@@ -2559,7 +2559,7 @@ public class Oplog implements CompactableOplog, Flushable {
             if (oldValue != null) {
               throw new AssertionError(
                   String.format(
-                      "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is {0,number,#}.",
+                      "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is %s.",
                       oplogKeyId));
             }
           }
@@ -2952,7 +2952,7 @@ public class Oplog implements CompactableOplog, Flushable {
         if (oldValue != null) {
           throw new AssertionError(
               String.format(
-                  "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is {0,number,#}.",
+                  "Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is %s.",
                   oplogKeyId));
         }
         // Check the actual region to see if it has this key from
@@ -5337,7 +5337,7 @@ public class Oplog implements CompactableOplog, Flushable {
                   dr.getName());
             } else if (offsetInOplog < 0) {
               throw new DiskAccessException(
-                  String.format("Cannot find record  %s  when reading from %s",
+                  String.format("Cannot find record %s when reading from %s",
                       offsetInOplog, this.diskFile.getPath()),
                   dr.getName());
             }
@@ -5428,7 +5428,7 @@ public class Oplog implements CompactableOplog, Flushable {
         getParent().getCancelCriterion().checkCancelInProgress(ex);
         throw new DiskAccessException(
             String.format(
-                "Failed reading from %s.  oplogID, %s  Offset being read= %s Current Oplog Size= %s Actual File Size, %s IS ASYNCH MODE, %s IS ASYNCH WRITER ALIVE= %s",
+                "Failed reading from %s.  oplogID, %s Offset being read= %s Current Oplog Size= %s Actual File Size, %s IS ASYNCH MODE, %s IS ASYNCH WRITER ALIVE= %s",
                 this.diskFile.getPath(), this.oplogId, offsetInOplog,
                 this.crf.currSize, this.crf.bytesFlushed, !dr.isSync(), Boolean.FALSE),
             ex, dr.getName());
@@ -5496,7 +5496,7 @@ public class Oplog implements CompactableOplog, Flushable {
                 dr.getName());
           } else if (offsetInOplog < 0) {
             throw new DiskAccessException(
-                String.format("Cannot find record  %s  when reading from %s",
+                String.format("Cannot find record %s when reading from %s",
                     offsetInOplog, this.diskFile.getPath()),
                 dr.getName());
           }
@@ -5526,7 +5526,7 @@ public class Oplog implements CompactableOplog, Flushable {
         getParent().getCancelCriterion().checkCancelInProgress(ex);
         throw new DiskAccessException(
             String.format(
-                "Failed reading from %s.  oplogID, %s Offset being read=%s Current Oplog Size=%s  Actual File Size,%s IS ASYNCH MODE,%s IS ASYNCH WRITER ALIVE=%s",
+                "Failed reading from %s.  oplogID, %s Offset being read=%s Current Oplog Size=%s Actual File Size,%s IS ASYNCH MODE,%s IS ASYNCH WRITER ALIVE=%s",
                 this.diskFile.getPath(), this.oplogId, offsetInOplog,
                 this.crf.currSize, this.crf.bytesFlushed, Boolean.FALSE, Boolean.FALSE),
             ex, dr.getName());

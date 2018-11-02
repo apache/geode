@@ -351,12 +351,12 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
         if (removeMember(id, true)) {
           if (!this.fn.isHA()) {
             fite = new FunctionInvocationTargetException(
-                String.format("memberDeparted event for < %s > crashed,  %s",
+                String.format("memberDeparted event for < %s > crashed, %s",
                     new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
           } else {
             fite = new InternalFunctionInvocationTargetException(
-                String.format("memberDeparted event for < %s > crashed,  %s",
+                String.format("memberDeparted event for < %s > crashed, %s",
                     new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
             this.execution.addFailedNode(id.getId());

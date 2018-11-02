@@ -135,7 +135,7 @@ public class AgentLauncher {
     Properties props = AgentConfigImpl.getDefaultValuesForAllProperties();
 
     out.println("\n");
-    out.println("Agent configuration properties".toString());
+    out.println("Agent configuration properties");
 
     SortedMap<String, String> map = new TreeMap<String, String>();
 
@@ -148,8 +148,7 @@ public class AgentLauncher {
       }
 
       map.put(prop,
-          AgentConfigImpl.getPropertyDescription(prop) + " ("
-              + "Default" + "  \""
+          AgentConfigImpl.getPropertyDescription(prop) + " (Default  \""
               + props.getProperty(prop) + "\")");
     }
 
@@ -483,7 +482,7 @@ public class AgentLauncher {
         processDirOption(options, arg.substring("-dir=".length()));
       } else {
         throw new Exception(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -753,7 +752,7 @@ public class AgentLauncher {
 
     if (!workingDirectory.exists()) {
       throw new FileNotFoundException(
-          String.format("The input working directory does not exist:  %s",
+          String.format("The input working directory does not exist: %s",
               dirValue));
     }
 
@@ -777,19 +776,19 @@ public class AgentLauncher {
     out.println("Starts the GemFire JMX Agent");
     out.println("\t"
         + "<vmarg> a VM-option passed to the agent's VM, example -J-Xmx1024M for a 1 Gb heap");
-    out.println("\t" + "<dir> Directory in which agent runs, default is the current directory");
-    out.println("\t" + "<prop> A configuration property/value passed to the agent");
-    out.println("\t" + "(see help config for more details)");
+    out.println("\t<dir> Directory in which agent runs, default is the current directory");
+    out.println("\t<prop> A configuration property/value passed to the agent");
+    out.println("\t(see help config for more details)");
     out.println();
 
     out.println("agent stop [-dir=<dir>]");
     out.println("Stops a GemFire JMX Agent");
-    out.println("\t" + "<dir> Directory in which agent runs, default is the current directory");
+    out.println("\t<dir> Directory in which agent runs, default is the current directory");
     out.println("");
     out.println("agent status [-dir=<dir>]");
     out.println(
         "Reports the status and the process id of a GemFire JMX Agent");
-    out.println("\t" + "<dir> Directory in which agent runs, default is the current directory");
+    out.println("\t<dir> Directory in which agent runs, default is the current directory");
     out.println();
 
     ExitCode.FATAL.doSystemExit();

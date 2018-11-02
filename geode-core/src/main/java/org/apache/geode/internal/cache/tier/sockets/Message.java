@@ -668,7 +668,7 @@ public class Message {
     cb.clear();
 
     if (!MessageType.validate(type)) {
-      throw new IOException(String.format("Invalid message type  %s  while reading header",
+      throw new IOException(String.format("Invalid message type %s while reading header",
           type));
     }
 
@@ -694,7 +694,7 @@ public class Message {
               }
               throw new IOException(
                   String.format(
-                      "Operation timed out on server waiting on concurrent message limiter after waiting  %s  milliseconds",
+                      "Operation timed out on server waiting on concurrent message limiter after waiting %s milliseconds",
                       timeToWait));
             }
           }
@@ -711,7 +711,7 @@ public class Message {
 
     if (len > 0) {
       if (this.maxIncomingMessageLength > 0 && len > this.maxIncomingMessageLength) {
-        throw new IOException(String.format("Message size  %s  exceeded max limit of  %s",
+        throw new IOException(String.format("Message size %s exceeded max limit of %s",
             new Object[] {len, this.maxIncomingMessageLength}));
       }
 
@@ -734,7 +734,7 @@ public class Message {
                   || !this.messageLimiter.tryAcquire(1, newTimeToWait, TimeUnit.MILLISECONDS)) {
                 throw new IOException(
                     String.format(
-                        "Operation timed out on server waiting on concurrent data limiter after waiting  %s  milliseconds",
+                        "Operation timed out on server waiting on concurrent data limiter after waiting %s milliseconds",
                         timeToWait));
               }
             }

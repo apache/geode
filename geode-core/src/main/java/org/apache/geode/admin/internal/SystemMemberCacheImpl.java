@@ -49,7 +49,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   protected CacheInfo info;
   protected Statistic[] statistics;
 
-  /** Maps the id of a bridge server to its SystemMemberBridgeServer */
+  /** Maps the id of a cache server to its SystemMemberBridgeServer */
   private ObjIdMap bridgeServers = new ObjIdMap();
 
   // constructors
@@ -58,7 +58,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     this.info = vm.getCacheInfo();
     if (this.info == null) {
       throw new CacheDoesNotExistException(
-          String.format("The VM  %s  does not currently have a cache.",
+          String.format("The VM %s does not currently have a cache.",
               vm.getId()));
     }
     initStats();

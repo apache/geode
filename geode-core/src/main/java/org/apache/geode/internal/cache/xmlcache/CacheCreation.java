@@ -204,7 +204,7 @@ public class CacheCreation implements InternalCache {
   private boolean hasServer = false;
 
   /**
-   * The bridge servers configured for this cache
+   * The cache servers configured for this cache
    */
   private final List<CacheServer> bridgeServers = new ArrayList<>();
 
@@ -739,7 +739,7 @@ public class CacheCreation implements InternalCache {
 
       } catch (IOException ex) {
         throw new GemFireIOException(
-            String.format("While starting cache server  %s", impl),
+            String.format("While starting cache server %s", impl),
             ex);
       }
     }
@@ -932,12 +932,12 @@ public class CacheCreation implements InternalCache {
         if (otherAttrs == null) {
           getLogger().fine("No attributes for " + myId);
           throw new RuntimeException(
-              String.format("No attributes for  %s", myId));
+              String.format("No attributes for %s", myId));
 
         } else {
           if (!myAttrs.sameAs(otherAttrs)) {
             getLogger().fine("Attributes for " + myId + " do not match");
-            throw new RuntimeException(String.format("Attributes for  %s  do not match",
+            throw new RuntimeException(String.format("Attributes for %s do not match",
                 myId));
           }
         }
@@ -954,7 +954,7 @@ public class CacheCreation implements InternalCache {
         Region<Object, Object> otherRegion = other.getRegion(rootRegion.getName());
         if (otherRegion == null) {
           throw new RuntimeException(
-              String.format("no root  %s", rootRegion.getName()));
+              String.format("no root %s", rootRegion.getName()));
         } else if (!rootRegion.sameAs(otherRegion)) {
           throw new RuntimeException(
               "regions differ");

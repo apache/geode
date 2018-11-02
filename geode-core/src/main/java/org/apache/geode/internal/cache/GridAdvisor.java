@@ -80,7 +80,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   }
 
   /**
-   * Return an unmodifiable Set<DistributedMember> of the bridge servers in this system.
+   * Return an unmodifiable Set<DistributedMember> of the cache servers in this system.
    */
   public Set adviseBridgeServers() {
     Set/* <DistributedMember> */ result = this.cachedBridgeServerAdvise;
@@ -221,7 +221,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     try {
       new UpdateAttributesProcessor(getAdvisee(), true/* removeProfile */).distribute();
 
-      // Notify any local bridge servers or controllers
+      // Notify any local cache servers or controllers
       // that we are closing.
       GridProfile profile = (GridProfile) createProfile();
       profile.tellLocalBridgeServers(getDistributionManager().getCache(), true, false, null);
@@ -321,8 +321,8 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     }
 
     /**
-     * Tell local bridge servers about the received profile. Also if exchange profiles then add each
-     * local bridge server to reply.
+     * Tell local cache servers about the received profile. Also if exchange profiles then add each
+     * local cache server to reply.
      *
      * @since GemFire 5.7
      */

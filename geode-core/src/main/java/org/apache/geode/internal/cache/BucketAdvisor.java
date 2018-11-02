@@ -1941,7 +1941,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
@@ -1976,7 +1976,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
@@ -2002,7 +2002,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
@@ -2041,7 +2041,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
@@ -2092,7 +2092,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           default:
-            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
@@ -2139,7 +2139,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           default:
-            throw new IllegalStateException(String.format("Cannot change from  %s  to  %s",
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
@@ -2198,7 +2198,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             return false;
           default:
             throw new IllegalStateException(
-                String.format("Cannot change from  %s  to  %s  for bucket  %s",
+                String.format("Cannot change from %s to %s for bucket %s",
                     new Object[] {this.primaryStateToString(),
                         this.primaryStateToString(requestedState), getAdvisee().getName()}));
         }

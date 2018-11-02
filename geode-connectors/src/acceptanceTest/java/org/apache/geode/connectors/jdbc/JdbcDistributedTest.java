@@ -647,7 +647,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       boolean valueContainsPrimaryKey) {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
         + connectionName + (valueContainsPrimaryKey ? " --value-contains-primary-key" : "")
-        + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
+        + (pdxClassName != null ? " --pdx-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

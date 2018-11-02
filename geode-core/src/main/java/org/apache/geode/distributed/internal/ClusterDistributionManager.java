@@ -1495,7 +1495,7 @@ public class ClusterDistributionManager implements DistributionManager {
         handleManagerStartup(member);
         break;
       default:
-        throw new InternalGemFireError(String.format("Unknown member type:  %s",
+        throw new InternalGemFireError(String.format("Unknown member type: %s",
             Integer.valueOf(vmType)));
     }
   }
@@ -2265,7 +2265,7 @@ public class ClusterDistributionManager implements DistributionManager {
         if (unresponsiveCount != 0) {
           if (Boolean.getBoolean("DistributionManager.requireAllStartupResponses")) {
             throw new SystemConnectException(
-                String.format("No startup replies from:  %s",
+                String.format("No startup replies from: %s",
                     unfinishedStartups));
           }
         }
@@ -2289,7 +2289,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
           throw new SystemConnectException(
               String.format(
-                  "Received no connection acknowledgments from any of the  %s  senior cache members:  %s",
+                  "Received no connection acknowledgments from any of the %s senior cache members: %s",
 
                   new Object[] {Integer.toString(allOthers.size()), sb.toString()}));
         } // and none responded

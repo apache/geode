@@ -153,7 +153,7 @@ public class LuceneXmlParser extends AbstractXmlParser {
       obj = c.newInstance();
     } catch (Exception ex) {
       throw new CacheXmlException(
-          String.format("While instantiating a  %s", className), ex);
+          String.format("While instantiating a %s", className), ex);
     }
     if (!(obj instanceof Analyzer)) {
       throw new CacheXmlException(

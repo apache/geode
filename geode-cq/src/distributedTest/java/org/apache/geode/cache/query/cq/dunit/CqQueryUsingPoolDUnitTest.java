@@ -96,7 +96,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
 
   protected static int port = 0;
@@ -235,10 +235,10 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Create a bridge server with partitioned region.
+   * Create a cache server with partitioned region.
    *
-   * @param server VM where to create the bridge server.
-   * @param port bridge server port.
+   * @param server VM where to create the cache server.
+   * @param port cache server port.
    * @param isAccessor if true the under lying partitioned region will not host data on this vm.
    * @param redundantCopies number of redundant copies for the primary bucket.
    */
@@ -2984,7 +2984,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port to serve up the given region.
+   * Starts a cache server on the given port to serve up the given region.
    *
    * @since GemFire 4.0
    */
@@ -2993,7 +2993,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 4.0
@@ -3009,7 +3009,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    *
    * @since GemFire 4.0
    */

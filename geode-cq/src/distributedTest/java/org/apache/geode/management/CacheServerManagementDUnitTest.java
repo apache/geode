@@ -192,7 +192,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     client.invoke("Start BridgeClient", () -> startBridgeClient(null,
         NetworkUtils.getServerHostName(locator.getHost()), locatorPort));
 
-    // stop the client and make sure the bridge server notifies
+    // stop the client and make sure the cache server notifies
     stopBridgeMemberVM(client);
     helper.closeCache(locator);
     helper.closeCache(server);

@@ -74,7 +74,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
       } else {
         throw new SAXNotRecognizedException(
-            String.format("DTD not found:  %s", location));
+            String.format("DTD not found: %s", location));
       }
 
     } else {
@@ -260,7 +260,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
         case DOUBLE_STORAGE:
           return statFactory.createDoubleCounter(statName, description, unit, largerBetter);
         default:
-          throw new RuntimeException(String.format("unexpected storage type  %s",
+          throw new RuntimeException(String.format("unexpected storage type %s",
               Integer.valueOf(storage)));
       }
     } else {
@@ -272,7 +272,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
         case DOUBLE_STORAGE:
           return statFactory.createDoubleGauge(statName, description, unit, largerBetter);
         default:
-          throw new RuntimeException(String.format("unexpected storage type  %s",
+          throw new RuntimeException(String.format("unexpected storage type %s",
               Integer.valueOf(storage)));
       }
     }

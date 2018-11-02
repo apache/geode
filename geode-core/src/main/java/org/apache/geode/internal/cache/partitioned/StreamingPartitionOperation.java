@@ -206,7 +206,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         this.failedMembers.add(id);
         this.memberDepartedMessage =
             String.format(
-                "Streaming reply processor got memberDeparted event for < %s > crashed,  %s",
+                "Streaming reply processor got memberDeparted event for < %s > crashed, %s",
                 new Object[] {id, Boolean.valueOf(crashed)});
       }
       super.memberDeparted(distributionManager, id, crashed);

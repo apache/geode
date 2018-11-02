@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
- * Just like CacheServerTransactionsDUnitTest but configures bridge server with thread pool (i.e.
+ * Just like CacheServerTransactionsDUnitTest but configures cache server with thread pool (i.e.
  * selector).
  */
 @Category({ClientServerTest.class})
