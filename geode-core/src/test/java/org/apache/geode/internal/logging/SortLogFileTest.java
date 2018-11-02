@@ -33,7 +33,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Tests the functionality of the {@link SortLogFile} program.
+ * Unit tests for {@link SortLogFile}.
  *
  * @since GemFire 3.0
  */

@@ -21,6 +21,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 
+/**
+ * Unit tests for {@link LogWriterImpl}.
+ */
 @Category(LoggingTest.class)
 public class LogWriterImplTest {
 
