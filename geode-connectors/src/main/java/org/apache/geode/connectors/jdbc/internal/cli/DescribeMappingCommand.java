@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -48,7 +47,6 @@ public class DescribeMappingCommand extends GfshCommand {
       "Region name of the jdbc mapping to be described.";
 
   static final String RESULT_SECTION_NAME = "MappingDescription";
-  static final String FIELD_TO_COLUMN_TABLE = "fieldToColumnTable";
 
   @CliCommand(value = DESCRIBE_MAPPING, help = DESCRIBE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -88,14 +86,5 @@ public class DescribeMappingCommand extends GfshCommand {
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionModel.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
     sectionModel.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, mapping.isPrimaryKeyInValue());
-
-    TabularResultModel tabularResultData = resultModel.addTable(FIELD_TO_COLUMN_TABLE);
-    tabularResultData.setHeader("Field to Column Mappings:");
-    if (mapping.getFieldMapping() != null) {
-      mapping.getFieldMapping().forEach((entry) -> {
-        tabularResultData.accumulate("Field", entry.getFieldName());
-        tabularResultData.accumulate("Column", entry.getColumnName());
-      });
-    }
   }
 }

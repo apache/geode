@@ -40,18 +40,6 @@ XML schema for JDBC Connector Service in Geode.
     </xsd:annotation>
         <xsd:element name="mapping">
             <xsd:complexType>
-                <xsd:sequence>
-                    <xsd:element name="field-mapping" maxOccurs="unbounded" minOccurs="0">
-                        <xsd:complexType>
-                            <xsd:simpleContent>
-                                <xsd:extension base="xsd:string">
-                                    <xsd:attribute type="xsd:string" name="field-name" use="optional"/>
-                                    <xsd:attribute type="xsd:string" name="column-name" use="optional"/>
-                                </xsd:extension>
-                            </xsd:simpleContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                </xsd:sequence>
                 <xsd:attribute type="xsd:string" name="connection-name" use="optional"/>
                 <xsd:attribute type="xsd:string" name="table" use="optional"/>
                 <xsd:attribute type="xsd:string" name="pdx-class" use="optional"/>

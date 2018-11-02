@@ -63,17 +63,8 @@ public class ListMappingCommandTest {
 
     RegionMapping mapping1 =
         new RegionMapping("region1", "class1", "table1", "name1", true);
-    mapping1.getFieldMapping()
-        .add(new RegionMapping.FieldMapping("field1", "value1"));
-    mapping1.getFieldMapping()
-        .add(new RegionMapping.FieldMapping("field2", "value2"));
-
     RegionMapping mapping2 =
         new RegionMapping("region2", "class2", "table2", "name2", true);
-    mapping2.getFieldMapping()
-        .add(new RegionMapping.FieldMapping("field3", "value3"));
-    mapping2.getFieldMapping()
-        .add(new RegionMapping.FieldMapping("field4", "value4"));
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));

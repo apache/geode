@@ -51,9 +51,6 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY = "value-contains-primary-key";
   static final String CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP =
       "If true, the primary key is contained in the PDX object, otherwise the region entry key is used for the primary key column value.";
-  static final String CREATE_MAPPING__FIELD_MAPPING = "field-mapping";
-  static final String CREATE_MAPPING__FIELD_MAPPING__HELP =
-      "Key value pairs of PDX field names to database column names formatted like \"key:value(,key:value)*\".";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -70,14 +67,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__PDX_CLASS_NAME__HELP) String pdxClassName,
       @CliOption(key = CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY,
           help = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true") boolean keyInValue,
-      @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
-          help = CREATE_MAPPING__FIELD_MAPPING__HELP) String[] fieldMappings) {
+          specifiedDefaultValue = "true") boolean keyInValue) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName,
         pdxClassName, table, connectionName, keyInValue);
-    mapping.setFieldMapping(fieldMappings);
 
     // action
     List<CliFunctionResult> results =

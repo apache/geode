@@ -46,15 +46,14 @@ public class AlterMappingCommandIntegrationTest {
     String tableName = "testTable";
     String pdxClass = "myPdxClass";
     Boolean keyInValue = true;
-    String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
     cache.createRegionFactory(RegionShortcut.LOCAL).create(regionName);
     CreateMappingCommand create = new CreateMappingCommand();
     create.setCache(cache);
-    assertThat(create.createMapping(regionName, connectionName, tableName, pdxClass, keyInValue,
-        fieldMappings).isSuccessful()).isTrue();
+    assertThat(create.createMapping(regionName, connectionName, tableName, pdxClass, keyInValue)
+        .isSuccessful()).isTrue();
 
     alterRegionMappingCommand = new AlterMappingCommand();
     alterRegionMappingCommand.setCache(cache);

@@ -48,23 +48,6 @@ public enum ElementType {
       RegionCreation regionCreation = (RegionCreation) stack.peek();
       regionCreation.getExtensionPoint().addExtension(new RegionMappingConfiguration(mapping));
     }
-  },
-  FIELD_MAPPING("field-mapping") {
-    @Override
-    void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof RegionMapping)) {
-        throw new CacheXmlException(
-            "<jdbc:field-mapping> elements must occur within <jdbc:mapping> elements");
-      }
-      RegionMapping mapping = (RegionMapping) stack.peek();
-      mapping.getFieldMapping()
-          .add(new RegionMapping.FieldMapping(
-              attributes.getValue(JdbcConnectorServiceXmlParser.FIELD_NAME),
-              attributes.getValue(JdbcConnectorServiceXmlParser.COLUMN_NAME)));
-    }
-
-    @Override
-    void endElement(Stack<Object> stack) {}
   };
 
   private String typeName;

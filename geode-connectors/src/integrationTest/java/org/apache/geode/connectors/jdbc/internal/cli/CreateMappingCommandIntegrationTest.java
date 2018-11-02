@@ -46,7 +46,6 @@ public class CreateMappingCommandIntegrationTest {
   private String tableName;
   private String pdxClass;
   private boolean keyInValue;
-  private String[] fieldMappings;
 
   @Before
   public void setup() {
@@ -55,7 +54,6 @@ public class CreateMappingCommandIntegrationTest {
     tableName = "testTable";
     pdxClass = "myPdxClass";
     keyInValue = true;
-    fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
@@ -73,7 +71,7 @@ public class CreateMappingCommandIntegrationTest {
   @Test
   public void createsRegionMappingInService() {
     ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName,
-        tableName, pdxClass, keyInValue, fieldMappings);
+        tableName, pdxClass, keyInValue);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -98,7 +96,7 @@ public class CreateMappingCommandIntegrationTest {
     ResultModel result;
     result =
         createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
-            keyInValue, fieldMappings);
+            keyInValue);
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     IgnoredException ignoredException =
@@ -106,7 +104,7 @@ public class CreateMappingCommandIntegrationTest {
 
     try {
       result = createRegionMappingCommand.createMapping(regionName, connectionName, tableName,
-          pdxClass, keyInValue, fieldMappings);
+          pdxClass, keyInValue);
     } finally {
       ignoredException.remove();
     }
@@ -117,7 +115,7 @@ public class CreateMappingCommandIntegrationTest {
   @Test
   public void createsRegionMappingWithMinimumParams() {
     ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName, null,
-        null, false, null);
+        null, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -130,6 +128,5 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getTableName()).isNull();
     assertThat(regionMapping.getPdxClassName()).isNull();
     assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
-    assertThat(regionMapping.getFieldMapping()).isEmpty();
   }
 }

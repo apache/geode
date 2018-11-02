@@ -67,10 +67,6 @@ public class DescribeMappingCommandTest {
 
     RegionMapping mapping =
         new RegionMapping("region", "class1", "table1", "name1", true);
-    mapping.getFieldMapping()
-        .add(new RegionMapping.FieldMapping("field1", "value1"));
-    mapping.getFieldMapping()
-        .add(new RegionMapping.FieldMapping("field2", "value2"));
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));

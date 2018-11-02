@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -57,14 +56,8 @@ public class AlterMappingFunction extends CliFunction<RegionMapping> {
     Boolean keyInValue = regionMapping.isPrimaryKeyInValue() == null
         ? existingMapping.isPrimaryKeyInValue() : regionMapping.isPrimaryKeyInValue();
 
-    List<RegionMapping.FieldMapping> fieldMappings =
-        regionMapping.getFieldMapping();
-    if (!regionMapping.isFieldMappingModified()) {
-      fieldMappings = existingMapping.getFieldMapping();
-    }
     RegionMapping alteredMapping = new RegionMapping(
         existingMapping.getRegionName(), pdxClassName, table, connectionName, keyInValue);
-    alteredMapping.getFieldMapping().addAll(fieldMappings);
     return alteredMapping;
   }
 

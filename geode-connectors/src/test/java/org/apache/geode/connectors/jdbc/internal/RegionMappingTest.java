@@ -56,14 +56,6 @@ public class RegionMappingTest {
   }
 
   @Test
-  public void emptyArrayFiledMapping() {
-    mapping = new RegionMapping("region", "class", "table", "connection", false);
-    mapping.setFieldMapping(new String[0]);
-    assertThat(mapping.isFieldMappingModified()).isTrue();
-    assertThat(mapping.getFieldMapping()).isEmpty();
-  }
-
-  @Test
   public void initiatedWithNullValues() {
     mapping = new RegionMapping(null, null, null, null, false);
 
@@ -127,7 +119,6 @@ public class RegionMappingTest {
   @Test
   public void returnsColumnNameIfFieldNotMapped() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
 
     String columnName = mapping.getColumnNameForField(fieldName1, mock(TableMetaDataView.class));
 
@@ -138,7 +129,6 @@ public class RegionMappingTest {
   public void returnsColumnNameFromTableMetaDataIfFieldNotMappedAndMetaDataMatchesWithCaseDiffering() {
     String metaDataColumnName = fieldName1.toUpperCase();
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton(metaDataColumnName));
 
@@ -150,7 +140,6 @@ public class RegionMappingTest {
   public void returnsColumnNameFromTableMetaDataIfFieldNotMappedAndMetaDataMatchesExactly() {
     String metaDataColumnName = fieldName1;
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton(metaDataColumnName));
 
@@ -161,7 +150,6 @@ public class RegionMappingTest {
   @Test
   public void returnsColumnNameIfFieldNotMappedAndNotInMetaData() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton("does not match"));
 
@@ -171,7 +159,6 @@ public class RegionMappingTest {
   @Test
   public void getColumnNameForFieldThrowsIfTwoColumnsMatchField() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
 
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
     HashSet<String> columnNames =
@@ -188,7 +175,6 @@ public class RegionMappingTest {
   @Test
   public void ifMixedCaseColumnNameNotMappedReturnsItAsFieldName() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
 
     assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnName");
   }
@@ -196,7 +182,6 @@ public class RegionMappingTest {
   @Test
   public void ifLowerCaseColumnNameNotMappedReturnsItAsFieldName() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
 
     assertThat(mapping.getFieldNameForColumn("columnname", null)).isEqualTo("columnname");
   }
@@ -204,7 +189,6 @@ public class RegionMappingTest {
   @Test
   public void ifUpperCaseColumnNameNotMappedReturnsItLowerCasedAsFieldName() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {"otherField:column"});
 
     assertThat(mapping.getFieldNameForColumn("COLUMNNAME", null)).isEqualTo("columnname");
   }
@@ -287,7 +271,6 @@ public class RegionMappingTest {
   @Test
   public void returnsMappedColumnNameForField() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {fieldName1 + ":" + columnName1});
 
     assertThat(mapping.getColumnNameForField(fieldName1, mock(TableMetaDataView.class)))
         .isEqualTo(columnName1);
@@ -296,7 +279,6 @@ public class RegionMappingTest {
   @Test
   public void returnsMappedColumnNameForFieldEvenIfMetaDataMatches() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {fieldName1 + ":" + columnName1});
 
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton(fieldName1));
@@ -307,7 +289,6 @@ public class RegionMappingTest {
   @Test
   public void returnsMappedFieldNameForColumn() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {fieldName1 + ":" + columnName1});
 
     assertThat(mapping.getFieldNameForColumn(columnName1, null)).isEqualTo(fieldName1);
   }
@@ -315,7 +296,6 @@ public class RegionMappingTest {
   @Test
   public void returnsCachedFieldNameForColumn() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {fieldName1 + ":" + columnName1});
 
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
 
@@ -327,41 +307,12 @@ public class RegionMappingTest {
   @Test
   public void returnsCachedColumnNameForField() {
     mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(new String[] {fieldName1 + ":" + columnName1});
 
     mapping.getFieldNameForColumn(columnName1, null);
 
     TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
 
     assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView)).isEqualTo(columnName1);
-  }
-
-  @Test
-  public void returnsAllMappings() {
-    mapping = new RegionMapping(null, null, null, null, true);
-    mapping.setFieldMapping(
-        new String[] {fieldName1 + ":" + columnName1, fieldName2 + ":" + columnName2});
-
-    assertThat(mapping.getFieldMapping()).hasSize(2);
-    assertThat(mapping.getFieldMapping().get(0).getFieldName()).isEqualTo("myField1");
-    assertThat(mapping.getFieldMapping().get(0).getColumnName()).isEqualTo("myColumn1");
-    assertThat(mapping.getFieldMapping().get(1).getFieldName()).isEqualTo("myField2");
-    assertThat(mapping.getFieldMapping().get(1).getColumnName()).isEqualTo("myColumn2");
-  }
-
-  @Test
-  public void verifyTwoNonDefaultInstancesAreEqual() {
-    RegionMapping rm1 = new RegionMapping("regionName",
-        "pdxClassName", "tableName", "connectionName", true);
-    rm1.setFieldMapping(
-        new String[] {fieldName1 + ":" + columnName1, fieldName2 + ":" + columnName2});
-
-    RegionMapping rm2 = new RegionMapping("regionName",
-        "pdxClassName", "tableName", "connectionName", true);
-    rm2.setFieldMapping(
-        new String[] {fieldName1 + ":" + columnName1, fieldName2 + ":" + columnName2});
-
-    assertThat(rm1).isEqualTo(rm2);
   }
 
   @Test
@@ -378,13 +329,9 @@ public class RegionMappingTest {
   public void verifyTwoInstancesThatAreEqualHaveSameHashCode() {
     RegionMapping rm1 = new RegionMapping("regionName",
         "pdxClassName", "tableName", "connectionName", true);
-    rm1.setFieldMapping(
-        new String[] {fieldName1 + ":" + columnName1, fieldName2 + ":" + columnName2});
 
     RegionMapping rm2 = new RegionMapping("regionName",
         "pdxClassName", "tableName", "connectionName", true);
-    rm1.setFieldMapping(
-        new String[] {fieldName1 + ":" + columnName1, fieldName2 + ":" + columnName2});
 
     assertThat(rm1.hashCode()).isEqualTo(rm2.hashCode());
   }

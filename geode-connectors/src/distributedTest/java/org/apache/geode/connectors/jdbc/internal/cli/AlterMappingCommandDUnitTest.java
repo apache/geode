@@ -23,14 +23,11 @@ import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.
 import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -78,7 +75,6 @@ public class AlterMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
-    csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
@@ -109,12 +105,6 @@ public class AlterMappingCommandDUnitTest {
       assertThat(mapping.getTableName()).isEqualTo("newTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("newPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(false);
-      List<RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
-      assertThat(fieldMappings).hasSize(2);
-      assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field3");
-      assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column3");
-      assertThat(fieldMappings.get(1).getFieldName()).isEqualTo("field4");
-      assertThat(fieldMappings.get(1).getColumnName()).isEqualTo("column4");
     });
   }
 
@@ -141,7 +131,6 @@ public class AlterMappingCommandDUnitTest {
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxClassName()).isNull();
-      assertThat(mapping.getFieldMapping()).isEmpty();
     });
   }
 }
