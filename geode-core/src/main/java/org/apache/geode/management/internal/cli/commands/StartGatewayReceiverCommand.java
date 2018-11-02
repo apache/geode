@@ -69,25 +69,25 @@ public class StartGatewayReceiverCommand extends SingleGfshCommand {
             service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
         if (receiverBean != null) {
           if (receiverBean.isRunning()) {
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+            resultData.addMemberStatusResultRow(member.getId(),
                 CliStrings.GATEWAY_ERROR,
                 CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_ALREADY_STARTED_ON_MEMBER_0,
                     new Object[] {member.getId()}));
           } else {
             receiverBean.start();
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+            resultData.addMemberStatusResultRow(member.getId(),
                 CliStrings.GATEWAY_OK,
                 CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_STARTED_ON_MEMBER_0,
                     new Object[] {member.getId()}));
           }
         } else {
-          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+          resultData.addMemberStatusResultRow(member.getId(),
               CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0,
                   new Object[] {member.getId()}));
         }
       } else {
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0,
                 new Object[] {member.getId()}));

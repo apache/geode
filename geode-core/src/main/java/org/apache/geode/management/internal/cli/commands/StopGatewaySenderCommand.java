@@ -79,18 +79,18 @@ public class StopGatewaySenderCommand extends SingleGfshCommand {
       if (bean != null) {
         if (bean.isRunning()) {
           bean.stop();
-          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+          resultData.addMemberStatusResultRow(member.getId(),
               CliStrings.GATEWAY_OK, CliStrings.format(
                   CliStrings.GATEWAY_SENDER_0_IS_STOPPED_ON_MEMBER_1, senderId, member.getId()));
 
         } else {
-          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+          resultData.addMemberStatusResultRow(member.getId(),
               CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_RUNNING_ON_MEMBER_1, senderId,
                   member.getId()));
         }
       } else {
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, senderId,
                 member.getId()));

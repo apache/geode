@@ -75,11 +75,11 @@ public class LoadBalanceGatewaySenderCommand extends SingleGfshCommand {
       if (bean != null) {
         gatewaySenderExists = true;
         bean.rebalance();
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_OK, CliStrings.format(
                 CliStrings.GATEWAY_SENDER_0_IS_REBALANCED_ON_MEMBER_1, senderId, member.getId()));
       } else {
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, senderId,
                 member.getId()));

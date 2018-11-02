@@ -133,10 +133,10 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
       List<String> memberStatus;
       try {
         memberStatus = future.get();
-        GatewayCommandsUtils.accumulateStartResult(resultData, memberStatus.get(0),
+        resultData.addMemberStatusResultRow(memberStatus.get(0),
             memberStatus.get(1), memberStatus.get(2));
       } catch (InterruptedException | ExecutionException ite) {
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1,
                 id, ite.getMessage()));

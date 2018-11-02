@@ -69,24 +69,24 @@ public class StopGatewayReceiverCommand extends SingleGfshCommand {
         if (receiverBean != null) {
           if (receiverBean.isRunning()) {
             receiverBean.stop();
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+            resultData.addMemberStatusResultRow(member.getId(),
                 CliStrings.GATEWAY_OK,
                 CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_STOPPED_ON_MEMBER_0,
                     new Object[] {member.getId()}));
           } else {
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+            resultData.addMemberStatusResultRow(member.getId(),
                 CliStrings.GATEWAY_ERROR,
                 CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_RUNNING_ON_MEMBER_0,
                     new Object[] {member.getId()}));
           }
         } else {
-          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+          resultData.addMemberStatusResultRow(member.getId(),
               CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0,
                   new Object[] {member.getId()}));
         }
       } else {
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0,
                 new Object[] {member.getId()}));
