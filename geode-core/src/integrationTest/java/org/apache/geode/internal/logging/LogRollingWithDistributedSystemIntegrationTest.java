@@ -42,12 +42,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Integration tests for log rolling with cache lifecycle.
+ * Integration tests for log rolling with {@link DistributedSystem} lifecycle.
  *
  * @since GemFire 6.5
  */
 @Category(LoggingTest.class)
-public class CacheLogRollingIntegrationTest {
+public class LogRollingWithDistributedSystemIntegrationTest {
 
   private static final int MAX_LOG_STATEMENTS = 100000;
   private static final String SECURITY_PREFIX = "security_";
@@ -84,9 +84,9 @@ public class CacheLogRollingIntegrationTest {
   @Test
   public void testSimpleStartRestartWithRolling() {
     Properties config = createConfig();
-    config.put(LOG_FILE, logFile.getAbsolutePath());
-    config.put(LOG_FILE_SIZE_LIMIT, "1");
-    config.put(LOG_DISK_SPACE_LIMIT, "200");
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(LOG_FILE_SIZE_LIMIT, "1");
+    config.setProperty(LOG_DISK_SPACE_LIMIT, "200");
 
     system = DistributedSystem.connect(config);
     system.disconnect();
@@ -98,7 +98,8 @@ public class CacheLogRollingIntegrationTest {
       File newRolledLogFile = childFile(mainInt - 1, 1);
 
       assertThat(newMetaFile).doesNotExist();
-      assertThat(newRolledLogFile).doesNotExist();
+      assertThat(newRolledLogFile).as("mainInt=" + mainInt + ", newMetaFile=" + newMetaFile
+          + ", newRolledLogFile=" + newRolledLogFile).doesNotExist();
 
       system = DistributedSystem.connect(config);
 
@@ -112,8 +113,8 @@ public class CacheLogRollingIntegrationTest {
   @Test
   public void testStartWithRollingThenRestartWithRolling() throws Exception {
     Properties config = createConfig();
-    config.put(LOG_FILE, logFile.getAbsolutePath());
-    config.put(LOG_FILE_SIZE_LIMIT, "1");
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(LOG_FILE_SIZE_LIMIT, "1");
 
     system = DistributedSystem.connect(config);
 
@@ -139,8 +140,8 @@ public class CacheLogRollingIntegrationTest {
   @Test
   public void testLogFileLayoutAndRolling() throws Exception {
     Properties config = createConfig();
-    config.put(LOG_FILE, logFile.getAbsolutePath());
-    config.put(LOG_FILE_SIZE_LIMIT, "1");
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(LOG_FILE_SIZE_LIMIT, "1");
 
     system = DistributedSystem.connect(config);
 
@@ -150,9 +151,9 @@ public class CacheLogRollingIntegrationTest {
   @Test
   public void testSecurityLogFileLayoutAndRolling() throws Exception {
     Properties config = createConfig();
-    config.put(LOG_FILE, logFile.getAbsolutePath());
-    config.put(LOG_FILE_SIZE_LIMIT, "1");
-    config.put(SECURITY_LOG_FILE, securityLogFile.getAbsolutePath());
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(LOG_FILE_SIZE_LIMIT, "1");
+    config.setProperty(SECURITY_LOG_FILE, securityLogFile.getAbsolutePath());
 
     system = DistributedSystem.connect(config);
 
@@ -162,8 +163,8 @@ public class CacheLogRollingIntegrationTest {
   @Test
   public void with_logFileSizeLimit_should_createMetaLogFile() {
     Properties config = createConfig();
-    config.put(LOG_FILE, logFile.getAbsolutePath());
-    config.put(LOG_FILE_SIZE_LIMIT, "1");
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(LOG_FILE_SIZE_LIMIT, "1");
 
     system = DistributedSystem.connect(config);
 
@@ -178,7 +179,7 @@ public class CacheLogRollingIntegrationTest {
   @Test
   public void without_logFileSizeLimit_shouldNot_createMetaLogFile() {
     Properties config = createConfig();
-    config.put(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
 
     system = DistributedSystem.connect(config);
 
