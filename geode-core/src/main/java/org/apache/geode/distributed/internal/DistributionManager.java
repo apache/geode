@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -115,7 +116,7 @@ public interface DistributionManager extends ReplySender {
   Set<InternalDistributedMember> getOtherNormalDistributionManagerIds();
 
   /**
-   * Add a membership listener and return other DistribtionManagerIds as an atomic operation
+   * Add a membership listener and return other DistributionManagerIds as an atomic operation
    */
   Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l);
@@ -476,4 +477,9 @@ public interface DistributionManager extends ReplySender {
 
   /** returns the Threads Monitoring instance */
   public ThreadsMonitoring getThreadMonitoring();
+
+  /**
+   * Returns the {@link AlertingService}.
+   */
+  AlertingService getAlertingService();
 }

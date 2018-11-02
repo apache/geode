@@ -12,17 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.alerting;
 
-package org.apache.geode.annotations;
+/**
+ * Defines the lifecycle callbacks of an {@code AlertingSession}.
+ */
+public interface AlertingSessionListener {
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+  void createSession(final AlertMessaging alertMessaging);
 
-@Documented
-@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
-public @interface TestingOnly {
+  void startSession();
 
-  /** Optional description */
-  String value() default "";
+  void stopSession();
 }

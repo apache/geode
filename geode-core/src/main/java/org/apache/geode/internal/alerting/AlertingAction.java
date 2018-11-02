@@ -12,17 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.alerting;
 
-package org.apache.geode.annotations;
+/**
+ * Executes an action that is protected against generating additional {@code Alert}s. Even if the
+ * executed action generates log statements that meet the configured {@code AlertLevel}, no
+ * {@code Alert} will be raised.
+ */
+public class AlertingAction {
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+  private static final ThreadLocal<Boolean> ALERTING = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-@Documented
-@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
-public @interface TestingOnly {
+  public static void execute(final Runnable action) {
+    ALERTING.set(true);
+    try {
+      action.run();
+    } finally {
+      ALERTING.set(false);
+    }
+  }
 
-  /** Optional description */
-  String value() default "";
+  public static boolean isThreadAlerting() {
+    return ALERTING.get();
+  }
 }
