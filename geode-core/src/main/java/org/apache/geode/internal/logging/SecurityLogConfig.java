@@ -16,30 +16,35 @@ package org.apache.geode.internal.logging;
 
 import java.io.File;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 /**
- * LogConfig implementation for Security logging configuration that delegates to a
- * DistributionConfig.
+ * Wraps a {@link LogConfig} and overrides configuration for Security.
  */
-class SecurityLogConfig implements LogConfig {
+public class SecurityLogConfig implements LogConfig {
 
-  private final DistributionConfig config;
+  private final LogConfig config;
 
-  SecurityLogConfig(final DistributionConfig config) {
+  SecurityLogConfig(final LogConfig config) {
     this.config = config;
   }
 
   @Override
   public int getLogLevel() {
-    // missing from LogConfig
     return config.getSecurityLogLevel();
   }
 
   @Override
   public File getLogFile() {
-    // missing from LogConfig
     return config.getSecurityLogFile();
+  }
+
+  @Override
+  public File getSecurityLogFile() {
+    return config.getSecurityLogFile();
+  }
+
+  @Override
+  public int getSecurityLogLevel() {
+    return config.getSecurityLogLevel();
   }
 
   @Override
@@ -53,12 +58,17 @@ class SecurityLogConfig implements LogConfig {
   }
 
   @Override
+  public String getName() {
+    return config.getName();
+  }
+
+  @Override
   public String toLoggerString() {
     return config.toLoggerString();
   }
 
   @Override
-  public String getName() {
-    return config.getName();
+  public boolean isLoner() {
+    return config.isLoner();
   }
 }

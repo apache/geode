@@ -1490,6 +1490,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     return dcAttDescriptions;
   }
 
+  @Override
+  public boolean isLoner() {
+    return getLocators().equals("") && getMcastPort() == 0;
+  }
+
   static InetAddress _getDefaultMcastAddress() {
     // Default MCast address can be just IPv4 address.
     // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
