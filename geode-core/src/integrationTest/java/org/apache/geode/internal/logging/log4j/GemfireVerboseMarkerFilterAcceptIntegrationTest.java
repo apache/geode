@@ -32,20 +32,27 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
+/**
+ * Integration tests for using {@link LogMarker#GEMFIRE_VERBOSE} with {@code MarkerFilter} having
+ * {@code onMatch} of {@code ACCEPT} and {@code onMismatch} of {@code DENY}.
+ */
 @Category(LoggingTest.class)
 public class GemfireVerboseMarkerFilterAcceptIntegrationTest {
 
+  private static final String CONFIG_FILE_NAME =
+      "GemfireVerboseMarkerFilterAcceptIntegrationTest_log4j2.xml";
   private static final String APPENDER_NAME = "LIST";
 
   private static String configFilePath;
 
+  private ListAppender listAppender;
   private Logger logger;
   private String logMessage;
-  private ListAppender listAppender;
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -53,24 +60,21 @@ public class GemfireVerboseMarkerFilterAcceptIntegrationTest {
   @Rule
   public LoggerContextRule loggerContextRule = new LoggerContextRule(configFilePath);
 
+  @Rule
+  public TestName testName = new TestName();
+
   @BeforeClass
   public static void setUpLogConfigFile() throws Exception {
-    String configFileName =
-        GemfireVerboseMarkerFilterAcceptIntegrationTest.class.getSimpleName() + "_log4j2.xml";
-    URL resource = getResource(configFileName);
-    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), configFileName)
+    URL resource = getResource(CONFIG_FILE_NAME);
+    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), CONFIG_FILE_NAME)
         .getAbsolutePath();
   }
 
   @Before
   public void setUp() throws Exception {
-    logger = LogService.getLogger();
-    logMessage = "this is a log statement";
-
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
-        .isFalse();
-
     listAppender = loggerContextRule.getListAppender(APPENDER_NAME);
+    logger = LogService.getLogger();
+    logMessage = "Logging in " + testName.getMethodName();
   }
 
   @Test

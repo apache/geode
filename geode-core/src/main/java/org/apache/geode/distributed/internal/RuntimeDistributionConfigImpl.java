@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 
 /**
  * Provides an implementation of {@code DistributionConfig} that is used at runtime by an
@@ -69,8 +68,7 @@ public class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
   public void setLogLevel(int value) {
     logLevel = (Integer) checkAttribute(LOG_LEVEL, value);
     getAttSourceMap().put(LOG_LEVEL, ConfigSource.runtime());
-    system.getInternalLogWriter().setLogWriterLevel(value);
-    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
+    logConfigChanged();
   }
 
   @Override
@@ -123,14 +121,14 @@ public class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
   public void setLogDiskSpaceLimit(int value) {
     logDiskSpaceLimit = (Integer) checkAttribute(LOG_DISK_SPACE_LIMIT, value);
     getAttSourceMap().put(LOG_DISK_SPACE_LIMIT, ConfigSource.runtime());
-    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
+    logConfigChanged();
   }
 
   @Override
   public void setLogFileSizeLimit(int value) {
     logFileSizeLimit = (Integer) checkAttribute(LOG_FILE_SIZE_LIMIT, value);
     getAttSourceMap().put(LOG_FILE_SIZE_LIMIT, ConfigSource.runtime());
-    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
+    logConfigChanged();
   }
 
   @Override
@@ -143,5 +141,9 @@ public class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
 
   public DistributionConfig takeSnapshot() {
     return new DistributionConfigSnapshot(this);
+  }
+
+  private void logConfigChanged() {
+    system.logConfigChanged();
   }
 }
