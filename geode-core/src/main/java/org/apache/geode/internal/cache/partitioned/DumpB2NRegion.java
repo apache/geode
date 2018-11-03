@@ -108,7 +108,6 @@ public class DumpB2NRegion extends PartitionMessage {
           Thread.sleep(2000);
         } catch (InterruptedException e) {
           interrupted = true;
-          pr.checkReadiness();
         } finally {
           if (interrupted)
             Thread.currentThread().interrupt();
