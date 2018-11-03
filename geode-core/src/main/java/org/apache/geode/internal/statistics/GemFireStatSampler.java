@@ -33,6 +33,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.admin.ListenerIdMap;
 import org.apache.geode.internal.admin.remote.StatListenerMessage;
+import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
@@ -42,7 +43,6 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
  * GemFireStatSampler adds listeners and rolling archives to HostStatSampler.
  * <p>
  * The StatisticsManager is implemented by DistributedSystem.
- *
  */
 public class GemFireStatSampler extends HostStatSampler {
 
@@ -67,6 +67,11 @@ public class GemFireStatSampler extends HostStatSampler {
 
   public GemFireStatSampler(InternalDistributedSystem con) {
     super(con.getCancelCriterion(), new StatSamplerStats(con, con.getId()));
+    this.con = con;
+  }
+
+  public GemFireStatSampler(InternalDistributedSystem con, LogFile logFile) {
+    super(con.getCancelCriterion(), new StatSamplerStats(con, con.getId()), logFile);
     this.con = con;
   }
 

@@ -95,8 +95,6 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
 
   int getLogWriterLevel();
 
-  void setLogWriterLevel(int logWriterLevel);
-
   boolean isSecure();
 
   String getConnectionName();
