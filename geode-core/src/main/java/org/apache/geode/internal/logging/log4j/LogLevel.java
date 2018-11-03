@@ -21,148 +21,106 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 
-import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogWriterLevel;
 
 /**
- * This class provides utility methods to hold all valid log4j levels and legacy geode log levels
- * and the mapping between the two level hierarchy.
+ * Provides lookup of any string representation of a logging level to Log4J2 {@code Level} or
+ * {@code LogWriterLevel} int value.
  */
 public class LogLevel {
 
-  private static Map<String, Level> LEVELS = new HashMap<>();
-  private static Map<String, Integer> S2I = new HashMap<>();
-  private static Map<Integer, String> I2S = new HashMap<>();
+  private static final Map<String, Level> ANY_NAME_TO_LEVEL = new HashMap<>();
+  private static final Map<String, LogWriterLevel> ANY_NAME_TO_LOGWRITERLEVEL = new HashMap<>();
 
   static {
-    // logwriter int level to log4j level string
-    I2S.put(InternalLogWriter.NONE_LEVEL, "OFF");
-    I2S.put(InternalLogWriter.SEVERE_LEVEL, "FATAL");
-    I2S.put(InternalLogWriter.ERROR_LEVEL, "ERROR");
-    I2S.put(InternalLogWriter.WARNING_LEVEL, "WARN");
-    I2S.put(InternalLogWriter.INFO_LEVEL, "INFO");
-    I2S.put(InternalLogWriter.CONFIG_LEVEL, "INFO");
-    I2S.put(InternalLogWriter.FINE_LEVEL, "DEBUG");
-    I2S.put(InternalLogWriter.FINER_LEVEL, "TRACE");
-    I2S.put(InternalLogWriter.FINEST_LEVEL, "TRACE");
-    I2S.put(InternalLogWriter.ALL_LEVEL, "ALL");
+    // LogWriterLevel name to LogWriterLevel
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.NONE.name(), LogWriterLevel.NONE);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.SEVERE.name(), LogWriterLevel.SEVERE);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.ERROR.name(), LogWriterLevel.ERROR);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.WARNING.name(), LogWriterLevel.WARNING);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.INFO.name(), LogWriterLevel.INFO);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.CONFIG.name(), LogWriterLevel.CONFIG);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.FINE.name(), LogWriterLevel.FINE);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.FINER.name(), LogWriterLevel.FINER);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.FINEST.name(), LogWriterLevel.FINEST);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.ALL.name(), LogWriterLevel.ALL);
 
-    // logwriter strings to integer
-    S2I.put("NONE", InternalLogWriter.NONE_LEVEL);
-    S2I.put("SEVERE", InternalLogWriter.SEVERE_LEVEL);
-    S2I.put("ERROR", InternalLogWriter.ERROR_LEVEL);
-    S2I.put("WARNING", InternalLogWriter.WARNING_LEVEL);
-    S2I.put("INFO", InternalLogWriter.INFO_LEVEL);
-    S2I.put("CONFIG", InternalLogWriter.CONFIG_LEVEL);
-    S2I.put("FINE", InternalLogWriter.FINE_LEVEL);
-    S2I.put("FINER", InternalLogWriter.FINER_LEVEL);
-    S2I.put("FINEST", InternalLogWriter.FINEST_LEVEL);
-    S2I.put("ALL", InternalLogWriter.ALL_LEVEL);
-
-    // additional log4j strings to integer
-    S2I.put("OFF", InternalLogWriter.NONE_LEVEL);
-    S2I.put("FATAL", InternalLogWriter.SEVERE_LEVEL);
-    S2I.put("WARN", InternalLogWriter.WARNING_LEVEL);
-    S2I.put("DEBUG", InternalLogWriter.FINE_LEVEL);
-    S2I.put("TRACE", InternalLogWriter.FINEST_LEVEL);
+    // additional Log4J2 names to LogWriterLevel
+    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.OFF.name(), LogWriterLevel.NONE);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.FATAL.name(), LogWriterLevel.SEVERE);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.WARN.name(), LogWriterLevel.WARNING);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.DEBUG.name(), LogWriterLevel.FINE);
+    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.TRACE.name(), LogWriterLevel.FINEST);
 
     // put all the log4j levels in the map first
     Arrays.stream(Level.values()).forEach(level -> {
-      LEVELS.put(level.name(), level);
+      ANY_NAME_TO_LEVEL.put(level.name(), level);
     });
 
     // map all the other logwriter level to log4j levels
-    LEVELS.put("SEVERE", getLog4jLevel(InternalLogWriter.SEVERE_LEVEL));
-    LEVELS.put("WARNING", getLog4jLevel(InternalLogWriter.WARNING_LEVEL));
-    LEVELS.put("CONFIG", getLog4jLevel(InternalLogWriter.CONFIG_LEVEL));
-    LEVELS.put("FINE", getLog4jLevel(InternalLogWriter.FINE_LEVEL));
-    LEVELS.put("FINER", getLog4jLevel(InternalLogWriter.FINER_LEVEL));
-    LEVELS.put("FINEST", getLog4jLevel(InternalLogWriter.FINEST_LEVEL));
-    LEVELS.put("NONE", getLog4jLevel(InternalLogWriter.NONE_LEVEL));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.SEVERE.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.SEVERE.intLevel())));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.WARNING.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.WARNING.intLevel())));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.CONFIG.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.CONFIG.intLevel())));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.FINE.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.FINE.intLevel())));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.FINER.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.FINER.intLevel())));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.FINEST.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.FINEST.intLevel())));
+    ANY_NAME_TO_LEVEL.put(LogWriterLevel.NONE.name(),
+        LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.NONE.intLevel())));
   }
 
   /**
-   * resolve the log4j level from any log statement in the log file.
+   * Convert any string representation of a logging level to a Log4J2 {@code Level}. Returns
+   * {@code Level.OFF} if invalid.
    *
-   * @param level either legacy level string or log4j level string
-   * @return log4j level. Level.OFF is invalid string
+   * <p>
+   * resolve the log4j level from any log statement in the log file.
    */
-  public static Level resolveLevel(final String level) {
-    Level log4jLevel = LEVELS.get(level.toUpperCase());
+  public static Level resolveLevel(final String anyLevelName) {
+    Level log4jLevel = ANY_NAME_TO_LEVEL.get(anyLevelName.toUpperCase());
     // make sure any unrecognizable log level is assigned a most specific level
     return log4jLevel == null ? Level.OFF : log4jLevel;
   }
 
   /**
+   * Convert any string representation of a logging level to a Log4J2 {@code Level}. Returns null
+   * if invalid.
+   *
+   * <p>
    * get Log4j Level from either legacy level string or log4j level string
-   *
-   * @param level either legacy level string or log4j level string
-   * @return log4j level. null if invalid level string
    */
-  public static Level getLevel(String level) {
-    return LEVELS.get(level.toUpperCase());
+  public static Level getLevel(String anyLevelName) {
+    return ANY_NAME_TO_LEVEL.get(anyLevelName.toUpperCase());
   }
 
   /**
-   * convert log4j level to logwriter code
+   * Convert any string representation of a logging level to a {@code LogWriterLevel} int value.
    *
-   * @param log4jLevel log4j level object
-   * @return legacy logwriter code
-   */
-  public static int getLogWriterLevel(final Level log4jLevel) {
-    Integer result = S2I.get(log4jLevel.name());
-
-    if (result == null)
-      throw new IllegalArgumentException("Unknown Log4J level [" + log4jLevel + "].");
-
-    return result;
-  }
-
-  /**
-   * convert legacy logwriter code to log4j level
-   *
-   * @param logWriterLevel logwriter code
-   * @return log4j level
-   */
-  public static Level getLog4jLevel(final int logWriterLevel) {
-    String log4jLevel = I2S.get(logWriterLevel);
-    if (log4jLevel == null)
-      throw new IllegalArgumentException("Unknown LogWriter level [" + logWriterLevel + "].");
-    return Level.getLevel(log4jLevel);
-  }
-
-  /**
+   * <p>
    * convert a string to logwriter code, either log4j level or logwriter string, or a level-xxx
-   *
-   * @param levelName a string of level name
-   * @return logwriter code
    */
-  public static int getLogWriterLevel(final String levelName) {
-    if (levelName == null) {
+  public static int getLogWriterLevel(final String anyLevelName) {
+    if (anyLevelName == null) {
       throw new IllegalArgumentException("LevelName cannot be null");
     }
 
-    Integer level = S2I.get(levelName.toUpperCase());
-    if (level != null)
-      return level;
+    if (ANY_NAME_TO_LOGWRITERLEVEL.get(anyLevelName.toUpperCase()) != null) {
+      return ANY_NAME_TO_LOGWRITERLEVEL.get(anyLevelName.toUpperCase()).intLevel();
+    }
 
-    if (levelName.startsWith("level-")) {
-      String levelValue = levelName.substring("level-".length());
+    if (anyLevelName.toLowerCase().startsWith("level-")) {
+      String levelValue = anyLevelName.toLowerCase().substring("level-".length());
       return Integer.parseInt(levelValue);
     }
 
     String values =
         Arrays.stream(Level.values()).sorted().map(Level::name).collect(Collectors.joining(", "));
     throw new IllegalArgumentException(
-        "Unknown log-level \"" + levelName + "\". Valid levels are: " + values + ".");
-  }
-
-  /**
-   * convert a legacy logwriter code to log4j level string
-   *
-   * @param logWriterLevel integer code
-   * @return log4j level string
-   */
-  public static String getLog4jLevelAsString(final int logWriterLevel) {
-    return getLog4jLevel(logWriterLevel).name().toLowerCase();
+        "Unknown log-level \"" + anyLevelName + "\". Valid levels are: " + values + ".");
   }
 }

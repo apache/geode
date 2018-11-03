@@ -93,7 +93,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
     return givenLocatorLauncher(newBuilder());
   }
 
-  private LocatorLauncher givenLocatorLauncher(final Builder builder) {
+  protected LocatorLauncher givenLocatorLauncher(final Builder builder) {
     return builder.build();
   }
 
