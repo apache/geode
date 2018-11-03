@@ -62,7 +62,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.Configuration;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -288,8 +288,9 @@ public class DUnitLauncher {
     final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
 
     final LoggerContext appenderContext =
-        ((org.apache.logging.log4j.core.Logger) LogManager.getLogger(LogService.BASE_LOGGER_NAME))
-            .getContext();
+        ((org.apache.logging.log4j.core.Logger) LogManager
+            .getLogger(Configuration.MAIN_LOGGER_NAME))
+                .getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
         "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n",
@@ -301,7 +302,7 @@ public class DUnitLauncher {
     fileAppender.start();
 
     LoggerConfig loggerConfig =
-        appenderContext.getConfiguration().getLoggerConfig(LogService.BASE_LOGGER_NAME);
+        appenderContext.getConfiguration().getLoggerConfig(Configuration.MAIN_LOGGER_NAME);
     loggerConfig.addAppender(fileAppender, Level.INFO, null);
   }
 
