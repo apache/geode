@@ -1084,7 +1084,7 @@ public class InternalDistributedSystem extends DistributedSystem
       t.join(MAX_DISCONNECT_WAIT);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      logger.warn("Interrupted while processing disconnect listener",
+      logger.warn("Interrupted while processing disconnect listener thread id = " + t,
           e);
     }
 

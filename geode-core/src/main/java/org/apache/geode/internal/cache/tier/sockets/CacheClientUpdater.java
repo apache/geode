@@ -505,6 +505,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    * stop method.
    */
   private void stopUpdater() {
+    logger.warn("{}: Stopping {}", this.location, this);
     boolean isSelfDestroying = Thread.currentThread() == this;
     stopProcessing();
 
@@ -515,7 +516,6 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Stopping {}", this.location, this);
       }
-
       if (!isSelfDestroying) {
         interrupt();
         try {
@@ -1815,7 +1815,10 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
   @Override
   public void onDisconnect(InternalDistributedSystem sys) {
+    logger.warn("{}: onDisconnect about to stopUpdater {}", this.location, this);
     stopUpdater();
+    logger.warn("{}: onDisconnect done stopUpdater {}", this.location, this);
+
   }
 
   private void verifySocketBufferSize(int requestedBufferSize, int actualBufferSize, String type) {

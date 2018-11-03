@@ -360,6 +360,7 @@ public class PoolFactoryImpl implements PoolFactory {
                     cache, threadMonitoring);
         logger.info(" **** Did we retry?");
       } catch (NoSubscriptionServersAvailableException nsa) {
+        logger.warn("About to retry");
         retries++;
         try {
           Thread.sleep(100);

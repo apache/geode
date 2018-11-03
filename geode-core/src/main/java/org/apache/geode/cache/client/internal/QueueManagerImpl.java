@@ -946,7 +946,7 @@ public class QueueManagerImpl implements QueueManager {
       ClientUpdater failedUpdater) {
     QueueConnectionImpl queueConnection = null;
     FailureTracker failureTracker = denyList.getFailureTracker(connection.getServer());
-    logger.info(" ****** denyList = " + denyList.toString());
+    logger.info(" ****** denyList = " + denyList.getBadServers());
     try {
       ClientUpdater updater = factory.createServerToClientConnection(connection.getEndpoint(), this,
           isPrimary, failedUpdater);
