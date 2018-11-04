@@ -38,7 +38,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -135,10 +136,10 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-    List<String> status = resultData.retrieveAllValues("Result");
-    assertThat(status).hasSize(3);
-    assertThat(status).contains("OK");
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
@@ -181,7 +182,11 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
     String strCmdResult = cmdResult.toString();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-    assertThat(strCmdResult).contains("is resumed on member");
+
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
+    List<String> messages = resultData.getValuesInColumn("Message");
+    assertThat(messages.get(0)).contains("is resumed on member");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
@@ -234,11 +239,10 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-    List<String> status = resultData.retrieveAllValues("Result");
-    assertThat(status).hasSize(3);
-    assertThat(status).doesNotContain("Error");
-    assertThat(status).contains("OK");
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
@@ -313,11 +317,10 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-    List<String> status = resultData.retrieveAllValues("Result");
-    assertThat(status).hasSize(4);
-    assertThat(status).doesNotContain("Error");
-    assertThat(status).contains("OK");
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));

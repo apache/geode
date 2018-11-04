@@ -35,8 +35,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -104,12 +104,11 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-    List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-    assertThat(result_Status).hasSize(3);
-    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+    List<String> status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
+    assertThat(status).hasSize(3);
+    assertThat(status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
 
     server1.invoke(WANCommandUtils::stopReceivers);
     server2.invoke(WANCommandUtils::stopReceivers);
@@ -127,12 +126,11 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    tableResultData = ((CompositeResultData) cmdResult.getResultData())
-        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-    result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-    assertThat(result_Status).hasSize(3);
-    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
+    resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+    status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
+    assertThat(status).hasSize(3);
+    assertThat(status).doesNotContain(CliStrings.GATEWAY_RUNNING);
   }
 
   @Test
@@ -167,12 +165,11 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-    List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-    assertThat(result_Status).hasSize(1);
-    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+    List<String> status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
+    assertThat(status).hasSize(1);
+    assertThat(status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
 
     server1.invoke(WANCommandUtils::stopReceivers);
     server2.invoke(WANCommandUtils::stopReceivers);
@@ -190,12 +187,11 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     cmdResult = gfsh.executeCommand(command);
     assertThat(cmdResult).isNotNull();
 
-    tableResultData = ((CompositeResultData) cmdResult.getResultData())
-        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-    result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-    assertThat(result_Status).hasSize(1);
-    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
+    resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+    status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
+    assertThat(status).hasSize(1);
+    assertThat(status).doesNotContain(CliStrings.GATEWAY_RUNNING);
   }
 
   @Test
@@ -231,12 +227,11 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-    List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-    assertThat(result_Status).hasSize(3);
-    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
+    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+    List<String> status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
+    assertThat(status).hasSize(3);
+    assertThat(status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
 
     server1.invoke(WANCommandUtils::stopReceivers);
     server2.invoke(WANCommandUtils::stopReceivers);
@@ -254,12 +249,11 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    tableResultData = ((CompositeResultData) cmdResult.getResultData())
-        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-    result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-    assertThat(result_Status).hasSize(3);
-    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
+    resultData = ((ResultModel) cmdResult.getResultData())
+        .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+    status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
+    assertThat(status).hasSize(3);
+    assertThat(status).doesNotContain(CliStrings.GATEWAY_RUNNING);
   }
 
   private MemberVM startServerWithGroups(int index, String groups, int locPort) {
