@@ -166,7 +166,12 @@ class DockerizedTestPlugin implements Plugin<Project> {
             {
                 if (address == null) {
                     def remoteAddresses = NetworkInterface.networkInterfaces.findAll {
-                        it.up && !it.loopback
+                        try {
+                            return it.up && !it.loopback
+                        } catch (SocketException ex) {
+                            logger.warn("Unable to inspect interface " + it)
+                            return false
+                        }
                     }*.inetAddresses*.collect { it }.flatten()
                     def original = delegate.address
                     address = new MultiChoiceAddress(original.canonicalAddress, original.port, remoteAddresses)
