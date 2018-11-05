@@ -67,6 +67,9 @@ dependencies {
   }
 
 
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
   distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
   distributedTestRuntime(files(war.destinationDir))

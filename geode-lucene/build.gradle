@@ -69,6 +69,9 @@ dependencies {
 
   distributedTestCompile(project(':geode-lucene:geode-lucene-test'))
   distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
 
 
   upgradeTestCompile(project(':geode-dunit')) {

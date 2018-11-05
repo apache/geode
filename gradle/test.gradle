@@ -102,6 +102,8 @@ subprojects {
   }
 
   dependencies {
+    // Do not add dependencies here that are not part of a custom configuration.
+    // Dependencies should be explicit in the relevant build.gradle files to maintain modularity.
     apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
     apt(group: 'junit', name: 'junit', version: project.'junit.version') {
       transitive = false
@@ -138,8 +140,6 @@ subprojects {
     integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
     integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
     integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
-
-    distributedTestCompile project(":geode-dunit")
   }
 
   configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
