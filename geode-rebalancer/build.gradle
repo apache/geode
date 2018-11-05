@@ -27,6 +27,7 @@ dependencies {
 
   testCompile(project(':geode-core'))
 
+  testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
   testCompile('org.powermock:powermock-core:' + project.'powermock.version')
   testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
   testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')

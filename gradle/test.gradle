@@ -118,8 +118,6 @@ subprojects {
       transitive = false
     }
 
-    testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-
     testRuntime('cglib:cglib:' + project.'cglib.version') {
       exclude module: 'org.apache.ant'
     }
