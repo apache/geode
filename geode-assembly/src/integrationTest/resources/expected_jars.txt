@@ -104,3 +104,6 @@ springfox-swagger-common
 springfox-swagger-ui
 swagger-annotations
 swagger-models
+commons-math
+geo
+grumpy-core
