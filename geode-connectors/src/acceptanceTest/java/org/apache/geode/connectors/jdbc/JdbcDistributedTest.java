@@ -234,7 +234,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
-  public void throwsExceptionWhenNoConnectionExists() throws Exception {
+  public void throwsExceptionWhenNoDataSourceExists() throws Exception {
     createTable();
     createRegionUsingGfsh(true, false, false);
     createMapping(REGION_NAME, DATA_SOURCE_NAME);
@@ -246,7 +246,8 @@ public abstract class JdbcDistributedTest implements Serializable {
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
-              "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jndi-binding'");
+              "JDBC connection with name " + DATA_SOURCE_NAME
+                  + " not found. Create the connection with the gfsh command 'create jndi-binding'");
     });
   }
 
