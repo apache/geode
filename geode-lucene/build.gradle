@@ -37,6 +37,10 @@ dependencies {
   distributedTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
 
   testCompile('com.carrotsearch.randomizedtesting:randomizedtesting-runner:' + project.'carrotsearch.version')
+  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+
   upgradeTestCompile('commons-io:commons-io:' + project.'commons-io.version')
 
   testCompile(project(':geode-junit')) {

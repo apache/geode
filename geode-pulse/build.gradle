@@ -71,6 +71,10 @@ dependencies {
   }
   testCompile(project(':geode-core'))
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
+  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+
 
 
   integrationTestCompile(project(':geode-junit')) {

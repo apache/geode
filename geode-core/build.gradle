@@ -267,6 +267,10 @@ dependencies {
   testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
   testCompile('com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version')
+  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
   testRuntime('commons-collections:commons-collections:' + project.'commons-collections.version')
