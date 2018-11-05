@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugin.dockerizedtest;
+package com.pedjak.gradle.plugins.dockerizedtest;
 
 import org.gradle.process.internal.health.memory.JvmMemoryStatusListener;
 import org.gradle.process.internal.health.memory.MemoryHolder;

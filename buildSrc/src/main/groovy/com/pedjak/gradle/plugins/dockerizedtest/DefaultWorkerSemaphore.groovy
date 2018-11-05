@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugin.dockerizedtest
+package com.pedjak.gradle.plugins.dockerizedtest
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 
 import java.util.concurrent.Semaphore
 
-class DefaultWorkerSemaphore implements com.pedjak.gradle.plugins.dockerizedtest.WorkerSemaphore {
+class DefaultWorkerSemaphore implements WorkerSemaphore {
     private int maxWorkers = Integer.MAX_VALUE
     private Semaphore semaphore
     private logger

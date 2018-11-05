@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugin.dockerizedtest
+package com.pedjak.gradle.plugins.dockerizedtest
 
 import com.pedjak.gradle.plugins.dockerizedtest.DockerizedTestExtension
 import com.pedjak.gradle.plugins.dockerizedtest.ExitCodeTolerantExecHandle
@@ -56,7 +56,7 @@ class DockerizedJavaExecHandleBuilder extends JavaExecHandleBuilder {
 
     ExecHandle build() {
 
-        return new ExitCodeTolerantExecHandle(new com.pedjak.gradle.plugins.dockerizedtest.DockerizedExecHandle(extension, getDisplayName(),
+        return new ExitCodeTolerantExecHandle(new DockerizedExecHandle(extension, getDisplayName(),
                 getWorkingDir(),
                 'java',
                 allArguments,

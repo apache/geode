@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugin.dockerizedtest
+package com.pedjak.gradle.plugins.dockerizedtest
 
 import com.github.dockerjava.api.model.Frame
 import com.github.dockerjava.api.model.StreamType
@@ -38,11 +38,11 @@ class DockerizedJvmVersionDetector implements JvmVersionDetector {
 
     private static final Lock lock = new ReentrantLock()
 
-    final com.pedjak.gradle.plugins.dockerizedtest.DockerizedTestExtension testExtension
+    final DockerizedTestExtension testExtension
 
     private static final imageJvms = [:]
 
-    DockerizedJvmVersionDetector(com.pedjak.gradle.plugins.dockerizedtest.DockerizedTestExtension testExtension) {
+    DockerizedJvmVersionDetector(DockerizedTestExtension testExtension) {
         this.testExtension = testExtension
     }
 

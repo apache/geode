@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugin.dockerizedtest;
+package com.pedjak.gradle.plugins.dockerizedtest;
 
 import static java.lang.String.format;
 
@@ -41,8 +41,13 @@ import javax.annotation.Nullable;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.StreamType;
+import com.github.dockerjava.api.model.WaitResponse;
 import com.github.dockerjava.core.command.AttachContainerResultCallback;
 import com.github.dockerjava.core.command.WaitContainerResultCallback;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Volume;
 import com.google.common.base.Joiner;
 import groovy.lang.Closure;
 import org.gradle.api.logging.Logger;

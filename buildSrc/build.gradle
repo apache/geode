@@ -16,10 +16,6 @@
  *
  */
 
-plugins {
-  id 'java'
-}
-
 repositories {
   mavenCentral()
   maven { url "http://geode-maven.s3-website-us-west-2.amazonaws.com" }
@@ -32,15 +28,20 @@ dependencies {
   compile gradleApi()
   compile 'org.apache.commons:commons-lang3:3.3.2'
   compile 'org.apache.maven:maven-artifact:3.3.3'
-  compile 'io.netty:netty-handler-proxy:4.1.22.Final'
-  compile 'io.netty:netty-codec-http:4.1.22.Final'
-  compile 'io.netty:netty-handler:4.1.22.Final'
-  compile 'io.netty:netty-transport-native-epoll:4.1.22.Final'
-  compile 'io.netty:netty-transport-native-kqueue:4.1.22.Final'
-  compile 'com.github.docker-java:docker-java:3.0.14'
+  compile 'com.github.docker-java:docker-java:3.1.2-GEODE'
 
   compile group: 'junit', name: 'junit', version: '4.12'
 
   testAnnotationProcessor this.project
+}
 
+sourceSets {
+  main {
+    java {
+      srcDirs = []
+    }
+    groovy {
+      srcDirs += ['src/main/java']
+    }
+  }
 }

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugin.dockerizedtest
+package com.pedjak.gradle.plugins.dockerizedtest
 
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
-import com.pedjak.gradle.plugins.dockerizedtest.DefaultWorkerSemaphore
-import com.pedjak.gradle.plugins.dockerizedtest.DockerizedTestExtension
 import org.apache.commons.lang3.SystemUtils
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.gradle.api.Action
