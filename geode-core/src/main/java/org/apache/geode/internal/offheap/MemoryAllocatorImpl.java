@@ -511,7 +511,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     Collections.sort(orphans, new Comparator<MemoryBlock>() {
       @Override
       public int compare(MemoryBlock o1, MemoryBlock o2) {
-        return Long.valueOf(o1.getAddress()).compareTo(o2.getAddress());
+        return Long.compare(o1.getAddress(), o2.getAddress());
       }
     });
     // this.memoryBlocks = new WeakReference<List<MemoryBlock>>(orphans);
