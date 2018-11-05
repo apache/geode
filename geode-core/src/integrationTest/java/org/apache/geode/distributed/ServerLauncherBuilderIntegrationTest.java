@@ -38,7 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncher.Builder;
-import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.distributed.AbstractLauncher.Command;
 import org.apache.geode.internal.AvailablePortHelper;
 
 /**

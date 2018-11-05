@@ -144,16 +144,16 @@ public class ServerLauncher extends AbstractLauncher<String> {
         String.valueOf(getDefaultServerPort())));
   }
 
-  private static final Map<Command, String> usageMap = new TreeMap<>();
+  private static final Map<AbstractLauncher.Command, String> usageMap = new TreeMap<>();
 
   static {
-    usageMap.put(Command.START,
+    usageMap.put(AbstractLauncher.Command.START,
         "start <member-name> [--assign-buckets] [--disable-default-server] [--rebalance] [--server-bind-address=<IP-address>] [--server-port=<port>] [--force] [--debug] [--help]");
-    usageMap.put(Command.STATUS,
+    usageMap.put(AbstractLauncher.Command.STATUS,
         "status [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.STOP,
+    usageMap.put(AbstractLauncher.Command.STOP,
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.VERSION, "version");
+    usageMap.put(AbstractLauncher.Command.VERSION, "version");
   }
 
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";
@@ -183,7 +183,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   private final CacheConfig cacheConfig;
 
-  private final Command command;
+  private final AbstractLauncher.Command command;
 
   private final InetAddress serverBindAddress;
 
@@ -388,7 +388,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return the Server launcher command used to invoke the Server.
    * @see org.apache.geode.distributed.ServerLauncher.Command
    */
-  public Command getCommand() {
+  public AbstractLauncher.Command getCommand() {
     return this.command;
   }
 
@@ -659,8 +659,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @param command the Server launcher command in which to display help information.
    * @see #usage()
    */
-  public void help(final Command command) {
-    if (Command.isUnspecified(command)) {
+  public void help(final AbstractLauncher.Command command) {
+    if (AbstractLauncher.Command.isUnspecified(command)) {
       usage();
     } else {
       info(wrap(helpMap.get(command.getName()), 80, ""));
@@ -680,16 +680,16 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Displays usage information on the proper invocation of the ServerLauncher from the command-line
    * to standard err.
    *
-   * @see #help(org.apache.geode.distributed.ServerLauncher.Command)
+   * @see #help(org.apache.geode.distributed.AbstractLauncher.Command)
    */
   public void usage() {
     info(wrap(helpMap.get("launcher"), 80, "\t"));
     info("\n\nSTART\n\n");
-    help(Command.START);
+    help(AbstractLauncher.Command.START);
     info("STATUS\n\n");
-    help(Command.STATUS);
+    help(AbstractLauncher.Command.STATUS);
     info("STOP\n\n");
-    help(Command.STOP);
+    help(AbstractLauncher.Command.STOP);
   }
 
   /**
@@ -1355,7 +1355,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   public static class Builder {
 
-    protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
+    protected static final AbstractLauncher.Command DEFAULT_COMMAND = AbstractLauncher.Command.UNSPECIFIED;
 
     private boolean serverBindAddressSetByUser;
     private boolean serverPortSetByUser;
@@ -1373,7 +1373,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     private final CacheConfig cacheConfig = new CacheConfig();
 
-    private Command command;
+    private AbstractLauncher.Command command;
 
     private InetAddress serverBindAddress;
 
@@ -1556,7 +1556,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
 
           if (options.has("version")) {
-            setCommand(Command.VERSION);
+            setCommand(AbstractLauncher.Command.VERSION);
           }
         }
 
@@ -1622,7 +1622,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     protected void parseCommand(final String... args) {
       if (args != null) {
         for (String arg : args) {
-          Command command = Command.valueOfName(arg);
+          AbstractLauncher.Command command = AbstractLauncher.Command.valueOfName(arg);
           if (command != null) {
             setCommand(command);
             break;
@@ -1644,7 +1644,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     protected void parseMemberName(final String... args) {
       if (args != null) {
         for (String arg : args) {
-          if (!(arg.startsWith(OPTION_PREFIX) || Command.isCommand(arg))) {
+          if (!(arg.startsWith(OPTION_PREFIX) || AbstractLauncher.Command.isCommand(arg))) {
             setMemberName(arg);
             break;
           }
@@ -1665,10 +1665,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Gets the Server launcher command used during the invocation of the ServerLauncher.
      *
      * @return the Server launcher command used to invoke (run) the ServerLauncher class.
-     * @see #setCommand(org.apache.geode.distributed.ServerLauncher.Command)
+     * @see #setCommand(org.apache.geode.distributed.AbstractLauncher.Command)
      * @see org.apache.geode.distributed.ServerLauncher.Command
      */
-    public Command getCommand() {
+    public AbstractLauncher.Command getCommand() {
       return this.command != null ? this.command : DEFAULT_COMMAND;
     }
 
@@ -1679,9 +1679,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *        ServerLauncher.
      * @return this Builder instance.
      * @see #getCommand()
-     * @see org.apache.geode.distributed.ServerLauncher.Command
+     * @see org.apache.geode.distributed.AbstractLauncher.Command
      */
-    public Builder setCommand(final Command command) {
+    public Builder setCommand(final AbstractLauncher.Command command) {
       this.command = command;
       return this;
     }
@@ -2393,7 +2393,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see org.apache.geode.distributed.ServerLauncher.Command#START
      */
     void validateOnStart() {
-      if (Command.START == getCommand()) {
+      if (AbstractLauncher.Command.START == getCommand()) {
         if (isBlank(getMemberName())
             && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
             && !isSet(getDistributedSystemProperties(), NAME)
@@ -2419,7 +2419,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see org.apache.geode.distributed.ServerLauncher.Command#STATUS
      */
     void validateOnStatus() {
-      if (Command.STATUS == getCommand()) {
+      if (AbstractLauncher.Command.STATUS == getCommand()) {
         // do nothing
       }
     }
@@ -2430,7 +2430,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see org.apache.geode.distributed.ServerLauncher.Command#STOP
      */
     void validateOnStop() {
-      if (Command.STOP == getCommand()) {
+      if (AbstractLauncher.Command.STOP == getCommand()) {
         // do nothing
       }
     }
@@ -2491,7 +2491,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a boolean value indicating whether the Server launcher command is unspecified.
      * @see Command#UNSPECIFIED
      */
-    public static boolean isUnspecified(final Command command) {
+    public static boolean isUnspecified(final AbstractLauncher.Command command) {
       return command == null || command.isUnspecified();
     }
 

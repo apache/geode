@@ -29,7 +29,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
-import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.distributed.AbstractLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
@@ -862,7 +862,7 @@ public class ServerLauncherBuilderTest {
   @Test
   public void buildUsesMemberNameSetInApiProperties() {
     ServerLauncher launcher =
-        new Builder().setCommand(ServerLauncher.Command.START).set(NAME, "serverABC").build();
+        new Builder().setCommand(Command.START).set(NAME, "serverABC").build();
 
     assertThat(launcher.getMemberName()).isNull();
     assertThat(launcher.getProperties().getProperty(NAME)).isEqualTo("serverABC");
@@ -872,7 +872,7 @@ public class ServerLauncherBuilderTest {
   public void buildUsesMemberNameSetInSystemProperties() {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "serverXYZ");
 
-    ServerLauncher launcher = new Builder().setCommand(ServerLauncher.Command.START).build();
+    ServerLauncher launcher = new Builder().setCommand(Command.START).build();
 
     assertThat(launcher.getMemberName()).isNull();
   }

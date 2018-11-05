@@ -24,7 +24,7 @@ public class ServerLauncherDUnitTestHelper {
     System.setProperty("gemfire.server-port", "0");
 
     final ServerLauncher serverLauncher =
-        new ServerLauncher.Builder().setCommand(ServerLauncher.Command.START)
+        new ServerLauncher.Builder().setCommand(AbstractLauncher.Command.START)
             .setMemberName("server1").set("locators", "localhost[" + locatorPort + "]")
             .set("log-level", "config").set("log-file", "").setDebug(true).build();
 

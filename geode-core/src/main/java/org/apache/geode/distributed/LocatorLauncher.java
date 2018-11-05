@@ -18,6 +18,8 @@ import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.lowerCase;
+import static org.apache.geode.distributed.AbstractLauncher.Command.START;
+import static org.apache.geode.distributed.AbstractLauncher.Command.STATUS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
@@ -92,6 +94,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private static final Boolean DEFAULT_LOAD_SHARED_CONFIG_FROM_DIR = Boolean.FALSE;
 
+  private static final String[] startOptions =
+      new String[] {"bind-address", "hostname-for-clients", "port", "force", "debug", "help"};
+  private static final String[] statusOptions =
+      new String[] {"bind-address", "port", "member", "pid", "dir", "debug", "help"};
+
   private static final Map<String, String> helpMap = new HashMap<>();
 
   static {
@@ -128,16 +135,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         "An option to cause the Locator to redirect standard out and standard error to the GemFire log file.");
   }
 
-  private static final Map<Command, String> usageMap = new TreeMap<>();
+  private static final Map<AbstractLauncher.Command, String> usageMap = new TreeMap<>();
 
   static {
-    usageMap.put(Command.START,
+    usageMap.put(AbstractLauncher.Command.START,
         "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--debug] [--help]");
-    usageMap.put(Command.STATUS,
+    usageMap.put(AbstractLauncher.Command.STATUS,
         "status [--bind-address=<IP-address>] [--port=<port>] [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.STOP,
+    usageMap.put(AbstractLauncher.Command.STOP,
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.VERSION, "version");
+    usageMap.put(AbstractLauncher.Command.VERSION, "version");
   }
 
   private static final String DEFAULT_LOCATOR_LOG_EXT = ".log";
@@ -157,7 +164,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final boolean help;
   private final boolean redirectOutput;
 
-  private final Command command;
+  private final AbstractLauncher.Command command;
 
   private final boolean bindAddressSpecified;
   private final boolean portSpecified;
@@ -232,6 +239,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.LocatorLauncher.Builder
    */
   private LocatorLauncher(final Builder builder) {
+    commandOptions.put(START, startOptions);
+    commandOptions.put(STATUS, statusOptions);
     this.command = builder.getCommand();
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.bindAddressSpecified = builder.isBindAddressSpecified();
@@ -307,9 +316,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * Get the Locator launcher command used to invoke the Locator.
    *
    * @return the Locator launcher command used to invoke the Locator.
-   * @see org.apache.geode.distributed.LocatorLauncher.Command
+   * @see org.apache.geode.distributed.AbstractLauncher.Command
    */
-  public Command getCommand() {
+  public AbstractLauncher.Command getCommand() {
     return this.command;
   }
 
@@ -330,7 +339,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * command-line.
    *
    * @return a boolean value indicating if this launcher is used for displaying help information.
-   * @see org.apache.geode.distributed.LocatorLauncher.Command
+   * @see org.apache.geode.distributed.AbstractLauncher.Command
    */
   public boolean isHelping() {
     return this.help;
@@ -495,8 +504,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @param command the Locator launcher command in which to display help information.
    * @see #usage()
    */
-  public void help(final Command command) {
-    if (Command.isUnspecified(command)) {
+  public void help(final AbstractLauncher.Command command) {
+    if (AbstractLauncher.Command.isUnspecified(command)) {
       usage();
     } else {
       info(wrap(helpMap.get(command.getName()), 80, ""));
@@ -516,16 +525,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * Displays usage information on the proper invocation of the LocatorLauncher from the
    * command-line to standard err.
    *
-   * @see #help(org.apache.geode.distributed.LocatorLauncher.Command)
+   * @see #help(org.apache.geode.distributed.AbstractLauncher.Command)
    */
   public void usage() {
     info(wrap(helpMap.get("launcher"), 80, "\t"));
     info("\n\nSTART\n\n");
-    help(Command.START);
+    help(AbstractLauncher.Command.START);
     info("STATUS\n\n");
-    help(Command.STATUS);
+    help(AbstractLauncher.Command.STATUS);
     info("STOP\n\n");
-    help(Command.STOP);
+    help(AbstractLauncher.Command.STOP);
   }
 
   /**
@@ -534,13 +543,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * implemented with a call to start() followed by a call to waitOnLocator().
    *
    * @see java.lang.Runnable
-   * @see LocatorLauncher.Command
+   * @see AbstractLauncher.Command
    * @see LocatorLauncher#start()
    * @see LocatorLauncher#waitOnLocator()
    * @see LocatorLauncher#status()
    * @see LocatorLauncher#stop()
    * @see LocatorLauncher#version()
-   * @see LocatorLauncher#help(org.apache.geode.distributed.LocatorLauncher.Command)
+   * @see LocatorLauncher#help(org.apache.geode.distributed.AbstractLauncher.Command)
    * @see LocatorLauncher#usage()
    */
   @Override
@@ -1175,7 +1184,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public static class Builder {
 
-    protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
+    protected static final AbstractLauncher.Command DEFAULT_COMMAND = AbstractLauncher.Command.UNSPECIFIED;
 
     private Boolean debug;
     private Boolean deletePidFileOnStop;
@@ -1183,7 +1192,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Boolean help;
     private Boolean redirectOutput;
     private Boolean loadSharedConfigFromDir;
-    private Command command;
+    private AbstractLauncher.Command command;
 
     private InetAddress bindAddress;
 
@@ -1280,7 +1289,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           }
 
           if (options.has("version")) {
-            setCommand(Command.VERSION);
+            setCommand(AbstractLauncher.Command.VERSION);
           }
         }
       } catch (OptionException e) {
@@ -1297,7 +1306,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Iterates the list of arguments in search of the target Locator launcher command.
      *
      * @param args an array of arguments from which to search for the Locator launcher command.
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#valueOfName(String)
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
      */
     protected void parseCommand(final String... args) {
@@ -1306,7 +1315,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       // list, but does it really matter? stop after we find one valid command.
       if (args != null) {
         for (String arg : args) {
-          final Command command = Command.valueOfName(arg);
+          final AbstractLauncher.Command command = AbstractLauncher.Command.valueOfName(arg);
           if (command != null) {
             setCommand(command);
             break;
@@ -1322,13 +1331,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      *
      * @param args the array of arguments from which to search for the Locator's member name in
      *        GemFire.
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#isCommand(String)
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
     protected void parseMemberName(final String... args) {
       if (args != null) {
         for (String arg : args) {
-          if (!(arg.startsWith(OPTION_PREFIX) || Command.isCommand(arg))) {
+          if (!(arg.startsWith(OPTION_PREFIX) || AbstractLauncher.Command.isCommand(arg))) {
             setMemberName(arg);
             break;
           }
@@ -1340,10 +1349,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Gets the Locator launcher command used during the invocation of the LocatorLauncher.
      *
      * @return the Locator launcher command used to invoke (run) the LocatorLauncher class.
-     * @see #setCommand(org.apache.geode.distributed.LocatorLauncher.Command)
-     * @see LocatorLauncher.Command
+     * @see #setCommand(org.apache.geode.distributed.AbstractLauncher.Command)
+     * @see AbstractLauncher.Command
      */
-    public Command getCommand() {
+    public AbstractLauncher.Command getCommand() {
       return this.command != null ? this.command : DEFAULT_COMMAND;
     }
 
@@ -1354,9 +1363,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      *        LocatorLauncher.
      * @return this Builder instance.
      * @see #getCommand()
-     * @see LocatorLauncher.Command
+     * @see AbstractLauncher.Command
      */
-    public Builder setCommand(final Command command) {
+    public Builder setCommand(final AbstractLauncher.Command command) {
       this.command = command;
       return this;
     }
@@ -1775,10 +1784,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'start' command has been issued.
      *
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#START
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#START
      */
     protected void validateOnStart() {
-      if (Command.START == getCommand()) {
+      if (AbstractLauncher.Command.START == getCommand()) {
         if (isBlank(getMemberName())
             && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
             && !isSet(getDistributedSystemProperties(), NAME)
@@ -1801,20 +1810,20 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
      *
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#STATUS
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#STATUS
      */
     protected void validateOnStatus() {
-      if (Command.STATUS == getCommand()) {
+      if (AbstractLauncher.Command.STATUS == getCommand()) {
       }
     }
 
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
      *
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#STOP
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#STOP
      */
     protected void validateOnStop() {
-      if (Command.STOP == getCommand()) {
+      if (AbstractLauncher.Command.STOP == getCommand()) {
       }
     }
 

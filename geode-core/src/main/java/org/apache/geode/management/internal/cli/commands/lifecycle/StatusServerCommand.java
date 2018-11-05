@@ -63,7 +63,7 @@ public class StatusServerCommand extends InternalGfshCommand {
       }
     } else {
       final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
+          .setCommand(AbstractLauncher.Command.STATUS).setDebug(isDebugging())
           // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
           // server when it was started,
           // set the disableDefaultServer property in the ServerLauncher.Builder to default status

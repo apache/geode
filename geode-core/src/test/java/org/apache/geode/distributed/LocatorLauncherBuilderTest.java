@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
-import org.apache.geode.distributed.LocatorLauncher.Command;
+import org.apache.geode.distributed.AbstractLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
@@ -499,7 +499,7 @@ public class LocatorLauncherBuilderTest {
   @Test
   public void buildUsesMemberNameSetInApiProperties() {
     LocatorLauncher launcher =
-        new Builder().setCommand(LocatorLauncher.Command.START).set(NAME, "locatorABC").build();
+        new Builder().setCommand(Command.START).set(NAME, "locatorABC").build();
 
     assertThat(launcher.getMemberName()).isNull();
     assertThat(launcher.getProperties().getProperty(NAME)).isEqualTo("locatorABC");
@@ -509,7 +509,7 @@ public class LocatorLauncherBuilderTest {
   public void buildUsesMemberNameSetInSystemPropertiesOnStart() {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "locatorXYZ");
 
-    LocatorLauncher launcher = new Builder().setCommand(LocatorLauncher.Command.START).build();
+    LocatorLauncher launcher = new Builder().setCommand(Command.START).build();
 
     assertThat(launcher.getCommand()).isEqualTo(LocatorLauncher.Command.START);
     assertThat(launcher.getMemberName()).isNull();

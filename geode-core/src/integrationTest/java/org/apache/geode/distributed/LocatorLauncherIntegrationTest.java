@@ -38,7 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
-import org.apache.geode.distributed.LocatorLauncher.Command;
+import org.apache.geode.distributed.AbstractLauncher.Command;
 
 /**
  * Integration tests for using {@link LocatorLauncher} as an in-process API within an existing JVM.

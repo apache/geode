@@ -79,7 +79,7 @@ public class StopLocatorCommand extends InternalGfshCommand {
       }
     } else {
       final LocatorLauncher locatorLauncher =
-          new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STOP)
+          new LocatorLauncher.Builder().setCommand(AbstractLauncher.Command.STOP)
               .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
 
       locatorState = locatorLauncher.status();

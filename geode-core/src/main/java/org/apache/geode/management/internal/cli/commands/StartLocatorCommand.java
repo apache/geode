@@ -478,7 +478,7 @@ public class StartLocatorCommand extends InternalGfshCommand {
           .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
     }
     commandLine.add(LocatorLauncher.class.getName());
-    commandLine.add(LocatorLauncher.Command.START.getName());
+    commandLine.add(AbstractLauncher.Command.START.getName());
 
     if (StringUtils.isNotBlank(launcher.getMemberName())) {
       commandLine.add(launcher.getMemberName());
