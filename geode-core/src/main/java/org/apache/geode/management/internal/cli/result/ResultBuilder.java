@@ -386,10 +386,6 @@ public class ResultBuilder {
         public SectionResultData addSection(String keyToRetrieve) {
           throw new UnsupportedOperationException("This is read only result data");
         }
-
-        public CompositeResultData addSeparator(char buildSeparatorFrom) {
-          throw new UnsupportedOperationException("This is read only result data");
-        }
       };
     } else {
       ErrorResultData errorResultData = new ErrorResultData();
