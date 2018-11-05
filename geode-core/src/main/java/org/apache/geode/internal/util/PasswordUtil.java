@@ -61,7 +61,7 @@ public class PasswordUtil {
     for (int i = 0; i < b.length; i++) {
       int index = i * 2;
       int v = Integer.parseInt(s.substring(index, index + 2), 16);
-      b[i] = (byte) v;
+      b[i] = (byte) (v & 0xff);
     }
     return b;
   }

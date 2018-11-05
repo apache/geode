@@ -243,7 +243,7 @@ public class IndexElemArray implements Iterable, Collection {
     synchronized (lock) {
       ensureCapacity(size + numNew);
       System.arraycopy(a, 0, elementData, size, numNew);
-      size += numNew;
+      size += (byte) (numNew & 0xFF);
     }
     return numNew != 0;
   }

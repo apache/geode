@@ -851,7 +851,7 @@ public class InternalDistributedSystem extends DistributedSystem
     if (attemptingToReconnect && !this.isConnected) {
       if (this.quorumChecker != null) {
         logger.info("performing a quorum check to see if location services can be started early");
-        if (!quorumChecker.checkForQuorum(3 * this.config.getMemberTimeout())) {
+        if (!quorumChecker.checkForQuorum(3L * this.config.getMemberTimeout())) {
           logger.info("quorum check failed - not allowing location services to start early");
           return;
         }
@@ -2798,7 +2798,7 @@ public class InternalDistributedSystem extends DistributedSystem
         if (reconnectDS != null && reconnectDS.isConnected()) {
           // make sure the new DS and cache are stable before exiting this loop
           try {
-            Thread.sleep(config.getMemberTimeout() * 3);
+            Thread.sleep(config.getMemberTimeout() * 3L);
           } catch (InterruptedException e) {
             logger.info("Reconnect thread has been interrupted - exiting");
             Thread.currentThread().interrupt();

@@ -2587,8 +2587,8 @@ public class Connection implements Runnable {
   /** ensure that a task is running to monitor transmission and reading of acks */
   public synchronized void scheduleAckTimeouts() {
     if (ackTimeoutTask == null) {
-      final long msAW = this.owner.getDM().getConfig().getAckWaitThreshold() * 1000;
-      final long msSA = this.owner.getDM().getConfig().getAckSevereAlertThreshold() * 1000;
+      final long msAW = this.owner.getDM().getConfig().getAckWaitThreshold() * 1000L;
+      final long msSA = this.owner.getDM().getConfig().getAckSevereAlertThreshold() * 1000L;
       ackTimeoutTask = new SystemTimer.SystemTimerTask() {
         @Override
         public void run2() {

@@ -814,10 +814,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     DistributionManager dm = this.regionAdvisor.getDistributionManager();
     DistributionConfig config = dm.getConfig();
     // failure detection period
-    long timeout = config.getMemberTimeout() * 3;
+    long timeout = config.getMemberTimeout() * 3L;
     // plus time for a new member to become primary
     timeout += Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "BucketAdvisor.getPrimaryTimeout",
-        15 * 1000);
+        15000L);
     InternalDistributedMember newPrimary = waitForPrimaryMember(timeout);
     return newPrimary;
   }

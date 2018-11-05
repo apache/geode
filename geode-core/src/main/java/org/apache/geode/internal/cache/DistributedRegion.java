@@ -2961,7 +2961,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (getCache().getLockLease() == -1) {
       return -1;
     }
-    return getCache().getLockLease() * 1000;
+    return (getCache().getLockLease()) * 1000L;
   }
 
   /**
@@ -3050,13 +3050,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         end = start + timeoutMS;
       }
 
-      long ackSAThreshold = getSystem().getConfig().getAckSevereAlertThreshold() * 1000;
+      long ackSAThreshold = getSystem().getConfig().getAckSevereAlertThreshold() * 1000L;
 
       long waitInterval;
       long ackWaitThreshold;
 
       if (ackSAThreshold > 0) {
-        ackWaitThreshold = getSystem().getConfig().getAckWaitThreshold() * 1000;
+        ackWaitThreshold = getSystem().getConfig().getAckWaitThreshold() * 1000L;
         waitInterval = ackWaitThreshold;
       } else {
         waitInterval = timeoutMS;

@@ -961,7 +961,7 @@ public class InternalLocator extends Locator implements ConnectListener {
           }
         }
         if (checker != null && !tcpServerStarted) {
-          boolean start = checker.checkForQuorum(3 * this.myDs.getConfig().getMemberTimeout());
+          boolean start = checker.checkForQuorum(3L * this.myDs.getConfig().getMemberTimeout());
           if (start) {
             // start up peer location. server location is started after the DS finishes
             // reconnecting
@@ -1188,7 +1188,7 @@ public class InternalLocator extends Locator implements ConnectListener {
                 // always retry some number of times
                 locatorWaitTime = 30;
               }
-              giveup = System.currentTimeMillis() + locatorWaitTime * 1000;
+              giveup = System.currentTimeMillis() + locatorWaitTime * 1000L;
               try {
                 Thread.sleep(1000);
               } catch (InterruptedException ignored) {

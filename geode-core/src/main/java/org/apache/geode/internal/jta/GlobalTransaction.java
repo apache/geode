@@ -661,7 +661,7 @@ public class GlobalTransaction {
         }
       }
     }
-    long newExp = System.currentTimeMillis() + (seconds * 1000);
+    long newExp = System.currentTimeMillis() + (seconds * 1000L);
     if (!resetXATimeOut)
       newExp = -1;
     return newExp;

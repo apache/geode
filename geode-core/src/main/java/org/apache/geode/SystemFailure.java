@@ -380,7 +380,7 @@ public final class SystemFailure {
           }
           logFine(WATCHDOG_NAME, "Waiting for disaster");
           try {
-            failureSync.wait(WATCHDOG_WAIT * 1000);
+            failureSync.wait(WATCHDOG_WAIT * 1000L);
           } catch (InterruptedException e) {
             // Ignore
           }

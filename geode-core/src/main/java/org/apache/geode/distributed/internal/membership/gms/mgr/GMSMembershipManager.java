@@ -1994,7 +1994,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       // Make sure that the entry isn't stale...
       long shunTime = shunnedMembers.get(m).longValue();
       long now = System.currentTimeMillis();
-      if (shunTime + SHUNNED_SUNSET * 1000 > now) {
+      if (shunTime + SHUNNED_SUNSET * 1000L > now) {
         return true;
       }
 
@@ -2088,7 +2088,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * @param m the member to add
    */
   private void addShunnedMember(InternalDistributedMember m) {
-    long deathTime = System.currentTimeMillis() - SHUNNED_SUNSET * 1000;
+    long deathTime = System.currentTimeMillis() - SHUNNED_SUNSET * 1000L;
 
     surpriseMembers.remove(m); // for safety
 

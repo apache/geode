@@ -52,18 +52,18 @@ public class PortfolioPdxVersion {
     status = i % 2 == 0 ? "active" : "inactive";
     type = "type" + (i % 3);
     position1 = new PositionPdxVersion(secIds[PositionPdxVersion.cnt % secIds.length],
-        PositionPdxVersion.cnt * 1000);
+        PositionPdxVersion.cnt * 1000L);
     if (i % 2 != 0) {
       position2 = new PositionPdxVersion(secIds[PositionPdxVersion.cnt % secIds.length],
-          PositionPdxVersion.cnt * 1000);
+          PositionPdxVersion.cnt * 1000L);
     } else {
       position2 = null;
     }
 
     positions.put(secIds[PositionPdxVersion.cnt % secIds.length], new PositionPdxVersion(
-        secIds[PositionPdxVersion.cnt % secIds.length], PositionPdxVersion.cnt * 1000));
+        secIds[PositionPdxVersion.cnt % secIds.length], PositionPdxVersion.cnt * 1000L));
     positions.put(secIds[PositionPdxVersion.cnt % secIds.length], new PositionPdxVersion(
-        secIds[PositionPdxVersion.cnt % secIds.length], PositionPdxVersion.cnt * 1000));
+        secIds[PositionPdxVersion.cnt % secIds.length], PositionPdxVersion.cnt * 1000L));
 
     collectionHolderMap.put("0", new CollectionHolder());
     collectionHolderMap.put("1", new CollectionHolder());
@@ -77,7 +77,7 @@ public class PortfolioPdxVersion {
     this.position1.portfolioId = j;
     this.position3 = new Object[3];
     for (int k = 0; k < position3.length; k++) {
-      PositionPdxVersion p = new PositionPdxVersion(secIds[k], (k + 1) * 1000);
+      PositionPdxVersion p = new PositionPdxVersion(secIds[k], (k + 1) * 1000L);
       p.portfolioId = (k + 1);
       this.position3[k] = p;
     }
