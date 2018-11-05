@@ -2366,6 +2366,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         } else {
           List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
           l.remove(mth);
+          this.membershipTestHooks = l;
         }
       }
     } finally {
