@@ -746,7 +746,8 @@ public abstract class DistributedCacheOperation {
           Long cqID = e.getKey();
           // For the CQs satisfying the event with destroy CQEvent, remove
           // the entry form CQ cache.
-          if (cq.getFilterID() == cqID && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
+          if (cq != null && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
+              && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
             cq.removeFromCqResultKeys(((EntryOperation) event).getKey(), true);
           }
         }
