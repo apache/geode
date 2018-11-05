@@ -491,7 +491,7 @@ public class VM implements Serializable {
             Thread.sleep(100);
             System.exit(0);
           } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("VM bounce thread interrupted before exiting.", e);
           }
         }).start();
         executeMethodOnObject(runnable, "run", new Object[0]);
