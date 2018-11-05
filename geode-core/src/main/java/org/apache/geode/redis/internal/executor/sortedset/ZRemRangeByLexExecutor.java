@@ -113,21 +113,21 @@ public class ZRemRangeByLexExecutor extends SortedSetExecutor {
       Region<ByteArrayWrapper, DoubleWrapper> keyRegion, ExecutionHandlerContext context,
       ByteArrayWrapper start, ByteArrayWrapper stop, boolean startInclusive, boolean stopInclusive)
       throws Exception {
-    if (start.equals("-") && stop.equals("+"))
+    if (start.equals(minus) && stop.equals(plus))
       return new ArrayList<ByteArrayWrapper>(keyRegion.keySet());
-    else if (start.equals("+") || stop.equals("-"))
+    else if (start.equals(plus) || stop.equals(minus))
       return null;
 
     Query query;
     Object[] params;
-    if (start.equals("-")) {
+    if (start.equals(minus)) {
       if (stopInclusive) {
         query = getQuery(key, SortedSetQuery.ZRANGEBYLEXNINFI, context);
       } else {
         query = getQuery(key, SortedSetQuery.ZRANGEBYLEXNINF, context);
       }
       params = new Object[] {stop, INFINITY_LIMIT};
-    } else if (stop.equals("+")) {
+    } else if (stop.equals(plus)) {
       if (startInclusive) {
         query = getQuery(key, SortedSetQuery.ZRANGEBYLEXPINFI, context);
       } else {
