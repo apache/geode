@@ -103,7 +103,10 @@ subprojects {
 
   dependencies {
     // Do not add dependencies here that are not part of a custom configuration.
-    // Dependencies should be explicit in the relevant build.gradle files to maintain modularity.
+    // Dependencies should be explicit in the relevant build.gradle files to keep our modules
+    //  as decoupled as possible.
+    
+    // This 'apt' configuration to be removed by GEODE-5606.
     apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
     apt(group: 'junit', name: 'junit', version: project.'junit.version') {
       transitive = false
@@ -115,16 +118,11 @@ subprojects {
       transitive = false
     }
 
-    testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
-      exclude module: 'junit-dep'
-    }
-    testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
 
-    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
     testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
     testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
     testCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
