@@ -60,6 +60,8 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
 
   public void init(Properties p) {}
 
+
+  @Override
   public boolean equals(Object obj) {
     // This method is only implemented so that RegionAttributesCreation.sameAs
     // works properly.
@@ -73,4 +75,11 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
 
     return true;
   }
+
+
+  @Override
+  public int hashCode() {
+    return SessionExpirationCacheListener.class.hashCode();
+  }
+
 }

@@ -33,6 +33,12 @@ class TemporalComparator implements Comparator {
     return obj instanceof TemporalComparator;
   }
 
+  @Override
+  public int hashCode() {
+    return TemporalComparator.class.hashCode();
+  }
+
+
   // throws ClassCastExcepton if obj1 or obj2 is not a java.util.Date or subclass
   public int compare(Object obj1, Object obj2) {
     java.util.Date date1 = (java.util.Date) obj1;

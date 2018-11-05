@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -104,6 +105,11 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
     return "InstallViewMessage(type=" + this.kind + "; Current ViewID=" + view.getViewId()
         + "; Previous View ID=" + previousViewId + "; " + this.view + "; cred="
         + (credentials == null ? "null" : "not null") + ")";
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(view, previousViewId);
   }
 
   @Override
