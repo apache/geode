@@ -74,7 +74,7 @@ public class DescribeMappingCommandTest {
         Collections.singletonList(new CliFunctionResult("server-1", mapping, "success")));
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
-        .containsOutput("connection", "name1").containsOutput("table", "table1")
+        .containsOutput("data-source", "name1").containsOutput("table", "table1")
         .containsOutput("pdx-name", "class1");
   }
 
