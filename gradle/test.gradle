@@ -118,7 +118,6 @@ subprojects {
       transitive = false
     }
 
-    testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
