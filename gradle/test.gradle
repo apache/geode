@@ -118,7 +118,6 @@ subprojects {
       transitive = false
     }
 
-    testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
 
     testRuntime('cglib:cglib:' + project.'cglib.version') {
