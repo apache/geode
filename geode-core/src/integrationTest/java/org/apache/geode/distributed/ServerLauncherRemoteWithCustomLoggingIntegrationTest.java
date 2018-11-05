@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.distributed.AbstractLauncher.Command;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;

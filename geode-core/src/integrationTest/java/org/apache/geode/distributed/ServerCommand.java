@@ -17,7 +17,7 @@ package org.apache.geode.distributed;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.distributed.AbstractLauncher.Command;
 
 public class ServerCommand {
 

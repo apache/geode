@@ -28,8 +28,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.AbstractLauncher.Command;
+import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**

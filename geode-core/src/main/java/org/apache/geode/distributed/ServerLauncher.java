@@ -18,7 +18,8 @@ import static org.apache.commons.lang.StringUtils.EMPTY;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.lowerCase;
+import static org.apache.geode.distributed.AbstractLauncher.Command.START;
+import static org.apache.geode.distributed.AbstractLauncher.Command.STATUS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
@@ -33,7 +34,6 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +101,12 @@ import org.apache.geode.security.GemFireSecurityException;
  */
 @SuppressWarnings({"unused"})
 public class ServerLauncher extends AbstractLauncher<String> {
+
+  private static final String[] startOptions =
+      new String[] {"assign-buckets", "disable-default-server", "rebalance", SERVER_BIND_ADDRESS,
+          "server-port", "force", "debug", "help"};
+  private static final String[] statusOptions =
+      new String[] {"member", "pid", "dir", "debug", "help"};
 
   private static final Map<String, String> helpMap = new HashMap<>();
 
@@ -267,6 +273,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.ServerLauncher.Builder
    */
   private ServerLauncher(final Builder builder) {
+    commandOptions.put(START, startOptions);
+    commandOptions.put(STATUS, statusOptions);
     this.cache = builder.getCache(); // testing
     this.cacheConfig = builder.getCacheConfig();
     this.command = builder.getCommand();
@@ -386,7 +394,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Get the Server launcher command used to invoke the Server.
    *
    * @return the Server launcher command used to invoke the Server.
-   * @see org.apache.geode.distributed.ServerLauncher.Command
+   * @see org.apache.geode.distributed.AbstractLauncher.Command
    */
   public AbstractLauncher.Command getCommand() {
     return this.command;
@@ -428,7 +436,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * command-line.
    *
    * @return a boolean value indicating if this launcher is used for displaying help information.
-   * @see org.apache.geode.distributed.ServerLauncher.Command
+   * @see org.apache.geode.distributed.AbstractLauncher.Command
    */
   public boolean isHelping() {
     return this.help;
@@ -1355,7 +1363,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   public static class Builder {
 
-    protected static final AbstractLauncher.Command DEFAULT_COMMAND = AbstractLauncher.Command.UNSPECIFIED;
+    protected static final AbstractLauncher.Command DEFAULT_COMMAND =
+        AbstractLauncher.Command.UNSPECIFIED;
 
     private boolean serverBindAddressSetByUser;
     private boolean serverPortSetByUser;
@@ -1616,7 +1625,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Iterates the list of arguments in search of the target Server launcher command.
      *
      * @param args an array of arguments from which to search for the Server launcher command.
-     * @see org.apache.geode.distributed.ServerLauncher.Command#valueOfName(String)
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
      */
     protected void parseCommand(final String... args) {
@@ -1638,7 +1647,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *
      * @param args the array of arguments from which to search for the Server's member name in
      *        GemFire.
-     * @see org.apache.geode.distributed.ServerLauncher.Command#isCommand(String)
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
     protected void parseMemberName(final String... args) {
@@ -2390,7 +2399,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'start' command has been issued.
      *
-     * @see org.apache.geode.distributed.ServerLauncher.Command#START
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#START
      */
     void validateOnStart() {
       if (AbstractLauncher.Command.START == getCommand()) {
@@ -2416,7 +2425,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
      *
-     * @see org.apache.geode.distributed.ServerLauncher.Command#STATUS
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#STATUS
      */
     void validateOnStatus() {
       if (AbstractLauncher.Command.STATUS == getCommand()) {
@@ -2427,7 +2436,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
      *
-     * @see org.apache.geode.distributed.ServerLauncher.Command#STOP
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#STOP
      */
     void validateOnStop() {
       if (AbstractLauncher.Command.STOP == getCommand()) {
@@ -2446,122 +2455,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public ServerLauncher build() {
       validate();
       return new ServerLauncher(this);
-    }
-  }
-
-  /**
-   * An enumerated type representing valid commands to the Server launcher.
-   */
-  public enum Command {
-    START("start", "assign-buckets", "disable-default-server", "rebalance", SERVER_BIND_ADDRESS,
-        "server-port", "force", "debug", "help"),
-    STATUS("status", "member", "pid", "dir", "debug", "help"),
-    STOP("stop", "member", "pid", "dir", "debug", "help"),
-    UNSPECIFIED("unspecified"),
-    VERSION("version");
-
-    private final List<String> options;
-
-    private final String name;
-
-    Command(final String name, final String... options) {
-      assert isNotBlank(name) : "The name of the command must be specified!";
-      this.name = name;
-      this.options = options != null ? Collections.unmodifiableList(Arrays.asList(options))
-          : Collections.emptyList();
-    }
-
-    /**
-     * Determines whether the specified name refers to a valid Server launcher command, as defined
-     * by this enumerated type.
-     *
-     * @param name a String value indicating the potential name of a Server launcher command.
-     * @return a boolean indicating whether the specified name for a Server launcher command is
-     *         valid.
-     */
-    public static boolean isCommand(final String name) {
-      return valueOfName(name) != null;
-    }
-
-    /**
-     * Determines whether the given Server launcher command has been properly specified. The command
-     * is deemed unspecified if the reference is null or the Command is UNSPECIFIED.
-     *
-     * @param command the Server launcher command.
-     * @return a boolean value indicating whether the Server launcher command is unspecified.
-     * @see Command#UNSPECIFIED
-     */
-    public static boolean isUnspecified(final AbstractLauncher.Command command) {
-      return command == null || command.isUnspecified();
-    }
-
-    /**
-     * Looks up a Server launcher command by name. The equality comparison on name is
-     * case-insensitive.
-     *
-     * @param name a String value indicating the name of the Server launcher command.
-     * @return an enumerated type representing the command name or null if the no such command with
-     *         the specified name exists.
-     */
-    public static Command valueOfName(final String name) {
-      for (final Command command : values()) {
-        if (command.getName().equalsIgnoreCase(name)) {
-          return command;
-        }
-      }
-
-      return null;
-    }
-
-    /**
-     * Gets the name of the Server launcher command.
-     *
-     * @return a String value indicating the name of the Server launcher command.
-     */
-    public String getName() {
-      return this.name;
-    }
-
-    /**
-     * Gets a set of valid options that can be used with the Server launcher command when used from
-     * the command-line.
-     *
-     * @return a Set of Strings indicating the names of the options available to the Server launcher
-     *         command.
-     */
-    public List<String> getOptions() {
-      return this.options;
-    }
-
-    /**
-     * Determines whether this Server launcher command has the specified command-line option.
-     *
-     * @param option a String indicating the name of the command-line option to this command.
-     * @return a boolean value indicating whether this command has the specified named command-line
-     *         option.
-     */
-    public boolean hasOption(final String option) {
-      return getOptions().contains(lowerCase(option));
-    }
-
-    /**
-     * Convenience method for determining whether this is the UNSPECIFIED Server launcher command.
-     *
-     * @return a boolean indicating if this command is UNSPECIFIED.
-     * @see #UNSPECIFIED
-     */
-    public boolean isUnspecified() {
-      return this == UNSPECIFIED;
-    }
-
-    /**
-     * Gets the String representation of this Server launcher command.
-     *
-     * @return a String value representing this Server launcher command.
-     */
-    @Override
-    public String toString() {
-      return getName();
     }
   }
 

@@ -17,7 +17,6 @@ package org.apache.geode.distributed;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.AbstractLauncher.Command.START;
 import static org.apache.geode.distributed.AbstractLauncher.Command.STATUS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
@@ -33,7 +32,6 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1184,7 +1182,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public static class Builder {
 
-    protected static final AbstractLauncher.Command DEFAULT_COMMAND = AbstractLauncher.Command.UNSPECIFIED;
+    protected static final AbstractLauncher.Command DEFAULT_COMMAND =
+        AbstractLauncher.Command.UNSPECIFIED;
 
     private Boolean debug;
     private Boolean deletePidFileOnStop;
@@ -1838,121 +1837,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public LocatorLauncher build() {
       validate();
       return new LocatorLauncher(this);
-    }
-  }
-
-  /**
-   * An enumerated type representing valid commands to the Locator launcher.
-   */
-  public enum Command {
-    START("start", "bind-address", "hostname-for-clients", "port", "force", "debug", "help"),
-    STATUS("status", "bind-address", "port", "member", "pid", "dir", "debug", "help"),
-    STOP("stop", "member", "pid", "dir", "debug", "help"),
-    VERSION("version"),
-    UNSPECIFIED("unspecified");
-
-    private final List<String> options;
-
-    private final String name;
-
-    Command(final String name, final String... options) {
-      assert isNotBlank(name) : "The name of the locator launcher command must be specified!";
-      this.name = name;
-      this.options = (options != null ? Collections.unmodifiableList(Arrays.asList(options))
-          : Collections.emptyList());
-    }
-
-    /**
-     * Determines whether the specified name refers to a valid Locator launcher command, as defined
-     * by this enumerated type.
-     *
-     * @param name a String value indicating the potential name of a Locator launcher command.
-     * @return a boolean indicating whether the specified name for a Locator launcher command is
-     *         valid.
-     */
-    public static boolean isCommand(final String name) {
-      return (valueOfName(name) != null);
-    }
-
-    /**
-     * Determines whether the given Locator launcher command has been properly specified. The
-     * command is deemed unspecified if the reference is null or the Command is UNSPECIFIED.
-     *
-     * @param command the Locator launcher command.
-     * @return a boolean value indicating whether the Locator launcher command is unspecified.
-     * @see Command#UNSPECIFIED
-     */
-    public static boolean isUnspecified(final Command command) {
-      return (command == null || command.isUnspecified());
-    }
-
-    /**
-     * Looks up a Locator launcher command by name. The equality comparison on name is
-     * case-insensitive.
-     *
-     * @param name a String value indicating the name of the Locator launcher command.
-     * @return an enumerated type representing the command name or null if the no such command with
-     *         the specified name exists.
-     */
-    public static Command valueOfName(final String name) {
-      for (Command command : values()) {
-        if (command.getName().equalsIgnoreCase(name)) {
-          return command;
-        }
-      }
-
-      return null;
-    }
-
-    /**
-     * Gets the name of the Locator launcher command.
-     *
-     * @return a String value indicating the name of the Locator launcher command.
-     */
-    public String getName() {
-      return this.name;
-    }
-
-    /**
-     * Gets a set of valid options that can be used with the Locator launcher command when used from
-     * the command-line.
-     *
-     * @return a Set of Strings indicating the names of the options available to the Locator
-     *         launcher command.
-     */
-    public List<String> getOptions() {
-      return this.options;
-    }
-
-    /**
-     * Determines whether this Locator launcher command has the specified command-line option.
-     *
-     * @param option a String indicating the name of the command-line option to this command.
-     * @return a boolean value indicating whether this command has the specified named command-line
-     *         option.
-     */
-    public boolean hasOption(final String option) {
-      return getOptions().contains(lowerCase(option));
-    }
-
-    /**
-     * Convenience method for determining whether this is the UNSPECIFIED Locator launcher command.
-     *
-     * @return a boolean indicating if this command is UNSPECIFIED.
-     * @see #UNSPECIFIED
-     */
-    public boolean isUnspecified() {
-      return UNSPECIFIED == this;
-    }
-
-    /**
-     * Gets the String representation of this Locator launcher command.
-     *
-     * @return a String value representing this Locator launcher command.
-     */
-    @Override
-    public String toString() {
-      return getName();
     }
   }
 

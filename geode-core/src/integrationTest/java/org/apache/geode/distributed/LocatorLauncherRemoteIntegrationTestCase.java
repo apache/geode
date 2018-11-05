@@ -30,9 +30,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 
+import org.apache.geode.distributed.AbstractLauncher.Command;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
-import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
