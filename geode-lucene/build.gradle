@@ -62,6 +62,8 @@ dependencies {
   testCompile('org.apache.lucene:lucene-test-framework:' + project.'lucene.version')
   testCompile('com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version')
 
+  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+
 
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'

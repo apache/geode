@@ -42,6 +42,8 @@ dependencies {
 
   compile(group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version')
 
+  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
   acceptanceTestCompile(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
 

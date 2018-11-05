@@ -270,6 +270,7 @@ dependencies {
   testCompile('org.powermock:powermock-core:' + project.'powermock.version')
   testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
   testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 

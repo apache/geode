@@ -123,8 +123,6 @@ subprojects {
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
 
-    testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-
     testRuntime('cglib:cglib:' + project.'cglib.version') {
       exclude module: 'org.apache.ant'
     }
