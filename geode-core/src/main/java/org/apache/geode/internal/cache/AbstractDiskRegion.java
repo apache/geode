@@ -309,17 +309,17 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
         this.compressor = compressorClass.newInstance();
       } catch (ClassNotFoundException e) {
         throw new IllegalArgumentException(
-            String.format("Unknown Compressor  %s  found in disk initialization file.",
+            String.format("Unknown Compressor %s found in disk initialization file.",
                 compressorClassName),
             e);
       } catch (InstantiationException e) {
         throw new IllegalArgumentException(
-            String.format("Unknown Compressor  %s  found in disk initialization file.",
+            String.format("Unknown Compressor %s found in disk initialization file.",
                 compressorClassName),
             e);
       } catch (IllegalAccessException e) {
         throw new IllegalArgumentException(
-            String.format("Unknown Compressor  %s  found in disk initialization file.",
+            String.format("Unknown Compressor %s found in disk initialization file.",
                 compressorClassName),
             e);
       }

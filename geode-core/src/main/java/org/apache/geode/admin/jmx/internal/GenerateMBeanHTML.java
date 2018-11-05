@@ -148,7 +148,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
         result = new InputSource(stream);
       } else {
         throw new SAXNotRecognizedException(
-            String.format("DTD not found:  %s", location));
+            String.format("DTD not found: %s", location));
       }
     }
 

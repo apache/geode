@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
@@ -130,7 +129,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private final ConcurrentMap<InternalDistributedMember, Collection<Collection>> resultsPerMember;
   private ConcurrentLinkedQueue<PRQueryTraceInfo> prQueryTraceInfoList = null;
   private final Set<Integer> bucketsToQuery;
-  private final IntOpenHashSet successfulBuckets;
   // set of members failed to execute query
   private Set<InternalDistributedMember> failedMembers;
 
@@ -152,7 +150,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     this.parameters = parameters;
     this.cumulativeResults = cumulativeResults;
     this.bucketsToQuery = bucketsToQuery;
-    this.successfulBuckets = new IntOpenHashSet(this.bucketsToQuery.size());
     this.resultsPerMember =
         new ConcurrentHashMap<InternalDistributedMember, Collection<Collection>>();
     this.node2bucketIds = Collections.emptyMap();
@@ -211,7 +208,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       Object traceObject = objects.get(0);
       if (traceObject instanceof PRQueryTraceInfo) {
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook("Pull off PR Query Trace Info");
+          DefaultQuery.testHook
+              .doTestHook(DefaultQuery.TestHook.SPOTS.PULL_OFF_PR_QUERY_TRACE_INFO, null);
         }
         PRQueryTraceInfo queryTrace = (PRQueryTraceInfo) objects.remove(0);
         queryTrace.setSender(sender);
@@ -239,7 +237,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (QueryMonitor.isLowMemory()) {
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
-          query.setCanceled(new QueryExecutionLowMemoryException(reason));
+          query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("query cancelled while gathering results, aborting due to exception "
@@ -642,7 +640,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     final DistributedMember me = this.pr.getMyId();
 
     if (DefaultQuery.testHook != null) {
-      DefaultQuery.testHook.doTestHook(4);
+      DefaultQuery.testHook
+          .doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_BUILD_CUMULATIVE_RESULT, null);
     }
 
     boolean localResults = false;
@@ -737,7 +736,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     if (prQueryTraceInfoList != null && this.query.isTraced() && logger.isInfoEnabled()) {
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook("Create PR Query Trace String");
+        DefaultQuery.testHook
+            .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING, null);
       }
       StringBuilder sb = new StringBuilder();
       sb.append(String.format("Trace Info for Query: %s",
@@ -759,9 +759,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     if (QueryMonitor.isLowMemory()) {
       String reason =
           "Query execution canceled due to low memory while gathering results from partitioned regions";
-      query.setCanceled(new QueryExecutionLowMemoryException(reason));
+      query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(5);
+        DefaultQuery.testHook
+            .doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_THROW_QUERY_CANCELED_EXCEPTION, null);
       }
       throw query.getQueryCanceledException();
     } else if (query.isCanceled()) {
@@ -986,7 +987,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         // Adds a query trace info object to the results list
         if (query.isTraced() && prQueryTraceInfoList != null) {
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook("Create PR Query Trace Info From Local Node");
+            DefaultQuery.testHook
+                .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE,
+                    null);
           }
           PRQueryTraceInfo queryTraceInfo = new PRQueryTraceInfo();
           queryTraceInfo.setNumResults(queryTraceInfo.calculateNumberOfResults(resultCollector));
@@ -1099,7 +1102,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (m.isCanceled()) {
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
-          query.setCanceled(new QueryExecutionLowMemoryException(reason));
+          query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
           this.abort = true;
         }
 

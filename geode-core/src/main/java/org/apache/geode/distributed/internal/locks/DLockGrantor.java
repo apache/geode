@@ -1753,7 +1753,7 @@ public class DLockGrantor {
         break;
     }
     if (stateDesc == null) {
-      throw new IllegalArgumentException(String.format("Unknown state for grantor:  %s",
+      throw new IllegalArgumentException(String.format("Unknown state for grantor: %s",
           Integer.valueOf(state)));
     }
     return stateDesc;
@@ -1768,7 +1768,7 @@ public class DLockGrantor {
     if (this.state != INITIALIZING) {
       String stateDesc = stateToString(this.state);
       throw new IllegalStateException(
-          String.format("DLockGrantor operation only allowed when initializing, not  %s",
+          String.format("DLockGrantor operation only allowed when initializing, not %s",
               stateDesc));
     }
   }
@@ -1794,7 +1794,7 @@ public class DLockGrantor {
     Assert.assertTrue(myRThread != null, "Attempted to suspend locking for null RemoteThread");
     Assert.assertTrue(this.lockingSuspendedBy == null || this.lockingSuspendedBy.equals(myRThread),
         "Attempted to suspend locking for " + myRThread + " but locking is already suspended by "
-            + this.lockingSuspendedBy); // KIRK: assert fails in bug 37945
+            + this.lockingSuspendedBy);
     this.suspendedLockId = lockId;
     this.lockingSuspendedBy = myRThread;
   }
@@ -1951,7 +1951,6 @@ public class DLockGrantor {
     // boolean permitSuspend = false;
     Integer integer = (Integer) readLockCountMap.get(rThread);
     int readLockCount = integer == null ? 0 : integer.intValue();
-    // Assert.assertTrue(readLockCount > 0, rThread + " not found in " + readLockCountMap); // KIRK
     if (readLockCount < 1) {
       // hit bug 35749
       if (isDebugEnabled_DLS) {
@@ -2490,8 +2489,7 @@ public class DLockGrantor {
      * @return true if lock was granted to the request
      */
     protected synchronized boolean grantLockToRequest(DLockRequestMessage request) {
-      Assert.assertTrue(request.getRemoteThread() != null); // KIRK search for these assertions and
-                                                            // remove
+      Assert.assertTrue(request.getRemoteThread() != null);
       if (isGranted(true) || hasWaitingRequests()) {
         return false;
       }

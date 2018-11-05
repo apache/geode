@@ -54,7 +54,7 @@ public class TXEntryUserAttrState {
     if (this.originalValue != curCmtValue) {
       throw new CommitConflictException(
           String.format(
-              "Entry user attribute for key  %s  on region  %s  had already been changed to  %s",
+              "Entry user attribute for key %s on region %s had already been changed to %s",
               new Object[] {key, r.getFullPath(), curCmtValue}));
     }
   }

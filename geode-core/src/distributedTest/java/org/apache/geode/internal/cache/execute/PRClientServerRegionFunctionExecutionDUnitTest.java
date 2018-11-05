@@ -477,7 +477,8 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       fail("Expected ServerConnectivityException not thrown!");
     } catch (Exception ex) {
       if (!(ex.getCause() instanceof ServerConnectivityException)
-          && !(ex.getCause() instanceof FunctionInvocationTargetException)) {
+          && !((ex instanceof FunctionInvocationTargetException
+              || ex.getCause() instanceof FunctionInvocationTargetException))) {
         throw ex;
       }
     }
@@ -1482,7 +1483,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     try {
       cache.getLogger()
           .info("<ExpectedException action=add>"
-              + "Could not create an instance of  org.apache.geode.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable"
+              + "Could not create an instance of org.apache.geode.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable"
               + "</ExpectedException>");
       dataSet.withFilter(testKeysSet).setArguments(new UnDeserializable())
           .execute(new FunctionAdapter() {
@@ -1506,7 +1507,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
           });
     } catch (Exception expected) {
       if (!expected.getCause().getMessage().contains(
-          "Could not create an instance of  org.apache.geode.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable")) {
+          "Could not create an instance of org.apache.geode.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable")) {
         throw expected;
       } ;
     } finally {

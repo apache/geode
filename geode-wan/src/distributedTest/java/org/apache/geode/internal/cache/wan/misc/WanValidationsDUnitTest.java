@@ -674,8 +674,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   /**
-   * This test has been added for the defect # 44372. A single VM hosts a bridge server as well as a
-   * Receiver. Expected: Cache.getCacheServer should return only the Bridge server and not the
+   * This test has been added for the defect # 44372. A single VM hosts a cache server as well as a
+   * Receiver. Expected: Cache.getCacheServer should return only the cache server and not the
    * Receiver
    */
   @Test
@@ -696,7 +696,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   /**
-   * Added for the defect # 44372. Two VMs are part of the DS. One VM hosts a Bridge server while
+   * Added for the defect # 44372. Two VMs are part of the DS. One VM hosts a cache server while
    * the other hosts a Receiver. Expected: Cache.getCacheServers should only return the bridge
    * server and not the Receiver.
    */

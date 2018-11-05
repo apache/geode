@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
- * Just like InterestListEndpointDUnitTest but uses thread pool (i.e. selector) in bridge servers
+ * Just like InterestListEndpointDUnitTest but uses thread pool (i.e. selector) in cache servers
  *
  */
 @Category({ClientSubscriptionTest.class})

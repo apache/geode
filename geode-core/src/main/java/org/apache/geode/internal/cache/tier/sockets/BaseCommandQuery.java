@@ -230,7 +230,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           writeQueryResponseChunk(result, null, true, servConn);
         }
       } else {
-        throw new QueryInvalidException(String.format("Unknown result type:  %s",
+        throw new QueryInvalidException(String.format("Unknown result type: %s",
             result.getClass()));
       }
       msg.clearParts();
@@ -264,7 +264,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // Check if query got canceled from QueryMonitor.
       DefaultQuery defaultQuery = (DefaultQuery) query;
       if ((defaultQuery).isCanceled()) {
-        e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(), e.getCause());
+        e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(),
+            e.getCause());
       }
       writeQueryResponseException(msg, e, servConn);
       return false;

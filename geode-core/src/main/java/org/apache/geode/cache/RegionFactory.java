@@ -109,7 +109,7 @@ public class RegionFactory<K, V> {
     this.cache = cache;
     RegionAttributes<K, V> ra = getCache().getRegionAttributes(regionAttributesId);
     if (ra == null) {
-      throw new IllegalStateException(String.format("No attributes associated with  %s",
+      throw new IllegalStateException(String.format("No attributes associated with %s",
           regionAttributesId));
     }
     this.attrsFactory = new AttributesFactory<K, V>(ra);

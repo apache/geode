@@ -67,7 +67,7 @@ public class CompiledNegation extends AbstractCompiledValue {
     if (obj == null || obj == QueryService.UNDEFINED)
       return QueryService.UNDEFINED;
     throw new TypeMismatchException(
-        String.format("%s  cannot be negated", obj.getClass()));
+        String.format("%s cannot be negated", obj.getClass()));
   }
 
   @Override

@@ -83,7 +83,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     ValidatingDiskEntry de = new ValidatingDiskEntry(key, re);
     if (this.map.putIfAbsent(key, de) != null) {
       throw new InternalGemFireError(
-          String.format("Entry already existed:  %s", key));
+          String.format("Entry already existed: %s", key));
     }
     return de;
   }

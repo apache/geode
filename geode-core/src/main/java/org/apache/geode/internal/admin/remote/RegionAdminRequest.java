@@ -51,7 +51,7 @@ public abstract class RegionAdminRequest extends AdminRequest {
     Region r = cache.getRegion(regionName);
     if (r == null) {
       throw new RegionNotFoundException(
-          String.format("Region  %s  not found in remote cache %s.",
+          String.format("Region %s not found in remote cache %s.",
               new Object[] {regionName, cache.getName()}));
     }
     return r;

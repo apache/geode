@@ -103,7 +103,7 @@ public class BucketSizeMessage extends PartitionMessage {
       size = ds.getBucketSize(bucketId);
     } else {
       // sender thought this member had a data store, but it doesn't
-      throw new ForceReattemptException(String.format("no datastore in  %s",
+      throw new ForceReattemptException(String.format("no datastore in %s",
           dm.getDistributionManagerId()));
     }
 

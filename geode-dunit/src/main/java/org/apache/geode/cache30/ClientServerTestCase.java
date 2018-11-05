@@ -71,7 +71,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   protected void preTearDownClientServerTestCase() throws Exception {}
 
   /**
-   * Starts a bridge server on the given port
+   * Starts a cache server on the given port
    *
    * @since GemFire 4.0
    */
@@ -94,7 +94,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    *
    * @since GemFire 4.0
    */

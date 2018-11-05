@@ -56,6 +56,7 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
@@ -321,7 +322,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       TransactionId tid = getTransactionId();
       if (tid != null) {
         throw new java.lang.IllegalStateException(
-            String.format("Transaction  %s  already in progress",
+            String.format("Transaction %s already in progress",
                 tid));
       }
     }
@@ -340,6 +341,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       proxy = new TXStateProxyImpl(cache, this, id, null);
     }
     setTXState(proxy);
+    if (logger.isDebugEnabled()) {
+      logger.debug("begin tx: {}", proxy);
+    }
     this.localTxMap.put(id, proxy);
   }
 
@@ -770,7 +774,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       TransactionId tid = getTransactionId();
       if (tid != null) {
         throw new java.lang.IllegalStateException(
-            String.format("Transaction  %s  already in progress",
+            String.format("Transaction %s already in progress",
                 tid));
       }
       if (needToResumeBySameThread) {
@@ -879,7 +883,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
       }
     }
-
+    if (logger.isDebugEnabled()) {
+      logger.debug("masqueradeAs tx {} for msg {} ", val, msg);
+    }
     setTXState(val);
     return val;
   }
@@ -896,6 +902,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           } else {
             val = new TXStateProxyImpl(cache, this, key, msg.getTXOriginatorClient());
             val.setLocalTXState(new TXState(val, true));
+            val.setTarget(cache.getDistributedSystem().getDistributedMember());
           }
           this.hostedTXStates.put(key, val);
         }
@@ -980,6 +987,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       }
       setTXState(val);
     }
+    if (logger.isDebugEnabled()) {
+      logger.debug("masqueradeAs tx {} for client message {}", val,
+          MessageType.getString(msg.getMessageType()));
+    }
     return val;
   }
 
@@ -994,6 +1005,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       txState.getLock().lock();
     }
     setTXState(txState);
+    if (logger.isDebugEnabled()) {
+      logger.debug("masqueradeAs tx {}", txState);
+    }
   }
 
   /**
@@ -1304,7 +1318,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public RuntimeException getExceptionForToken(TXCommitMessage msg, TXId txId) {
     if (msg == TXCommitMessage.CMT_CONFLICT_MSG) {
       return new CommitConflictException(
-          String.format("Conflict detected in GemFire transaction  %s",
+          String.format("Conflict detected in GemFire transaction %s",
               txId));
     }
     if (msg == TXCommitMessage.REBALANCE_MSG) {

@@ -161,8 +161,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
       } else if (t instanceof IOException || t instanceof ServerConnectivityException
-          || t instanceof ConnectionDestroyedException || t instanceof MessageTooLargeException
-          || t instanceof IllegalStateException || t instanceof GemFireSecurityException) {
+          || t instanceof ConnectionDestroyedException || t instanceof IllegalStateException
+          || t instanceof GemFireSecurityException) {
         this.processor.handleException();
         // If the cause is an IOException or a ServerException, sleep and retry.
         // Sleep for a bit and recheck.
@@ -243,7 +243,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         destroyConnection();
       }
       throw new GatewaySenderException(
-          String.format("%s : Exception during processing batch  %s  on connection  %s",
+          String.format("%s : Exception during processing batch %s on connection %s",
               new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           ex);
     } catch (GemFireIOException e) {
@@ -267,13 +267,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         destroyConnection();
       }
       throw new GatewaySenderException(
-          String.format("%s : Exception during processing batch  %s  on connection  %s",
+          String.format("%s : Exception during processing batch %s on connection %s",
               new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           ex);
     } catch (IllegalStateException e) {
       this.processor.setException(new GatewaySenderException(e));
       throw new GatewaySenderException(
-          String.format("%s : Exception during processing batch  %s  on connection  %s",
+          String.format("%s : Exception during processing batch %s on connection %s",
               new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           e);
     } catch (Exception e) {
@@ -289,7 +289,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       destroyConnection();
 
       throw new GatewaySenderException(
-          String.format("%s : Exception during processing batch  %s  on connection  %s",
+          String.format("%s : Exception during processing batch %s on connection %s",
               new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           ex);
     }

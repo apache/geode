@@ -82,15 +82,15 @@ public class CreateAsyncEventQueueCommandDUnitTest {
         .tableHasRowWithValues("Member", "Status", "Message", "server-2", "OK", "Success");
 
     IgnoredException
-        .addIgnoredException("java.lang.IllegalStateException: A GatewaySender with id  "
-            + "AsyncEventQueue_queue  is already defined in this cache.");
+        .addIgnoredException("java.lang.IllegalStateException: A GatewaySender with id "
+            + "AsyncEventQueue_queue is already defined in this cache.");
     // create a queue with the same id would result in failure
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsError()
         .tableHasRowCount("Member", 2)
         .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "ERROR")
         .tableHasColumnWithExactValuesInAnyOrder("Message",
-            " java.lang.IllegalStateException: A GatewaySender with id  AsyncEventQueue_queue  is already defined in this cache.",
-            " java.lang.IllegalStateException: A GatewaySender with id  AsyncEventQueue_queue  is already defined in this cache.");
+            " java.lang.IllegalStateException: A GatewaySender with id AsyncEventQueue_queue is already defined in this cache.",
+            " java.lang.IllegalStateException: A GatewaySender with id AsyncEventQueue_queue is already defined in this cache.");
 
     gfsh.executeAndAssertThat("create disk-store --name=diskStore2 --dir=diskstore");
     locator.waitUntilDiskStoreIsReadyOnExactlyThisManyServers("diskStore2", 2);

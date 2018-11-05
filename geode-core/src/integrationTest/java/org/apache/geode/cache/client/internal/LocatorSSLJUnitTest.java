@@ -36,10 +36,8 @@ import org.apache.geode.util.test.TestUtil;
 
 @Category({ClientServerTest.class})
 public class LocatorSSLJUnitTest {
-  private final String SERVER_KEY_STORE =
-      TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "cacheserver.keystore");
-  private final String SERVER_TRUST_STORE =
-      TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "cacheserver.truststore");
+  private final String KEY_STORE =
+      TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "default.keystore");
 
   @After
   public void tearDownTest() {
@@ -52,9 +50,9 @@ public class LocatorSSLJUnitTest {
     properties.setProperty(MCAST_PORT, "0");
     properties.put(SSL_ENABLED_COMPONENTS, "all");
     properties.put(SSL_KEYSTORE_TYPE, "jks");
-    properties.put(SSL_KEYSTORE, SERVER_KEY_STORE);
+    properties.put(SSL_KEYSTORE, KEY_STORE);
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_TRUSTSTORE, SERVER_TRUST_STORE);
+    properties.put(SSL_TRUSTSTORE, KEY_STORE);
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
 
     Locator locator = Locator.startLocatorAndDS(0, null, properties);

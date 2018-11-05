@@ -162,7 +162,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators,
       final String[] regions, final ServerLoadProbe probe, final boolean useGroupsProperty) {
-    return vm.invoke("start bridge server",
+    return vm.invoke("start cache server",
         () -> startBridgeServer(groups, locators, regions, probe, useGroupsProperty));
   }
 

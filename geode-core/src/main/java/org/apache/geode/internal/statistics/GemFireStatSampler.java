@@ -457,7 +457,7 @@ public class GemFireStatSampler extends HostStatSampler {
           break;
         default:
           throw new RuntimeException(
-              String.format("Illegal field type  %s  for statistic",
+              String.format("Illegal field type %s for statistic",
                   stats.getType()));
       }
       result.stats = stats;

@@ -245,7 +245,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   public RemoteGfManagerAgent(GfManagerAgentConfig cfg) {
     if (!(cfg.getTransport() instanceof RemoteTransportConfig)) {
       throw new IllegalArgumentException(
-          String.format("Expected  %s  to be a RemoteTransportConfig",
+          String.format("Expected %s to be a RemoteTransportConfig",
               cfg.getTransport()));
     }
     this.transport = (RemoteTransportConfig) cfg.getTransport();
@@ -545,7 +545,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     try {
       if (((Boolean) sending.get()).booleanValue()) {
         throw new OperationCancelledException(
-            String.format("Recursion detected while sending  %s",
+            String.format("Recursion detected while sending %s",
                 msg));
 
       } else {
@@ -560,7 +560,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
         // bug 39824: generate CancelException if we're shutting down
         dm.getCancelCriterion().checkCancelInProgress(null);
         throw new RuntimeAdminException(
-            String.format("%s  is not currently connected.",
+            String.format("%s is not currently connected.",
                 this));
       }
 
@@ -1071,7 +1071,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
         case ClusterDistributionManager.LONER_DM_TYPE:
           break; // should this ever happen? :-)
         default:
-          throw new IllegalArgumentException(String.format("Unknown VM Kind:  %s",
+          throw new IllegalArgumentException(String.format("Unknown VM Kind: %s",
               Integer.valueOf(id.getVmKind())));
       }
 

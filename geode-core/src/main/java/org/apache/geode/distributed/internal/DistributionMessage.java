@@ -384,7 +384,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(String.format("Uncaught exception processing  %s", this), t);
+      logger.fatal(String.format("Uncaught exception processing %s", this), t);
     } finally {
       if (doDecMessagesBeingReceived) {
         dm.getStats().decMessagesBeingReceived(this.bytesRead);
@@ -439,7 +439,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
         });
       } catch (RejectedExecutionException ex) {
         if (!dm.shutdownInProgress()) { // fix for bug 32395
-          logger.warn(String.format("%s  schedule() rejected", this.toString()), ex);
+          logger.warn(String.format("%s schedule() rejected", this.toString()), ex);
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -453,7 +453,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(String.format("Uncaught exception processing  %s", this), t);
+        logger.fatal(String.format("Uncaught exception processing %s", this), t);
         // I don't believe this ever happens (DJP May 2007)
         throw new InternalGemFireException(
             "Unexpected error scheduling message",

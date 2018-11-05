@@ -870,7 +870,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   AdminResponse sendAndWait(AdminRequest msg) {
     if (unreachable) {
       throw new OperationCancelledException(
-          String.format("%s  is unreachable. It has either left or crashed.",
+          String.format("%s is unreachable. It has either left or crashed.",
               this.name));
     }
     if (this.id == null) {

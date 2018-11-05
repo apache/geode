@@ -20,6 +20,7 @@ import org.apache.geode.pdx.PdxWriter;
 
 @SuppressWarnings("unused")
 public class Employee implements PdxSerializable {
+  private String id;
   private String name;
   private int age;
 
@@ -27,9 +28,14 @@ public class Employee implements PdxSerializable {
     // nothing
   }
 
-  Employee(String name, int age) {
+  Employee(String id, String name, int age) {
+    this.id = id;
     this.name = name;
     this.age = age;
+  }
+
+  String getId() {
+    return id;
   }
 
   String getName() {
@@ -42,12 +48,14 @@ public class Employee implements PdxSerializable {
 
   @Override
   public void toData(PdxWriter writer) {
+    writer.writeString("id", this.id);
     writer.writeString("name", this.name);
     writer.writeInt("age", this.age);
   }
 
   @Override
   public void fromData(PdxReader reader) {
+    this.id = reader.readString("id");
     this.name = reader.readString("name");
     this.age = reader.readInt("age");
   }

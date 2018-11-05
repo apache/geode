@@ -304,8 +304,8 @@ public class ElderState {
 
       GrantorInfo currentGI = (GrantorInfo) this.nameToInfo.get(serviceName);
       if (currentGI == null) {
-        return; // KIRK added this null check because becomeGrantor may not have talked to elder
-                // before destroy dls
+        // added null check because becomeGrantor may not have talked to elder before destroy dls
+        return;
       }
       if (currentGI.getVersionId() != grantorVersion
           || currentGI.getSerialNumber() != dlsSerialNumber) {

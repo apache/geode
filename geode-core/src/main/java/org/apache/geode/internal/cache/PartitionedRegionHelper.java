@@ -250,7 +250,7 @@ public class PartitionedRegionHelper {
             if (newConf != oldConf && !newConf.isGreaterNodeListVersion(oldConf)) {
               throw new CacheWriterException(
                   String.format(
-                      "New PartitionedRegionConfig  %s  does not have newer version than previous  %s",
+                      "New PartitionedRegionConfig %s does not have newer version than previous %s",
                       new Object[] {newConf, oldConf}));
             }
           }
@@ -549,7 +549,7 @@ public class PartitionedRegionHelper {
             String.format(
                 "For FixedPartitionedRegion %s, FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)",
                 pr.getName()));
-      } else if (!(resolver instanceof FixedPartitionResolver)) {
+      } else {
         Object[] prms = new Object[] {pr.getName(), resolver};
         throw new IllegalStateException(
             String.format(

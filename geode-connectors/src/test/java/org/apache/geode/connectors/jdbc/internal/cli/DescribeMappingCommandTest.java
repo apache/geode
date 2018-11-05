@@ -20,21 +20,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -42,8 +37,6 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 public class DescribeMappingCommandTest {
   public static final String COMMAND = "describe jdbc-mapping --region=region ";
   private DescribeMappingCommand command;
-  private ConfigurationPersistenceService ccService;
-  private CacheConfig cacheConfig;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -51,10 +44,6 @@ public class DescribeMappingCommandTest {
   @Before
   public void setUp() {
     command = spy(DescribeMappingCommand.class);
-    ccService = mock(InternalConfigurationPersistenceService.class);
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-    cacheConfig = mock(CacheConfig.class);
-    when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
 
   @Test
@@ -64,68 +53,20 @@ public class DescribeMappingCommandTest {
   }
 
   @Test
-  public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-        .containsOutput("mapping for region 'region' not found");
-  }
-
-  @Test
-  public void whenCCServiceIsRunningAndNoConnectionFound() {
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-
-    ConnectorService connectorService = mock(ConnectorService.class);
-    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-        .containsOutput("mapping for region 'region' not found");
-  }
-
-  @Test
-  public void whenCCIsAvailable() {
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-
-    // mapping found in CC
-    ConnectorService.RegionMapping mapping =
-        new ConnectorService.RegionMapping("region", "class1", "table1", "name1", true);
-    mapping.getFieldMapping()
-        .add(new ConnectorService.RegionMapping.FieldMapping("field1", "value1"));
-    mapping.getFieldMapping()
-        .add(new ConnectorService.RegionMapping.FieldMapping("field2", "value2"));
-
-    ConnectorService connectorService = mock(ConnectorService.class);
-    List<ConnectorService.RegionMapping> mappings = new ArrayList<>();
-    when(connectorService.getRegionMapping()).thenReturn(mappings);
-    mappings.add(mapping);
-    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
-
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
-        .containsOutput("connection", "name1").containsOutput("table", "table1")
-        .containsOutput("pdx-class-name", "class1")
-        .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
-        .containsOutput("field2", "value2");
-  }
-
-  @Test
-  public void whenCCIsNotAvailableAndNoMemberExists() {
-    doReturn(null).when(command).getConfigurationPersistenceService();
+  public void whenNoMemberExists() {
     doReturn(Collections.emptySet()).when(command).findMembers(null, null);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-        .containsOutput("mapping for region 'region' not found");
+        .containsOutput("No Members Found");
   }
 
   @Test
-  public void whenCCIsNotAvailableAndMemberExists() {
-    doReturn(null).when(command).getConfigurationPersistenceService();
+  public void whenMemberExists() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
 
-    ConnectorService.RegionMapping mapping =
-        new ConnectorService.RegionMapping("region", "class1", "table1", "name1", true);
-    mapping.getFieldMapping()
-        .add(new ConnectorService.RegionMapping.FieldMapping("field1", "value1"));
-    mapping.getFieldMapping()
-        .add(new ConnectorService.RegionMapping.FieldMapping("field2", "value2"));
+    RegionMapping mapping =
+        new RegionMapping("region", "class1", "table1", "name1");
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
@@ -134,14 +75,11 @@ public class DescribeMappingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
         .containsOutput("connection", "name1").containsOutput("table", "table1")
-        .containsOutput("pdx-class-name", "class1")
-        .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
-        .containsOutput("field2", "value2");
+        .containsOutput("pdx-name", "class1");
   }
 
   @Test
-  public void whenCCIsNotAvailableAndNoMappingFoundOnMember() {
-    doReturn(null).when(command).getConfigurationPersistenceService();
+  public void whenNoMappingFoundOnMember() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
 

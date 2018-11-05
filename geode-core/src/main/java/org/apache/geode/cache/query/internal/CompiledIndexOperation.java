@@ -142,7 +142,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
      * == null) { return null; } return this.evalRegionAsEntry? entry:entry.getValue(); }
      */
     throw new TypeMismatchException(
-        String.format("index expression not supported on objects of type  %s",
+        String.format("index expression not supported on objects of type %s",
             rcvr.getClass().getName()));
   }
 

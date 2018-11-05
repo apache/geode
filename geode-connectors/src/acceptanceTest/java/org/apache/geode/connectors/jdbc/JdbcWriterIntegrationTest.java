@@ -148,7 +148,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceThatIsPdxSerializable() throws SQLException {
     Region nonPdxEmployees = this.employees;
-    Employee value = new Employee("Emp2", 22);
+    Employee value = new Employee("2", "Emp2", 22);
     nonPdxEmployees.put("2", value);
 
     ResultSet resultSet =

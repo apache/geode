@@ -78,7 +78,7 @@ public class Functions {
 
     } catch (Exception ex) {
       throw new QueryInvalidException(
-          String.format("Malformed date format string as the format is  %s",
+          String.format("Malformed date format string as the format is %s",
               format),
           ex);
     }
@@ -192,7 +192,7 @@ public class Functions {
   private static void checkSingleton(int size) throws FunctionDomainException {
     if (size != 1)
       throw new FunctionDomainException(
-          String.format("element() applied to parameter of size  %s",
+          String.format("element() applied to parameter of size %s",
               Integer.valueOf(size)));
   }
 

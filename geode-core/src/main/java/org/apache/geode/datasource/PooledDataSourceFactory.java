@@ -20,11 +20,16 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * Classes that implement this interface can be used as the class name
  * specified in the jndi-binding "conn-pooled-datasource-class" when the
  * jndi-binding type is "POOLED". For more information see "gfsh create jndi-binding".
+ * <p>
+ * Note: implementors of this interface must also implement a zero-arg constructor.
  */
+@Experimental
 public interface PooledDataSourceFactory {
   /**
    * Create and return a data source configured with the given properties.

@@ -194,7 +194,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     try {
       this.objectName = new ObjectName(this.mbeanName);
     } catch (MalformedObjectNameException ex) {
-      String s = String.format("While creating ObjectName:  %s",
+      String s = String.format("While creating ObjectName: %s",
           new Object[] {this.mbeanName});
       throw new AdminException(s, ex);
     }
@@ -316,7 +316,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         logger.error(autoConnectFailed, ex.getMessage());
         this.stop();
         throw new StartupException(new AdminException(
-            String.format("auto connect failed:  %s", ex.getMessage()), ex));
+            String.format("auto connect failed: %s", ex.getMessage()), ex));
       }
     } // getAutoConnect
 
@@ -539,13 +539,13 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     File f = (new File(value)).getAbsoluteFile();
     if (f.isDirectory()) {
       throw new IllegalArgumentException(
-          String.format("The file  %s  is a directory.", f));
+          String.format("The file %s is a directory.", f));
     }
     File parent = f.getParentFile();
     if (parent != null) {
       if (!parent.isDirectory()) {
         throw new IllegalArgumentException(
-            String.format("The directory  %s  does not exist.", parent));
+            String.format("The directory %s does not exist.", parent));
       }
     }
     this.propertyFile = f.getPath();
@@ -1254,7 +1254,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // is still usable:
       SystemFailure.checkFailure();
       logger.error("Failed to start SnmpAdaptor:  {}", t.getMessage());
-      throw new StartupException(String.format("Failed to start SnmpAdaptor:  %s",
+      throw new StartupException(String.format("Failed to start SnmpAdaptor: %s",
           t.getMessage()), t);
     }
   }
@@ -1335,7 +1335,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // is still usable:
       SystemFailure.checkFailure();
       logger.error("Failed to start HttpAdaptor:  {}", t.getMessage());
-      throw new StartupException(String.format("Failed to start HttpAdaptor:  %s",
+      throw new StartupException(String.format("Failed to start HttpAdaptor: %s",
           t.getMessage()), t);
     }
   }

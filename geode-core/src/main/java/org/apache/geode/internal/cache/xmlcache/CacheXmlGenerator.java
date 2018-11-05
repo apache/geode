@@ -1809,7 +1809,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       } else {
         throw new InternalGemFireException(
-            String.format("Unknown scope:  %s", scope));
+            String.format("Unknown scope: %s", scope));
       }
 
 
@@ -1897,7 +1897,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           }
         } else {
           throw new InternalGemFireException(
-              String.format("Unknown data policy:  %s", dp));
+              String.format("Unknown data policy: %s", dp));
         }
 
         if (generateDefaults() || !dp.equals(DataPolicy.DEFAULT))
@@ -1924,7 +1924,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           mirrorString = KEYS_VALUES;
         else
           throw new InternalGemFireException(
-              String.format("Unknown mirror type:  %s", mirror));
+              String.format("Unknown mirror type: %s", mirror));
         atts.addAttribute("", "", MIRROR_TYPE, "", mirrorString);
       }
       if ((!(attrs instanceof RegionAttributesCreation)
@@ -2306,7 +2306,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown ExpirationAction:  %s", action));
+          String.format("Unknown ExpirationAction: %s", action));
     }
 
     atts.addAttribute("", "", ACTION, "", actionString);
@@ -2341,7 +2341,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       interestString = CACHE_CONTENT;
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown InterestPolicy:  %s", ip));
+          String.format("Unknown InterestPolicy: %s", ip));
     }
 
     atts.addAttribute("", "", INTEREST_POLICY, "", interestString);

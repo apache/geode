@@ -28,7 +28,6 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,18 +149,18 @@ public class CacheServerLauncher {
     out.println("\t"
         + "<classpath> Location of user classes required by the cache server.  This path is appended to the current classpath.");
     out.println(
-        "\t" + "<attName> Distributed system attribute such as mcast-port or cache-xml-file.");
-    out.println("\t" + "-rebalance  Indicates that the Cache should immediately be rebalanced");
+        "\t<attName> Distributed system attribute such as mcast-port or cache-xml-file.");
+    out.println("\t-rebalance  Indicates that the Cache should immediately be rebalanced");
     out.println(
-        "\t" + "-disable-default-server  Do not add a default <cache-server>");
+        "\t-disable-default-server  Do not add a default <cache-server>");
     out.println("\t"
         + "<server-port>  Port the server is to listen on for client connections. This overrides the port set in the <cache-server> element of the cache-xml-file");
     out.println(
-        "\t" + "<server-bind-address>  Address the server is to listen on for client connections. This overrides the bind-address set in the <cache-server> element of the cache-xml-file");
+        "\t<server-bind-address>  Address the server is to listen on for client connections. This overrides the bind-address set in the <cache-server> element of the cache-xml-file");
     out.println(
-        "\t" + "<critical-heap-percentage>  Sets the critical heap threshold limit of the Resource Manager. This best works with parallel young generation collector (UseParNewGC) and concurrent low pause collector (UseConcMarkSweepGC) with appropriate CMSInitiatingOccupancyFraction like 50%. This overrides the critical-heap-percentage set in the <resource-manager> element of the cache-xml-file");
+        "\t<critical-heap-percentage>  Sets the critical heap threshold limit of the Resource Manager. This best works with parallel young generation collector (UseParNewGC) and concurrent low pause collector (UseConcMarkSweepGC) with appropriate CMSInitiatingOccupancyFraction like 50%. This overrides the critical-heap-percentage set in the <resource-manager> element of the cache-xml-file");
     out.println(
-        "\t" + "<eviction-heap-percentage>  Sets the eviction heap threshold limit of the Resource Manager above which the eviction should begin on Regions configured for eviction by heap LRU. This overrides the eviction-heap-percentage set in the resource-manager> element of the cache-xml-file");
+        "\t<eviction-heap-percentage>  Sets the eviction heap threshold limit of the Resource Manager above which the eviction should begin on Regions configured for eviction by heap LRU. This overrides the eviction-heap-percentage set in the resource-manager> element of the cache-xml-file");
     out.println("\t"
         + "<critical-Off-heap-percentage>  Sets the critical off-heap threshold limit of the Resource Manager. This overrides the critical-off-heap-percentage set in the <resource-manager> element of the cache-xml-file");
     out.println("\t"
@@ -177,7 +176,7 @@ public class CacheServerLauncher {
         + "<workingdir> Directory in which cacheserver runs, default is the current directory");
     out.println();
     out.println("cacheserver status [-dir=<workingdir>]");
-    out.println("\t" + "Reports the status and process id of a GemFire CacheServer VM");
+    out.println("\tReports the status and process id of a GemFire CacheServer VM");
     out.println("\t"
         + "<workingdir> Directory in which cacheserver runs, default is the current directory");
   }
@@ -292,7 +291,7 @@ public class CacheServerLauncher {
 
     if (!inputWorkingDirectory.exists()) {
       throw new FileNotFoundException(
-          String.format("The input working directory does not exist:  %s",
+          String.format("The input working directory does not exist: %s",
               dirValue));
     }
 
@@ -367,7 +366,7 @@ public class CacheServerLauncher {
         }
       } else {
         throw new IllegalArgumentException(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -407,7 +406,7 @@ public class CacheServerLauncher {
   protected void processUnknownStartOption(final String key, final String value,
       final Map<String, Object> options, final List<String> vmArgs, final Properties props) {
     throw new IllegalArgumentException(
-        String.format("Unknown argument:  %s", key));
+        String.format("Unknown argument: %s", key));
   }
 
   /**
@@ -456,7 +455,7 @@ public class CacheServerLauncher {
         }
       } else {
         throw new IllegalArgumentException(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -478,7 +477,7 @@ public class CacheServerLauncher {
         processDirOption(options, arg.substring(arg.indexOf("=") + 1));
       } else {
         throw new IllegalArgumentException(
-            String.format("Unknown argument:  %s", arg));
+            String.format("Unknown argument: %s", arg));
       }
     }
 
@@ -573,7 +572,7 @@ public class CacheServerLauncher {
 
   protected void printStartMessage(final Map<String, Object> options, final int pid)
       throws Exception {
-    System.out.println(String.format("Starting %s with pid: {1,number,#}",
+    System.out.println(String.format("Starting %s with pid: %s",
         this.baseName, pid));
   }
 
@@ -1143,7 +1142,7 @@ public class CacheServerLauncher {
                 && !lastReadMessage.equals(lastReportedMessage)) {
               long elapsedSec = TimeUnit.NANOSECONDS.toSeconds(elapsed);
               System.out.println(String.format(
-                  "The server is still starting. %s seconds have elapsed since the last log message:  %s",
+                  "The server is still starting. %s seconds have elapsed since the last log message: %s",
                   elapsedSec, status.dsMsg));
               lastReportedMessage = lastReadMessage;
             }
@@ -1194,44 +1193,54 @@ public class CacheServerLauncher {
    */
   protected void addToServerCommand(final List<String> commandLine,
       final Map<String, Object> options) {
-    final ListWrapper<String> commandLineWrapper = new ListWrapper<String>(commandLine);
 
     if (Boolean.TRUE.equals(options.get(REBALANCE))) {
-      commandLineWrapper.add("-rebalance");
+      commandLine.add("-rebalance");
     }
 
-    commandLineWrapper.add((String) options.get(DISABLE_DEFAULT_SERVER));
-    commandLineWrapper.add((String) options.get(SERVER_PORT));
-    commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS_NAME));
+    String disableDefaultServer = (String) options.get(DISABLE_DEFAULT_SERVER);
+    if (disableDefaultServer != null) {
+      commandLine.add(disableDefaultServer);
+    }
+
+    String serverPort = (String) options.get(SERVER_PORT);
+    if (serverPort != null) {
+      commandLine.add(serverPort);
+    }
+
+    String serverBindAddressName = (String) options.get(SERVER_BIND_ADDRESS_NAME);
+    if (serverBindAddressName != null) {
+      commandLine.add(serverBindAddressName);
+    }
 
     String criticalHeapThreshold = (String) options.get(CRITICAL_HEAP_PERCENTAGE);
     if (criticalHeapThreshold != null) {
-      commandLineWrapper.add(criticalHeapThreshold);
+      commandLine.add(criticalHeapThreshold);
     }
     String evictionHeapThreshold = (String) options.get(EVICTION_HEAP_PERCENTAGE);
     if (evictionHeapThreshold != null) {
-      commandLineWrapper.add(evictionHeapThreshold);
+      commandLine.add(evictionHeapThreshold);
     }
 
     String criticalOffHeapThreshold = (String) options.get(CRITICAL_OFF_HEAP_PERCENTAGE);
     if (criticalOffHeapThreshold != null) {
-      commandLineWrapper.add(criticalOffHeapThreshold);
+      commandLine.add(criticalOffHeapThreshold);
     }
     String evictionOffHeapThreshold = (String) options.get(EVICTION_OFF_HEAP_PERCENTAGE);
     if (evictionOffHeapThreshold != null) {
-      commandLineWrapper.add(evictionOffHeapThreshold);
+      commandLine.add(evictionOffHeapThreshold);
     }
 
     final Properties props = (Properties) options.get(PROPERTIES);
 
     for (final Object key : props.keySet()) {
-      commandLineWrapper.add(key + "=" + props.getProperty(key.toString()));
+      commandLine.add(key + "=" + props.getProperty(key.toString()));
     }
 
     if (props.getProperty(LOG_FILE) == null && CacheServerLauncher.isLoggingToStdOut()) {
       // Do not allow the cache server to log to stdout; override the logger with
       // #defaultLogFileName
-      commandLineWrapper.add(LOG_FILE + "=" + defaultLogFileName);
+      commandLine.add(LOG_FILE + "=" + defaultLogFileName);
     }
   }
 
@@ -1249,56 +1258,7 @@ public class CacheServerLauncher {
    */
   protected void stopAdditionalServices() throws Exception {}
 
-  /**
-   * A List implementation that disallows null values.
-   *
-   * @param <E> the Class type for the List elements.
-   */
-  protected static class ListWrapper<E> extends AbstractList<E> {
 
-    private static final ThreadLocal<Boolean> addResult = new ThreadLocal<Boolean>();
-
-    private final List<E> list;
-
-    public ListWrapper(final List<E> list) {
-      assert list != null : "The List cannot be null!";
-      this.list = list;
-    }
-
-    @Override
-    public boolean add(final E e) {
-      final boolean localAddResult = super.add(e);
-      return (localAddResult && addResult.get());
-    }
-
-    @Override
-    public void add(final int index, final E element) {
-      if (element != null) {
-        list.add(index, element);
-      }
-      addResult.set(element != null);
-    }
-
-    @Override
-    public E get(final int index) {
-      return this.list.get(index);
-    }
-
-    @Override
-    public E remove(final int index) {
-      return list.remove(index);
-    }
-
-    @Override
-    public E set(final int index, final E element) {
-      return (element != null ? list.set(index, element) : list.get(index));
-    }
-
-    @Override
-    public int size() {
-      return list.size();
-    }
-  }
 
   private class MainLogReporter extends Thread implements StartupStatusListener {
     private String lastLogMessage;

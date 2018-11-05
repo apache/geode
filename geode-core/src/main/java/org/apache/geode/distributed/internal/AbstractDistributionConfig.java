@@ -458,7 +458,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
-              String.format("Unknown locator bind address:  %s",
+              String.format("Unknown locator bind address: %s",
                   bindAddr));
         }
 
@@ -474,7 +474,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
       if (lastIndex == -1) {
         if (locator.indexOf('[') >= 0) {
           throw new IllegalArgumentException(
-              String.format("Invalid locator:  %s",
+              String.format("Invalid locator: %s",
                   value));
 
         } else {
@@ -497,7 +497,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         }
       } catch (NumberFormatException ex) {
         throw new IllegalArgumentException(
-            String.format("Invalid locator:  %s", value));
+            String.format("Invalid locator: %s", value));
       }
 
       locatorsb.append('[');
@@ -735,7 +735,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
       // null is a "valid" value for any class
       if (!validValueClass.isInstance(attValue)) {
         throw new InvalidValueException(
-            String.format("%s  value %s must be of type  %s",
+            String.format("%s value %s must be of type %s",
                 attName, attValue, validValueClass.getName()));
       }
     }

@@ -698,7 +698,7 @@ public class MBeanUtil {
               if (entry == null)
                 return;
               if (!(entry instanceof ManagedResource)) {
-                throw new ClassCastException(String.format("%s  is not a ManagedResource",
+                throw new ClassCastException(String.format("%s is not a ManagedResource",
                     new Object[] {entry.getClass().getName()}));
               }
               ManagedResource resource = (ManagedResource) entry;

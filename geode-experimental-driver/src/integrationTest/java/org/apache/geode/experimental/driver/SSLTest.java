@@ -62,6 +62,8 @@ public class SSLTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
+  private final String DEFAULT_KEY_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "default.keystore");
   private final String SERVER_KEY_STORE =
       TestUtil.getResourcePath(SSLTest.class, "cacheserver.keystore");
   private final String SERVER_TRUST_STORE =
@@ -84,8 +86,8 @@ public class SSLTest {
     System.setProperty("geode.feature-protobuf-protocol", "true");
   }
 
-  private void startLocator(String keyStore, boolean twoWayAuthentication, String protocols,
-      String ciphers) throws IOException {
+  private void startLocator(String keyStore, String trustStore, boolean twoWayAuthentication,
+      String protocols, String ciphers) throws IOException {
     // Create a cache
     Properties properties = new Properties();
     properties.put(SSL_ENABLED_COMPONENTS, "all");
@@ -94,7 +96,7 @@ public class SSLTest {
     properties.put(SSL_PROTOCOLS, protocols);
     properties.put(SSL_CIPHERS, ciphers);
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_TRUSTSTORE, SERVER_TRUST_STORE);
+    properties.put(SSL_TRUSTSTORE, trustStore);
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(twoWayAuthentication));
 
@@ -123,17 +125,19 @@ public class SSLTest {
 
   @Test
   public void driverFailsToConnectWhenThereAreNoServers() throws Exception {
-    startLocator(SERVER_KEY_STORE, true, "any", "any");
+    // using TLSv1.2 specifically so that in jdk11 (by default using TLSv1.3) this won't take
+    // too long to finish.
+    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.2", "any");
     expectedException.expect(IOException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort).create();
   }
 
   @Test
   public void driverCanConnectWithTwoWayAuthentication() throws Exception {
-    startLocator(SERVER_KEY_STORE, true, "any", "any");
+    startLocator(DEFAULT_KEY_STORE, DEFAULT_KEY_STORE, true, "any", "any");
     startServer();
     driver = new DriverFactory().addLocator("localhost", locatorPort)
-        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
+        .setTrustStorePath(DEFAULT_KEY_STORE).setKeyStorePath(DEFAULT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
     assertEquals(Collections.singleton("/region"), regionsOnServer);
     assertTrue(driver.isConnected());
@@ -141,7 +145,7 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectWithBogusClientKeystore() throws Exception {
-    startLocator(SERVER_KEY_STORE, true, "any", "any");
+    startLocator(DEFAULT_KEY_STORE, DEFAULT_KEY_STORE, true, "any", "any");
     startServer();
     expectedException
         .expect(anyOf(instanceOf(SSLException.class), instanceOf(SocketException.class)));
@@ -151,7 +155,9 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectWithBogusServerKeystore() throws Exception {
-    startLocator(BOGUSSERVER_KEY_STORE, true, "any", "any");
+    // using TLSv1.2 specifically so that in jdk11 (by default using TLSv1.3) this won't take
+    // too long to finish.
+    startLocator(BOGUSSERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.2", "any");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)
@@ -160,10 +166,10 @@ public class SSLTest {
 
   @Test
   public void driverCanConnectWithOneWayAuthentication() throws Exception {
-    startLocator(SERVER_KEY_STORE, false, "any", "any");
+    startLocator(DEFAULT_KEY_STORE, DEFAULT_KEY_STORE, false, "any", "any");
     startServer();
     driver = new DriverFactory().addLocator("localhost", locatorPort)
-        .setTrustStorePath(CLIENT_TRUST_STORE).create();
+        .setTrustStorePath(DEFAULT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
     assertEquals(Collections.singleton("/region"), regionsOnServer);
     assertTrue(driver.isConnected());
@@ -171,7 +177,7 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectIfProtocolsMismatch() throws Exception {
-    startLocator(SERVER_KEY_STORE, true, "TLSv1.1", "any");
+    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.1", "any");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)
@@ -181,7 +187,8 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectIfCiphersMismatch() throws Exception {
-    startLocator(SERVER_KEY_STORE, true, "any", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256");
+    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "any",
+        "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)

@@ -61,7 +61,7 @@ public class CreatePooledJndiBindingDUnitTest {
   public void testCreateJndiBinding() throws Exception {
     // assert that is no datasource
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
 
     // create the binding
     gfsh.executeAndAssertThat(

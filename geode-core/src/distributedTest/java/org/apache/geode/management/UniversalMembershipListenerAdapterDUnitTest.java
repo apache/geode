@@ -1058,7 +1058,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   /**
-   * Tests notification of events for bridge server in system bridge client process.
+   * Tests notification of events for cache server in system bridge client process.
    */
   @Test
   public void testServerEventsInPeerSystem() throws Exception {
@@ -1310,7 +1310,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   /**
-   * Tests notification of events for bridge server in system bridge client process.
+   * Tests notification of events for cache server in system bridge client process.
    */
   @Test
   public void testServerEventsInLonerClient() throws Exception {
@@ -1438,7 +1438,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     // gather details for later creation of pool...
     assertThat((int) vm0.invoke("getServerPort", () -> serverPort)).isEqualTo(ports[0]);
 
-    // create region which connects to bridge server
+    // create region which connects to cache server
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
@@ -1495,7 +1495,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     addIgnoredException(IOException.class.getName());
     addIgnoredException(ConnectException.class.getName());
 
-    vm0.invoke(new SerializableRunnable("Disconnect bridge server") {
+    vm0.invoke(new SerializableRunnable("Disconnect cache server") {
       @Override
       public void run() {
         closeCache();

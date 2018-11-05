@@ -15,13 +15,7 @@
 # limitations under the License.
 #
 # JDBC Connector Extension commands
-org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand
-org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand
-org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand
-org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand
-org.apache.geode.connectors.jdbc.internal.cli.AlterConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
-org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand

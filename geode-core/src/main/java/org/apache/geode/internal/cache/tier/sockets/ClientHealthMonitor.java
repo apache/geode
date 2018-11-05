@@ -87,7 +87,7 @@ public class ClientHealthMonitor {
   static ClientHealthMonitor _instance;
 
   /**
-   * Reference count in the event that multiple bridge servers are using the health monitor
+   * Reference count in the event that multiple cache servers are using the health monitor
    */
 
   private static int refCount = 0;

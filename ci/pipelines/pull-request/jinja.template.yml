@@ -157,7 +157,7 @@ jobs:
             path: geode-unmerged-request
             status: pending
       - do:
-        - get: concourse-metadata-resource
+        - put: concourse-metadata-resource
         - task: create_instance
           {{- alpine_tools_config()|indent(10) }}
             params:

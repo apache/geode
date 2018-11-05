@@ -1264,7 +1264,7 @@ public class HeapDataOutputStream extends OutputStream
     } catch (UTFDataFormatException ex) {
       // this shouldn't happen since we did not encode the length
       throw new IllegalStateException(
-          String.format("unexpected  %s", ex));
+          String.format("unexpected %s", ex));
     }
   }
 

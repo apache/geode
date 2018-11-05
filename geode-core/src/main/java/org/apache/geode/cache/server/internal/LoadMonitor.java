@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * A class which monitors the load on a bridge server and periodically sends updates to the locator.
+ * A class which monitors the load on a cache server and periodically sends updates to the locator.
  *
  * @since GemFire 5.7
  *
@@ -192,7 +192,7 @@ public class LoadMonitor implements ConnectionListener {
             Set locators = advisor.adviseControllers();
 
             if (logger.isDebugEnabled()) {
-              logger.debug("Bridge Server Load Monitor Transmitting load {} to locators {}", load,
+              logger.debug("cache server Load Monitor Transmitting load {} to locators {}", load,
                   locators);
             }
 
@@ -212,7 +212,7 @@ public class LoadMonitor implements ConnectionListener {
           } else {
             if (logger.isDebugEnabled()) {
               logger.debug(
-                  "Bridge Server Load Monitor Load {} hasn't changed, not transmitting. skippedLoadUpdates={}",
+                  "cache server Load Monitor Load {} hasn't changed, not transmitting. skippedLoadUpdates={}",
                   load, skippedLoadUpdates);
             }
           }

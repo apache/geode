@@ -194,7 +194,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
       throw new IllegalArgumentException(
-          String.format("obj does not have the same StructType: required:  %s , actual:  %s",
+          String.format("obj does not have the same StructType: required: %s , actual: %s",
               new Object[] {this.structType, s.getStructType()}));
     }
     return addFieldValues(s.getFieldValues());

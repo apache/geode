@@ -27,21 +27,20 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusGatewaySenderCommand extends InternalGfshCommand {
+public class StatusGatewaySenderCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.STATUS_GATEWAYSENDER, help = CliStrings.STATUS_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result statusGatewaySender(@CliOption(key = CliStrings.STATUS_GATEWAYSENDER__ID,
+  public ResultModel statusGatewaySender(@CliOption(key = CliStrings.STATUS_GATEWAYSENDER__ID,
       mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STATUS_GATEWAYSENDER__ID__HELP) String senderId,
 
@@ -53,30 +52,27 @@ public class StatusGatewaySenderCommand extends InternalGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Result result;
     if (senderId != null) {
       senderId = senderId.trim();
     }
 
     Cache cache = getCache();
-    SystemManagementService service = (SystemManagementService) getManagementService();
+    SystemManagementService service = getManagementService();
 
     GatewaySenderMXBean bean;
 
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    TabularResultData availableSenderData =
-        crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-            .addTable(CliStrings.TABLE_GATEWAY_SENDER);
-
-    TabularResultData notAvailableSenderData =
-        crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
-            .addTable(CliStrings.TABLE_GATEWAY_SENDER);
-
+    ResultModel crd = new ResultModel();
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    TabularResultModel availableSenderData =
+        crd.addTable(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE);
+
+    TabularResultModel notAvailableSenderData =
+        crd.addTable(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE);
 
     for (DistributedMember member : dsMembers) {
       if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
@@ -91,12 +87,12 @@ public class StatusGatewaySenderCommand extends InternalGfshCommand {
         buildSenderStatus(member.getId(), bean, notAvailableSenderData);
       }
     }
-    result = ResultBuilder.buildResult(crd);
-    return result;
+
+    return crd;
   }
 
-  private TabularResultData buildSenderStatus(String memberId, GatewaySenderMXBean bean,
-      TabularResultData resultData) {
+  private TabularResultModel buildSenderStatus(String memberId, GatewaySenderMXBean bean,
+      TabularResultModel resultData) {
     resultData.accumulate(CliStrings.RESULT_HOST_MEMBER, memberId);
     if (bean != null) {
       resultData.accumulate(CliStrings.RESULT_TYPE,

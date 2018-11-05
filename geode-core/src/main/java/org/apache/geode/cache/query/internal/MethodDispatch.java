@@ -125,7 +125,7 @@ public class MethodDispatch {
     if (candidates.isEmpty()) {
       throw new NameNotFoundException(
           String.format(
-              "No applicable and accessible method named ' %s ' was found in class ' %s ' for the argument types  %s",
+              "No applicable and accessible method named ' %s ' was found in class ' %s ' for the argument types %s",
 
               new Object[] {_methodName, _targetClass.getName(), Arrays.asList(_argTypes)}));
     }
@@ -153,7 +153,7 @@ public class MethodDispatch {
     if (equalSpecificity(meth1, meth2, _argTypes))
       throw new AmbiguousNameException(
           String.format(
-              "Two or more maximally specific methods were found for the method named ' %s ' in class ' %s ' for the argument types:  %s",
+              "Two or more maximally specific methods were found for the method named ' %s ' in class ' %s ' for the argument types: %s",
               new Object[] {meth1.getName(), _targetClass.getName(),
                   Arrays.asList(_argTypes)}));
 

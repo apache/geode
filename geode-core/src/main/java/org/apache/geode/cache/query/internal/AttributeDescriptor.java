@@ -154,7 +154,7 @@ public class AttributeDescriptor {
 
     if (m == null) {
       throw new NameNotFoundException(
-          String.format("No public attribute named ' %s ' was found in class  %s",
+          String.format("No public attribute named ' %s ' was found in class %s",
               new Object[] {_name, targetClass.getName()}));
     }
 

@@ -372,10 +372,10 @@ if __name__ == '__main__':
                         default=100)
     parser.add_argument('--cookie-token',
                         help='If authentication is required (e.g., team="staging"), '
-                             "provide your ATC-Authorization cookie's token here.  "
+                             "provide your skymarshal_auth cookie's token here.  "
                              "Unfortunately, this is currently done by logging in via a web browser, "
                              "inspecting your cookies, and pasting it here.",
-                        type=lambda t: {u'ATC-Authorization':
+                        type=lambda t: {u'skymarshal_auth':
                                         '"Bearer {}"'.format(t if not t.startswith("Bearer ") else t[7:])})
     parser.add_argument('--threaded',
                         help="Use multiple cores to hasten api requests.",

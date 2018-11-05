@@ -155,17 +155,17 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   public void setValue(Object value) throws UnmodifiableConfigurationException {
     if (!isModifiable()) {
       throw new UnmodifiableConfigurationException(
-          String.format("%s  is not a modifiable configuration parameter",
+          String.format("%s is not a modifiable configuration parameter",
               getName()));
     }
     if (value == null) {
       throw new IllegalArgumentException(
-          String.format("Unable to set  %s  to null value",
+          String.format("Unable to set %s to null value",
               getName()));
     }
     if (!getValueType().equals(value.getClass())) {
       throw new IllegalArgumentException(
-          String.format("Unable to set type  %s  with type  %s",
+          String.format("Unable to set type %s with type %s",
 
               new Object[] {getValueType().getName(), value.getClass().getName()}));
     }
@@ -205,7 +205,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   protected void setValueFromString(String newValue) {
     if (newValue == null) {
       throw new IllegalArgumentException(
-          String.format("Unable to set  %s  to null value",
+          String.format("Unable to set %s to null value",
               getName()));
     }
 

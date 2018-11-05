@@ -125,7 +125,7 @@ public class QueryCommandDUnitTestBase {
       CommandResult result = gfsh.executeCommand(query);
       assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
       assertThat(result.getResultData().toString())
-          .contains(String.format("Syntax error in query:  %s", ""));
+          .contains(String.format("Syntax error in query: %s", ""));
     } finally {
       ex.remove();
     }

@@ -655,9 +655,7 @@ public class OpExecutorImpl implements ExecutablePool {
     cancelCriterion.checkCancelInProgress(e);
 
     if (logger.isDebugEnabled() && !(e instanceof java.io.EOFException)) {
-      if (e instanceof java.io.EOFException) {
-        logger.debug("OpExecutor.handleException on Connection to {} found EOF", conn.getServer());
-      } else if (e instanceof java.net.SocketTimeoutException) {
+      if (e instanceof java.net.SocketTimeoutException) {
         logger.debug("OpExecutor.handleException on Connection to {} read timed out",
             conn.getServer());
       } else {

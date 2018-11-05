@@ -26,21 +26,21 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StopGatewayReceiverCommand extends InternalGfshCommand {
+public class StopGatewayReceiverCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.STOP_GATEWAYRECEIVER, help = CliStrings.STOP_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public Result stopGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+  public ResultModel stopGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
@@ -49,20 +49,17 @@ public class StopGatewayReceiverCommand extends InternalGfshCommand {
           help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember)
       throws Exception {
 
-    Result result;
-
-    SystemManagementService service = (SystemManagementService) getManagementService();
+    SystemManagementService service = getManagementService();
 
     GatewayReceiverMXBean receiverBean;
 
-    TabularResultData resultData = ResultBuilder.createTabularResultData();
-
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
-
     if (dsMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel resultData = resultModel.addTable(CliStrings.STOP_GATEWAYRECEIVER);
     for (DistributedMember member : dsMembers) {
       ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
 
@@ -72,31 +69,30 @@ public class StopGatewayReceiverCommand extends InternalGfshCommand {
         if (receiverBean != null) {
           if (receiverBean.isRunning()) {
             receiverBean.stop();
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+            resultData.addMemberStatusResultRow(member.getId(),
                 CliStrings.GATEWAY_OK,
                 CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_STOPPED_ON_MEMBER_0,
                     new Object[] {member.getId()}));
           } else {
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+            resultData.addMemberStatusResultRow(member.getId(),
                 CliStrings.GATEWAY_ERROR,
                 CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_RUNNING_ON_MEMBER_0,
                     new Object[] {member.getId()}));
           }
         } else {
-          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+          resultData.addMemberStatusResultRow(member.getId(),
               CliStrings.GATEWAY_ERROR,
               CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0,
                   new Object[] {member.getId()}));
         }
       } else {
-        GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+        resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0,
                 new Object[] {member.getId()}));
       }
     }
-    result = ResultBuilder.buildResult(resultData);
 
-    return result;
+    return resultModel;
   }
 }

@@ -71,7 +71,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
         result = currentValue;
       } else {
         throw new IllegalArgumentException(
-            String.format("Statistics type named  %s  already exists.",
+            String.format("Statistics type named %s already exists.",
                 result.getName()));
       }
     }

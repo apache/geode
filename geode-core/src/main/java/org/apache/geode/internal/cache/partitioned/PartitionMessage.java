@@ -296,10 +296,10 @@ public abstract class PartitionMessage extends DistributionMessage
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
         if (cache != null) {
           thr = cache
-              .getCacheClosedException(String.format("Remote cache is closed:  %s",
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
                   dm.getId()));
         } else {
-          thr = new CacheClosedException(String.format("Remote cache is closed:  %s",
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
               dm.getId()));
         }
         return;
@@ -356,7 +356,7 @@ public abstract class PartitionMessage extends DistributionMessage
       // destroyed, so we must send back an exception. If the sender's
       // region is also destroyed, who cares if we send it an exception
       // if (pr != null && pr.isClosed) {
-      thr = new ForceReattemptException(String.format("Region is destroyed in  %s",
+      thr = new ForceReattemptException(String.format("Region is destroyed in %s",
           dm.getDistributionManagerId()), rde);
       // }
     } catch (VirtualMachineError err) {
@@ -763,7 +763,7 @@ public abstract class PartitionMessage extends DistributionMessage
       if (id != null) {
         if (removeMember(id, true)) {
           this.prce = new ForceReattemptException(
-              String.format("memberDeparted event for < %s > crashed,  %s",
+              String.format("memberDeparted event for < %s > crashed, %s",
                   id, crashed));
         }
         checkIfDone();

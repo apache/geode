@@ -25,7 +25,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
- * Represents the location of a bridge server. This class is preferable to InetSocketAddress because
+ * Represents the location of a cache server. This class is preferable to InetSocketAddress because
  * it doesn't do any name resolution.
  *
  *

@@ -37,22 +37,28 @@ done
 META_PROPERTIES=${SCRIPTDIR}/meta.properties
 LOCAL_META_PROPERTIES=${SCRIPTDIR}/meta.properties.local
 
-## Load default properties file
+## Load default properties
 source ${META_PROPERTIES}
 echo "**************************************************"
 echo "Default Environment variables for this deployment:"
 cat ${SCRIPTDIR}/meta.properties | grep -v "^#"
 source ${META_PROPERTIES}
+GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo GEODE_BRANCH=${GEODE_BRANCH}
 echo "**************************************************"
 
 ## Load local overrides properties file
 if [[ -f ${LOCAL_META_PROPERTIES} ]]; then
-  echo "Locally overridden environment variables for this:"
+  echo "Local Environment overrides for this deployment:"
   cat ${SCRIPTDIR}/meta.properties.local
   source ${LOCAL_META_PROPERTIES}
   echo "**************************************************"
 else
-  echo "(to deploy your own pipeline, press x then create ${LOCAL_META_PROPERTIES} containing GEODE_FORK=<your github username>)"
+  git remote -v | awk '/fetch/{sub("/[^/]*$","");sub(".*[/:]","");if($0!="apache")print}' | while read fork; do
+    echo "to deploy a pipeline for $fork, press x then"
+    echo "echo GEODE_FORK=$fork > ${LOCAL_META_PROPERTIES}"
+  done
+  echo "**************************************************"
 fi
 
 read -n 1 -s -r -p "Press any key to continue or x to abort" DEPLOY
@@ -69,7 +75,6 @@ if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
 fi
 CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
 FLY_TARGET=${CONCOURSE_HOST}
-GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 . ${SCRIPTDIR}/../shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -176,7 +181,7 @@ function awaitJob {
   JOB=$2
   echo -n "Waiting for ${JOB}..."
   status="n/a"
-  while [ "$status" = "n/a" ] || [ "$status" = "started" ] ; do
+  while [ "$status" = "n/a" ] || [ "$status" = "pending" ] || [ "$status" = "started" ] ; do
     echo -n .
     sleep 5
     status=$(jobStatus ${PIPELINE} ${JOB})
@@ -196,7 +201,7 @@ function driveToGreen {
   if [ "aborted" = "$status" ] || [ "failed" = "$status" ] || [ "errored" = "$status" ] ; then
     triggerJob ${PIPELINE} ${JOB}
     awaitJob ${PIPELINE} ${JOB}
-  elif [ "n/a" = "$status" ] || [ "started" = "$status" ] ; then
+  elif [ "n/a" = "$status" ] || [ "pending" = "$status" ] || [ "started" = "$status" ] ; then
     awaitJob ${PIPELINE} ${JOB}
   elif [ "succeeded" = "$status" ] ; then
     echo "${JOB} $status"

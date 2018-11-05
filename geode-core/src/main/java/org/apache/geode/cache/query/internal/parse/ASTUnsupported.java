@@ -36,6 +36,6 @@ public class ASTUnsupported extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     throw new UnsupportedOperationException(
-        String.format("Unsupported feature:  %s", getText()));
+        String.format("Unsupported feature: %s", getText()));
   }
 }
