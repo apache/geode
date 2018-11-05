@@ -161,8 +161,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
       } else if (t instanceof IOException || t instanceof ServerConnectivityException
-          || t instanceof ConnectionDestroyedException || t instanceof MessageTooLargeException
-          || t instanceof IllegalStateException || t instanceof GemFireSecurityException) {
+          || t instanceof ConnectionDestroyedException || t instanceof IllegalStateException
+          || t instanceof GemFireSecurityException) {
         this.processor.handleException();
         // If the cause is an IOException or a ServerException, sleep and retry.
         // Sleep for a bit and recheck.

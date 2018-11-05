@@ -549,7 +549,7 @@ public class PartitionedRegionHelper {
             String.format(
                 "For FixedPartitionedRegion %s, FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)",
                 pr.getName()));
-      } else if (!(resolver instanceof FixedPartitionResolver)) {
+      } else {
         Object[] prms = new Object[] {pr.getName(), resolver};
         throw new IllegalStateException(
             String.format(
