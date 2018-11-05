@@ -17,6 +17,7 @@ package org.apache.geode.modules.gatewaydelta;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
@@ -65,6 +66,6 @@ public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
   public String toString() {
     return new StringBuilder().append("GatewayDeltaCreateEvent[").append("regionName=")
         .append(this.regionName).append("; key=").append(this.key).append("; gatewayDelta=")
-        .append(this.gatewayDelta).append("]").toString();
+        .append(Arrays.toString(this.gatewayDelta)).append("]").toString();
   }
 }

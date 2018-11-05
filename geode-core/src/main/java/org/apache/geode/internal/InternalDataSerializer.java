@@ -855,13 +855,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
       init = c.getDeclaredConstructor(new Class[0]);
 
     } catch (NoSuchMethodException ignored) {
+      if (c.getDeclaringClass() != null) {
+        String s =
+            "Class %s does not have a zero-argument constructor. It is an inner class of %s. Should it be a static inner class?";
+        Object[] args = new Object[] {c.getName(), c.getDeclaringClass()};
+        throw new IllegalArgumentException(String.format(s, args));
+      }
       String s = "Class %s does not have a zero-argument constructor.";
       Object[] args = new Object[] {c.getName()};
-      if (c.getDeclaringClass() != null) {
-        s =
-            "Class %s does not have a zero-argument constructor. It is an inner class of %s. Should it be a static inner class?";
-        args = new Object[] {c.getName(), c.getDeclaringClass()};
-      }
       throw new IllegalArgumentException(String.format(s, args));
     }
 

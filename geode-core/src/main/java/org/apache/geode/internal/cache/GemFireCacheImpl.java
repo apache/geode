@@ -824,7 +824,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Creates a new instance of GemFireCache and populates it according to the {@code cache.xml}, if
    * appropriate.
    *
-   * @param typeRegistry: currently only unit tests set this parameter to a non-null value
+   * Currently only unit tests set the typeRegistry parameter to a non-null value
    */
   private GemFireCacheImpl(boolean isClient, PoolFactory pf, InternalDistributedSystem system,
       CacheConfig cacheConfig, boolean asyncEventListeners, TypeRegistry typeRegistry) {

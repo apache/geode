@@ -190,7 +190,7 @@ public class HeapDataOutputStream extends OutputStream
       return;
     checkIfWritable();
     ensureCapacity(1);
-    buffer.put((byte) b);
+    buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
@@ -888,7 +888,7 @@ public class HeapDataOutputStream extends OutputStream
       return;
     checkIfWritable();
     ensureCapacity(2);
-    buffer.putShort((short) v);
+    buffer.putShort((short) (v & 0xffff));
   }
 
   /**

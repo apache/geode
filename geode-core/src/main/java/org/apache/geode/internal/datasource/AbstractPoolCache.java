@@ -107,17 +107,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     }
   }
 
-  /**
-   * Authenticates the username and password for the database connection.
-   *
-   * @param user The username for the database connection
-   * @param pass The password for the database connection
-   *
-   *        public abstract void checkCredentials(String user, String pass)
-   */
-  /**
-   * @return ???
-   */
   public abstract Object getNewPoolConnection() throws PoolException;
 
   /**

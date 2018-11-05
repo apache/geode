@@ -41,14 +41,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   protected ConnectionProvider provider;
 
   /**
-   * Creates a new instance of GemFireConnPooledDataSource
-   *
-   * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
-   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
-   */
-
-
-  /**
    * Place holder for abstract method isWrapperFor(java.lang.Class) in java.sql.Wrapper required by
    * jdk 1.6
    *
@@ -64,6 +56,12 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
 
 
 
+  /**
+   * Creates a new instance of GemFireConnPooledDataSource
+   *
+   * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
+   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
+   */
   public GemFireConnPooledDataSource(ConnectionPoolDataSource connPoolDS,
       ConfiguredDataSourceProperties configs) throws SQLException {
     super(configs);
