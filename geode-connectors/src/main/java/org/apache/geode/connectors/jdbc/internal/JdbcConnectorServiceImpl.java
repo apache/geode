@@ -56,7 +56,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
         mappingsByRegion.get(alteredMapping.getRegionName());
     if (existingMapping == null) {
       throw new RegionMappingNotFoundException(
-          "RegionMapping for region " + existingMapping.getRegionName() + " was not found");
+          "RegionMapping for the region " + alteredMapping.getRegionName() + " was not found");
     }
 
     mappingsByRegion.put(existingMapping.getRegionName(), alteredMapping);
