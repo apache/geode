@@ -41,6 +41,10 @@ dependencies {
   testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
   testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
 
+  testRuntime('cglib:cglib:' + project.'cglib.version') {
+    exclude module: 'org.apache.ant'
+  }
+
   upgradeTestCompile('commons-io:commons-io:' + project.'commons-io.version')
 
   testCompile(project(':geode-junit')) {
