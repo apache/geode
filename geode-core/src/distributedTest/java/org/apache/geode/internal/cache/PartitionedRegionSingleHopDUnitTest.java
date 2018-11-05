@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -2000,6 +2001,11 @@ class Customer implements DataSerializable { // TODO: move this to be an inner c
     Customer cust = (Customer) o;
     return (cust.name.equals(name) && cust.address.equals(address));
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, address);
+  }
 }
 
 
@@ -2040,6 +2046,15 @@ class Order implements DataSerializable {
     }
     return false;
   }
+
+  @Override
+  public int hashCode() {
+    if (orderName == null) {
+      return super.hashCode();
+    }
+    return orderName.hashCode();
+  }
+
 }
 
 
@@ -2080,4 +2095,14 @@ class Shipment implements DataSerializable {
     }
     return false;
   }
+
+
+  @Override
+  public int hashCode() {
+    if (shipmentName == null) {
+      return super.hashCode();
+    }
+    return shipmentName.hashCode();
+  }
+
 }

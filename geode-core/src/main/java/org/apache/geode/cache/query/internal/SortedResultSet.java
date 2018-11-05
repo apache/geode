@@ -69,6 +69,9 @@ public class SortedResultSet extends TreeSet
 
   @Override
   public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    }
     if (!(other instanceof SortedResultSet)) {
       return false;
     }
@@ -76,6 +79,11 @@ public class SortedResultSet extends TreeSet
       return false;
     }
     return super.equals(other);
+  }
+
+  @Override
+  public int hashCode() {
+    return this.elementType.hashCode();
   }
 
   public void setElementType(ObjectType elementType) {

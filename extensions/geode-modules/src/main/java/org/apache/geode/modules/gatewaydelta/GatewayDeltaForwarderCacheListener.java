@@ -170,6 +170,7 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
     return (LocalRegion) region;
   }
 
+  @Override
   public boolean equals(Object obj) {
     // This method is only implemented so that RegionCreator.validateRegion works properly.
     // The CacheListener comparison fails because two of these instances are not equal.
@@ -182,5 +183,10 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
     }
 
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return GatewayDeltaForwarderCacheListener.class.hashCode();
   }
 }

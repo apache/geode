@@ -62,6 +62,11 @@ class MonthBasedPartitionResolver implements PartitionResolver, Declarable2 {
   }
 
   @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  @Override
   public String getName() {
     return null;
   }

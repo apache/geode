@@ -90,6 +90,9 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
 
   @Override
   public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    }
     if (!(other instanceof ResultsSet)) {
       return false;
     }
@@ -99,6 +102,10 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     return super.equals(other);
   }
 
+  @Override
+  public int hashCode() {
+    return this.elementType.hashCode();
+  }
 
   public List asList() {
     return new ArrayList(this);
