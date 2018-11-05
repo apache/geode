@@ -246,8 +246,9 @@ public abstract class JdbcDistributedTest implements Serializable {
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
-              "JDBC connection with name " + DATA_SOURCE_NAME
-                  + " not found. Create the connection with the gfsh command 'create jndi-binding'");
+              "JDBC data-source named \"" + DATA_SOURCE_NAME
+                  + "\" not found. Create it with gfsh 'create data-source --pooled --name="
+                  + DATA_SOURCE_NAME + "'.");
     });
   }
 
