@@ -625,7 +625,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             locked = this.lock.tryLock(region.getCache().getLockTimeout(), TimeUnit.SECONDS);
             if (!locked) {
               throw new TimeoutException(
-                  String.format("Timed out locking  %s  before load",
+                  String.format("Timed out locking %s before load",
                       key));
             }
             break;
@@ -744,7 +744,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               cause = this.remoteException;
             }
             throw new CacheLoaderException(
-                String.format("While invoking a remote netLoad:  %s",
+                String.format("While invoking a remote netLoad: %s",
                     cause),
                 cause);
           }
@@ -947,7 +947,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           cause = this.remoteException;
         }
         throw new CacheWriterException(
-            String.format("While invoking a remote netWrite:  %s",
+            String.format("While invoking a remote netWrite: %s",
                 cause),
             cause);
       }
@@ -1217,7 +1217,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           if (waitTimeMs <= 0) {
             throw new TimeoutException(
                 String.format(
-                    "Timed out while doing netsearch/netload/netwrite processorId= %s  Key is  %s",
+                    "Timed out while doing netsearch/netload/netwrite processorId= %s Key is %s",
                     new Object[] {this.processorId, this.key}));
           }
 
@@ -1255,7 +1255,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                 sb.append(" lastNotifySpot=").append(lastNS);
               }
               throw new TimeoutException(
-                  String.format("Timeout during netsearch/netload/netwrite. Details:  %s",
+                  String.format("Timeout during netsearch/netload/netwrite. Details: %s",
                       sb));
             }
             return;

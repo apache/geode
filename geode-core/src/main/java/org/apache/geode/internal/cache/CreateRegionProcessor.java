@@ -403,7 +403,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         if (replyException == null) {
           replyException = new ReplyException(t);
         } else {
-          logger.warn(String.format("More than one exception thrown in  %s", this),
+          logger.warn(String.format("More than one exception thrown in %s", this),
               t);
         }
       } finally {

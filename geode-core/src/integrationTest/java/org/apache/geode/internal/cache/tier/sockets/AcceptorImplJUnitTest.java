@@ -15,9 +15,10 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -26,9 +27,9 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -36,7 +37,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -45,6 +45,8 @@ public class AcceptorImplJUnitTest {
 
   DistributedSystem system;
   InternalCache cache;
+  AcceptorImpl acceptor1 = null, acceptor2 = null;
+  ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
 
   @Before
   public void setUp() throws Exception {
@@ -56,85 +58,88 @@ public class AcceptorImplJUnitTest {
 
   @After
   public void tearDown() throws Exception {
+    if (acceptor1 != null) {
+      acceptor1.close();
+    }
+    if (acceptor2 != null) {
+      acceptor2.close();
+    }
     this.cache.close();
     this.system.disconnect();
   }
 
-  /*
-   * Test method for 'org.apache.geode.internal.cache.tier.sockets.AcceptorImpl(int, int, boolean,
-   * int, Cache)'
-   */
-  @Ignore
+  @Test(expected = BindException.class)
+  public void constructorThrowsBindException() throws CacheException, IOException {
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+        AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
+        CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
+        null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
+        serverConnectionFactory, 1000);
+    acceptor2 =
+        new AcceptorImpl(acceptor1.getPort(), null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+            AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
+            CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
+            null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
+            serverConnectionFactory, 1000);
+  }
+
   @Test
-  public void testConstructor() throws CacheException, IOException {
-    AcceptorImpl a1 = null, a2 = null, a3 = null;
-    try {
-      final int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-      int port1 = freeTCPPorts[0];
-      int port2 = freeTCPPorts[1];
-
-
-      ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
-      try {
-        new AcceptorImpl(port1, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
-            AcceptorImpl.MINIMUM_MAX_CONNECTIONS - 1, CacheServer.DEFAULT_MAX_THREADS,
-            CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
-            null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
-            serverConnectionFactory);
-        fail("Expected an IllegalArgumentExcption due to max conns < min pool size");
-      } catch (IllegalArgumentException expected) {
-      }
-
-      try {
-        new AcceptorImpl(port2, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache, 0,
-            CacheServer.DEFAULT_MAX_THREADS, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-            CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null, null, false, Collections.EMPTY_LIST,
-            CacheServer.DEFAULT_TCP_NO_DELAY, serverConnectionFactory);
-        fail("Expected an IllegalArgumentExcption due to max conns of zero");
-      } catch (IllegalArgumentException expected) {
-      }
-
-      try {
-        a1 = new AcceptorImpl(port1, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
-            AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
-            CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
-            null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
-            serverConnectionFactory);
-        a2 = new AcceptorImpl(port1, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
-            AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
-            CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
-            null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
-            serverConnectionFactory);
-        fail("Expecetd a BindException while attaching to the same port");
-      } catch (BindException expected) {
-      }
-
-      a3 = new AcceptorImpl(port2, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-          CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
-          AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
-          CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
-          null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
-          serverConnectionFactory);
-      assertEquals(port2, a3.getPort());
-      InternalDistributedSystem isystem =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
-      DistributionConfig config = isystem.getConfig();
-      String bindAddress = config.getBindAddress();
-      if (bindAddress == null || bindAddress.length() <= 0) {
-        assertTrue(a3.getServerInetAddr().isAnyLocalAddress());
-      }
-    } finally {
-      if (a1 != null)
-        a1.close();
-      if (a2 != null)
-        a2.close();
-      if (a3 != null)
-        a3.close();
+  public void acceptorBindsToLocalAddress() throws CacheException, IOException {
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+        AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
+        CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
+        null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
+        serverConnectionFactory, 1000);
+    InternalDistributedSystem isystem =
+        (InternalDistributedSystem) this.cache.getDistributedSystem();
+    DistributionConfig config = isystem.getConfig();
+    String bindAddress = config.getBindAddress();
+    if (bindAddress == null || bindAddress.length() <= 0) {
+      assertTrue(acceptor1.getServerInetAddr().isAnyLocalAddress());
     }
+  }
+
+  /**
+   * If a CacheServer is stopped but the cache is still open we need to inform other members
+   * of the cluster that the server component no longer exists. Partitioned Region bucket
+   * advisors need to know about this event.
+   */
+  @Test
+  public void acceptorCloseInformsOtherServersIfCacheIsNotClosed() throws Exception {
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+        AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
+        CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
+        null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
+        serverConnectionFactory, 1000);
+    InternalDistributedSystem isystem =
+        (InternalDistributedSystem) this.cache.getDistributedSystem();
+    AcceptorImpl spy = Mockito.spy(acceptor1);
+    spy.close();
+    verify(spy, atLeastOnce()).notifyCacheMembersOfClose();
+  }
+
+  /**
+   * If a CacheServer is stopped as part of cache.close() we don't need to inform other
+   * members of the cluster since all regions will be destroyed.
+   */
+  @Test
+  public void acceptorCloseDoesNotInformOtherServersIfCacheIsClosed() throws Exception {
+    acceptor1 = new AcceptorImpl(0, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
+        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+        AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
+        CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
+        null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY,
+        serverConnectionFactory, 1000);
+    InternalDistributedSystem isystem =
+        (InternalDistributedSystem) this.cache.getDistributedSystem();
+    AcceptorImpl spy = Mockito.spy(acceptor1);
+    cache.close();
+    spy.close();
+    verify(spy, never()).notifyCacheMembersOfClose();
   }
 
 }

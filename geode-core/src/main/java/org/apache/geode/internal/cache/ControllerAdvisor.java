@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 
 
 /**
- * Used to give advise to a connection controller. Bridge server currently need to know about
+ * Used to give advise to a connection controller. cache server currently need to know about
  * controller's
  *
  */
@@ -86,7 +86,7 @@ public class ControllerAdvisor extends GridAdvisor {
   }
 
   /**
-   * Describes a bridge server for distribution purposes.
+   * Describes a cache server for distribution purposes.
    */
   public static class ControllerProfile extends GridAdvisor.GridProfile {
 
@@ -102,9 +102,9 @@ public class ControllerAdvisor extends GridAdvisor {
     }
 
     /**
-     * Used to process an incoming connection controller profile. Any controller or bridge server in
+     * Used to process an incoming connection controller profile. Any controller or cache server in
      * this vm needs to be told about this incoming new controller. The reply needs to contain any
-     * controller(s) that exist in this vm and any bridge servers that exist in this vm.
+     * controller(s) that exist in this vm and any cache servers that exist in this vm.
      *
      * @since GemFire 5.7
      */
@@ -113,7 +113,7 @@ public class ControllerAdvisor extends GridAdvisor {
         boolean removeProfile, boolean exchangeProfiles, final List<Profile> replyProfiles) {
       // tell local controllers about this remote controller
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
-      // tell local bridge servers about this remote controller
+      // tell local cache servers about this remote controller
       tellLocalBridgeServers(dm.getCache(), removeProfile, exchangeProfiles, replyProfiles);
     }
 

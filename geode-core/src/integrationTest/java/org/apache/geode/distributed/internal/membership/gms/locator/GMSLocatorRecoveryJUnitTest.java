@@ -31,6 +31,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +61,7 @@ public class GMSLocatorRecoveryJUnitTest {
 
   private File tempStateFile;
   private GMSLocator locator;
+  private File dir;
 
   @Before
   public void setUp() throws Exception {
@@ -69,13 +71,16 @@ public class GMSLocatorRecoveryJUnitTest {
     }
     this.locator = new GMSLocator(null, null, false, false, new LocatorStats(), "");
     locator.setViewFile(tempStateFile);
-    // System.out.println("temp state file: " + tempStateFile);
   }
 
   @After
   public void tearDown() throws Exception {
     if (this.tempStateFile.exists()) {
       this.tempStateFile.delete();
+    }
+
+    if (dir != null) {
+      FileUtils.deleteQuietly(dir);
     }
   }
 
@@ -194,24 +199,19 @@ public class GMSLocatorRecoveryJUnitTest {
   }
 
   @Test
-  public void testViewFileFoundWhenUserDirModified() throws Exception {
+  public void testViewFileNotFound() throws Exception {
     NetView view = new NetView();
     populateStateFile(this.tempStateFile, GMSLocator.LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL,
         view);
+    assertTrue(this.tempStateFile.exists());
 
-    String userDir = System.getProperty("user.dir");
-    try {
-      File dir = new File("testViewFileFoundWhenUserDirModified");
-      dir.mkdir();
-      System.setProperty("user.dir", dir.getAbsolutePath());
-      File viewFileInNewDirectory = new File(tempStateFile.getName());
-      // GEODE-4180 - file in parent dir still seen with relative path
-      assertTrue(viewFileInNewDirectory.exists());
-      File locatorViewFile = locator.setViewFile(viewFileInNewDirectory);
-      assertFalse(locator.recoverFromFile(locatorViewFile));
-    } finally {
-      System.setProperty("user.dir", userDir);
-    }
+    dir = new File("testViewFileFoundWhenUserDirModified");
+    dir.mkdir();
+    File viewFileInNewDirectory = new File(dir, tempStateFile.getName());
+
+    assertFalse(viewFileInNewDirectory.exists());
+    File locatorViewFile = locator.setViewFile(viewFileInNewDirectory);
+    assertFalse(locator.recoverFromFile(locatorViewFile));
   }
 
 

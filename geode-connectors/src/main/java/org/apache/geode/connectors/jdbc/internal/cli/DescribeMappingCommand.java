@@ -15,10 +15,9 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 
 import java.util.Set;
 
@@ -26,10 +25,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -38,7 +34,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -51,7 +46,6 @@ public class DescribeMappingCommand extends GfshCommand {
       "Region name of the jdbc mapping to be described.";
 
   static final String RESULT_SECTION_NAME = "MappingDescription";
-  static final String FIELD_TO_COLUMN_TABLE = "fieldToColumnTable";
 
   @CliCommand(value = DESCRIBE_MAPPING, help = DESCRIBE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -59,30 +53,18 @@ public class DescribeMappingCommand extends GfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
       mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
-    ConnectorService.RegionMapping mapping = null;
+    RegionMapping mapping = null;
 
-    // check if CC is available and use it to describe the connection
-    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    if (ccService != null) {
-      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
-      if (cacheConfig != null) {
-        ConnectorService service =
-            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
-        if (service != null) {
-          mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
-        }
+    Set<DistributedMember> members = findMembers(null, null);
+    if (members.size() > 0) {
+      DistributedMember targetMember = members.iterator().next();
+      CliFunctionResult result = executeFunctionAndGetFunctionResult(
+          new DescribeMappingFunction(), regionName, targetMember);
+      if (result != null) {
+        mapping = (RegionMapping) result.getResultObject();
       }
     } else {
-      // otherwise get it from any member
-      Set<DistributedMember> members = findMembers(null, null);
-      if (members.size() > 0) {
-        DistributedMember targetMember = members.iterator().next();
-        CliFunctionResult result = executeFunctionAndGetFunctionResult(
-            new DescribeMappingFunction(), regionName, targetMember);
-        if (result != null) {
-          mapping = (ConnectorService.RegionMapping) result.getResultObject();
-        }
-      }
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     if (mapping == null) {
@@ -96,21 +78,11 @@ public class DescribeMappingCommand extends GfshCommand {
     return resultModel;
   }
 
-  private void fillResultData(ConnectorService.RegionMapping mapping, ResultModel resultModel) {
+  private void fillResultData(RegionMapping mapping, ResultModel resultModel) {
     DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
     sectionModel.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
     sectionModel.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
-    sectionModel.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
-    sectionModel.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, mapping.isPrimaryKeyInValue());
-
-    TabularResultModel tabularResultData = resultModel.addTable(FIELD_TO_COLUMN_TABLE);
-    tabularResultData.setHeader("Field to Column Mappings:");
-    if (mapping.getFieldMapping() != null) {
-      mapping.getFieldMapping().forEach((entry) -> {
-        tabularResultData.accumulate("Field", entry.getFieldName());
-        tabularResultData.accumulate("Column", entry.getColumnName());
-      });
-    }
+    sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
   }
 }

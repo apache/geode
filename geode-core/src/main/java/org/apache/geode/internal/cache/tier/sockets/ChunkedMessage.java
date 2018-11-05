@@ -201,7 +201,7 @@ public class ChunkedMessage extends Message {
         cb.clear();
         if (!MessageType.validate(type)) {
           throw new IOException(
-              String.format("Invalid message type  %s  while reading header",
+              String.format("Invalid message type %s while reading header",
                   Integer.valueOf(type)));
         }
 

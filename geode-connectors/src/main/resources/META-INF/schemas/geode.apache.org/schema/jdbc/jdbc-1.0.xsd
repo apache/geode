@@ -28,7 +28,7 @@ XML schema for JDBC Connector Service in Geode.
 
   <cache
     xmlns="http://geode.apache.org/schema/cache"
-    xmlns:lucene="http://geode.apache.org/schema/jdbc"
+    xmlns:jdbc="http://geode.apache.org/schema/jdbc"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://geode.apache.org/schema/cache
         http://geode.apache.org/schema/cache/cache-1.0.xsd
@@ -38,45 +38,11 @@ XML schema for JDBC Connector Service in Geode.
 
     ]]></xsd:documentation>
     </xsd:annotation>
-    <xsd:element name="connector-service">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="connection" maxOccurs="unbounded" minOccurs="0">
-                    <xsd:complexType>
-                        <xsd:simpleContent>
-                            <xsd:extension base="xsd:string">
-                                <xsd:attribute type="xsd:string" name="name" use="optional"/>
-                                <xsd:attribute type="xsd:string" name="url" use="optional"/>
-                                <xsd:attribute type="xsd:string" name="user" use="optional"/>
-                                <xsd:attribute type="xsd:string" name="password" use="optional"/>
-                                <xsd:attribute type="xsd:string" name="parameters" use="optional"/>
-                            </xsd:extension>
-                        </xsd:simpleContent>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="region-mapping" maxOccurs="unbounded" minOccurs="0">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="field-mapping" maxOccurs="unbounded" minOccurs="0">
-                                <xsd:complexType>
-                                    <xsd:simpleContent>
-                                        <xsd:extension base="xsd:string">
-                                            <xsd:attribute type="xsd:string" name="field-name" use="optional"/>
-                                            <xsd:attribute type="xsd:string" name="column-name" use="optional"/>
-                                        </xsd:extension>
-                                    </xsd:simpleContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                        <xsd:attribute type="xsd:string" name="connection-name" use="optional"/>
-                        <xsd:attribute type="xsd:string" name="region" use="optional"/>
-                        <xsd:attribute type="xsd:string" name="table" use="optional"/>
-                        <xsd:attribute type="xsd:string" name="pdx-class" use="optional"/>
-                        <xsd:attribute type="xsd:string" name="primary-key-in-value" use="optional"/>
-                    </xsd:complexType>
-                </xsd:element>
-            </xsd:sequence>
-            <xsd:attribute name="name" type="xsd:string" fixed="connector-service"/>
-        </xsd:complexType>
-    </xsd:element>
+        <xsd:element name="mapping">
+            <xsd:complexType>
+                <xsd:attribute type="xsd:string" name="connection-name" use="optional"/>
+                <xsd:attribute type="xsd:string" name="table" use="optional"/>
+                <xsd:attribute type="xsd:string" name="pdx-name" use="optional"/>
+            </xsd:complexType>
+        </xsd:element>
 </xsd:schema>

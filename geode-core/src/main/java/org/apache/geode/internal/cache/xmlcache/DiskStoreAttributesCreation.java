@@ -174,43 +174,43 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
   public boolean sameAs(DiskStore other) {
     if (this.autoCompact != other.getAutoCompact()) {
       throw new RuntimeException(
-          String.format("AutoCompact of disk store %s is not the same: this:  %s  other:  %s",
+          String.format("AutoCompact of disk store %s is not the same: this: %s other: %s",
               new Object[] {name, this.autoCompact, other.getAutoCompact()}));
     }
     if (this.compactionThreshold != other.getCompactionThreshold()) {
       throw new RuntimeException(
           String.format(
-              "CompactionThreshold of disk store %s is not the same: this:  %s  other:  %s",
+              "CompactionThreshold of disk store %s is not the same: this: %s other: %s",
 
               new Object[] {name, this.compactionThreshold, other.getCompactionThreshold()}));
     }
     if (this.allowForceCompaction != other.getAllowForceCompaction()) {
       throw new RuntimeException(
           String.format(
-              "AllowForceCompaction of disk store %s is not the same: this:  %s  other:  %s",
+              "AllowForceCompaction of disk store %s is not the same: this: %s other: %s",
 
               new Object[] {name, this.allowForceCompaction, other.getAllowForceCompaction()}));
     }
     if (this.maxOplogSizeInBytes != other.getMaxOplogSize() * 1024 * 1024) {
       throw new RuntimeException(
-          String.format("MaxOpLogSize of disk store %s is not the same: this:  %s  other:  %s",
+          String.format("MaxOpLogSize of disk store %s is not the same: this: %s other: %s",
               new Object[] {name, this.maxOplogSizeInBytes / 1024 / 1024,
                   other.getMaxOplogSize()}));
     }
     if (this.timeInterval != other.getTimeInterval()) {
       throw new RuntimeException(
-          String.format("TimeInterval of disk store %s is not the same: this:  %s  other:  %s",
+          String.format("TimeInterval of disk store %s is not the same: this: %s other: %s",
               new Object[] {name, this.timeInterval, other.getTimeInterval()}));
     }
     if (this.writeBufferSize != other.getWriteBufferSize()) {
       throw new RuntimeException(
-          String.format("WriteBufferSize of disk store %s is not the same: this:  %s  other:  %s",
+          String.format("WriteBufferSize of disk store %s is not the same: this: %s other: %s",
 
               new Object[] {name, this.writeBufferSize, other.getWriteBufferSize()}));
     }
     if (this.queueSize != other.getQueueSize()) {
       throw new RuntimeException(
-          String.format("QueueSize of disk store %s is not the same: this:  %s  other:  %s",
+          String.format("QueueSize of disk store %s is not the same: this: %s other: %s",
               new Object[] {name, this.queueSize, other.getQueueSize()}));
     }
     if (!equal(this.diskDirs, other.getDiskDirs())) {
@@ -291,7 +291,7 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
     if (sizes.length != this.diskDirs.length) {
       throw new IllegalArgumentException(
           String.format(
-              "Number of diskSizes is  %s  which is not equal to number of disk Dirs which is  %s",
+              "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
 
               new Object[] {Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)}));
     }
@@ -334,7 +334,7 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
     for (int i = 0; i < sizes.length; i++) {
       if (sizes[i] < 0) {
         throw new IllegalArgumentException(
-            String.format("Dir size cannot be negative :  %s for disk store %s",
+            String.format("Dir size cannot be negative : %s for disk store %s",
                 new Object[] {Integer.valueOf(sizes[i]), name}));
       }
     }

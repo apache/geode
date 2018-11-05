@@ -394,10 +394,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     Region subregion = region.createSubregion(name, attrs);
     assertTrue(attrs != subregion.getAttributes());
-    /*
-     * @todo compare each individual attribute for equality? assertIndexDetailsEquals(attrs,
-     * subregion.getAttributes());
-     */
 
     Set subregions = region.subregions(false);
     assertEquals(1, subregions.size());

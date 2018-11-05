@@ -161,7 +161,8 @@ public class TCPConduit implements Runnable {
    */
   private int port;
 
-  private int[] tcpPortRange = new int[] {1024, 65535};
+  private int[] tcpPortRange = new int[] {DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0],
+      DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]};
 
   /**
    * The java groups address that this conduit is associated with
@@ -948,7 +949,7 @@ public class TCPConduit implements Runnable {
             if (conn == null) {
               // conduit may be closed - otherwise an ioexception would be thrown
               problem = new IOException(
-                  String.format("Unable to reconnect to server; possible shutdown:  %s",
+                  String.format("Unable to reconnect to server; possible shutdown: %s",
                       memberAddress));
             } else if (conn.isClosing() || !conn.getRemoteAddress().equals(memberAddress)) {
               if (logger.isDebugEnabled()) {

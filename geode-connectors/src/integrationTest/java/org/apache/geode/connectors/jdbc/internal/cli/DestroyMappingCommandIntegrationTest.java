@@ -24,7 +24,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -35,7 +35,7 @@ public class DestroyMappingCommandIntegrationTest {
 
   private String regionName;
   private InternalCache cache;
-  private ConnectorService.RegionMapping mapping;
+  private RegionMapping mapping;
 
   private DestroyMappingCommand command;
 
@@ -44,7 +44,7 @@ public class DestroyMappingCommandIntegrationTest {
     regionName = "testRegion";
 
     String[] params = new String[] {"param1:value1", "param2:value2"};
-    mapping = new ConnectorService.RegionMapping(regionName, null, null, null, null);
+    mapping = new RegionMapping(regionName, null, null, null);
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();

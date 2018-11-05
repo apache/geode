@@ -168,7 +168,6 @@ import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.SimpleClass1;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestCase;
@@ -961,11 +960,12 @@ public class WANTestBase extends DistributedTestCase {
     gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, String.valueOf(gatewaySslRequireAuth));
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
+    // this uses the default.keystore which is all jdk compliant in geode-dunit module
     gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/client.keystore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/client.truststore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -1012,7 +1012,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   /**
-   * Method that creates a bridge server
+   * Method that creates a cache server
    *
    * @return Integer Port on which the server is started.
    */
@@ -1031,7 +1031,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   /**
-   * Returns a Map that contains the count for number of bridge server and number of Receivers.
+   * Returns a Map that contains the count for number of cache server and number of Receivers.
    *
    */
   public static Map getCacheServers() {
@@ -2036,10 +2036,10 @@ public class WANTestBase extends DistributedTestCase {
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/cacheserver.keystore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/cacheserver.truststore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -2891,7 +2891,7 @@ public class WANTestBase extends DistributedTestCase {
             + sameRegionSizeCounter + " :regionSize " + previousSize;
       }
     };
-    GeodeAwaitility.await().untilAsserted(wc);
+    await().untilAsserted(wc);
   }
 
   public static String getRegionFullPath(String regionName) {
@@ -3939,6 +3939,10 @@ public class WANTestBase extends DistributedTestCase {
             DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
             ObjectName expectedName = service.getGatewayReceiverMBeanName(receiverMember);
             try {
+              await("wait for member to be added to DistributedSystemBridge membership list")
+                  .untilAsserted(
+                      () -> assertThat(bean.fetchGatewayReceiverObjectName(receiverMember.getId()))
+                          .isNotNull());
               ObjectName actualName = bean.fetchGatewayReceiverObjectName(receiverMember.getId());
               assertEquals(expectedName, actualName);
             } catch (Exception e) {

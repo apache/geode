@@ -18,8 +18,12 @@
 dependencies {
   compileOnly(project(':geode-core'))
   testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit'))
-  integrationTestCompile(project(':geode-junit'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }

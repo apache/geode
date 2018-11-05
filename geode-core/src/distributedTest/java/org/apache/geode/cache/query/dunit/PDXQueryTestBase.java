@@ -57,7 +57,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
   protected static final Compressor compressor = SnappyCompressor.getDefaultInstance();
   protected final String rootRegionName = "root";
@@ -92,7 +92,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
     final Host host = Host.getHost(0);
     for (int i = 0; i < 4; i++) {
       VM vm = host.getVM(i);
-      vm.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+      vm.invoke(new CacheSerializableRunnable("Create cache server") {
         public void run2() throws CacheException {
           TestObject.numInstance = 0;
           PortfolioPdx.numInstance = 0;
@@ -196,7 +196,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   }
 
   protected void configAndStartBridgeServer(boolean isPr, boolean isAccessor) {
-    configAndStartBridgeServer(false, false, false, null);
+    configAndStartBridgeServer(isPr, isAccessor, false, null);
   }
 
   protected void configAndStartBridgeServer(boolean isPr, boolean isAccessor, boolean asyncIndex,
@@ -251,7 +251,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription) throws IOException {
@@ -264,7 +264,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
     CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
@@ -287,7 +287,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    */
   protected void startCacheServer(int port, boolean notifyBySubscription) throws IOException {

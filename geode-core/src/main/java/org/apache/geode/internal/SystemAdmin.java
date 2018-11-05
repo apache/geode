@@ -273,7 +273,7 @@ public class SystemAdmin {
         addr = InetAddress.getByName(addressOption);
       } catch (UnknownHostException ex) {
         throw new IllegalArgumentException(
-            String.format("-address value was not a known IP address:  %s",
+            String.format("-address value was not a known IP address: %s",
                 ex));
       }
     }
@@ -795,7 +795,7 @@ public class SystemAdmin {
         ps = new PrintStream(new FileOutputStream(outOption));
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
-            String.format("Could not create file %s for output because  %s",
+            String.format("Could not create file %s for output because %s",
                 outOption, getExceptionMessage(ex)));
       }
     } else {
@@ -819,7 +819,7 @@ public class SystemAdmin {
         inputs.put(shortName, new FileInputStream(fileName));
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
-            String.format("Could not open to %s for reading because  %s",
+            String.format("Could not open to %s for reading because %s",
                 fileName, getExceptionMessage(ex)));
       }
       if (!quiet) {
@@ -1454,7 +1454,7 @@ public class SystemAdmin {
           cmd = "validate-disk-store";
         } else {
           throw new InternalGemFireException(
-              String.format("Unhandled alias  %s", cmd));
+              String.format("Unhandled alias %s", cmd));
         }
       }
     }
@@ -1791,7 +1791,7 @@ public class SystemAdmin {
       return d.getTime();
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
-          String.format("Time was not in this format %s.  %s",
+          String.format("Time was not in this format %s. %s",
               new Object[] {DateFormatter.FORMAT_STRING, ex}));
     }
   }
@@ -1857,7 +1857,7 @@ public class SystemAdmin {
             outputDir = argValue;
           } else {
             throw new InternalGemFireException(
-                String.format("unexpected valid option  %s",
+                String.format("unexpected valid option %s",
                     validArgs[i]));
           }
           return true;
@@ -1888,7 +1888,7 @@ public class SystemAdmin {
         } else if (validArgs[i].equals("-all-threads")) {
           printStacksOption = arg;
         } else {
-          throw new InternalGemFireException(String.format("unexpected valid option  %s",
+          throw new InternalGemFireException(String.format("unexpected valid option %s",
               validArgs[i]));
         }
         return true;

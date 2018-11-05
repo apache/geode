@@ -50,7 +50,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   /**
-   * Constructor for retaining bridge server information during auto-reconnect
+   * Constructor for retaining cache server information during auto-reconnect
    *
    */
   public CacheServerCreation(InternalCache cache, CacheServer other) {
@@ -160,7 +160,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   /**
-   * Returns whether or not this bridge server has the same configuration as another bridge server.
+   * Returns whether or not this cache server has the same configuration as another cache server.
    */
   @Override
   public boolean sameAs(CacheServer other) {

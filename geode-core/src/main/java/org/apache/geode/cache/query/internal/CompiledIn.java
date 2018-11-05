@@ -127,7 +127,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
     if (!evalColln.getClass().isArray()) {
       throw new TypeMismatchException(
-          String.format("Operand of IN cannot be interpreted as a Collection. Is instance of  %s",
+          String.format("Operand of IN cannot be interpreted as a Collection. Is instance of %s",
               evalColln.getClass().getName()));
     }
     if (evalColln.getClass().getComponentType().isPrimitive()) {

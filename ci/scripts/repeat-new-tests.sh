@@ -76,8 +76,10 @@ function append_to_test_targets() {
 append_to_test_targets "repeatUnitTest" "$UNIT_TEST_CHANGES"
 append_to_test_targets "repeatIntegrationTest" "$INTEGRATION_TEST_CHANGES"
 append_to_test_targets "repeatDistributedTest" "$DISTRIBUTED_TEST_CHANGES"
-append_to_test_targets "repeatAcceptanceTest" "$ACCEPTANCE_TEST_CHANGES"
 append_to_test_targets "repeatUpgradeTest" "$UPGRADE_TEST_CHANGES"
+
+# Acceptance tests cannot currently run in parallel, so do not stress these tests
+#append_to_test_targets "repeatAcceptanceTest" "$ACCEPTANCE_TEST_CHANGES"
 
 export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistributedTestJava $TEST_TARGETS"
 export GRADLE_TASK_OPTIONS="--no-parallel -Prepeat=50 -PfailOnNoMatchingTests=false"

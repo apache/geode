@@ -1801,8 +1801,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
 
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE)
-      ? new int[] {32769, 61000} : new int[] {1024, 65535};
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[] {41000, 61000};
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
   int[] getMembershipPortRange();

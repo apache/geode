@@ -3782,7 +3782,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests declarative bridge servers
+   * Tests declarative cache servers
    *
    * @since GemFire 4.0
    */

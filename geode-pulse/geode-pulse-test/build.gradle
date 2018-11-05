@@ -18,7 +18,9 @@
 
 dependencies {
   compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-junit'))
+  compileOnly(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   compileOnly(project(':geode-pulse'))
 
   compile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')

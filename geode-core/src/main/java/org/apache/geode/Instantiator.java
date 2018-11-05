@@ -195,13 +195,13 @@ public abstract class Instantiator {
 
     if (!DataSerializable.class.isAssignableFrom(c)) {
       throw new IllegalArgumentException(
-          String.format("Class  %s  does not implement DataSerializable",
+          String.format("Class %s does not implement DataSerializable",
               c.getName()));
     }
 
     if (classId == 0) {
       throw new IllegalArgumentException(
-          String.format("Class id  %s  must not be 0.", classId));
+          String.format("Class id %s must not be 0.", classId));
     }
 
     this.clazz = c;

@@ -34,7 +34,7 @@ public class ConfigurePDXCommandIntegrationTest {
 
   @Rule
   public LocatorStarterRule locator =
-      new LocatorStarterRule().withWorkingDir().withAutoStart().withJMXManager();;
+      new LocatorStarterRule().withAutoStart().withJMXManager();;
 
   @Before
   public void before() throws Exception {

@@ -76,7 +76,7 @@ public class StructBag extends ResultsBag implements StructFields {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
       if (!(o instanceof Object[])) {
-        throw new ClassCastException(String.format("Expected an Object[], but actual is  %s",
+        throw new ClassCastException(String.format("Expected an Object[], but actual is %s",
             o.getClass().getName()));
       }
       Object[] oa = (Object[]) o;
@@ -332,7 +332,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
     for (Iterator itr = sb.fieldValuesIterator(); itr.hasNext();) {
       // Check if query execution on this thread is canceled.
-      QueryMonitor.isQueryExecutionCanceled();
+      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
       Object[] vals = (Object[]) itr.next();
       if (super.add(vals)) {

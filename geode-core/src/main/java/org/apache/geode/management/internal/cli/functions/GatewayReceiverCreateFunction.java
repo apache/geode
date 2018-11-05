@@ -60,7 +60,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
     if (gatewayReceiverExists(cache)) {
       CliFunctionResult result;
       if (gatewayReceiverCreateArgs.getIfNotExists()) {
-        result = new CliFunctionResult(memberNameOrId, true,
+        result = new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
             "Skipping: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
       } else {
         Exception illegalState =
@@ -76,7 +76,8 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       GatewayReceiver createdGatewayReceiver =
           createGatewayReceiver(cache, gatewayReceiverCreateArgs);
 
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId,
+          CliFunctionResult.StatusState.OK,
           CliStrings.format(
               CliStrings.CREATE_GATEWAYRECEIVER__MSG__GATEWAYRECEIVER_CREATED_ON_0_ONPORT_1,
               memberNameOrId, Integer.toString(createdGatewayReceiver.getPort()))));

@@ -16,25 +16,55 @@ package org.apache.geode.internal.cache.partitioned;
 
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalDataView;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 
 public class PutAllPRMessageTest {
+  private PartitionedRegion partitionedRegion;
+  private PartitionedRegionDataStore dataStore;
+  private BucketRegion bucketRegion;
+  private Object[] keys;
+  private DistributedPutAllOperation.PutAllEntryData entryData;
+
+  private final int bucketId = 1;
+
+  @Before
+  public void setup() throws Exception {
+    partitionedRegion = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
+    dataStore = mock(PartitionedRegionDataStore.class);
+    bucketRegion = mock(BucketRegion.class, RETURNS_DEEP_STUBS);
+    keys = new Object[] {1};
+    entryData = mock(DistributedPutAllOperation.PutAllEntryData.class);
+
+    when(partitionedRegion.getDataStore()).thenReturn(dataStore);
+    when(dataStore.getInitializedBucketForId(null, bucketId)).thenReturn(bucketRegion);
+    when(entryData.getEventID()).thenReturn(mock(EventID.class));
+  }
 
   @Test
   public void doPostPutAllCallsCheckReadinessBeforeAndAfter() throws Exception {
-    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
     DistributedPutAllOperation distributedPutAllOperation = mock(DistributedPutAllOperation.class);
-    BucketRegion bucketRegion = mock(BucketRegion.class);
     InternalDataView internalDataView = mock(InternalDataView.class);
     when(bucketRegion.getDataView()).thenReturn(internalDataView);
     PutAllPRMessage putAllPRMessage = new PutAllPRMessage();
@@ -46,4 +76,33 @@ public class PutAllPRMessageTest {
     inOrder.verify(internalDataView).postPutAll(any(), any(), any());
     inOrder.verify(partitionedRegion).checkReadiness();
   }
+
+  @Test(expected = PrimaryBucketException.class)
+  public void lockedKeysAreRemoved() throws Exception {
+    PutAllPRMessage message = spy(new PutAllPRMessage(bucketId, 1, false, false, false, null));
+    message.addEntry(entryData);
+    doReturn(keys).when(message).getKeysToBeLocked();
+    when(bucketRegion.waitUntilLocked(keys)).thenReturn(true);
+    when(bucketRegion.doLockForPrimary(false)).thenThrow(new PrimaryBucketException());
+
+    message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1);
+
+    verify(bucketRegion).removeAndNotifyKeys(eq(keys));
+  }
+
+  @Test
+  public void removeAndNotifyKeysIsNotInvokedIfKeysNotLocked() throws Exception {
+    PutAllPRMessage message = spy(new PutAllPRMessage(bucketId, 1, false, false, false, null));
+    RegionDestroyedException regionDestroyedException = new RegionDestroyedException("", "");
+    message.addEntry(entryData);
+    doReturn(keys).when(message).getKeysToBeLocked();
+    when(bucketRegion.waitUntilLocked(keys)).thenThrow(regionDestroyedException);
+
+    message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1);
+
+    verify(bucketRegion, never()).removeAndNotifyKeys(eq(keys));
+    verify(dataStore).checkRegionDestroyedOnBucket(eq(bucketRegion), eq(true),
+        eq(regionDestroyedException));
+  }
+
 }

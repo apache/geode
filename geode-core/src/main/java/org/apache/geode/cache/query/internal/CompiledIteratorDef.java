@@ -150,7 +150,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     if (typ != null) {
       if (!(typ instanceof CollectionType)) {
         throw new TypeMismatchException(
-            String.format("An iterator definition must be a collection type, not a  %s",
+            String.format("An iterator definition must be a collection type, not a %s",
                 typ));
       }
       if (typ instanceof MapType) { // we iterate over map entries
@@ -177,9 +177,6 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     Object coll;
-
-    // Check if query execution on this thread is Canceled.
-    // QueryMonitor.isQueryExecutionCanceled();
 
     context.currentScope().setLimit(stopAtIter);
     try {

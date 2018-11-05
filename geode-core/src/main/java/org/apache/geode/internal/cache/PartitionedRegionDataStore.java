@@ -1556,13 +1556,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       BucketAdvisor bucketAdvisor = bucketRegion.getBucketAdvisor();
       InternalDistributedMember myId =
           this.partitionedRegion.getDistributionManager().getDistributionManagerId();
-      Lock writeLock = bucketAdvisor.getActiveWriteLock();
+      Lock primaryMoveReadLock = bucketAdvisor.getPrimaryMoveReadLock();
 
       // Fix for 43613 - don't remove the bucket
       // if we are primary. We hold the lock here
       // to prevent this member from becoming primary until this
       // member is no longer hosting the bucket.
-      writeLock.lock();
+      primaryMoveReadLock.lock();
       try {
         // forceRemovePrimary==true will enable remove the bucket even when:
         // 1) it's primary
@@ -1602,7 +1602,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         }
         bucketAdvisor.getProxyBucketRegion().removeBucket();
       } finally {
-        writeLock.unlock();
+        primaryMoveReadLock.unlock();
       }
 
       if (logger.isDebugEnabled()) {
@@ -1774,7 +1774,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             this.partitionedRegion);
       }
       ForceReattemptException fre = new BucketNotFoundException(
-          String.format("Bucket id  %s  not found on VM  %s",
+          String.format("Bucket id %s not found on VM %s",
 
               new Object[] {this.partitionedRegion.bucketStringForLogs(bucketId.intValue()),
                   this.partitionedRegion.getMyId()}));

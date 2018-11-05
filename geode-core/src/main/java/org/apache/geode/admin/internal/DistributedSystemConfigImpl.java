@@ -597,7 +597,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void basicSetBindAddress(String bindAddress) {
     if (!validateBindAddress(bindAddress)) {
       throw new IllegalArgumentException(
-          String.format("Invalid bind address:  %s",
+          String.format("Invalid bind address: %s",
               bindAddress));
     }
     this.bindAddress = bindAddress;
@@ -606,7 +606,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void basicSetServerBindAddress(String bindAddress) {
     if (!validateBindAddress(bindAddress)) {
       throw new IllegalArgumentException(
-          String.format("Invalid bind address:  %s",
+          String.format("Invalid bind address: %s",
               bindAddress));
     }
     this.serverBindAddress = bindAddress;
@@ -1001,7 +1001,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public void validate() {
     if (this.getMcastPort() < MIN_MCAST_PORT || this.getMcastPort() > MAX_MCAST_PORT) {
       throw new IllegalArgumentException(
-          String.format("mcastPort must be an integer inclusively between  %s  and  %s",
+          String.format("mcastPort must be an integer inclusively between %s and %s",
 
               new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
     }
@@ -1011,7 +1011,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT
         || this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
       throw new IllegalArgumentException(
-          String.format("LogFileSizeLimit must be an integer between  %s  and  %s",
+          String.format("LogFileSizeLimit must be an integer between %s and %s",
               new Object[] {Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
                   Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)}));
     }
@@ -1019,7 +1019,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (this.logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT
         || this.logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
       throw new IllegalArgumentException(
-          String.format("LogDiskSpaceLimit must be an integer between  %s  and  %s",
+          String.format("LogDiskSpaceLimit must be an integer between %s and %s",
               new Object[] {Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
                   Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)}));
     }

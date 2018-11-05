@@ -43,10 +43,10 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
   public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";
 
-  /** The cache that is served by this bridge server */
+  /** The cache that is served by this cache server */
   protected final InternalCache cache;
 
-  /** The port that the bridge server was configured to run on */
+  /** The port that the cache server was configured to run on */
   protected int port;
 
   /** The maximum number of connections that the BridgeServer will accept */
@@ -55,7 +55,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
   /** The maximum number of threads that the BridgeServer will create */
   protected int maxThreads;
 
-  /** Whether the bridge server notifies by subscription */
+  /** Whether the cache server notifies by subscription */
   protected boolean notifyBySubscription = true;
 
   /**
@@ -359,7 +359,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
   }
 
   /**
-   * Returns whether or not this bridge server has the same configuration as another bridge server.
+   * Returns whether or not this cache server has the same configuration as another cache server.
    */
   public boolean sameAs(CacheServer other) {
     return getPort() == other.getPort() && eq(getBindAddress(), other.getBindAddress())

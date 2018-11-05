@@ -115,7 +115,7 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * The default membership-port-range.
    * <p>
-   * Actual value is <code>[1024,65535]</code>.
+   * Actual value is <code>[41000,61000]</code>.
    *
    * @since GemFire 6.5
    */

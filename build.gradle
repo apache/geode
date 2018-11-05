@@ -40,6 +40,7 @@ apply plugin: 'nebula.facet'
 
 wrapper {
   gradleVersion = minimumGradleVersion
+  distributionType = "all"
 }
 
 // Load all properties in dependency-version.properties as project properties, so all projects can read them

@@ -154,7 +154,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     this.versionTag = event.getVersionTag();
     Assert.assertTrue(this.eventId != null);
 
-    // added for old value if available sent over the wire for bridge servers.
+    // added for old value if available sent over the wire for cache servers.
     if (event.hasOldValue()) {
       this.hasOldValue = true;
       event.exportOldValue(this);

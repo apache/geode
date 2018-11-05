@@ -58,21 +58,9 @@ public class TomcatInstall extends ContainerInstall {
     /**
      * Converts the version to an integer
      *
-     * This differs from {@link #getVersion()} in that this does not always return the version
-     * number. For Tomcat 9, there is no DeltaSession manager, so it must use the session manager
-     * from Tomcat 8. Thus, this function returns 8 when asked for the Tomcat 9 version number.
      */
     public int toInteger() {
-      switch (this) {
-        case TOMCAT6:
-        case TOMCAT7:
-        case TOMCAT8:
-          return getVersion();
-        case TOMCAT9:
-          return 8;
-        default:
-          return getVersion();
-      }
+      return getVersion();
     }
 
     public int getVersion() {

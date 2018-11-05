@@ -256,7 +256,6 @@ public class LogWriterAppenders {
   }
 
   public static synchronized void destroy(final Identifier id) {
-    // TODO:LOG:KIRK: new Exception("KIRK destroy called for " + id).printStackTrace();
     LogWriterAppender appender = appenders.get(id);
     if (appender == null) {
       return;

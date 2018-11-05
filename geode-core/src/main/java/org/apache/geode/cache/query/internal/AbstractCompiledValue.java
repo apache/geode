@@ -268,7 +268,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
       CompiledValue v = (CompiledValue) itr.next();
       if (v == null) {
         throw new NullPointerException(
-            String.format("Got null as a child from  %s",
+            String.format("Got null as a child from %s",
                 this));
       }
       v.getRegionsInQuery(regionsInQuery, parameters);

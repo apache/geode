@@ -32,8 +32,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -47,10 +47,10 @@ import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.assertj.core.api.Assertions;
 import org.awaitility.core.ConditionTimeoutException;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -74,13 +74,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 /**
  * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code
  * duplication.
+ *
+ * The rule will try to clean up the working dir as best as it can. Any first level children
+ * created in the test will be cleaned up after the test.
  */
 public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
-
-  protected String oldUserDir;
-
-  protected transient TemporaryFolder temporaryFolder;
-  protected File workingDir;
   protected int memberPort = 0;
   protected int jmxPort = -1;
   protected int httpPort = -1;
@@ -91,6 +89,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   protected boolean autoStart = false;
   private final transient UniquePortSupplier portSupplier;
+
+  private List<File> firstLevelChildrenFile = new ArrayList<>();
+  private boolean cleanWorkingDir = true;
 
   public static void setWaitUntilTimeout(int waitUntilTimeout) {
     WAIT_UNTIL_TIMEOUT = waitUntilTimeout;
@@ -104,7 +105,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public MemberStarterRule(UniquePortSupplier portSupplier) {
     this.portSupplier = portSupplier;
-    oldUserDir = System.getProperty("user.dir");
 
     // initial values
     properties.setProperty(MCAST_PORT, "0");
@@ -123,6 +123,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       // use putIfAbsent if it was configured using withProperty
       properties.putIfAbsent(HTTP_SERVICE_PORT, "0");
     }
+    firstLevelChildrenFile = Arrays.asList(getWorkingDir().listFiles());
   }
 
   @Override
@@ -135,42 +136,18 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // future tests
     SocketCreatorFactory.close();
 
-    if (temporaryFolder != null) {
-      temporaryFolder.delete();
-    }
-
-    if (oldUserDir == null) {
-      System.clearProperty("user.dir");
-    } else {
-      System.setProperty("user.dir", oldUserDir);
-    }
+    // delete the first-level children files that are created in the tests
+    if (cleanWorkingDir)
+      Arrays.stream(getWorkingDir().listFiles())
+          // do not delete the pre-existing files
+          .filter(f -> !firstLevelChildrenFile.contains(f))
+          // do not delete the dunit folder that might have been created by dunit launcher
+          .filter(f -> !(f.isDirectory() && f.getName().equals("dunit")))
+          .forEach(FileUtils::deleteQuietly);
   }
 
   public T withPort(int memberPort) {
     this.memberPort = memberPort;
-    return (T) this;
-  }
-
-  public T withWorkingDir(File workingDir) {
-    this.workingDir = workingDir;
-    if (workingDir != null) {
-      System.setProperty("user.dir", workingDir.toString());
-    }
-    return (T) this;
-  }
-
-  /**
-   * create a working dir using temporaryFolder. Use with caution, this sets "user.dir" system
-   * property that not approved by JDK
-   */
-  public T withWorkingDir() {
-    temporaryFolder = new TemporaryFolder();
-    try {
-      temporaryFolder.create();
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-    withWorkingDir(temporaryFolder.getRoot().getAbsoluteFile());
     return (T) this;
   }
 
@@ -261,6 +238,10 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       httpPort = 0;
     }
     return (T) this;
+  }
+
+  public void setCleanWorkingDir(boolean cleanWorkingDir) {
+    this.cleanWorkingDir = cleanWorkingDir;
   }
 
   /**
@@ -498,7 +479,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public File getWorkingDir() {
-    return workingDir;
+    return new File(System.getProperty("user.dir"));
   }
 
   @Override

@@ -496,7 +496,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
       }
     } else {
       throw new IllegalArgumentException(
-          String.format("Specified properties file does not exist:  %s",
+          String.format("Specified properties file does not exist: %s",
               propFile));
     }
 
@@ -1209,7 +1209,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
       String description = _getPropertyDescription(prop);
       if (description == null) {
         throw new IllegalArgumentException(
-            String.format("Unknown config property:  %s", prop));
+            String.format("Unknown config property: %s", prop));
 
       } else {
         return description;

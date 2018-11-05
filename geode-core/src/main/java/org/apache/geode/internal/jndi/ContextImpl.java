@@ -187,7 +187,7 @@ public class ContextImpl implements Context {
         return subContext;
       } else {
         throw new NameAlreadyBoundException(
-            String.format("Name  %s  is already bound!", subContextName));
+            String.format("Name %s is already bound!", subContextName));
       }
     } else {
       if (boundObject instanceof Context) {
@@ -198,7 +198,7 @@ public class ContextImpl implements Context {
         // an exception will be thrown in that case.
         return ((Context) boundObject).createSubcontext(parsedName.getSuffix(1));
       } else {
-        throw new NotContextException(String.format("Expected Context but found  %s",
+        throw new NotContextException(String.format("Expected Context but found %s",
             boundObject));
       }
     }
@@ -240,7 +240,7 @@ public class ContextImpl implements Context {
     String subContextName = parsedName.get(0);
     Object boundObject = ctxMaps.get(subContextName);
     if (boundObject == null) {
-      throw new NameNotFoundException(String.format("Name  %s not found in the context!",
+      throw new NameNotFoundException(String.format("Name %s not found in the context!",
           subContextName));
     }
     if (!(boundObject instanceof ContextImpl)) {
@@ -382,9 +382,9 @@ public class ContextImpl implements Context {
       }
       if (subContext == null && !ctxMaps.containsKey(parsedName.get(0))) {
         throw new NameNotFoundException(
-            String.format("Name  %s  not found", name));
+            String.format("Name %s not found", name));
       } else {
-        throw new NotContextException(String.format("Expected Context but found  %s",
+        throw new NotContextException(String.format("Expected Context but found %s",
             subContext));
       }
     }
@@ -433,7 +433,7 @@ public class ContextImpl implements Context {
       // if not found
       if (!ctxMaps.containsKey(nameComponent)) {
         throw new NameNotFoundException(
-            String.format("Name  %s  not found", name));
+            String.format("Name %s not found", name));
       }
       // if this is a compound name
       else if (parsedName.size() > 1) {
@@ -441,7 +441,7 @@ public class ContextImpl implements Context {
           res = ((ContextImpl) res).lookup(parsedName.getSuffix(1));
         } else {
           throw new NotContextException(
-              String.format("Expected ContextImpl but found  %s", res));
+              String.format("Expected ContextImpl but found %s", res));
         }
       }
       return res;
@@ -451,7 +451,7 @@ public class ContextImpl implements Context {
         writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name),
             e);
       throw new NameNotFoundException(
-          String.format("Name  %s  not found", name));
+          String.format("Name %s not found", name));
     } catch (SystemException se) {
       LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.severeEnabled())
@@ -479,10 +479,10 @@ public class ContextImpl implements Context {
     } catch (NameNotFoundException e) {
       LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.infoEnabled())
-        writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name,
-            e));
+        writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name),
+            e);
       throw new NameNotFoundException(
-          String.format("Name  %s  not found", new Object[] {name}));
+          String.format("Name %s not found", new Object[] {name}));
     }
   }
 
@@ -540,7 +540,7 @@ public class ContextImpl implements Context {
           Context sub = createSubcontext(nameToBind);
           sub.bind(parsedName.getSuffix(1), obj);
         } else {
-          throw new NotContextException(String.format("Expected Context but found  %s",
+          throw new NotContextException(String.format("Expected Context but found %s",
               boundObject));
         }
       }
@@ -627,9 +627,9 @@ public class ContextImpl implements Context {
         // if the name is not found then throw exception
         if (!ctxMaps.containsKey(nameToRemove)) {
           throw new NameNotFoundException(
-              String.format("Can not find  %s", name));
+              String.format("Can not find %s", name));
         }
-        throw new NotContextException(String.format("Expected Context but found  %s",
+        throw new NotContextException(String.format("Expected Context but found %s",
             boundObject));
       }
     }

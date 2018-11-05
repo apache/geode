@@ -246,14 +246,14 @@ public abstract class AbstractConfig implements Config {
           attObjectValue = InetAddress.getByName(value);
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
-              String.format("%s  value %s must be a valid host name.  %s",
+              String.format("%s value %s must be a valid host name. %s",
                   name, value, ex.toString()));
         }
       } else if (valueType.equals(FlowControlParams.class)) {
         String[] values = value.split(",");
         if (values.length != 3) {
           throw new IllegalArgumentException(
-              String.format("%s  value %s must have three elements separated by commas",
+              String.format("%s value %s must have three elements separated by commas",
                   name, value));
         }
         int allowance;
@@ -265,7 +265,7 @@ public abstract class AbstractConfig implements Config {
           waitTime = Integer.parseInt(values[2].trim());
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(
-              String.format("%s  value %s must be composed of an integer, a float, and an integer",
+              String.format("%s value %s must be composed of an integer, a float, and an integer",
                   name, value));
         }
         attObjectValue = new FlowControlParams(allowance, threshold, waitTime);
@@ -274,7 +274,7 @@ public abstract class AbstractConfig implements Config {
         attObjectValue = commaDelimitedStringToSecurableCommunicationChannels(value);
       } else {
         throw new InternalGemFireException(
-            String.format("unhandled attribute type  %s  for %s.",
+            String.format("unhandled attribute type %s for %s.",
                 valueType, name));
       }
     } catch (NumberFormatException ex) {
@@ -323,7 +323,7 @@ public abstract class AbstractConfig implements Config {
     String[] validAttNames = getAttributeNames();
     if (!Arrays.asList(validAttNames).contains(name.toLowerCase())) {
       throw new IllegalArgumentException(
-          String.format("Unknown configuration attribute name %s. Valid attribute names are:  %s .",
+          String.format("Unknown configuration attribute name %s. Valid attribute names are: %s .",
               name, SystemAdmin.join(validAttNames)));
     }
   }

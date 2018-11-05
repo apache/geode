@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -26,10 +28,8 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class GatewaySenderCreateFunction implements InternalFunction {
 
@@ -54,10 +54,9 @@ public class GatewaySenderCreateFunction implements InternalFunction {
 
     try {
       GatewaySender createdGatewaySender = createGatewaySender(cache, gatewaySenderCreateArgs);
-      XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.GATEWAY_SENDER, "id", gatewaySenderCreateArgs.getId());
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
-          CliStrings.format(CliStrings.CREATE_GATEWAYSENDER__MSG__GATEWAYSENDER_0_CREATED_ON_1,
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId,
+          CliFunctionResult.StatusState.OK, CliStrings.format(
+              CliStrings.CREATE_GATEWAYSENDER__MSG__GATEWAYSENDER_0_CREATED_ON_1,
               new Object[] {createdGatewaySender.getId(), memberNameOrId})));
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
@@ -141,7 +140,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       gateway.setDiskSynchronous(isDiskSynchronous);
     }
 
-    String[] gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
+    List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
     if (gatewayEventFilters != null) {
       for (String gatewayEventFilter : gatewayEventFilters) {
         Class gatewayEventFilterKlass =
@@ -151,7 +150,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       }
     }
 
-    String[] gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
+    List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
     if (gatewayTransportFilters != null) {
       for (String gatewayTransportFilter : gatewayTransportFilters) {
         Class gatewayTransportFilterKlass = forName(gatewayTransportFilter,

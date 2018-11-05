@@ -73,7 +73,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   private EventID eventIdentifier;
 
   /**
-   * The underlying map for all the ha region queues associated with a bridge server.
+   * The underlying map for all the ha region queues associated with a cache server.
    */
   private Map haContainer;
 

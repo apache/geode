@@ -233,7 +233,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test for registering cqs on a bridge server with local max memory zero.
+   * test for registering cqs on a cache server with local max memory zero.
    */
   @Test
   public void testPartitionedCqOnAccessorBridgeServer() throws Exception {
@@ -243,7 +243,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM server2 = host.getVM(1);
     VM client = host.getVM(2);
 
-    // creating an accessor vm with Bridge Server installed.
+    // creating an accessor vm with cache server installed.
     createServer(server1, true);
 
     createServer(server2);
@@ -309,7 +309,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test for registering cqs on single Bridge server hosting all the data. This will generate all
+   * test for registering cqs on single cache server hosting all the data. This will generate all
    * the events locally and should always have the old value and should not sent the profile update
    * on wire.
    */
@@ -319,7 +319,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM server1 = host.getVM(0);
     VM client = host.getVM(2);
 
-    // creating an accessor vm with Bridge Server installed.
+    // creating an accessor vm with cache server installed.
     createServer(server1);
     final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
@@ -378,7 +378,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test for registering cqs on single Bridge server hosting all the data. This will generate all
+   * test for registering cqs on single cache server hosting all the data. This will generate all
    * the events locally but the puts, updates and destroys originate at an accessor vm.
    */
   @Test
@@ -388,7 +388,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM server2 = host.getVM(1);
     VM client = host.getVM(2);
 
-    // creating an accessor vm with Bridge Server installed.
+    // creating an accessor vm with cache server installed.
     createServer(server1, true);
 
     assertLocalMaxMemory(server1);
@@ -455,7 +455,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test to check invalidates on bridge server hosting datastores as well.
+   * test to check invalidates on cache server hosting datastores as well.
    */
   @Test
   public void testPRCqWithInvalidatesOnBridgeServer() {
@@ -464,8 +464,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM server2 = host.getVM(1);
     VM client = host.getVM(2);
 
-    // creating Bridge Server with data store. clients will connect to this
-    // bridge server.
+    // creating cache server with data store. clients will connect to this
+    // cache server.
     createServer(server1);
 
     // create another server with data store.
@@ -529,7 +529,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test cqs with invalidates on bridge server not hosting datastores.
+   * test cqs with invalidates on cache server not hosting datastores.
    */
   @Test
   public void testPRCqWithInvalidatesOnAccessorBridgeServer() throws Exception {
@@ -538,8 +538,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM server2 = host.getVM(1);
     VM client = host.getVM(2);
 
-    // creating Bridge Server with data store. clients will connect to this
-    // bridge server.
+    // creating cache server with data store. clients will connect to this
+    // cache server.
     createServer(server1, true);
 
     // create another server with data store.
@@ -602,7 +602,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test cqs with create updates and destroys from client on bridge server hosting datastores.
+   * test cqs with create updates and destroys from client on cache server hosting datastores.
    */
   @Test
   public void testPRCqWithUpdatesFromClients() throws Exception {
@@ -612,8 +612,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM client = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    // creating Bridge Server with data store. clients will connect to this
-    // bridge server.
+    // creating cache server with data store. clients will connect to this
+    // cache server.
     createServer(server1, false, 1);
 
     // create another server with data store.
@@ -680,7 +680,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * test cqs on multiple partitioned region hosted by bridge servers.
+   * test cqs on multiple partitioned region hosted by cache servers.
    */
   @Test
   public void testPRCqWithMultipleRegionsOnServer() throws Exception {
@@ -690,8 +690,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM client = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    // creating Bridge Server with data store. clients will connect to this
-    // bridge server.
+    // creating cache server with data store. clients will connect to this
+    // cache server.
     createServer(server1, false, 1);
 
     // create another server with data store.
@@ -780,7 +780,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * tests multiple cqs on partitioned region on bridge servers with profile update for not
+   * tests multiple cqs on partitioned region on cache servers with profile update for not
    * requiring old values.
    */
   @Test
@@ -791,8 +791,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     VM client = host.getVM(2);
     VM client2 = host.getVM(3);
 
-    // creating Bridge Server with data store. clients will connect to this
-    // bridge server.
+    // creating cache server with data store. clients will connect to this
+    // cache server.
     createServer(server1, false, 1);
 
     // create another server with data store.
@@ -1106,7 +1106,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * create bridge server with default attributes for partitioned region.
+   * create cache server with default attributes for partitioned region.
    */
   public void createServer(VM server) {
     createServer(server, 0, false, 0);
@@ -1115,8 +1115,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * create accessor vm if the given accessor parameter variable is true.
    *
-   * @param server VM to create bridge server.
-   * @param accessor boolean if true creates an accessor bridge server.
+   * @param server VM to create cache server.
+   * @param accessor boolean if true creates an accessor cache server.
    */
   public void createServer(VM server, boolean accessor) {
     createServer(server, 0, accessor, 0);
@@ -1125,7 +1125,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * create server with partitioned region with redundant copies.
    *
-   * @param server VM where to create the bridge server.
+   * @param server VM where to create the cache server.
    * @param accessor boolean if true create partitioned region with local max memory zero.
    * @param redundantCopies number of redundant copies for a partitioned region.
    */
@@ -1134,10 +1134,10 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Create a bridge server with partitioned region.
+   * Create a cache server with partitioned region.
    *
-   * @param server VM where to create the bridge server.
-   * @param port bridge server port.
+   * @param server VM where to create the cache server.
+   * @param port cache server port.
    * @param isAccessor if true the under lying partitioned region will not host data on this vm.
    * @param redundantCopies number of redundant copies for the primary bucket.
    */
@@ -1174,10 +1174,10 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Create a bridge server with partitioned region.
+   * Create a cache server with partitioned region.
    *
-   * @param server VM where to create the bridge server.
-   * @param port bridge server port.
+   * @param server VM where to create the cache server.
+   * @param port cache server port.
    * @param isAccessor if true the under lying partitioned region will not host data on this vm.
    * @param redundantCopies number of redundant copies for the primary bucket.
    */
@@ -1219,7 +1219,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 5.5

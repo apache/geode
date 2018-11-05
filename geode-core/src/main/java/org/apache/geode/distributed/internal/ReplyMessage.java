@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -97,12 +98,13 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
       m.returnValueIsException = true;
     }
     if (exception != null && logger.isDebugEnabled()) {
-      if (exception.getCause() != null
-          && (exception.getCause() instanceof EntryNotFoundException)) {
+      Throwable cause = exception.getCause();
+      if (cause instanceof EntryNotFoundException) {
         logger.debug("Replying with entry-not-found: {}", exception.getCause().getMessage());
-      } else if (exception.getCause() != null
-          && (exception.getCause() instanceof ConcurrentCacheModificationException)) {
+      } else if (cause instanceof ConcurrentCacheModificationException) {
         logger.debug("Replying with concurrent-modification-exception");
+      } else if (cause instanceof CancelException) {
+        // no need to log this - it will show up in normal debug-level logs when the reply is sent
       } else {
         logger.debug("Replying with exception: " + m, exception);
       }

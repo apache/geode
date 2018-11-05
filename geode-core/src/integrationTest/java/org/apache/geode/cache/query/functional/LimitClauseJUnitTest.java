@@ -1193,39 +1193,6 @@ public class LimitClauseJUnitTest {
     assertEquals(resultsNoIndex.size(), resultsWithIndex.size());
   }
 
-  /*
-   * This test shows an error with order by. Limit does not affect this and will enable this test
-   * after the bug for order by is logged and fixed
-   *
-   * @Test public void testNotApplyingLimitAtIndexLevelForMultiIndexAndClauseUsageWithOrderBy()
-   * throws Exception { //try { Query query; SelectResults result; int limit = 25; Region region =
-   * CacheUtils.createRegion("portfolios1", Portfolio.class); for (int i = 30; i > 0; i--) {
-   * Portfolio p = new Portfolio(i); p.positions.clear(); p.positions.put("IBM", new Position("IBM",
-   * i)); region.put("KEY" + i, p); }
-   *
-   * String queryString =
-   * "<trace>SELECT distinct P FROM /portfolios1 P, P.positions.values POS WHERE P.ID > 5 AND POS.secId = 'IBM' ORDER BY P.ID"
-   * ; query = qs.newQuery(queryString); SelectResults resultsNoIndex = (SelectResults)
-   * query.execute();
-   *
-   * //Create Index on ID and secId //Index secIndex = qs.createIndex("secIdIndex", "pos.secId",
-   * "/portfolios1 p, p.positions.values pos"); Index idIndex = qs.createIndex("idIndex",
-   * IndexType.FUNCTIONAL, "P.ID", "/portfolios1 P");
-   *
-   * //assertNotNull(secIndex); assertNotNull(idIndex); assertTrue(idIndex instanceof
-   * CompactRangeIndex); SelectResults resultsWithIndex = (SelectResults) query.execute();
-   *
-   * assertIndexDetailsEquals(resultsNoIndex.size(), resultsWithIndex.size());
-   * assertIndexDetailsEquals(limit, resultsWithIndex.size());
-   *
-   * int expectedId = 6; Iterator iterator = resultsNoIndex.iterator(); while (iterator.hasNext()) {
-   * Portfolio p = (Portfolio) iterator.next(); assertIndexDetailsEquals(expectedId++, p.ID); }
-   *
-   * //check order by results expectedId = 6; iterator = resultsWithIndex.iterator(); while
-   * (iterator.hasNext()) { Portfolio p = (Portfolio) iterator.next();
-   * assertIndexDetailsEquals(expectedId++, p.ID); } }
-   */
-
 
   @Test
   public void testNotLimitAtIndexLevelForMultiSingleIndexAndClauseUsage() throws Exception {

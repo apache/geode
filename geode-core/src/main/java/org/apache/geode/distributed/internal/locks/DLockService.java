@@ -209,7 +209,7 @@ public class DLockService extends DistributedLockService {
    * @return the detail message that explains LockServiceDestroyedException
    */
   protected String generateLockServiceDestroyedMessage() {
-    return String.format("%s  has been destroyed", this);
+    return String.format("%s has been destroyed", this);
   }
 
   /**
@@ -1428,7 +1428,7 @@ public class DLockService extends DistributedLockService {
               reentrant = true;
               if (reentrant && disallowReentrant) {
                 throw new IllegalStateException(
-                    String.format("%s  attempted to reenter non-reentrant lock %s",
+                    String.format("%s attempted to reenter non-reentrant lock %s",
                         new Object[] {Thread.currentThread(), token}));
               }
               recursionBefore = token.getRecursion();
@@ -1727,14 +1727,6 @@ public class DLockService extends DistributedLockService {
   public void unlock(Object name) throws LockNotHeldException, LeaseExpiredException {
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
 
-    if (this.ds.isDisconnectListenerThread()) {
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE,
-            "{}, name: {} - disconnect listener thread is exiting unlock()", this, name);
-      }
-      return;
-    }
-
     if (isDebugEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - entering unlock()", this, name);
     }
@@ -1758,7 +1750,7 @@ public class DLockService extends DistributedLockService {
           }
           throw new LockNotHeldException(
               String.format(
-                  "Attempting to unlock  %s  :  %s , but this thread does not own the lock.",
+                  "Attempting to unlock %s : %s , but this thread does not own the lock.",
                   new Object[] {this, name}));
         }
 
@@ -1773,7 +1765,7 @@ public class DLockService extends DistributedLockService {
             }
             throw new LockNotHeldException(
                 String.format(
-                    "Attempting to unlock  %s  :  %s , but this thread does not own the lock.  %s",
+                    "Attempting to unlock %s : %s , but this thread does not own the lock. %s",
                     new Object[] {this, name, token}));
           }
           // if recursion > 0 then token will still be locked after calling release
@@ -2292,7 +2284,7 @@ public class DLockService extends DistributedLockService {
     }
 
     // if hasActiveLocks, tell grantor we're destroying...
-    if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !this.ds.isDisconnectListenerThread()) {
+    if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !this.ds.isDisconnectThread()) {
       boolean retry;
       int nonGrantorDestroyLoopCount = 0;
       do {
@@ -2324,12 +2316,10 @@ public class DLockService extends DistributedLockService {
       } while (retry);
     }
 
-    // KIRK: probably don't need to do the following if isMakingLockGrantor
     if (isCurrentlyLockGrantor || isMakingLockGrantor) {
       // If forcedDisconnect is in progress, the membership view will not
       // change and no-one else can contact this member, so don't wait for a grantor
       if (this.ds.getCancelCriterion().isCancelInProgress()) {
-        // KIRK: probably don't need to waitForGrantor
         try {
           DLockGrantor.waitForGrantor(this);
         } catch (InterruptedException e) {

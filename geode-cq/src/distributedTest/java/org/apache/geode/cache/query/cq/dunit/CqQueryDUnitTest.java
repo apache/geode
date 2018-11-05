@@ -89,7 +89,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
   /**
-   * The port on which the bridge server was started in this VM
+   * The port on which the cache server was started in this VM
    */
   private static int bridgeServerPort;
 
@@ -3221,10 +3221,10 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /*
-   * Used only by tests that start and stop a server only to need to start the bridge server again
+   * Used only by tests that start and stop a server only to need to start the cache server again
    */
   private void restartBridgeServer(VM server, final int port) {
-    server.invoke(new CacheSerializableRunnable("Start bridge server") {
+    server.invoke(new CacheSerializableRunnable("Start cache server") {
       public void run2() {
         try {
           restartBridgeServers(getCache());
@@ -3237,7 +3237,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
 
   /**
-   * Starts a bridge server on the given port to serve up the given region.
+   * Starts a cache server on the given port to serve up the given region.
    *
    * @since GemFire 4.0
    */
@@ -3246,7 +3246,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 4.0
@@ -3262,7 +3262,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    *
    * @since GemFire 4.0
    */

@@ -192,7 +192,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     client.invoke("Start BridgeClient", () -> startBridgeClient(null,
         NetworkUtils.getServerHostName(locator.getHost()), locatorPort));
 
-    // stop the client and make sure the bridge server notifies
+    // stop the client and make sure the cache server notifies
     stopBridgeMemberVM(client);
     helper.closeCache(locator);
     helper.closeCache(server);
@@ -487,10 +487,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
               assertTrue(bean.showAllClientStats()[0].getClientCQCount() == 1);
               int numQueues = bean.getNumSubscriptions();
               assertEquals(numQueues, 1);
-              // test for client connection Count
-
-              /* @TODO */
-              // assertTrue(bean.getClientConnectionCount() > 0);
 
               bean.getContinuousQueryList();
               // Only temporarily stops the query

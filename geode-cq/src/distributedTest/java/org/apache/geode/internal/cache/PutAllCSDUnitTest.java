@@ -259,7 +259,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
           }
         });
 
-    server.invoke(new CacheSerializableRunnable(title + "verify Bridge Server") {
+    server.invoke(new CacheSerializableRunnable(title + "verify cache server") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -539,8 +539,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -627,8 +627,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -641,8 +641,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -677,8 +677,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -690,8 +690,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -754,8 +754,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1 for asyn keys
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1 for async keys") {
+    // verify cache server 1 for asyn keys
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1 for async keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -774,8 +774,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
         }
       }
     });
-    // verify bridge server 2 for asyn keys
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2 for async keys") {
+    // verify cache server 2 for asyn keys
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2 for async keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -842,8 +842,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify async removeAll Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify async removeAll cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -851,8 +851,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify async removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify async removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -884,8 +884,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2 for p2p keys
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2 for p2p keys") {
+    // verify cache server 2 for p2p keys
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2 for p2p keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -932,8 +932,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
         assertEquals(0, region.size());
       }
     });
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify p2p removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify p2p removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1064,8 +1064,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1079,7 +1079,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1101,8 +1101,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1114,8 +1114,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1151,8 +1151,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1164,7 +1164,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1182,7 +1182,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 1") {
+    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1190,7 +1190,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 2") {
+    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1226,8 +1226,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1311,7 +1311,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    client2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    client2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Wait.pause(5000);
@@ -1344,7 +1344,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1357,7 +1357,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1370,7 +1370,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    client2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    client2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Wait.pause(5000);
@@ -1565,8 +1565,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1579,8 +1579,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1614,8 +1614,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1629,8 +1629,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1693,8 +1693,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2 for asyn keys
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2 for async keys") {
+    // verify cache server 2 for asyn keys
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2 for async keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1761,8 +1761,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 1, its data are from client
-    server1.invoke(new CacheSerializableRunnable(title + "verify async removeAll Bridge Server 1") {
+    // verify cache server 1, its data are from client
+    server1.invoke(new CacheSerializableRunnable(title + "verify async removeAll cache server 1") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1770,8 +1770,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify async removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify async removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1803,8 +1803,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
       }
     });
 
-    // verify bridge server 2 for p2p keys
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2 for async keys") {
+    // verify cache server 2 for p2p keys
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2 for async keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -1851,8 +1851,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
         assertEquals(0, region.size());
       }
     });
-    // verify bridge server 2, because its data are from distribution
-    server2.invoke(new CacheSerializableRunnable(title + "verify p2p removeAll Bridge Server 2") {
+    // verify cache server 2, because its data are from distribution
+    server2.invoke(new CacheSerializableRunnable(title + "verify p2p removeAll cache server 2") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -3083,7 +3083,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
 
 
     Wait.pause(2000);
-    server1.invoke(new CacheSerializableRunnable(title + "stop Bridge Server 1") {
+    server1.invoke(new CacheSerializableRunnable(title + "stop cache server 1") {
       @Override
       public void run2() throws CacheException {
         stopOneBridgeServer(serverPort1);
@@ -3092,8 +3092,8 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
 
     ThreadUtils.join(async1, 30 * 1000);
 
-    // verify bridge server 2 for asyn keys
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge Server 2 for async keys") {
+    // verify cache server 2 for asyn keys
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server 2 for async keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -3324,7 +3324,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
         });
 
     Wait.pause(2000);
-    server1.invoke(new CacheSerializableRunnable(title + "stop Bridge Server 1") {
+    server1.invoke(new CacheSerializableRunnable(title + "stop cache server 1") {
       @Override
       public void run2() throws CacheException {
         stopOneBridgeServer(serverPort1);
@@ -3479,7 +3479,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
     ThreadUtils.join(async3, 30 * 1000);
 
     // verify server 2 for asyn keys
-    server2.invoke(new CacheSerializableRunnable(title + "verify Bridge server2 for keys") {
+    server2.invoke(new CacheSerializableRunnable(title + "verify cache server2 for keys") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
@@ -4219,7 +4219,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Stops the bridge server specified by port
+   * Stops the cache server specified by port
    */
   public void stopOneBridgeServer(int port) {
     CacheServer bridge = null;

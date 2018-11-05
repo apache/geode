@@ -235,9 +235,9 @@ function process_input_file() {
 
             log "Creating new war $WAR" D
             if [ -n "$MANIFEST" ]; then
-                jar cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
+                $JARCMD cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
             else
-                jar cf $WAR -C $TMP_WAR_DIR .
+                $JARCMD cf $WAR -C $TMP_WAR_DIR .
             fi
         fi
 

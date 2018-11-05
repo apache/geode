@@ -33,12 +33,10 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
-import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
@@ -57,6 +55,9 @@ public abstract class JdbcLoaderIntegrationTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  private final TestDataSourceFactory testDataSourceFactory =
+      new TestDataSourceFactory(getConnectionUrl());
 
   @Before
   public void setUp() throws Exception {
@@ -98,6 +99,7 @@ public abstract class JdbcLoaderIntegrationTest {
     if (connection != null) {
       connection.close();
     }
+    testDataSourceFactory.close();
   }
 
   @Test
@@ -108,7 +110,8 @@ public abstract class JdbcLoaderIntegrationTest {
     Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
 
-    assertThat(pdx.getFieldNames()).hasSize(2);
+    assertThat(pdx.getFieldNames()).hasSize(3);
+    assertThat(pdx.getField("id")).isEqualTo("1");
     assertThat(pdx.getField("name")).isEqualTo("Emp1");
     assertThat(pdx.getField("age")).isEqualTo(21);
   }
@@ -146,7 +149,7 @@ public abstract class JdbcLoaderIntegrationTest {
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
     createClassWithSupportedPdxFieldsTable(statement, REGION_TABLE_NAME);
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
-        createClassWithSupportedPdxFieldsForInsert();
+        createClassWithSupportedPdxFieldsForInsert("1");
     insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
     Region<String, ClassWithSupportedPdxFields> region = createRegionWithJDBCLoader(
         REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName(), false);
@@ -158,7 +161,7 @@ public abstract class JdbcLoaderIntegrationTest {
   }
 
   private void createPdxType() throws IOException {
-    createPdxType(new Employee("name", 45));
+    createPdxType(new Employee("id", "name", 45));
   }
 
   private void createPdxType(Object value) throws IOException {
@@ -175,15 +178,16 @@ public abstract class JdbcLoaderIntegrationTest {
   }
 
   private SqlHandler createSqlHandler(String pdxClassName, boolean primaryKeyInValue)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
+      throws RegionMappingExistsException {
+    return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            primaryKeyInValue, getConnectionUrl()));
+            primaryKeyInValue, getConnectionUrl()),
+        testDataSourceFactory);
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
       boolean primaryKeyInValue)
-      throws ConnectionConfigExistsException, RegionMappingExistsException {
+      throws RegionMappingExistsException {
     JdbcLoader<K, V> jdbcLoader =
         new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue), cache);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
@@ -191,9 +195,9 @@ public abstract class JdbcLoaderIntegrationTest {
     return regionFactory.create(regionName);
   }
 
-  private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
+  private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert(String key) {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
-        new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
+        new ClassWithSupportedPdxFields(key, true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
             new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     return classWithSupportedPdxFields;

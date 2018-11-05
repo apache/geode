@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.OpType;
  *
  * @since GemFire 5.0
  */
-public final class Operation implements java.io.Serializable {
+public class Operation implements java.io.Serializable {
   private static final long serialVersionUID = -7521751729852504238L;
 
   private static byte nextOrdinal = 0;

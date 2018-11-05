@@ -144,7 +144,7 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
       ByteArrayWrapper start, ByteArrayWrapper stop, boolean startInclusive, boolean stopInclusive,
       int offset, int limit) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    if (start.equals("-") && stop.equals("+")) {
+    if (start.equals(minus) && stop.equals(plus)) {
       List<ByteArrayWrapper> l = new ArrayList<ByteArrayWrapper>(keyRegion.keySet());
       int size = l.size();
       Collections.sort(l);
@@ -152,19 +152,19 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
         limit += size;
       l = l.subList(Math.min(size, offset), Math.min(offset + limit, size));
       return l;
-    } else if (start.equals("+") || stop.equals("-"))
+    } else if (start.equals(plus) || stop.equals(minus))
       return null;
 
     Query query;
     Object[] params;
-    if (start.equals("-")) {
+    if (start.equals(minus)) {
       if (stopInclusive) {
         query = getQuery(key, SortedSetQuery.ZRANGEBYLEXNINFI, context);
       } else {
         query = getQuery(key, SortedSetQuery.ZRANGEBYLEXNINF, context);
       }
       params = new Object[] {stop, INFINITY_LIMIT};
-    } else if (stop.equals("+")) {
+    } else if (stop.equals(plus)) {
       if (startInclusive) {
         query = getQuery(key, SortedSetQuery.ZRANGEBYLEXPINFI, context);
       } else {

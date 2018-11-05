@@ -616,7 +616,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
   }
 
   /*
-   * get cache server / bridge server attacted to cache
+   * get cache server / cache server attacted to cache
    */
   private static CacheServerImpl getBridgeServer() {
     CacheServerImpl bridgeServer = (CacheServerImpl) cache.getCacheServers().iterator().next();
@@ -649,7 +649,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
   }
 
   /*
-   * stop bridge server
+   * stop cache server
    */
   public static void stopCacheServer() {
     getBridgeServer().stop();

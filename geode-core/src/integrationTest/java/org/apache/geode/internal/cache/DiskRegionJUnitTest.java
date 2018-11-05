@@ -1678,7 +1678,7 @@ public class DiskRegionJUnitTest {
 
   /**
    * If IOException occurs while updating an entry in an already initialized DiskRegion ,then the
-   * bridge servers should not be stopped , if any running as they are no clients connected to it.
+   * cache servers should not be stopped , if any running as they are no clients connected to it.
    */
   @Test
   public void testBridgeServerStoppingInSyncPersistOnlyForIOExceptionCase() throws Exception {
@@ -1777,7 +1777,7 @@ public class DiskRegionJUnitTest {
   }
 
   /**
-   * If IOException occurs while initializing a region, then the bridge servers should not be
+   * If IOException occurs while initializing a region, then the cache servers should not be
    * stopped
    */
   @Test

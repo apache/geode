@@ -381,13 +381,13 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
               || execution instanceof MultiRegionFunctionExecutor) {
             if (!this.fn.isHA()) {
               fe = new FunctionInvocationTargetException(
-                  String.format("MemberResponse got memberDeparted event for < %s > crashed,  %s",
+                  String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
                       new Object[] {id, Boolean.valueOf(crashed)}),
                   id);
             } else {
               fe = new InternalFunctionInvocationTargetException(
                   String.format(
-                      "DistributionResponse got memberDeparted event for < %s > crashed,  %s",
+                      "DistributionResponse got memberDeparted event for < %s > crashed, %s",
                       new Object[] {id, Boolean.valueOf(crashed)}),
                   id);
               if (execution.isClientServerMode()) {
@@ -406,7 +406,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
             this.fites.add(fe);
           } else {
             fe = new FunctionInvocationTargetException(
-                String.format("MemberResponse got memberDeparted event for < %s > crashed,  %s",
+                String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
                     new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
           }

@@ -18,7 +18,7 @@ package org.apache.geode.internal.cache;
 import java.io.Serializable;
 
 /**
- * Interface <code>Conflatable</code> is used by the bridge server client notification mechanism to
+ * Interface <code>Conflatable</code> is used by the cache server client notification mechanism to
  * conflate messages being sent from the server to the client.
  *
  *

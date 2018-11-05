@@ -38,7 +38,7 @@ fi
 
 
 echo "Sanitized Geode Fork = ${SANITIZED_GEODE_FORK}"
-echo "Sanitized Goede Branch = ${SANITIZED_GEODE_BRANCH}"
+echo "Sanitized Geode Branch = ${SANITIZED_GEODE_BRANCH}"
 
 MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
@@ -71,6 +71,8 @@ public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
 version-bucket: ${VERSION_BUCKET}
 artifact-bucket: ${ARTIFACT_BUCKET}
+gradle-global-args: ${GRADLE_GLOBAL_ARGS}
+maven-snapshot-bucket: ${MAVEN_SNAPSHOT_BUCKET}
 YML
 
 

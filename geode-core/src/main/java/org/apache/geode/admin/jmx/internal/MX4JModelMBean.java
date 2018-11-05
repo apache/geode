@@ -358,13 +358,13 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanAttributeInfo attrInfo = info.getAttribute(attribute);
     if (attrInfo == null)
       throw new AttributeNotFoundException(
-          String.format("Cannot find ModelMBeanAttributeInfo for attribute  %s",
+          String.format("Cannot find ModelMBeanAttributeInfo for attribute %s",
               attribute));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute info is: " + attrInfo);
     if (!attrInfo.isReadable())
       throw new AttributeNotFoundException(
-          String.format("Attribute  %s  is not readable", attribute));
+          String.format("Attribute %s is not readable", attribute));
 
     // This returns a clone of the mbean descriptor, we use it read only
     Descriptor mbeanDescriptor = info.getMBeanDescriptor();
@@ -378,7 +378,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor attributeDescriptor = attrInfo.getDescriptor();
     if (attributeDescriptor == null)
       throw new AttributeNotFoundException(
-          String.format("Attribute descriptor for attribute  %s  cannot be null",
+          String.format("Attribute descriptor for attribute %s cannot be null",
               attribute));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute descriptor is: " + attributeDescriptor);
@@ -514,14 +514,14 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanAttributeInfo attrInfo = info.getAttribute(attrName);
     if (attrInfo == null)
       throw new AttributeNotFoundException(
-          String.format("Cannot find ModelMBeanAttributeInfo for attribute  %s",
+          String.format("Cannot find ModelMBeanAttributeInfo for attribute %s",
               attrName));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute info is: " + attrInfo);
 
     if (!attrInfo.isWritable())
       throw new AttributeNotFoundException(
-          String.format("Attribute  %s  is not writable", attrName));
+          String.format("Attribute %s is not writable", attrName));
 
     // This returns a clone of the mbean descriptor, we use it read only
     Descriptor mbeanDescriptor = info.getMBeanDescriptor();
@@ -535,7 +535,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor attributeDescriptor = attrInfo.getDescriptor();
     if (attributeDescriptor == null)
       throw new AttributeNotFoundException(
-          String.format("Attribute descriptor for attribute  %s  cannot be null",
+          String.format("Attribute descriptor for attribute %s cannot be null",
               attrName));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute descriptor is: " + attributeDescriptor);
@@ -641,7 +641,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanOperationInfo operInfo = info.getOperation(method);
     if (operInfo == null)
       throw new MBeanException(new ServiceNotFoundException(
-          String.format("Cannot find ModelMBeanOperationInfo for operation  %s",
+          String.format("Cannot find ModelMBeanOperationInfo for operation %s",
               method)));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Operation info is: " + operInfo);
@@ -650,12 +650,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor operationDescriptor = operInfo.getDescriptor();
     if (operationDescriptor == null)
       throw new MBeanException(new ServiceNotFoundException(
-          String.format("Operation descriptor for operation  %s  cannot be null",
+          String.format("Operation descriptor for operation %s cannot be null",
               method)));
     String role = (String) operationDescriptor.getFieldValue("role");
     if (role == null || !role.equals("operation"))
       throw new MBeanException(new ServiceNotFoundException(
-          String.format("Operation descriptor field 'role' must be 'operation', not  %s",
+          String.format("Operation descriptor field 'role' must be 'operation', not %s",
               role)));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Operation descriptor is: " + operationDescriptor);

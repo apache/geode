@@ -64,7 +64,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 @Category({OQLIndexTest.class})
 public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
 
   private String region = "regionA";
@@ -596,7 +596,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 6.6

@@ -285,13 +285,13 @@ public class DefaultQueryService implements InternalQueryService {
     } else {
       throw new RegionNotFoundException(
           String.format(
-              "DefaultQueryService::createIndex:First Iterator of Index >From Clause does not evaluate to a Region Path. The from clause used for Index creation is  %s",
+              "DefaultQueryService::createIndex:First Iterator of Index >From Clause does not evaluate to a Region Path. The from clause used for Index creation is %s",
               fromClause));
     }
     Region region = cache.getRegion(regionPath);
     if (region == null) {
       throw new RegionNotFoundException(
-          String.format("Region ' %s ' not found: from  %s",
+          String.format("Region ' %s ' not found: from %s",
               new Object[] {regionPath, fromClause}));
     }
     return region;
@@ -442,7 +442,7 @@ public class DefaultQueryService implements InternalQueryService {
       try {
         ((PartitionedRegion) region).removeIndex(index, false);
       } catch (ForceReattemptException ex) {
-        logger.info(String.format("Exception removing index :  %s", ex));
+        logger.info(String.format("Exception removing index : %s", ex));
       }
       return;
     }
@@ -489,7 +489,7 @@ public class DefaultQueryService implements InternalQueryService {
         ((PartitionedRegion) region).removeIndexes(false);
       } catch (ForceReattemptException ex) {
         // will have to throw a proper exception relating to remove index.
-        logger.info(String.format("Exception removing index :  %s", ex));
+        logger.info(String.format("Exception removing index : %s", ex));
       }
     }
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);

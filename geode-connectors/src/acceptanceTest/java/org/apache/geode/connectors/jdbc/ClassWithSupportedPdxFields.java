@@ -22,6 +22,7 @@ import java.util.Date;
 import org.apache.geode.internal.PdxSerializerObject;
 
 public class ClassWithSupportedPdxFields implements PdxSerializerObject, Serializable {
+  private String id;
   private boolean aboolean;
   private byte aByte;
   private short ASHORT;
@@ -37,9 +38,11 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
 
   public ClassWithSupportedPdxFields() {}
 
-  public ClassWithSupportedPdxFields(boolean aboolean, byte aByte, short ASHORT, int anint,
+  public ClassWithSupportedPdxFields(String id, boolean aboolean, byte aByte, short ASHORT,
+      int anint,
       long along, float afloat, double adouble, String astring, Date adate, Object anobject,
       byte[] abytearray, char achar) {
+    this.id = id;
     this.aboolean = aboolean;
     this.aByte = aByte;
     this.ASHORT = ASHORT;
@@ -54,6 +57,10 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
     this.achar = achar;
   }
 
+  public ClassWithSupportedPdxFields(String id) {
+    this.id = id;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -65,6 +72,10 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
 
     ClassWithSupportedPdxFields that = (ClassWithSupportedPdxFields) o;
 
+    if (getId() != null ? !getId().equals(that.getId())
+        : that.getId() != null) {
+      return false;
+    }
     if (isAboolean() != that.isAboolean()) {
       return false;
     }
@@ -124,11 +135,16 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
 
   @Override
   public String toString() {
-    return "ClassWithSupportedPdxFields{" + "aboolean=" + isAboolean() + ", aByte=" + getAbyte()
+    return "ClassWithSupportedPdxFields{" + "id=" + getId() + ", aboolean=" + isAboolean()
+        + ", aByte=" + getAbyte()
         + ", achar=" + getAchar() + ", ASHORT=" + getAshort() + ", anint=" + getAnint() + ", along="
         + getAlong() + ", afloat=" + getAfloat() + ", adouble=" + getAdouble() + ", astring='"
         + getAstring() + '\'' + ", adate=" + getAdate() + ", anobject=" + getAnobject()
         + ", abytearray=" + Arrays.toString(getAbytearray()) + '}';
+  }
+
+  public String getId() {
+    return id;
   }
 
   public boolean isAboolean() {

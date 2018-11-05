@@ -602,7 +602,6 @@ public class JndiBindingsType {
       return getJndiName();
     }
 
-
     /**
      * <p>
      * Java class for anonymous complex type.
@@ -646,6 +645,11 @@ public class JndiBindingsType {
       public ConfigProperty(String name, String type, String value) {
         this.configPropertyName = name;
         this.configPropertyType = type;
+        this.configPropertyValue = value;
+      }
+
+      public ConfigProperty(String name, String value) {
+        this.configPropertyName = name;
         this.configPropertyValue = value;
       }
 

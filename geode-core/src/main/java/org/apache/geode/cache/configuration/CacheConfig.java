@@ -437,7 +437,7 @@ public class CacheConfig {
    */
   public List<CacheConfig.GatewaySender> getGatewaySenders() {
     if (gatewaySenders == null) {
-      gatewaySenders = new ArrayList<CacheConfig.GatewaySender>();
+      gatewaySenders = new ArrayList<>();
     }
     return this.gatewaySenders;
   }
@@ -2870,7 +2870,7 @@ public class CacheConfig {
      */
     public List<DeclarableType> getGatewayEventFilters() {
       if (gatewayEventFilters == null) {
-        gatewayEventFilters = new ArrayList<DeclarableType>();
+        gatewayEventFilters = new ArrayList<>();
       }
       return this.gatewayEventFilters;
     }
@@ -2922,7 +2922,7 @@ public class CacheConfig {
      */
     public List<DeclarableType> getGatewayTransportFilters() {
       if (gatewayTransportFilters == null) {
-        gatewayTransportFilters = new ArrayList<DeclarableType>();
+        gatewayTransportFilters = new ArrayList<>();
       }
       return this.gatewayTransportFilters;
     }

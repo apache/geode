@@ -2132,7 +2132,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       DataPolicy dp = getDataPolicy();
       if (dp.isEmpty()) {
         throw new IllegalStateException(
-            String.format("Cannot write a region with data-policy  %s  to disk.",
+            String.format("Cannot write a region with data-policy %s to disk.",
                 dp));
       } else if (!dp.withPersistence() && !isOverflowEnabled()) {
         throw new IllegalStateException(
@@ -2757,7 +2757,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkReadiness();
     // Localized string for partitioned region is generic enough for general use
     throw new EntryNotFoundException(
-        String.format("Entry not found for key  %s", entryKey));
+        String.format("Entry not found for key %s", entryKey));
   }
 
   /**
@@ -3593,7 +3593,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void saveSnapshot(OutputStream outputStream) throws IOException {
     if (isProxy()) {
       throw new UnsupportedOperationException(
-          String.format("Regions with DataPolicy  %s  do not support saveSnapshot.",
+          String.format("Regions with DataPolicy %s do not support saveSnapshot.",
               getDataPolicy()));
     }
     checkForNoAccess();
@@ -3643,7 +3643,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throws CacheWriterException, TimeoutException, ClassNotFoundException, IOException {
     if (isProxy()) {
       throw new UnsupportedOperationException(
-          String.format("Regions with DataPolicy  %s  do not support loadSnapshot.",
+          String.format("Regions with DataPolicy %s do not support loadSnapshot.",
               getDataPolicy()));
     }
     if (inputStream == null) {
@@ -4045,7 +4045,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           "InterestType.OQL_QUERY not yet supported");
 
     } else {
-      throw new IllegalArgumentException(String.format("Unsupported interest type:  %s",
+      throw new IllegalArgumentException(String.format("Unsupported interest type: %s",
           interestType));
     }
     return ret;
@@ -4206,10 +4206,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException cnfe) {
       throw new RuntimeException(
-          String.format("Class  %s  not found in classpath.", key), cnfe);
+          String.format("Class %s not found in classpath.", key), cnfe);
     } catch (Exception e) {
       throw new RuntimeException(
-          String.format("Class  %s  could not be instantiated.", key), e);
+          String.format("Class %s could not be instantiated.", key), e);
     }
 
     for (Object entryObject : entrySet(false)) {
@@ -4797,7 +4797,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     RegionEntry regionEntry = this.entries.initRecoveredEntry(key, re);
     if (regionEntry == null) {
       throw new InternalGemFireError(
-          String.format("Entry already existed:  %s", key));
+          String.format("Entry already existed: %s", key));
     }
     return (DiskEntry) regionEntry;
   }
@@ -5315,7 +5315,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   /**
    * Perform an update in a bridge client. See CacheClientUpdater.handleUpdate() The op is from the
-   * bridge server and should not be distributed back to it.
+   * cache server and should not be distributed back to it.
    */
   public void basicBridgeClientUpdate(DistributedMember serverId, Object key, Object value,
       byte[] deltaBytes, boolean isObject, Object callbackArgument, boolean isCreate,
@@ -5373,7 +5373,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Perform an invalidate in a bridge client. The op is from the bridge server and should not be
+   * Perform an invalidate in a bridge client. The op is from the cache server and should not be
    * distributed back to it.
    */
   public void basicBridgeClientInvalidate(DistributedMember serverId, Object key,
@@ -5422,7 +5422,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Perform a destroy in a bridge client. The op is from the bridge server and should not be
+   * Perform a destroy in a bridge client. The op is from the cache server and should not be
    * distributed back to it.
    */
   public void basicBridgeClientDestroy(DistributedMember serverId, Object key,
@@ -5767,7 +5767,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         DistTXState.internalBeforeNonTXBasicPut.run();
       }
 
-      return this.entries.basicPut(event, lastModified, ifNew, false, null, false, false);
+      return getRegionMap().basicPut(event, lastModified, ifNew, false, null, false, false);
     }
   }
 
@@ -6111,7 +6111,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (shouldNotifyBridgeClients()) {
       if (numBS > 0) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: notifying {} bridge servers of event: {}", this.getName(), numBS,
+          logger.debug("{}: notifying {} cache servers of event: {}", this.getName(), numBS,
               event);
         }
       }
@@ -9338,7 +9338,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Called on a bridge server when it has a received a putAll command from a client.
+   * Called on a cache server when it has a received a putAll command from a client.
    *
    * @param map a map of key->value for the entries we are putting
    * @param retryVersions a map of key->version tag. If any of the entries are the result of a
@@ -9376,7 +9376,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Called on a bridge server when it has a received a removeAll command from a client.
+   * Called on a cache server when it has a received a removeAll command from a client.
    *
    * @param keys a collection of the keys we are putting
    * @param retryVersions a collection of version tags. If the client is retrying a key then that
@@ -9504,7 +9504,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     boolean partialResult = false;
     RuntimeException runtimeException = null;
     if (hasServerProxy()) {
-      // send message to bridge server
+      // send message to cache server
       if (isTX()) {
         TXStateProxyImpl txState = (TXStateProxyImpl) this.cache.getTxManager().getTXState();
         txState.getRealDeal(null, this);
@@ -9725,7 +9725,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     RuntimeException runtimeException = null;
 
     if (hasServerProxy()) {
-      // send message to bridge server
+      // send message to cache server
       if (isTX()) {
         TXStateProxyImpl txState = (TXStateProxyImpl) this.cache.getTxManager().getTXState();
         txState.getRealDeal(null, this);
@@ -10536,9 +10536,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   /**
    * Used to prevent notification of bridge clients, typically used for internal "meta" regions and
-   * if the cache doesn't have any bridge servers
+   * if the cache doesn't have any cache servers
    *
-   * @return true only if it's cache has bridge servers and this is nt a meta region
+   * @return true only if it's cache has cache servers and this is nt a meta region
    */
   @Override
   public boolean shouldNotifyBridgeClients() {

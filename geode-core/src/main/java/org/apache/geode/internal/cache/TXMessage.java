@@ -75,11 +75,11 @@ public abstract class TXMessage extends SerialDistributionMessage
       InternalCache cache = dm.getCache();
       if (checkCacheClosing(cache) || checkDSClosing(cache.getInternalDistributedSystem())) {
         if (cache == null) {
-          thr = new CacheClosedException(String.format("Remote cache is closed:  %s",
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
               dm.getId()));
         } else {
           thr = cache
-              .getCacheClosedException(String.format("Remote cache is closed:  %s",
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
                   dm.getId()));
         }
         return;
@@ -102,7 +102,7 @@ public abstract class TXMessage extends SerialDistributionMessage
         logger.debug("shutdown caught, abandoning message: " + se);
       }
     } catch (RegionDestroyedException rde) {
-      thr = new ForceReattemptException(String.format("Region is destroyed in  %s",
+      thr = new ForceReattemptException(String.format("Region is destroyed in %s",
           dm.getDistributionManagerId()), rde);
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);

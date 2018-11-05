@@ -443,7 +443,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     }
     if (this.dataPolicy != other.getDataPolicy()) {
       throw new RuntimeException(
-          String.format("Data Policies are not the same: this:  %s  other:  %s",
+          String.format("Data Policies are not the same: this: %s other: %s",
               new Object[] {this.getDataPolicy(), other.getDataPolicy()}));
     }
     if (this.earlyAck != other.getEarlyAck()) {
@@ -521,7 +521,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     }
     if (this.cloningEnabled != other.getCloningEnabled()) {
       throw new RuntimeException(
-          String.format("Cloning enabled is not the same: this:  %s  other:  %s",
+          String.format("Cloning enabled is not the same: this: %s other: %s",
               new Object[] {Boolean.valueOf(this.cloningEnabled),
                   Boolean.valueOf(other.getCloningEnabled())}));
     }
@@ -1017,7 +1017,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     for (int i = 0; i < sizes.length; i++) {
       if (sizes[i] < 0) {
         throw new IllegalArgumentException(
-            String.format("Dir size cannot be negative :  %s",
+            String.format("Dir size cannot be negative : %s",
                 Integer.valueOf(sizes[i])));
       }
     }

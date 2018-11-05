@@ -647,7 +647,7 @@ public class Connection implements Runnable {
 
   public static int calcHdrSize(int byteSize) {
     if (byteSize > MAX_MSG_SIZE) {
-      throw new IllegalStateException(String.format("tcp message exceeded max size of  %s",
+      throw new IllegalStateException(String.format("tcp message exceeded max size of %s",
           Integer.valueOf(MAX_MSG_SIZE)));
     }
     int hdrSize = byteSize;
@@ -664,7 +664,7 @@ public class Connection implements Runnable {
     if (ver != HANDSHAKE_VERSION) {
       throw new IOException(
           String.format(
-              "Detected wrong version of GemFire product during handshake. Expected  %s  but found  %s",
+              "Detected wrong version of GemFire product during handshake. Expected %s but found %s",
               new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(ver)}));
     }
     return ver;
@@ -764,7 +764,7 @@ public class Connection implements Runnable {
                 // connection-formation. So, we need to initiate suspect processing here
                 owner.getDM().getMembershipManager().suspectMember(this.remoteAddr,
                     String.format(
-                        "Connection handshake with  %s  timed out after waiting  %s  milliseconds.",
+                        "Connection handshake with %s timed out after waiting %s milliseconds.",
 
                         peerName, Integer.valueOf(HANDSHAKE_TIMEOUT_MS)));
               } else {
@@ -773,7 +773,7 @@ public class Connection implements Runnable {
               }
               throw new ConnectionException(
                   String.format(
-                      "Connection handshake with  %s  timed out after waiting  %s  milliseconds.",
+                      "Connection handshake with %s timed out after waiting %s milliseconds.",
                       peerName, Integer.valueOf(HANDSHAKE_TIMEOUT_MS)));
             } else {
               success = this.handshakeRead;
@@ -1051,7 +1051,7 @@ public class Connection implements Runnable {
           t.getConduit().getCancelCriterion().checkCancelInProgress(null);
           if (giveUpOnMember(mgr, remoteAddr)) {
             throw new IOException(
-                String.format("Member %s  left the group", remoteAddr));
+                String.format("Member %s left the group", remoteAddr));
           }
           if (!warningPrinted) {
             warningPrinted = true;
@@ -1096,7 +1096,7 @@ public class Connection implements Runnable {
               // and the socket was closed or we were sent
               // ShutdownMessage
               if (giveUpOnMember(mgr, remoteAddr)) {
-                throw new IOException(String.format("Member %s  left the group",
+                throw new IOException(String.format("Member %s left the group",
                     remoteAddr));
               }
               t.getConduit().getCancelCriterion().checkCancelInProgress(null);
@@ -1277,7 +1277,7 @@ public class Connection implements Runnable {
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Connection: connected to {} with stub {}", remoteAddr, addr);
+      logger.debug("Connection: connected to {} with IP address {}", remoteAddr, addr);
     }
     try {
       getSocket().setTcpNoDelay(true);
@@ -2274,7 +2274,7 @@ public class Connection implements Runnable {
               if (handshakeByte != HANDSHAKE_VERSION) {
                 throw new IllegalStateException(
                     String.format(
-                        "Detected wrong version of GemFire product during handshake. Expected  %s  but found  %s",
+                        "Detected wrong version of GemFire product during handshake. Expected %s but found %s",
 
                         new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handshakeByte)}));
               }
@@ -2498,7 +2498,7 @@ public class Connection implements Runnable {
       DistributionMessage msg) throws IOException, ConnectionException {
     if (!connected) {
       throw new ConnectionException(
-          String.format("Not connected to  %s", this.remoteAddr));
+          String.format("Not connected to %s", this.remoteAddr));
     }
     if (this.batchFlusher != null) {
       batchSend(buffer);
@@ -2707,7 +2707,7 @@ public class Connection implements Runnable {
         if (this.disconnectRequested) {
           buffer.position(origBufferPos);
           // we have given up so just drop this message.
-          throw new ConnectionException(String.format("Forced disconnect sent to  %s",
+          throw new ConnectionException(String.format("Forced disconnect sent to %s",
               this.remoteAddr));
         }
         if (!force && !this.asyncQueuingInProgress) {
@@ -3177,7 +3177,7 @@ public class Connection implements Runnable {
                   long blockedMs = now - queueTimeoutTarget;
                   blockedMs += this.asyncQueueTimeout;
                   logger.warn(
-                      "Blocked for %sms which is longer than the max of %sms, asking slow receiver {} to disconnect.",
+                      "Blocked for {}ms which is longer than the max of {}ms, asking slow receiver {} to disconnect.",
                       Long.valueOf(blockedMs),
                       Integer.valueOf(this.asyncQueueTimeout), this.remoteAddr);
                   stats.incAsyncQueueTimeouts(1);
@@ -3405,7 +3405,7 @@ public class Connection implements Runnable {
       } catch (Exception ex) {
       }
       throw new ConnectionException(
-          String.format("Unable to read direct ack because:  %s", e));
+          String.format("Unable to read direct ack because: %s", e));
     } catch (ConnectionException e) {
       this.owner.getConduit().getCancelCriterion().checkCancelInProgress(e);
       throw e;
@@ -3419,7 +3419,7 @@ public class Connection implements Runnable {
       } catch (Exception ex) {
       }
       throw new ConnectionException(
-          String.format("Unable to read direct ack because:  %s", e));
+          String.format("Unable to read direct ack because: %s", e));
     } finally {
       stats.incProcessedMessages(1L);
       accessed();
@@ -3709,7 +3709,7 @@ public class Connection implements Runnable {
               if (this.replyCode != REPLY_CODE_OK
                   && this.replyCode != REPLY_CODE_OK_WITH_ASYNC_INFO) {
                 String err =
-                    "Unknown handshake reply code: {} nioMessageLength=%s processorType={}";
+                    "Unknown handshake reply code: %s nioMessageLength: %s";
                 Object[] errArgs = new Object[] {Integer.valueOf(this.replyCode),
                     Integer.valueOf(nioMessageLength)};
                 if (replyCode == 0 && logger.isDebugEnabled()) { // bug 37113
@@ -3729,14 +3729,14 @@ public class Connection implements Runnable {
                 if (b != 0) {
                   throw new IllegalStateException(
                       String.format(
-                          "Detected old version (pre 5.0.1) of GemFire or non-GemFire during handshake due to initial byte being  %s",
+                          "Detected old version (pre 5.0.1) of GemFire or non-GemFire during handshake due to initial byte being %s",
                           new Byte(b)));
                 }
                 byte handshakeByte = dis.readByte();
                 if (handshakeByte != HANDSHAKE_VERSION) {
                   throw new IllegalStateException(
                       String.format(
-                          "Detected wrong version of GemFire product during handshake. Expected  %s  but found  %s",
+                          "Detected wrong version of GemFire product during handshake. Expected %s but found %s",
 
                           new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handshakeByte)}));
                 }

@@ -158,7 +158,7 @@ jobs:
             status: pending
       - do:
         - put: concourse-metadata-resource
-        - task: start_instance
+        - task: create_instance
           {{- alpine_tools_config()|indent(10) }}
             params:
               CPUS: {{test.CPUS}}
@@ -168,7 +168,7 @@ jobs:
               GCP_PROJECT: ((gcp-project))
               RAM: {{test.RAM}}
             run:
-              path: geode-ci/ci/scripts/start_instance.sh
+              path: geode-ci/ci/scripts/create_instance.sh
             inputs:
             - name: concourse-metadata-resource
             - name: geode
@@ -200,7 +200,8 @@ jobs:
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
           PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
           ARTIFACT_BUCKET: ((artifact-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          SERVICE_ACCOUNT: ((concourse-gcp-account))
+          GRADLE_GLOBAL_ARGS: ((gradle-global-args))
         run:
           {%- if test.name=="StressNew" %}
           path: geode/ci/scripts/repeat-new-tests.sh
@@ -253,10 +254,10 @@ jobs:
             - name: geode
             - name: geode-ci
             - name: geode-results
-        - task: stop_instance
+        - task: delete_instance
           {{- alpine_tools_config()|indent(10) }}
             run:
-              path: geode-ci/ci/scripts/stop_instance.sh
+              path: geode-ci/ci/scripts/delete_instance.sh
             inputs:
             - name: geode
             - name: geode-ci

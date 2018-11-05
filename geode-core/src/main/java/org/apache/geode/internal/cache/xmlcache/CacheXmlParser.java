@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import javax.naming.NamingException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -113,6 +114,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -949,7 +951,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof TransactionListener)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a CacheListener.",
+          String.format("A %s is not an instance of a CacheListener.",
               d.getClass().getName()));
     }
     CacheTransactionManagerCreation txMgrCreation = (CacheTransactionManagerCreation) stack.peek();
@@ -1042,7 +1044,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof TransactionWriter)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a TransactionWriter.",
+          String.format("A %s is not an instance of a TransactionWriter.",
               d.getClass().getName()));
     }
     CacheTransactionManagerCreation txMgrCreation = (CacheTransactionManagerCreation) stack.peek();
@@ -1067,7 +1069,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       attrs.setScope(Scope.GLOBAL);
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown scope:  %s", scope));
+          String.format("Unknown scope: %s", scope));
     }
     String mirror = atts.getValue(MIRROR_TYPE);
     if (mirror == null) {
@@ -1079,7 +1081,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       attrs.setMirrorType(MirrorType.KEYS_VALUES);
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown mirror type:  %s", mirror));
+          String.format("Unknown mirror type: %s", mirror));
     }
     {
       String dp = atts.getValue(DATA_POLICY);
@@ -1100,7 +1102,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         attrs.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
       } else {
         throw new InternalGemFireException(
-            String.format("Unknown data policy:  %s", dp));
+            String.format("Unknown data policy: %s", dp));
       }
     }
 
@@ -1335,7 +1337,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       c = InternalDataSerializer.getCachedClass(className);
     } catch (Exception ex) {
       throw new CacheXmlException(
-          String.format("Could not load key-constraint class:  %s",
+          String.format("Could not load key-constraint class: %s",
               className),
           ex);
     }
@@ -1357,7 +1359,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       c = InternalDataSerializer.getCachedClass(className);
     } catch (Exception ex) {
       throw new CacheXmlException(
-          String.format("Could not load value-constraint class:  %s",
+          String.format("Could not load value-constraint class: %s",
               className),
           ex);
     }
@@ -1392,7 +1394,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Object a = stack.peek();
     if (!(a instanceof RegionAttributesCreation)) {
       throw new CacheXmlException(
-          String.format("A  %s  must be defined in the context of region-attributes.",
+          String.format("A %s must be defined in the context of region-attributes.",
               dependentElement));
     }
     return (RegionAttributesCreation) a;
@@ -1433,7 +1435,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       throw new CacheXmlException(
           String.format(
-              "A  %s  must be defined in the context of region-attributes or partition-attributes.",
+              "A %s must be defined in the context of region-attributes or partition-attributes.",
               ENTRY_TIME_TO_LIVE));
     }
   }
@@ -1461,7 +1463,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       throw new CacheXmlException(
           String.format(
-              "A  %s  must be defined in the context of region-attributes or partition-attributes.",
+              "A %s must be defined in the context of region-attributes or partition-attributes.",
               ENTRY_IDLE_TIME));
     }
   }
@@ -1585,7 +1587,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       attrs.setDiskDirsAndSize(disks, diskSizes);
     } else {
       throw new CacheXmlException(
-          String.format("A  %s  must be defined in the context of region-attributes.",
+          String.format("A %s must be defined in the context of region-attributes.",
               DISK_DIRS));
     }
   }
@@ -1719,7 +1721,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       sa = new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT);
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown interest-policy:  %s", ip));
+          String.format("Unknown interest-policy: %s", ip));
     }
     RegionAttributesCreation rattrs = (RegionAttributesCreation) stack.peek();
     rattrs.setSubscriptionAttributes(sa);
@@ -1890,7 +1892,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       expire = new ExpirationAttributes(timeout, ExpirationAction.LOCAL_DESTROY);
     } else {
       throw new InternalGemFireException(
-          String.format("Unknown expiration action:  %s", action));
+          String.format("Unknown expiration action: %s", action));
     }
     stack.push(expire);
   }
@@ -1979,7 +1981,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Class<?> klass = getClassFromStack();
     if (!Compressor.class.isAssignableFrom(klass)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a Compressor.",
+          String.format("A %s is not an instance of a Compressor.",
               klass.getName()));
     }
 
@@ -1987,7 +1989,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     try {
       compressor = (Compressor) klass.newInstance();
     } catch (Exception ex) {
-      throw new CacheXmlException(String.format("While instantiating a  %s",
+      throw new CacheXmlException(String.format("While instantiating a %s",
           klass.getName()), ex);
     }
 
@@ -1998,7 +2000,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       attrs.setCompressor(compressor);
     } else {
       throw new CacheXmlException(
-          String.format("A  %s  must be defined in the context of region-attributes or  %s",
+          String.format("A %s must be defined in the context of region-attributes or %s",
               new Object[] {COMPRESSOR, DYNAMIC_REGION_FACTORY}));
     }
   }
@@ -2015,7 +2017,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof CacheLoader)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a CacheLoader.",
+          String.format("A %s is not an instance of a CacheLoader.",
               d.getClass().getName()));
     }
     // Two peeks required to handle dynamic region context
@@ -2038,7 +2040,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       attrs.setCacheLoader((CacheLoader) d);
     } else {
       throw new CacheXmlException(
-          String.format("A  %s  must be defined in the context of region-attributes or  %s",
+          String.format("A %s must be defined in the context of region-attributes or %s",
               new Object[] {CACHE_LOADER, DYNAMIC_REGION_FACTORY}));
     }
   }
@@ -2055,7 +2057,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof CacheWriter)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a CacheWriter.",
+          String.format("A %s is not an instance of a CacheWriter.",
               d.getClass().getName()));
     }
 
@@ -2074,7 +2076,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       //
       if (!(a instanceof RegionAttributesCreation)) {
         throw new CacheXmlException(
-            String.format("%s  must be defined in the context of  %s",
+            String.format("%s must be defined in the context of %s",
                 new Object[] {CACHE_WRITER, DYNAMIC_REGION_FACTORY}));
       }
       stack.push(size);
@@ -2083,7 +2085,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     // check for normal region-attributes
     else if (!(a instanceof RegionAttributesCreation)) {
       throw new CacheXmlException(
-          String.format("%s  must be defined in the context of region-attributes.",
+          String.format("%s must be defined in the context of region-attributes.",
               CACHE_WRITER));
     }
 
@@ -2157,7 +2159,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       d = createDeclarable();
       if (!(d instanceof ObjectSizer)) {
         throw new CacheXmlException(
-            String.format("A  %s  is not an instance of a ObjectSizer.",
+            String.format("A %s is not an instance of a ObjectSizer.",
                 d.getClass().getName()));
       }
     }
@@ -2216,7 +2218,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof CacheListener)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a CacheListener.",
+          String.format("A %s is not an instance of a CacheListener.",
               d.getClass().getName()));
     }
     RegionAttributesCreation attrs = peekRegionAttributesContext(CACHE_LISTENER);
@@ -2324,7 +2326,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof AsyncEventListener)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a AsyncEventListener",
+          String.format("A %s is not an instance of a AsyncEventListener",
               d.getClass().getName()));
     }
     AsyncEventQueueCreation eventChannel = peekAsyncEventQueueContext(ASYNC_EVENT_LISTENER);
@@ -2335,7 +2337,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Object a = stack.peek();
     if (!(a instanceof AsyncEventQueueCreation)) {
       throw new CacheXmlException(
-          String.format("A  %s  must be defined in the context of async-event-queue.",
+          String.format("A %s must be defined in the context of async-event-queue.",
               dependentElement));
     }
     return (AsyncEventQueueCreation) a;
@@ -3028,9 +3030,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endTransactionWriter();
       } else if (qName.equals(JNDI_BINDINGS)) {
       } else if (qName.equals(JNDI_BINDING)) {
-        // Asif Pop the BindingCreation object
         BindingCreation bc = (BindingCreation) this.stack.pop();
-        JNDIInvoker.mapDatasource(bc.getGFSpecificMap(), bc.getVendorSpecificList());
+        Map map = bc.getGFSpecificMap();
+        try {
+          JNDIInvoker.mapDatasource(map, bc.getVendorSpecificList());
+        } catch (NamingException | DataSourceCreateException ex) {
+          if (logger.isWarnEnabled()) {
+            logger.warn("jndi-binding creation of {} failed with: {}", map.get("jndi-name"), ex);
+          }
+        }
       } else if (qName.equals(CONFIG_PROPERTY_BINDING)) {
       } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
         String name = null;
@@ -3141,7 +3149,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       throw new CacheXmlException(
           String.format(
-              "A  %s  must be defined in the context of gateway-sender or gateway-receiver.",
+              "A %s must be defined in the context of gateway-sender or gateway-receiver.",
               GATEWAY_TRANSPORT_FILTER));
     }
   }
@@ -3162,7 +3170,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       throw new CacheXmlException(
           String.format(
-              "A  %s  must be defined in the context of gateway-sender or async-event-queue.",
+              "A %s must be defined in the context of gateway-sender or async-event-queue.",
               "GatewayEventFilter"));
     }
   }
@@ -3184,7 +3192,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       throw new CacheXmlException(
           String.format(
-              "A  %s  must be defined in the context of gateway-sender or async-event-queue.",
+              "A %s must be defined in the context of gateway-sender or async-event-queue.",
               "GatewayEventSubstitutionFilter"));
     }
   }
@@ -3193,7 +3201,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Object a = stack.peek();
     if (!(a instanceof GatewaySenderFactory)) {
       throw new CacheXmlException(
-          String.format("A  %s  must be defined in the context of gateway-sender.",
+          String.format("A %s must be defined in the context of gateway-sender.",
               dependentElement));
     }
     return (GatewaySenderFactory) a;
@@ -3203,7 +3211,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = createDeclarable();
     if (!(d instanceof PdxSerializer)) {
       throw new CacheXmlException(
-          String.format("A  %s  is not an instance of a PdxSerializer.",
+          String.format("A %s is not an instance of a PdxSerializer.",
               d.getClass().getName()));
     }
     PdxSerializer serializer = (PdxSerializer) d;
@@ -3230,7 +3238,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       o = c.newInstance();
     } catch (Exception ex) {
       throw new CacheXmlException(
-          String.format("While instantiating a  %s", className), ex);
+          String.format("While instantiating a %s", className), ex);
     }
     if (!(o instanceof Declarable)) {
       throw new CacheXmlException(
@@ -3261,7 +3269,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     while (!top.equals(globalOrLocal)) {
       if (!(top instanceof Parameter)) {
         throw new CacheXmlException(
-            String.format("Only a parameter is allowed in the context of  %s",
+            String.format("Only a parameter is allowed in the context of %s",
                 globalOrLocal));
       }
       Parameter param = (Parameter) top;

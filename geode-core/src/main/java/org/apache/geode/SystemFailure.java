@@ -576,7 +576,7 @@ public final class SystemFailure {
     // Allocate this error in advance, since it's too late once it's been detected!
     final OutOfMemoryError oome = new OutOfMemoryError(
         String.format(
-            "%s : memory has remained chronically below  %s  bytes (out of a maximum of  %s ) for  %s  sec.",
+            "%s : memory has remained chronically below %s bytes (out of a maximum of %s ) for %s sec.",
             new Object[] {PROCTOR_NAME, Long.valueOf(minimumMemoryThreshold),
                 Long.valueOf(maxMemory), Integer.valueOf(WATCHDOG_WAIT)}));
 
