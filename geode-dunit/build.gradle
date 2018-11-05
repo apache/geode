@@ -50,10 +50,6 @@ dependencies {
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }
-
-  testRuntime('cglib:cglib:' + project.'cglib.version') {
-    exclude module: 'org.apache.ant'
-  }
 }
 
 distributedTest {

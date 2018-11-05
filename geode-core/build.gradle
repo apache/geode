@@ -274,9 +274,6 @@ dependencies {
 
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  testRuntime('cglib:cglib:' + project.'cglib.version') {
-    exclude module: 'org.apache.ant'
-  }
   testRuntime('commons-collections:commons-collections:' + project.'commons-collections.version')
   testRuntime('commons-configuration:commons-configuration:' + project.'commons-configuration.version')
   testRuntime('commons-io:commons-io:' + project.'commons-io.version')
