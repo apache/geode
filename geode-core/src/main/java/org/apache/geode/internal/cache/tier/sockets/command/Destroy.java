@@ -153,8 +153,10 @@ public class Destroy extends BaseCommand {
     } catch (EntryNotFoundException e) {
       // Don't send an exception back to the client if this
       // exception happens. Just log it and continue.
-      logger.info("{}: during entry destroy no entry was found for key {}",
-          serverConnection.getName(), key);
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: during entry destroy no entry was found for key {}",
+            serverConnection.getName(), key);
+      }
     } catch (RegionDestroyedException rde) {
       writeException(clientMessage, rde, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
