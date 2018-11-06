@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.Map.Entry;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,13 +50,13 @@ import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.ha.HAHelper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -166,17 +168,17 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
-    Map.Entry entry;
+    GeodeAwaitility.await().untilAsserted(ev);
+    Entry entry;
     synchronized (map) {
       Iterator iter = map.entrySet().iterator();
-      entry = (Map.Entry) iter.next();
+      entry = (Entry) iter.next();
     }
 
     SequenceIdAndExpirationObject seo = (SequenceIdAndExpirationObject) entry.getValue();
     assertFalse(seo.getAckSend());
     creationTime = seo.getCreationTime();
-    LogWriterUtils.getLogWriter().info("seo is " + seo.toString());
+    getLogWriter().info("seo is " + seo.toString());
     assertTrue("Creation time not set", creationTime != 0);
 
     Object args[] = new Object[] {((ThreadIdentifier) entry.getKey()).getMembershipID(),
@@ -258,7 +260,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Wait for new value on bridge server to become visible in this cache
+   * Wait for new value on cache server to become visible in this cache
    */
   public static void waitForServerUpdate() {
     Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);

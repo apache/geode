@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -24,10 +23,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.File;
 import java.io.IOException;
@@ -153,12 +151,12 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
     londonServerVM.invoke(() -> {
       GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
-      await().atMost(1, MINUTES).untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
+      await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
     });
 
     newYorkServerVM.invoke(() -> {
       GatewaySender sender = cacheRule.getCache().getGatewaySender(londonName);
-      await().atMost(1, MINUTES).untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
+      await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
     });
 
     newYorkServerVM.invoke(() -> {
@@ -175,7 +173,8 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     newYorkServerVM.invoke(() -> {
       Region<Integer, Integer> region = cacheRule.getCache().getRegion(REGION_NAME);
       assertThat(region).isNotNull();
-      waitAtMost(1, MINUTES).untilAsserted(() -> assertThat(region.isEmpty()).isFalse());
+      await()
+          .untilAsserted(() -> assertThat(region.isEmpty()).isFalse());
     });
 
     newYorkLocatorVM.invoke(() -> {

@@ -40,7 +40,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntriesSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection and optionally adds a
@@ -113,12 +112,11 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   private void validateConstraint(ObjectType constraint) {
     if (constraint == null)
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsCollectionWrapper_CONSTRAINT_CANNOT_BE_NULL.toLocalizedString());
+          "constraint cannot be null");
     // must be public
     if (!Modifier.isPublic(constraint.resolveClass().getModifiers()))
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsCollectionWrapper_CONSTRAINT_CLASS_MUST_BE_PUBLIC
-              .toLocalizedString());
+          "constraint class must be public");
   }
 
   // @todo should we bother taking the performance hit to check the constraint?
@@ -126,8 +124,8 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     ObjectType elementType = this.collectionType.getElementType();
     if (!elementType.resolveClass().isInstance(obj)) {
       throw new InternalGemFireError(
-          LocalizedStrings.ResultsCollectionWrapper_CONSTRAINT_VIOLATION_0_IS_NOT_A_1
-              .toLocalizedString(new Object[] {obj.getClass().getName(), elementType}));
+          String.format("Constraint Violation: %s is not a %s",
+              new Object[] {obj.getClass().getName(), elementType}));
     }
   }
 

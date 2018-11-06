@@ -72,7 +72,8 @@ public class StartMemberUtils {
 
   static String resolveWorkingDir(File userSpecifiedDir, File memberNameDir) {
     File workingDir =
-        (userSpecifiedDir == null) ? memberNameDir : userSpecifiedDir;
+        (userSpecifiedDir == null || userSpecifiedDir.equals(new File(""))) ? memberNameDir
+            : userSpecifiedDir;
     String workingDirPath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDir);
     if (!workingDir.exists()) {
       if (!workingDir.mkdirs()) {

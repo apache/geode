@@ -44,7 +44,6 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
@@ -94,14 +93,15 @@ public class RegionCreateFunction implements InternalFunction {
 
     try {
       Region<?, ?> createdRegion = createRegion(cache, regionCreateArgs);
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", createdRegion.getName());
+      XmlEntity xmlEntity = getXmlEntityForRegion(createdRegion);
+
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
               createdRegion.getFullPath(), memberNameOrId)));
     } catch (IllegalStateException e) {
       String exceptionMsg = e.getMessage();
       String localizedString =
-          LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
+          "Only regions with persistence or overflow to disk can specify DiskStore";
       if (localizedString.equals(e.getMessage())) {
         exceptionMsg = exceptionMsg + " "
             + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
@@ -129,14 +129,25 @@ public class RegionCreateFunction implements InternalFunction {
     if (e != null && logger.isDebugEnabled()) {
       logger.debug(e.getMessage(), e);
     }
+
     if (exceptionMsg != null) {
-      return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
+      return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+          exceptionMsg);
     }
 
-    return new CliFunctionResult(memberNameOrId);
+    return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR);
   }
 
-  public static <K, V> Region<?, ?> createRegion(Cache cache, RegionFunctionArgs regionCreateArgs) {
+  private XmlEntity getXmlEntityForRegion(Region<?, ?> region) {
+    Region<?, ?> curRegion = region;
+    while (curRegion != null && curRegion.getParentRegion() != null) {
+      curRegion = curRegion.getParentRegion();
+    }
+
+    return new XmlEntity(CacheXml.REGION, "name", curRegion.getName());
+  }
+
+  private <K, V> Region<?, ?> createRegion(Cache cache, RegionFunctionArgs regionCreateArgs) {
     Region<K, V> createdRegion = null;
 
     final RegionShortcut regionShortcut = regionCreateArgs.getRegionShortcut();

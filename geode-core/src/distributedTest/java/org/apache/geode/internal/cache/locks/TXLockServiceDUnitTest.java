@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.locks;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -162,14 +161,14 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     thread.setDaemon(true);
     thread.start();
 
-    await("waiting for recovery message to block").atMost(999, TimeUnit.MILLISECONDS).until(() -> {
+    await("waiting for recovery message to block").until(() -> {
       return ((TXLockServiceImpl) dtls).isRecovering();
     });
 
     dtls.release(txLockId);
 
     // check results to verify no locks were provided in the reply
-    await("waiting for thread to exit").atMost(30, TimeUnit.SECONDS).until(() -> {
+    await("waiting for thread to exit").until(() -> {
       return !thread.isAlive();
     });
 
@@ -231,7 +230,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
       thread.setDaemon(true);
       thread.start();
 
-      await("waiting for recovery to begin").atMost(10, TimeUnit.SECONDS).until(() -> {
+      await("waiting for recovery to begin").until(() -> {
         return observer.isPreventingProcessing();
       });
 
@@ -258,7 +257,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
       System.out.println("releasing transaction locks, which should block for a bit");
       dtls.release(txLockId);
 
-      await("waiting for recovery to finish").atMost(10, TimeUnit.SECONDS).until(() -> {
+      await("waiting for recovery to finish").until(() -> {
         return !((TXLockServiceImpl) dtls).isRecovering();
       });
     } finally {

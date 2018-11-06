@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * TXStateStub lives on the accessor node when we are remoting a transaction. It is a stub for
@@ -62,8 +61,8 @@ public abstract class TXStateStub implements TXStateInterface {
   public void precommit()
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("precommit"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "precommit"));
   }
 
   /**
@@ -143,8 +142,7 @@ public abstract class TXStateStub implements TXStateInterface {
       Object expectedOldValue) throws EntryNotFoundException {
     if (event.getOperation().isLocal()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXStateStub_LOCAL_DESTROY_NOT_ALLOWED_IN_TRANSACTION
-              .toLocalizedString());
+          "localDestroy() is not allowed in a transaction");
     }
     TXRegionStub rs = getTXRegionStub(event.getRegion());
     rs.destroyExistingEntry(event, cacheWrite, expectedOldValue);
@@ -271,8 +269,7 @@ public abstract class TXStateStub implements TXStateInterface {
       boolean forceNewEntry) {
     if (event.getOperation().isLocal()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXStateStub_LOCAL_INVALIDATE_NOT_ALLOWED_IN_TRANSACTION
-              .toLocalizedString());
+          "localInvalidate() is not allowed in a transaction");
     }
     getTXRegionStub(event.getRegion()).invalidateExistingEntry(event, invokeCallbacks,
         forceNewEntry);
@@ -612,20 +609,19 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_DESTROY_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "destroyRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_INVALIDATE_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString());
+        "invalidateRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "clear() is not supported while in a transaction");
   }
 
   /*

@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
@@ -234,8 +233,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     // obligatory type check
     if (o == null || !(o instanceof GMSMember)) {
       throw new ClassCastException(
-          LocalizedStrings.Member_MEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES
-              .toLocalizedString());
+          "NetMember.compareTo(): comparison between different classes");
     }
     byte[] myAddr = inetAddr.getAddress();
     GMSMember his = (GMSMember) o;

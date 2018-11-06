@@ -22,7 +22,6 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * {@code RegionFactory} is used to create {@link Region regions} in a {@link Cache cache}.
@@ -110,8 +109,8 @@ public class RegionFactory<K, V> {
     this.cache = cache;
     RegionAttributes<K, V> ra = getCache().getRegionAttributes(regionAttributesId);
     if (ra == null) {
-      throw new IllegalStateException(LocalizedStrings.RegionFactory_NO_ATTRIBUTES_ASSOCIATED_WITH_0
-          .toLocalizedString(regionAttributesId));
+      throw new IllegalStateException(String.format("No attributes associated with %s",
+          regionAttributesId));
     }
     this.attrsFactory = new AttributesFactory<K, V>(ra);
   }

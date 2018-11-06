@@ -41,5 +41,7 @@ public abstract class SingleGfshCommand extends GfshCommand {
    *
    *        it should throw some RuntimeException if update failed.
    */
-  public abstract void updateClusterConfig(String group, CacheConfig config, Object configObject);
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+    // Default is a no-op
+  }
 }

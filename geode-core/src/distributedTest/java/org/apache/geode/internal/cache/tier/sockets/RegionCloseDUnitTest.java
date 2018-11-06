@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.CacheFactory.getAnyInstance;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -38,11 +39,11 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -140,7 +141,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void VerifyClientProxyOnServerBeforeClose() {
-    Cache c = CacheFactory.getAnyInstance();
+    Cache c = getAnyInstance();
     assertEquals("More than one CacheServer", 1, c.getCacheServers().size());
 
 
@@ -154,7 +155,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 15 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
 
     Iterator iter = bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
@@ -181,7 +182,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void VerifyClientProxyOnServerAfterClose() {
-    final Cache c = CacheFactory.getAnyInstance();
+    final Cache c = getAnyInstance();
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return c.getCacheServers().size() == 1;
@@ -191,7 +192,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 40 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     final CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
     ev = new WaitCriterion() {
@@ -203,7 +204,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 40 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
       public boolean done() {
@@ -214,7 +215,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 40 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     // assertNull(c.getRegion("/"+clientMembershipId));
     assertEquals(0, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
   }

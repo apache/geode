@@ -16,7 +16,6 @@ package org.apache.geode.cache.query.internal.cq;
 
 import org.apache.geode.cache.query.CqAttributesMutator;
 import org.apache.geode.cache.query.CqListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Supports modification of certain cq attributes after the cq has been created. The setter methods
@@ -35,7 +34,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
   public void addCqListener(CqListener aListener) {
     if (true) {
       throw new IllegalStateException(
-          LocalizedStrings.CqAttributesMutatorImpl_NOT_YET_SUPPORTED.toLocalizedString());
+          "Not yet supported.");
     }
   }
 
@@ -51,7 +50,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
   public void removeCqListener(CqListener aListener) {
     if (true) {
       throw new IllegalStateException(
-          LocalizedStrings.CqAttributesMutatorImpl_NOT_YET_SUPPORTED.toLocalizedString());
+          "Not yet supported.");
     }
   }
 
@@ -65,7 +64,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
   public void initCqListeners(CqListener[] newListeners) {
     if (true) {
       throw new IllegalStateException(
-          LocalizedStrings.CqAttributesMutatorImpl_NOT_YET_SUPPORTED.toLocalizedString());
+          "Not yet supported.");
     }
   }
 }

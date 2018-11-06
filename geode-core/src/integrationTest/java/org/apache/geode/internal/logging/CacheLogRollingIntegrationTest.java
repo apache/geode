@@ -75,14 +75,14 @@ public class CacheLogRollingIntegrationTest {
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     if (system != null) {
       system.disconnect();
     }
   }
 
   @Test
-  public void testSimpleStartRestartWithRolling() throws Exception {
+  public void testSimpleStartRestartWithRolling() {
     Properties config = createConfig();
     config.put(LOG_FILE, logFile.getAbsolutePath());
     config.put(LOG_FILE_SIZE_LIMIT, "1");
@@ -160,7 +160,7 @@ public class CacheLogRollingIntegrationTest {
   }
 
   @Test
-  public void with_logFileSizeLimit_should_createMetaLogFile() throws Exception {
+  public void with_logFileSizeLimit_should_createMetaLogFile() {
     Properties config = createConfig();
     config.put(LOG_FILE, logFile.getAbsolutePath());
     config.put(LOG_FILE_SIZE_LIMIT, "1");
@@ -176,7 +176,7 @@ public class CacheLogRollingIntegrationTest {
   }
 
   @Test
-  public void without_logFileSizeLimit_shouldNot_createMetaLogFile() throws Exception {
+  public void without_logFileSizeLimit_shouldNot_createMetaLogFile() {
     Properties config = createConfig();
     config.put(LOG_FILE, logFile.getAbsolutePath());
 
@@ -201,7 +201,7 @@ public class CacheLogRollingIntegrationTest {
     assertThat(file).exists();
 
     BufferedReader reader = new BufferedReader(new FileReader(file));
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     int numRead;
     char[] chars = new char[1024];
 

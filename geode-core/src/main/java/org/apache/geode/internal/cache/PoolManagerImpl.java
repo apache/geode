@@ -39,9 +39,7 @@ import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Implementation used by PoolManager.
@@ -150,7 +148,7 @@ public class PoolManagerImpl {
       Object old = copy.put(name, pool);
       if (old != null) {
         throw new IllegalStateException(
-            LocalizedStrings.PoolManagerImpl_POOL_NAMED_0_ALREADY_EXISTS.toLocalizedString(name));
+            String.format("A pool named %s already exists", name));
       }
       // Boolean specialCase=Boolean.getBoolean("gemfire.SPECIAL_DURABLE");
       // if(specialCase && copy.size()>1){
@@ -208,8 +206,7 @@ public class PoolManagerImpl {
     }
     if (pools.size() > 0 && !foundDurablePool) {
       throw new IllegalStateException(
-          LocalizedStrings.PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_READYFOREVENTS
-              .toLocalizedString());
+          "Only durable clients should call readyForEvents()");
     }
   }
 
@@ -227,8 +224,7 @@ public class PoolManagerImpl {
               InternalInstantiator.generateEventId());
         }
       } catch (RuntimeException e) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.PoolmanagerImpl_ERROR_REGISTERING_INSTANTIATOR_ON_POOL), e);
+        logger.warn("Error registering instantiator on pool:", e);
       } finally {
         next.releaseThreadLocalConnection();
       }
@@ -248,8 +244,7 @@ public class PoolManagerImpl {
           RegisterInstantiatorsOp.execute(next, holders, InternalInstantiator.generateEventId());
         }
       } catch (RuntimeException e) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.PoolmanagerImpl_ERROR_REGISTERING_INSTANTIATOR_ON_POOL), e);
+        logger.warn("Error registering instantiator on pool:", e);
       } finally {
         next.releaseThreadLocalConnection();
       }
@@ -272,8 +267,7 @@ public class PoolManagerImpl {
           RegisterDataSerializersOp.execute(next, dataSerializers, eventId);
         }
       } catch (RuntimeException e) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.PoolmanagerImpl_ERROR_REGISTERING_INSTANTIATOR_ON_POOL), e);
+        logger.warn("Error registering instantiator on pool:", e);
       } finally {
         next.releaseThreadLocalConnection();
       }
@@ -296,8 +290,7 @@ public class PoolManagerImpl {
           RegisterDataSerializersOp.execute(next, holders, eventId);
         }
       } catch (RuntimeException e) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.PoolmanagerImpl_ERROR_REGISTERING_INSTANTIATOR_ON_POOL), e);
+        logger.warn("Error registering instantiator on pool:", e);
       } finally {
         next.releaseThreadLocalConnection();
       }

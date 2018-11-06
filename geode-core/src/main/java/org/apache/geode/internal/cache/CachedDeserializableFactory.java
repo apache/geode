@@ -23,7 +23,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -201,8 +200,7 @@ public class CachedDeserializableFactory {
         result += dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            LocalizedStrings.CachedDeserializableFactory_COULD_NOT_CALCULATE_SIZE_OF_OBJECT
-                .toLocalizedString());
+            "Could not calculate size of object");
         ex2.initCause(ex);
         throw ex2;
       }
@@ -216,7 +214,7 @@ public class CachedDeserializableFactory {
     }
     // GemFireCache.getInstance().getLogger().info("DEBUG calcMemSize: o=<" + o + "> o.class=" + (o
     // != null ? o.getClass() : "<null>") + " os=" + os + " result=" + result, new
-    // RuntimeException("STACK"));
+    // RuntimeException("STACK");
     return result;
   }
 
@@ -245,15 +243,14 @@ public class CachedDeserializableFactory {
         result += dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            LocalizedStrings.CachedDeserializableFactory_COULD_NOT_CALCULATE_SIZE_OF_OBJECT
-                .toLocalizedString());
+            "Could not calculate size of object");
         ex2.initCause(ex);
         throw ex2;
       }
     }
     // GemFireCache.getInstance().getLogger().info("DEBUG calcSerializedSize: o=<" + o + ">
     // o.class=" + (o != null ? o.getClass() : "<null>") + " result=" + result, new
-    // RuntimeException("STACK"));
+    // RuntimeException("STACK");
     return result;
   }
 

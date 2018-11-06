@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static java.lang.Thread.sleep;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.ha.HARegionQueue.BLOCKING_HA_QUEUE;
+import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
+import static org.apache.geode.test.dunit.ThreadUtils.join;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -30,8 +34,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -100,8 +104,8 @@ public class BlockingHARegionJUnitTest {
     quitForLoop = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(1);
-    final HARegionQueue hrq = HARegionQueue.getHARegionQueueInstance(
-        "BlockingHARegionJUnitTest_Region", cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false);
+    final HARegionQueue hrq = getHARegionQueueInstance(
+        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false);
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
     final Thread thread1 = new DoPuts(hrq, 2);
     thread1.start();
@@ -114,7 +118,7 @@ public class BlockingHARegionJUnitTest {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertTrue(thread1.isAlive()); // thread should still be alive (in wait state)
 
     Thread thread2 = new DoTake(hrq, 1);
@@ -129,7 +133,7 @@ public class BlockingHARegionJUnitTest {
       }
     };
     // sleep. take will proceed and so will sleeping put
-    Wait.waitForCriterion(ev, 3 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     // thread should have died since put should have proceeded
     ev = new WaitCriterion() {
@@ -141,10 +145,10 @@ public class BlockingHARegionJUnitTest {
         return "thread1 still alive";
       }
     };
-    Wait.waitForCriterion(ev, 30 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
-    ThreadUtils.join(thread1, 30 * 1000); // for completeness
-    ThreadUtils.join(thread2, 30 * 1000);
+    join(thread1, 30 * 1000); // for completeness
+    join(thread2, 30 * 1000);
     if (exceptionOccurred) {
       fail(" Test failed due to " + exceptionString);
     }
@@ -165,8 +169,8 @@ public class BlockingHARegionJUnitTest {
     quitForLoop = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
-    final HARegionQueue hrq = HARegionQueue.getHARegionQueueInstance(
-        "BlockingHARegionJUnitTest_Region", cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false);
+    final HARegionQueue hrq = getHARegionQueueInstance(
+        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false);
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
     Thread thread1 = new DoPuts(hrq, 20000, 1);
     Thread thread2 = new DoPuts(hrq, 20000, 2);
@@ -189,7 +193,7 @@ public class BlockingHARegionJUnitTest {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     assertTrue(thread1.isAlive());
     assertTrue(thread2.isAlive());
@@ -200,7 +204,7 @@ public class BlockingHARegionJUnitTest {
     assertTrue(hrq.region.size() == 20000);
 
     quitForLoop = true;
-    Thread.sleep(20000);
+    sleep(20000);
 
     thread1.interrupt();
     thread2.interrupt();
@@ -208,13 +212,13 @@ public class BlockingHARegionJUnitTest {
     thread4.interrupt();
     thread5.interrupt();
 
-    Thread.sleep(2000);
+    sleep(2000);
 
-    ThreadUtils.join(thread1, 5 * 60 * 1000);
-    ThreadUtils.join(thread2, 5 * 60 * 1000);
-    ThreadUtils.join(thread3, 5 * 60 * 1000);
-    ThreadUtils.join(thread4, 5 * 60 * 1000);
-    ThreadUtils.join(thread5, 5 * 60 * 1000);
+    join(thread1, 5 * 60 * 1000);
+    join(thread2, 5 * 60 * 1000);
+    join(thread3, 5 * 60 * 1000);
+    join(thread4, 5 * 60 * 1000);
+    join(thread5, 5 * 60 * 1000);
 
     cache.close();
   }
@@ -233,8 +237,8 @@ public class BlockingHARegionJUnitTest {
     quitForLoop = false;
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
-    final HARegionQueue hrq = HARegionQueue.getHARegionQueueInstance(
-        "BlockingHARegionJUnitTest_Region", cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false);
+    final HARegionQueue hrq = getHARegionQueueInstance(
+        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false);
     Thread thread1 = new DoPuts(hrq, 40000, 1);
     Thread thread2 = new DoPuts(hrq, 40000, 2);
     Thread thread3 = new DoPuts(hrq, 40000, 3);
@@ -259,11 +263,11 @@ public class BlockingHARegionJUnitTest {
     thread9.start();
     thread10.start();
 
-    ThreadUtils.join(thread6, 30 * 1000);
-    ThreadUtils.join(thread7, 30 * 1000);
-    ThreadUtils.join(thread8, 30 * 1000);
-    ThreadUtils.join(thread9, 30 * 1000);
-    ThreadUtils.join(thread10, 30 * 1000);
+    join(thread6, 30 * 1000);
+    join(thread7, 30 * 1000);
+    join(thread8, 30 * 1000);
+    join(thread9, 30 * 1000);
+    join(thread10, 30 * 1000);
 
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
@@ -274,7 +278,7 @@ public class BlockingHARegionJUnitTest {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     assertTrue(thread1.isAlive());
     assertTrue(thread2.isAlive());
@@ -286,7 +290,7 @@ public class BlockingHARegionJUnitTest {
 
     quitForLoop = true;
 
-    Thread.sleep(2000);
+    sleep(2000);
 
     thread1.interrupt();
     thread2.interrupt();
@@ -294,14 +298,14 @@ public class BlockingHARegionJUnitTest {
     thread4.interrupt();
     thread5.interrupt();
 
-    Thread.sleep(2000);
+    sleep(2000);
 
 
-    ThreadUtils.join(thread1, 30 * 1000);
-    ThreadUtils.join(thread2, 30 * 1000);
-    ThreadUtils.join(thread3, 30 * 1000);
-    ThreadUtils.join(thread4, 30 * 1000);
-    ThreadUtils.join(thread5, 30 * 1000);
+    join(thread1, 30 * 1000);
+    join(thread2, 30 * 1000);
+    join(thread3, 30 * 1000);
+    join(thread4, 30 * 1000);
+    join(thread5, 30 * 1000);
 
     cache.close();
   }

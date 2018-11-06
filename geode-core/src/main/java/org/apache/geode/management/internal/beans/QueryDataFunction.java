@@ -58,7 +58,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -138,9 +137,8 @@ public class QueryDataFunction implements Function, InternalEntity {
       Region region = cache.getRegion(regionName);
 
       if (region == null) {
-        throw new Exception(
-            ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND_ON_MEMBER.toLocalizedString(regionName,
-                cache.getDistributedSystem().getDistributedMember().getId()));
+        throw new Exception(String.format("Cannot find region %s in member %s", regionName,
+            cache.getDistributedSystem().getDistributedMember().getId()));
       }
 
       Object results = null;
@@ -304,14 +302,13 @@ public class QueryDataFunction implements Function, InternalEntity {
       }
     } catch (FunctionException fe) {
       throw new Exception(
-          ManagementStrings.QUERY__MSG__QUERY_EXEC.toLocalizedString(fe.getMessage()));
+          String.format("Query could not be executed due to : %s", fe.getMessage()));
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable e) {
       SystemFailure.checkFailure();
-      throw new Exception(
-          ManagementStrings.QUERY__MSG__QUERY_EXEC.toLocalizedString(e.getMessage()));
+      throw new Exception(String.format("Query could not be executed due to : %s", e.getMessage()));
     }
   }
 
@@ -330,7 +327,7 @@ public class QueryDataFunction implements Function, InternalEntity {
       throws Exception {
 
     if (query == null || query.isEmpty()) {
-      return new JsonisedErrorMessage(ManagementStrings.QUERY__MSG__QUERY_EMPTY.toLocalizedString())
+      return new JsonisedErrorMessage("Query is either empty or Null")
           .toString();
     }
 
@@ -344,7 +341,7 @@ public class QueryDataFunction implements Function, InternalEntity {
         inputMembers.add(distributedMember);
         if (distributedMember == null) {
           return new JsonisedErrorMessage(
-              ManagementStrings.QUERY__MSG__INVALID_MEMBER.toLocalizedString(member)).toString();
+              String.format("Query is invalid due to invalid member : %s", member)).toString();
         }
       }
     }
@@ -362,7 +359,7 @@ public class QueryDataFunction implements Function, InternalEntity {
           DistributedRegionMXBean regionMBean = service.getDistributedRegionMXBean(regionPath);
           if (regionMBean == null) {
             return new JsonisedErrorMessage(
-                ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND.toLocalizedString(regionPath))
+                String.format("Cannot find regions %s in any of the members", regionPath))
                     .toString();
           } else {
             Set<DistributedMember> associatedMembers =
@@ -371,15 +368,15 @@ public class QueryDataFunction implements Function, InternalEntity {
             if (inputMembers != null && inputMembers.size() > 0) {
               if (!associatedMembers.containsAll(inputMembers)) {
                 return new JsonisedErrorMessage(
-                    ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND_ON_MEMBERS
-                        .toLocalizedString(regionPath)).toString();
+                    String.format("Cannot find regions %s in specified members", regionPath))
+                        .toString();
               }
             }
           }
         }
       } else {
-        return new JsonisedErrorMessage(ManagementStrings.QUERY__MSG__INVALID_QUERY
-            .toLocalizedString("Region mentioned in query probably missing /")).toString();
+        return new JsonisedErrorMessage(String.format("Query is invalid due to error : %s",
+            "Region mentioned in query probably missing /")).toString();
       }
 
       // Validate
@@ -390,7 +387,8 @@ public class QueryDataFunction implements Function, InternalEntity {
           if (regionMBean.getRegionType().equals(DataPolicy.PARTITION.toString())
               || regionMBean.getRegionType().equals(DataPolicy.PERSISTENT_PARTITION.toString())) {
             return new JsonisedErrorMessage(
-                ManagementStrings.QUERY__MSG__JOIN_OP_EX.toLocalizedString()).toString();
+                "Join operation can only be executed on targeted members, please give member input")
+                    .toString();
           }
         }
       }
@@ -424,13 +422,14 @@ public class QueryDataFunction implements Function, InternalEntity {
         }
 
       } else {
-        return new JsonisedErrorMessage(ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND
-            .toLocalizedString(regionsInQuery.toString())).toString();
+        return new JsonisedErrorMessage(String
+            .format("Cannot find regions %s in any of the members", regionsInQuery.toString()))
+                .toString();
       }
 
     } catch (QueryInvalidException qe) {
       return new JsonisedErrorMessage(
-          ManagementStrings.QUERY__MSG__INVALID_QUERY.toLocalizedString(qe.getMessage()))
+          String.format("Query is invalid due to error : %s", qe.getMessage()))
               .toString();
     }
   }

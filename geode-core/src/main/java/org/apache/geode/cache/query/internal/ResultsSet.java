@@ -36,7 +36,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo probably should assert element type when elements added
 /**
@@ -85,8 +84,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsSet_THIS_COLLECTION_DOES_NOT_SUPPORT_STRUCT_ELEMENTS
-              .toLocalizedString());
+          "This collection does not support struct elements");
     this.elementType = elementType;
   }
 

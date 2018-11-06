@@ -16,7 +16,6 @@ package org.apache.geode.cache.query.internal.cq;
 
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * CqListener class, implements CqListener interface methods. Offers callback methods for the
@@ -32,7 +31,7 @@ public class CqListenerImpl implements CqListener {
   public void onEvent(CqEvent aCqEvent) {
     if (true) {
       throw new IllegalStateException(
-          LocalizedStrings.CqListenerImpl_NOT_YET_SUPPORTED.toLocalizedString());
+          "Not yet supported.");
     }
   }
 
@@ -43,7 +42,7 @@ public class CqListenerImpl implements CqListener {
   public void onError(CqEvent aCqEvent) {
     if (true) {
       throw new IllegalStateException(
-          LocalizedStrings.CqListenerImpl_NOT_YET_SUPPORTED.toLocalizedString());
+          "Not yet supported.");
     }
   }
 

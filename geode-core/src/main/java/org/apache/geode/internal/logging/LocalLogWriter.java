@@ -17,11 +17,9 @@ package org.apache.geode.internal.logging;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import org.apache.geode.i18n.LogWriterI18n;
 
 /**
- * Implementation of {@link LogWriterI18n} that will write to a local stream.
- *
+ * Implementation of {@link org.apache.geode.LogWriter} that will write to a local stream.
  * <p>
  * Note this class is no longer needed. It can be replaced by PureLogWriter.
  */

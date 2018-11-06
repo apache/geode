@@ -57,7 +57,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.BlobHelper;
 
@@ -374,7 +373,7 @@ public abstract class StreamingOperation {
         replyWithException(dm, rex);
       } else if (!sentFinalMessage && !receiverCacheClosed) {
         throw new InternalGemFireError(
-            LocalizedStrings.StreamingOperation_THIS_SHOULDNT_HAPPEN.toLocalizedString());
+            "this should not happen");
         // replyNoData(dm);
       }
     }
@@ -543,9 +542,11 @@ public abstract class StreamingOperation {
           for (int i = 0; i < n; i++) {
             // TestHook used in ResourceManagerWithQueryMonitorDUnitTest.
             // will simulate an critical memory event after a certain number of calls to
-            // doTestHook(3)
+            // doTestHook(BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION)
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook(3);
+              DefaultQuery.testHook.doTestHook(
+                  DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
+                  null);
             }
             if (isQueryMessageProcessor && QueryMonitor.isLowMemory()) {
               lowMemoryDetected = true;
@@ -567,7 +568,9 @@ public abstract class StreamingOperation {
             isCanceled = true;
             // TestHook to help verify that objects have been rejected.
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook(2);
+              DefaultQuery.testHook.doTestHook(
+                  DefaultQuery.TestHook.SPOTS.LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION,
+                  null);
             }
           }
         } finally {

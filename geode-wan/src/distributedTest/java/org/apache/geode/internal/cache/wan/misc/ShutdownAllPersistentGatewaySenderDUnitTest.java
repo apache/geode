@@ -30,12 +30,12 @@ import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -92,7 +92,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
           @Override
           public void beforeShutdownAll() {
             final Region region = cache.getRegion(getTestMethodName() + "_PR");
-            Wait.waitForCriterion(new WaitCriterion() {
+            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
               @Override
               public boolean done() {
                 return region.size() >= 2;
@@ -102,7 +102,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
               public String description() {
                 return "Wait for wan to have processed several events";
               }
-            }, 30000, 100, true);
+            });
           }
         });
       }
@@ -150,7 +150,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
         final Region region = cache.getRegion(getTestMethodName() + "_PR");
 
         cache.getLogger().info("vm1's region size after restart gatewayHub is " + region.size());
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
           public boolean done() {
             Object lastValue = region.get(NUM_KEYS - 1);
             if (lastValue != null && lastValue.equals(NUM_KEYS - 1)) {
@@ -165,7 +165,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
             return "Waiting for destination region to reach size: " + NUM_KEYS + ", current is "
                 + region.size();
           }
-        }, MAX_WAIT, 100, true);
+        });
         assertEquals(NUM_KEYS, region.size());
       }
     });

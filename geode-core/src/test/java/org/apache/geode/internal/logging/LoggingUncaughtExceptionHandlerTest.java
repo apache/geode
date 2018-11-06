@@ -97,7 +97,7 @@ public class LoggingUncaughtExceptionHandlerTest {
     handler.uncaughtException(thread, throwable);
 
     verify(logger).info(
-        "Uncaught exception in thread {0} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {1}",
+        "Uncaught exception in thread {} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {}",
         thread, throwable);
   }
 

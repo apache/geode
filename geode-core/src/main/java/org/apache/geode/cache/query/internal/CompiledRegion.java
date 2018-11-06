@@ -23,7 +23,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -85,7 +84,7 @@ public class CompiledRegion extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          LocalizedStrings.CompiledRegion_REGION_NOT_FOUND_0.toLocalizedString(this.regionPath));
+          String.format("Region not found: %s", this.regionPath));
     }
 
     if (context.isCqQueryContext()) {

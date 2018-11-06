@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,9 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -77,7 +76,7 @@ public class ValueSerializerIntegrationTest {
 
     socket = new Socket("localhost", cacheServerPort);
 
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    await().until(socket::isConnected);
 
     MessageUtil.performAndVerifyHandshake(socket);
 

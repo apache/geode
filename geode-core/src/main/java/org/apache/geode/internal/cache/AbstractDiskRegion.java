@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
@@ -309,14 +308,20 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
             (Class<Compressor>) ClassPathLoader.getLatest().forName(compressorClassName);
         this.compressor = compressorClass.newInstance();
       } catch (ClassNotFoundException e) {
-        throw new IllegalArgumentException(LocalizedStrings.DiskInitFile_UNKNOWN_COMPRESSOR_0_FOUND
-            .toLocalizedString(compressorClassName), e);
+        throw new IllegalArgumentException(
+            String.format("Unknown Compressor %s found in disk initialization file.",
+                compressorClassName),
+            e);
       } catch (InstantiationException e) {
-        throw new IllegalArgumentException(LocalizedStrings.DiskInitFile_UNKNOWN_COMPRESSOR_0_FOUND
-            .toLocalizedString(compressorClassName), e);
+        throw new IllegalArgumentException(
+            String.format("Unknown Compressor %s found in disk initialization file.",
+                compressorClassName),
+            e);
       } catch (IllegalAccessException e) {
-        throw new IllegalArgumentException(LocalizedStrings.DiskInitFile_UNKNOWN_COMPRESSOR_0_FOUND
-            .toLocalizedString(compressorClassName), e);
+        throw new IllegalArgumentException(
+            String.format("Unknown Compressor %s found in disk initialization file.",
+                compressorClassName),
+            e);
       }
     }
   }

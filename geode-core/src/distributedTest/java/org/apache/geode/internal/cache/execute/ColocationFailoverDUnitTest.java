@@ -41,6 +41,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -207,7 +208,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
 
@@ -347,7 +348,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, 2 * 60 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void createCacheInAllVms() {

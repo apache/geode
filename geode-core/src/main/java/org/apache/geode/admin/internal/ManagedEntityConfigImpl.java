@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -64,8 +63,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_DETERMINE_LOCALHOST
-              .toLocalizedString());
+          "Could not determine localhost?!");
       ex2.initCause(ex);
       throw ex2;
     }
@@ -87,7 +85,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
     URL url = GemFireVersion.getJarURL();
     if (url == null) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());
+          "Could not find gemfire.jar.");
     }
 
     File gemfireJar = new File(url.getPath());
@@ -142,8 +140,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
   public void checkReadOnly() {
     if (this.isReadOnly()) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_THIS_CONFIGURATION_CANNOT_BE_MODIFIED_WHILE_ITS_MANAGED_ENTITY_IS_RUNNING
-              .toLocalizedString());
+          "This configuration cannot be modified while its managed entity is running.");
     }
   }
 
@@ -219,7 +216,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
   public void validate() {
     if (InetAddressUtil.validateHost(this.host) == null) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_INVALID_HOST_0.toLocalizedString(this.host));
+          String.format("Invalid host %s", this.host));
     }
   }
 

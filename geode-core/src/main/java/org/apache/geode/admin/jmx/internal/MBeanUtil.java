@@ -43,7 +43,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -155,25 +154,26 @@ public class MBeanUtil {
         registry = Registry.getRegistry(null, null);
         if (mbeanServer == null) {
           throw new IllegalStateException(
-              LocalizedStrings.MBeanUtil_MBEAN_SERVER_NOT_INITIALIZED_YET.toLocalizedString());
+              "MBean Server is not initialized yet.");
         }
         registry.setMBeanServer(mbeanServer);
 
         String mbeansResource = getOSPath("/org/apache/geode/admin/jmx/mbeans-descriptors.xml");
 
         URL url = ClassPathLoader.getLatest().getResource(MBeanUtil.class, mbeansResource);
-        raiseOnFailure(url != null, LocalizedStrings.MBeanUtil_FAILED_TO_FIND_0
-            .toLocalizedString(new Object[] {mbeansResource}));
+        raiseOnFailure(url != null, String.format("Failed to find %s",
+            new Object[] {mbeansResource}));
         registry.loadMetadata(url);
 
         // simple test to make sure the xml was actually loaded and is valid...
         String[] test = registry.findManagedBeans();
-        raiseOnFailure(test != null && test.length > 0, LocalizedStrings.MBeanUtil_FAILED_TO_LOAD_0
-            .toLocalizedString(new Object[] {mbeansResource}));
+        raiseOnFailure(test != null && test.length > 0,
+            String.format("Failed to load metadata from %s",
+                new Object[] {mbeansResource}));
       } catch (Exception e) {
         logStackTrace(Level.WARN, e);
         throw new RuntimeAdminException(
-            LocalizedStrings.MBeanUtil_FAILED_TO_GET_MBEAN_REGISTRY.toLocalizedString(), e);
+            "Failed to get MBean Registry", e);
       }
     }
     return registry;
@@ -212,8 +212,8 @@ public class MBeanUtil {
       try {
         objName = ObjectName.getInstance(resource.getMBeanName());
       } catch (MalformedObjectNameException e) {
-        throw new MalformedObjectNameException(LocalizedStrings.MBeanUtil_0_IN_1
-            .toLocalizedString(new Object[] {e.getMessage(), resource.getMBeanName()}));
+        throw new MalformedObjectNameException(String.format("%s in '%s'",
+            new Object[] {e.getMessage(), resource.getMBeanName()}));
       }
 
       synchronized (MBeanUtil.class) {
@@ -229,8 +229,10 @@ public class MBeanUtil {
       }
       return objName;
     } catch (java.lang.Exception e) {
-      throw new RuntimeAdminException(LocalizedStrings.MBeanUtil_FAILED_TO_CREATE_MBEAN_FOR_0
-          .toLocalizedString(new Object[] {resource.getMBeanName()}), e);
+      throw new RuntimeAdminException(
+          String.format("Failed to create MBean representation for resource %s.",
+              new Object[] {resource.getMBeanName()}),
+          e);
     }
   }
 
@@ -255,8 +257,8 @@ public class MBeanUtil {
         }
       }
       raiseOnFailure(mbeanServer.isRegistered(objName),
-          LocalizedStrings.MBeanUtil_COULDNT_FIND_MBEAN_REGISTERED_WITH_OBJECTNAME_0
-              .toLocalizedString(new Object[] {objName.toString()}));
+          String.format("Could not find a MBean registered with ObjectName: %s.",
+              new Object[] {objName.toString()}));
       return objName;
     } catch (java.lang.Exception e) {
       throw new RuntimeAdminException(e);
@@ -276,12 +278,12 @@ public class MBeanUtil {
       managed = registry.findManagedBean(resource.getManagedResourceType().getClassTypeName());
     } else {
       throw new IllegalArgumentException(
-          LocalizedStrings.MBeanUtil_MANAGEDBEAN_IS_NULL.toLocalizedString());
+          "ManagedBean is null");
     }
 
     if (managed == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MBeanUtil_MANAGEDBEAN_IS_NULL.toLocalizedString());
+          "ManagedBean is null");
     }
 
     // customize the defn...
@@ -304,16 +306,15 @@ public class MBeanUtil {
       RefreshNotificationType type, int refreshInterval) {
     if (client == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MBeanUtil_NOTIFICATIONLISTENER_IS_REQUIRED.toLocalizedString());
+          "NotificationListener is required");
     }
     if (type == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MBeanUtil_REFRESHNOTIFICATIONTYPE_IS_REQUIRED.toLocalizedString());
+          "RefreshNotificationType is required");
     }
     if (refreshTimerObjectName == null || refreshTimer == null) {
       throw new IllegalStateException(
-          LocalizedStrings.MBeanUtil_REFRESHTIMER_HAS_NOT_BEEN_PROPERLY_INITIALIZED
-              .toLocalizedString());
+          "RefreshTimer has not been properly initialized.");
     }
 
     try {
@@ -345,8 +346,7 @@ public class MBeanUtil {
         } catch (InstanceNotFoundException e) {
           // should not happen since we already checked refreshTimerObjectName
           logStackTrace(Level.WARN, e,
-              LocalizedStrings.MBeanUtil_COULD_NOT_FIND_REGISTERED_REFRESHTIMER_INSTANCE
-                  .toLocalizedString());
+              "Could not find registered RefreshTimer instance.");
         }
       }
 
@@ -463,13 +463,13 @@ public class MBeanUtil {
       refreshTimer.start();
     } catch (JMException e) {
       logStackTrace(Level.WARN, e,
-          LocalizedStrings.MBeanUtil_FAILED_TO_CREATE_REFRESH_TIMER.toLocalizedString());
+          "Failed to create/register/start refresh timer.");
     } catch (JMRuntimeException e) {
       logStackTrace(Level.WARN, e,
-          LocalizedStrings.MBeanUtil_FAILED_TO_CREATE_REFRESH_TIMER.toLocalizedString());
+          "Failed to create/register/start refresh timer.");
     } catch (Exception e) {
       logStackTrace(Level.WARN, e,
-          LocalizedStrings.MBeanUtil_FAILED_TO_CREATE_REFRESH_TIMER.toLocalizedString());
+          "Failed to create/register/start refresh timer.");
     }
   }
 
@@ -583,16 +583,16 @@ public class MBeanUtil {
       }
     } catch (MBeanRegistrationException e) {
       logStackTrace(Level.WARN, null,
-          LocalizedStrings.MBeanUtil_FAILED_WHILE_UNREGISTERING_MBEAN_WITH_OBJECTNAME_0
-              .toLocalizedString(new Object[] {objectName}));
+          String.format("Failed while unregistering MBean with ObjectName : %s",
+              new Object[] {objectName}));
     } catch (InstanceNotFoundException e) {
       logStackTrace(Level.WARN, null,
-          LocalizedStrings.MBeanUtil_WHILE_UNREGISTERING_COULDNT_FIND_MBEAN_WITH_OBJECTNAME_0
-              .toLocalizedString(new Object[] {objectName}));
+          String.format("While unregistering, could not find MBean with ObjectName : %s",
+              new Object[] {objectName}));
     } catch (JMRuntimeException e) {
       logStackTrace(Level.WARN, null,
-          LocalizedStrings.MBeanUtil_COULD_NOT_UNREGISTER_MBEAN_WITH_OBJECTNAME_0
-              .toLocalizedString(new Object[] {objectName}));
+          String.format("Could not un-register MBean with ObjectName : %s",
+              new Object[] {objectName}));
     }
   }
 
@@ -655,8 +655,8 @@ public class MBeanUtil {
       } catch (InstanceNotFoundException xptn) {
         // should not happen since we already checked refreshTimerObjectName
         logStackTrace(Level.WARN, null,
-            LocalizedStrings.MBeanUtil_WHILE_UNREGISTERING_COULDNT_FIND_MBEAN_WITH_OBJECTNAME_0
-                .toLocalizedString(new Object[] {refreshTimerObjectName}));
+            String.format("While unregistering, could not find MBean with ObjectName : %s",
+                new Object[] {refreshTimerObjectName}));
       }
     }
   }
@@ -698,8 +698,8 @@ public class MBeanUtil {
               if (entry == null)
                 return;
               if (!(entry instanceof ManagedResource)) {
-                throw new ClassCastException(LocalizedStrings.MBeanUtil_0_IS_NOT_A_MANAGEDRESOURCE
-                    .toLocalizedString(new Object[] {entry.getClass().getName()}));
+                throw new ClassCastException(String.format("%s is not a ManagedResource",
+                    new Object[] {entry.getClass().getName()}));
               }
               ManagedResource resource = (ManagedResource) entry;
               {
@@ -712,12 +712,10 @@ public class MBeanUtil {
       }, null, null);
     } catch (JMException e) {
       logStackTrace(Level.WARN, e,
-          LocalizedStrings.MBeanUtil_FAILED_TO_REGISTER_SERVERNOTIFICATIONLISTENER
-              .toLocalizedString());
+          "Failed to register ServerNotificationListener.");
     } catch (JMRuntimeException e) {
       logStackTrace(Level.WARN, e,
-          LocalizedStrings.MBeanUtil_FAILED_TO_REGISTER_SERVERNOTIFICATIONLISTENER
-              .toLocalizedString());
+          "Failed to register ServerNotificationListener.");
     }
   }
 

@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to get its current information
@@ -36,7 +35,7 @@ public class FetchHostRequest extends AdminRequest {
   }
 
   public FetchHostRequest() {
-    friendlyName = LocalizedStrings.FetchHostRequest_FETCH_REMOTE_HOST.toLocalizedString();
+    friendlyName = "Fetch remote host";
   }
 
   /**
@@ -63,7 +62,7 @@ public class FetchHostRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchHostRequest_FETCHHOSTREQUEST_FOR_0
-        .toLocalizedString(this.getRecipient());
+    return String.format("FetchHostRequest for %s",
+        this.getRecipient());
   }
 }

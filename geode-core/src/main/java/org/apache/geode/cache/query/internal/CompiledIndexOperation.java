@@ -28,7 +28,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Class Description
@@ -108,8 +107,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     if ((rcvr instanceof List) || rcvr.getClass().isArray() || (rcvr instanceof String)) {
       if (!(index instanceof Integer)) {
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledIndexOperation_INDEX_EXPRESSION_MUST_BE_AN_INTEGER_FOR_LISTS_OR_ARRAYS
-                .toLocalizedString());
+            "index expression must be an integer for lists or arrays");
       }
     }
     if (rcvr instanceof List) {
@@ -144,8 +142,8 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
      * == null) { return null; } return this.evalRegionAsEntry? entry:entry.getValue(); }
      */
     throw new TypeMismatchException(
-        LocalizedStrings.CompiledIndexOperation_INDEX_EXPRESSION_NOT_SUPPORTED_ON_OBJECTS_OF_TYPE_0
-            .toLocalizedString(rcvr.getClass().getName()));
+        String.format("index expression not supported on objects of type %s",
+            rcvr.getClass().getName()));
   }
 
   // Asif :Function for generating canonicalized expression

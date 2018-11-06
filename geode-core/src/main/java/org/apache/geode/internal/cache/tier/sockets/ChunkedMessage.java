@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -202,8 +201,8 @@ public class ChunkedMessage extends Message {
         cb.clear();
         if (!MessageType.validate(type)) {
           throw new IOException(
-              LocalizedStrings.ChunkedMessage_INVALID_MESSAGE_TYPE_0_WHILE_READING_HEADER
-                  .toLocalizedString(Integer.valueOf(type)));
+              String.format("Invalid message type %s while reading header",
+                  Integer.valueOf(type)));
         }
 
         // Set the header and payload fields only after receiving all the
@@ -214,7 +213,7 @@ public class ChunkedMessage extends Message {
         this.transactionId = txid;
       }
     } else {
-      throw new IOException(LocalizedStrings.ChunkedMessage_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 
@@ -227,7 +226,7 @@ public class ChunkedMessage extends Message {
         readChunk();
       }
     } else {
-      throw new IOException(LocalizedStrings.ChunkedMessage_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 
@@ -245,7 +244,7 @@ public class ChunkedMessage extends Message {
           inputStream.read(cb.array(), totalBytesRead, CHUNK_HEADER_LENGTH - totalBytesRead);
       if (bytesRead == -1) {
         throw new EOFException(
-            LocalizedStrings.ChunkedMessage_CHUNK_READ_ERROR_CONNECTION_RESET.toLocalizedString());
+            "Chunk read error (connection reset)");
       }
       totalBytesRead += bytesRead;
       if (this.messageStats != null) {
@@ -291,7 +290,7 @@ public class ChunkedMessage extends Message {
       this.currentPart = 0;
       this.headerSent = true;
     } else {
-      throw new IOException(LocalizedStrings.ChunkedMessage_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 

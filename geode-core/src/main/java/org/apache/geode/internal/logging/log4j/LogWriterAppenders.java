@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
@@ -154,12 +153,12 @@ public class LogWriterAppenders {
         final boolean succeeded = LogFileUtils.renameAggressively(logFile, oldMain);
 
         if (succeeded) {
-          firstMsg = LocalizedStrings.InternalDistributedSystem_RENAMED_OLD_LOG_FILE_TO_0
-              .toLocalizedString(oldMain);
+          firstMsg = String.format("Renamed old log file to %s.",
+              oldMain);
         } else {
           firstMsgWarning = true;
-          firstMsg = LocalizedStrings.InternalDistributedSystem_COULD_NOT_RENAME_0_TO_1
-              .toLocalizedString(logFile, oldMain);
+          firstMsg = String.format("Could not rename %s to %s.",
+              logFile, oldMain);
         }
       }
     }
@@ -169,8 +168,8 @@ public class LogWriterAppenders {
     try {
       fos = new FileOutputStream(logFile, true);
     } catch (FileNotFoundException ex) {
-      String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0
-          .toLocalizedString(logFile);
+      String s = String.format("Could not open log file %s.",
+          logFile);
       throw new GemFireIOException(s, ex);
     }
     final PrintStream out = new PrintStream(fos);
@@ -228,8 +227,8 @@ public class LogWriterAppenders {
     if (logConfig) {
       if (!isLoner) {
         // LOG:CONFIG: changed from config to info
-        logWriter.info(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
-            config.toLoggerString());
+        logWriter.info(String.format("Startup Configuration: %s",
+            config.toLoggerString()));
       }
     }
 
@@ -257,7 +256,6 @@ public class LogWriterAppenders {
   }
 
   public static synchronized void destroy(final Identifier id) {
-    // TODO:LOG:KIRK: new Exception("KIRK destroy called for " + id).printStackTrace();
     LogWriterAppender appender = appenders.get(id);
     if (appender == null) {
       return;

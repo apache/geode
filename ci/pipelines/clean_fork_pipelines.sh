@@ -45,7 +45,7 @@ echo "Fork is ${GEODE_FORK}"
 echo "Branch is ${GEODE_BRANCH}"
 
 echo "Deleting meta pipeline if it exists..."
-META_PIPELINE="meta-${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
+META_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-meta"
 fly -t ${TARGET} destroy-pipeline --non-interactive -p ${META_PIPELINE}
 
 echo "Deleting images pipeline if it exists..."
@@ -57,7 +57,7 @@ REAPER_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-reaper"
 fly -t ${TARGET} destroy-pipeline --non-interactive -p ${REAPER_PIPELINE}
 
 echo "Deleting build pipeline if it exists..."
-BUILD_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
+BUILD_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-main"
 fly -t ${TARGET} destroy-pipeline --non-interactive -p ${BUILD_PIPELINE}
 
 gcloud container images list | grep "${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}" | while IFS= read -r line; do

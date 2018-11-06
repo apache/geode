@@ -31,9 +31,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
@@ -81,9 +79,9 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
         if (response != null) {
           if (response.getLocators() == null) {
             if (logProxyFailure()) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.AbstractGatewaySender_REMOTE_LOCATOR_FOR_REMOTE_SITE_0_IS_NOT_AVAILABLE_IN_LOCAL_LOCATOR_1,
-                  new Object[] {remoteDSId, localLocator}));
+              logger.warn(
+                  "Remote locator host port information for remote site {} is not available in local locator {}.",
+                  new Object[] {remoteDSId, localLocator});
             }
             continue;
           }
@@ -100,9 +98,10 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
               locatorCount++;
             } catch (Exception e) {
               if (logProxyFailure()) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.PoolFactoryImpl_CAUGHT_EXCEPTION_ATTEMPTING_TO_ADD_REMOTE_LOCATOR_0,
-                    new Object[] {remoteLocator}), e);
+                logger.warn(String.format(
+                    "Caught the following exception attempting to add remote locator %s. The locator will be ignored.",
+                    new Object[] {remoteLocator}),
+                    e);
               }
             }
           }
@@ -116,16 +115,16 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
             ioeStr = ": " + ioe.toString();
             ioe = null;
           }
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.AbstractGatewaySender_SENDER_0_IS_NOT_ABLE_TO_CONNECT_TO_LOCAL_LOCATOR_1,
-              new Object[] {this.id, localLocator + ioeStr}), ioe);
+          logger.warn(String.format("GatewaySender %s is not able to connect to local locator %s",
+              new Object[] {this.id, localLocator + ioeStr}),
+              ioe);
         }
         continue;
       } catch (ClassNotFoundException e) {
         if (logProxyFailure()) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.AbstractGatewaySender_SENDER_0_IS_NOT_ABLE_TO_CONNECT_TO_LOCAL_LOCATOR_1,
-              new Object[] {this.id, localLocator}), e);
+          logger.warn(String.format("GatewaySender %s is not able to connect to local locator %s",
+              new Object[] {this.id, localLocator}),
+              e);
         }
         continue;
       }
@@ -133,21 +132,22 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
 
     if (locatorCount == 0) {
       if (logProxyFailure()) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.AbstractGatewaySender_SENDER_0_COULD_NOT_GET_REMOTE_LOCATOR_INFORMATION_FOR_SITE_1,
-            new Object[] {this.id, this.remoteDSId}));
+        logger.fatal(
+            "GatewaySender {} could not get remote locator information for remote site {}.",
+            new Object[] {this.id, this.remoteDSId});
       }
       this.proxyFailureTries++;
       throw new GatewaySenderConfigurationException(
-          LocalizedStrings.AbstractGatewaySender_SENDER_0_COULD_NOT_GET_REMOTE_LOCATOR_INFORMATION_FOR_SITE_1
-              .toLocalizedString(new Object[] {this.id, this.remoteDSId}));
+          String.format(
+              "GatewaySender %s could not get remote locator information for remote site %s.",
+              new Object[] {this.id, this.remoteDSId}));
     }
     pf.init(this);
     this.proxy = ((PoolImpl) pf.create(this.getId()));
     if (this.proxyFailureTries > 0) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AbstractGatewaySender_SENDER_0_GOT_REMOTE_LOCATOR_INFORMATION_FOR_SITE_1,
-          new Object[] {this.id, this.remoteDSId, this.proxyFailureTries}));
+      logger.info(
+          "GatewaySender {} got remote locator information for remote site {} after {} failures in connecting to remote site.",
+          new Object[] {this.id, this.remoteDSId, this.proxyFailureTries});
       this.proxyFailureTries = 0;
     }
   }

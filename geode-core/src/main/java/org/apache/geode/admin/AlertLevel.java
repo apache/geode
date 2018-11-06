@@ -15,7 +15,6 @@
 package org.apache.geode.admin;
 
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Type-safe enumeration for {@link org.apache.geode.admin.Alert Alert} level.
@@ -80,8 +79,8 @@ public class AlertLevel implements java.io.Serializable {
       case Alert.OFF:
         return AlertLevel.OFF;
       default:
-        throw new IllegalArgumentException(LocalizedStrings.AlertLevel_UNKNOWN_ALERT_SEVERITY_0
-            .toLocalizedString(Integer.valueOf(severity)));
+        throw new IllegalArgumentException(String.format("Unknown alert severity: %s",
+            Integer.valueOf(severity)));
     }
   }
 
@@ -99,7 +98,7 @@ public class AlertLevel implements java.io.Serializable {
     }
 
     throw new IllegalArgumentException(
-        LocalizedStrings.AlertLevel_THERE_IS_NO_ALERT_LEVEL_0.toLocalizedString(name));
+        String.format("There is no alert level %s", name));
   }
 
   public int getSeverity() {

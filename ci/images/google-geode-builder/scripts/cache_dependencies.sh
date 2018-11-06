@@ -19,6 +19,14 @@ set -e
 
 WORK_DIR=$(mktemp -d)
 
+export JAVA_HOME=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
+echo "JAVA_HOME is [${JAVA_HOME}]"
+
+if [ -z ${JAVA_HOME} ]; then
+  echo "JAVA_HOME [${JAVA_HOME}] does not exist. Quitting."
+  exit 1
+fi
+
 pushd ${WORK_DIR}
   git clone -b develop --depth 1 https://github.com/apache/geode.git geode
 

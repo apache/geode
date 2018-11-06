@@ -37,9 +37,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener.PersistentStateAdapter;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.TransformUtils;
 
@@ -87,10 +85,10 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       this.recoveryException = e;
       this.someMemberRecoveredLatch.countDown();
     } else if (recoveryException != null) {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.BucketPersistenceAdvisor_ERROR_RECOVERYING_SECONDARY_BUCKET_0,
-          new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
-              proxyBucket.getBucketId()}),
+      logger.fatal(
+          String.format("Unable to recover secondary bucket from disk for region %s bucket %s",
+              new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
+                  proxyBucket.getBucketId()}),
           e);
     }
   }
@@ -114,9 +112,10 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       bucketLock.unlock();
     } else {
       if (membersToWaitFor != null && !membersToWaitFor.isEmpty()) {
-        String message = LocalizedStrings.PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE
-            .toLocalizedString(proxyBucket.getPartitionedRegion().getFullPath(),
-                proxyBucket.getBucketId(), membersToWaitFor);
+        String message = String.format(
+            "Region %s bucket %s has persistent data that is no longer online stored at these locations: %s",
+            proxyBucket.getPartitionedRegion().getFullPath(),
+            proxyBucket.getBucketId(), membersToWaitFor);
         throw new PartitionOfflineException((Set) membersToWaitFor, message);
       }
     }
@@ -131,12 +130,13 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       if (offlineMembersWaitingFor != null && !offlineMembersWaitingFor.isEmpty()) {
         TransformUtils.transform(offlineMembersWaitingFor, membersToWaitForPrettyFormat,
             TransformUtils.persistentMemberIdToLogEntryTransformer);
-        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, LocalizedMessage.create(
-            LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+            "Region {}, bucket {} has potentially stale data.  It is waiting for another member to recover the latest data.My persistent id: {} Members with potentially new data:{}  Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
             new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
                 proxyBucket.getBucketId(),
-                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
-                membersToWaitForPrettyFormat}));
+                TransformUtils.persistentMemberIdToLogEntryTransformer
+                    .transform(getPersistentID()),
+                membersToWaitForPrettyFormat});
       } else {
         TransformUtils.transform(allMembersWaitingFor, membersToWaitForPrettyFormat,
             TransformUtils.persistentMemberIdToLogEntryTransformer);
@@ -144,12 +144,13 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
           logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
               "All persistent members being waited on are online, but they have not yet initialized");
         }
-        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, LocalizedMessage.create(
-            LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+            "Region {}, bucket {} has potentially stale data.  It is waiting for another member to recover the latest data. My persistent id: {} Members with potentially new data:{}  Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
             new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
                 proxyBucket.getBucketId(),
-                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
-                membersToWaitForPrettyFormat}));
+                TransformUtils.persistentMemberIdToLogEntryTransformer
+                    .transform(getPersistentID()),
+                membersToWaitForPrettyFormat});
       }
     }
   }

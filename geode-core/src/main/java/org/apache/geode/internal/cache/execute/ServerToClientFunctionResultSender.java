@@ -31,9 +31,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 
 public class ServerToClientFunctionResultSender implements ResultSender {
@@ -104,8 +102,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
 
       if (!headerSent) {
@@ -126,8 +124,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_LAST_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the last chunk to client",
             ex);
       }
     }
@@ -152,8 +149,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
 
       if (!headerSent) {
@@ -173,8 +170,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_LAST_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the last chunk to client",
             ex);
       }
     }
@@ -199,8 +195,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
       if (!headerSent) {
         sendHeader();
@@ -216,8 +212,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_RESULT_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the result chunk to client",
             ex);
       }
     }
@@ -242,8 +237,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(
-            LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                .toLocalizedString("send"));
+            String.format("Cannot %s result as the Function#hasResult() is false",
+                "send"));
       }
       if (!headerSent) {
         sendHeader();
@@ -259,8 +254,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_IOEXCEPTION_WHILE_SENDING_RESULT_CHUNK
-                .toLocalizedString(),
+            "IOException while sending the result chunk to client",
             ex);
       }
     }
@@ -323,9 +317,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
           }
           String exceptionMessage = exception.getMessage() != null ? exception.getMessage()
               : "Exception occurred during function execution";
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-              this.fn), exception);
+          logger.warn(String.format("Exception on server while executing function : %s",
+              this.fn),
+              exception);
           if (logger.isDebugEnabled()) {
             logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           }

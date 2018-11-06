@@ -40,9 +40,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -242,8 +240,7 @@ public class StateFlushOperation {
         logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Finished processing {}", smm);
       }
     } catch (ReplyException re) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.StateFlushOperation_STATE_FLUSH_TERMINATED_WITH_EXCEPTION), re);
+      logger.warn("state flush terminated with exception", re);
       return false;
     }
     return true;
@@ -360,9 +357,9 @@ public class StateFlushOperation {
           // cache is closed - no distribution advisor available for the region so nothing to do but
           // send the stabilization message
         } catch (Exception e) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.StateFlushOperation_0__EXCEPTION_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
-              this), e);
+          logger.fatal(String.format("%s Exception caught while determining channel state",
+              this),
+              e);
         } finally {
           // no need to send a relay request to this process - just send the
           // ack back to the sender
@@ -424,9 +421,9 @@ public class StateFlushOperation {
           // cache is closed - no distribution advisor available for the region so nothing to do but
           // send the stabilization message
         } catch (Exception e) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.StateFlushOperation_0__EXCEPTION_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
-              this), e);
+          logger.fatal(String.format("%s Exception caught while determining channel state",
+              this),
+              e);
         } finally {
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
             logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", gr);
@@ -594,9 +591,7 @@ public class StateFlushOperation {
             // error condition, so you also need to check to see if the JVM
             // is still usable:
             SystemFailure.checkFailure();
-            logger.fatal(
-                LocalizedMessage.create(
-                    LocalizedStrings.StateFlushOperation_EXCEPTION_CAUGHT_WHILE_WAITING_FOR_CHANNEL_STATE),
+            logger.fatal("Exception caught while waiting for channel state",
                 e);
           } finally {
             StateStabilizedMessage ga = new StateStabilizedMessage();

@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,24 +35,38 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Unit tests the FastLogger class which wraps and delegates to an actual Logger with optimizations
- * for isDebugEnabled and isTraceEnabled.
+ * Unit tests for {@link FastLogger} which wraps and delegates to an actual Logger with
+ * optimizations for isDebugEnabled and isTraceEnabled.
  */
 @Category(LoggingTest.class)
 public class FastLoggerTest {
 
-  private MessageFactory messageFactory;
+  private static final String LOGGER_NAME = "LOGGER";
+  private static final String MARKER_NAME = "MARKER";
+
+  private FastLogger fastLogger;
   private ExtendedLogger mockedLogger;
   private Marker mockedMarker;
 
   @Before
   public void setUp() {
-    messageFactory = new ParameterizedMessageFactory();
+    MessageFactory messageFactory = new ParameterizedMessageFactory();
     mockedLogger = mock(ExtendedLogger.class);
     mockedMarker = mock(Marker.class);
 
     when(mockedLogger.getMessageFactory()).thenReturn(messageFactory);
-    when(mockedMarker.getName()).thenReturn("MARKER");
+    when(mockedLogger.getName()).thenReturn(LOGGER_NAME);
+    when(mockedLogger.getLevel()).thenReturn(Level.INFO);
+
+    when(mockedMarker.getName()).thenReturn(MARKER_NAME);
+
+    fastLogger = new FastLogger(mockedLogger);
+
+    FastLogger.setDelegating(true);
+
+    clearInvocations(mockedLogger);
+
+    assertThat(mockedLogger.getLevel()).isEqualTo(Level.INFO);
   }
 
   /**
@@ -61,15 +74,11 @@ public class FastLoggerTest {
    */
   @Test
   public void returnIsDelegatingAfterSetDelegating() {
-    FastLogger.setDelegating(true);
-
-    FastLogger fastLogger = new FastLogger(mockedLogger);
-
-    assertThat(fastLogger.isDelegating(), is(true));
+    assertThat(fastLogger.isDelegating()).isTrue();
 
     FastLogger.setDelegating(false);
 
-    assertThat(fastLogger.isDelegating(), is(false));
+    assertThat(fastLogger.isDelegating()).isFalse();
   }
 
   /**
@@ -77,13 +86,9 @@ public class FastLoggerTest {
    */
   @Test
   public void delegateGetLevel() {
-    FastLogger.setDelegating(true);
     when(mockedLogger.getLevel()).thenReturn(Level.DEBUG);
 
-    FastLogger fastLogger = new FastLogger(mockedLogger);
-
-    assertThat(fastLogger.getLevel(), is(Level.DEBUG));
-    verify(mockedLogger, times(1)).getLevel();
+    assertThat(fastLogger.getLevel()).isEqualTo(Level.DEBUG);
   }
 
   /**
@@ -91,21 +96,16 @@ public class FastLoggerTest {
    */
   @Test
   public void delegateIsDebugEnabledWhenIsDelegating() {
-    FastLogger.setDelegating(true);
     when(mockedLogger.getLevel()).thenReturn(Level.DEBUG);
-    when(mockedLogger.isEnabled(eq(Level.DEBUG), isNull(Marker.class), isNull(String.class)))
+    when(mockedLogger.isEnabled(eq(Level.DEBUG), isNull(), isNull())).thenReturn(true);
+    when(mockedLogger.isEnabled(eq(Level.DEBUG), eq(mockedMarker), (Object) isNull(), isNull()))
         .thenReturn(true);
-    when(mockedLogger.isEnabled(eq(Level.DEBUG), eq(mockedMarker), isNull(Object.class),
-        isNull(Throwable.class))).thenReturn(true);
 
-    FastLogger fastLogger = new FastLogger(mockedLogger);
+    assertThat(fastLogger.isDebugEnabled()).isTrue();
+    assertThat(fastLogger.isDebugEnabled(mockedMarker)).isTrue();
 
-    assertThat(fastLogger.isDebugEnabled(), is(true));
-    assertThat(fastLogger.isDebugEnabled(mockedMarker), is(true));
-    verify(mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), isNull(Marker.class),
-        isNull(String.class));
-    verify(mockedLogger, times(1)).isEnabled(eq(Level.DEBUG), eq(mockedMarker),
-        isNull(Object.class), isNull(Throwable.class));
+    verify(mockedLogger).isEnabled(eq(Level.DEBUG), isNull(), isNull());
+    verify(mockedLogger).isEnabled(eq(Level.DEBUG), eq(mockedMarker), (Object) isNull(), isNull());
   }
 
   /**
@@ -113,21 +113,17 @@ public class FastLoggerTest {
    */
   @Test
   public void delegateIsTraceEnabledWhenIsDelegating() {
-    FastLogger.setDelegating(true);
     when(mockedLogger.getLevel()).thenReturn(Level.TRACE);
-    when(mockedLogger.isEnabled(eq(Level.TRACE), isNull(Marker.class), isNull(Object.class),
-        isNull(Throwable.class))).thenReturn(true);
-    when(mockedLogger.isEnabled(eq(Level.TRACE), eq(mockedMarker), isNull(Object.class),
-        isNull(Throwable.class))).thenReturn(true);
+    when(mockedLogger.isEnabled(eq(Level.TRACE), isNull(), (Object) isNull(), isNull()))
+        .thenReturn(true);
+    when(mockedLogger.isEnabled(eq(Level.TRACE), eq(mockedMarker), (Object) isNull(), isNull()))
+        .thenReturn(true);
 
-    FastLogger fastLogger = new FastLogger(mockedLogger);
+    assertThat(fastLogger.isTraceEnabled()).isTrue();
+    assertThat(fastLogger.isTraceEnabled(mockedMarker)).isTrue();
 
-    assertThat(fastLogger.isTraceEnabled(), is(true));
-    assertThat(fastLogger.isTraceEnabled(mockedMarker), is(true));
-    verify(mockedLogger, times(1)).isEnabled(eq(Level.TRACE), isNull(Marker.class),
-        isNull(Object.class), isNull(Throwable.class));
-    verify(mockedLogger, times(1)).isEnabled(eq(Level.TRACE), eq(mockedMarker),
-        isNull(Object.class), isNull(Throwable.class));
+    verify(mockedLogger).isEnabled(eq(Level.TRACE), isNull(), (Object) isNull(), isNull());
+    verify(mockedLogger).isEnabled(eq(Level.TRACE), eq(mockedMarker), (Object) isNull(), isNull());
   }
 
   /**
@@ -136,17 +132,16 @@ public class FastLoggerTest {
   @Test
   public void notDelegateIsDebugEnabledWhenNotIsDelegating() {
     FastLogger.setDelegating(false);
+
     when(mockedLogger.getLevel()).thenReturn(Level.INFO);
 
-    FastLogger fastLogger = new FastLogger(mockedLogger);
+    assertThat(fastLogger.getLevel()).isEqualTo(Level.INFO);
+    assertThat(fastLogger.isDebugEnabled()).isFalse();
+    assertThat(fastLogger.isDebugEnabled(mockedMarker)).isFalse();
 
-    assertThat(fastLogger.getLevel(), is(Level.INFO));
-    assertThat(fastLogger.isDebugEnabled(), is(false));
-    assertThat(fastLogger.isDebugEnabled(mockedMarker), is(false));
-    verify(mockedLogger, times(0)).isEnabled(eq(Level.DEBUG), isNull(Marker.class),
-        isNull(String.class));
-    verify(mockedLogger, times(0)).isEnabled(eq(Level.DEBUG), eq(mockedMarker),
-        isNull(Object.class), isNull(Throwable.class));
+    verify(mockedLogger, never()).isEnabled(eq(Level.DEBUG), isNull(), isNull());
+    verify(mockedLogger, never()).isEnabled(eq(Level.DEBUG), eq(mockedMarker), (Object) isNull(),
+        isNull());
   }
 
   /**
@@ -155,17 +150,15 @@ public class FastLoggerTest {
   @Test
   public void notDelegateIsTraceEnabledWhenNotIsDelegating() {
     FastLogger.setDelegating(false);
-    when(mockedLogger.getLevel()).thenReturn(Level.INFO);
 
-    FastLogger fastLogger = new FastLogger(mockedLogger);
+    assertThat(fastLogger.getLevel()).isEqualTo(Level.INFO);
 
-    assertThat(fastLogger.getLevel(), is(Level.INFO));
-    assertThat(fastLogger.isTraceEnabled(), is(false));
-    assertThat(fastLogger.isTraceEnabled(mockedMarker), is(false));
-    verify(mockedLogger, times(0)).isEnabled(eq(Level.TRACE), isNull(Marker.class),
-        isNull(String.class));
-    verify(mockedLogger, times(0)).isEnabled(eq(Level.TRACE), eq(mockedMarker),
-        isNull(Object.class), isNull(Throwable.class));
+    assertThat(fastLogger.isTraceEnabled()).isFalse();
+    verify(mockedLogger, never()).isEnabled(eq(Level.TRACE), isNull(), isNull());
+
+    assertThat(fastLogger.isTraceEnabled(mockedMarker)).isFalse();
+    verify(mockedLogger, never()).isEnabled(eq(Level.TRACE), eq(mockedMarker), (Object) isNull(),
+        isNull());
   }
 
   /**
@@ -173,9 +166,7 @@ public class FastLoggerTest {
    */
   @Test
   public void wrapDelegateAndReturnFromGetExtendedLogger() {
-    FastLogger fastLogger = new FastLogger(mockedLogger);
-
-    assertThat(fastLogger.getExtendedLogger(), is(sameInstance(mockedLogger)));
+    assertThat(fastLogger.getExtendedLogger()).isSameAs(mockedLogger);
   }
 
   /**
@@ -183,11 +174,8 @@ public class FastLoggerTest {
    */
   @Test
   public void delegateGetName() {
-    when(mockedLogger.getName()).thenReturn("name");
+    assertThat(fastLogger.getName()).isEqualTo(LOGGER_NAME);
 
-    FastLogger fastLogger = new FastLogger(mockedLogger);
-
-    assertThat(fastLogger.getName(), is("name"));
-    verify(mockedLogger, times(1)).getName();
+    verify(mockedLogger, never()).getName();
   }
 }

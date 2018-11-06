@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -98,7 +97,7 @@ public class FetchEntryMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.FetchEntryMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -134,12 +133,11 @@ public class FetchEntryMessage extends PartitionMessage {
       } catch (PRLocallyDestroyedException pde) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
             new ReplyException(new ForceReattemptException(
-                LocalizedStrings.FetchEntryMessage_ENCOUNTERED_PRLOCALLYDESTROYED
-                    .toLocalizedString(),
+                "Encountered PRLocallyDestroyed",
                 pde)));
       } catch (EntryNotFoundException enfe) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(
-            LocalizedStrings.FetchEntryMessage_ENTRY_NOT_FOUND.toLocalizedString(), enfe));
+            "entry not found", enfe));
       } catch (PrimaryBucketException pbe) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
             new ReplyException(pbe));
@@ -153,8 +151,7 @@ public class FetchEntryMessage extends PartitionMessage {
       }
     } else {
       throw new InternalGemFireError(
-          LocalizedStrings.FetchEntryMessage_FETCHENTRYMESSAGE_MESSAGE_SENT_TO_WRONG_MEMBER
-              .toLocalizedString());
+          "FetchEntryMessage message sent to wrong member");
     }
 
     // Unless there was an exception thrown, this message handles sending the
@@ -364,8 +361,7 @@ public class FetchEntryMessage extends PartitionMessage {
       } catch (CacheException ce) {
         logger.debug("FetchEntryResponse got remote CacheException; forcing reattempt.", ce);
         throw new ForceReattemptException(
-            LocalizedStrings.FetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
+            "FetchEntryResponse got remote CacheException; forcing reattempt.",
             ce);
       }
       return this.returnValue;

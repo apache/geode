@@ -20,7 +20,6 @@ import java.net.UnknownHostException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.Statistics;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
@@ -52,8 +51,7 @@ public class HostStatHelper {
     String osName = System.getProperty("os.name", "unknown");
     if (!PureJavaMode.osStatsAreAvailable()) {
       throw new RuntimeException(
-          LocalizedStrings.HostStatHelper_HOSTSTATHELPER_NOT_ALLOWED_IN_PURE_JAVA_MODE
-              .toLocalizedString());
+          "HostStatHelper not allowed in pure java mode");
     } else if (osName.equals("SunOS")) {
       osCode = SOLARIS_CODE;
     } else if (osName.startsWith("Windows")) {
@@ -64,8 +62,9 @@ public class HostStatHelper {
       osCode = OSX_CODE;
     } else {
       throw new InternalGemFireException(
-          LocalizedStrings.HostStatHelper_UNSUPPORTED_OS_0_SUPPORTED_OSS_ARE_SUNOSSPARC_SOLARIS_LINUXX86_AND_WINDOWS
-              .toLocalizedString(osName));
+          String.format(
+              "Unsupported OS %s. Supported OSs are: SunOS(sparc Solaris), Linux(x86) and Windows.",
+              osName));
     }
   }
 
@@ -175,8 +174,8 @@ public class HostStatHelper {
     } else if ((flags & SYSTEM_STAT_FLAG) != 0) {
       HostStatHelper.refreshSystem(stats);
     } else {
-      throw new RuntimeException(LocalizedStrings.HostStatHelper_UNEXPECTED_OS_STATS_FLAGS_0
-          .toLocalizedString(Integer.valueOf(flags)));
+      throw new RuntimeException(String.format("Unexpected os stats flags %s",
+          Integer.valueOf(flags)));
     }
   }
 
@@ -201,8 +200,8 @@ public class HostStatHelper {
         break;
       default:
         throw new InternalGemFireException(
-            LocalizedStrings.HostStatHelper_UNHANDLED_OSCODE_0_HOSTSTATHELPERNEWPROCESS
-                .toLocalizedString(Integer.valueOf(osCode)));
+            String.format("unhandled osCode= %s HostStatHelper:newProcess",
+                Integer.valueOf(osCode)));
     }
     // Note we don't call refreshProcess since we only want the manager to do that
     return stats;
@@ -230,8 +229,8 @@ public class HostStatHelper {
 
       default:
         throw new InternalGemFireException(
-            LocalizedStrings.HostStatHelper_UNHANDLED_OSCODE_0_HOSTSTATHELPERNEWPROCESSSTATS
-                .toLocalizedString(Integer.valueOf(osCode)));
+            String.format("unhandled osCode= %s HostStatHelper:newProcessStats",
+                Integer.valueOf(osCode)));
     }
   }
 
@@ -260,8 +259,8 @@ public class HostStatHelper {
         break;
       default:
         throw new InternalGemFireException(
-            LocalizedStrings.HostStatHelper_UNHANDLED_OSCODE_0_HOSTSTATHELPERNEWSYSTEM
-                .toLocalizedString(Integer.valueOf(osCode)));
+            String.format("unhandled osCode= %s HostStatHelper:newSystem",
+                Integer.valueOf(osCode)));
     }
     if (stats instanceof LocalStatisticsImpl) {
       refreshSystem((LocalStatisticsImpl) stats);

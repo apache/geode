@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a Future without a background thread. Instead of a Runnable that will set the value,
@@ -62,13 +61,13 @@ public class FutureResult implements Future {
       throw new InterruptedException(); // check in case latch is null
     if (this.isCancelled) {
       throw new CancellationException(
-          LocalizedStrings.FutureResult_FUTURE_WAS_CANCELLED.toLocalizedString());
+          "Future was cancelled");
     }
     if (this.latch != null)
       this.latch.await();
     if (this.isCancelled) {
       throw new CancellationException(
-          LocalizedStrings.FutureResult_FUTURE_WAS_CANCELLED.toLocalizedString());
+          "Future was cancelled");
     }
     return this.value;
   }
@@ -78,7 +77,7 @@ public class FutureResult implements Future {
       throw new InterruptedException(); // check in case latch is null
     if (this.isCancelled) {
       throw new CancellationException(
-          LocalizedStrings.FutureResult_FUTURE_WAS_CANCELLED.toLocalizedString());
+          "Future was cancelled");
     }
     if (this.latch != null) {
       if (!this.latch.await(unit.toMillis(timeout))) {

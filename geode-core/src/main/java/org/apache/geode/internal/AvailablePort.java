@@ -32,7 +32,6 @@ import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -135,7 +134,7 @@ public class AvailablePort {
       } catch (java.io.IOException ioe) {
         if (ioe.getMessage().equals("Network is unreachable")) {
           throw new RuntimeException(
-              LocalizedStrings.AvailablePort_NETWORK_IS_UNREACHABLE.toLocalizedString(), ioe);
+              "Network is unreachable", ioe);
         }
         ioe.printStackTrace();
         return false;
@@ -154,8 +153,8 @@ public class AvailablePort {
     }
 
     else {
-      throw new IllegalArgumentException(LocalizedStrings.AvailablePort_UNKNOWN_PROTOCOL_0
-          .toLocalizedString(Integer.valueOf(protocol)));
+      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
+          Integer.valueOf(protocol)));
     }
   }
 
@@ -170,8 +169,8 @@ public class AvailablePort {
     } else if (protocol == MULTICAST) {
       throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
     } else {
-      throw new IllegalArgumentException(LocalizedStrings.AvailablePort_UNKNOWN_PROTOCOL_0
-          .toLocalizedString(Integer.valueOf(protocol)));
+      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
+          Integer.valueOf(protocol)));
     }
   }
 
@@ -499,8 +498,7 @@ public class AvailablePort {
     err.println("usage: java AvailablePort socket|jgroups [\"addr\" network-address] [port]");
     err.println("");
     err.println(
-        LocalizedStrings.AvailablePort_THIS_PROGRAM_EITHER_PRINTS_WHETHER_OR_NOT_A_PORT_IS_AVAILABLE_FOR_A_GIVEN_PROTOCOL_OR_IT_PRINTS_OUT_AN_AVAILABLE_PORT_FOR_A_GIVEN_PROTOCOL
-            .toLocalizedString());
+        "This program either prints whether or not a port is available for a given protocol, or it prints out an available port for a given protocol.");
     err.println("");
     ExitCode.FATAL.doSystemExit();
   }

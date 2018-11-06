@@ -33,7 +33,6 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -105,8 +104,9 @@ public class AttributeDescriptor {
           return QueryService.UNDEFINED;
         } catch (IllegalAccessException e) {
           throw new NameNotFoundException(
-              LocalizedStrings.AttributeDescriptor_METHOD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-                  .toLocalizedString(new Object[] {m.getName(), target.getClass().getName()}),
+              String.format(
+                  "Method ' %s ' in class ' %s ' is not accessible to the query processor",
+                  new Object[] {m.getName(), target.getClass().getName()}),
               e);
         } catch (InvocationTargetException e) {
           // if the target exception is Exception, wrap that,
@@ -125,8 +125,9 @@ public class AttributeDescriptor {
           return ((Field) m).get(target);
         } catch (IllegalAccessException e) {
           throw new NameNotFoundException(
-              LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-                  .toLocalizedString(new Object[] {m.getName(), target.getClass().getName()}),
+              String.format(
+                  "Field ' %s ' in class ' %s ' is not accessible to the query processor",
+                  new Object[] {m.getName(), target.getClass().getName()}),
               e);
         } catch (EntryDestroyedException e) {
           return QueryService.UNDEFINED;
@@ -153,8 +154,8 @@ public class AttributeDescriptor {
 
     if (m == null) {
       throw new NameNotFoundException(
-          LocalizedStrings.AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1
-              .toLocalizedString(new Object[] {_name, targetClass.getName()}));
+          String.format("No public attribute named ' %s ' was found in class %s",
+              new Object[] {_name, targetClass.getName()}));
     }
 
     // override security for nonpublic derived classes with public members
@@ -250,8 +251,8 @@ public class AttributeDescriptor {
         return ((PdxInstance) target).getField(_name);
       }
       throw new NameNotFoundException(
-          LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-              .toLocalizedString(new Object[] {_name, target.getClass().getName()}));
+          String.format("Field ' %s ' in class ' %s ' is not accessible to the query processor",
+              new Object[] {_name, target.getClass().getName()}));
     }
   }
 
@@ -262,8 +263,8 @@ public class AttributeDescriptor {
       return readReflection(obj);
     } catch (PdxSerializationException e) {
       throw new NameNotFoundException( // the domain object is not available
-          LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-              .toLocalizedString(new Object[] {_name, target.getClass().getName()}));
+          String.format("Field ' %s ' in class ' %s ' is not accessible to the query processor",
+              new Object[] {_name, target.getClass().getName()}));
     }
   }
 

@@ -28,7 +28,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides the entry point into execution of user defined {@linkplain Function}s.
@@ -253,8 +252,7 @@ public class FunctionService {
     DistributedSystem system = InternalDistributedSystem.getConnectedInstance();
     if (system == null) {
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
-              .toLocalizedString());
+          "This connection to a distributed system has been disconnected.");
     }
     return system;
   }

@@ -24,7 +24,6 @@ import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of an object used for managing cache servers.
@@ -34,13 +33,13 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class SystemMemberBridgeServerImpl
     implements SystemMemberCacheServer, SystemMemberBridgeServer {
 
-  /** The VM in which the bridge server resides */
+  /** The VM in which the cache server resides */
   private final GemFireVM vm;
 
-  /** The cache server by this bridge server */
+  /** The cache server by this cache server */
   private CacheInfo cache;
 
-  /** Information about the bridge server */
+  /** Information about the cache server */
   private AdminBridgeServer bridgeInfo;
 
   ///////////////////// Constructors /////////////////////
@@ -61,13 +60,12 @@ public class SystemMemberBridgeServerImpl
   //////////////////// Instance Methods ////////////////////
 
   /**
-   * Throws an <code>AdminException</code> if this bridge server is running.
+   * Throws an <code>AdminException</code> if this cache server is running.
    */
   private void checkRunning() throws AdminException {
     if (this.isRunning()) {
       throw new AdminException(
-          LocalizedStrings.SystemMemberBridgeServerImpl_CANNOT_CHANGE_THE_CONFIGURATION_OF_A_RUNNING_BRIDGE_SERVER
-              .toLocalizedString());
+          "Cannot change the configuration of a running cache server.");
     }
   }
 
@@ -93,7 +91,7 @@ public class SystemMemberBridgeServerImpl
   }
 
   /**
-   * Returns the VM-unique id of this bridge server
+   * Returns the VM-unique id of this cache server
    */
   protected int getBridgeId() {
     return this.bridgeInfo.getId();
@@ -105,8 +103,7 @@ public class SystemMemberBridgeServerImpl
 
     } catch (AdminException ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.SystemMemberBridgeServerImpl_UNEXPECTED_EXCEPTION_WHILE_REFRESHING
-              .toLocalizedString(),
+          "Unexpected exception while refreshing",
           ex);
     }
   }

@@ -44,7 +44,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
@@ -649,7 +648,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_CREATE;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_UNHANDLED_OP_0.toLocalizedString(Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
     }
   }
 
@@ -888,7 +887,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_UPDATE;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_UNHANDLED_OP_0.toLocalizedString(Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
     }
   }
 
@@ -1085,8 +1084,8 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
           case OP_D_DESTROY:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNEXPECTED_CURRENT_OP_0_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Unexpected current op %s for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
             break;
@@ -1140,7 +1139,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNHANDLED_0.toLocalizedString(opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_D_DESTROY:
@@ -1162,8 +1161,8 @@ public class TXEntryState implements Releasable {
           case OP_D_DESTROY:
           case OP_D_INVALIDATE_LD:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNEXPECTED_CURRENT_OP_0_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Unexpected current op %s for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
             break;
@@ -1212,7 +1211,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNHANDLED_0.toLocalizedString(opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_D_INVALIDATE:
@@ -1230,8 +1229,8 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
           case OP_D_DESTROY:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNEXPECTED_CURRENT_OP_0_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Unexpected current op %s for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_D_INVALIDATE:
           case OP_L_INVALIDATE:
             advisedOpCode = OP_D_INVALIDATE;
@@ -1276,7 +1275,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNHANDLED_0.toLocalizedString(opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_CREATE:
@@ -1347,8 +1346,8 @@ public class TXEntryState implements Releasable {
             // Note that OP_D_INVALIDATE followed by OP_SEARCH_PUT is not
             // possible since the netsearch will alwsys "miss" in this case.
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_PREVIOUS_OP_0_UNEXPECTED_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Previous op %s unexpected for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
         }
         break;
       case OP_LLOAD_PUT:
@@ -1378,14 +1377,14 @@ public class TXEntryState implements Releasable {
             // case because they should have caused a OP_SEARCH_PUT
             // to be requested.
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_PREVIOUS_OP_0_UNEXPECTED_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Previous op %s unexpected for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
         }
         break;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_OPCODE_0_SHOULD_NEVER_BE_REQUESTED
-                .toLocalizedString(opToString(requestedOpCode)));
+            String.format("OpCode %s should never be requested",
+                opToString(requestedOpCode)));
     }
     return advisedOpCode;
   }
@@ -1446,14 +1445,15 @@ public class TXEntryState implements Releasable {
             String toString = calcConflictString(curCmtVersionId);
             if (!fromString.equals(toString)) {
               throw new CommitConflictException(
-                  LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_FROM_2_TO_3
-                      .toLocalizedString(
-                          new Object[] {key, r.getDisplayName(), fromString, toString}));
+                  String.format(
+                      "Entry for key %s on region %s had already been changed from %s to %s",
+
+                      new Object[] {key, r.getDisplayName(), fromString, toString}));
             }
           }
           throw new CommitConflictException(
-              LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_A_STATE_CHANGE
-                  .toLocalizedString(new Object[] {key, r.getDisplayName()}));
+              String.format("Entry for key %s on region %s had a state change",
+                  new Object[] {key, r.getDisplayName()}));
         }
       } finally {
         OffHeapHelper.release(curCmtVersionId);
@@ -1461,7 +1461,7 @@ public class TXEntryState implements Releasable {
     } catch (CacheRuntimeException ex) {
       r.getCancelCriterion().checkCancelInProgress(null);
       throw new CommitConflictException(
-          LocalizedStrings.TXEntryState_CONFLICT_CAUSED_BY_CACHE_EXCEPTION.toLocalizedString(), ex);
+          "Conflict caused by cache exception", ex);
     }
   }
 
@@ -1799,7 +1799,7 @@ public class TXEntryState implements Releasable {
         break;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_UNHANDLED_OP_0.toLocalizedString(opToString()));
+            String.format("<unhandled op %s >", opToString()));
     }
   }
 

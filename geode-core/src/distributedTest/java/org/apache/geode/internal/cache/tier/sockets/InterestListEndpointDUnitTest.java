@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.Entry;
+import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -50,6 +52,7 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -179,7 +182,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
         String poolName = r.getAttributes().getPoolName();
         assertNotNull(poolName);
-        final PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
+        final PoolImpl pool = (PoolImpl) find(poolName);
         assertNotNull(pool);
         pool.acquireConnection();
         try {
@@ -203,7 +206,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
             return null;
           }
         };
-        Wait.waitForCriterion(ev, maxWaitTime, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       }
     });
 
@@ -421,10 +424,10 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
       assertNotNull(r);
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
-          Region.Entry e1 = r.getEntry(k1);
+          Entry e1 = r.getEntry(k1);
           if (e1 == null)
             return false;
-          Region.Entry e2 = r.getEntry(k2);
+          Entry e2 = r.getEntry(k2);
           if (e2 == null)
             return false;
           Object v1 = e1.getValue();
@@ -438,10 +441,10 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
         }
 
         public String description() {
-          Region.Entry e1 = r.getEntry(k1);
+          Entry e1 = r.getEntry(k1);
           if (e1 == null)
             return "Entry for " + k1 + " is null";
-          Region.Entry e2 = r.getEntry(k2);
+          Entry e2 = r.getEntry(k2);
           if (e2 == null)
             return "Entry for " + k2 + " is null";
           Object v1 = e1.getValue();
@@ -455,7 +458,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
           return "Test missed a success";
         }
       };
-      Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       // yes update
       assertEquals(server_k1, r.getEntry(k1).getValue());

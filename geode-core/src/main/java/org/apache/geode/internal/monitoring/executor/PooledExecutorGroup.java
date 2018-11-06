@@ -25,4 +25,8 @@ public class PooledExecutorGroup extends AbstractExecutor {
     setGroupName(GROUPNAME);
   }
 
+  public PooledExecutorGroup(ThreadsMonitoring tMonitoring, long threadID) {
+    super(tMonitoring, threadID);
+    setGroupName(GROUPNAME);
+  }
 }

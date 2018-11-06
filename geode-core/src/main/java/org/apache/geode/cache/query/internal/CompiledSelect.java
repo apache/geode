@@ -47,7 +47,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -255,8 +254,8 @@ public class CompiledSelect extends AbstractCompiledValue {
 
       if (projAttribs != null && projAttribs.size() != this.groupBy.size()) {
         throw new QueryInvalidException(
-            LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString() + " or "
-                + LocalizedStrings.DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ.toLocalizedString());
+            "Query contains projected column not present in group by clause or "
+                + "Query contains group by columns not present in projected fields");
       }
 
       boolean shouldTransform = true;
@@ -300,8 +299,8 @@ public class CompiledSelect extends AbstractCompiledValue {
         this.modifyGroupByToOrderBy(true, context);
       } else {
         throw new QueryInvalidException(
-            LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString() + " or "
-                + LocalizedStrings.DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ.toLocalizedString());
+            "Query contains projected column not present in group by clause or "
+                + "Query contains group by columns not present in projected fields");
       }
     }
   }
@@ -395,7 +394,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     context.setDistinct(this.distinct);
     if (this.hasUnmappedOrderByCols && context.getBucketList() != null) {
       throw new QueryInvalidException(
-          LocalizedStrings.DefaultQuery_ORDER_BY_ATTRIBS_NOT_PRESENT_IN_PROJ.toLocalizedString());
+          "Query contains atleast one order by field which is not present in projected fields.");
     }
     if (hints != null) {
       context.cachePut(QUERY_INDEX_HINTS, hints);
@@ -442,8 +441,8 @@ public class CompiledSelect extends AbstractCompiledValue {
             // return result;
           } else if (!(b instanceof Boolean)) {
             throw new TypeMismatchException(
-                LocalizedStrings.CompiledSelect_THE_WHERE_CLAUSE_WAS_TYPE_0_INSTEAD_OF_BOOLEAN
-                    .toLocalizedString(b.getClass().getName()));
+                String.format("The WHERE clause was type ' %s ' instead of boolean",
+                    b.getClass().getName()));
           } else if ((Boolean) b) {
             result = doIterationEvaluate(context, false);
           } else {
@@ -661,7 +660,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          LocalizedStrings.CompiledRegion_REGION_NOT_FOUND_0.toLocalizedString(regionPath));
+          String.format("Region not found: %s", regionPath));
     }
   }
 
@@ -788,8 +787,8 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
         } else {
           throw new TypeMismatchException(
-              LocalizedStrings.CompiledSelect_THE_WHERE_CLAUSE_WAS_TYPE_0_INSTEAD_OF_BOOLEAN
-                  .toLocalizedString(result.getClass().getName()));
+              String.format("The WHERE clause was type ' %s ' instead of boolean",
+                  result.getClass().getName()));
         }
       }
       if (addToResults) {
@@ -832,7 +831,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       // Iterate through the data set.
       for (Object aSr : sr) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
         Object currObj = aSr;
         rIter.setCurrent(currObj);
@@ -878,7 +877,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         while (((this.orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
             || (numElementsAdded < limitValue)) && resultsIter.hasNext()) {
           // Check if query execution on this thread is canceled
-          QueryMonitor.isQueryExecutionCanceled();
+          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
           Object values[] = ((Struct) resultsIter.next()).getFieldValues();
           for (int i = 0; i < values.length; i++) {
@@ -909,8 +908,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         }
       } else {
         throw new RuntimeException(
-            LocalizedStrings.CompiledSelect_RESULT_SET_DOES_NOT_MATCH_WITH_ITERATOR_DEFINITIONS_IN_FROM_CLAUSE
-                .toLocalizedString());
+            "Result Set does not match with iterator definitions in from clause");
       }
       return pResultSet;
     }

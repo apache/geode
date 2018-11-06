@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.tcp;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -95,7 +95,7 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     Thread.sleep(5000);
 
     try {
-      Awaitility.await("for message to be sent").atMost(10, TimeUnit.SECONDS).until(() -> {
+      await("for message to be sent").until(() -> {
         final SerialAckedMessage serialAckedMessage = new SerialAckedMessage();
         serialAckedMessage.send(system.getAllOtherMembers(), false);
         return true;

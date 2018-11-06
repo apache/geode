@@ -37,9 +37,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -181,13 +179,11 @@ public class ElderInitProcessor extends ReplyProcessor21 {
         // so we return empty lists.
 
         logger.info(LogMarker.DLS_MARKER,
-            LocalizedMessage.create(
-                LocalizedStrings.ElderInitProcessor__0_RETURNING_EMPTY_LISTS_BECAUSE_I_KNOW_OF_NO_OTHER_MEMBERS,
-                this));
+            "{}: returning empty lists because I know of no other members.",
+            this);
         reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
       } else {
-        logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(
-            LocalizedStrings.ElderInitProcessor_0_DISREGARDING_REQUEST_FROM_DEPARTED_MEMBER, this));
+        logger.info(LogMarker.DLS_MARKER, "{}: disregarding request from departed member.", this);
       }
     }
 

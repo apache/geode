@@ -36,7 +36,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -88,7 +87,7 @@ public class BucketSizeMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.BucketSizeMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -104,8 +103,8 @@ public class BucketSizeMessage extends PartitionMessage {
       size = ds.getBucketSize(bucketId);
     } else {
       // sender thought this member had a data store, but it doesn't
-      throw new ForceReattemptException(LocalizedStrings.BucketSizeMessage_NO_DATASTORE_IN_0
-          .toLocalizedString(dm.getDistributionManagerId()));
+      throw new ForceReattemptException(String.format("no datastore in %s",
+          dm.getDistributionManagerId()));
     }
 
     r.getPrStats().endPartitionMessagesProcessing(startTime);
@@ -265,16 +264,14 @@ public class BucketSizeMessage extends PartitionMessage {
           logger.debug("BucketSizeResponse got remote cancellation; forcing reattempt. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.BucketSizeMessage_BUCKETSIZERESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION_FORCING_REATTEMPT
-                  .toLocalizedString(),
+              "BucketSizeResponse got remote CacheClosedException; forcing reattempt.",
               t);
         }
         if (t instanceof ForceReattemptException) {
           logger.debug("BucketSizeResponse got remote Region destroyed; forcing reattempt. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.BucketSizeMessage_BUCKETSIZERESPONSE_GOT_REMOTE_REGION_DESTROYED_FORCING_REATTEMPT
-                  .toLocalizedString(),
+              "BucketSizeResponse got remote Region destroyed; forcing reattempt.",
               t);
         }
         e.handleCause();

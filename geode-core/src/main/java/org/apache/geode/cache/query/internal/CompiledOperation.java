@@ -33,7 +33,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
@@ -113,8 +112,7 @@ public class CompiledOperation extends AbstractCompiledValue {
        * eval0(rcvrItr.evaluate(context), rcvrItr.getElementType().resolveClass(), context); }
        *
        * // function call: no functions implemented except keywords in the grammar throw new
-       * TypeMismatchException(LocalizedStrings.CompiledOperation_COULD_NOT_RESOLVE_METHOD_NAMED_0.
-       * toLocalizedString(this.methodName));
+       * TypeMismatchException("Could not resolve method named 'xyz'")
        */
     } else {
       // if not null, then explicit receiver
@@ -203,8 +201,8 @@ public class CompiledOperation extends AbstractCompiledValue {
       if (rcvrItr == null) { // no receiver resolved
         // function call: no functions implemented except keywords in the grammar
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledOperation_COULD_NOT_RESOLVE_METHOD_NAMED_0
-                .toLocalizedString(this.methodName));
+            String.format("Could not resolve method named ' %s '",
+                this.methodName));
       }
       // cache the receiver so we don't have to resolve it again
       context.cachePut(this, rcvrItr);

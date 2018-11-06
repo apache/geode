@@ -15,8 +15,8 @@
 package org.apache.geode.test.junit.rules;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
@@ -69,7 +69,7 @@ public class ExecutorServiceRuleIntegrationTest {
     assertThat(result.wasSuccessful()).isTrue();
 
     assertThat(isTestHung()).isTrue();
-    await().atMost(10, SECONDS)
+    await()
         .untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
     invocations.afterRule();
 

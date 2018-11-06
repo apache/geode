@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.MemberFunctionResultSender;
 import org.apache.geode.internal.cache.execute.MultiRegionFunctionContextImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class MemberFunctionStreamingMessage extends DistributionMessage
@@ -148,8 +147,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     ReplyException rex = null;
     if (this.functionObject == null) {
       rex = new ReplyException(
-          new FunctionException(LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(this.functionName)));
+          new FunctionException(
+              String.format("Function named %s is not registered to FunctionService",
+                  this.functionName)));
 
       replyWithException(dm, rex);
       return;
@@ -169,12 +169,12 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             if (dm.getCache() == null) {
               thr = new CacheClosedException(
-                  LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                      .toLocalizedString(dm.getId()));
+                  String.format("Remote cache is closed: %s",
+                      dm.getId()));
             } else {
               dm.getCache().getCacheClosedException(
-                  LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                      .toLocalizedString(dm.getId()));
+                  String.format("Remote cache is closed: %s",
+                      dm.getId()));
             }
             return;
           }
@@ -193,8 +193,8 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       this.functionObject.execute(context);
       if (!this.replyLastMsg && this.functionObject.hasResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(functionObject.getId()));
+            String.format("The function, %s, did not send last result",
+                functionObject.getId()));
       }
       stats.endFunctionExecution(start, this.functionObject.hasResult());
     } catch (FunctionException functionException) {

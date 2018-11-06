@@ -62,7 +62,7 @@ public class AssemblyContentsIntegrationTest {
     String message =
         "The assembly contents have changed. Verify dependencies."
             + "\nWhen fixed, copy geode-assembly/build/integrationTest/assembly_content.txt"
-            + "\nto src/integrationTest/resources/assembly_content.txt"
+            + "\nto geode-assembly/src/integrationTest/resources/assembly_content.txt"
             + "\nRemoved Content\n--------------\n"
             + String.join("\n", missingAssemblyContent) + "\n\nAdded Content\n--------------\n"
             + String.join("\n", newAssemblyContent) + "\n\n";

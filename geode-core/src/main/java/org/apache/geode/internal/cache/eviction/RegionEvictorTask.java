@@ -22,9 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Takes delta to be evicted and tries to evict the least no of LRU entry which would make
@@ -90,7 +88,7 @@ public class RegionEvictorTask implements Runnable {
               region.getCache().getCancelCriterion().checkCancelInProgress(e);
             } catch (RuntimeException e) {
               region.getCache().getCancelCriterion().checkCancelInProgress(e);
-              logger.warn(LocalizedMessage.create(LocalizedStrings.Eviction_EVICTOR_TASK_EXCEPTION,
+              logger.warn(String.format("Exception: %s occurred during eviction ",
                   new Object[] {e.getMessage()}), e);
             } finally {
               long end = CachePerfStats.getStatTime();

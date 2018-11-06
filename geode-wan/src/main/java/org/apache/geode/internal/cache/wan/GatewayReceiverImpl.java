@@ -29,9 +29,7 @@ import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -100,7 +98,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       return SocketCreator.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
+          "Could not get host name", e);
     }
   }
 
@@ -156,8 +154,8 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       this.port = port;
       return true;
     } catch (IOException e) {
-      logger.info(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-          .toLocalizedString(new Object[] {bindAdd, port}));
+      logger.info("Failed to create server socket on  {}[{}]",
+          bindAdd, port);
       return false;
     }
   }
@@ -167,7 +165,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       receiver = this.cache.addCacheServer(true);
     }
     if (receiver.isRunning()) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_IS_ALREADY_RUNNING));
+      logger.warn("Gateway Receiver is already running");
       return;
     }
 
@@ -187,7 +185,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
 
     logger
-        .info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
+        .info("The GatewayReceiver started on port : {}", this.port);
 
     InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
@@ -208,7 +206,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   public void stop() {
     if (!isRunning()) {
       throw new GatewayReceiverException(
-          LocalizedStrings.GatewayReceiver_IS_NOT_RUNNING.toLocalizedString());
+          "Gateway Receiver is not running");
     }
     receiver.stop();
   }

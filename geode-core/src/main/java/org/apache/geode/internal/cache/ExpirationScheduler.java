@@ -22,9 +22,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * ExpirationScheduler uses a single instance of java.util.Timer (and therefore a single thread) per
@@ -75,9 +73,8 @@ public class ExpirationScheduler {
   public ExpiryTask addExpiryTask(ExpiryTask task) {
     try {
       if (logger.isTraceEnabled()) {
-        logger.trace(LocalizedMessage.create(
-            LocalizedStrings.ExpirationScheduler_SCHEDULING__0__TO_FIRE_IN__1__MS,
-            new Object[] {task, Long.valueOf(task.getExpiryMillis())}));
+        logger.trace("Scheduling  {}  to fire in  {}  ms",
+            new Object[] {task, task.getExpiryMillis()});
       }
       // To fix bug 52267 do not create a Date here; instead calculate the relative duration.
       timer.schedule(task, task.getExpiryMillis());

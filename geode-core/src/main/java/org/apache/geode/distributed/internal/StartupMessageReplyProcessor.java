@@ -16,8 +16,8 @@ package org.apache.geode.distributed.internal;
 
 import java.util.Set;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 
 public class StartupMessageReplyProcessor extends ReplyProcessor21 {
   /** has a rejection message (license mismatch, etc) been received? */
@@ -76,7 +76,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
 
   @Override
   public void process(DistributionMessage msg) {
-    final LogWriterI18n log = this.system.getLogWriter().convertToLogWriterI18n();
+    final LogWriter log = this.system.getLogWriter();
     super.process(msg);
     if (log.fineEnabled()) {
       log.fine(this.toString() + " done processing " + msg + " from " + msg.getSender());

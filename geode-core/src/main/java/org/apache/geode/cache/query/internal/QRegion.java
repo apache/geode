@@ -50,7 +50,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * @since GemFire 4.0
@@ -67,7 +66,7 @@ public class QRegion implements SelectResults {
   public QRegion(Region region, boolean includeKeys) {
     if (region == null)
       throw new IllegalArgumentException(
-          LocalizedStrings.QRegion_REGION_CAN_NOT_BE_NULL.toLocalizedString());
+          "Region can not be NULL");
     this.region = region;
     Class constraint = this.region.getAttributes().getValueConstraint();
     if (constraint == null)
@@ -90,7 +89,7 @@ public class QRegion implements SelectResults {
 
     if (region == null)
       throw new IllegalArgumentException(
-          LocalizedStrings.QRegion_REGION_CAN_NOT_BE_NULL.toLocalizedString());
+          "Region can not be NULL");
 
     Class constraint = region.getAttributes().getValueConstraint();
     if (constraint == null)
@@ -237,17 +236,17 @@ public class QRegion implements SelectResults {
   //////////// Set methods ///////////////////////////////////
   public boolean add(Object obj) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.QRegion_REGION_VALUES_IS_NOT_MODIFIABLE.toLocalizedString());
+        "Region values is not modifiable");
   }
 
   public boolean addAll(Collection collection) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.QRegion_REGION_VALUES_IS_NOT_MODIFIABLE.toLocalizedString());
+        "Region values is not modifiable");
   }
 
   public void clear() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.QRegion_REGION_VALUES_IS_NOT_MODIFIABLE.toLocalizedString());
+        "Region values is not modifiable");
   }
 
   // to be sure, we need to iterate to make sure the region isn't full of
@@ -276,17 +275,17 @@ public class QRegion implements SelectResults {
 
   public boolean remove(Object obj) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.QRegion_REGION_VALUES_IS_NOT_MODIFIABLE.toLocalizedString());
+        "Region values is not modifiable");
   }
 
   public boolean removeAll(Collection collection) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.QRegion_REGION_VALUES_IS_NOT_MODIFIABLE.toLocalizedString());
+        "Region values is not modifiable");
   }
 
   public boolean retainAll(Collection collection) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.QRegion_REGION_VALUES_IS_NOT_MODIFIABLE.toLocalizedString());
+        "Region values is not modifiable");
   }
 
   public int size() {
@@ -500,7 +499,7 @@ public class QRegion implements SelectResults {
   public Set subregions(boolean recursive) {
     // return this.region.subregions(recursive);
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void loadSnapshot(InputStream inputStream)
@@ -514,44 +513,44 @@ public class QRegion implements SelectResults {
 
   public void registerInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterest(Object key, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public List getInterestList() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public List getInterestListRegex() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   // Object methods

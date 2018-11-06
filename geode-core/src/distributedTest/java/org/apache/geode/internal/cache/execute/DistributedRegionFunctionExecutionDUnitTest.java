@@ -59,8 +59,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.functions.DistribuedRegionFunctionFunctionInvocationException;
 import org.apache.geode.internal.cache.functions.DistributedRegionFunction;
+import org.apache.geode.internal.cache.functions.DistributedRegionFunctionFunctionInvocationException;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.security.templates.DummyAuthenticator;
@@ -73,7 +73,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
@@ -1025,8 +1024,9 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   }
 
   public static void registerFunction(Boolean isHA, Integer retryCount) {
-    Function function = new DistribuedRegionFunctionFunctionInvocationException(isHA.booleanValue(),
-        retryCount.intValue());
+    Function function =
+        new DistributedRegionFunctionFunctionInvocationException(isHA.booleanValue(),
+            retryCount.intValue());
     FunctionService.registerFunction(function);
   }
 
@@ -1132,7 +1132,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static void executeFunctionFunctionInvocationTargetException() {
     try {
       ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistribuedRegionFunctionFunctionInvocationException");
+          .execute("DistributedRegionFunctionFunctionInvocationException");
       List list = (ArrayList) rc1.getResult();
       assertEquals(5, list.get(0));
     } catch (Exception e) {
@@ -1144,7 +1144,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static void executeFunctionFunctionInvocationTargetExceptionWithoutHA() {
     try {
       ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistribuedRegionFunctionFunctionInvocationException");
+          .execute("DistributedRegionFunctionFunctionInvocationException");
       rc1.getResult();
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
@@ -1158,7 +1158,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static void executeFunctionFunctionInvocationTargetException_ClientServer() {
     try {
       List list = (ArrayList) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistribuedRegionFunctionFunctionInvocationException").getResult();
+          .execute("DistributedRegionFunctionFunctionInvocationException").getResult();
       assertEquals(1, list.size());
       assertEquals(5, list.get(0));
     } catch (Exception e) {
@@ -1170,11 +1170,12 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static void executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA() {
     try {
       FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistribuedRegionFunctionFunctionInvocationException").getResult();
+          .execute("DistributedRegionFunctionFunctionInvocationException").getResult();
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
       e.printStackTrace();
-      if (!(e.getCause() instanceof FunctionInvocationTargetException)) {
+      if (!((e instanceof FunctionInvocationTargetException)
+          || (e.getCause() instanceof FunctionInvocationTargetException))) {
         fail("FunctionInvocationTargetException should be thrown");
       }
     }
@@ -1315,42 +1316,20 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void closeCache() {
     long startTime = System.currentTimeMillis();
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 3000, 200, false);
+    Wait.pause(3000);
     long endTime = System.currentTimeMillis();
     region.getCache().getLogger().fine("Time wait for Cache Close = " + (endTime - startTime));
     cache.close();
   }
 
   public static void startServerHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 2000, 500, false);
+    Wait.pause(2000);
     Collection bridgeServers = cache.getCacheServers();
     LogWriterUtils.getLogWriter()
-        .info("Start Server Bridge Servers list : " + bridgeServers.size());
+        .info("Start Server cache servers list : " + bridgeServers.size());
     Iterator bridgeIterator = bridgeServers.iterator();
     CacheServer bridgeServer = (CacheServer) bridgeIterator.next();
-    LogWriterUtils.getLogWriter().info("start Server Bridge Server" + bridgeServer);
+    LogWriterUtils.getLogWriter().info("start Server cache server" + bridgeServer);
     try {
       bridgeServer.start();
     } catch (IOException e) {
@@ -1359,18 +1338,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   }
 
   public static void stopServerHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 1000, 200, false);
+    Wait.pause(1000);
     try {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
@@ -1383,18 +1351,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   }
 
   public static void closeCacheHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 1000, 200, false);
+    Wait.pause(1000);
     if (cache != null && !cache.isClosed()) {
       try {
         Iterator iter = cache.getCacheServers().iterator();
@@ -1412,18 +1369,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void disconnect() {
     long startTime = System.currentTimeMillis();
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 2000, 200, false);
+    Wait.pause(2000);
     long endTime = System.currentTimeMillis();
     region.getCache().getLogger().fine("Time wait for Disconnecting = " + (endTime - startTime));
     cache.getDistributedSystem().disconnect();

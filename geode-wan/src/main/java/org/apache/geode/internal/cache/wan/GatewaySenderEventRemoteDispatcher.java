@@ -35,9 +35,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -138,8 +136,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       } else {
         if (!(ex instanceof CancelException)) {
           logger.fatal(
-              LocalizedMessage.create(
-                  LocalizedStrings.GatewayEventRemoteDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH),
+              "Stopping the processor because the following exception occurred while processing a batch:",
               ex);
         }
         this.processor.setIsStopped(true);
@@ -164,8 +161,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
       } else if (t instanceof IOException || t instanceof ServerConnectivityException
-          || t instanceof ConnectionDestroyedException || t instanceof MessageTooLargeException
-          || t instanceof IllegalStateException || t instanceof GemFireSecurityException) {
+          || t instanceof ConnectionDestroyedException || t instanceof IllegalStateException
+          || t instanceof GemFireSecurityException) {
         this.processor.handleException();
         // If the cause is an IOException or a ServerException, sleep and retry.
         // Sleep for a bit and recheck.
@@ -180,8 +177,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         }
       } else {
         logger.fatal(
-            LocalizedMessage.create(
-                LocalizedStrings.GatewayEventRemoteDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH),
+            "Stopping the processor because the following exception occurred while processing a batch:",
             ge);
         this.processor.setIsStopped(true);
       }
@@ -195,8 +191,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     } catch (Exception e) {
       this.processor.setIsStopped(true);
       logger.fatal(
-          LocalizedMessage.create(
-              LocalizedStrings.GatewayEventRemoteDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH),
+          "Stopping the processor because the following exception occurred while processing a batch:",
           e);
     }
     return success;
@@ -248,8 +243,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         destroyConnection();
       }
       throw new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2
-              .toLocalizedString(new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+          String.format("%s : Exception during processing batch %s on connection %s",
+              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           ex);
     } catch (GemFireIOException e) {
       Throwable t = e.getCause();
@@ -260,9 +255,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         // Reduce the batch size by half of the configured batch size or number of events in the
         // current batch (whichever is less)
         int newBatchSize = Math.min(events.size(), this.processor.getBatchSize()) / 2;
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.GatewaySenderEventRemoteDispatcher_MESSAGE_TOO_LARGE_EXCEPTION,
-            new Object[] {events.size(), newBatchSize}), e);
+        logger.warn(String.format(
+            "The following exception occurred attempting to send a batch of %s events. The batch will be tried again after reducing the batch size to %s events.",
+            events.size(), newBatchSize),
+            e);
         this.processor.setBatchSize(newBatchSize);
         statistics.incBatchesResized();
       } else {
@@ -271,14 +267,14 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         destroyConnection();
       }
       throw new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2
-              .toLocalizedString(new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+          String.format("%s : Exception during processing batch %s on connection %s",
+              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           ex);
     } catch (IllegalStateException e) {
       this.processor.setException(new GatewaySenderException(e));
       throw new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2
-              .toLocalizedString(new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+          String.format("%s : Exception during processing batch %s on connection %s",
+              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           e);
     } catch (Exception e) {
       // An Exception has occurred. Get its cause.
@@ -293,8 +289,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       destroyConnection();
 
       throw new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher_0_EXCEPTION_DURING_PROCESSING_BATCH_1_ON_CONNECTION_2
-              .toLocalizedString(new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+          String.format("%s : Exception during processing batch %s on connection %s",
+              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
           ex);
     }
   }
@@ -435,9 +431,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         // Log the exception if necessary
         if (logConnectionFailure()) {
           // only log this message once; another msg is logged once we connect
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1,
-              new Object[] {this.processor.getSender().getId(), gse.getCause().getMessage()}));
+          logger.warn("{} : Could not connect due to: {}",
+              this.processor.getSender().getId(), gse.getCause().getMessage());
         }
 
         // Increment failed connection count
@@ -449,21 +444,19 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       if (this.failedConnectCount > 0) {
         Object[] logArgs =
             new Object[] {this.processor.getSender().getId(), con, this.failedConnectCount};
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GatewayEventRemoteDispatcher_0_USING_1_AFTER_2_FAILED_CONNECT_ATTEMPTS,
-            logArgs));
+        logger.info("{}: Using {} after {} failed connect attempts",
+            logArgs);
         this.failedConnectCount = 0;
       } else {
         Object[] logArgs = new Object[] {this.processor.getSender().getId(), con};
-        logger.info(LocalizedMessage.create(LocalizedStrings.GatewayEventRemoteDispatcher_0_USING_1,
-            logArgs));
+        logger.info("{}: Using {}", logArgs);
       }
       this.connection = con;
       this.processor.checkIfPdxNeedsResend(this.connection.getQueueStatus().getPdxSize());
     } catch (ConnectionDestroyedException e) {
       throw new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1.toLocalizedString(
-              new Object[] {this.processor.getSender().getId(), e.getMessage()}),
+          String.format("%s : Could not connect due to: %s",
+              this.processor.getSender().getId(), e.getMessage()),
           e);
     } finally {
       this.connectionLifeCycleLock.writeLock().unlock();
@@ -479,8 +472,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       List<ServerLocation> servers = this.sender.getProxy().getCurrentServers();
       String ioMsg;
       if (servers.size() == 0) {
-        ioMsg = LocalizedStrings.GatewayEventRemoteDispatcher_THERE_ARE_NO_ACTIVE_SERVERS
-            .toLocalizedString();
+        ioMsg = "There are no active servers.";
       } else {
         final StringBuilder buffer = new StringBuilder();
         for (ServerLocation server : servers) {
@@ -491,12 +483,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           buffer.append(endpointName);
         }
         ioMsg =
-            LocalizedStrings.GatewayEventRemoteDispatcher_NO_AVAILABLE_CONNECTION_WAS_FOUND_BUT_THE_FOLLOWING_ACTIVE_SERVERS_EXIST_0
-                .toLocalizedString(buffer.toString());
+            String.format(
+                "No available connection was found, but the following active servers exist: %s",
+                buffer.toString());
       }
       IOException ex = new IOException(ioMsg);
       gse = new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1.toLocalizedString(
+          String.format("%s : Could not connect due to: %s",
               new Object[] {this.processor.getSender().getId(), ex.getMessage()}),
           ex);
     }
@@ -631,9 +624,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
             // If the batch is successfully processed, remove it from the
             // queue.
             if (gotBatchException) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.GatewaySenderEventRemoteDispatcher_GATEWAY_SENDER_0_RECEIVED_ACK_FOR_BATCH_ID_1_WITH_EXCEPTION,
-                  new Object[] {processor.getSender(), ack.getBatchId()}));
+              logger.warn(
+                  "Gateway Sender {} : Received ack for batch id {} with one or more exceptions",
+                  processor.getSender(), ack.getBatchId());
               // If we get PDX related exception in the batch exception then try
               // to resend all the pdx events as well in the next batch.
               final GatewaySenderStats statistics = sender.getStatistics();
@@ -676,8 +669,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       } catch (Exception e) {
         if (!checkCancelled()) {
           logger.fatal(
-              LocalizedMessage.create(
-                  LocalizedStrings.GatewayEventRemoteDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH),
+              "Stopping the processor because the following exception occurred while processing a batch:",
               e);
         }
         sender.getLifeCycleLock().writeLock().lock();
@@ -714,9 +706,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
             List<GatewaySenderEventImpl> pdxEvents =
                 processor.getBatchIdToPDXEventsMap().get(be.getBatchId());
             if (logWarning) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_PDX_EVENT__0,
-                  be.getIndex()), be);
+              logger.warn(String.format(
+                  "A BatchException occurred processing PDX events. Index of array of Exception : %s",
+                  be.getIndex()),
+                  be);
             }
             if (pdxEvents != null) {
               for (GatewaySenderEventImpl senderEvent : pdxEvents) {
@@ -724,17 +717,18 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               }
               GatewaySenderEventImpl gsEvent = pdxEvents.get(be.getIndex());
               if (logWarning) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.GatewayEventRemoteDispatcher_THE_EVENT_BEING_PROCESSED_WHEN_THE_BATCHEXCEPTION_OCCURRED_WAS__0,
-                    gsEvent));
+                logger.warn("The event being processed when the BatchException occurred was:  {}",
+                    gsEvent);
               }
             }
             continue;
           }
           if (logWarning) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_EVENT__0,
-                be.getIndex()), be);
+            logger.warn(
+                String.format(
+                    "A BatchException occurred processing events. Index of Array of Exception : %s",
+                    be.getIndex()),
+                be);
           }
           List<GatewaySenderEventImpl>[] eventsArr =
               processor.getBatchIdToEventsMap().get(be.getBatchId());
@@ -743,16 +737,14 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
             GatewaySenderEventImpl gsEvent =
                 (GatewaySenderEventImpl) filteredEvents.get(be.getIndex());
             if (logWarning) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.GatewayEventRemoteDispatcher_THE_EVENT_BEING_PROCESSED_WHEN_THE_BATCHEXCEPTION_OCCURRED_WAS__0,
-                  gsEvent));
+              logger.warn("The event being processed when the BatchException occurred was:  {}",
+                  gsEvent);
             }
           }
         }
       } catch (Exception e) {
         logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.GatewayEventRemoteDispatcher_AN_EXCEPTION_OCCURRED_PROCESSING_A_BATCHEXCEPTION__0),
+            "An unexpected exception occurred processing a BatchException. The thread will continue.",
             e);
       }
     }
@@ -785,8 +777,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         }
       }
       if (this.isAlive()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.GatewaySender_ACKREADERTHREAD_IGNORED_CANCELLATION));
+        logger.warn("AckReaderThread ignored cancellation");
       }
     }
 

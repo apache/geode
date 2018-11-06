@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Used to reserve region entries, during a transaction commit, for modification by the transaction.
@@ -103,8 +102,9 @@ public class TXReservationMgr {
       if (s.contains(keys[i])) {
         release(localLocks, true);
         throw new CommitConflictException(
-            LocalizedStrings.TXReservationMgr_THE_KEY_0_IN_REGION_1_WAS_BEING_MODIFIED_BY_ANOTHER_TRANSACTION_LOCALLY
-                .toLocalizedString(new Object[] {keys[i], rr.getRegionFullPath()}));
+            String.format(
+                "The key %s in region %s was being modified by another transaction locally.",
+                new Object[] {keys[i], rr.getRegionFullPath()}));
       }
     }
   }

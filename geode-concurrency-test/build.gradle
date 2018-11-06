@@ -15,6 +15,6 @@
  * limitations under the License.
  */
 dependencies {
-  compile 'junit:junit:' + project.'junit.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile('junit:junit:' + project.'junit.version')
+  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
 }

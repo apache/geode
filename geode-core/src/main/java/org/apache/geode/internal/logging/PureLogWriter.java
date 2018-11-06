@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.i18n.LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,12 +25,10 @@ import java.io.StringWriter;
 import java.util.Date;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * Implementation of {@link LogWriterI18n} that will write to a local stream
+ * Implementation of {@link org.apache.geode.LogWriter} that will write to a local stream
  * and only use pure java features.
  */
 public class PureLogWriter extends LogWriterImpl {
@@ -182,7 +179,7 @@ public class PureLogWriter extends LogWriterImpl {
         formatText(printWriter, message, 40);
       } catch (RuntimeException e) {
         printWriter.println(message);
-        printWriter.println(LocalizedStrings.PureLogWriter_IGNORING_EXCEPTION.toLocalizedString());
+        printWriter.println("Ignoring exception: ");
         e.printStackTrace(printWriter);
       }
     } else {
@@ -264,7 +261,7 @@ public class PureLogWriter extends LogWriterImpl {
     try {
       return new PrintWriter(new FileOutputStream(logFile, true), true);
     } catch (FileNotFoundException ex) {
-      String s = InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0.toLocalizedString(logFile);
+      String s = String.format("Could not open log file \"%s\".", logFile);
       throw new GemFireIOException(s, ex);
     }
   }

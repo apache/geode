@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -74,7 +73,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.PrimaryRequestMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -223,8 +222,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
                 t.getMessage(), t);
           }
           throw new ForceReattemptException(
-              LocalizedStrings.PrimaryRequestMessage_NODERESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION_THROWING_PARTITIONEDREGIONCOMMUNICATION_EXCEPTION
-                  .toLocalizedString(),
+              "NodeResponse got remote CacheClosedException, throwing PartitionedRegionCommunication Exception.",
               t);
         }
         e.handleCause();

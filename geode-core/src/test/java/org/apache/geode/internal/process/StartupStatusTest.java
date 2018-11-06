@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.i18n.StringId;
 
 public class StartupStatusTest {
 
@@ -105,7 +104,7 @@ public class StartupStatusTest {
   @Test
   public void startup_nullStringId_throwsIllegalArgumentException() throws Exception {
     // arrange
-    StringId stringId = null;
+    String stringId = null;
     Object[] params = new Object[0];
 
     // act/assert
@@ -116,7 +115,7 @@ public class StartupStatusTest {
   @Test
   public void startup_emptyParams() throws Exception {
     // arrange
-    StringId stringId = new StringId(1, "my string");
+    String stringId = "my string";
     Object[] params = new Object[0];
 
     // act
@@ -129,7 +128,7 @@ public class StartupStatusTest {
   @Test
   public void startup_doesNothingIfNoListener() throws Exception {
     // arrange
-    StringId stringId = new StringId(1, "my string");
+    String stringId = "my string";
     Object[] params = new Object[0];
 
     // act
@@ -143,7 +142,7 @@ public class StartupStatusTest {
   public void startup_invokesListener() throws Exception {
     // arrange
     listener = statusMessage -> statusMessageList.add(statusMessage);
-    StringId stringId = new StringId(1, "my string");
+    String stringId = "my string";
     Object[] params = new Object[0];
     setListener(listener);
 
@@ -158,8 +157,8 @@ public class StartupStatusTest {
   public void startupTwice_invokesListenerTwice() throws Exception {
     // arrange
     listener = statusMessage -> statusMessageList.add(statusMessage);
-    StringId stringIdOne = new StringId(1, "my string");
-    StringId stringIdTwo = new StringId(2, "other string");
+    String stringIdOne = "my string";
+    String stringIdTwo = "other string";
     Object[] params = new Object[0];
     setListener(listener);
 

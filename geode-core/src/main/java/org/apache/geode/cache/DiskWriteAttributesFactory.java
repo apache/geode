@@ -18,7 +18,6 @@ import java.util.Properties;
 
 import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Factory for getting DiskWriteAttribute objects
@@ -116,13 +115,14 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   public void setCompactionThreshold(int compactionThreshold) {
     if (compactionThreshold < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_POSITIVE_NUMBER_AND_THE_VALUE_GIVEN_1_IS_NOT_ACCEPTABLE
-              .toLocalizedString(new Object[] {CacheXml.COMPACTION_THRESHOLD,
+          String.format("%s has to be positive number and the value given %s is not acceptable",
+              new Object[] {CacheXml.COMPACTION_THRESHOLD,
                   Integer.valueOf(compactionThreshold)}));
     } else if (compactionThreshold > 100) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_LESS_THAN_2_BUT_WAS_1
-              .toLocalizedString(new Object[] {CacheXml.COMPACTION_THRESHOLD,
+          String.format(
+              "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
+              new Object[] {CacheXml.COMPACTION_THRESHOLD,
                   Integer.valueOf(compactionThreshold), Integer.valueOf(100)}));
     }
     this.props.setProperty(CacheXml.COMPACTION_THRESHOLD, String.valueOf(compactionThreshold));
@@ -144,8 +144,9 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
 
     if (maxOplogSize < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesFactory_MAXIMUM_OPLOG_SIZE_SPECIFIED_HAS_TO_BE_A_NONNEGATIVE_NUMBER_AND_THE_VALUE_GIVEN_0_IS_NOT_ACCEPTABLE
-              .toLocalizedString(Long.valueOf(maxOplogSize)));
+          String.format(
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
+              Long.valueOf(maxOplogSize)));
     }
     this.props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSize));
   }
@@ -166,8 +167,9 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
 
     if (maxOplogSize < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesFactory_MAXIMUM_OPLOG_SIZE_SPECIFIED_HAS_TO_BE_A_NONNEGATIVE_NUMBER_AND_THE_VALUE_GIVEN_0_IS_NOT_ACCEPTABLE
-              .toLocalizedString(Integer.valueOf(maxOplogSize)));
+          String.format(
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
+              Integer.valueOf(maxOplogSize)));
     }
     long maxOplogSizeInBytes = convertToBytes(maxOplogSize);
     this.props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSizeInBytes));
@@ -197,8 +199,9 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   public void setTimeInterval(long timeInterval) {
     if (timeInterval < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesFactory_TIME_INTERVAL_SPECIFIED_HAS_TO_BE_A_NONNEGATIVE_NUMBER_AND_THE_VALUE_GIVEN_0_IS_NOT_ACCEPTABLE
-              .toLocalizedString(Long.valueOf(timeInterval)));
+          String.format(
+              "Time Interval specified has to be a non-negative number and the value given %s is not acceptable",
+              Long.valueOf(timeInterval)));
     }
 
     this.props.setProperty(CacheXml.TIME_INTERVAL, String.valueOf(timeInterval));
@@ -216,8 +219,9 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   public void setBytesThreshold(long bytesThreshold) {
     if (bytesThreshold < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesFactory_QUEUE_SIZE_SPECIFIED_HAS_TO_BE_A_NONNEGATIVE_NUMBER_AND_THE_VALUE_GIVEN_0_IS_NOT_ACCEPTABLE
-              .toLocalizedString(Long.valueOf(bytesThreshold)));
+          String.format(
+              "Queue size specified has to be a non-negative number and the value given %s is not acceptable",
+              Long.valueOf(bytesThreshold)));
     }
 
     this.props.setProperty(CacheXml.BYTES_THRESHOLD, String.valueOf(bytesThreshold));

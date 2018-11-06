@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -1417,7 +1416,7 @@ public class DistributionAdvisor {
     public Profile(InternalDistributedMember memberId, int version) {
       if (memberId == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DistributionAdvisor_MEMBERID_CANNOT_BE_NULL.toLocalizedString());
+            "memberId cannot be null");
       }
       this.peerMemberId = memberId;
       this.version = version;

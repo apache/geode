@@ -52,6 +52,7 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -61,7 +62,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -616,7 +616,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       }
     };
 
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     if (numRegions != 0) {
       assertTrue(regionMetaData.containsKey(region.getFullPath()));
@@ -652,7 +652,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       }
     };
 
-    Wait.waitForCriterion(wc, 120000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
@@ -714,7 +714,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       }
     };
 
-    Wait.waitForCriterion(wc, 120000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     if (numRegions != 0) {
       assertTrue(regionMetaData.containsKey(region.getFullPath()));

@@ -48,7 +48,6 @@ import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
@@ -119,8 +118,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     } catch (DistributedSystemDisconnectedException sde) {
       sendReply(getSender(), this.processorId, dm,
           new ReplyException(new RemoteOperationException(
-              LocalizedStrings.GetMessage_OPERATION_GOT_INTERRUPTED_DUE_TO_SHUTDOWN_IN_PROGRESS_ON_REMOTE_VM
-                  .toLocalizedString(),
+              "Operation got interrupted due to shutdown in progress on remote VM.",
               sde)),
           r, startTime);
       return false;
@@ -182,7 +180,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -371,12 +369,11 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
         return null;
       } catch (IOException e) {
         throw new RemoteOperationException(
-            LocalizedStrings.GetMessage_UNABLE_TO_DESERIALIZE_VALUE_IOEXCEPTION.toLocalizedString(),
+            "Unable to deserialize value (IOException)",
             e);
       } catch (ClassNotFoundException e) {
         throw new RemoteOperationException(
-            LocalizedStrings.GetMessage_UNABLE_TO_DESERIALIZE_VALUE_CLASSNOTFOUNDEXCEPTION
-                .toLocalizedString(),
+            "Unable to deserialize value (ClassNotFoundException)",
             e);
       }
     }
@@ -392,7 +389,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       }
       if (!this.returnValueReceived) {
         throw new RemoteOperationException(
-            LocalizedStrings.GetMessage_NO_RETURN_VALUE_RECEIVED.toLocalizedString());
+            "no return value received");
       }
       return getValue(preferCD);
     }

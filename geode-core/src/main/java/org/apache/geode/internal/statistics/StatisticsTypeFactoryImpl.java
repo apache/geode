@@ -21,7 +21,6 @@ import java.util.HashMap;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * The implementation of {@link StatisticsTypeFactory}. Each VM can any have a single instance of
@@ -72,8 +71,8 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
         result = currentValue;
       } else {
         throw new IllegalArgumentException(
-            LocalizedStrings.StatisticsTypeFactoryImpl_STATISTICS_TYPE_NAMED_0_ALREADY_EXISTS
-                .toLocalizedString(result.getName()));
+            String.format("Statistics type named %s already exists.",
+                result.getName()));
       }
     }
     return result;

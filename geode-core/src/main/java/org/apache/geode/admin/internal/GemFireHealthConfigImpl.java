@@ -15,7 +15,6 @@
 package org.apache.geode.admin.internal;
 
 import org.apache.geode.admin.GemFireHealthConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo davidw Delegate to a "parent" config for properties that are not overridden.
 // This will be made easier with a special <code>HealthConfigAttribute</code> class.
@@ -68,12 +67,11 @@ public class GemFireHealthConfigImpl extends CacheHealthConfigImpl implements Ge
   @Override
   public String toString() {
     if (this.hostName == null) {
-      return LocalizedStrings.GemFireHealthConfigImpl_DEFAULT_GEMFIRE_HEALTH_CONFIGURATION
-          .toLocalizedString();
+      return "Default GemFire health configuration";
 
     } else {
-      return LocalizedStrings.GemFireHealthConfigImpl_GEMFIRE_HEALTH_CONFIGURATION_FOR_HOST_0
-          .toLocalizedString(this.hostName);
+      return String.format("GemFire health configuration for host %s",
+          this.hostName);
     }
   }
 

@@ -20,9 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 abstract class AbstractEvictionList implements EvictionList {
@@ -103,8 +101,7 @@ abstract class AbstractEvictionList implements EvictionList {
     }
 
     if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
-      logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage
-          .create(LocalizedStrings.NewLRUClockHand_ADDING_ANODE_TO_LRU_LIST, evictionNode));
+      logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "adding a Node to lru list: {}", evictionNode);
     }
 
     evictionNode.setNext(tail);
@@ -118,8 +115,7 @@ abstract class AbstractEvictionList implements EvictionList {
   @Override
   public synchronized void destroyEntry(EvictionNode evictionNode) {
     if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
-      logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage
-          .create(LocalizedStrings.NewLRUClockHand_UNLINKENTRY_CALLED, evictionNode));
+      logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "destroyEntry called for {}", evictionNode);
     }
 
     if (removeEntry(evictionNode)) {
@@ -175,7 +171,7 @@ abstract class AbstractEvictionList implements EvictionList {
     if (evictionNode.isEvicted()) {
       if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
         logger.trace(LogMarker.LRU_CLOCK_VERBOSE,
-            LocalizedMessage.create(LocalizedStrings.NewLRUClockHand_DISCARDING_EVICTED_ENTRY));
+            "discarding evicted entry");
       }
       return false;
     }
@@ -185,8 +181,8 @@ abstract class AbstractEvictionList implements EvictionList {
     synchronized (evictionNode) {
       if (evictionNode.isInUseByTransaction()) {
         if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
-          logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage.create(
-              LocalizedStrings.NewLRUClockHand_REMOVING_TRANSACTIONAL_ENTRY_FROM_CONSIDERATION));
+          logger.trace(LogMarker.LRU_CLOCK_VERBOSE,
+              "removing transactional entry from consideration");
         }
         return false;
       }

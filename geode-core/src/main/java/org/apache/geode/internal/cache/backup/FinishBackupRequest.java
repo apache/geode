@@ -26,9 +26,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A request send from an admin VM to all of the peers to indicate that that should complete the
@@ -57,7 +55,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
     try {
       persistentIds = finishBackupFactory.createFinishBackup(dm.getCache()).run();
     } catch (IOException e) {
-      logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
+      logger.error(String.format("Error processing request %s.", getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
     }
     return finishBackupFactory.createBackupResponse(getSender(), persistentIds);

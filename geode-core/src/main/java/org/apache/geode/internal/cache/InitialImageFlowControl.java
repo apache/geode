@@ -31,11 +31,8 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProcessorKeeper21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * This class keeps track of how many InitialImageMessages are in flight between the initial image
@@ -124,18 +121,15 @@ public class InitialImageFlowControl implements MembershipListener {
       checkCancellation();
 
       Set activeMembers = dm.getDistributionManagerIds();
-      final Object[] msgArgs =
-          new Object[] {getAckWaitThreshold(), this, dm.getId(), activeMembers};
-      final StringId msg =
-          LocalizedStrings.ReplyProcessor21_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLIES_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3;
-      logger.warn(LocalizedMessage.create(msg, msgArgs));
+      logger.warn(
+          "{} seconds have elapsed while waiting for replies: {} on {} whose current membership list is: [{}]",
+          getAckWaitThreshold(), this, dm.getId(), activeMembers);
 
       permits.acquire();
 
       // Give an info message since timeout gave a warning.
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1,
-              "InitialImageFlowControl"));
+      logger.info("{} wait for replies completed",
+          "InitialImageFlowControl");
     }
   }
 

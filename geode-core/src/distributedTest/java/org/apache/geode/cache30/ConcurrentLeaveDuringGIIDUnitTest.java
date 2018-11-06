@@ -14,6 +14,11 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.BeforeGetInitialImage;
+import static org.apache.geode.internal.cache.InitialImageOperation.getGIITestHookForCheckingPurpose;
+import static org.apache.geode.internal.cache.InitialImageOperation.setGIITestHook;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -25,17 +30,15 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionMap;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -96,11 +99,11 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable createRegionA = new SerializableCallable("create region in A") {
       public Object call() {
         final GiiCallback cb = new GiiCallback(
-            InitialImageOperation.GIITestHookType.BeforeGetInitialImage, regionName);
-        InitialImageOperation.setGIITestHook(cb);
+            BeforeGetInitialImage, regionName);
+        setGIITestHook(cb);
         Thread t = new Thread("create region in a thread that will block before GII") {
           public void run() {
-            Region r = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+            Region r = getCache().createRegionFactory(REPLICATE).create(regionName);
           }
         };
         t.start();
@@ -113,7 +116,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
             return "waiting for GII test hook to be invoked";
           }
         };
-        Wait.waitForCriterion(wc, 20000, 500, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return getCache().getDistributedSystem().getDistributedMember();
       }
     };
@@ -141,7 +144,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
             return "waiting for region " + regionName + " to contain keyFromX";
           }
         };
-        Wait.waitForCriterion(wc, 20000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
       }
     });
 
@@ -150,8 +153,8 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
 
     A.invoke(new SerializableRunnable("allow A to continue GII from B") {
       public void run() {
-        GiiCallback cb = (GiiCallback) InitialImageOperation.getGIITestHookForCheckingPurpose(
-            InitialImageOperation.GIITestHookType.BeforeGetInitialImage);
+        GiiCallback cb = (GiiCallback) getGIITestHookForCheckingPurpose(
+            BeforeGetInitialImage);
         synchronized (cb.lockObject) {
           cb.lockObject.notify();
         }
@@ -164,11 +167,11 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
             return "waiting for region " + regionName + " to initialize";
           }
         };
-        Wait.waitForCriterion(wc, 20000, 1000, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         // ensure that the RVV has recorded the event
         DistributedRegion r = (DistributedRegion) getCache().getRegion(regionName);
         if (!r.getVersionVector().contains(Xid, 1)) {
-          LogWriterUtils.getLogWriter()
+          getLogWriter()
               .info("r's version vector is " + r.getVersionVector().fullToString());
           ((LocalRegion) r).dumpBackingMap();
         }
@@ -193,7 +196,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
           }
         };
         // if the test fails here then a sync from B to A was not performed
-        Wait.waitForCriterion(wc, 20000, 500, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         // if the test fails here something is odd because the sync was done
         // but the RVV doesn't know about it
         assertTrue(((LocalRegion) r).getVersionVector().contains(Xid, 1));

@@ -36,9 +36,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.RegionQueue;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
@@ -112,9 +110,10 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
                   filter.afterAcknowledgement(eventForFilter);
                 }
               } catch (Exception e) {
-                logger.fatal(LocalizedMessage.create(
-                    LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-                    new Object[] {filter.toString(), eventForFilter}), e);
+                logger.fatal(String.format(
+                    "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+                    new Object[] {filter.toString(), eventForFilter}),
+                    e);
               }
             }
             rgn.localDestroy(k, RegionQueue.WAN_QUEUE_TOKEN);
@@ -155,11 +154,10 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         this.appliedOperation = true;
       } catch (CacheWriterException e) {
         throw new Error(
-            LocalizedStrings.DestroyOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED.toLocalizedString(),
+            "CacheWriter should not be called",
             e);
       } catch (TimeoutException e) {
-        throw new Error(LocalizedStrings.DestroyOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-            .toLocalizedString(), e);
+        throw new Error("DistributedLock should not be acquired", e);
       }
       return true;
     }

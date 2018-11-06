@@ -47,7 +47,7 @@ public class ListJndiBindingFunctionTest {
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     listJndiBindingFunction = spy(new ListJndiBindingFunction());
     context = mock(FunctionContext.class);
     distributedSystem = mock(DistributedSystem.class);

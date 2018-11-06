@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -27,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 
@@ -186,12 +186,12 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
       }
     };
     ScheduledFuture f = ex.scheduleAtFixedRate(run, 0, 1, TimeUnit.SECONDS);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals("Task was not executed repeatedly", true, counter.get() > 1));
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals("The task could not be cancelled", true, f.cancel(true)));
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals("Task was not cancelled within 30 sec", true, f.isCancelled()));
     int oldValue = counter.get();

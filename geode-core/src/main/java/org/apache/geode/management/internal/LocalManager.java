@@ -349,7 +349,7 @@ public class LocalManager extends Manager {
         }
       } catch (CancelException ex) {
         if (logger.isDebugEnabled())
-          logger.debug(ManagementStrings.MANAGEMENT_TASK_CANCELLED.toLocalizedString());
+          logger.debug("Management Task Cancelled");
         return;
       } catch (GemFireException ex) {
         if (!cache.isClosed() && logger.isDebugEnabled()) {

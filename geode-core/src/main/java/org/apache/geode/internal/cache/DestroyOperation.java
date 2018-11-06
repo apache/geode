@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
@@ -101,11 +100,10 @@ public class DestroyOperation extends DistributedCacheOperation {
         throw e;
       } catch (CacheWriterException e) {
         throw new Error(
-            LocalizedStrings.DestroyOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED.toLocalizedString(),
+            "CacheWriter should not be called",
             e);
       } catch (TimeoutException e) {
-        throw new Error(LocalizedStrings.DestroyOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-            .toLocalizedString(), e);
+        throw new Error("DistributedLock should not be acquired", e);
       }
       return true;
     }

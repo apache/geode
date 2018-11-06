@@ -78,6 +78,7 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.locks.TXLockBatch;
 import org.apache.geode.internal.cache.locks.TXLockService;
 import org.apache.geode.internal.cache.locks.TXLockServiceImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -86,7 +87,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -1483,7 +1483,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
             @Override
             public void run2() {
               final Cache c = getCache();
-              Wait.waitForCriterion(new WaitCriterion() {
+              GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
                 @Override
                 public boolean done() {
                   return c.getRegion(rgnName1) == null;
@@ -1493,7 +1493,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
                 public String description() {
                   return null;
                 }
-              }, 30000, 1000, true);
+              });
               Region r2 = c.getRegion(rgnName2);
               assertNull(r2);
             }

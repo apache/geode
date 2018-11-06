@@ -40,9 +40,7 @@ import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -337,10 +335,10 @@ public class ConnectionImpl implements Connection {
 
   private void verifySocketBufferSize(int requestedBufferSize, int actualBufferSize, String type) {
     if (actualBufferSize < requestedBufferSize) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.Connection_SOCKET_0_IS_1_INSTEAD_OF_THE_REQUESTED_2,
-          new Object[] {new StringBuilder(type).append(" buffer size").toString(), actualBufferSize,
-              requestedBufferSize}));
+      logger.info("Socket {} buffer size is {} instead of the requested {}.",
+          new Object[] {type,
+              actualBufferSize,
+              requestedBufferSize});
     }
   }
 }

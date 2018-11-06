@@ -31,9 +31,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class PartitionRegionConfigValidator {
 
@@ -69,13 +67,14 @@ public class PartitionRegionConfigValidator {
 
     if (userPA.getTotalSize() != prconfPA.getTotalSize()) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionedRegion_TOTAL_SIZE_IN_PARTITIONATTRIBUTES_IS_INCOMPATIBLE_WITH_GLOBALLY_SET_TOTAL_SIZE_SET_THE_TOTAL_SIZE_TO_0MB
-              .toLocalizedString(Long.valueOf(prconfPA.getTotalSize())));
+          String.format(
+              "Total size in PartitionAttributes is incompatible with globally set total size. Set the total size to %sMB.",
+              Long.valueOf(prconfPA.getTotalSize())));
     }
     if (userPA.getRedundantCopies() != prconfPA.getRedundantCopies()) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionedRegion_REQUESTED_REDUNDANCY_0_IS_INCOMPATIBLE_WITH_EXISTING_REDUNDANCY_1
-              .toLocalizedString(new Object[] {Integer.valueOf(userPA.getRedundantCopies()),
+          String.format("Requested redundancy %s is incompatible with existing redundancy %s",
+              new Object[] {Integer.valueOf(userPA.getRedundantCopies()),
                   Integer.valueOf(prconfPA.getRedundantCopies())}));
     }
 
@@ -87,15 +86,17 @@ public class PartitionRegionConfigValidator {
     Scope myScope = pr.getScope();
     if (!myScope.equals(prconfScope)) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionedRegion_SCOPE_IN_PARTITIONATTRIBUTES_IS_INCOMPATIBLE_WITH_ALREADY_SET_SCOPESET_THE_SCOPE_TO_0
-              .toLocalizedString(prconfScope));
+          String.format(
+              "Scope in PartitionAttributes is incompatible with already set scope.Set the scope to %s .",
+              prconfScope));
     }
 
     final int prconfTotalNumBuckets = prconfPA.getTotalNumBuckets();
     if (userPA.getTotalNumBuckets() != prconfTotalNumBuckets) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionedRegion_THE_TOTAL_NUMBER_OF_BUCKETS_FOUND_IN_PARTITIONATTRIBUTES_0_IS_INCOMPATIBLE_WITH_THE_TOTAL_NUMBER_OF_BUCKETS_USED_BY_OTHER_DISTRIBUTED_MEMBERS_SET_THE_NUMBER_OF_BUCKETS_TO_1
-              .toLocalizedString(new Object[] {Integer.valueOf(userPA.getTotalNumBuckets()),
+          String.format(
+              "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
+              new Object[] {Integer.valueOf(userPA.getTotalNumBuckets()),
                   Integer.valueOf(prconfTotalNumBuckets)}));
     }
     validatePartitionListeners(prconf, userPA);
@@ -112,8 +113,9 @@ public class PartitionRegionConfigValidator {
     if (userPA.getPartitionListeners() == null && userPA.getPartitionListeners().length == 0
         && prconfList != null) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_PARTITION_LISTENER
-              .toLocalizedString(new Object[] {null, prconfList}));
+          String.format(
+              "The PartitionListeners=%s are incompatible with the PartitionListeners=%s used by other distributed members.",
+              new Object[] {null, prconfList}));
     }
     if (userPA.getPartitionListeners() != null && prconfList != null) {
       ArrayList<String> userPRList = new ArrayList<String>();
@@ -123,15 +125,17 @@ public class PartitionRegionConfigValidator {
 
       if (userPA.getPartitionListeners().length != prconfList.size()) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_PARTITION_LISTENER
-                .toLocalizedString(new Object[] {userPRList, prconfList}));
+            String.format(
+                "The PartitionListeners=%s are incompatible with the PartitionListeners=%s used by other distributed members.",
+                new Object[] {userPRList, prconfList}));
       }
 
       for (String listener : prconfList) {
         if (!(userPRList.contains(listener))) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_PARTITION_LISTENER
-                  .toLocalizedString(new Object[] {userPRList, prconfList}));
+              String.format(
+                  "The PartitionListeners=%s are incompatible with the PartitionListeners=%s used by other distributed members.",
+                  new Object[] {userPRList, prconfList}));
         }
       }
     }
@@ -142,15 +146,18 @@ public class PartitionRegionConfigValidator {
     /*
      * if (userPA.getPartitionResolver() == null && prconf.getPartitionResolverClassName() != null)
      * { throw new IllegalStateException(
-     * LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_PARTITION_RESOLVER
-     * .toLocalizedString(new Object[] { "null", prconf.getPartitionResolverClassName() })); }
+     * String.
+     * format("The PartitionResolver=%s is incompatible with the PartitionResolver=%s used by other distributed members."
+     * ,
+     * new Object[] { "null", prconf.getPartitionResolverClassName() })); }
      */
     if (userPA.getPartitionResolver() != null && prconf.getResolverClassName() != null) {
       if (!(prconf.getResolverClassName()
           .equals(userPA.getPartitionResolver().getClass().getName()))) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_PARTITION_RESOLVER
-                .toLocalizedString(new Object[] {userPA.getPartitionResolver().getClass().getName(),
+            String.format(
+                "The PartitionResolver=%s is incompatible with the PartitionResolver=%s used by other distributed members.",
+                new Object[] {userPA.getPartitionResolver().getClass().getName(),
                     prconf.getResolverClassName()}));
       }
     }
@@ -160,16 +167,18 @@ public class PartitionRegionConfigValidator {
       final PartitionAttributes userPA) {
     if (userPA.getColocatedWith() == null && prconf.getColocatedWith() != null) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_COLOCATED_WITH
-              .toLocalizedString(new Object[] {"null", prconf.getColocatedWith()}));
+          String.format(
+              "The colocatedWith=%s found in PartitionAttributes is incompatible with the colocatedWith=%s used by other distributed members.",
+              new Object[] {"null", prconf.getColocatedWith()}));
 
     }
     if (userPA.getColocatedWith() != null && prconf.getColocatedWith() != null) {
       if (!(prconf.getColocatedWith().equals(userPA.getColocatedWith()))) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_COLOCATED_WITH
-                .toLocalizedString(
-                    new Object[] {userPA.getColocatedWith(), prconf.getColocatedWith()}));
+            String.format(
+                "The colocatedWith=%s found in PartitionAttributes is incompatible with the colocatedWith=%s used by other distributed members.",
+
+                new Object[] {userPA.getColocatedWith(), prconf.getColocatedWith()}));
       }
     }
   }
@@ -178,23 +187,27 @@ public class PartitionRegionConfigValidator {
       final PartitionRegionConfig prconf) {
     if (!userRA.getRegionIdleTimeout().equals(prconf.getRegionIdleTimeout())) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_EXPIRATION_ATTRIBUETS
-              .toLocalizedString(new Object[] {" region idle timout "}));
+          String.format(
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
+              new Object[] {" region idle timout "}));
     }
     if (!userRA.getRegionTimeToLive().equals(prconf.getRegionTimeToLive())) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_EXPIRATION_ATTRIBUETS
-              .toLocalizedString(new Object[] {" region time to live "}));
+          String.format(
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
+              new Object[] {" region time to live "}));
     }
     if (!userRA.getEntryIdleTimeout().equals(prconf.getEntryIdleTimeout())) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_EXPIRATION_ATTRIBUETS
-              .toLocalizedString(new Object[] {" entry idle timout "}));
+          String.format(
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
+              new Object[] {" entry idle timout "}));
     }
     if (!userRA.getEntryTimeToLive().equals(prconf.getEntryTimeToLive())) {
       throw new IllegalStateException(
-          LocalizedStrings.PartitionRegionConfigValidator_INCOMPATIBLE_EXPIRATION_ATTRIBUETS
-              .toLocalizedString(new Object[] {" entry time to live "}));
+          String.format(
+              "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
+              new Object[] {" entry time to live "}));
     }
   }
 
@@ -242,9 +255,9 @@ public class PartitionRegionConfigValidator {
       if (ea.getAction().isLocalDestroy()) {
         // LRUHeap doesn't support maximum, but other eviction algos do
         if (!ea.getAlgorithm().isLRUHeap() && ea.getMaximum() != prconfEa.getMaximum()) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PartitionedRegion_0_EVICTIONATTRIBUTES_1_DO_NOT_MATCH_WITH_OTHER_2,
-              new Object[] {pr.getFullPath(), ea, prconfEa}));
+          logger.warn(
+              "For Partitioned Region {} the locally configured EvictionAttributes {} do not match with other EvictionAttributes {} and may cause misses during reads from VMs with smaller maximums.",
+              new Object[] {pr.getFullPath(), ea, prconfEa});
         }
       }
     } // end Same algo, action...
@@ -262,9 +275,9 @@ public class PartitionRegionConfigValidator {
     final EvictionAttributes ea = pr.getEvictionAttributes();
     if (pr.getLocalMaxMemory() == 0 && !ea.getAction().isNone()) {
       // This is an accessor which won't ever do eviction, say so
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionedRegion_EVICTIONATTRIBUTES_0_WILL_HAVE_NO_EFFECT_1_2,
-          new Object[] {ea, pr.getFullPath(), Integer.valueOf(pr.localMaxMemory)}));
+      logger.info(
+          "EvictionAttributes {} will have no effect for Partitioned Region {} on this VM because localMaxMemory is {}.",
+          new Object[] {ea, pr.getFullPath(), Integer.valueOf(pr.localMaxMemory)});
     }
   }
 
@@ -342,23 +355,27 @@ public class PartitionRegionConfigValidator {
       } else {
         if (n.isCacheLoaderAttached() && pr.getAttributes().getCacheLoader() == null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionRegionConfigValidator_CACHE_LOADER_IS_NOTNULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE
-                  .toLocalizedString(new Object[] {this.pr.getName()}));
+              String.format(
+                  "Incompatible CacheLoader. CacheLoader is not null in partitionedRegion %s on another datastore.",
+                  new Object[] {this.pr.getName()}));
         }
         if (!n.isCacheLoaderAttached() && pr.getAttributes().getCacheLoader() != null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionRegionConfigValidator_CACHE_LOADER_IS_NULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE
-                  .toLocalizedString(new Object[] {this.pr.getName()}));
+              String.format(
+                  "Incompatible CacheLoader. CacheLoader is null in partitionedRegion %s on another datastore.",
+                  new Object[] {this.pr.getName()}));
         }
         if (n.isCacheWriterAttached() && pr.getAttributes().getCacheWriter() == null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionRegionConfigValidator_CACHE_WRITER_IS_NOTNULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE
-                  .toLocalizedString(new Object[] {this.pr.getName()}));
+              String.format(
+                  "Incompatible CacheWriter. CacheWriter is not null in partitionedRegion %s on another datastore.",
+                  new Object[] {this.pr.getName()}));
         }
         if (!n.isCacheWriterAttached() && pr.getAttributes().getCacheWriter() != null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionRegionConfigValidator_CACHE_WRITER_IS_NULL_IN_PARTITIONED_REGION_0_ON_OTHER_DATASTORE
-                  .toLocalizedString(new Object[] {this.pr.getName()}));
+              String.format(
+                  "Incompatible CacheWriter. CacheWriter is null in partitionedRegion %s on another datastore.",
+                  new Object[] {this.pr.getName()}));
         }
       }
     }
@@ -388,11 +405,10 @@ public class PartitionRegionConfigValidator {
         numBuckets = numBuckets + samefpa.getNumBuckets();
       }
       if (numBuckets > this.pr.getTotalNumberOfBuckets()) {
-        Object[] prms =
-            new Object[] {this.pr.getName(), numBuckets, this.pr.getTotalNumberOfBuckets()};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionConfigValidator_FOR_REGION_0_SUM_OF_NUM_BUCKETS_1_FOR_DIFFERENT_PRIMARY_PARTITIONS_SHOULD_NOT_BE_GREATER_THAN_TOTAL_NUM_BUCKETS_2
-                .toString(prms));
+            String.format(
+                "For region %s,sum of num-buckets %s for different primary partitions should not be greater than total-num-buckets %s.",
+                this.pr.getName(), numBuckets, this.pr.getTotalNumberOfBuckets()));
       }
     }
   }
@@ -411,20 +427,20 @@ public class PartitionRegionConfigValidator {
         int numSecondaries = 0;
         for (FixedPartitionAttributes otherfpa : allSameFPAs) {
           if (fpa.getNumBuckets() != otherfpa.getNumBuckets()) {
-            Object[] prms = new Object[] {this.pr.getName(), fpa.getPartitionName(),
-                fpa.getNumBuckets(), otherfpa.getNumBuckets()};
             throw new IllegalStateException(
-                LocalizedStrings.PartitionedRegionConfigValidator_FOR_REGION_0_FOR_PARTITION_1_NUM_BUCKETS_ARE_NOT_SAME_ACROSS_NODES
-                    .toString(prms));
+                String.format(
+                    "For region %s,for partition %s, num-buckets are not same (%s, %s)across nodes.",
+                    this.pr.getName(), fpa.getPartitionName(),
+                    fpa.getNumBuckets(), otherfpa.getNumBuckets()));
           }
 
           if (!otherfpa.isPrimary()) {
             if (++numSecondaries > (this.pr.getRedundantCopies())) {
-              Object[] prms = new Object[] {this.pr.getName(), numSecondaries,
-                  fpa.getPartitionName(), this.pr.getRedundantCopies()};
               throw new IllegalStateException(
-                  LocalizedStrings.PartitionedRegionConfigValidator_FOR_REGION_0_NUMBER_OF_SECONDARY_PARTITIONS_1_OF_A_PARTITION_2_SHOULD_NEVER_EXCEED_NUMBER_OF_REDUNDANT_COPIES_3
-                      .toString(prms));
+                  String.format(
+                      "For region %s, number of secondary partitions %s of a partition %s should never exceed number of redundant copies %s.",
+                      this.pr.getName(), numSecondaries,
+                      fpa.getPartitionName(), this.pr.getRedundantCopies()));
             }
           }
         }
@@ -441,10 +457,10 @@ public class PartitionRegionConfigValidator {
 
     for (FixedPartitionAttributes fpa : this.pr.getFixedPartitionAttributesImpl()) {
       if (fpa.isPrimary() && remotePrimaryFPAs.contains(fpa)) {
-        Object[] prms = new Object[] {this.pr.getName(), fpa.getPartitionName()};
         throw new DuplicatePrimaryPartitionException(
-            LocalizedStrings.PartitionedRegionConfigValidator_FOR_REGION_0_SAME_PARTITION_NAME_1_CANNOT_BE_DEFINED_AS_PRIMARY_ON_MORE_THAN_ONE_NODE
-                .toString(prms));
+            String.format(
+                "For region %s, same partition name %s can not be defined as primary on more than one node.",
+                this.pr.getName(), fpa.getPartitionName()));
       }
     }
   }
@@ -462,8 +478,9 @@ public class PartitionRegionConfigValidator {
           // throw exception
           Object[] prms = new Object[] {pr.getName()};
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegionConfigValidator_FIXED_PARTITION_REGION_ONE_DATASTORE_IS_WITHOUTFPA
-                  .toLocalizedString(prms));
+              String.format(
+                  "Region %s uses fixed partitioning but at least one datastore node (localMaxMemory > 0) has no fixed partitions. Please make sure that each datastore creating this region is configured with at least one fixed partition.",
+                  prms));
         }
       } else {
         if (isDataStore) {
@@ -471,8 +488,9 @@ public class PartitionRegionConfigValidator {
             // throw Exception
             Object[] prms = new Object[] {pr.getName()};
             throw new IllegalStateException(
-                LocalizedStrings.PartitionedRegionConfigValidator_FIXED_PARTITION_REGION_ONE_DATASTORE_IS_WITHOUTFPA
-                    .toLocalizedString(prms));
+                String.format(
+                    "Region %s uses fixed partitioning but at least one datastore node (localMaxMemory > 0) has no fixed partitions. Please make sure that each datastore creating this region is configured with at least one fixed partition.",
+                    prms));
           }
         }
       }

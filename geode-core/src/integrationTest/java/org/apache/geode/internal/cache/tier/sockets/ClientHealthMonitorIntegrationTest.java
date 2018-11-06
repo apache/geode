@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.mock;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -192,8 +192,8 @@ public class ClientHealthMonitorIntegrationTest {
             + statistics.getInt("currentClientConnections"));
     this.system.getLogWriter().info("acquired connection " + connection1);
 
-    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 1);
+    await().pollDelay(0, TimeUnit.MILLISECONDS)
+        .until(() -> statistics.getInt("currentClients") == 1);
 
     assertEquals(1, statistics.getInt("currentClients"));
     assertEquals(1, statistics.getInt("currentClientConnections"));
@@ -202,8 +202,8 @@ public class ClientHealthMonitorIntegrationTest {
     srp.putOnForTestsOnly(connection1, "key-1", "value-1", new EventID(new byte[] {1}, 1, 1), null);
     this.system.getLogWriter().info("did put 1");
 
-    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
-        .atMost(5, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 0);
+    await().pollDelay(0, TimeUnit.MILLISECONDS)
+        .until(() -> statistics.getInt("currentClients") == 0);
 
     this.system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
         + " currentClientConnections=" + statistics.getInt("currentClientConnections"));

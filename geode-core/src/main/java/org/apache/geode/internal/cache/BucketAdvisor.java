@@ -61,9 +61,7 @@ import org.apache.geode.internal.cache.partitioned.BucketProfileUpdateMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage.DeposePrimaryBucketResponse;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
 
@@ -133,9 +131,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * A read/write lock to prevent making this bucket not primary while a write is in progress on the
    * bucket.
    */
-  private final ReadWriteLock primaryMoveLock = new ReentrantReadWriteLock();
-  private final Lock activeWriteLock = primaryMoveLock.readLock();
-  private final Lock activePrimaryMoveLock = primaryMoveLock.writeLock();
+  private final ReadWriteLock primaryMoveReadWriteLock = new ReentrantReadWriteLock();
+  private final Lock primaryMoveReadLock = primaryMoveReadWriteLock.readLock();
+  private final Lock primaryMoveWriteLock = primaryMoveReadWriteLock.writeLock();
 
   /**
    * The advisor for the bucket region that we are colocated with, if this region is a colocated
@@ -202,7 +200,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  private void assignStartingBucketAdvisor() {
+  private void assignStartingBucketAdvisorIfFixedPartitioned() {
+    if (startingBucketAdvisor != null) {
+      // already assigned
+      return;
+    }
     if (this.pRegion.isFixedPartitionedRegion()) {
       List<FixedPartitionAttributesImpl> fpas = this.pRegion.getFixedPartitionAttributesImpl();
       if (fpas != null) {
@@ -223,8 +225,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @return the lock for in-progress write operations
    */
-  public Lock getActiveWriteLock() {
-    return this.activeWriteLock;
+  public Lock getPrimaryMoveReadLock() {
+    return primaryMoveReadLock;
   }
 
   /**
@@ -233,9 +235,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @return the lock for in-progress write operations
    */
-  Lock getParentActiveWriteLock() {
-    if (this.parentAdvisor != null) {
-      return this.parentAdvisor.getActiveWriteLock();
+  Lock getParentPrimaryMoveReadLock() {
+    if (parentAdvisor != null) {
+      return parentAdvisor.getPrimaryMoveReadLock();
     }
     return null;
   }
@@ -247,9 +249,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   public void tryLockIfPrimary() {
     if (isPrimary()) {
       try {
-        this.activePrimaryMoveLock.lock();
+        this.primaryMoveWriteLock.lock();
       } finally {
-        this.activePrimaryMoveLock.unlock();
+        this.primaryMoveWriteLock.unlock();
       }
     }
   }
@@ -262,7 +264,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   public boolean deposePrimary() {
     if (isPrimary()) {
-      this.activePrimaryMoveLock.lock();
+      this.primaryMoveWriteLock.lock();
       boolean needToSendProfileUpdate = false;
       try {
         removePrimary(getDistributionManager().getId());
@@ -276,7 +278,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
         }
       } finally {
-        this.activePrimaryMoveLock.unlock();
+        this.primaryMoveWriteLock.unlock();
         if (needToSendProfileUpdate) {
           sendProfileUpdate();
         }
@@ -1163,7 +1165,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // from occurring until all members know that
     // this member is now the primary.
     boolean shouldInvokeListeners = false;
-    activePrimaryMoveLock.lock();
+    primaryMoveWriteLock.lock();
     try {
       synchronized (this) {
         if (isHosting() && (isVolunteering() || isBecomingPrimary())) {
@@ -1212,7 +1214,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           releasePrimaryLock();
         }
       } finally {
-        activePrimaryMoveLock.unlock();
+        primaryMoveWriteLock.unlock();
       }
     }
   }
@@ -1307,7 +1309,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               "BucketAdvisor.acquirePrimaryRecursivelyForColocated: about to take lock for bucket: {} of PR: {} with isHosting={}",
               getBucket().getId(), childPR.getFullPath(), childBA.isHosting());
         }
-        childBA.activePrimaryMoveLock.lock();
+        childBA.primaryMoveWriteLock.lock();
         try {
           if (childBA.isHosting()) {
             if (isPrimary()) {
@@ -1327,7 +1329,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             childBA.acquirePrimaryRecursivelyForColocated();
           }
         } finally {
-          childBA.activePrimaryMoveLock.unlock();
+          childBA.primaryMoveWriteLock.unlock();
         }
       }
     }
@@ -1343,7 +1345,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             Bucket b = regionAdvisor.getBucket(i++);
             if (b != null) {
               BucketAdvisor ba = b.getBucketAdvisor();
-              ba.activePrimaryMoveLock.lock();
+              ba.primaryMoveWriteLock.lock();
               try {
                 if (ba.isHosting()) {
                   if (!ba.isPrimary()) {
@@ -1352,7 +1354,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                   }
                 }
               } finally {
-                ba.activePrimaryMoveLock.unlock();
+                ba.primaryMoveWriteLock.unlock();
               }
             }
           }
@@ -1434,8 +1436,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             long timeUntilWarning = warnTime - elapsed;
             if (timeUntilWarning <= 0) {
               logger
-                  .warn(LocalizedMessage.create(LocalizedStrings.BucketAdvisor_WAITING_FOR_PRIMARY,
-                      new Object[] {warnTime / 1000L, this, this.adviseInitialized()}));
+                  .warn(
+                      "{} secs have elapsed waiting for a primary for bucket {}. Current bucket owners {}",
+                      new Object[] {warnTime / 1000L, this, this.adviseInitialized()});
               // log a warning;
               loggedWarning = true;
             } else {
@@ -1450,7 +1453,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       } finally {
         if (loggedWarning) {
           logger.info(
-              LocalizedMessage.create(LocalizedStrings.BucketAdvisor_WAITING_FOR_PRIMARY_DONE));
+              "Wait for primary completed");
         }
       }
       return null;
@@ -1853,24 +1856,14 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     if (parentAdvisor != null) {
       return;
     }
-    if (startingBucketAdvisor == null) {
-      assignStartingBucketAdvisor();
-      if (startingBucketAdvisor != null) {
-        return;
-      }
-    } else {
+    assignStartingBucketAdvisorIfFixedPartitioned();
+    if (startingBucketAdvisor != null) {
       return;
     }
-    // TODO fix this method to not release any locks if the
-    // redundancy is zero, since no locks are grabbed.
     try {
       DistributedMemberLock thePrimaryLock = getPrimaryLock(false);
       if (thePrimaryLock != null) {
         thePrimaryLock.unlock();
-      } else {
-        // InternalDistributedSystem.isDisconnecting probably prevented us from
-        // creating the DLS... hope there's a thread closing this advisor but
-        // it's probably not safe to assert that it already happened
       }
     } catch (LockNotHeldException e) {
       Assert.assertTrue(!isHosting(), "Got LockNotHeldException for Bucket = " + this);
@@ -1948,8 +1941,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -1983,8 +1976,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2009,8 +2002,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2048,8 +2041,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             this.primaryState = requestedState;
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2099,8 +2092,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2146,8 +2139,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           default:
-            throw new IllegalStateException(LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1
-                .toLocalizedString(new Object[] {this.primaryStateToString(),
+            throw new IllegalStateException(String.format("Cannot change from %s to %s",
+                new Object[] {this.primaryStateToString(),
                     this.primaryStateToString(requestedState)}));
         }
         break;
@@ -2187,11 +2180,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         switch (requestedState) {
           case CLOSED:
             Exception e = new Exception(
-                LocalizedStrings.BucketAdvisor_ATTEMPTED_TO_CLOSE_BUCKETADVISOR_THAT_IS_ALREADY_CLOSED
-                    .toLocalizedString());
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.BucketAdvisor_ATTEMPTED_TO_CLOSE_BUCKETADVISOR_THAT_IS_ALREADY_CLOSED),
+                "Attempted to close BucketAdvisor that is already CLOSED");
+            logger.warn("Attempted to close BucketAdvisor that is already CLOSED",
                 e);
             break;
           case VOLUNTEERING_HOSTING:
@@ -2208,8 +2198,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             return false;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.BucketAdvisor_CANNOT_CHANGE_FROM_0_TO_1_FOR_BUCKET_2
-                    .toLocalizedString(new Object[] {this.primaryStateToString(),
+                String.format("Cannot change from %s to %s for bucket %s",
+                    new Object[] {this.primaryStateToString(),
                         this.primaryStateToString(requestedState), getAdvisee().getName()}));
         }
     }
@@ -2529,11 +2519,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         while (continueVolunteering()) {
           // Fix for 41865 - We can't send out profiles while holding the
           // sync on this advisor, because that will cause a deadlock.
-          // Holding the activePrimaryMoveLock here instead prevents any
+          // Holding the primaryMoveWriteLock here instead prevents any
           // operations from being performed on this primary until the child regions
           // are synced up. It also prevents a depose from happening until then.
           BucketAdvisor parentBA = parentAdvisor;
-          BucketAdvisor.this.activePrimaryMoveLock.lock();
+          BucketAdvisor.this.primaryMoveWriteLock.lock();
           try {
             boolean acquiredLock = false;
             getAdvisee().getCancelCriterion().checkCancelInProgress(null);
@@ -2541,7 +2531,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             // accordingly
             if (parentBA != null) {
               // Fix for 44350 - we don't want to get a primary move lock on
-              // the advisor, becuase that might deadlock with a user thread.
+              // the advisor, because that might deadlock with a user thread.
               // However, since all depose/elect operations on the parent bucket
               // cascade to the child bucket and get the child bucket move lock,
               // if should be safe to check this without the lock here.
@@ -2552,9 +2542,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               }
             } else {
               // we're not colocated, need to get the dlock
-              if (startingBucketAdvisor == null) {
-                assignStartingBucketAdvisor();
-              }
+              assignStartingBucketAdvisorIfFixedPartitioned();
               if (startingBucketAdvisor != null) {
                 Assert.assertHoldsLock(this, false);
                 synchronized (startingBucketAdvisor) {
@@ -2599,7 +2587,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               return;
             }
           } finally {
-            BucketAdvisor.this.activePrimaryMoveLock.unlock();
+            BucketAdvisor.this.primaryMoveWriteLock.unlock();
           }
           // else: acquiredPrimaryLock released thePrimaryLock
 
@@ -2647,11 +2635,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       if (!safe) {
         if (ENFORCE_SAFE_CLOSE) {
           Assert.assertTrue(safe,
-              LocalizedStrings.BucketAdvisor_BUCKETADVISOR_WAS_NOT_CLOSED_PROPERLY
-                  .toLocalizedString());
+              "BucketAdvisor was not closed properly.");
         } else if (loggit) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.BucketAdvisor_BUCKETADVISOR_WAS_NOT_CLOSED_PROPERLY), e);
+          logger.warn("BucketAdvisor was not closed properly.", e);
         }
       }
     }

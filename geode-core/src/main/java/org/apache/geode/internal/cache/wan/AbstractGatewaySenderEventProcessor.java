@@ -53,10 +53,8 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
@@ -225,14 +223,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     int currentBatchSize = this.batchSize;
     if (batchSize <= 0) {
       this.batchSize = 1;
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.AbstractGatewaySenderEventProcessor_ATTEMPT_TO_SET_BATCH_SIZE_FAILED,
-          new Object[] {currentBatchSize, batchSize}));
+      logger.warn(
+          "Attempting to set the batch size from {} to {} events failed. Instead it was set to 1.",
+          new Object[] {currentBatchSize, batchSize});
     } else {
       this.batchSize = batchSize;
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AbstractGatewaySenderEventProcessor_SET_BATCH_SIZE,
-          new Object[] {currentBatchSize, this.batchSize}));
+      logger.info("Set the batch size from {} to {} events",
+          new Object[] {currentBatchSize, this.batchSize});
     }
   }
 
@@ -640,9 +637,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
               removeEventFromFailureMap(getBatchId());
             } else {
               if (!skipFailureLogging(getBatchId())) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.GatewayImpl_EVENT_QUEUE_DISPATCH_FAILED,
-                    new Object[] {filteredList.size(), getBatchId()}));
+                logger.warn(
+                    "During normal processing, unsuccessfully dispatched {} events (batch #{})",
+                    new Object[] {filteredList.size(), getBatchId()});
               }
             }
             // check again, don't do post-processing if we're stopped.
@@ -743,9 +740,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         }
 
         // We'll log it but continue on with the next batch.
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.GatewayImpl_AN_EXCEPTION_OCCURRED_THE_DISPATCHER_WILL_CONTINUE),
+        logger.warn("An Exception occurred. The dispatcher will continue.",
             e);
       }
     } // for
@@ -920,9 +915,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             try {
               filter.afterAcknowledgement((GatewaySenderEventImpl) o);
             } catch (Exception e) {
-              logger.fatal(LocalizedMessage.create(
-                  LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-                  new Object[] {filter.toString(), o}), e);
+              logger.fatal(
+                  String.format(
+                      "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+                      new Object[] {filter.toString(), o}),
+                  e);
             }
           }
         }
@@ -943,10 +940,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         if (o != null && o instanceof GatewaySenderEventImpl) {
           GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
           if (ge.getCreationTime() + this.sender.getAlertThreshold() < currentTime) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GatewayImpl_EVENT_QUEUE_ALERT_OPERATION_0_REGION_1_KEY_2_VALUE_3_TIME_4,
+            logger.warn(
+                "{} event for region={} key={} value={} was in the queue for {} milliseconds",
                 new Object[] {ge.getOperation(), ge.getRegionPath(), ge.getKey(),
-                    ge.getValueAsString(true), currentTime - ge.getCreationTime()}));
+                    ge.getValueAsString(true), currentTime - ge.getCreationTime()});
             statistics.incEventsExceedingAlertThreshold();
           }
         }
@@ -954,9 +951,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     }
 
     if (this.eventQueueSizeWarning && queueSize <= AbstractGatewaySender.QUEUE_SIZE_THRESHOLD) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_THE_EVENT_QUEUE_SIZE_HAS_DROPPED_BELOW_THE_THRESHOLD_0,
-          AbstractGatewaySender.QUEUE_SIZE_THRESHOLD));
+      logger.info("The event queue size has dropped below {} events.",
+          AbstractGatewaySender.QUEUE_SIZE_THRESHOLD);
       this.eventQueueSizeWarning = false;
     }
     incrementBatchId();
@@ -1005,9 +1001,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           try {
             filter.afterAcknowledgement(event);
           } catch (Exception e) {
-            logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-                new Object[] {filter.toString(), event}), e);
+            logger.fatal(String.format(
+                "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+                new Object[] {filter.toString(), event}),
+                e);
           }
         }
       }
@@ -1075,8 +1072,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       processQueue();
     } catch (CancelException e) {
       if (!this.isStopped()) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.GatewayImpl_A_CANCELLATION_OCCURRED_STOPPING_THE_DISPATCHER));
+        logger.info("A cancellation occurred. Stopping the dispatcher.");
         setIsStopped(true);
       }
     } catch (VirtualMachineError err) {
@@ -1091,8 +1087,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.GatewayImpl_MESSAGE_DISPATCH_FAILED_DUE_TO_UNEXPECTED_EXCEPTION), e);
+      logger.fatal("Message dispatch failed due to unexpected exception..", e);
     }
   }
 
@@ -1179,9 +1174,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       try {
         this.join(5000); // wait for our thread to stop
         if (this.isAlive()) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewayImpl_0_DISPATCHER_STILL_ALIVE_EVEN_AFTER_JOIN_OF_5_SECONDS,
-              this));
+          logger.warn("{}:Dispatcher still alive even after join of 5 seconds.",
+              this);
           // if the server machine crashed or there was a nic failure, we need
           // to terminate the socket connection now to avoid a hang when closing
           // the connections later
@@ -1191,9 +1185,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         }
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.GatewayImpl_0_INTERRUPTEDEXCEPTION_IN_JOINING_WITH_DISPATCHER_THREAD,
-            this));
+        logger.warn("{}: InterruptedException in joining with dispatcher thread.",
+            this);
       }
     }
 
@@ -1210,8 +1203,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     }
     try {
       if (this.sender.isPrimary() && this.queue.size() > 0) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.GatewayImpl_DESTROYING_GATEWAYEVENTDISPATCHER_WITH_ACTIVELY_QUEUED_DATA));
+        logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
       }
     } catch (RegionDestroyedException ignore) {
     } catch (CancelException ignore) {
@@ -1232,8 +1224,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     try {
       try {
         if (this.queue.peek() != null) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewayImpl_DESTROYING_GATEWAYEVENTDISPATCHER_WITH_ACTIVELY_QUEUED_DATA));
+          logger.warn(
+              "Destroying GatewayEventDispatcher with actively queued data.");
         }
       } catch (InterruptedException e) {
         /*

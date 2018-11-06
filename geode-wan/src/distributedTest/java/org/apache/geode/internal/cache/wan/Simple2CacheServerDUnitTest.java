@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -80,7 +79,7 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     } else {
       vm3.invoke(() -> checkResultAndUnsetClientServerObserver());
     }
-    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm2);
     });
 
@@ -89,7 +88,7 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     if (serverPortAtVM1 != 0) {
       vm2.invoke(() -> CacheClientNotifierDUnitTest.closeACacheServer(serverPortAtVM1));
       LogService.getLogger().info("Closed cache server on vm2:" + serverPortAtVM1);
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+      await().until(() -> {
         return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm2);
       });
     } else {
@@ -160,7 +159,7 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
       @Override
       public Object call() throws Exception {
         final CacheClientNotifier ccn = CacheClientNotifier.getInstance();
-        Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+        await().until(() -> {
           return (ccn.getClientProxies().size() == 1);
         });
 

@@ -15,12 +15,13 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.util.Locale;
 
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
@@ -28,26 +29,17 @@ import org.apache.logging.log4j.core.Logger;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 
 public class ColocationHelperTest {
-  /**
-   * This test assumes Locale is in English. Before the test, change the locale of Locale and
-   * StringId to English and restore the original locale after the test.
-   */
-  @Rule
-  public final RestoreLocaleRule restoreLocale =
-      new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
-
   private GemFireCacheImpl cache;
   private GemFireCacheImpl oldCacheInstance;
   private InternalDistributedSystem system;
@@ -105,7 +97,8 @@ public class ColocationHelperTest {
     } catch (Exception e) {
       assertEquals("Expected IllegalStateException for missing colocated parent region",
           IllegalStateException.class, e.getClass());
-      assertTrue("Expected IllegalStateException to be thrown for missing colocated region",
+      assertTrue("Expected IllegalStateException to be thrown for missing colocated region: "
+          + e.getMessage(),
           e.getMessage().matches("Region specified in 'colocated-with' .* does not exist.*"));
       caughtIllegalStateException = true;
     }
@@ -137,5 +130,23 @@ public class ColocationHelperTest {
       caughtIllegalStateException = true;
     }
     assertTrue(caughtIllegalStateException);
+  }
+
+  @Test
+  public void testGetColocatedRegionThrowsCacheClosedExceptionWhenCacheIsClosed() {
+    when(pr.getCache()).thenReturn(cache);
+    DistributedRegion prRoot = mock(DistributedRegion.class);
+    when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
+        .thenReturn(prRoot);
+    when(pr.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn("region2");
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(CacheClosedException.class).when(cancelCriterion).checkCancelInProgress(any());
+
+    assertThatThrownBy(() -> ColocationHelper.getColocatedRegion(pr))
+        .isInstanceOf(CacheClosedException.class);
   }
 }

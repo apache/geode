@@ -23,9 +23,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class DistributedRegionFunctionResultSender implements InternalResultSender {
 
@@ -74,8 +72,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   public void lastResult(Object oneResult) {
     if (!this.functionObject.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     if (this.localLastResultReceived) {
       return;
@@ -111,8 +109,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   public void lastResult(Object oneResult, DistributedMember memberID) {
     if (!this.functionObject.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     this.localLastResultReceived = true;
     if (this.sender != null) { // Client-Server
@@ -147,8 +145,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   public synchronized void sendResult(Object oneResult) {
     if (!this.functionObject.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     if (this.sender != null) { // Client-Server
       sender.sendResult(oneResult);
@@ -175,8 +173,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   public synchronized void sendResult(Object oneResult, DistributedMember memberID) {
     if (!this.functionObject.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     if (this.sender != null) { // Client-Server
       sender.sendResult(oneResult, memberID);
@@ -221,9 +219,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
     } else {
       ((LocalResultCollector) this.rc).setException(exception);
       // this.lastResult(exception);
-      logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DistributedRegionFunctionResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE),
+      logger.info("Unexpected exception during function execution on local node Distributed Region",
           exception);
     }
     this.rc.endResults();

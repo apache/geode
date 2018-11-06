@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({OQLQueryTest.class})
@@ -115,7 +114,7 @@ public class CompiledGroupBySelectJUnitTest {
       fail("query creation should have failed");
     } catch (QueryInvalidException qie) {
       assertTrue(qie.toString().indexOf(
-          LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString()) != -1);
+          "Query contains projected column not present in group by clause") != -1);
     }
 
     queryStr = "select * from /portfolio pf where pf.ID > 0 group by pf.ID";
@@ -124,7 +123,7 @@ public class CompiledGroupBySelectJUnitTest {
       fail("query creation should have failed");
     } catch (QueryInvalidException qie) {
       assertTrue(qie.toString().indexOf(
-          LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString()) != -1);
+          "Query contains projected column not present in group by clause") != -1);
     }
 
     queryStr = "select * from /portfolio pf, pf.positions pos where pf.ID > 0 group by pf";
@@ -146,7 +145,7 @@ public class CompiledGroupBySelectJUnitTest {
       fail("query creation should have failed");
     } catch (QueryInvalidException qie) {
       assertTrue(qie.toString().indexOf(
-          LocalizedStrings.DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ.toLocalizedString()) != -1);
+          "Query contains group by columns not present in projected fields") != -1);
     }
   }
 

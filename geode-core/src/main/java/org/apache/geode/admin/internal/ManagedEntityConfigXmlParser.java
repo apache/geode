@@ -34,7 +34,6 @@ import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Parses an XML file and configures a {@link DistributedSystemConfig} from it.
@@ -85,7 +84,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
       }
 
       throw new AdminXmlException(
-          LocalizedStrings.ManagedEntityConfigXmlParser_WHILE_PARSING_XML.toLocalizedString(), ex);
+          "While parsing XML", ex);
     }
   }
 
@@ -100,7 +99,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
     } catch (NumberFormatException ex) {
       throw new AdminXmlException(
-          LocalizedStrings.ManagedEntityConfigXmlParser_MALFORMED_INTEGER_0.toLocalizedString(s),
+          String.format("Malformed integer %s", s),
           ex);
     }
   }
@@ -160,8 +159,8 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
     } else {
       throw new AdminXmlException(
-          LocalizedStrings.ManagedEntityConfigXmlParser_UNKNOWN_XML_ELEMENT_0
-              .toLocalizedString(qName));
+          String.format("Unknown XML element %s",
+              qName));
     }
   }
 
@@ -217,8 +216,8 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
     } else {
       throw new AdminXmlException(
-          LocalizedStrings.ManagedEntityConfigXmlParser_UNKNOWN_XML_ELEMENT_0
-              .toLocalizedString(qName));
+          String.format("Unknown XML element %s",
+              qName));
     }
   }
 

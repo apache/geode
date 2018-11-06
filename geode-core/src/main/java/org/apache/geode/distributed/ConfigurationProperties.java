@@ -1333,7 +1333,7 @@ public interface ConfigurationProperties {
    * (TCP). This range is given as two numbers separated by a minus sign. Minimum 3 values in range
    * are required to successfully startup.
    * <p>
-   * <U>Default</U>: 1024-65535
+   * <U>Default</U>: 41000-61000
    */
   String MEMBERSHIP_PORT_RANGE = "membership-port-range";
   /**
@@ -1969,7 +1969,7 @@ public interface ConfigurationProperties {
    * the {@link #CLUSTER_SSL_PREFIX} properties. This property will determine which components will
    * use SSL for their communications.
    * </p>
-   * <U>Options</U>: "all","server","cluster","gateway","web","jmx","none" -- As described
+   * <U>Options</U>: "all","server","cluster","gateway","web","jmx","" -- As described
    * {@link org.apache.geode.security.SecurableCommunicationChannels} <U>Since</U>: Geode 1.0
    */
   String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";

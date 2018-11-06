@@ -81,7 +81,6 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
@@ -116,7 +115,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   public void init(final Cache cache) {
     if (cache == null) {
-      throw new IllegalStateException(LocalizedStrings.CqService_CACHE_IS_NULL.toLocalizedString());
+      throw new IllegalStateException("cache is null");
     }
     cache.getCancelCriterion().checkCancelInProgress(null);
 
@@ -147,8 +146,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if (!indexes.isEmpty()) {
       String indexNames = indexes.stream().map(i -> i.getName()).collect(Collectors.joining(","));
       throw new IllegalStateException(
-          LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
-              .toLocalizedString(region.getFullPath(), indexNames));
+          String.format(
+              "Region %s cannot be destroyed because it defines Lucene index(es) [%s]. Destroy all Lucene indexes before destroying the region.",
+              region.getFullPath(), indexNames));
     }
   }
 
@@ -264,8 +264,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     try {
       afterDataRegionCreated(luceneIndex);
     } catch (LuceneIndexDestroyedException e) {
-      logger.warn(LocalizedStrings.LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED
-          .toString(indexName, regionPath));
+      logger.warn(String.format("Lucene index %s on region %s was destroyed while being created",
+          indexName, regionPath));
       return;
     }
 
@@ -281,8 +281,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
       } catch (IllegalStateException e) {
         region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
         throw new UnsupportedOperationException(
-            LocalizedStrings.LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION
-                .toString(indexName),
+            String.format(
+                "Lucene index %s cannot be created because its parameters are incompatible with another Lucene index",
+                indexName),
             e);
       }
     };
@@ -451,8 +452,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     } else {
       indexImpl.destroy(initiator);
       removeFromIndexMap(indexImpl);
-      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2
-          .toLocalizedString(indexName, "initialized", regionPath));
+      logger.info(String.format("Destroyed Lucene index %s from %s region %s",
+          indexName, "initialized", regionPath));
     }
   }
 
@@ -467,11 +468,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
       if (listenerToRemove != null) {
         cache.removeRegionListener(listenerToRemove);
       }
-      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2
-          .toLocalizedString(indexName, "defined", regionPath));
+      logger.info(String.format("Destroyed Lucene index %s from %s region %s",
+          indexName, "defined", regionPath));
     } else {
       throw new IllegalArgumentException(
-          LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1.toLocalizedString(indexName,
+          String.format("Lucene index %s was not found in region %s", indexName,
               regionPath));
     }
   }
@@ -514,13 +515,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
     // If list is empty throw an exception; otherwise iterate and destroy the defined index
     if (indexesToDestroy.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
-              .toLocalizedString(regionPath));
+          String.format("No Lucene indexes were found in region %s",
+              regionPath));
     } else {
       for (LuceneIndex index : indexesToDestroy) {
         removeFromIndexMap(index);
-        logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2
-            .toLocalizedString(index.getName(), "initialized", regionPath));
+        logger.info(String.format("Destroyed Lucene index %s from %s region %s",
+            index.getName(), "initialized", regionPath));
       }
     }
   }
@@ -541,8 +542,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     // If list is empty throw an exception; otherwise iterate and destroy the defined index
     if (indexesToDestroy.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
-              .toLocalizedString(regionPath));
+          String.format("No Lucene indexes were found in region %s",
+              regionPath));
     } else {
       for (LuceneIndexCreationProfile profile : indexesToDestroy) {
         destroyDefinedIndex(profile.getIndexName(), profile.getRegionPath());
@@ -681,8 +682,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
             dataRegion.getRegionAdvisor().adviseAllPRNodes();
         if (isAnyRemoteMemberVersionLessThanGeode1_7_0(remoteMembers)) {
           throw new IllegalStateException(
-              LocalizedStrings.LuceneIndexingInProgress_CANNOT_BE_DETERMINED_BECAUSE_OF_VERSION_MISMATCH
-                  .toLocalizedString(regionPath));
+              String.format(
+                  "Lucene indexing in progress status cannot be determined if all members hosting the user data region : %s, are not above Apache Geode 1.6.0 version ",
+                  regionPath));
         }
       }
     }

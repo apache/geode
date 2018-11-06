@@ -17,13 +17,13 @@ package org.apache.geode.internal.cache.partitioned;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -285,7 +285,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
           if (message instanceof ManageBucketMessage.ManageBucketReplyMessage) {
             Cache cache = getCache();
             disconnectFromDS();
-            await().atMost(2, MINUTES).until(() -> cache.isClosed());
+            await().until(() -> cache.isClosed());
             CRASHED.set(true);
           }
         }
@@ -304,7 +304,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     // wait till cache is completely shutdown before trying to create the region again. otherwise
     // deadlock situation might happen.
-    vm0.invoke(() -> await().atMost(2, MINUTES).until(() -> CRASHED.get()));
+    vm0.invoke(() -> await().until(() -> CRASHED.get()));
     vm0.invoke(() -> createPartitionedRegion(0, -1, 113, true));
     vm0.invoke(() -> checkData(0, 4, "a", partitionedRegionName));
 
@@ -498,7 +498,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
 
     // vm1 should satisfy redundancy for the bucket as well
-    await().atMost(2, MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
     });
   }
@@ -523,7 +523,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
     PartitionedRegionDataStore dataStore = region.getDataStore();
 
-    await().atMost(2, MINUTES).until(() -> bucketsLost.equals(dataStore.getAllLocalBucketIds()));
+    await().until(() -> bucketsLost.equals(dataStore.getAllLocalBucketIds()));
   }
 
   private void createPartitionedRegion(final int redundancy, final int recoveryDelay,

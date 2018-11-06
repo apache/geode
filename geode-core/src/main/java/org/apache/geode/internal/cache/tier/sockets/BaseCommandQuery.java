@@ -39,8 +39,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -116,8 +114,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
         String regionName = (String) itr.next();
         if (crHelper.getRegion(regionName) == null) {
           throw new RegionDestroyedException(
-              LocalizedStrings.BaseCommand_REGION_DESTROYED_DURING_THE_EXECUTION_OF_THE_QUERY
-                  .toLocalizedString(),
+              "Region destroyed during the execution of the query",
               regionName);
         }
       }
@@ -233,8 +230,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
           writeQueryResponseChunk(result, null, true, servConn);
         }
       } else {
-        throw new QueryInvalidException(LocalizedStrings.BaseCommand_UNKNOWN_RESULT_TYPE_0
-            .toLocalizedString(result.getClass()));
+        throw new QueryInvalidException(String.format("Unknown result type: %s",
+            result.getClass()));
       }
       msg.clearParts();
     } catch (QueryInvalidException e) {
@@ -243,12 +240,12 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // java.io.NotSerializableException: antlr.CommonToken
       // Log a warning to show stack trace and create a new
       // QueryInvalidEsception on the original one's message (not cause).
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.BaseCommand_UNEXPECTED_QUERYINVALIDEXCEPTION_WHILE_PROCESSING_QUERY_0,
-          queryString), e);
+      logger.warn(String.format("Unexpected QueryInvalidException while processing query %s",
+          queryString),
+          e);
       QueryInvalidException qie =
-          new QueryInvalidException(LocalizedStrings.BaseCommand_0_QUERYSTRING_IS_1
-              .toLocalizedString(new Object[] {e.getLocalizedMessage(), queryString}));
+          new QueryInvalidException(String.format("%s : QueryString is: %s.",
+              new Object[] {e.getLocalizedMessage(), queryString}));
       writeQueryResponseException(msg, qie, servConn);
       return false;
     } catch (DistributedSystemDisconnectedException se) {
@@ -267,7 +264,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // Check if query got canceled from QueryMonitor.
       DefaultQuery defaultQuery = (DefaultQuery) query;
       if ((defaultQuery).isCanceled()) {
-        e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(), e.getCause());
+        e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(),
+            e.getCause());
       }
       writeQueryResponseException(msg, e, servConn);
       return false;
@@ -332,7 +330,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       default:
         msgType = MessageType.CQ_EXCEPTION_TYPE;
         cqMsg.setNumberOfParts(1);
-        msgStr += LocalizedStrings.BaseCommand_UNKNOWN_QUERY_EXCEPTION.toLocalizedString();
+        msgStr += "Uknown query Exception.";
         break;
     }
 

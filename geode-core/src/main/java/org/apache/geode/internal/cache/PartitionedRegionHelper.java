@@ -55,9 +55,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class PartitionedRegionHelper {
   private static final Logger logger = LogService.getLogger();
@@ -160,9 +158,10 @@ public class PartitionedRegionHelper {
           try {
             root.destroy(regionIdentifier);
           } catch (EntryNotFoundException e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegionHelper_GOT_ENTRYNOTFOUNDEXCEPTION_IN_DESTROY_OP_FOR_ALLPRREGION_KEY_0,
-                regionIdentifier), e);
+            logger.warn(
+                String.format("Got EntryNotFoundException in destroy Op for allPRRegion key, %s",
+                    regionIdentifier),
+                e);
           }
         } else {
           prConfig.removeNode(failedNode);
@@ -250,8 +249,9 @@ public class PartitionedRegionHelper {
             final PartitionRegionConfig oldConf = (PartitionRegionConfig) event.getOldValue();
             if (newConf != oldConf && !newConf.isGreaterNodeListVersion(oldConf)) {
               throw new CacheWriterException(
-                  LocalizedStrings.PartitionedRegionHelper_NEW_PARTITIONEDREGIONCONFIG_0_DOES_NOT_HAVE_NEWER_VERSION_THAN_PREVIOUS_1
-                      .toLocalizedString(new Object[] {newConf, oldConf}));
+                  String.format(
+                      "New PartitionedRegionConfig %s does not have newer version than previous %s",
+                      new Object[] {newConf, oldConf}));
             }
           }
         });
@@ -531,27 +531,30 @@ public class PartitionedRegionHelper {
         if (partition == null) {
           Object[] prms = new Object[] {pr.getName(), resolver};
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL
-                  .toLocalizedString(prms));
+              String.format("For region %s, partition resolver %s returned partition name null",
+                  prms));
         }
         Integer[] bucketArray = partitionMap.get(partition);
         if (bucketArray == null) {
           Object[] prms = new Object[] {pr.getName(), partition};
           throw new PartitionNotAvailableException(
-              LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE
-                  .toLocalizedString(prms));
+              String.format(
+                  "For FixedPartitionedRegion %s, partition %s is not available on any datastore.",
+                  prms));
         }
         int numBukets = bucketArray[1];
         resolveKey = (numBukets == 1) ? partition : resolver.getRoutingObject(event);
       } else if (resolver == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_RESOLVER_IS_NOT_AVAILABLE
-                .toString(pr.getName()));
-      } else if (!(resolver instanceof FixedPartitionResolver)) {
+            String.format(
+                "For FixedPartitionedRegion %s, FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)",
+                pr.getName()));
+      } else {
         Object[] prms = new Object[] {pr.getName(), resolver};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_RESOLVER_DEFINED_1_IS_NOT_AN_INSTANCE_OF_FIXEDPARTITIONRESOLVER
-                .toLocalizedString(prms));
+            String.format(
+                "For FixedPartitionedRegion %s, Resolver defined %s is not an instance of FixedPartitionResolver",
+                prms));
       }
       return assignFixedBucketId(pr, partition, resolveKey);
     } else {
@@ -569,8 +572,7 @@ public class PartitionedRegionHelper {
         resolveKey = resolver.getRoutingObject(event);
         if (resolveKey == null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegionHelper_THE_ROUTINGOBJECT_RETURNED_BY_PARTITIONRESOLVER_IS_NULL
-                  .toLocalizedString());
+              "The RoutingObject returned by PartitionResolver is null.");
         }
       }
       // Finally, calculate the hash.
@@ -624,16 +626,17 @@ public class PartitionedRegionHelper {
       if (isPartitionAvailable) {
         Object[] prms = new Object[] {pr.getName(), partition};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_FOR_PARTITION_1_PARTITIION_NUM_BUCKETS_ARE_SET_TO_0_BUCKETS_CANNOT_BE_CREATED_ON_THIS_MEMBER
-                .toLocalizedString(prms));
+            String.format(
+                "For region %s, For partition %s partition-num-buckets is set to 0. Buckets cann not be created on this partition.",
+                prms));
       }
     }
 
     if (!isPartitionAvailable) {
       Object[] prms = new Object[] {pr.getName(), partition};
       throw new PartitionNotAvailableException(
-          LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITION_NAME_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE
-              .toLocalizedString(prms));
+          String.format("For region %s, partition name %s is not available on any datastore.",
+              prms));
     }
     int hc = resolveKey.hashCode();
     int bucketId = Math.abs(hc % partitionNumBuckets);
@@ -835,15 +838,13 @@ public class PartitionedRegionHelper {
       return;
 
     Set members = partitionedRegion.getDistributionManager().getDistributionManagerIds();
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegionHelper_DATALOSS___0____SIZE_OF_NODELIST_AFTER_VERIFYBUCKETNODES_FOR_BUKID___1__IS_0,
-        new Object[] {callingMethod, bucketId}));
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegionHelper_DATALOSS___0____NODELIST_FROM_PRCONFIG___1,
-        new Object[] {callingMethod, printCollection(prConfig.getNodes())}));
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegionHelper_DATALOSS___0____CURRENT_MEMBERSHIP_LIST___1,
-        new Object[] {callingMethod, printCollection(members)}));
+    logger.warn(
+        "DATALOSS (  {}  ) :: Size of nodeList After verifyBucketNodes for bucket ID,  {}  is 0",
+        callingMethod, bucketId);
+    logger.warn("DATALOSS (  {}  ) :: NodeList from prConfig,  {}",
+        callingMethod, printCollection(prConfig.getNodes()));
+    logger.warn("DATALOSS (  {}  ) :: Current Membership List,  {}",
+        callingMethod, printCollection(members));
   }
 
   /**
@@ -888,8 +889,9 @@ public class PartitionedRegionHelper {
     }
     Object[] prms = new Object[] {pr.getName(), bucketId};
     throw new PartitionNotAvailableException(
-        LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_IS_NOT_AVAILABLE_FOR_BUCKET_1_ON_ANY_DATASTORE
-            .toLocalizedString(prms));
+        String.format(
+            "For FixedPartitionedRegion %s, Fixed partition is not defined for bucket id %s on any datastore",
+            prms));
   }
 
   private static Set<String> getAllAvailablePartitions(PartitionedRegion region) {

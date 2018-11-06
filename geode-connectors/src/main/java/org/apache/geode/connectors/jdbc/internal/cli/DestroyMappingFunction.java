@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
@@ -30,7 +30,7 @@ public class DestroyMappingFunction extends CliFunction<String> {
     JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     String regionName = context.getArguments();
     String member = context.getMemberName();
-    ConnectorService.RegionMapping mapping = service.getMappingForRegion(regionName);
+    RegionMapping mapping = service.getMappingForRegion(regionName);
     if (mapping != null) {
       service.destroyRegionMapping(regionName);
       String message = "Destroyed region mapping for region " + regionName + " on " + member;

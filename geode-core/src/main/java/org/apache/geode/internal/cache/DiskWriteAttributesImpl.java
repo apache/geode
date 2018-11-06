@@ -23,7 +23,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of DiskWriteAttributes
@@ -193,15 +192,13 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       long opSize = verifyLongInString(maxOplogSizeString, CacheXml.MAX_OPLOG_SIZE);
       if (opSize == 0 && this.compactOplogs == true) {
         throw new IllegalStateException(
-            LocalizedStrings.DiskWriteAttributesImpl_COMPACTION_CANNOT_BE_SET_TO_TRUE_IF_MAXOPLOGSIZE_IS_SET_TO_INFINITE_INFINITE_IS_REPRESENTED_BY_SIZE_ZERO_0
-                .toLocalizedString());
+            "Compaction cannot be set to true if max-oplog-size is set to infinite (infinite is represented by size zero : 0)");
 
       }
       if (opSize == 0 || opSize == DEFAULT_MAX_OPLOG_SIZE_LIMIT) {
         if (this.compactOplogs) {
           throw new IllegalArgumentException(
-              LocalizedStrings.DiskWriteAttributesImpl_CANNOT_SET_MAXOPLOGS_SIZE_TO_INFINITY_0_IF_COMPACTION_IS_SET_TO_TRUE
-                  .toLocalizedString());
+              "Cannot set maxOplogs size to infinity (0) if compaction is set to true");
         } else {
           this.maxOplogSize = DEFAULT_MAX_OPLOG_SIZE_LIMIT; // infinity
         }
@@ -224,8 +221,8 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private void verifyBooleanString(String propertyString, String property) {
     if (!(propertyString.equalsIgnoreCase("true") || propertyString.equalsIgnoreCase("false"))) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_PROPERTY_HAS_TO_BE_TRUE_OR_FALSE_OR_NULL_AND_CANNOT_BE_1
-              .toLocalizedString(new Object[] {property, propertyString}));
+          String.format("%s property has to be true or false or null and cannot be %s",
+              new Object[] {property, propertyString}));
     }
   }
 
@@ -241,14 +238,14 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       returnValue = Long.valueOf(propertyString).longValue();
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_A_VALID_NUMBER_AND_NOT_1
-              .toLocalizedString(new Object[] {property, propertyString}));
+          String.format("%s has to be a valid number and not %s",
+              new Object[] {property, propertyString}));
     }
 
     if (returnValue < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_POSITIVE_NUMBER_AND_THE_VALUE_GIVEN_1_IS_NOT_ACCEPTABLE
-              .toLocalizedString(new Object[] {property, Long.valueOf(returnValue)}));
+          String.format("%s has to be positive number and the value given %s is not acceptable",
+              new Object[] {property, Long.valueOf(returnValue)}));
     }
 
     return returnValue;
@@ -266,19 +263,20 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       returnValue = Integer.valueOf(propertyString).intValue();
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_A_VALID_NUMBER_AND_NOT_1
-              .toLocalizedString(new Object[] {property, propertyString}));
+          String.format("%s has to be a valid number and not %s",
+              new Object[] {property, propertyString}));
     }
 
     if (returnValue < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_POSITIVE_NUMBER_AND_THE_VALUE_GIVEN_1_IS_NOT_ACCEPTABLE
-              .toLocalizedString(new Object[] {property, Integer.valueOf(returnValue)}));
+          String.format("%s has to be positive number and the value given %s is not acceptable",
+              new Object[] {property, Integer.valueOf(returnValue)}));
     } else if (returnValue > 100) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_LESS_THAN_2_BUT_WAS_1
-              .toLocalizedString(
-                  new Object[] {property, Integer.valueOf(returnValue), Integer.valueOf(100)}));
+          String.format(
+              "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
+
+              new Object[] {property, Integer.valueOf(returnValue), Integer.valueOf(100)}));
     }
 
     return returnValue;

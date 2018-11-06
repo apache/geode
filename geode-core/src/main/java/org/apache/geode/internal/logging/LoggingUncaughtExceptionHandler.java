@@ -83,7 +83,7 @@ public class LoggingUncaughtExceptionHandler {
       if ((ex instanceof NoClassDefFoundError)
           && (t.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
         logger.info(
-            "Uncaught exception in thread {0} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {1}",
+            "Uncaught exception in thread {} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {}",
             t, ex);
       } else {
         String message = MessageFormat.format("Uncaught exception in thread {0}", t);

@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -78,9 +77,11 @@ public class ColocationHelper {
     PartitionRegionConfig prConf =
         (PartitionRegionConfig) prRoot.get(getRegionIdentifier(colocatedWith));
     if (prConf == null) {
+      partitionedRegion.getCache().getCancelCriterion().checkCancelInProgress(null);
       throw new IllegalStateException(
-          LocalizedStrings.ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST
-              .toLocalizedString(new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+          String.format(
+              "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
+              new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
     }
     int prID = prConf.getPRId();
     PartitionedRegion colocatedPR = null;
@@ -89,9 +90,11 @@ public class ColocationHelper {
       if (colocatedPR != null) {
         colocatedPR.waitOnBucketMetadataInitialization();
       } else {
+        partitionedRegion.getCache().getCancelCriterion().checkCancelInProgress(null);
         throw new IllegalStateException(
-            LocalizedStrings.ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST
-                .toLocalizedString(new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+            String.format(
+                "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
+                new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
       }
     } catch (PRLocallyDestroyedException e) {
       if (logger.isDebugEnabled()) {

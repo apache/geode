@@ -51,9 +51,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A connection source which uses locators to find the least loaded server.
@@ -216,9 +214,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       updateLocatorInLocatorList(locator);
       return null;
     } catch (ClassNotFoundException e) {
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.AutoConnectionSourceImpl_RECEIVED_EXCEPTION_FROM_LOCATOR_0, locator),
+      logger.warn(String.format("Received exception from locator %s", locator),
           e);
       return null;
     } catch (ClassCastException e) {
@@ -330,15 +326,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       addedLocators.removeAll(oldLocators.getLocators());
       if (!addedLocators.isEmpty()) {
         locatorCallback.locatorsDiscovered(Collections.unmodifiableList(addedLocators));
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.AutoConnectionSourceImpl_AUTOCONNECTIONSOURCE_DISCOVERED_NEW_LOCATORS_0,
-            addedLocators));
+        logger.info("AutoConnectionSource discovered new locators {}",
+            addedLocators);
       }
       if (!removedLocators.isEmpty()) {
         locatorCallback.locatorsRemoved(Collections.unmodifiableList(removedLocators));
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.AutoConnectionSourceImpl_AUTOCONNECTIONSOURCE_DROPPING_PREVIOUSLY_DISCOVERED_LOCATORS_0,
-            removedLocators));
+        logger.info("AutoConnectionSource dropping previously discovered locators {}",
+            removedLocators);
       }
     }
 
@@ -376,9 +370,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     if (locatorUpdateInterval > 0) {
       pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
           locatorUpdateInterval, TimeUnit.MILLISECONDS);
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AutoConnectionSourceImpl_UPDATE_LOCATOR_LIST_TASK_STARTED_WITH_INTERVAL_0,
-          new Object[] {this.locatorUpdateInterval}));
+      logger.info("AutoConnectionSource UpdateLocatorListTask started with interval={} ms.",
+          new Object[] {this.locatorUpdateInterval});
     }
   }
 
@@ -393,9 +386,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private synchronized void reportLiveLocator(InetSocketAddress l) {
     Object prevState = this.locatorState.put(l, null);
     if (prevState != null) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AutoConnectionSourceImpl_COMMUNICATION_HAS_BEEN_RESTORED_WITH_LOCATOR_0,
-          l));
+      logger.info("Communication has been restored with locator {}.",
+          l);
     }
   }
 
@@ -403,12 +395,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object prevState = this.locatorState.put(l, ex);
     if (prevState == null) {
       if (ex instanceof ConnectException) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.AutoConnectionSourceImpl_LOCATOR_0_IS_NOT_RUNNING, l), ex);
+        logger.info(String.format("locator %s is not running.", l), ex);
       } else {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.AutoConnectionSourceImpl_COMMUNICATION_WITH_LOCATOR_0_FAILED_WITH_1,
-            new Object[] {l, ex}), ex);
+        logger.info(String.format("Communication with locator %s failed with %s.",
+            new Object[] {l, ex}),
+            ex);
       }
     }
   }

@@ -21,77 +21,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 @Experimental
 public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
-  private final Map<String, ConnectorService.Connection> connectionsByName =
+  private final Map<String, RegionMapping> mappingsByRegion =
       new ConcurrentHashMap<>();
-  private final Map<String, ConnectorService.RegionMapping> mappingsByRegion =
-      new ConcurrentHashMap<>();
-  private final DataSourceManager manager =
-      new DataSourceManager(new HikariJdbcDataSourceFactory());
-  private volatile InternalCache cache;
-  private boolean registered;
 
   @Override
-  public void createConnectionConfig(ConnectorService.Connection config)
-      throws ConnectionConfigExistsException {
-    ConnectorService.Connection existing = connectionsByName.putIfAbsent(config.getName(), config);
-    if (existing != null) {
-      throw new ConnectionConfigExistsException("Connection " + config.getName() + " exists");
-    }
-  }
-
-  @Override
-  public void replaceConnectionConfig(ConnectorService.Connection alteredConfig)
-      throws ConnectionConfigNotFoundException {
-    ConnectorService.Connection existingConfig = connectionsByName.get(alteredConfig.getName());
-    if (existingConfig == null) {
-      throw new ConnectionConfigNotFoundException(
-          "Connection configuration " + alteredConfig.getName() + " was not found");
-    }
-
-    connectionsByName.put(existingConfig.getName(), alteredConfig);
-  }
-
-  @Override
-  public void destroyConnectionConfig(String connectionName) {
-    connectionsByName.remove(connectionName);
-  }
-
-  @Override
-  public ConnectorService.Connection getConnectionConfig(String connectionName) {
-    return connectionsByName.get(connectionName);
-  }
-
-  @Override
-  public Set<ConnectorService.Connection> getConnectionConfigs() {
-    Set<ConnectorService.Connection> connectionConfigs = new HashSet<>();
-    connectionConfigs.addAll(connectionsByName.values());
-    return connectionConfigs;
-  }
-
-  @Override
-  public Set<ConnectorService.RegionMapping> getRegionMappings() {
-    Set<ConnectorService.RegionMapping> regionMappings = new HashSet<>();
+  public Set<RegionMapping> getRegionMappings() {
+    Set<RegionMapping> regionMappings = new HashSet<>();
     regionMappings.addAll(mappingsByRegion.values());
     return regionMappings;
   }
 
   @Override
-  public DataSourceManager getDataSourceManager() {
-    return manager;
-  }
-
-  @Override
-  public void createRegionMapping(ConnectorService.RegionMapping mapping)
+  public void createRegionMapping(RegionMapping mapping)
       throws RegionMappingExistsException {
-    ConnectorService.RegionMapping existing =
+    RegionMapping existing =
         mappingsByRegion.putIfAbsent(mapping.getRegionName(), mapping);
     if (existing != null) {
       throw new RegionMappingExistsException(
@@ -100,20 +50,20 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public void replaceRegionMapping(ConnectorService.RegionMapping alteredMapping)
+  public void replaceRegionMapping(RegionMapping alteredMapping)
       throws RegionMappingNotFoundException {
-    ConnectorService.RegionMapping existingMapping =
+    RegionMapping existingMapping =
         mappingsByRegion.get(alteredMapping.getRegionName());
     if (existingMapping == null) {
       throw new RegionMappingNotFoundException(
-          "RegionMapping for region " + existingMapping.getRegionName() + " was not found");
+          "RegionMapping for the region " + alteredMapping.getRegionName() + " was not found");
     }
 
     mappingsByRegion.put(existingMapping.getRegionName(), alteredMapping);
   }
 
   @Override
-  public ConnectorService.RegionMapping getMappingForRegion(String regionName) {
+  public RegionMapping getMappingForRegion(String regionName) {
     return mappingsByRegion.get(regionName);
   }
 
@@ -123,9 +73,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public void init(Cache cache) {
-    this.cache = (InternalCache) cache;
-  }
+  public void init(Cache cache) {}
 
 
   @Override

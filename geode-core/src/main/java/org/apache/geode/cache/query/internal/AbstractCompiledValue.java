@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Class Description
@@ -101,8 +100,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
       Object result = evaluate(context);
       if (!(result instanceof Boolean))
         throw new TypeMismatchException(
-            LocalizedStrings.AbstractCompiledValue_BOOLEAN_VALUE_EXPECTED_NOT_TYPE_0
-                .toLocalizedString(result.getClass().getName()));
+            String.format("boolean value expected, not type ' %s '",
+                result.getClass().getName()));
       boolean b = ((Boolean) result).booleanValue();
       planInfo.evalAsFilter = !b;
       return planInfo;
@@ -222,8 +221,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
           context.getCachePerfStats());
     if (!(result instanceof Boolean))
       throw new TypeMismatchException(
-          LocalizedStrings.AbstractCompiledValue_BOOLEAN_VALUE_EXPECTED_NOT_TYPE_0
-              .toLocalizedString(result.getClass().getName()));
+          String.format("boolean value expected, not type ' %s '",
+              result.getClass().getName()));
     boolean b = ((Boolean) result).booleanValue();
     // Asif : Boolean true, means the cartesian of all the RuntimeIterators
     // indicated by null value. A false means an empty ResultSet
@@ -269,8 +268,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
       CompiledValue v = (CompiledValue) itr.next();
       if (v == null) {
         throw new NullPointerException(
-            LocalizedStrings.AbstractCompiledValue_GOT_NULL_AS_A_CHILD_FROM_0
-                .toLocalizedString(this));
+            String.format("Got null as a child from %s",
+                this));
       }
       v.getRegionsInQuery(regionsInQuery, parameters);
     }

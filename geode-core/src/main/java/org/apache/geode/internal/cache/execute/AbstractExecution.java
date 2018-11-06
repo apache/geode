@@ -40,9 +40,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Abstract implementation of InternalExecution interface.
@@ -263,8 +261,8 @@ public abstract class AbstractExecution implements InternalExecution {
         executeFunctionLocally(fn, cx, sender, dm);
         if (!sender.isLastResultReceived() && fn.hasResult()) {
           ((InternalResultSender) sender).setException(new FunctionException(
-              LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                  .toString(fn.getId())));
+              String.format("The function, %s, did not send last result",
+                  fn.getId())));
         }
       } else {
 
@@ -274,8 +272,8 @@ public abstract class AbstractExecution implements InternalExecution {
             executeFunctionLocally(fn, cx, sender, newDM);
             if (!sender.isLastResultReceived() && fn.hasResult()) {
               ((InternalResultSender) sender).setException(new FunctionException(
-                  LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                      .toString(fn.getId())));
+                  String.format("The function, %s, did not send last result",
+                      fn.getId())));
             }
           }
         });
@@ -284,8 +282,8 @@ public abstract class AbstractExecution implements InternalExecution {
       executeFunctionLocally(fn, cx, sender, dm);
       if (!sender.isLastResultReceived() && fn.hasResult()) {
         ((InternalResultSender) sender).setException(new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(fn.getId())));
+            String.format("The function, %s, did not send last result",
+                fn.getId())));
       }
     }
   }
@@ -302,8 +300,8 @@ public abstract class AbstractExecution implements InternalExecution {
           executeFunctionLocally(fn, cx, sender, newDM);
           if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
             ((InternalResultSender) sender).setException(new FunctionException(
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                    .toString(fn.getId())));
+                String.format("The function, %s, did not send last result",
+                    fn.getId())));
           }
         }
       });
@@ -311,8 +309,8 @@ public abstract class AbstractExecution implements InternalExecution {
       executeFunctionLocally(fn, cx, sender, dm);
       if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
         ((InternalResultSender) sender).setException(new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(fn.getId())));
+            String.format("The function, %s, did not send last result",
+                fn.getId())));
       }
     }
   }
@@ -362,15 +360,14 @@ public abstract class AbstractExecution implements InternalExecution {
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
     this.isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionName));
+          String.format("Function named %s is not registered to FunctionService",
+              functionName));
     }
 
     return executeFunction(functionObject);
@@ -379,18 +376,17 @@ public abstract class AbstractExecution implements InternalExecution {
   public ResultCollector execute(Function function) throws FunctionException {
     if (function == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
     if (function.isHA() && !function.hasResult()) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
+          "For Functions with isHA true, hasResult must also be true.");
     }
 
     String id = function.getId();
     if (id == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteFunction_THE_FUNCTION_GET_ID_RETURNED_NULL.toLocalizedString());
+          "The Function#getID() returned null");
     }
     this.isFnSerializationReqd = true;
     return executeFunction(function);
@@ -457,8 +453,8 @@ public abstract class AbstractExecution implements InternalExecution {
    */
   public byte[] getFunctionAttributes(String functionId) {
     if (functionId == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("functionId instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "functionId instance "));
     }
     return idToFunctionAttributes.get(functionId);
   }
@@ -495,7 +491,7 @@ public abstract class AbstractExecution implements InternalExecution {
         ((InternalResultSender) sender).setException(functionException);
       }
     } else {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.FunctionService_EXCEPTION_ON_LOCAL_NODE),
+      logger.warn("Exception occurred on local node while executing Function:",
           functionException);
     }
   }

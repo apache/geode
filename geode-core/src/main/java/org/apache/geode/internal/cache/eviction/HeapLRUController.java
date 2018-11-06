@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A {@code HeapLRUController} controls the contents of {@link Region} based on the percentage of
@@ -74,8 +73,9 @@ public class HeapLRUController extends SizeLRUController {
    */
   @Override
   public String toString() {
-    return LocalizedStrings.HeapLRUCapacityController_HEAPLRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_OF_HEAP_AND_AN_THREAD_INTERVAL_OF_1_AND_EVICTION_ACTION_2
-        .toLocalizedString(getLimit(), getEvictionAction());
+    return String.format(
+        "HeapLRUCapacityController with a capacity of %s%s of memory and eviction action %s.",
+        getLimit(), "%", getEvictionAction());
   }
 
   @Override

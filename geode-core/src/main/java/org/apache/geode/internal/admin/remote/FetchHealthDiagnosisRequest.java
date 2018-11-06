@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to fetch its health diagnosis
@@ -78,9 +77,8 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchHealthDiagnosisRequest_FETCHHEALTHDIAGNOSISREQUEST_FROM_ID_1_HEALTHCODE_2
-        .toLocalizedString(
-            new Object[] {this.getRecipient(), Integer.valueOf(this.id), this.healthCode});
+    return String.format("FetchHealthDiagnosisRequest from %s id=%s healthCode=%s",
+        this.getRecipient(), Integer.valueOf(this.id), this.healthCode);
   }
 
 
@@ -88,7 +86,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
     this.id = i;
     this.healthCode = oHC;
     this.friendlyName =
-        LocalizedStrings.FetchHealthDiagnosisRequest_FETCH_HEALTH_DIAGNOSIS_FOR_HEALTH_CODE_0
-            .toLocalizedString(this.healthCode);
+        String.format("fetch health diagnosis for health code %s",
+            this.healthCode);
   }
 }

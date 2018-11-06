@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular app vm to request the region statistics of a given region.
@@ -39,7 +38,7 @@ public class RegionStatisticsRequest extends RegionAdminRequest {
 
   public RegionStatisticsRequest() {
     friendlyName =
-        LocalizedStrings.RegionStatisticsRequest_FETCH_REGION_STATISTICS.toLocalizedString();
+        "Fetch region statistics";
   }
 
   /**

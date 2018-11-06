@@ -19,30 +19,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Locale;
 import java.util.Properties;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 
 /**
  * Unit tests GMSAuthenticator using old security.
  */
 @Category({SecurityTest.class})
 public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthenticatorTestCase {
-
-  /**
-   * This test assumes Locale is in English. Before the test, change the locale of Locale and
-   * StringId to English and restore the original locale after the test.
-   */
-  @Rule
-  public final RestoreLocaleRule restoreLocale =
-      new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
 
   @Override
   protected boolean isIntegratedSecurity() {

@@ -26,9 +26,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -97,8 +95,7 @@ public class BucketBackupMessage extends PartitionMessage {
     if (ds != null) {
       pr.getRedundancyProvider().finishIncompleteBucketCreation(bucketId);
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.BucketBackupMessage_BUCKETBACKUPMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+      logger.warn("BucketBackupMessage: data store not configured for this member");
     }
     pr.getPrStats().endPartitionMessagesProcessing(startTime);
     return false;

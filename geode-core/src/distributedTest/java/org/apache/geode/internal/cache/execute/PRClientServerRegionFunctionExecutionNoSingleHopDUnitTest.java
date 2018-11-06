@@ -52,7 +52,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -983,8 +982,8 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
       expected.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : " + expected.getMessage());
       assertTrue(expected.getMessage()
-          .startsWith((LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("return any"))));
+          .startsWith((String.format("Cannot %s result as the Function#hasResult() is false",
+              "return any"))));
     } catch (Exception notexpected) {
       Assert.fail("Test failed during execute or sleeping", notexpected);
     } finally {

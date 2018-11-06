@@ -15,7 +15,6 @@
 package org.apache.geode.internal.util;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.EventID;
 
 /**
@@ -101,9 +100,9 @@ public class Breadcrumbs {
    * a problem crumb can be set using I18n message strings and arguments. Breadcrumb will localize
    * the string with the given args
    */
-  public static void setProblem(StringId msg, Object[] args) {
+  public static void setProblem(String msg, Object[] args) {
     if (ENABLED) {
-      setBreadcrumb(Thread.currentThread(), CrumbType.PROBLEM, msg.toLocalizedString(args));
+      setBreadcrumb(Thread.currentThread(), CrumbType.PROBLEM, String.format(msg, args));
     }
   }
 

@@ -24,12 +24,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.ManagementStrings;
 
 public class LocatorMBeanBridge {
   private static final Logger logger = LogService.getLogger();
@@ -117,19 +114,16 @@ public class LocatorMBeanBridge {
       mainTail = BeanUtilFuncs.tailSystemLog(logFile, numLines);
       if (mainTail == null) {
         mainTail =
-            ManagementStrings.TailLogResponse_NO_LOG_FILE_WAS_SPECIFIED_IN_THE_CONFIGURATION_MESSAGES_IS_BEING_DIRECTED_TO_STDOUT
-                .toLocalizedString();
+            "No log file was specified in the configuration, messages is being directed to stdout.";
       }
 
     } catch (IOException e) {
-      logger.warn(LocalizedMessage.create(
-          ManagementStrings.TailLogResponse_ERROR_OCCURRED_WHILE_READING_LOGFILE_LOG__0, e));
+      logger.warn("Error occurred while reading log file: ", e);
       mainTail = "";
     }
 
     if (mainTail == null) {
-      return LocalizedStrings.SystemMemberImpl_NO_LOG_FILE_CONFIGURED_LOG_MESSAGES_WILL_BE_DIRECTED_TO_STDOUT
-          .toLocalizedString();
+      return "No log file configured, log messages will be directed to stdout.";
     } else {
       StringBuffer result = new StringBuffer();
       if (mainTail != null) {

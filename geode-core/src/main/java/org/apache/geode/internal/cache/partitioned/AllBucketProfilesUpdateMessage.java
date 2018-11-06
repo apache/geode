@@ -113,21 +113,18 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
    * @param dm the distribution manager used to send the message
    * @param prId the unique partitioned region identifier
    * @param profiles bucked id to profile map
-   * @param requireAck whether or not to expect a reply
    * @return an instance of reply processor if requireAck is true on which the caller can wait until
    *         the event has finished.
    */
   public static ReplyProcessor21 send(Set recipients, DistributionManager dm, int prId,
-      Map<Integer, BucketAdvisor.BucketProfile> profiles, boolean requireAck) {
+      Map<Integer, BucketAdvisor.BucketProfile> profiles) {
     if (recipients.isEmpty()) {
       return null;
     }
     ReplyProcessor21 rp = null;
     int procId = 0;
-    if (requireAck) {
-      rp = new ReplyProcessor21(dm, recipients);
-      procId = rp.getProcessorId();
-    }
+    rp = new ReplyProcessor21(dm, recipients);
+    procId = rp.getProcessorId();
     AllBucketProfilesUpdateMessage m =
         new AllBucketProfilesUpdateMessage(recipients, prId, procId, profiles);
     dm.putOutgoing(m);

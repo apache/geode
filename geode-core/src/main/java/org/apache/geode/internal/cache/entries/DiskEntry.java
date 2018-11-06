@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.OffHeapHelper;
@@ -385,8 +384,7 @@ public interface DiskEntry extends RegionEntry {
                 entry.setSerialized(true);
               } catch (IOException e) {
                 throw new IllegalArgumentException(
-                    LocalizedStrings.DiskEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                        .toLocalizedString(),
+                    "An IOException was thrown while serializing.",
                     e);
               }
             }
@@ -426,8 +424,7 @@ public interface DiskEntry extends RegionEntry {
             entry.setSerialized(true);
           } catch (IOException e) {
             RuntimeException e2 = new IllegalArgumentException(
-                LocalizedStrings.DiskEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                    .toLocalizedString());
+                "An IOException was thrown while serializing.");
             e2.initCause(e);
             throw e2;
           }
@@ -449,7 +446,7 @@ public interface DiskEntry extends RegionEntry {
       }
       if (drv == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DiskEntry_DISK_REGION_IS_NULL.toLocalizedString());
+            "Disk region is null");
       }
 
       if (newValue instanceof RecoveredEntry) {
@@ -842,7 +839,7 @@ public interface DiskEntry extends RegionEntry {
         EntryEventImpl event) throws RegionClearedException {
       if (newValue == null) {
         throw new NullPointerException(
-            LocalizedStrings.DiskEntry_ENTRYS_VALUE_SHOULD_NOT_BE_NULL.toLocalizedString());
+            "Entry's value should not be null.");
       }
       boolean basicUpdateCalled = false;
       try {

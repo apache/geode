@@ -14,16 +14,15 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -116,7 +115,7 @@ public class GrantorFailoverDUnitTest {
     final MemberVM survivor2 = locators.get(2);
     grantorVM.invoke(() -> {
       DistributedLockService.becomeLockGrantor(SERVICE_NAME);
-      Awaitility.waitAtMost(30, TimeUnit.SECONDS).untilAsserted(
+      await().untilAsserted(
           () -> assertThat(DistributedLockService.isLockGrantor(SERVICE_NAME)).isTrue());
     });
 
@@ -176,7 +175,7 @@ public class GrantorFailoverDUnitTest {
   private static InternalDistributedMember assertIsElderAndGetId() {
     DistributionManager distributionManager =
         ClusterStartupRule.getCache().getInternalDistributedSystem().getDistributionManager();
-    Awaitility.await("Wait to be elder").atMost(2, TimeUnit.MINUTES)
+    await("Wait to be elder")
         .untilAsserted(() -> assertThat(distributionManager.isElder()).isTrue());
     return distributionManager.getElderId();
   }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -45,8 +46,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -73,7 +72,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     final int queryLimit = 6; // where id > 5 (0-5)
 
     // Start server1
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         Region region = getRootRegion().getSubregion(regionName);
@@ -84,7 +83,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Start server2
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         Region region = getRootRegion().getSubregion(regionName);
@@ -148,14 +147,14 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     // Check for TestObject instances on Server2.
     // It should be 0
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }
     });
 
     // update
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         for (int i = 0; i < numberOfEntries * 2; i++) {
@@ -168,7 +167,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     // Check for TestObject instances on Server2.
     // It should be 0
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }
@@ -195,16 +194,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         final CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
 
         // Wait for the events to show up on the client.
-        Wait.waitForCriterion(new WaitCriterion() {
-
-          public boolean done() {
-            return listener.getTotalEventCount() >= (numberOfEntries * 2 - queryLimit);
-          }
-
-          public String description() {
-            return null;
-          }
-        }, 30000, 100, false);
+        await().until(() -> listener.getTotalEventCount() >= (numberOfEntries * 2 - queryLimit));
 
         listener.printInfo(false);
 
@@ -260,7 +250,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
             "SELECT * FROM " + regName + " WHERE id > 5",};
 
     // Start server1
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer(false, true);
         Region region = getRootRegion().getSubregion(regionName);
@@ -268,7 +258,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Start server2
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer(false, true);
         Region region = getRootRegion().getSubregion(regionName);
@@ -372,13 +362,13 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     // Check for TestObject instances on Server2.
     // It should be 0
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }
     });
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Check for TestObject instances.
@@ -414,7 +404,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     }
 
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Check for TestObject instances.
@@ -424,7 +414,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     // Check for TestObject instances on Server2.
     // It should be 0
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }
@@ -456,7 +446,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
             "SELECT * FROM " + regName + " WHERE id > 5",};
 
     // Start server1
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer(false, true);
         Region region = getRootRegion().getSubregion(regionName);
@@ -464,7 +454,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Start server2
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer(false, true);
         Region region = getRootRegion().getSubregion(regionName);
@@ -472,7 +462,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Start server3
-    vm2.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm2.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         configAndStartBridgeServer(false, true);
         Region region = getRootRegion().getSubregion(regionName);
@@ -564,13 +554,13 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     // Check for TestObject instances on Server2.
     // It should be 0
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }
     });
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Check for TestObject instances.
@@ -606,7 +596,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     }
 
 
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Check for TestObject instances.
@@ -614,7 +604,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
       }
     });
 
-    vm1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }
@@ -655,7 +645,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
     // Check for TestObject instances on Server3.
     // It should be 0
-    vm2.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm2.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         assertEquals(0, TestObject.numInstance);
       }

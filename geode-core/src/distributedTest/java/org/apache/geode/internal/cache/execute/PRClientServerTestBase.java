@@ -60,7 +60,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class PRClientServerTestBase extends JUnit4CacheTestCase {
@@ -628,40 +627,18 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   }
 
   public static void startServerHA() throws Exception {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 2000, 500, false);
+    Wait.pause(2000);
     Collection bridgeServers = cache.getCacheServers();
     LogWriterUtils.getLogWriter()
-        .info("Start Server Bridge Servers list : " + bridgeServers.size());
+        .info("Start Server cache servers list : " + bridgeServers.size());
     Iterator bridgeIterator = bridgeServers.iterator();
     CacheServer bridgeServer = (CacheServer) bridgeIterator.next();
-    LogWriterUtils.getLogWriter().info("start Server Bridge Server" + bridgeServer);
+    LogWriterUtils.getLogWriter().info("start Server cache server" + bridgeServer);
     bridgeServer.start();
   }
 
   public static void stopServerHA() throws Exception {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 1000, 200, false);
+    Wait.pause(1000);
     Iterator iter = cache.getCacheServers().iterator();
     if (iter.hasNext()) {
       CacheServer server = (CacheServer) iter.next();
@@ -686,18 +663,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   }
 
   public static void closeCacheHA() {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 1000, 200, false);
+    Wait.pause(1000);
     if (cache != null && !cache.isClosed()) {
       cache.close();
     }

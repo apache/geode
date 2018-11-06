@@ -61,9 +61,7 @@ import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 
 public class LocalDataSet implements Region, QueryExecutor {
@@ -151,8 +149,8 @@ public class LocalDataSet implements Region, QueryExecutor {
     }
     if (result.size() > 1) {
       throw new FunctionDomainException(
-          LocalizedStrings.AbstractRegion_SELECTVALUE_EXPECTS_RESULTS_OF_SIZE_1_BUT_FOUND_RESULTS_OF_SIZE_0
-              .toLocalizedString(Integer.valueOf(result.size())));
+          String.format("selectValue expects results of size 1, but found results of size %s",
+              Integer.valueOf(result.size())));
     }
     return result.iterator().next();
   }
@@ -429,9 +427,9 @@ public class LocalDataSet implements Region, QueryExecutor {
       try {
         result.put(key, get(key, callback));
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.LocalRegion_THE_FOLLOWING_EXCEPTION_OCCURRED_ATTEMPTING_TO_GET_KEY_0,
-            key), e);
+        logger.warn(String.format("The following exception occurred attempting to get key=%s",
+            key),
+            e);
       }
     }
     return result;
@@ -721,8 +719,7 @@ public class LocalDataSet implements Region, QueryExecutor {
       @Override
       public void remove() {
         throw new UnsupportedOperationException(
-            LocalizedStrings.LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION
-                .toLocalizedString());
+            "This iterator does not support modification");
       }
 
     }

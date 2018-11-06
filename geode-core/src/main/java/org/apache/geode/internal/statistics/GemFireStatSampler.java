@@ -33,9 +33,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.admin.ListenerIdMap;
 import org.apache.geode.internal.admin.remote.StatListenerMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
@@ -248,13 +246,13 @@ public class GemFireStatSampler extends HostStatSampler {
   protected void initProcessStats(long id) {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (osStatsDisabled()) {
-        logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
-            LocalizedStrings.GemFireStatSampler_OS_STATISTIC_COLLECTION_DISABLED_BY_OSSTATSDISABLED_SYSTEM_PROPERTY));
+        logger.info(LogMarker.STATISTICS_MARKER,
+            "OS statistic collection disabled by setting the osStatsDisabled system property to true.");
       } else {
         int retVal = HostStatHelper.initOSStats();
         if (retVal != 0) {
-          logger.error(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
-              LocalizedStrings.GemFireStatSampler_OS_STATISTICS_FAILED_TO_INITIALIZE_PROPERLY_SOME_STATS_MAY_BE_MISSING_SEE_BUGNOTE_37160));
+          logger.error(LogMarker.STATISTICS_MARKER,
+              "OS statistics failed to initialize properly, some stats may be missing. See bugnote #37160.");
         }
         HostStatHelper.newSystem(getOsStatisticsFactory());
         String statName = getStatisticsManager().getName();
@@ -459,8 +457,8 @@ public class GemFireStatSampler extends HostStatSampler {
           break;
         default:
           throw new RuntimeException(
-              LocalizedStrings.GemFireStatSampler_ILLEGAL_FIELD_TYPE_0_FOR_STATISTIC
-                  .toLocalizedString(stats.getType()));
+              String.format("Illegal field type %s for statistic",
+                  stats.getType()));
       }
       result.stats = stats;
       result.stat = stat;

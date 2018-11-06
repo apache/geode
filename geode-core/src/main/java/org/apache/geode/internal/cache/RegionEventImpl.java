@@ -34,7 +34,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of a region event
@@ -185,7 +184,7 @@ public class RegionEventImpl
     try {
       return super.clone();
     } catch (CloneNotSupportedException e) {
-      throw new Error(LocalizedStrings.RegionEventImpl_CLONE_IS_SUPPORTED.toLocalizedString());
+      throw new Error("clone IS supported");
     }
   }
 

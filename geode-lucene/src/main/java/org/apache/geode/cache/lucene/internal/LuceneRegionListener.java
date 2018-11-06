@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class LuceneRegionListener implements RegionListener {
@@ -116,8 +115,8 @@ public class LuceneRegionListener implements RegionListener {
       try {
         this.service.afterDataRegionCreated(this.luceneIndex);
       } catch (LuceneIndexDestroyedException e) {
-        logger.warn(LocalizedStrings.LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED
-            .toString(indexName, regionPath));
+        logger.warn(String.format("Lucene index %s on region %s was destroyed while being created",
+            indexName, regionPath));
         return;
       }
       this.service.createLuceneIndexOnDataRegion((PartitionedRegion) region, luceneIndex);

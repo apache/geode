@@ -44,7 +44,6 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class ClientTXStateStub extends TXStateStub {
@@ -230,7 +229,7 @@ public class ClientTXStateStub extends TXStateStub {
       if (status == Status.STATUS_COMMITTED) {
         if (txcm == null) {
           throw new TransactionInDoubtException(
-              LocalizedStrings.ClientTXStateStub_COMMIT_FAILED_ON_SERVER.toLocalizedString());
+              "Commit failed on cache server");
         } else {
           afterServerCommit(txcm);
         }

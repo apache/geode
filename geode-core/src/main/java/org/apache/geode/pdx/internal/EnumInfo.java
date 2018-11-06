@@ -29,7 +29,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -223,8 +222,8 @@ public class EnumInfo implements DataSerializableFixedID {
         return this.ei.getEnum();
       } catch (ClassNotFoundException ex) {
         throw new PdxSerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-                .toLocalizedString(getClassName()),
+            String.format("Could not create an instance of a class %s",
+                getClassName()),
             ex);
       }
     }

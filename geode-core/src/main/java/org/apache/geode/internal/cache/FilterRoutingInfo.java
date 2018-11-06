@@ -516,7 +516,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
         sb.append(", interestedClientsInv:");
         sb.append(this.interestedClientsInv);
       }
-      if (InternalDistributedSystem.getLoggerI18n().finerEnabled()) {
+      if (InternalDistributedSystem.getLogger().finerEnabled()) {
         if (this.cqs != null) {
           sb.append(", cqs=");
           sb.append(this.cqs.keySet());

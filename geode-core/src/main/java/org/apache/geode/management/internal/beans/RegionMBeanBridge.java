@@ -36,7 +36,6 @@ import org.apache.geode.management.MembershipAttributesData;
 import org.apache.geode.management.PartitionAttributesData;
 import org.apache.geode.management.RegionAttributesData;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
@@ -159,7 +158,7 @@ public class RegionMBeanBridge<K, V> {
         RegionMBeanCompositeDataFactory.getEvictionAttributesData(regAttrs);
 
     this.regionMonitor =
-        new MBeanStatsMonitor(ManagementStrings.REGION_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("RegionMXBeanMonitor");
 
     configureRegionMetrics();
 
@@ -241,7 +240,7 @@ public class RegionMBeanBridge<K, V> {
     this.regionStats = cachePerfStats;
 
     this.regionMonitor =
-        new MBeanStatsMonitor(ManagementStrings.REGION_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("RegionMXBeanMonitor");
     regionMonitor.addStatisticsToMonitor(cachePerfStats.getStats());
     configureRegionMetrics();
   }

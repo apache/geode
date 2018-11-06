@@ -35,9 +35,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.BlobHelper;
@@ -191,7 +189,7 @@ public class Message {
     this.messageModified = true;
     if (!MessageType.validate(msgType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.Message_INVALID_MESSAGETYPE.toLocalizedString());
+          "Invalid MessageType");
     }
     this.messageType = msgType;
   }
@@ -552,7 +550,7 @@ public class Message {
       this.serverConnection.updateProcessingMessage();
     }
     if (this.socket == null) {
-      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
     try {
       final ByteBuffer commBuffer = getCommBuffer();
@@ -670,8 +668,8 @@ public class Message {
     cb.clear();
 
     if (!MessageType.validate(type)) {
-      throw new IOException(LocalizedStrings.Message_INVALID_MESSAGE_TYPE_0_WHILE_READING_HEADER
-          .toLocalizedString(type));
+      throw new IOException(String.format("Invalid message type %s while reading header",
+          type));
     }
 
     int timeToWait = 0;
@@ -695,8 +693,9 @@ public class Message {
                 ((CacheServerStats) this.messageStats).incConnectionsTimedOut();
               }
               throw new IOException(
-                  LocalizedStrings.Message_OPERATION_TIMED_OUT_ON_SERVER_WAITING_ON_CONCURRENT_MESSAGE_LIMITER_AFTER_WAITING_0_MILLISECONDS
-                      .toLocalizedString(timeToWait));
+                  String.format(
+                      "Operation timed out on server waiting on concurrent message limiter after waiting %s milliseconds",
+                      timeToWait));
             }
           }
           break;
@@ -712,8 +711,8 @@ public class Message {
 
     if (len > 0) {
       if (this.maxIncomingMessageLength > 0 && len > this.maxIncomingMessageLength) {
-        throw new IOException(LocalizedStrings.Message_MESSAGE_SIZE_0_EXCEEDED_MAX_LIMIT_OF_1
-            .toLocalizedString(new Object[] {len, this.maxIncomingMessageLength}));
+        throw new IOException(String.format("Message size %s exceeded max limit of %s",
+            new Object[] {len, this.maxIncomingMessageLength}));
       }
 
       if (this.dataLimiter != null) {
@@ -734,8 +733,9 @@ public class Message {
               if (newTimeToWait <= 0
                   || !this.messageLimiter.tryAcquire(1, newTimeToWait, TimeUnit.MILLISECONDS)) {
                 throw new IOException(
-                    LocalizedStrings.Message_OPERATION_TIMED_OUT_ON_SERVER_WAITING_ON_CONCURRENT_DATA_LIMITER_AFTER_WAITING_0_MILLISECONDS
-                        .toLocalizedString(timeToWait));
+                    String.format(
+                        "Operation timed out on server waiting on concurrent data limiter after waiting %s milliseconds",
+                        timeToWait));
               }
             }
             // makes sure payloadLength gets set now so we will release the semaphore
@@ -794,8 +794,7 @@ public class Message {
         int bytesRead = this.socketChannel.read(cb);
         if (bytesRead == -1) {
           throw new EOFException(
-              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
-                  .toLocalizedString());
+              "The connection has been reset while reading the header");
         }
         if (this.messageStats != null) {
           this.messageStats.incReceivedBytes(bytesRead);
@@ -809,8 +808,7 @@ public class Message {
         int bytesRead = this.inputStream.read(cb.array(), hdr, headerLength - hdr);
         if (bytesRead == -1) {
           throw new EOFException(
-              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
-                  .toLocalizedString());
+              "The connection has been reset while reading the header");
         }
         hdr += bytesRead;
         if (this.messageStats != null) {
@@ -829,8 +827,8 @@ public class Message {
   void readPayloadFields(final int numParts, final int len) throws IOException {
     if (len > 0 && numParts <= 0 || len <= 0 && numParts > 0) {
       throw new IOException(
-          LocalizedStrings.Message_PART_LENGTH_0_AND_NUMBER_OF_PARTS_1_INCONSISTENT
-              .toLocalizedString(new Object[] {len, numParts}));
+          String.format("Part length ( %s ) and number of parts ( %s ) inconsistent",
+              new Object[] {len, numParts}));
     }
 
     Integer msgType = MESSAGE_TYPE.get();
@@ -851,8 +849,8 @@ public class Message {
     }
 
     if (len < 0) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.Message_RPL_NEG_LEN__0, len));
-      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
+      logger.info("rpl: neg len: {}", len);
+      throw new IOException("Dead Connection");
     }
 
     final ByteBuffer cb = getCommBuffer();
@@ -912,8 +910,7 @@ public class Message {
               }
             } else {
               throw new EOFException(
-                  LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_A_PART
-                      .toLocalizedString());
+                  "The connection has been reset while reading a part");
             }
           } else {
             int res = this.inputStream.read(partBytes, off, remaining);
@@ -926,8 +923,7 @@ public class Message {
               }
             } else {
               throw new EOFException(
-                  LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_A_PART
-                      .toLocalizedString());
+                  "The connection has been reset while reading a part");
             }
           }
         }
@@ -986,8 +982,7 @@ public class Message {
           }
         } else {
           throw new EOFException(
-              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_PAYLOAD
-                  .toLocalizedString());
+              "The connection has been reset while reading the payload");
         }
       }
 
@@ -1009,8 +1004,7 @@ public class Message {
           }
         } else {
           throw new EOFException(
-              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_PAYLOAD
-                  .toLocalizedString());
+              "The connection has been reset while reading the payload");
         }
       }
 
@@ -1124,7 +1118,7 @@ public class Message {
         readHeaderAndBody(timeoutMillis);
       }
     } else {
-      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 

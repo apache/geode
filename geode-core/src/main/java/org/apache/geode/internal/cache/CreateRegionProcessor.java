@@ -55,9 +55,7 @@ import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * This message processor handles creation and initial exchange of
@@ -405,8 +403,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         if (replyException == null) {
           replyException = new ReplyException(t);
         } else {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.CreateRegionProcessor_MORE_THAN_ONE_EXCEPTION_THROWN_IN__0, this),
+          logger.warn(String.format("More than one exception thrown in %s", this),
               t);
         }
       } finally {
@@ -524,8 +521,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // non-persistent replicate is running
         if (!rgn.getAttributes().getDataPolicy().withPersistence()) {
           result =
-              LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_PERSISTANCE_TRUE_PERSISTENT_MEMBERS_B4_NON_PERSISTENT
-                  .toLocalizedString(regionPath, myId);
+              String.format(
+                  "Cannot create region %s DataPolicy withPersistence=true because another cache (%s) has the same region DataPolicy withPersistence=false. Persistent members must be started before non-persistent members",
+                  regionPath, myId);
           skipConcurrencyChecks = true;
         } else {
           // make the new member turn on concurrency checks
@@ -536,8 +534,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (!initializing && !skipCheckForAccessor && !skipConcurrencyChecks
           && this.concurrencyChecksEnabled != otherCCEnabled) {
         result =
-            LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_CCENABLED_1_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_CCENABLED_2
-                .toLocalizedString(regionPath, this.concurrencyChecksEnabled, myId, otherCCEnabled);
+            String.format(
+                "Cannot create region %s concurrency-checks-enabled=%s because another cache (%s) has the same region concurrency-checks-enabled=%s",
+                regionPath, this.concurrencyChecksEnabled, myId, otherCCEnabled);
       }
 
       Set<String> otherGatewaySenderIds = ((LocalRegion) rgn).getGatewaySenderIds();
@@ -545,8 +544,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (!otherGatewaySenderIds.equals(myGatewaySenderIds)) {
         if (!rgn.getFullPath().contains(DynamicRegionFactory.dynamicRegionListName)) {
           result =
-              LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_GATEWAY_SENDER_IDS_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_GATEWAY_SENDER_IDS
-                  .toLocalizedString(this.regionPath, myGatewaySenderIds, otherGatewaySenderIds);
+              String.format(
+                  "Cannot create Region %s with %s gateway sender ids because another cache has the same region defined with %s gateway sender ids",
+                  this.regionPath, myGatewaySenderIds, otherGatewaySenderIds);
         }
       }
 
@@ -555,26 +555,30 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (!isLocalOrRemoteAccessor(rgn, profile)
           && !otherAsynEventQueueIds.equals(myAsyncEventQueueIds)) {
         result =
-            LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_ASYNC_EVENT_IDS_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_IDS
-                .toLocalizedString(this.regionPath, myAsyncEventQueueIds, otherAsynEventQueueIds);
+            String.format(
+                "Cannot create Region %s with %s async event ids because another cache has the same region defined with %s async event ids",
+                this.regionPath, myAsyncEventQueueIds, otherAsynEventQueueIds);
       }
 
       final PartitionAttributes pa = rgn.getAttributes().getPartitionAttributes();
       if (pa == null && profile.isPartitioned) {
         result =
-            LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_PARTITIONEDREGION_0_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_DEFINED_AS_A_NON_PARTITIONEDREGION
-                .toLocalizedString(this.regionPath, myId);
+            String.format(
+                "Cannot create PartitionedRegion %s because another cache (%s) has the same region defined as a non PartitionedRegion.",
+                this.regionPath, myId);
       } else if (pa != null && !profile.isPartitioned) {
         result =
-            LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_THE_NON_PARTITIONEDREGION_0_BECAUSE_ANOTHER_CACHE_HAS_A_PARTITIONED_REGION_DEFINED_WITH_THE_SAME_NAME
-                .toLocalizedString(this.regionPath, myId);
+            String.format(
+                "Cannot create the non PartitionedRegion %s because another cache (%s) has a Partitioned Region defined with the same name.",
+                this.regionPath, myId);
       } else if (profile.scope.isDistributed() && otherScope.isDistributed()) {
         // This check is somewhat unnecessary as all Partitioned Regions should have the same scope
         // due to the fact that Partitioned Regions do no support scope.
         if (profile.scope != otherScope) {
           result =
-              LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_SCOPE_BECAUSE_ANOTHER_CACHE_HAS_SAME_REGION_WITH_2_SCOPE
-                  .toLocalizedString(this.regionPath, profile.scope, myId, otherScope);
+              String.format(
+                  "Cannot create region %s with %s scope because another cache (%s) has same region with %s scope.",
+                  this.regionPath, profile.scope, myId, otherScope);
         }
       }
 
@@ -589,8 +593,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (!isRemoteAccessor(profile) && !thisIsRemoteAccessor
           && profile.isOffHeap != otherIsOffHeap) {
         result =
-            LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3
-                .toLocalizedString(this.regionPath, profile.isOffHeap, myId, otherIsOffHeap);
+            String.format(
+                "Cannot create region %s with off-heap=%s because another cache (%s) has the same region with off-heap=%s.",
+                this.regionPath, profile.isOffHeap, myId, otherIsOffHeap);
       }
 
       String cspResult = null;

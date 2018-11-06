@@ -16,12 +16,16 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.DoubleWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class SortedSetExecutor extends AbstractExecutor {
+
+  final ByteArrayWrapper minus = new ByteArrayWrapper(Coder.stringToBytes("-"));
+  final ByteArrayWrapper plus = new ByteArrayWrapper(Coder.stringToBytes("+"));
 
   @Override
   protected Region<ByteArrayWrapper, DoubleWrapper> getOrCreateRegion(

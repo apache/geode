@@ -19,7 +19,6 @@ import javax.management.modelmbean.ModelMBean;
 
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides MBean support for managing a distribution locator.
@@ -96,12 +95,12 @@ public class DistributionLocatorJmxImpl
   }
 
   public void validate() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public int getPort() {

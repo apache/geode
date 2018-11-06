@@ -42,9 +42,9 @@ import org.apache.geode.util.test.TestUtil;
 @Category({ClientSubscriptionTest.class})
 public class RedundancyLevelJUnitTest {
   private static final String expectedRedundantErrorMsg =
-      "Could not find any server to create redundant client queue on.";
+      "Could not find any server to host redundant client queue.";
   private static final String expectedPrimaryErrorMsg =
-      "Could not find any server to create primary client queue on.";
+      "Could not find any server to host primary client queue.";
 
   final String expected =
       "Could not initialize a primary queue on startup. No queue servers available";

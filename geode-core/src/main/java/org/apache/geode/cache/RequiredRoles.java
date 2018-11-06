@@ -21,7 +21,6 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides information on presence or absence of a <code>Region</code>'s required roles.
@@ -77,12 +76,11 @@ public class RequiredRoles {
       throws InterruptedException {
     if (region == null) {
       throw new NullPointerException(
-          LocalizedStrings.RequiredRoles_REGION_MUST_BE_SPECIFIED.toLocalizedString());
+          "Region must be specified");
     }
     if (!(region instanceof DistributedRegion)) {
       throw new IllegalStateException(
-          LocalizedStrings.RequiredRoles_REGION_HAS_NOT_BEEN_CONFIGURED_WITH_REQUIRED_ROLES
-              .toLocalizedString());
+          "Region has not been configured with required roles.");
     }
     DistributedRegion dr = (DistributedRegion) region;
     return dr.waitForRequiredRoles(timeout);

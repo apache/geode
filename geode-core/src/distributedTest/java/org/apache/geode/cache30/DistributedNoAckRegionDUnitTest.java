@@ -34,6 +34,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.StateFlushOperation;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -257,7 +258,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
               return "overflow queue remains nonempty";
             }
           };
-          Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
         }
       });
     } // finally

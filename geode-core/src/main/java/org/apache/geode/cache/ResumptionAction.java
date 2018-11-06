@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Specifies how the region is affected by resumption of reliability when one or more missing
@@ -75,8 +74,8 @@ public class ResumptionAction implements java.io.Serializable {
   public static ResumptionAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ResumptionAction_INVALID_RESUMPTIONACTION_NAME_0
-              .toLocalizedString(name));
+          String.format("Invalid ResumptionAction name: %s",
+              name));
     }
     for (int i = 0; i < PRIVATE_VALUES.length; i++) {
       if (name.equals(PRIVATE_VALUES[i].name)) {
@@ -84,7 +83,7 @@ public class ResumptionAction implements java.io.Serializable {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.ResumptionAction_INVALID_RESUMPTIONACTION_NAME_0.toLocalizedString(name));
+        String.format("Invalid ResumptionAction name: %s", name));
   }
 
   /** Returns true if this is <code>NONE</code>. */

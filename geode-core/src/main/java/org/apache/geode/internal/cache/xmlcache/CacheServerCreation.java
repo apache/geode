@@ -26,7 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -51,7 +50,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   /**
-   * Constructor for retaining bridge server information during auto-reconnect
+   * Constructor for retaining cache server information during auto-reconnect
    *
    */
   public CacheServerCreation(InternalCache cache, CacheServer other) {
@@ -153,15 +152,15 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   public boolean isRunning() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void stop() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
-   * Returns whether or not this bridge server has the same configuration as another bridge server.
+   * Returns whether or not this cache server has the same configuration as another cache server.
    */
   @Override
   public boolean sameAs(CacheServer other) {

@@ -31,11 +31,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -73,7 +73,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
     vm.invoke(new SerializableRunnable() {
 
       public void run() {
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           public String description() {
             return "Waiting for another persistent member to come online";
@@ -87,7 +87,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
             return done;
           }
 
-        }, MAX_WAIT, 100, true);
+        });
 
       }
 

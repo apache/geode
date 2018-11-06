@@ -26,7 +26,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular app vm on a distribution manager to make an administration
@@ -52,8 +51,8 @@ public abstract class RegionAdminRequest extends AdminRequest {
     Region r = cache.getRegion(regionName);
     if (r == null) {
       throw new RegionNotFoundException(
-          LocalizedStrings.RegionAdminRequest_REGION_0_NOT_FOUND_IN_REMOTE_CACHE_1
-              .toLocalizedString(new Object[] {regionName, cache.getName()}));
+          String.format("Region %s not found in remote cache %s.",
+              new Object[] {regionName, cache.getName()}));
     }
     return r;
   }

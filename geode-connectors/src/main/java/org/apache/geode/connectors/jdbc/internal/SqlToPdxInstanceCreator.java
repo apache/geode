@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
@@ -32,12 +32,12 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 class SqlToPdxInstanceCreator {
   private final InternalCache cache;
-  private final ConnectorService.RegionMapping regionMapping;
+  private final RegionMapping regionMapping;
   private final ResultSet resultSet;
   private final TableMetaDataView tableMetaData;
   private final PdxInstanceFactory factory;
 
-  public SqlToPdxInstanceCreator(InternalCache cache, ConnectorService.RegionMapping regionMapping,
+  public SqlToPdxInstanceCreator(InternalCache cache, RegionMapping regionMapping,
       ResultSet resultSet, TableMetaDataView tableMetaData) {
     this.cache = cache;
     this.regionMapping = regionMapping;
@@ -55,12 +55,9 @@ class SqlToPdxInstanceCreator {
     final int columnCount = metaData.getColumnCount();
     for (int i = 1; i <= columnCount; i++) {
       String columnName = metaData.getColumnName(i);
-      if (regionMapping.isPrimaryKeyInValue()
-          || !tableMetaData.getKeyColumnName().equals(columnName)) {
-        String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
-        FieldType fieldType = getFieldType(typeRegistry, fieldName);
-        writeField(columnName, i, fieldName, fieldType);
-      }
+      String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
+      FieldType fieldType = getFieldType(typeRegistry, fieldName);
+      writeField(columnName, i, fieldName, fieldType);
     }
     if (resultSet.next()) {
       throw new JdbcConnectorException(
@@ -70,7 +67,7 @@ class SqlToPdxInstanceCreator {
   }
 
   private PdxInstanceFactory createPdxInstanceFactory() {
-    String valueClassName = regionMapping.getPdxClassName();
+    String valueClassName = regionMapping.getPdxName();
     if (valueClassName != null) {
       return cache.createPdxInstanceFactory(valueClassName);
     } else {
@@ -250,7 +247,7 @@ class SqlToPdxInstanceCreator {
   }
 
   private FieldType getFieldType(TypeRegistry typeRegistry, String fieldName) {
-    String pdxClassName = regionMapping.getPdxClassName();
+    String pdxClassName = regionMapping.getPdxName();
     if (pdxClassName == null) {
       return FieldType.OBJECT;
     }

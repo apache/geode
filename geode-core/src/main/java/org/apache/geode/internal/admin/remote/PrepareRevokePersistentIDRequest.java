@@ -30,7 +30,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -99,8 +98,9 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
       } else {
         if (!mm.prepareRevoke(this.pattern, dm, getSender())) {
           throw new RevokeFailedException(
-              LocalizedStrings.RevokeFailedException_Member_0_is_already_running_1
-                  .toLocalizedString(dm.getId(), this.pattern));
+              String.format(
+                  "Member %s is already running with persistent files matching %s. You cannot revoke the disk store of a running member.",
+                  dm.getId(), this.pattern));
         }
       }
     }

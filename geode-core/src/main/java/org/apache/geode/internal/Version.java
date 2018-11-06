@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -273,8 +272,9 @@ public class Version implements Comparable<Version> {
     // for processing
     if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null
         || (forGFEClients && CommandInitializer.getCommands(VALUES[ordinal]) == null)) {
-      throw new UnsupportedVersionException(LocalizedStrings.Version_REMOTE_VERSION_NOT_SUPPORTED
-          .toLocalizedString(ordinal, CURRENT.name));
+      throw new UnsupportedVersionException(String.format(
+          "Peer or client version with ordinal %s not supported. Highest known version is %s",
+          ordinal, CURRENT.name));
     }
     return VALUES[ordinal];
   }

@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -230,8 +229,7 @@ public class DestroyOp {
           logger.debug("received REMOVE response from server with entryNotFound={}", entryNotFound);
         }
         return new EntryNotFoundException(
-            LocalizedStrings.AbstractRegionMap_ENTRY_NOT_FOUND_WITH_EXPECTED_VALUE
-                .toLocalizedString());
+            "entry not found with expected value");
       }
       return null;
     }

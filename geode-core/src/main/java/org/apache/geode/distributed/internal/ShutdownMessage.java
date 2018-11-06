@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager shuts down.
@@ -89,7 +88,7 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
     // else {
     // dm.putOutgoing(reply);
     dm.shutdownMessageReceived(id,
-        LocalizedStrings.ShutdownMessage_SHUTDOWN_MESSAGE_RECEIVED.toLocalizedString());
+        "shutdown message received");
     // }
   }
 
@@ -114,8 +113,8 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
 
   @Override
   public String toString() {
-    return LocalizedStrings.ShutdownMessage_SHUTDOWNMESSAGE_DM_0_HAS_SHUTDOWN
-        .toLocalizedString(this.id);
+    return String.format("ShutdownMessage DM %s has shutdown",
+        this.id);
   }
 
 }

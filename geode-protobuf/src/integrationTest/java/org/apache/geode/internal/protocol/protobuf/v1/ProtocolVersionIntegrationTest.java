@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -24,9 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -78,7 +77,7 @@ public class ProtocolVersionIntegrationTest {
 
     socket = socketChannel.socket();
 
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    await().until(socket::isConnected);
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
 
@@ -108,7 +107,7 @@ public class ProtocolVersionIntegrationTest {
     assertFalse(handshakeResponse.getVersionAccepted());
 
     // Verify that connection is closed
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       try {
         assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
         return true;
@@ -129,7 +128,7 @@ public class ProtocolVersionIntegrationTest {
         .setMinorVersion(0).build().writeDelimitedTo(socket.getOutputStream());
 
     // Verify that connection is closed
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       try {
         assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
         return true;

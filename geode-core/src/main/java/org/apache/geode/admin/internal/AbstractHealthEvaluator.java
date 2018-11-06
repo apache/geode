@@ -21,9 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * The abstract superclass of all GemFire health evaluators. Basically, this class specifies what
@@ -94,8 +92,8 @@ public abstract class AbstractHealthEvaluator {
    * {@linkplain GemFireHealth#OKAY_HEALTH okay} status.
    */
   protected HealthStatus okayHealth(String diagnosis) {
-    logger.info(LocalizedMessage.create(LocalizedStrings.AbstractHealthEvaluator_OKAY_HEALTH__0,
-        diagnosis));
+    logger.info("OKAY_HEALTH:  {}",
+        diagnosis);
     return new HealthStatus(GemFireHealth.OKAY_HEALTH, diagnosis);
   }
 
@@ -104,8 +102,8 @@ public abstract class AbstractHealthEvaluator {
    * {@linkplain GemFireHealth#POOR_HEALTH poor} status.
    */
   protected HealthStatus poorHealth(String diagnosis) {
-    logger.info(LocalizedMessage.create(LocalizedStrings.AbstractHealthEvaluator_POOR_HEALTH__0,
-        diagnosis));
+    logger.info("POOR_HEALTH:  {}",
+        diagnosis);
     return new HealthStatus(GemFireHealth.POOR_HEALTH, diagnosis);
   }
 

@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
@@ -227,7 +226,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
                   logger.info("##### Before vm0 is bounced.");
                   getBlackboard().signalGate("bounce");
                   // vm0.bounceForcibly();
-                  await().atMost(2, MINUTES).until(() -> cacheRule.getCache().isClosed());
+                  await().until(() -> cacheRule.getCache().isClosed());
                   logger.info("##### After vm0 is bounced.");
                 } else {
                   logger.info("#### Region path: " + rim.regionPath);
@@ -304,7 +303,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
                   logger.info("##### Before vm0 is bounced.");
                   getBlackboard().signalGate("bounce");
                   // vm0.bounceForcibly();
-                  await().atMost(2, MINUTES).until(() -> cacheRule.getCache().isClosed());
+                  await().until(() -> cacheRule.getCache().isClosed());
                   logger.info("##### After vm0 is bounced.");
                 } else {
                   logger.info("#### Region path: " + rim.regionPath);

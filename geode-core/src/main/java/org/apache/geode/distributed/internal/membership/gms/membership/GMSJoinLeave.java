@@ -78,7 +78,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.security.AuthenticationRequiredException;
@@ -1417,8 +1416,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (isJoined && isNetworkPartition(newView, true)) {
         if (quorumRequired) {
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
-          forceDisconnect(LocalizedStrings.Network_partition_detected
-              .toLocalizedString(crashes.size(), crashes));
+          forceDisconnect(String.format(
+              "Exiting due to possible network partition event due to loss of %s cache processes: %s",
+              crashes.size(), crashes));
           return;
         }
       }
@@ -2503,8 +2503,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           Thread.sleep(BROADCAST_MESSAGE_SLEEP_TIME);
 
           Set<InternalDistributedMember> crashes = newView.getActualCrashedMembers(currentView);
-          forceDisconnect(LocalizedStrings.Network_partition_detected
-              .toLocalizedString(crashes.size(), crashes));
+          forceDisconnect(String.format(
+              "Exiting due to possible network partition event due to loss of %s cache processes: %s",
+              crashes.size(), crashes));
           setShutdownFlag();
           return;
         }

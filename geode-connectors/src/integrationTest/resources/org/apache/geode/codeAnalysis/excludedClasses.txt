@@ -1,5 +1,2 @@
 org/apache/geode/connectors/jdbc/internal/xml/ElementType
 org/apache/geode/connectors/jdbc/internal/xml/ElementType$1
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$2
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$3
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$4

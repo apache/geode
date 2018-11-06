@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -86,8 +85,8 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     if (this.context.getFunction() == null) {
       sendReply(getSender(), getProcessorId(), dm,
           new ReplyException(new FunctionException(
-              LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-                  .toLocalizedString(this.context.getFunctionId()))),
+              String.format("Function named %s is not registered to FunctionService",
+                  this.context.getFunctionId()))),
           r, startTime);
       return false;
     }
@@ -102,8 +101,8 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
       if (!this.replyLastMsg && context.getFunction().hasResult()) {
         sendReply(getSender(), getProcessorId(), dm,
             new ReplyException(new FunctionException(
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                    .toString(context.getFunction().getId()))),
+                String.format("The function, %s, did not send last result",
+                    context.getFunction().getId()))),
             r, startTime);
         return false;
       }

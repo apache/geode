@@ -61,7 +61,6 @@ import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -202,7 +201,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     Set<?> failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(msg));
+          String.format("Failed sending < %s >", msg));
     }
     return p;
   }

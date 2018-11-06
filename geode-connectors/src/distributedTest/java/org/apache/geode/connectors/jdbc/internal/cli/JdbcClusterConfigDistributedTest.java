@@ -15,7 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -24,8 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
@@ -51,10 +49,11 @@ public class JdbcClusterConfigDistributedTest {
   @Test
   public void recreateCacheFromClusterConfig() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create jdbc-connection --name=connection --url=url")
-        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("create region --name=regionName --type=PARTITION").statusIsSuccess();
+
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-class-name=myPdxClass --value-contains-primary-key --field-mapping=field1:column1,field2:column2")
+        "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-name=myPdxClass")
         .statusIsSuccess();
 
     server.invoke(() -> {
@@ -69,22 +68,16 @@ public class JdbcClusterConfigDistributedTest {
     server.invoke(() -> {
       JdbcConnectorService service =
           ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
-      assertThat(service.getConnectionConfig("connection")).isNotNull();
       validateRegionMapping(service.getMappingForRegion("regionName"));
     });
   }
 
-  private static void validateRegionMapping(ConnectorService.RegionMapping regionMapping) {
+  private static void validateRegionMapping(RegionMapping regionMapping) {
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connection");
     assertThat(regionMapping.getTableName()).isEqualTo("testTable");
-    assertThat(regionMapping.getPdxClassName()).isEqualTo("myPdxClass");
-    assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(true);
-    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
-        .isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
-        .isEqualTo("column2");
+    assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
   }
 
 }

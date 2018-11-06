@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.tier.sockets.DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -46,6 +48,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -403,29 +406,29 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     assertNotNull(proxy);
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        return DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy()
-            .getRegionsWithEmptyDataPolicy().containsKey(Region.SEPARATOR + REGION_NAME1);
+        return getClientProxy()
+            .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + REGION_NAME1);
       }
 
       public String description() {
         return "Wait Expired";
       }
     };
-    Wait.waitForCriterion(wc, 5 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     assertTrue(REGION_NAME1 + " not present in cache client proxy : Delta is enable",
         proxy.getRegionsWithEmptyDataPolicy()
-            .containsKey(Region.SEPARATOR + REGION_NAME1)); /*
-                                                             * Empty data policy
-                                                             */
+            .containsKey(SEPARATOR + REGION_NAME1)); /*
+                                                      * Empty data policy
+                                                      */
     assertFalse(REGION_NAME2 + " present in cache client proxy : Delta is disable",
         proxy.getRegionsWithEmptyDataPolicy()
-            .containsKey(Region.SEPARATOR + REGION_NAME2)); /*
-                                                             * other then Empty data policy
-                                                             */
+            .containsKey(SEPARATOR + REGION_NAME2)); /*
+                                                      * other then Empty data policy
+                                                      */
     assertTrue("Multiple entries for a region", proxy.getRegionsWithEmptyDataPolicy().size() == 1);
     assertTrue("Wrong ordinal stored for empty data policy",
-        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(Region.SEPARATOR + REGION_NAME1))
+        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME1))
             .intValue() == 0);
 
   }
@@ -437,26 +440,26 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
 
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        return DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy()
-            .getRegionsWithEmptyDataPolicy().containsKey(Region.SEPARATOR + REGION_NAME1)
-            && DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy()
-                .getRegionsWithEmptyDataPolicy().containsKey(Region.SEPARATOR + REGION_NAME2);
+        return getClientProxy()
+            .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + REGION_NAME1)
+            && getClientProxy()
+                .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + REGION_NAME2);
       }
 
       public String description() {
         return "Wait Expired";
       }
     };
-    Wait.waitForCriterion(wc, 5 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     assertTrue("Multiple entries for a region", proxy.getRegionsWithEmptyDataPolicy().size() == 2);
 
     assertTrue("Wrong ordinal stored for empty data policy",
-        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(Region.SEPARATOR + REGION_NAME1))
+        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME1))
             .intValue() == 0);
 
     assertTrue("Wrong ordinal stored for empty data policy",
-        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(Region.SEPARATOR + REGION_NAME2))
+        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME2))
             .intValue() == 0);
 
   }
@@ -613,7 +616,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
   }
 
   /*
-   * get cache server / bridge server attacted to cache
+   * get cache server / cache server attacted to cache
    */
   private static CacheServerImpl getBridgeServer() {
     CacheServerImpl bridgeServer = (CacheServerImpl) cache.getCacheServers().iterator().next();
@@ -646,7 +649,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
   }
 
   /*
-   * stop bridge server
+   * stop cache server
    */
   public static void stopCacheServer() {
     getBridgeServer().stop();

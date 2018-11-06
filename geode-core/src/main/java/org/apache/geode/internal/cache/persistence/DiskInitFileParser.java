@@ -43,7 +43,6 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -437,7 +436,7 @@ public class DiskInitFileParser {
             gfversion = Version.fromOrdinal(ver, false);
           } catch (UnsupportedVersionException e) {
             throw new DiskAccessException(
-                LocalizedStrings.Oplog_UNEXPECTED_PRODUCT_VERSION_0.toLocalizedString(ver), e,
+                String.format("Unknown version ordinal %s found when recovering Oplogs", ver), e,
                 this.interpreter.getNameForError());
           }
           interpreter.cmnGemfireVersion(gfversion);
@@ -476,7 +475,7 @@ public class DiskInitFileParser {
           break;
         default:
           throw new DiskAccessException(
-              LocalizedStrings.DiskInitFile_UNKNOWN_OPCODE_0_FOUND.toLocalizedString(opCode),
+              String.format("Unknown opCode %s found in disk initialization file.", opCode),
               this.interpreter.getNameForError());
       }
       if (interpreter.isClosing()) {

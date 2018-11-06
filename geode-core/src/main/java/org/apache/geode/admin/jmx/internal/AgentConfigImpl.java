@@ -49,7 +49,6 @@ import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.util.IOUtils;
 
 /**
@@ -493,12 +492,12 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         in.close();
       } catch (java.io.IOException e) {
         throw new GemFireIOException(
-            LocalizedStrings.AgentConfigImpl_FAILED_READING_0.toLocalizedString(propFile), e);
+            String.format("Failed reading %s", propFile), e);
       }
     } else {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_SPECIFIED_PROPERTIES_FILE_DOES_NOT_EXIST_0
-              .toLocalizedString(propFile));
+          String.format("Specified properties file does not exist: %s",
+              propFile));
     }
 
     initialize(props);
@@ -523,8 +522,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   protected void checkReadOnly() {
     if (this.agent != null) {
       throw new IllegalStateException(
-          LocalizedStrings.AgentConfigImpl_AN_AGENTCONFIG_OBJECT_CANNOT_BE_MODIFIED_AFTER_IT_HAS_BEEN_USED_TO_CREATE_AN_AGENT
-              .toLocalizedString());
+          "An AgentConfig object cannot be modified after it has been used to create an Agent.");
     }
 
     super.checkReadOnly();
@@ -544,11 +542,10 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
      * information.
      */
     if (this.url == null) {
-      return LocalizedStrings.AgentConfigImpl_USING_DEFAULT_CONFIGURATION_BECAUSE_PROPERTY_FILE_WAS_FOUND
-          .toLocalizedString();
+      return "Using default configuration because property file was not found.";
     } else {
-      return LocalizedStrings.AgentConfigImpl_CONFIGURATION_LOADED_FROM_0
-          .toLocalizedString(this.url);
+      return String.format("Configuration loaded from: %s.",
+          this.url);
     }
   }
 
@@ -579,7 +576,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
-    pw.println(LocalizedStrings.AgentConfigImpl_AGENT_CONFIGURATION.toLocalizedString());
+    pw.println("Agent Configuration:");
     Enumeration e = p.propertyNames();
     while (e.hasMoreElements()) {
       String pn = (String) e.nextElement();
@@ -1145,7 +1142,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         }
       } catch (IOException e) {
         throw new GemFireIOException(
-            LocalizedStrings.AgentConfigImpl_FAILED_READING_0.toLocalizedString(url.toString()), e);
+            String.format("Failed reading %s", url.toString()), e);
       } finally {
         IOUtils.close(in);
       }
@@ -1173,62 +1170,46 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    */
   public static String getPropertyDescription(String prop) {
     if (prop.equals(LOG_FILE_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_NAME_OF_THE_AGENTS_LOG_FILE.toLocalizedString();
+      return "Name of the agent's log file";
     } else if (prop.equals(LOG_LEVEL_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_MINIMUM_LEVEL_OF_LOGGING_PERFORMED_BY_AGENT
-          .toLocalizedString();
+      return "Minimum level of logging performed by agent. Valid values are: all, finest, finer, fine, config, info, warning, error, severe and none.";
     } else if (prop.equals(AGENT_DEBUG)) {
-      return LocalizedStrings.AgentConfigImpl_WHETHER_THE_AGENT_SHOULD_PRINT_DEBUGGING_INFORMATION
-          .toLocalizedString();
+      return "Whether the agent should print debugging information";
     } else if (prop.equals(LOG_DISK_SPACE_LIMIT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_LIMIT_IN_MEGABYTES_OF_HOW_MUCH_DISK_SPACE_CAN_BE_CONSUMED_BY_OLD_INACTIVE_LOG_FILES
-          .toLocalizedString();
+      return "Limit, in megabytes, of how much disk space can be consumed by old inactive log files. This value (in megabytes) should be in the range: 0-1000000.";
     } else if (prop.equals(LOG_FILE_SIZE_LIMIT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_LIMIT_IN_MEGABYTES_OF_HOW_LARGE_THE_CURRENT_STATISTIC_ARCHIVE_FILE_CAN_GROW_BEFORE_IT_IS_CLOSED_AND_ARCHIVAL_ROLLS_ON_TO_A_NEW_FILE
-          .toLocalizedString();
+      return "Limit, in megabytes, of how large the current log file can grow before it is closed and log rolls on to a new file. This value (in megabytes) should be in the range: 0-1000000.";
     } else if (prop.equals(MCAST_PORT)) {
-      return LocalizedStrings.AgentConfigImpl_MULTICAST_PORT_USED_TO_CONNECT_TO_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "Multicast port used to connect to distributed system. To use IP multicast, you must also define mcast-address. The value must be in the range: 0-65535.";
     } else if (prop.equals(MCAST_ADDRESS)) {
-      return LocalizedStrings.AgentConfigImpl_MULTICAST_ADDRESS_USED_TO_CONNECT_TO_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "Multicast address used to connect to distributed system. To use multicast, you must also define mcast-port, the IP port.";
     } else if (prop.equals(BIND_ADDRESS)) {
-      return LocalizedStrings.AgentConfigImpl_IP_ADDRESS_OF_THE_AGENTS_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "An IP address of the JMX Agent's distributed system on a multi-homed host. On a multi-homed host, you must explicitly specify the bind address.";
     } else if (prop.equals(TCP_PORT)) {
-      return LocalizedStrings.AgentConfigImpl_TCP_PORT.toLocalizedString();
+      return "TCP/IP port number to use in the agent's distributed system";
     } else if (prop.equals(LOCATORS)) {
-      return LocalizedStrings.AgentConfigImpl_ADDRESSES_OF_THE_LOCATORS_OF_THE_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "A comma-separated list of address(es) of the locator(s) in the distributed system in host[port] form. E.g. locators=host1[port1],host2[port2],...,hostn[portn]";
     } else if (prop.equals(MEMBERSHIP_PORT_RANGE_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_ALLOWED_RANGE_OF_UDP_PORTS_TO_FORM_UNIQUE_MEMBERSHIP_ID
-          .toLocalizedString();
+      return "The allowed range of UDP ports for use in forming an unique membership identifier. This range is given as two numbers separated by a minus sign.";
     } else if (prop.equals(ENTITY_CONFIG_XML_FILE_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_XML_CONFIGURATION_FILE_FOR_MANAGED_ENTITIES
-          .toLocalizedString();
+      return "The name of an XML file that specifies the configuration for the managed entity administered by the Distributed System. The XML file must conform to the dtd - doc-files/ds5_0.dtd.";
     } else if (prop.equals(REFRESH_INTERVAL_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_REFRESH_INTERVAL_IN_SECONDS_FOR_AUTOREFRESH_OF_MEMBERS_AND_STATISTIC_RESOURCES
-          .toLocalizedString();
+      return "Refresh Interval, in seconds, to be used for auto-refresh of SystemMember, StatisticResource and CacheServer refreshes";
     } else if (prop.equals(REMOTE_COMMAND_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_COMMAND_PREFIX_USED_FOR_LAUNCHING_MEMBERS_OF_THE_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "Command prefix used for launching members of the distributed system";
     } else if (prop.equals(CLUSTER_SSL_ENABLED)) {
-      return LocalizedStrings.AgentConfigImpl_DOES_THE_DISTRIBUTED_SYSTEM_COMMUNICATE_USING_SSL
-          .toLocalizedString();
+      return "Whether to use the SSL protocol for communication between members of the admin distributed system. If set to true, locators should be used.";
     } else if (prop.equals(CLUSTER_SSL_PROTOCOLS)) {
-      return LocalizedStrings.AgentConfigImpl_SSL_PROTOCOLS_USED_TO_COMMUNICATE_WITH_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "A space-separated list of the SSL protocols used to communicate with distributed system.";
     } else if (prop.equals(CLUSTER_SSL_CIPHERS)) {
-      return LocalizedStrings.AgentConfigImpl_SSL_CIPHERS_USED_TO_COMMUNICATE_WITH_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "A space-separated list of the SSL ciphers to be used to communicate with distributed system.";
     } else if (prop.equals(CLUSTER_SSL_REQUIRE_AUTHENTICATION)) {
-      return LocalizedStrings.AgentConfigImpl_DOES_CONNECTING_TO_THE_DISTRIBUTED_SYSTEM_REQUIRE_SSL_AUTHENTICATION
-          .toLocalizedString();
+      return "Whether connection to the distributed system needs SSL authentication.";
     } else {
       String description = _getPropertyDescription(prop);
       if (description == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AgentConfigImpl_UNKNOWN_CONFIG_PROPERTY_0.toLocalizedString(prop));
+            String.format("Unknown config property: %s", prop));
 
       } else {
         return description;
@@ -1242,134 +1223,102 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    */
   public static String _getPropertyDescription(String prop) {
     if (prop.equals(AUTO_CONNECT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_AUTOMATICALLY_CONNECT_TO_THE_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "Whether the JMX agent will connect 'automatically' to the distributed system that it is configured to monitor.";
     } else if (prop.equals(HTTP_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_START_THE_HTTP_JMX_ADAPTER
-          .toLocalizedString();
+      return "Whether the HTTP adapter is enabled in the JMX agent.";
 
     } else if (prop.equals(HTTP_BIND_ADDRESS_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_BIND_ADDRESS_OF_HTTP_ADAPTERS_SOCKETS
-          .toLocalizedString();
+      return "Bind address of HTTP adapter's sockets";
 
     } else if (prop.equals(HTTP_PORT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_PORT_ON_WHICH_THE_HTTP_ADAPTER_WILL_BE_STARTED
-          .toLocalizedString();
+      return "The port on which the HTTP adapter will be started. This value should be in the range: 0-65535.";
 
     } else if (prop.equals(RMI_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_START_THE_RMI_JMX_ADAPTER
-          .toLocalizedString();
+      return "Whether the RMI JMX adapter is enabled.";
 
     } else if (prop.equals(RMI_REGISTRY_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_HOST_AN_RMI_REGISTRY
-          .toLocalizedString();
+      return "Whether the JMX agent should start RMI registry. Alternatively, a registry outside of the JMX agent VM can be used.";
 
     } else if (prop.equals(RMI_BIND_ADDRESS_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_BIND_ADDRESS_OF_RMI_ADAPTERS_SOCKETS
-          .toLocalizedString();
+      return "Bind address of RMI adapter's sockets";
 
     } else if (prop.equals(RMI_PORT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_PORT_ON_WHICH_TO_CONTACT_THE_RMI_REGISTER
-          .toLocalizedString();
+      return "The port on which to contact the RMI registry. The value must be in the range: 0-65535.";
 
     } else if (prop.equals(RMI_SERVER_PORT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_PORT_USED_TO_CONFIGURE_RMI_CONNECTOR_SERVER
-          .toLocalizedString();
+      return "The port on which the RMI Connector Server should start. The value must be in the range: 0-65535.";
 
     } else if (prop.equals(SNMP_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_START_THE_SNMP_JMX_ADAPTER
-          .toLocalizedString();
+      return "Whether the SNMP JMX adapter will be enabled.";
 
     } else if (prop.equals(SNMP_BIND_ADDRESS_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_BIND_ADDRESS_OF_SNMP_ADAPTERS_SOCKETS
-          .toLocalizedString();
+      return "Bind address of SNMP adapter's sockets";
 
     } else if (prop.equals(SNMP_DIRECTORY_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_DIRECTORY_IN_WHICH_SNMP_CONFIGURATION_RESIDES
-          .toLocalizedString();
+      return "The directory in which SNMP configuration resides";
 
     } else if (prop.equals(AGENT_SSL_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_COMMUNICATE_USING_SSL
-          .toLocalizedString();
+      return "Whether the JMX Agent will use the SSL protocol for communication.";
 
     } else if (prop.equals(AGENT_SSL_PROTOCOLS_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_SSL_PROTOCOLS_USED_BY_THE_AGENT
-          .toLocalizedString();
+      return "The space-separated list of the SSL protocols to be used when connecting to the JMX agent.";
 
     } else if (prop.equals(AGENT_SSL_CIPHERS_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_SSL_CIPHERS_USED_BY_THE_AGENT.toLocalizedString();
+      return "The space-separated list of the SSL ciphers to be used when connecting to the JMX Agent.";
 
     } else if (prop.equals(AGENT_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_REQUIRE_SSL_AUTHENTICATION
-          .toLocalizedString();
+      return "Whether or not SSL connections to the RMI adapter require authentication. If true, needs client authentication for RMI and other non-HTTP connectors/adaptors.";
 
     } else if (prop.equals(HTTP_SSL_REQUIRE_AUTHENTICATION_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_HTTP_ADAPTER_REQUIRE_SSL_AUTHENTICATION
-          .toLocalizedString();
+      return "Whether SSL connections to the HTTP adapter will need authentication.";
 
     } else if (prop.equals(HTTP_AUTHENTICATION_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_WILL_THE_HTTP_JMX_ADAPTER_USE_HTTP_AUTHENTICATION
-          .toLocalizedString();
+      return "Whether the HTTP adapter will use HTTP authentication.";
 
     } else if (prop.equals(HTTP_AUTHENTICATION_USER_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_USER_NAME_FOR_AUTHENTICATION_IN_THE_HTTP_JMX_ADAPTER
-          .toLocalizedString();
+      return "The user name for authentication in the HTTP JMX adapter";
 
     } else if (prop.equals(HTTP_AUTHENTICATION_PASSWORD_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_THE_PASSWORD_FOR_AUTHENTICATION_IN_THE_HTTP_JMX_ADAPTER
-          .toLocalizedString();
+      return "The password for authentication in the HTTP JMX adapter";
 
     } else if (prop.equals(PROPERTY_FILE_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_PROPERTY_FILE_FROM_WHICH_AGENT_READS_CONFIGURATION
-          .toLocalizedString();
+      return "Name and path of the Agent's properties file from which agent reads configuration";
 
     } else if (prop.equals(LOCATOR_HOST_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_HOST_ON_WHICH_THE_DISTRIBUTED_SYSTEMS_LOCATOR_RUNS
-          .toLocalizedString();
+      return "Host on which the distributed system's locator runs";
 
     } else if (prop.equals(LOCATOR_PORT_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_HOST_ON_WHICH_THE_DISTRIBUTED_SYSTEMS_LOCATOR_RUNS
-          .toLocalizedString();
+      return "Host on which the distributed system's locator runs";
 
     } else if (prop.equals(LOCATOR_PRODUCT_DIRECTORY_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_GEMFIRE_PRODUCT_DIRECTORY_USED_TO_LAUNCH_A_LOCATOR
-          .toLocalizedString();
+      return "GemFire product directory used to launch a locator";
 
     } else if (prop.equals(LOCATOR_WORKING_DIRECTORY_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_DIRECTORY_IN_WHICH_A_LOCATOR_WILL_BE_LAUNCHED
-          .toLocalizedString();
+      return "Directory in which a locator will be launched";
 
     } else if (prop.equals(LOCATOR_REMOTE_COMMAND)) {
-      return LocalizedStrings.AgentConfigImpl_COMMAND_PREFIX_USED_WHEN_LAUNCHING_A_LOCATOR
-          .toLocalizedString();
+      return "Command prefix used when launching a locator";
 
     } else if (prop.equals(LOCATOR_BIND_ADDRESS)) {
-      return LocalizedStrings.AgentConfigImpl_IP_ADDRESS_TO_USE_WHEN_CONTACTING_LOCATOR
-          .toLocalizedString();
+      return "IP address to use when contacting locator";
 
     } else if (prop.equals(LOCATOR_DS_PROPERTIES)) {
-      return LocalizedStrings.AgentConfigImpl_PROPERTIES_FOR_CONFIGURING_A_LOCATORS_DISTRIBUTED_SYSTEM
-          .toLocalizedString();
+      return "Properties for configuring a locator's distributed system";
 
     } else if (prop.equals(EMAIL_NOTIFICATIONS_ENABLED_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_IDENTIFY_IF_EMAIL_NOTIFICATIONS_ARE_ENABLED_OR_NOT
-          .toLocalizedString();
+      return "Whether the e-mail notifications are enabled.";
 
     } else if (prop.equals(EMAIL_NOTIFICATIONS_FROM_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_IDENTIFY_THE_EMAIL_ADDRESS_USING_WHICH_EMAIL_NOTIFICATIONS_ARE_SENT
-          .toLocalizedString();
+      return "E-mail address to be used to send e-mail notifications.";
 
     } else if (prop.equals(EMAIL_NOTIFICATIONS_HOST_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_IDENTIFY_THE_EMAIL_SERVER_HOST_USING_WHICH_EMAIL_NOTIFICATIONS_ARE_SENT
-          .toLocalizedString();
+      return "The host name of the e-mail server to be used for sending email notification.";
 
     } else if (prop.equals(EMAIL_NOTIFICATIONS_TO_LIST_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_IDENTIFY_THE_COMMA_SEPARATED_EMAIL_ADDRESSES_LIST_TO_WHICH_EMAIL_NOTIFICATIONS_ARE_SENT
-          .toLocalizedString();
+      return "A comma-separated list of recipient e-mail addresses to send e-mail notifications to.";
 
     } else if (prop.equals(STATE_SAVE_FILE_NAME)) {
-      return LocalizedStrings.AgentConfigImpl_IDENTIFY_THE_NAME_OF_THE_FILE_TO_BE_USED_FOR_SAVING_AGENT_STATE
-          .toLocalizedString();
+      return "The name(not the path) of the file to be used for saving agent state. The file is stored in the same directory in which the agent.properties file is located.";
 
     } else {
       return null;
@@ -1432,22 +1381,22 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
     if (this.httpPort < 0 || this.httpPort > MAX_HTTP_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_0_MUST_BE_ZERO_OR_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
+          String.format("%s must be zero or an integer between %s and %s.",
+              new Object[] {HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
                   Integer.valueOf(MAX_HTTP_PORT)}));
     }
 
     if (this.rmiPort < 0 || this.rmiPort > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_0_MUST_BE_ZERO_OR_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+          String.format("%s must be zero or an integer between %s and %s.",
+              new Object[] {RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
                   Integer.valueOf(MAX_RMI_PORT)}));
     }
 
     if (this.rmiServerPort < 0 || this.rmiServerPort > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_0_MUST_BE_ZERO_OR_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+          String.format("%s must be zero or an integer between %s and %s.",
+              new Object[] {RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
                   Integer.valueOf(MAX_RMI_PORT)}));
     }
 
@@ -1509,8 +1458,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   private int validateHttpPort(int val) {
     if (val < 0 || val > MAX_HTTP_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_0_MUST_BE_ZERO_OR_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
+          String.format("%s must be zero or an integer between %s and %s.",
+              new Object[] {HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
                   Integer.valueOf(MAX_HTTP_PORT)}));
     }
     return val;
@@ -1535,7 +1484,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   private String validateHttpBindAddress(InetAddress val) {
     if (val == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_HTTPBINDADDRESS_MUST_NOT_BE_NULL.toLocalizedString());
+          "HttpBindAddress must not be null");
     }
     return toString("", val);
   }
@@ -1584,8 +1533,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   private int validateRmiPort(int val) {
     if (val < MIN_RMI_PORT || val > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_0_MUST_BE_ZERO_OR_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+          String.format("%s must be zero or an integer between %s and %s.",
+              new Object[] {RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
                   Integer.valueOf(MAX_RMI_PORT)}));
     }
     return val;
@@ -1612,8 +1561,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   private int validateRmiServerPort(int val) {
     if (val < MIN_RMI_PORT || val > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_0_MUST_BE_ZERO_OR_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+          String.format("%s must be zero or an integer between %s and %s.",
+              new Object[] {RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
                   Integer.valueOf(MAX_RMI_PORT)}));
     }
     return val;
@@ -1638,8 +1587,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   private File validateWorkingDirectory(String workingDir) {
     if (isEmpty(workingDir)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AgentConfigImpl_LOCATOR_WORKINGDIRECTORY_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "Locator WorkingDirectory must not be null");
     }
     return new File(workingDir);
   }

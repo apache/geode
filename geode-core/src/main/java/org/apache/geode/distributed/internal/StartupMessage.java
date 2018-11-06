@@ -34,7 +34,6 @@ import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHold
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -182,26 +181,30 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     String theirVersion = this.version;
     if (dm.getTransport().isMcastEnabled() != isMcastEnabled) {
       rejectionMessage =
-          LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_ISMCASTENABLED_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_IT_IS_ATTEMPTING_TO_JOIN
-              .toLocalizedString(
-                  new Object[] {getSender(), isMcastEnabled ? "enabled" : "disabled"});
+          String.format(
+              "Rejected new system node %s because mcast was %s which does not match the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
+
+              new Object[] {getSender(), isMcastEnabled ? "enabled" : "disabled"});
     } else if (isMcastEnabled
         && dm.getSystem().getOriginalConfig().getMcastPort() != getMcastPort()) {
       rejectionMessage =
-          LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_MCAST_PORT_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN
-              .toLocalizedString(new Object[] {getSender(), getMcastPort(),
+          String.format(
+              "Rejected new system node %s because its mcast-port %s does not match the mcast-port %s of the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
+              new Object[] {getSender(), getMcastPort(),
                   dm.getSystem().getOriginalConfig().getMcastPort()});
     } else if (isMcastEnabled
         && !checkMcastAddress(dm.getSystem().getOriginalConfig().getMcastAddress(),
             getMcastHostAddress())) {
       rejectionMessage =
-          LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_MCAST_ADDRESS_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN
-              .toLocalizedString(new Object[] {getSender(), getMcastHostAddress(),
+          String.format(
+              "Rejected new system node %s because its mcast-address %s does not match the mcast-address %s of the distributed system it is attempting to join. To fix this make sure the mcast-address gemfire property is set the same on all members of the same distributed system.",
+              new Object[] {getSender(), getMcastHostAddress(),
                   dm.getSystem().getOriginalConfig().getMcastAddress()});
     } else if (dm.getTransport().isTcpDisabled() != isTcpDisabled) {
       rejectionMessage =
-          LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_ISTCPDISABLED_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_IT_IS_ATTEMPTING_TO_JOIN
-              .toLocalizedString(new Object[] {getSender(), Boolean.valueOf(isTcpDisabled)});
+          String.format(
+              "Rejected new system node %s because isTcpDisabled=%s does not match the distributed system it is attempting to join.",
+              new Object[] {getSender(), Boolean.valueOf(isTcpDisabled)});
     } else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
         && distributedSystemId != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
         && distributedSystemId != dm.getDistributedSystemId()) {
@@ -212,14 +215,16 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
       if (distributedSystemListener != null) {
         if (-distributedSystemId != dm.getDistributedSystemId()) {
           rejectionMessage =
-              LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_DISTRIBUTED_SYSTEM_ID_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN
-                  .toLocalizedString(new Object[] {getSender(),
+              String.format(
+                  "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
+                  new Object[] {getSender(),
                       Integer.valueOf(distributedSystemId), dm.getDistributedSystemId()});
         }
       } else {
         rejectionMessage =
-            LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_DISTRIBUTED_SYSTEM_ID_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_2_IT_IS_ATTEMPTING_TO_JOIN
-                .toLocalizedString(new Object[] {getSender(), Integer.valueOf(distributedSystemId),
+            String.format(
+                "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
+                new Object[] {getSender(), Integer.valueOf(distributedSystemId),
                     dm.getDistributedSystemId()});
       }
     }
@@ -232,9 +237,8 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
 
     if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
       if (this.interfaces == null || this.interfaces.size() == 0) {
-        final org.apache.geode.i18n.StringId msg =
-            LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_PEER_HAS_NO_NETWORK_INTERFACES;
-        rejectionMessage = msg.toLocalizedString(getSender());
+        String msg = "Rejected new system node %s because peer has no network interfaces";
+        rejectionMessage = String.format(msg, getSender());
       } else {
         dm.setEquivalentHosts(this.interfaces);
       }
@@ -387,8 +391,8 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
         }
       } catch (IllegalArgumentException ex) {
         recordFromDataProblem(
-            LocalizedStrings.StartupMessage_ILLEGALARGUMENTEXCEPTION_WHILE_REGISTERING_A_DATASERIALIZER_0
-                .toLocalizedString(ex));
+            String.format("IllegalArgumentException while registering a DataSerializer: %s",
+                ex));
       }
     }
 
@@ -404,8 +408,8 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
         }
       } catch (IllegalArgumentException ex) {
         recordFromDataProblem(
-            LocalizedStrings.StartupMessage_ILLEGALARGUMENTEXCEPTION_WHILE_REGISTERING_AN_INSTANTIATOR_0
-                .toLocalizedString(ex));
+            String.format("IllegalArgumentException while registering an Instantiator: %s",
+                ex));
       }
     } // for
 
@@ -424,8 +428,9 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
 
   @Override
   public String toString() {
-    return LocalizedStrings.StartupMessage_STARTUPMESSAGE_DM_0_HAS_STARTED_PROCESSOR_1_WITH_DISTRIBUTED_SYSTEM_ID_2
-        .toLocalizedString(new Object[] {getSender(), Integer.valueOf(replyProcessorId),
+    return String.format(
+        "StartupMessage DM %s has started. processor, %s. with distributed system id : %s",
+        new Object[] {getSender(), Integer.valueOf(replyProcessorId),
             this.distributedSystemId});
   }
 }

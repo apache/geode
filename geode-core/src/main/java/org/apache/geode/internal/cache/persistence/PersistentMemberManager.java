@@ -28,9 +28,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class PersistentMemberManager {
   private static final Logger logger = LogService.getLogger();
@@ -50,8 +48,8 @@ public class PersistentMemberManager {
     cancelRevoke(pattern);
     synchronized (this) {
       if (revokedMembers.put(pattern, TOKEN) == null) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.PersistenceAdvisorImpl_MEMBER_REVOKED,
-            pattern));
+        logger.info("The following persistent member has been revoked: {}",
+            pattern);
         for (MemberRevocationListener listener : revocationListeners) {
           listener.revoked(pattern);
         }
@@ -73,15 +71,17 @@ public class PersistentMemberManager {
       for (PersistentMemberPattern pattern : pendingRevokes.keySet()) {
         if (listener.matches(pattern)) {
           throw new RevokedPersistentDataException(
-              LocalizedStrings.PersistentMemberManager_Member_0_is_already_revoked
-                  .toLocalizedString(pattern));
+              String.format(
+                  "The persistent member id %s has been revoked in this distributed system. You cannot recover from disk files which have been revoked.",
+                  pattern));
         }
       }
       for (PersistentMemberPattern pattern : revokedMembers.keySet()) {
         if (listener.matches(pattern)) {
           throw new RevokedPersistentDataException(
-              LocalizedStrings.PersistentMemberManager_Member_0_is_already_revoked
-                  .toLocalizedString(pattern));
+              String.format(
+                  "The persistent member id %s has been revoked in this distributed system. You cannot recover from disk files which have been revoked.",
+                  pattern));
         }
       }
       for (PersistentMemberPattern pattern : recoveredRevokedMembers) {

@@ -27,7 +27,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.Statistic;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -154,8 +153,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   @Deprecated
   public void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException {
     throw new OperationNotSupportedException(
-        LocalizedStrings.MANAGED_RESOURCE_REFRESH_INTERVAL_CANT_BE_SET_DIRECTLY
-            .toLocalizedString());
+        "RefreshInterval can not be set directly. Use DistributedSystemConfig.refreshInterval.");
   }
 
   // -------------------------------------------------------------------------
@@ -228,7 +226,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
       throws org.apache.geode.admin.AdminException {
     if (managed == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticResourceJmxImpl_MANAGEDBEAN_IS_NULL.toLocalizedString());
+          "ManagedBean is null");
     }
 
     refresh(); // to get the stats...

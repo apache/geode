@@ -1,27 +1,37 @@
 {
   "variables": {
-    "image_family_prefix": "local-testing-",
-    "geode_docker_image": "gcr.io/apachegeode-ci/test-container"
+    "pipeline_prefix": "local-testing-",
+    "hashed_pipeline_prefix": "0b7ad56c-671b-5244-9f36-01f92928abf8",
+    "geode_docker_image": "unset",
+    "gcp_project": "unset",
+    "gcp_network": "default",
+    "gcp_subnetwork": "default",
+    "use_internal_ip": "false",
+    "java_build_version": "8"
   },
   "builders": [
     {
-      "image_name": "{{user `image_family_prefix`}}windows-geode-builder-{{timestamp}}",
-      "image_family": "{{user `image_family_prefix`}}windows-geode-builder",
+      "image_name": "{{user `hashed_pipeline_prefix`}}wgb-{{timestamp}}",
+      "image_family": "{{user `pipeline_prefix`}}windows-geode-builder",
       "type": "googlecompute",
-      "project_id": "apachegeode-ci",
-      "source_image": "windows-server-1709-dc-core-for-containers-v20180814",
+      "project_id": "{{user `gcp_project`}}",
+      "network": "{{user `gcp_network`}}",
+      "subnetwork": "{{user `gcp_subnetwork`}}",
+      "source_image_family": "windows-1709-core-for-containers",
       "disk_size": "100",
       "machine_type": "n1-standard-1",
       "communicator": "winrm",
       "winrm_username": "geode",
       "winrm_insecure": true,
       "winrm_use_ssl": true,
+      "state_timeout": "10m",
       "metadata": {
         "windows-startup-script-cmd": "winrm quickconfig -quiet & net user /add geode & net localgroup administrators geode /add & winrm set winrm/config/service/auth @{Basic=\"true\"}"
       },
       "zone": "us-central1-a",
+      "tags": ["packer"],
       "omit_external_ip": false,
-      "use_internal_ip": false
+      "use_internal_ip": "{{user `use_internal_ip`}}"
     }
   ],
   "provisioners": [
@@ -32,7 +42,10 @@
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
 
         "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression",
-        "choco install -y jdk8 git",
+        "choco install -y git rsync openjdk",
+        "Move-Item \"C:\\Program Files\\OpenJDK\\jdk-11*\" c:\\java11",
+        "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
+        "Move-Item \"C:\\java8tmp\" c:\\java8",
         "choco install -y openssh /SSHServerFeature",
         "refreshenv",
 
@@ -66,7 +79,7 @@
         "write-output '>>>>>>>>>> Cloning geode repo <<<<<<<<<<'",
         "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
         "pushd geode",
-        "$Env:JAVA_HOME = 'C:\\Program Files\\Java\\jdk1.8.0_181'",
+        "$Env:JAVA_HOME = 'C:\\java8'",
         ".\\gradlew.bat --no-daemon resolveDependencies",
         "popd",
 

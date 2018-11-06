@@ -94,7 +94,7 @@ public class JettyHelper {
       if (protocol != null) {
         sslContextFactory.setProtocol(protocol);
       } else {
-        logger.warn(ManagementStrings.SSL_PROTOCOAL_COULD_NOT_BE_DETERMINED);
+        logger.warn("SSL Protocol could not be determined. SSL settings might not work correctly");
       }
 
 

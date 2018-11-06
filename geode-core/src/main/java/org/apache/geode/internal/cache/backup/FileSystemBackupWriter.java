@@ -28,7 +28,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 class FileSystemBackupWriter implements BackupWriter {
 
@@ -90,7 +89,8 @@ class FileSystemBackupWriter implements BackupWriter {
   }
 
   private void writeReadMe() throws IOException {
-    String text = LocalizedStrings.BackupService_README.toLocalizedString();
+    String text =
+        "This directory contains a backup of the persistent data for a single gemfire VM. The layout is:diskstoresA backup of the persistent disk stores in the VMuserAny files specified by the backup element in the cache.xml file.configThe cache.xml and gemfire.properties for the backed up member.restore.[sh|bat]A script to restore the backup.Please note that the config is not restored, only the diskstores and user files.";
     Files.write(backupDirectory.resolve(README_FILE), text.getBytes());
   }
 

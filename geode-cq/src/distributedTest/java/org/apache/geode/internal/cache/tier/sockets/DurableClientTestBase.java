@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.Matchers.notNullValue;
@@ -35,7 +36,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 
 import org.apache.geode.cache.CacheException;
@@ -145,7 +145,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         addControlListener));
 
     this.durableClientVM.invoke(() -> {
-      Awaitility.waitAtMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+      await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
           .pollInterval(100, MILLISECONDS)
           .until(CacheServerTestUtil::getCache, notNullValue());
     });
@@ -200,8 +200,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   public void disconnectDurableClient(boolean keepAlive) {
     printClientProxyState("Before");
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache(keepAlive));
-    Awaitility.waitAtMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
-        .pollInterval(100, MILLISECONDS)
+    await()
         .until(CacheServerTestUtil::getCache, nullValue());
     printClientProxyState("after");
   }
@@ -252,8 +251,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     final CacheClientProxy proxy = getClientProxy();
     assertThat(proxy).isNotNull();
 
-    Awaitility.waitAtMost(60 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
-        .pollInterval(200, MILLISECONDS)
+    await()
         .until(proxy::isPaused);
 
     assertThat(proxy.isPaused()).isTrue();
@@ -439,16 +437,14 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   static void checkNumberOfClientProxies(final int expected) {
-    Awaitility.waitAtMost(50 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
-        .pollInterval(200, MILLISECONDS)
+    await()
         .until(() -> {
           return expected == getNumberOfClientProxies();
         });
   }
 
   static void checkProxyIsAlive(final CacheClientProxy proxy) {
-    Awaitility.waitAtMost(15 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
-        .pollInterval(200, MILLISECONDS)
+    await()
         .until(proxy::isAlive);
   }
 
@@ -487,7 +483,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   static void verifyReceivedMarkerAck() {
-    Awaitility.waitAtMost(3 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+    await().atMost(3 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
         .pollInterval(200, MILLISECONDS)
         .until(HARegionQueue::isTestMarkerMessageReceived);
   }
@@ -597,7 +593,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         final CqQueryImpl cqQuery = (CqQueryImpl) cqService.getClientCqFromServer(proxyId, cqName);
 
         // Wait until we get the expected number of events or until 10 seconds are up
-        Awaitility.waitAtMost(10, SECONDS).pollInterval(200, MILLISECONDS)
+        await()
             .until(() -> cqQuery.getVsdStats().getNumHAQueuedEvents() == expectedNumber);
 
         assertThat(expectedNumber).isEqualTo(cqQuery.getVsdStats().getNumHAQueuedEvents());
@@ -619,7 +615,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         final CacheClientProxy clientProxy = ccnInstance.getClientProxy(durableClientId);
 
         // Wait until we get the expected number of events or until 10 seconds are up
-        Awaitility.waitAtMost(10, SECONDS).pollInterval(200, MILLISECONDS)
+        await()
             .until(() -> clientProxy.getQueueSizeStat() == expectedNumber
                 || clientProxy.getQueueSizeStat() == remaining);
 
@@ -722,7 +718,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     vm.invoke(new CacheSerializableRunnable("Verify durable client") {
       public void run2() throws CacheException {
 
-        Awaitility.waitAtMost(60, SECONDS).pollInterval(1, SECONDS)
+        await()
             .until(() -> CacheServerTestUtil.getPool().isPrimaryUpdaterAlive());
 
         assertThat(CacheServerTestUtil.getPool().isPrimaryUpdaterAlive()).isTrue();

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -21,9 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -240,9 +239,9 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
 
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> regionMetaData.size() > 0);
+    await().until(() -> regionMetaData.size() > 0);
     assertThat(regionMetaData).containsKey(region.getFullPath());
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> {
+    await().until(() -> {
       ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
       assertThat(prMetaData).isNotNull();
       assertThat(prMetaData.adviseRandomServerLocation()).isNotNull();

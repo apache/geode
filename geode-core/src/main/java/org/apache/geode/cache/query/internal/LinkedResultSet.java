@@ -34,7 +34,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LinkedResultSet extends java.util.LinkedHashSet
     implements Ordered, SelectResults, DataSerializableFixedID {
@@ -73,8 +72,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedResultSet_THIS_COLLECTION_DOES_NOT_SUPPORT_STRUCT_ELEMENTS
-              .toLocalizedString());
+          "This collection does not support struct elements");
     this.elementType = elementType;
   }
 

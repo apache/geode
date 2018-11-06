@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -44,7 +45,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistTXState;
@@ -454,7 +454,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
         mgr.setDistributed(true);
-        LogWriterI18n logger = getGemfireCache().getLoggerI18n();
+        LogWriter logger = getGemfireCache().getLogger();
 
         mgr.begin();
         logger.fine("TEST:Commit-1");
@@ -773,7 +773,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
         mgr.setDistributed(true);
         // mgr.begin();
-        LogWriterI18n logger = getGemfireCache().getLoggerI18n();
+        LogWriter logger = getGemfireCache().getLogger();
 
         Region<CustId, Customer> custPR = getCache().getRegion(CUSTOMER_PR);
         for (int i = 1; i <= 2; i++) {
@@ -1319,10 +1319,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         BucketRegion br = ((PartitionedRegion) prRegion).getBucketRegion(custIdOne);
 
         String primaryMember = br.getBucketAdvisor().getPrimary().toString();
-        getGemfireCache().getLoggerI18n().fine("TEST:PRIMARY:" + primaryMember);
+        getGemfireCache().getLogger().fine("TEST:PRIMARY:" + primaryMember);
 
         String memberId = getGemfireCache().getDistributedSystem().getMemberId();
-        getGemfireCache().getLoggerI18n().fine("TEST:MEMBERID:" + memberId);
+        getGemfireCache().getLogger().fine("TEST:MEMBERID:" + memberId);
 
         return null;
       }
@@ -1338,10 +1338,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         BucketRegion br = ((PartitionedRegion) prRegion).getBucketRegion(custIdOne);
 
         String primaryMember = br.getBucketAdvisor().getPrimary().toString();
-        getGemfireCache().getLoggerI18n().fine("TEST:PRIMARY:" + primaryMember);
+        getGemfireCache().getLogger().fine("TEST:PRIMARY:" + primaryMember);
 
         String memberId = getGemfireCache().getDistributedSystem().getMemberId();
-        getGemfireCache().getLoggerI18n().fine("TEST:MEMBERID:" + memberId);
+        getGemfireCache().getLogger().fine("TEST:MEMBERID:" + memberId);
 
         return memberId.equals(primaryMember);
       }
@@ -1366,15 +1366,15 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         try {
-          GemFireCacheImpl.getExisting().getLoggerI18n().fine("TEST:TX WAITING - " + op);
+          GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX WAITING - " + op);
           cdl.await();
-          GemFireCacheImpl.getExisting().getLoggerI18n().fine("TEST:TX END WAITING");
+          GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX END WAITING");
         } catch (InterruptedException e) {
         }
       }
 
       public void release() {
-        GemFireCacheImpl.getExisting().getLoggerI18n().fine("TEST:TX COUNTDOWN - " + op);
+        GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX COUNTDOWN - " + op);
         cdl.countDown();
       }
     }
@@ -1417,15 +1417,15 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
           public void run() {
             CacheTransactionManager mgr = getGemfireCache().getTxManager();
             mgr.setDistributed(true);
-            getGemfireCache().getLoggerI18n().fine("TEST:DISTTX=" + mgr.isDistributed());
+            getGemfireCache().getLogger().fine("TEST:DISTTX=" + mgr.isDistributed());
             mgr.begin();
             Region<CustId, Customer> prRegion = getCache().getRegion(PERSISTENT_CUSTOMER_PR);
 
             CustId custIdOne = new CustId(1);
             Customer customerOne = new Customer("name1_tx", "addr1");
-            getGemfireCache().getLoggerI18n().fine("TEST:TX UPDATE");
+            getGemfireCache().getLogger().fine("TEST:TX UPDATE");
             prRegion.put(custIdOne, customerOne);
-            getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT");
+            getGemfireCache().getLogger().fine("TEST:TX COMMIT");
             mgr.commit();
           }
         }.start();
@@ -1444,7 +1444,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
         CustId custIdOne = new CustId(1);
         Customer customerOne = new Customer("name1_nontx", "addr1");
-        getGemfireCache().getLoggerI18n().fine("TEST:TX NONTXUPDATE");
+        getGemfireCache().getLogger().fine("TEST:TX NONTXUPDATE");
         prRegion.put(custIdOne, customerOne);
         return null;
       }
@@ -1490,11 +1490,11 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         BucketRegion br = ((PartitionedRegion) prRegion).getBucketRegion(custId);
         RegionEntry re = br.getRegionEntry(custId);
 
-        getGemfireCache().getLoggerI18n().fine("TEST:TX PRIMARY CUSTOMER=" + customer);
+        getGemfireCache().getLogger().fine("TEST:TX PRIMARY CUSTOMER=" + customer);
 
-        getGemfireCache().getLoggerI18n()
+        getGemfireCache().getLogger()
             .fine("TEST:TX PRIMARY REGION VERSION=" + re.getVersionStamp().getRegionVersion());
-        getGemfireCache().getLoggerI18n()
+        getGemfireCache().getLogger()
             .fine("TEST:TX PRIMARY ENTRY VERSION=" + re.getVersionStamp().getEntryVersion());
         return null;
       }
@@ -1511,11 +1511,11 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         BucketRegion br = ((PartitionedRegion) prRegion).getBucketRegion(custId);
         RegionEntry re = br.getRegionEntry(custId);
 
-        getGemfireCache().getLoggerI18n().fine("TEST:TX SECONDARY CUSTOMER=" + customer);
+        getGemfireCache().getLogger().fine("TEST:TX SECONDARY CUSTOMER=" + customer);
 
-        getGemfireCache().getLoggerI18n()
+        getGemfireCache().getLogger()
             .fine("TEST:TX SECONDARY REGION VERSION=" + re.getVersionStamp().getRegionVersion());
-        getGemfireCache().getLoggerI18n()
+        getGemfireCache().getLogger()
             .fine("TEST:TX SECONDARY ENTRY VERSION=" + re.getVersionStamp().getEntryVersion());
         return null;
       }
@@ -1537,22 +1537,22 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
         mgr.setDistributed(true);
-        getGemfireCache().getLoggerI18n().fine("TEST:DISTTX=" + mgr.isDistributed());
-        getGemfireCache().getLoggerI18n().fine("TEST:TX BEGIN");
+        getGemfireCache().getLogger().fine("TEST:DISTTX=" + mgr.isDistributed());
+        getGemfireCache().getLogger().fine("TEST:TX BEGIN");
         mgr.begin();
         Region<CustId, Customer> prRegion = getCache().getRegion(PERSISTENT_CUSTOMER_PR);
 
         CustId custIdOne = new CustId(1);
         Customer customerOne = new Customer("name1", "addr1");
-        getGemfireCache().getLoggerI18n().fine("TEST:TX PUT 1");
+        getGemfireCache().getLogger().fine("TEST:TX PUT 1");
         prRegion.put(custIdOne, customerOne);
 
         CustId custIdTwo = new CustId(2);
         Customer customerTwo = new Customer("name2", "addr2");
-        getGemfireCache().getLoggerI18n().fine("TEST:TX PUT 2");
+        getGemfireCache().getLogger().fine("TEST:TX PUT 2");
         prRegion.put(custIdTwo, customerTwo);
 
-        getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT");
+        getGemfireCache().getLogger().fine("TEST:TX COMMIT");
         mgr.commit();
         return null;
       }
@@ -1572,28 +1572,28 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
         mgr.setDistributed(true);
-        getGemfireCache().getLoggerI18n().fine("TEST:DISTTX=" + mgr.isDistributed());
-        getGemfireCache().getLoggerI18n().fine("TEST:TX BEGIN");
+        getGemfireCache().getLogger().fine("TEST:DISTTX=" + mgr.isDistributed());
+        getGemfireCache().getLogger().fine("TEST:TX BEGIN");
         mgr.begin();
 
         Region<CustId, Customer> prRegion = getCache().getRegion(PERSISTENT_CUSTOMER_PR);
 
         CustId custIdOne = new CustId(1);
         Customer customerOne = new Customer("name1", "addr1");
-        getGemfireCache().getLoggerI18n().fine("TEST:TX PUT 1");
+        getGemfireCache().getLogger().fine("TEST:TX PUT 1");
         prRegion.put(custIdOne, customerOne);
 
         BucketRegion br = ((PartitionedRegion) prRegion).getBucketRegion(custIdOne);
 
         assertEquals(0L, br.getVersionVector().getCurrentVersion());
-        getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT 1");
+        getGemfireCache().getLogger().fine("TEST:TX COMMIT 1");
         mgr.commit();
 
         // Verify region version on the region
         assertEquals(1L, br.getVersionVector().getCurrentVersion());
 
         RegionEntry re = br.getRegionEntry(custIdOne);
-        getGemfireCache().getLoggerI18n().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
+        getGemfireCache().getLogger().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
 
         // Verify region version on the region entry
         assertEquals(1L, re.getVersionStamp().getRegionVersion());
@@ -1604,7 +1604,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         prRegion.put(custIdOne, new Customer("name1_1", "addr1"));
 
-        getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT 2");
+        getGemfireCache().getLogger().fine("TEST:TX COMMIT 2");
 
         assertEquals(1L, br.getVersionVector().getCurrentVersion());
         mgr.commit();
@@ -1613,7 +1613,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(2L, br.getVersionVector().getCurrentVersion());
 
         re = br.getRegionEntry(custIdOne);
-        getGemfireCache().getLoggerI18n().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
+        getGemfireCache().getLogger().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
 
         // Verify region version on the region entry
         assertEquals(2L, re.getVersionStamp().getRegionVersion());
@@ -1661,28 +1661,28 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
         mgr.setDistributed(true);
-        getGemfireCache().getLoggerI18n().fine("TEST:DISTTX=" + mgr.isDistributed());
-        getGemfireCache().getLoggerI18n().fine("TEST:TX BEGIN");
+        getGemfireCache().getLogger().fine("TEST:DISTTX=" + mgr.isDistributed());
+        getGemfireCache().getLogger().fine("TEST:TX BEGIN");
         mgr.begin();
 
         Region<CustId, Customer> region = getCache().getRegion(CUSTOMER_RR);
 
         CustId custIdOne = new CustId(1);
         Customer customerOne = new Customer("name1", "addr1");
-        getGemfireCache().getLoggerI18n().fine("TEST:TX PUT 1");
+        getGemfireCache().getLogger().fine("TEST:TX PUT 1");
         region.put(custIdOne, customerOne);
 
         LocalRegion lr = (LocalRegion) region;
 
         assertEquals(0L, lr.getVersionVector().getCurrentVersion());
-        getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT 1");
+        getGemfireCache().getLogger().fine("TEST:TX COMMIT 1");
         mgr.commit();
 
         // Verify region version on the region
         assertEquals(1L, lr.getVersionVector().getCurrentVersion());
 
         RegionEntry re = lr.getRegionEntry(custIdOne);
-        getGemfireCache().getLoggerI18n().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
+        getGemfireCache().getLogger().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
 
         // Verify region version on the region entry
         assertEquals(1L, re.getVersionStamp().getRegionVersion());
@@ -1693,7 +1693,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         region.put(custIdOne, new Customer("name1_1", "addr1"));
 
-        getGemfireCache().getLoggerI18n().fine("TEST:TX COMMIT 2");
+        getGemfireCache().getLogger().fine("TEST:TX COMMIT 2");
 
         assertEquals(1L, lr.getVersionVector().getCurrentVersion());
         mgr.commit();
@@ -1702,7 +1702,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(2L, lr.getVersionVector().getCurrentVersion());
 
         re = lr.getRegionEntry(custIdOne);
-        getGemfireCache().getLoggerI18n().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
+        getGemfireCache().getLogger().fine("TEST:VERSION-STAMP:" + re.getVersionStamp());
 
         // Verify region version on the region entry
         assertEquals(2L, re.getVersionStamp().getRegionVersion());

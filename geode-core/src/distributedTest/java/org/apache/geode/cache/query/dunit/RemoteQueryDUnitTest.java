@@ -67,7 +67,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
 
   @Override
@@ -93,7 +93,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -112,7 +112,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -235,7 +235,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -254,7 +254,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -377,7 +377,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -396,7 +396,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -520,7 +520,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * final String name = this.getName(); final Host host = Host.getHost(0); VM vm0 =
      * host.getVM(0); VM vm1 = host.getVM(1); // final int numberOfEntries = 100;
      *
-     * // Start server vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") { public
+     * // Start server vm0.invoke(new CacheSerializableRunnable("Create cache server") { public
      * void run2() throws CacheException { Properties config = new Properties();
      * config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() +
      * "]"); getSystem(config); AttributesFactory factory = new AttributesFactory();
@@ -528,7 +528,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * startBridgeServer(0, false); } catch (Exception ex) {
      * Assert.fail("While starting CacheServer", ex); } } });
      *
-     * // Initialize server region vm0.invoke(new CacheSerializableRunnable("Create Bridge Server")
+     * // Initialize server region vm0.invoke(new CacheSerializableRunnable("Create cache server")
      * { public void run2() throws CacheException { Region region =
      * getRootRegion().getSubregion(name); Portfolio portfolio = null; Position position1 = null;
      * Position position2 = null; Properties portfolioProperties= null; Properties
@@ -639,7 +639,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -658,7 +658,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -817,7 +817,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -837,7 +837,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region1 = getRootRegion().getSubregion(name + "1");
         for (int i = 0; i < numberOfEntries; i++) {
@@ -921,7 +921,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -939,7 +939,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -1088,7 +1088,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -1106,7 +1106,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -1188,7 +1188,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(LOCATORS,
@@ -1213,7 +1213,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server region
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfEntries; i++) {
@@ -1325,7 +1325,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription) throws IOException {
@@ -1339,7 +1339,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
     CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();

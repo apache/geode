@@ -22,7 +22,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Stores eviction and critical thresholds for memory as well as the logic for determining how
@@ -138,21 +137,18 @@ public class MemoryThresholds {
   public MemoryThresholds(long maxMemoryBytes, float criticalThreshold, float evictionThreshold) {
     if (criticalThreshold > 100.0f || criticalThreshold < 0.0f) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GT_ZERO_AND_LTE_100
-              .toLocalizedString());
+          "Critical percentage must be greater than 0.0 and less than or equal to 100.0.");
     }
 
     if (evictionThreshold > 100.0f || evictionThreshold < 0.0f) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemoryThresholds_EVICTION_PERCENTAGE_GT_ZERO_AND_LTE_100
-              .toLocalizedString());
+          "Eviction percentage must be greater than 0.0 and less than or equal to 100.0.");
     }
 
     if (evictionThreshold != 0 && criticalThreshold != 0
         && evictionThreshold >= criticalThreshold) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GTE_EVICTION_PERCENTAGE
-              .toLocalizedString());
+          "Critical percentage must be greater than the eviction percentage.");
     }
 
     this.maxMemoryBytes = maxMemoryBytes;

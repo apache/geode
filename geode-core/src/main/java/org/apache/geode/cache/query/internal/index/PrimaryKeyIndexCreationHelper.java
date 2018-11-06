@@ -25,7 +25,6 @@ import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
 
@@ -53,15 +52,13 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
     List list = this.compiler.compileFromClause(fromClause);
     if (list.size() > 1) {
       throw new IndexInvalidException(
-          LocalizedStrings.PrimaryKeyIndexCreationHelper_THE_FROMCLAUSE_FOR_A_PRIMARY_KEY_INDEX_SHOULD_ONLY_HAVE_ONE_ITERATOR_AND_THE_COLLECTION_MUST_BE_A_REGION_PATH_ONLY
-              .toLocalizedString());
+          "The fromClause for a Primary Key index should only have one iterator and the collection must be a Region Path only");
     }
     try {
       CompiledIteratorDef iterDef = (CompiledIteratorDef) list.get(0);
       if (iterDef.getCollectionExpr().getType() != OQLLexerTokenTypes.RegionPath) {
         throw new IndexInvalidException(
-            LocalizedStrings.PrimaryKeyIndexCreationHelper_THE_FROMCLAUSE_FOR_A_PRIMARY_KEY_INDEX_SHOULD_BE_A_REGION_PATH_ONLY
-                .toLocalizedString());
+            "The fromClause for a Primary Key index should be a Region Path only");
       }
       iterDef.computeDependencies(this.context);
       RuntimeIterator rIter = (iterDef.getRuntimeIterator(this.context));
@@ -93,22 +90,22 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
     List indexedExprs = this.compiler.compileProjectionAttributes(indexedExpression);
     if (indexedExprs == null || indexedExprs.size() != 1) {
       throw new IndexInvalidException(
-          LocalizedStrings.PrimaryKeyIndexCreationHelper_INVALID_INDEXED_EXPRESSOION_0
-              .toLocalizedString(indexedExpression));
+          String.format("Invalid indexed expressoion : ' %s '",
+              indexedExpression));
     }
     CompiledValue expr = (CompiledValue) ((Object[]) indexedExprs.get(0))[1];
     if (expr.getType() == CompiledValue.LITERAL)
       throw new IndexInvalidException(
-          LocalizedStrings.PrimaryKeyIndexCreationHelper_INVALID_INDEXED_EXPRESSOION_0
-              .toLocalizedString(indexedExpression));
+          String.format("Invalid indexed expressoion : ' %s '",
+              indexedExpression));
     try {
       StringBuilder sb = new StringBuilder();
       expr.generateCanonicalizedExpression(sb, context);
       this.indexedExpression = sb.toString();
     } catch (Exception e) {
       throw new IndexInvalidException(
-          LocalizedStrings.PrimaryKeyIndexCreationHelper_INVALID_INDEXED_EXPRESSOION_0_N_1
-              .toLocalizedString(new Object[] {indexedExpression, e.getMessage()}));
+          String.format("Invalid indexed expressoion : ' %s ' %s",
+              new Object[] {indexedExpression, e.getMessage()}));
     }
   }
 
@@ -116,8 +113,8 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
       throws IndexInvalidException {
     if (projectionAttributes != null && !projectionAttributes.equals("*")) {
       throw new IndexInvalidException(
-          LocalizedStrings.PrimaryKeyIndexCreationHelper_INVALID_PROJECTION_ATTRIBUTES_0
-              .toLocalizedString(projectionAttributes));
+          String.format("Invalid projection attributes : ' %s '",
+              projectionAttributes));
     }
     this.projectionAttributes = projectionAttributes;
   }

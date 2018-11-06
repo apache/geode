@@ -25,7 +25,6 @@ import antlr.Token;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.QCompiler;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class ASTLiteral extends GemFireAST {
   private static final long serialVersionUID = 8374021603235812835L;
@@ -76,7 +75,7 @@ public class ASTLiteral extends GemFireAST {
       return Integer.valueOf(s);
     } catch (NumberFormatException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_UNABLE_TO_PARSE_INTEGER_0.toLocalizedString(s), e);
+          String.format("unable to parse integer: %s", s), e);
     }
   }
 
@@ -90,7 +89,7 @@ public class ASTLiteral extends GemFireAST {
       return Long.valueOf(s);
     } catch (NumberFormatException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_UNABLE_TO_PARSE_FLOAT_0.toLocalizedString(s));
+          String.format("Unable to parse float %s", s));
     }
   }
 
@@ -117,7 +116,7 @@ public class ASTLiteral extends GemFireAST {
       return Double.valueOf(s);
     } catch (NumberFormatException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_UNABLE_TO_PARSE_DOUBLE_0.toLocalizedString(s));
+          String.format("Unable to parse double %s", s));
     }
   }
 
@@ -145,8 +144,7 @@ public class ASTLiteral extends GemFireAST {
   private Character getChar(String s) {
     if (s.length() != 1)
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_ILLEGAL_FORMAT_FOR_CHAR_LITERAL_A_CHARACTER_LITERAL_MUST_HAVE_EXACTLY_ONE_CHARACTER
-              .toLocalizedString());
+          "Illegal format for CHAR literal. A character literal must have exactly one character");
     return new Character(s.charAt(0));
   }
 
@@ -160,15 +158,15 @@ public class ASTLiteral extends GemFireAST {
       int day = Integer.parseInt(s.substring(secondDash + 1));
       if (month < 1 || month > 12)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_MONTH_MUST_BE_112_IN_DATE_LITERAL.toLocalizedString());
+            "Month must be 1..12 in DATE literal");
       if (day < 1 || day > 31)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_DAY_MUST_BE_131_IN_DATE_LITERAL.toLocalizedString());
+            "Day must be 1..31 in DATE literal");
       return date;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_ILLEGAL_FORMAT_FOR_DATE_LITERAL_0_EXPECTED_FORMAT_IS_YYYYMMDD
-              .toLocalizedString(s));
+          String.format("Illegal format for DATE literal: %s . Expected format is yyyy-mm-dd",
+              s));
     }
   }
 
@@ -184,18 +182,18 @@ public class ASTLiteral extends GemFireAST {
       int second = Integer.parseInt(s.substring(secondColon + 1));
       if (hour < 0 || hour > 23)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_HOUR_MUST_BE_023_IN_TIME_LITERAL.toLocalizedString());
+            "Hour must be 0..23 in TIME literal");
       if (minute < 0 || minute > 59)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_MINUTE_MUST_BE_059_IN_TIME_LITERAL.toLocalizedString());
+            "Minute must be 0..59 in TIME literal");
       if (second < 0 || second > 59)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_SECOND_MUST_BE_059_IN_TIME_LITERAL.toLocalizedString());
+            "Second must be 0..59 in TIME literal");
       return time;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_ILLEGAL_FORMAT_FOR_TIME_LITERAL_0_EXPECTED_FORMAT_IS_HHMMSS
-              .toLocalizedString(s));
+          String.format("Illegal format for TIME literal: %s . Expected format is hh:mm:ss",
+              s));
     }
   }
 
@@ -211,8 +209,7 @@ public class ASTLiteral extends GemFireAST {
 
       if (count > 2)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_NEGATIVE_NUMBERS_NOT_ALLOWED_IN_TIMESTAMP_LITERAL
-                .toLocalizedString());
+            "Negative numbers not allowed in TIMESTAMP literal");
 
       // now just get the numbers, ignoring delimiters
       StringTokenizer tokenizer = new StringTokenizer(s, ":-\t\n\r\f ");
@@ -221,20 +218,19 @@ public class ASTLiteral extends GemFireAST {
       int month = Integer.parseInt(tokenizer.nextToken());
       if (month < 1 || month > 12)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_MONTH_MUST_BE_112_IN_TIMESTAMP_LITERAL.toLocalizedString());
+            "Month must be 1..12 in TIMESTAMP literal");
       int day = Integer.parseInt(tokenizer.nextToken());
       if (day < 1 || day > 31)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_DAY_MUST_BE_131_IN_TIMESTAMP_LITERAL.toLocalizedString());
+            "Day must be 1..31 in TIMESTAMP literal");
       int hour = Integer.parseInt(tokenizer.nextToken());
       if (hour < 0 || hour > 23)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_HOUR_MUST_BE_023_IN_TIMESTAMP_LITERAL.toLocalizedString());
+            "Hour must be 0..23 in TIMESTAMP literal");
       int minute = Integer.parseInt(tokenizer.nextToken());
       if (minute < 0 || minute > 59)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_MINUTE_MUST_BE_059_IN_TIMESTAMP_LITERAL
-                .toLocalizedString());
+            "Minute must be 0..59 in TIMESTAMP literal");
       String sec_s = tokenizer.nextToken();
       int period = sec_s.indexOf('.');
       int second;
@@ -244,13 +240,13 @@ public class ASTLiteral extends GemFireAST {
         second = Integer.parseInt(sec_s);
       if (second < 0 || second > 59)
         throw new QueryInvalidException(
-            LocalizedStrings.ASTLiteral_SECOND_MUST_BE_059_IN_TIMESTAMP_LITERAL
-                .toLocalizedString());
+            "Second must be 0..59 in TIMESTAMP literal");
       return timestamp;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.ASTLiteral_ILLEGAL_FORMAT_FOR_TIMESTAMP_LITERAL_0_EXPECTED_FORMAT_IS_YYYYMMDD_HHMMSSFFFFFFFFF
-              .toLocalizedString(s));
+          String.format(
+              "Illegal format for TIMESTAMP literal: %s . Expected format is yyyy-mm-dd hh:mm:ss.fffffffff",
+              s));
     }
   }
 }

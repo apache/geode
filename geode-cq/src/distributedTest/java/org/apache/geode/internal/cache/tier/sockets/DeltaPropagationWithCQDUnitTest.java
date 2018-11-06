@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.lang.Boolean.TRUE;
+import static java.lang.System.out;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -50,10 +53,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -117,17 +120,16 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testCqWithRI() throws Exception {
     // 1. setup a cache server
-    int port = (Integer) server1.invoke(() -> DeltaPropagationWithCQDUnitTest.createCacheServer());
+    int port = (Integer) server1.invoke(() -> createCacheServer());
     // 2. setup a client
-    client1.invoke(() -> DeltaPropagationWithCQDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, Boolean.TRUE));
+    client1.invoke(() -> createClientCache(getServerHostName(server1.getHost()), port, TRUE));
     // 3. setup another client with cqs and interest in all keys.
-    createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, true);
+    createClientCache(getServerHostName(server1.getHost()), port, true);
     registerCQs(1, "CQWithInterestDUnitTest_cq");
     // 4. put a key on client1
-    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.doPut("SAMPLE_KEY", "SAMPLE_VALUE"));
+    client1.invoke(() -> doPut("SAMPLE_KEY", "SAMPLE_VALUE"));
     // 5. update the key with new value, on client1
-    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.doPut("SAMPLE_KEY", "NEW_VALUE"));
+    client1.invoke(() -> doPut("SAMPLE_KEY", "NEW_VALUE"));
     // 6. Wait for some time
     WaitCriterion wc = new WaitCriterion() {
       @Override
@@ -141,7 +143,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
             + cqErrors + " cqErrors";
       }
     };
-    Wait.waitForCriterion(wc, 30 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     // 7. validate that client2 has the new value
     assertEquals("Latest value: ", "NEW_VALUE", cache.getRegion(regionName).get("SAMPLE_KEY"));
@@ -189,12 +191,12 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public boolean done() {
-        System.out.println("verifyCqListeners: expected total=" + events + "; cqEvents=" + cqEvents
+        out.println("verifyCqListeners: expected total=" + events + "; cqEvents=" + cqEvents
             + "; cqErrors=" + cqErrors);
         return (cqEvents + cqErrors) == events;
       }
     };
-    Wait.waitForCriterion(wc, 10000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void verifyFullValueRequestsFromClients(Long expected) throws Exception {

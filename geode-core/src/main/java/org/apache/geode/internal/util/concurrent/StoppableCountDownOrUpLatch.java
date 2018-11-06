@@ -17,7 +17,6 @@ package org.apache.geode.internal.util.concurrent;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Extends the CountDownLatch with the ability to also countUp.
@@ -46,7 +45,7 @@ public class StoppableCountDownOrUpLatch {
     Assert.assertTrue(stopper != null);
     if (count < 0)
       throw new IllegalArgumentException(
-          LocalizedStrings.StoppableCountDownOrUpLatch_COUNT_0.toLocalizedString());
+          "count < 0");
     this.stopper = stopper;
     this.count_ = count;
   }

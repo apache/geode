@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 
 public class ExecuteFunction70 extends ExecuteFunction66 {
@@ -97,7 +96,7 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
     DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
     if (ds == null) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_DS_NOT_CREATED_OR_NOT_READY.toLocalizedString());
+          "DistributedSystem is either not created or not ready");
     }
     Set<DistributedMember> members = new HashSet<DistributedMember>();
     for (String group : groups) {

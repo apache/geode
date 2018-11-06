@@ -16,9 +16,10 @@ package org.apache.geode.management.internal.pulse;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.getInstance;
+import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -41,6 +42,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 
@@ -156,12 +158,12 @@ public class TestSubscriptionsDUnitTest extends ManagementTestBase {
 
   private void verifyNumSubscriptions(final VM vm) {
     vm.invoke("TestSubscriptionsDUnitTest Verify Cache Server Remote", () -> {
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      final GemFireCacheImpl cache = getInstance();
 
-      waitForCriterion(new WaitCriterion() {
+      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         @Override
         public boolean done() {
-          ManagementService service = ManagementService.getExistingManagementService(cache);
+          ManagementService service = getExistingManagementService(cache);
           DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
           return distributedSystemMXBean != null
               & distributedSystemMXBean.getNumSubscriptions() > 1;
@@ -171,10 +173,10 @@ public class TestSubscriptionsDUnitTest extends ManagementTestBase {
         public String description() {
           return "TestSubscriptionsDUnitTest wait for getDistributedSystemMXBean to complete and get results";
         }
-      }, 2 * 60 * 1000, 3000, true);
+      });
 
       DistributedSystemMXBean distributedSystemMXBean =
-          ManagementService.getExistingManagementService(cache).getDistributedSystemMXBean();
+          getExistingManagementService(cache).getDistributedSystemMXBean();
       assertNotNull(distributedSystemMXBean);
       assertEquals(2, distributedSystemMXBean.getNumSubscriptions());
     });

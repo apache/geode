@@ -34,7 +34,6 @@ import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LuceneXmlParser extends AbstractXmlParser {
   private CacheCreation cache;
@@ -154,12 +153,12 @@ public class LuceneXmlParser extends AbstractXmlParser {
       obj = c.newInstance();
     } catch (Exception ex) {
       throw new CacheXmlException(
-          LocalizedStrings.CacheXmlParser_WHILE_INSTANTIATING_A_0.toLocalizedString(className), ex);
+          String.format("While instantiating a %s", className), ex);
     }
     if (!(obj instanceof Analyzer)) {
       throw new CacheXmlException(
-          LocalizedStrings.LuceneXmlParser_CLASS_0_IS_NOT_AN_INSTANCE_OF_ANALYZER
-              .toLocalizedString(className));
+          String.format("Class %s is not an instance of Analyzer.",
+              className));
     }
     return (Analyzer) obj;
   }

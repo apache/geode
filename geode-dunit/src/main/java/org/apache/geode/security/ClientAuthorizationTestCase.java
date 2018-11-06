@@ -14,11 +14,10 @@
  */
 package org.apache.geode.security;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.security.ClientAuthorizationTestCase.OpFlags.CHECK_FAIL;
 import static org.apache.geode.security.SecurityTestUtils.KEYS;
 import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
@@ -31,6 +30,7 @@ import static org.apache.geode.security.SecurityTestUtils.concatProperties;
 import static org.apache.geode.security.SecurityTestUtils.getCache;
 import static org.apache.geode.security.SecurityTestUtils.getLocalValue;
 import static org.apache.geode.security.SecurityTestUtils.registerExpectedExceptions;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -38,8 +38,6 @@ import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +83,7 @@ import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
 import org.apache.geode.security.templates.UsernamePrincipal;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -284,7 +283,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       if ((flags & OpFlags.NO_CREATE_SUBREGION) > 0) {
         if ((flags & OpFlags.CHECK_NOREGION) > 0) {
           // Wait for some time for DRF update to come
-          waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+          await()
               .until(() -> getSubregion() == null);
           subregion = getSubregion();
           assertNull(subregion);
@@ -292,7 +291,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
         } else {
           // Wait for some time for DRF update to come
-          waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+          await()
               .until(() -> getSubregion() != null);
           subregion = getSubregion();
           assertNotNull(subregion);
@@ -307,7 +306,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
     } else if ((flags & OpFlags.CHECK_NOREGION) > 0) {
       // Wait for some time for region destroy update to come
-      waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+      await()
           .until(() -> getRegion() == null);
       region = getRegion();
       assertNull(region);
@@ -408,7 +407,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
                 return this;
               }
             }.init(region);
-            waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+            await()
                 .until(condition);
 
             value = getLocalValue(region, key);
@@ -611,7 +610,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             WaitCriterion ev = new WaitCriterion() {
               @Override
               public boolean done() {
-                if ((flags & OpFlags.CHECK_FAIL) > 0) {
+                if ((flags & CHECK_FAIL) > 0) {
                   return 0 == listener.getNumUpdates();
                 } else {
                   return numOps == listener.getNumUpdates();
@@ -623,9 +622,9 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
                 return null;
               }
             };
-            waitForCriterion(ev, 3 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
 
-            if ((flags & OpFlags.CHECK_FAIL) > 0) {
+            if ((flags & CHECK_FAIL) > 0) {
               assertEquals(0, listener.getNumUpdates());
             } else {
               assertEquals(numOps, listener.getNumUpdates());

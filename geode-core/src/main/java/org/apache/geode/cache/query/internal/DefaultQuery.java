@@ -22,7 +22,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.cache.CacheRuntimeException;
@@ -56,7 +59,6 @@ import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Thread-safe implementation of org.apache.persistence.query.Query
@@ -76,6 +78,8 @@ public class DefaultQuery implements Query {
   private final LongAdder totalExecutionTime = new LongAdder();
 
   private final QueryStatistics stats;
+
+  private Optional<ScheduledFuture> expirationTask;
 
   private boolean traceOn = false;
 
@@ -100,15 +104,7 @@ public class DefaultQuery implements Query {
    */
   public static final Object NULL_RESULT = new Object();
 
-  private volatile boolean isCanceled = false;
-
-  private CacheRuntimeException canceledException;
-
-  /**
-   * This is declared as array so that it can be synchronized between two threads to validate the
-   * state.
-   */
-  private final boolean[] queryCompletedForMonitoring = new boolean[] {false};
+  private volatile CacheRuntimeException queryCancelledException;
 
   private ProxyCache proxyCache;
 
@@ -152,6 +148,9 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
+  static final ThreadLocal<AtomicBoolean> queryCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
+
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
     pdxClassToMethodsMap.set(map);
   }
@@ -160,6 +159,13 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
+  public Optional<ScheduledFuture> getCancelationTask() {
+    return expirationTask;
+  }
+
+  public void setCancelationTask(final ScheduledFuture expirationTask) {
+    this.expirationTask = Optional.of(expirationTask);
+  }
 
   /**
    * Should be constructed from DefaultQueryService
@@ -182,6 +188,7 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
+    this.expirationTask = Optional.empty();
   }
 
   /**
@@ -213,7 +220,7 @@ public class DefaultQuery implements Query {
     // Local Query.
     if (params == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQuery_PARAMETERS_CANNOT_BE_NULL.toLocalizedString());
+          "'parameters' cannot be null");
     }
 
     // If pool is associated with the Query; execute the query on pool. ServerSide query.
@@ -240,7 +247,8 @@ public class DefaultQuery implements Query {
       indexObserver = this.startTrace();
       if (qe != null) {
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook(1);
+          DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION,
+              this);
         }
 
         result = qe.executeQuery(this, params, null);
@@ -263,7 +271,7 @@ public class DefaultQuery implements Query {
         // Add current thread to be monitored by QueryMonitor.
         // In case of partitioned region it will be added before the query execution
         // starts on the Local Buckets.
-        queryMonitor.monitorQueryThread(Thread.currentThread(), this);
+        queryMonitor.monitorQueryThread(this);
       }
 
       context.setCqQueryContext(this.isCqQuery);
@@ -302,21 +310,30 @@ public class DefaultQuery implements Query {
       }
       return result;
     } catch (QueryExecutionCanceledException ignore) {
-      // query execution canceled exception will be thrown from the QueryMonitor
-      // canceled exception should not be null at this point as it should be set
-      // when query is canceled.
-      if (this.canceledException != null) {
-        throw this.canceledException;
-      } else {
-        throw new QueryExecutionCanceledException(
-            "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
-      }
+      return reinterpretQueryExecutionCanceledException();
     } finally {
       this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
-        queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
+        queryMonitor.stopMonitoringQueryThread(this);
       }
       this.endTrace(indexObserver, startTime, result);
+    }
+  }
+
+  /**
+   * This method attempts to reintrepret a {@link QueryExecutionCanceledException} using the
+   * the value returned by {@link #getQueryCanceledException} (set by the {@link QueryMonitor}).
+   *
+   * @throws if {@link #getQueryCanceledException} doesn't return {@code null} then throw that
+   *         {@link CacheRuntimeException}, otherwise throw {@link QueryExecutionCanceledException}
+   */
+  private Object reinterpretQueryExecutionCanceledException() {
+    final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+    if (queryCanceledException != null) {
+      throw queryCanceledException;
+    } else {
+      throw new QueryExecutionCanceledException(
+          "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
     }
   }
 
@@ -389,7 +406,7 @@ public class DefaultQuery implements Query {
     // QueryMonitor Service.
     if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
       // Add current thread to be monitored by QueryMonitor.
-      queryMonitor.monitorQueryThread(Thread.currentThread(), this);
+      queryMonitor.monitorQueryThread(this);
     }
 
     Object result = null;
@@ -397,7 +414,7 @@ public class DefaultQuery implements Query {
       result = executeUsingContext(context);
     } finally {
       if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
-        queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
+        queryMonitor.stopMonitoringQueryThread(this);
       }
 
       int resultSize = 0;
@@ -430,7 +447,7 @@ public class DefaultQuery implements Query {
       observer.beforeQueryEvaluation(this.compiledQuery, context);
 
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(6, this);
+        DefaultQuery.testHook.doTestHook(TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION, this);
       }
       Object results = null;
       try {
@@ -438,19 +455,11 @@ public class DefaultQuery implements Query {
         // first pre-compute dependencies, cached in the context.
         this.compiledQuery.computeDependencies(context);
         if (testHook != null) {
-          testHook.doTestHook(1);
+          testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION, this);
         }
         results = this.compiledQuery.evaluate(context);
       } catch (QueryExecutionCanceledException ignore) {
-        // query execution canceled exception will be thrown from the QueryMonitor
-        // canceled exception should not be null at this point as it should be set
-        // when query is canceled.
-        if (this.canceledException != null) {
-          throw this.canceledException;
-        } else {
-          throw new QueryExecutionCanceledException(
-              "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
-        }
+        reinterpretQueryExecutionCanceledException();
       } finally {
         observer.afterQueryEvaluation(results);
       }
@@ -461,6 +470,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
+      queryCanceled.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -481,7 +491,7 @@ public class DefaultQuery implements Query {
       if (rgn == null) {
         this.cache.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionNotFoundException(
-            LocalizedStrings.DefaultQuery_REGION_NOT_FOUND_0.toLocalizedString(regionPath));
+            String.format("Region not found: %s", regionPath));
       }
       if (rgn instanceof QueryExecutor) {
         ((PartitionedRegion) rgn).checkPROffline();
@@ -496,8 +506,9 @@ public class DefaultQuery implements Query {
       // First query has to be executed in a Function.
       if (!this.isQueryWithFunctionContext()) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_REGION_1
-                .toLocalizedString(prs.get(0).getName(), prs.get(1).getName()));
+            String.format(
+                "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
+                prs.get(0).getName()));
       }
 
       // If there are more than one PRs they have to be co-located.
@@ -519,8 +530,9 @@ public class DefaultQuery implements Query {
 
         if (!colocated) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_NON_COLOCATED_PARTITIONED_REGION_1
-                  .toLocalizedString(eachPR.getName(), other.getName()));
+              String.format(
+                  "A query on a Partitioned Region ( %s ) may not reference any other region except Co-located Partitioned Region. PR region %s is not collocated with other PR region in the query.",
+                  eachPR.getName(), other.getName()));
         }
 
       } // eachPR
@@ -529,8 +541,7 @@ public class DefaultQuery implements Query {
       CompiledSelect select = getSimpleSelect();
       if (select == null) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.DefaultQuery_QUERY_MUST_BE_A_SIMPLE_SELECT_WHEN_REFERENCING_A_PARTITIONED_REGION
-                .toLocalizedString());
+            "query must be a simple select when referencing a Partitioned Region");
       }
 
       // make sure the where clause references no regions
@@ -540,8 +551,7 @@ public class DefaultQuery implements Query {
         whereClause.getRegionsInQuery(regions, parameters);
         if (!regions.isEmpty()) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.DefaultQuery_THE_WHERE_CLAUSE_CANNOT_REFER_TO_A_REGION_WHEN_QUERYING_ON_A_PARTITIONED_REGION
-                  .toLocalizedString());
+              "The WHERE clause cannot refer to a region when querying on a Partitioned Region");
         }
       }
       List fromClause = select.getIterators();
@@ -557,8 +567,7 @@ public class DefaultQuery implements Query {
         public boolean visit(CompiledValue node) {
           if (node instanceof CompiledSelect) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONEDREGION_THE_FIRST_FROM_CLAUSE_ITERATOR_MUST_NOT_CONTAIN_A_SUBQUERY
-                    .toLocalizedString());
+                "When querying a PartitionedRegion, the first FROM clause iterator must not contain a subquery");
           }
           return true;
         }
@@ -571,8 +580,7 @@ public class DefaultQuery implements Query {
           itrDef.getRegionsInQuery(regions, parameters);
           if (!regions.isEmpty()) {
             throw new UnsupportedOperationException(
-                LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONED_REGION_THE_FROM_CLAUSE_ITERATORS_OTHER_THAN_THE_FIRST_ONE_MUST_NOT_REFERENCE_ANY_REGIONS
-                    .toLocalizedString());
+                "When querying a Partitioned Region, the FROM clause iterators other than the first one must not reference any regions");
           }
         }
 
@@ -585,8 +593,7 @@ public class DefaultQuery implements Query {
             proj.getRegionsInQuery(regions, parameters);
             if (!regions.isEmpty()) {
               throw new UnsupportedOperationException(
-                  LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONED_REGION_THE_PROJECTIONS_MUST_NOT_REFERENCE_ANY_REGIONS
-                      .toLocalizedString());
+                  "When querying a Partitioned Region, the projections must not reference any regions");
             }
           }
         }
@@ -597,8 +604,7 @@ public class DefaultQuery implements Query {
             orderBy.getRegionsInQuery(regions, parameters);
             if (!regions.isEmpty()) {
               throw new UnsupportedOperationException(
-                  LocalizedStrings.DefaultQuery_WHEN_QUERYING_A_PARTITIONED_REGION_THE_ORDERBY_ATTRIBUTES_MUST_NOT_REFERENCE_ANY_REGIONS
-                      .toLocalizedString());
+                  "When querying a Partitioned Region, the order-by attributes must not reference any regions");
             }
           }
         }
@@ -618,7 +624,7 @@ public class DefaultQuery implements Query {
   @Override
   public void compile() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DefaultQuery_NOT_YET_IMPLEMENTED.toLocalizedString());
+        "not yet implemented");
   }
 
   @Override
@@ -698,28 +704,18 @@ public class DefaultQuery implements Query {
    * if it takes more than the max query execution time or low memory situations
    */
   public boolean isCanceled() {
-    return this.isCanceled;
+    return getQueryCanceledException() != null;
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return this.canceledException;
-  }
-
-  boolean[] getQueryCompletedForMonitoring() {
-    return this.queryCompletedForMonitoring;
-  }
-
-  // TODO: parameter value is always true
-  void setQueryCompletedForMonitoring(boolean value) {
-    this.queryCompletedForMonitoring[0] = value;
+    return queryCancelledException;
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
-  public void setCanceled(CacheRuntimeException canceledException) {
-    this.isCanceled = true;
-    this.canceledException = canceledException;
+  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
+    this.queryCancelledException = queryCanceledException;
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
@@ -752,7 +748,7 @@ public class DefaultQuery implements Query {
     sb.append(this.queryString);
     sb.append(';');
     sb.append("isCancelled = ");
-    sb.append(this.isCanceled);
+    sb.append(this.isCanceled());
     sb.append("; Total Executions = ");
     sb.append(this.numExecutions);
     sb.append("; Total Execution Time = ");
@@ -859,13 +855,13 @@ public class DefaultQuery implements Query {
     // Supported only with RegionFunctionContext
     if (context == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQuery_FUNCTIONCONTEXT_CANNOT_BE_NULL.toLocalizedString());
+          "'Function Context' cannot be null");
     }
     this.isQueryWithFunctionContext = true;
 
     if (params == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQuery_PARAMETERS_CANNOT_BE_NULL.toLocalizedString());
+          "'parameters' cannot be null");
     }
 
     long startTime = 0L;
@@ -888,7 +884,7 @@ public class DefaultQuery implements Query {
       } else {
         // Not supported on regions other than PartitionRegion.
         throw new IllegalArgumentException(
-            LocalizedStrings.DefaultQuery_API_ONLY_FOR_PR.toLocalizedString());
+            "This query API can only be used for Partition Region Queries.");
       }
 
     } finally {
@@ -982,13 +978,57 @@ public class DefaultQuery implements Query {
     this.keepSerialized = true;
   }
 
+  /**
+   * Test logic sets DefaultQuery.testHook to an implementation of this interface,
+   * to facilitate white-box testing.
+   *
+   * DefaultQuery and other classes in query* packages invoke doTestHook() at various points
+   * during query processing--identifying the location with a SPOT value.
+   */
+  @FunctionalInterface
   public interface TestHook {
-    default void doTestHook(int spot) {};
+    enum SPOTS {
 
-    default void doTestHook(int spot, DefaultQuery query) {
-      doTestHook(spot);
+      /*
+       * These spots pass a DefaultQuery
+       */
+      BEFORE_QUERY_EXECUTION, /* was 1 */
+      BEFORE_QUERY_DEPENDENCY_COMPUTATION, /* was 6 */
+
+      /*
+       * These spots do not pass a DefaultQuery
+       */
+      LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION, /* was 2 */
+      BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION, /* was 3 */
+      BEFORE_BUILD_CUMULATIVE_RESULT, /* was 4 */
+      BEFORE_THROW_QUERY_CANCELED_EXCEPTION, /* was 5 */
+      BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY,
+      TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY,
+      COMPLETE_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY,
+      BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
+      TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN,
+      COMPLETE_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
+      ATTEMPT_REMOVE,
+      ATTEMPT_RETRY,
+      BEGIN_REMOVE_FROM_ELEM_ARRAY,
+      REMOVE_CALLED_FROM_ELEM_ARRAY,
+      COMPLETE_REMOVE_FROM_ELEM_ARRAY,
+      PULL_OFF_PR_QUERY_TRACE_INFO,
+      CREATE_PR_QUERY_TRACE_STRING,
+      CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE,
+      CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
+      POPULATING_TRACE_INFO_FOR_REMOTE_QUERY
     };
 
-    default void doTestHook(String spot) {};
+    /**
+     * Called (for side-effects) at various points in query processing, to facilitate
+     * white-box testing.
+     *
+     * @param spot identifies the (logical) calling code location. Some SPOT values represent
+     *        more than one physical location in the query processing code.
+     * @param query nullable, DefaultQuery, for SPOTS in the DefaultQuery class
+     */
+    void doTestHook(SPOTS spot, DefaultQuery query);
   }
+
 }

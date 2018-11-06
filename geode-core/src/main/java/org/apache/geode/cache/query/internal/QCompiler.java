@@ -43,7 +43,6 @@ import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -83,7 +82,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize());
@@ -104,7 +103,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize());
@@ -130,7 +129,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize() + ";stack=" + this.stack);
@@ -195,7 +194,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 0, "stack size = " + stackSize() + ";stack=" + this.stack);
@@ -415,15 +414,14 @@ public class QCompiler implements OQLLexerTokenTypes {
       final List indexList = (List) TypeUtils.checkCast(indexParams, List.class);
       if (!isForIndexCompilation && indexList.size() != 1) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.QCompiler_ONLY_ONE_INDEX_EXPRESSION_SUPPORTED.toLocalizedString());
+            "Only one index expression supported");
       }
       if (indexList.size() == 1) {
         indexExpr = (CompiledValue) TypeUtils.checkCast(indexList.get(0), CompiledValue.class);
 
         if (indexExpr.getType() == TOK_COLON) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.QCompiler_RANGES_NOT_SUPPORTED_IN_INDEX_OPERATORS
-                  .toLocalizedString());
+              "Ranges not supported in index operators");
         }
         indexExpr = (CompiledValue) TypeUtils.checkCast(indexList.get(0), CompiledValue.class);
         push(new CompiledIndexOperation(rcvr, indexExpr));
@@ -435,8 +433,8 @@ public class QCompiler implements OQLLexerTokenTypes {
       }
     } else {
       if (!this.isForIndexCompilation) {
-        throw new QueryInvalidException(LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0
-            .toLocalizedString("* use incorrect"));
+        throw new QueryInvalidException(String.format("Syntax error in query: %s",
+            "* use incorrect"));
       }
       push(new CompiledIndexOperation(rcvr, indexExpr));
     }
@@ -693,7 +691,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       resultClass = InternalDataSerializer.getCachedClass(typeName);
     } catch (ClassNotFoundException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_TYPE_NOT_FOUND_0.toLocalizedString(typeName), e);
+          String.format("Type not found: %s", typeName), e);
     }
     if (logger.isTraceEnabled()) {
       logger.trace("QCompiler.resolveType= {}", resultClass.getName());

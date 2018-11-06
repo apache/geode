@@ -17,18 +17,16 @@
 
 
 dependencies {
-
-  compileOnly project(':geode-core')
-  compileOnly project(':geode-pulse')
-  compileOnly project(':extensions:geode-modules-test')
-
-  compileOnly group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
-  compileOnly 'org.assertj:assertj-core:' + project.'assertj-core.version'
-  compileOnly 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compileOnly 'commons-io:commons-io:' + project.'commons-io.version'
-  compileOnly 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compileOnly 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  compileOnly 'junit:junit:' + project.'junit.version'
+  compileOnly(project(':extensions:geode-modules-test'))
+  compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-pulse'))
+  compileOnly('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
+  compileOnly('commons-io:commons-io:' + project.'commons-io.version')
+  compileOnly('junit:junit:' + project.'junit.version')
+  compileOnly('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  compileOnly('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compileOnly('org.assertj:assertj-core:' + project.'assertj-core.version')
+  compileOnly(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
 }
 
 disableMavenPublishing()

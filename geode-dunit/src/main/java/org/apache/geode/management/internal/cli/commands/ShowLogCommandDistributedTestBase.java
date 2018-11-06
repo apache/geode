@@ -18,14 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -93,7 +92,7 @@ public class ShowLogCommandDistributedTestBase implements Serializable {
   public void before() throws Exception {
     gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
 
-    Awaitility.await().atMost(2, TimeUnit.MINUTES)
+    await()
         .until(ShowLogCommandDistributedTestBase::allMembersAreConnected);
   }
 

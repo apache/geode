@@ -1,0 +1,293 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{% from 'shared/shared_jinja.yml' import github_access with context %}
+
+---
+
+resources:
+- name: once-a-week
+  type: time
+  source:
+    days: [Monday]
+    start: 6:00 AM
+    stop: 7:00 AM
+    interval: 1h
+    location: US/Pacific
+
+- name: build-concourse-dockerfile
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/docker/*
+
+- name: build-concourse-docker-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse
+
+- name: openjdk8-docker-image
+  type: docker-image
+  source:
+    repository: openjdk
+    tag: 8
+
+- name: google-geode-builder
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/images/google-geode-builder
+
+- name: google-windows-geode-builder
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/images/google-windows-geode-builder
+
+- name: alpine-docker-image
+  type: docker-image
+  source:
+    repository: alpine
+    tag: latest
+    skip_download: true
+
+- name: alpine-tools-dockerfile
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/images/alpine-tools/*
+
+- name: alpine-tools-docker-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+
+- name: test-container-dockerfile
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/images/test-container/*
+
+- name: test-container-docker-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))test-container
+
+- name: concourse-metadata-resource-dockerfile
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/resource-types/concourse-metadata-resource/*
+
+- name: concourse-metadata-resource-docker-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
+
+- name: metric-tools-dockerfile
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/images/metric-tools/*
+
+- name: metric-tools-docker-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))metric-tools
+
+- name: gce-instances-resource-dockerfile
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    paths:
+    - ci/resource-types/gce-instances-resource/*
+
+- name: gce-instances-resource-docker-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))gce-instances-resource
+
+jobs:
+- name: build-concourse-docker-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: openjdk8-docker-image
+      trigger: true
+    - get: build-concourse-dockerfile
+      trigger: true
+  - put: build-concourse-docker-image
+    params:
+      build: build-concourse-dockerfile/ci/docker
+      tag_as_latest: true
+
+- name: build-google-geode-builder
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: once-a-week
+      trigger: true
+    - get: test-container-docker-image
+      passed: [build-test-container-docker-image]
+      trigger: true
+    - get: google-geode-builder
+      trigger: true
+    - get: alpine-tools-docker-image
+  - task: build-image
+    image: alpine-tools-docker-image
+    config:
+      inputs:
+      - name: google-geode-builder
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        GEODE_DOCKER_IMAGE: gcr.io/((gcp-project))/((pipeline-prefix))test-container
+        PIPELINE_PREFIX: ((pipeline-prefix))
+        GCP_PROJECT: ((gcp-project))
+        CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
+        JAVA_BUILD_VERSION: 8
+      run:
+        path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
+
+- name: build-google-windows-geode-builder
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: once-a-week
+      trigger: true
+    - get: google-windows-geode-builder
+      trigger: true
+    - get: alpine-tools-docker-image
+      passed:
+      - build-alpine-tools-docker-image
+  - task: build-image
+    image: alpine-tools-docker-image
+    config:
+      inputs:
+      - name: google-windows-geode-builder
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        GEODE_DOCKER_IMAGE: gcr.io/((gcp-project))/((pipeline-prefix))test-container
+        PIPELINE_PREFIX: ((pipeline-prefix))
+        GCP_PROJECT: ((gcp-project))
+        CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
+        JAVA_BUILD_VERSION: 8
+      run:
+        path: google-windows-geode-builder/ci/images/google-windows-geode-builder/build_image.sh
+
+- name: build-alpine-tools-docker-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: alpine-tools-dockerfile
+      trigger: true
+  - put: alpine-tools-docker-image
+    params:
+      build: alpine-tools-dockerfile/ci/images/alpine-tools
+      tag_as_latest: true
+
+- name: build-test-container-docker-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: openjdk8-docker-image
+      trigger: true
+    - get: test-container-dockerfile
+      trigger: true
+  - put: test-container-docker-image
+    params:
+      build: test-container-dockerfile/ci/images/test-container
+      tag_as_latest: true
+
+- name: build-concourse-metadata-resource-docker-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: concourse-metadata-resource-dockerfile
+      trigger: true
+  - put: concourse-metadata-resource-docker-image
+    params:
+      build: concourse-metadata-resource-dockerfile/ci/resource-types/concourse-metadata-resource
+      tag_as_latest: true
+
+- name: build-metric-tools-docker-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: metric-tools-dockerfile
+      trigger: true
+  - put: metric-tools-docker-image
+    params:
+      build: metric-tools-dockerfile/ci/images/metric-tools
+      tag_as_latest: true
+
+- name: build-gce-instances-resource-docker-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: gce-instances-resource-dockerfile
+      trigger: true
+  - put: gce-instances-resource-docker-image
+    params:
+      build: gce-instances-resource-dockerfile/ci/resource-types/gce-instances-resource
+      tag_as_latest: true

@@ -14,14 +14,13 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,7 +106,7 @@ public class ElderMemberDistributedTest {
   private static InternalDistributedMember assertIsElderAndGetId() {
     DistributionManager distributionManager =
         ClusterStartupRule.getCache().getInternalDistributedSystem().getDistributionManager();
-    Awaitility.waitAtMost(1, TimeUnit.MINUTES)
+    await()
         .untilAsserted(() -> assertThat(distributionManager.isElder()).isTrue());
     return distributionManager.getElderId();
   }
@@ -117,7 +116,7 @@ public class ElderMemberDistributedTest {
         (ClusterDistributionManager) ClusterStartupRule.getCache().getInternalDistributedSystem()
             .getDistributionManager();
     assertThat(distributionManager.isElder()).isFalse();
-    Awaitility.await("Choosing elder stopped for too long").atMost(10, TimeUnit.SECONDS)
+    await("Choosing elder stopped for too long")
         .until(() -> {
           distributionManager.waitForElder(elderId);
           return true;

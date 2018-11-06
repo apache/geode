@@ -44,7 +44,6 @@ import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -184,8 +183,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
 
     if (childTail == null && mainTail == null) {
-      return LocalizedStrings.SystemMemberImpl_NO_LOG_FILE_CONFIGURED_LOG_MESSAGES_WILL_BE_DIRECTED_TO_STDOUT
-          .toLocalizedString();
+      return "No log file configured, log messages will be directed to stdout.";
     } else {
       StringBuffer result = new StringBuffer();
       if (mainTail != null) {
@@ -193,7 +191,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
       }
       if (childTail != null) {
         result.append(
-            "\n" + LocalizedStrings.SystemMemberImpl_TAIL_OF_CHILD_LOG.toLocalizedString() + "\n");
+            "\n" + "-------------------- tail of child log --------------------" + "\n");
         result.append(childTail);
       }
       return result.toString();
@@ -270,15 +268,15 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   public void refreshConfig(Config config) throws org.apache.geode.admin.AdminException {
     if (config == null) {
       throw new AdminException(
-          LocalizedStrings.SystemMemberImpl_FAILED_TO_REFRESH_CONFIGURATION_PARAMETERS_FOR_0
-              .toLocalizedString(new Object[] {getId()}));
+          String.format("Failed to refresh configuration parameters for: %s",
+              new Object[] {getId()}));
     }
 
     String[] names = config.getAttributeNames();
     if (names == null || names.length < 1) {
       throw new AdminException(
-          LocalizedStrings.SystemMemberImpl_FAILED_TO_REFRESH_CONFIGURATION_PARAMETERS_FOR_0
-              .toLocalizedString(new Object[] {getId()}));
+          String.format("Failed to refresh configuration parameters for: %s",
+              new Object[] {getId()}));
     }
 
     for (int i = 0; i < names.length; i++) {

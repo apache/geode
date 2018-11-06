@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -616,8 +615,8 @@ public class ExecuteFunctionOp {
             String errorMessage = executeFunctionResponseMsg.getPart(0).getString();
             throw new ServerOperationException(errorMessage);
           default:
-            throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-                .toLocalizedString(Integer.valueOf(executeFunctionResponseMsg.getMessageType())));
+            throw new InternalGemFireError(String.format("Unknown message type %s",
+                Integer.valueOf(executeFunctionResponseMsg.getMessageType())));
         }
       } finally {
         executeFunctionResponseMsg.clear();

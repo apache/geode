@@ -17,7 +17,6 @@ package org.apache.geode.internal;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Support for correctness assertions. "An assertion is a statement containing a boolean expression
@@ -69,7 +68,7 @@ public class Assert {
       System.out.flush();
       System.err.println("Assertion failure: " + message);
       try {
-        throw new Exception(LocalizedStrings.Assert_GET_STACK_TRACE.toLocalizedString());
+        throw new Exception("get Stack trace");
       } catch (Exception ex) {
         ex.printStackTrace();
       }

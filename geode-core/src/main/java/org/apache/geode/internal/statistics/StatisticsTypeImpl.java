@@ -22,7 +22,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Gathers together a number of {@link StatisticDescriptor statistics} into one logical type.
@@ -101,19 +100,17 @@ public class StatisticsTypeImpl implements StatisticsType {
       boolean wrapsSharedClass) {
     if (name == null) {
       throw new NullPointerException(
-          LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTICS_TYPE_NAME
-              .toLocalizedString());
+          "Cannot have a null statistics type name.");
     }
 
     if (stats == null) {
       throw new NullPointerException(
-          LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTIC_DESCRIPTORS
-              .toLocalizedString());
+          "Cannot have a null statistic descriptors.");
     }
     if (stats.length > StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticsTypeImpl_THE_REQUESTED_DESCRIPTOR_COUNT_0_EXCEEDS_THE_MAXIMUM_WHICH_IS_1
-              .toLocalizedString(new Object[] {Integer.valueOf(stats.length),
+          String.format("The requested descriptor count %s exceeds the maximum which is  %s .",
+              new Object[] {Integer.valueOf(stats.length),
                   Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)}));
     }
 
@@ -145,8 +142,8 @@ public class StatisticsTypeImpl implements StatisticsType {
       Object previousValue = statsMap.put(stats[i].getName(), sd);
       if (previousValue != null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.StatisticsTypeImpl_DUPLICATE_STATISTICDESCRIPTOR_NAMED_0
-                .toLocalizedString(stats[i].getName()));
+            String.format("Duplicate StatisticDescriptor named %s",
+                stats[i].getName()));
       }
     }
     this.intStatCount = intCount;
@@ -176,8 +173,8 @@ public class StatisticsTypeImpl implements StatisticsType {
     StatisticDescriptorImpl stat = (StatisticDescriptorImpl) statsMap.get(name);
     if (stat == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticsTypeImpl_THERE_IS_NO_STATISTIC_NAMED_0
-              .toLocalizedString(name));
+          String.format("There is no statistic named %s",
+              name));
     }
     return stat;
   }

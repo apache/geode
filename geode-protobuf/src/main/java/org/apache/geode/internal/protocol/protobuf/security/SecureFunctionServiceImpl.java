@@ -28,7 +28,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class SecureFunctionServiceImpl implements SecureFunctionService {
 
@@ -70,8 +69,8 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
     final Function<?> function = FunctionService.getFunction(functionID);
     if (function == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionID));
+          String.format("Function named %s is not registered to FunctionService",
+              functionID));
     }
 
     function.getRequiredPermissions(regionName).forEach(security::authorize);

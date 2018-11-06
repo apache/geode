@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.StartupStatus;
@@ -323,9 +322,11 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
     private void logDoneMessage() {
       this.loggedDoneMessage = true;
       StartupStatus.startup(
-          LocalizedStrings.CreatePersistentRegionProcessor_DONE_WAITING_FOR_BUCKET_MEMBERS,
-          new Object[] {this.region,
-              TransformUtils.persistentMemberIdToLogEntryTransformer.transform(this.thisMember)});
+          String.format(
+              "Region %s has successfully completed waiting for other members to recover the latest data.My persistent member information:%s",
+              new Object[] {this.region,
+                  TransformUtils.persistentMemberIdToLogEntryTransformer
+                      .transform(this.thisMember)}));
     }
 
     /**
@@ -350,10 +351,12 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
         Set<Integer> missingBuckets = getAllWaitingBuckets(offlineMembers);
 
         StartupStatus.startup(
-            LocalizedStrings.CreatePersistentRegionProcessor_WAITING_FOR_OFFLINE_BUCKET_MEMBERS,
-            new Object[] {this.region, missingBuckets,
-                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(this.thisMember),
-                membersToWaitForLogEntries});
+            String.format(
+                "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another offline member to recover the latest data.My persistent id is:%sOffline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+                new Object[] {this.region, missingBuckets,
+                    TransformUtils.persistentMemberIdToLogEntryTransformer
+                        .transform(this.thisMember),
+                    membersToWaitForLogEntries}));
 
         this.loggedDoneMessage = false;
       }
@@ -368,10 +371,12 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
             TransformUtils.persistentMemberEntryToLogEntryTransformer);
 
         StartupStatus.startup(
-            LocalizedStrings.CreatePersistentRegionProcessor_WAITING_FOR_ONLINE_BUCKET_MEMBERS,
-            new Object[] {this.region, missingBuckets,
-                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(this.thisMember),
-                membersToWaitForLogEntries});
+            String.format(
+                "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another online member to recover the latest data.My persistent id is:%sOnline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+                new Object[] {this.region, missingBuckets,
+                    TransformUtils.persistentMemberIdToLogEntryTransformer
+                        .transform(this.thisMember),
+                    membersToWaitForLogEntries}));
 
 
         this.loggedDoneMessage = false;

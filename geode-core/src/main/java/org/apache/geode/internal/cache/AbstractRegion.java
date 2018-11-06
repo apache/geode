@@ -94,9 +94,7 @@ import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
@@ -293,9 +291,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
         && this.evictionAttributes.getAlgorithm().isLRUMemory()
         && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && this.evictionAttributes
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
+      logger.warn(
+          "For region {} with data policy PARTITION, memory LRU eviction attribute maximum has been reset from {}MB to local-max-memory {}MB",
           new Object[] {regionName, this.evictionAttributes.getMaximum(),
-              attrs.getPartitionAttributes().getLocalMaxMemory()}));
+              attrs.getPartitionAttributes().getLocalMaxMemory()});
       this.evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
     }
 
@@ -346,8 +345,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       PoolImpl cp = getPool();
       if (cp == null) {
         throw new IllegalStateException(
-            LocalizedStrings.AbstractRegion_THE_CONNECTION_POOL_0_HAS_NOT_BEEN_CREATED
-                .toLocalizedString(this.poolName));
+            String.format("The connection pool %s has not been created",
+                this.poolName));
       }
       cp.attach();
       if (cp.getMultiuserAuthentication() && !this.getDataPolicy().isEmpty()) {
@@ -370,8 +369,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (!attrs.getConcurrencyChecksEnabled() && attrs.getDataPolicy().withPersistence()
         && supportsConcurrencyChecks()) {
       throw new IllegalStateException(
-          LocalizedStrings.AttributesFactory_CONCURRENCY_CHECKS_MUST_BE_ENABLED
-              .toLocalizedString());
+          "Concurrency checks cannot be disabled for regions that use persistence");
     }
   }
 
@@ -633,8 +631,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.getDataPolicy()));
+          String.format("No mirror type corresponds to data policy %s",
+              this.getDataPolicy()));
     }
   }
 
@@ -663,7 +661,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       return listeners[0];
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_MORE_THAN_ONE_CACHE_LISTENER_EXISTS.toLocalizedString());
+          "More than one cache listener exists.");
     }
   }
 
@@ -1019,7 +1017,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (aListener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_ADDCACHELISTENER_PARAMETER_WAS_NULL.toLocalizedString());
+          "addCacheListener parameter was null");
     }
     CacheListener wcl = wrapRegionMembershipListener(aListener);
     boolean changed = false;
@@ -1104,8 +1102,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       } else { // we have some listeners to add
         if (Arrays.asList(listenersToAdd).contains(null)) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractRegion_INITCACHELISTENERS_PARAMETER_HAD_A_NULL_ELEMENT
-                  .toLocalizedString());
+              "initCacheListeners parameter had a null element");
         }
         CacheListener[] newCacheListeners = new CacheListener[listenersToAdd.length];
         System.arraycopy(listenersToAdd, 0, newCacheListeners, 0, newCacheListeners.length);
@@ -1136,8 +1133,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (aListener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_REMOVECACHELISTENER_PARAMETER_WAS_NULL
-              .toLocalizedString());
+          "removeCacheListener parameter was null");
     }
     boolean changed = false;
     synchronized (this.clSync) {
@@ -1194,8 +1190,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if ((this.getDataPolicy().withReplication() || this.getDataPolicy().withPartitioning())
         && (ea == ExpirationAction.LOCAL_DESTROY || ea == ExpirationAction.LOCAL_INVALIDATE)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
-              .toLocalizedString(mode));
+          String.format("%s action is incompatible with this region's data policy.",
+              mode));
     }
   }
 
@@ -1204,13 +1200,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (idleTimeout == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString());
+          "idleTimeout must not be null");
     }
     checkEntryTimeoutAction("idleTimeout", idleTimeout.getAction());
     if (!this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_IDLE_TIMEOUT_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set idle timeout when statistics are disabled.");
     }
 
     ExpirationAttributes oldAttrs = getEntryIdleTimeout();
@@ -1227,8 +1222,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (custom != null && !this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_IDLE_TIMEOUT_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set idle timeout when statistics are disabled.");
     }
 
     CustomExpiry old = getCustomEntryIdleTimeout();
@@ -1243,13 +1237,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+          "timeToLive must not be null");
     }
     checkEntryTimeoutAction("timeToLive", timeToLive.getAction());
     if (!this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_TIME_TO_LIVE_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set time to live when statistics are disabled");
     }
     ExpirationAttributes oldAttrs = getEntryTimeToLive();
     this.entryTimeToLive = timeToLive.getTimeout();
@@ -1265,8 +1258,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (custom != null && !this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_CUSTOM_TIME_TO_LIVE_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set custom time to live when statistics are disabled");
     }
     CustomExpiry old = getCustomEntryTimeToLive();
     this.customEntryTimeToLive = custom;
@@ -1280,12 +1272,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       ExpirationAction expAction = expAtts.getAction();
       if (expAction.isInvalidate() || expAction.isLocalInvalidate()) {
         throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR
-                .toLocalizedString());
+            "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region.");
       } else if (expAction.isDestroy() || expAction.isLocalDestroy()) {
         throw new IllegalStateException(
-            LocalizedStrings.AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR
-                .toLocalizedString());
+            "ExpirationAction DESTROY or LOCAL_DESTROY for region is not supported for Partitioned Region.");
       }
     }
   }
@@ -1295,7 +1285,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (idleTimeout == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString());
+          "idleTimeout must not be null");
     }
     if (this.getAttributes().getDataPolicy().withPartitioning()) {
       validatePRRegionExpirationAttributes(idleTimeout);
@@ -1303,13 +1293,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
-              .toLocalizedString("idleTimeout"));
+          String.format("%s action is incompatible with this region's data policy.",
+              "idleTimeout"));
     }
     if (!this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_IDLE_TIMEOUT_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set idle timeout when statistics are disabled.");
     }
     ExpirationAttributes oldAttrs = getRegionIdleTimeout();
     this.regionIdleTimeout = idleTimeout.getTimeout();
@@ -1324,7 +1313,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+          "timeToLive must not be null");
     }
     if (this.getAttributes().getDataPolicy().withPartitioning()) {
       validatePRRegionExpirationAttributes(timeToLive);
@@ -1332,13 +1321,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
-              .toLocalizedString("timeToLive"));
+          String.format("%s action is incompatible with this region's data policy.",
+              "timeToLive"));
     }
     if (!this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_TIME_TO_LIVE_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set time to live when statistics are disabled");
     }
 
     ExpirationAttributes oldAttrs = getRegionTimeToLive();
@@ -1355,8 +1343,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkForLimitedOrNoAccess();
     if (this.scope != Scope.GLOBAL) {
       throw new IllegalStateException(
-          LocalizedStrings.AbstractRegion_CANNOT_SET_LOCK_GRANTOR_WHEN_SCOPE_IS_NOT_GLOBAL
-              .toLocalizedString());
+          "Cannot set lock grantor when scope is not global");
     }
     if (isCurrentlyLockGrantor())
       return; // nothing to do... already lock grantor
@@ -1369,8 +1356,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     if (!this.statisticsEnabled) {
       throw new StatisticsDisabledException(
-          LocalizedStrings.AbstractRegion_STATISTICS_DISABLED_FOR_REGION_0
-              .toLocalizedString(getFullPath()));
+          String.format("Statistics disabled for region ' %s '",
+              getFullPath()));
     }
     return this;
   }
@@ -1530,8 +1517,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       try {
         cb.close();
       } catch (RuntimeException ex) {
-        logger.warn(
-            LocalizedMessage.create(LocalizedStrings.AbstractRegion_CACHECALLBACK_CLOSE_EXCEPTION),
+        logger.warn("CacheCallback close exception",
             ex);
       }
     }
@@ -1679,8 +1665,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
     if (result.size() > 1)
       throw new FunctionDomainException(
-          LocalizedStrings.AbstractRegion_SELECTVALUE_EXPECTS_RESULTS_OF_SIZE_1_BUT_FOUND_RESULTS_OF_SIZE_0
-              .toLocalizedString(result.size()));
+          String.format("selectValue expects results of size 1, but found results of size %s",
+              result.size()));
     return result.iterator().next();
   }
 

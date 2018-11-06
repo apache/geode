@@ -18,7 +18,6 @@ package org.apache.geode.cache.query.internal.parse;
 import antlr.Token;
 
 import org.apache.geode.cache.query.internal.QCompiler;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * AST class used for an AST node that cannot be compiled directly because it is either data for
@@ -37,6 +36,6 @@ public class ASTUnsupported extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.ASTUnsupported_UNSUPPORTED_FEATURE_0.toLocalizedString(getText()));
+        String.format("Unsupported feature: %s", getText()));
   }
 }

@@ -24,8 +24,8 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -39,7 +39,7 @@ public class NotificationHub {
   /**
    * logger
    */
-  private LogWriterI18n logger;
+  private LogWriter logger;
 
   /**
    * This is a single window to manipulate region resources for management
@@ -64,7 +64,7 @@ public class NotificationHub {
    */
   public NotificationHub(ManagementResourceRepo repo) {
     this.repo = repo;
-    logger = InternalDistributedSystem.getLoggerI18n();
+    logger = InternalDistributedSystem.getLogger();
     this.listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
     memberSource = MBeanJMXAdapter
         .getMemberNameOrId(InternalDistributedSystem.getConnectedInstance().getDistributedMember());

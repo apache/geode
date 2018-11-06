@@ -18,7 +18,6 @@ package org.apache.geode.internal.admin;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A <code>CacheCollector</code> is {@linkplain GfManagerAgent#setCacheCollector registered} on a
@@ -143,8 +142,7 @@ public class CacheCollector {
     if (update instanceof EntrySnapshot) {
       if (snaps instanceof CompoundRegionSnapshot) {
         throw new IllegalStateException(
-            LocalizedStrings.CacheCollector_UNABLE_TO_MIX_REGION_AND_ENTRY_SNAPSHOTS_IN_CACHECOLLECTOR
-                .toLocalizedString());
+            "Unable to mix region and entry snapshots in CacheCollector.");
       }
       if (snaps == null) {
         snaps = new CompoundEntrySnapshot(update.getName());
@@ -153,8 +151,7 @@ public class CacheCollector {
     } else if (update instanceof RegionSnapshot) {
       if (snaps instanceof CompoundEntrySnapshot) {
         throw new IllegalStateException(
-            LocalizedStrings.CacheCollector_UNABLE_TO_MIX_REGION_AND_ENTRY_SNAPSHOTS_IN_CACHECOLLECTOR
-                .toLocalizedString());
+            "Unable to mix region and entry snapshots in CacheCollector.");
       }
       if (snaps == null) {
         snaps = new CompoundRegionSnapshot(update.getName().toString());

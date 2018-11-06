@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation of the {@link DistributionConfig} interface for a snapshot of running
@@ -55,8 +54,9 @@ public class DistributionConfigSnapshot extends DistributionConfigImpl {
 
   @Override
   protected String _getUnmodifiableMsg(String name) {
-    return LocalizedStrings.DistributionConfigSnapshot_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_MODIFIED_WHILE_THE_SYSTEM_IS_RUNNING
-        .toLocalizedString(name);
+    return String.format(
+        "The %s configuration attribute can not be modified while the system is running.",
+        name);
   }
 
   @Override

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -26,11 +25,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -1059,7 +1058,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   /**
-   * Tests notification of events for bridge server in system bridge client process.
+   * Tests notification of events for cache server in system bridge client process.
    */
   @Test
   public void testServerEventsInPeerSystem() throws Exception {
@@ -1311,7 +1310,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   /**
-   * Tests notification of events for bridge server in system bridge client process.
+   * Tests notification of events for cache server in system bridge client process.
    */
   @Test
   public void testServerEventsInLonerClient() throws Exception {
@@ -1439,19 +1438,19 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     // gather details for later creation of pool...
     assertThat((int) vm0.invoke("getServerPort", () -> serverPort)).isEqualTo(ports[0]);
 
-    // create region which connects to bridge server
+    // create region which connects to cache server
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     configureConnectionPool(factory, getServerHostName(host), ports, false, -1, -1, null);
     createRegion(name, factory.create());
     assertThat(getRootRegion().getSubregion(name)).isNotNull();
 
-    await("wait for join").atMost(ASYNC_EVENT_WAIT_MILLIS, MILLISECONDS).until(() -> {
+    await("wait for join").until(() -> {
       synchronized (adapter) {
         return firedAdapter[JOINED];
       }
     });
-    await("wait for join").atMost(ASYNC_EVENT_WAIT_MILLIS, MILLISECONDS).until(() -> {
+    await("wait for join").until(() -> {
       synchronized (bridgeListener) {
         return firedBridge[JOINED];
       }
@@ -1496,19 +1495,19 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     addIgnoredException(IOException.class.getName());
     addIgnoredException(ConnectException.class.getName());
 
-    vm0.invoke(new SerializableRunnable("Disconnect bridge server") {
+    vm0.invoke(new SerializableRunnable("Disconnect cache server") {
       @Override
       public void run() {
         closeCache();
       }
     });
 
-    await("wait for server to leave").atMost(ASYNC_EVENT_WAIT_MILLIS, MILLISECONDS).until(() -> {
+    await("wait for server to leave").until(() -> {
       synchronized (adapter) {
         return firedAdapter[LEFT] || firedAdapter[CRASHED];
       }
     });
-    await("wait for server to leave").atMost(ASYNC_EVENT_WAIT_MILLIS, MILLISECONDS).until(() -> {
+    await("wait for server to leave").until(() -> {
       synchronized (bridgeListener) {
         return firedBridge[LEFT] || firedBridge[CRASHED];
       }
@@ -1556,12 +1555,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     // gather details for later creation of pool...
     assertThat((int) vm0.invoke(() -> serverPort)).isEqualTo(ports[0]);
 
-    await("wait for join").atMost(ASYNC_EVENT_WAIT_MILLIS, MILLISECONDS).until(() -> {
+    await("wait for join").until(() -> {
       synchronized (adapter) {
         return firedAdapter[JOINED];
       }
     });
-    await("wait for join").atMost(ASYNC_EVENT_WAIT_MILLIS, MILLISECONDS).until(() -> {
+    await("wait for join").until(() -> {
       synchronized (bridgeListener) {
         return firedBridge[JOINED];
       }
@@ -1648,7 +1647,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     }
 
     void awaitNotification(final long timeout, final TimeUnit unit) {
-      await().atMost(timeout, unit).until(() -> notified.get());
+      await().until(() -> notified.get());
     }
 
     void awaitWithoutNotification(final long timeout, final TimeUnit unit) {

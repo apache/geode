@@ -26,9 +26,7 @@ import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class DataSerializerRecoveryListener extends EndpointManager.EndpointListenerAdapter {
   private static final Logger logger = LogService.getLogger();
@@ -132,16 +130,13 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
           Throwable cause = e.getCause();
           boolean cnfException = false;
           if (cause instanceof ClassNotFoundException) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.DataSerializerRecoveryListener_ERROR_CLASSNOTFOUNDEXCEPTION,
-                cause.getMessage()));
+            logger.warn("DataSerializerRecoveryTask - Error ClassNotFoundException: {}",
+                cause.getMessage());
             cnfException = true;
           }
 
           if (!recoveryScheduled && !cnfException) {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.DataSerializerRecoveryListener_ERROR_RECOVERING_DATASERIALIZERS),
+            logger.warn("DataSerializerRecoveryTask - Error recovering dataSerializers: ",
                 e);
             try {
               background.schedule(new RecoveryTask(), pingInterval, TimeUnit.MILLISECONDS);

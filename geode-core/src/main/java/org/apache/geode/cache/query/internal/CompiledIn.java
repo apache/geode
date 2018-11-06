@@ -45,7 +45,6 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -128,14 +127,13 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
     if (!evalColln.getClass().isArray()) {
       throw new TypeMismatchException(
-          LocalizedStrings.CompiledIn_OPERAND_OF_IN_CANNOT_BE_INTERPRETED_AS_A_COLLECTION_IS_INSTANCE_OF_0
-              .toLocalizedString(evalColln.getClass().getName()));
+          String.format("Operand of IN cannot be interpreted as a Collection. Is instance of %s",
+              evalColln.getClass().getName()));
     }
     if (evalColln.getClass().getComponentType().isPrimitive()) {
       if (evalElm == null) {
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledIn_IN_OPERATOR_CHECK_FOR_NULL_IN_PRIMITIVE_ARRAY
-                .toLocalizedString());
+            "IN operator, check for null IN primitive array");
       }
     }
 

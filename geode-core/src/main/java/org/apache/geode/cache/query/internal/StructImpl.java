@@ -28,7 +28,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -51,7 +50,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   public StructImpl(StructTypeImpl type, Object[] values) {
     if (type == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructImpl_TYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "type must not be null");
     }
     this.type = type;
     this.values = values;

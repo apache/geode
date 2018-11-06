@@ -30,7 +30,6 @@ import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -75,8 +74,8 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
       } catch (QueryNodeException e) {
         logger.warn("Caught the following exception attempting parse query '" + query + "': ", e);
         throw new LuceneQueryException(
-            LocalizedStrings.StringQueryProvider_PARSING_QUERY_0_FAILED_DUE_TO_1
-                .toLocalizedString("'" + query + "'", e.getMessage()));
+            String.format("Parsing query %s failed due to: %s",
+                "'" + query + "'", e.getMessage()));
       }
     }
     return luceneQuery;

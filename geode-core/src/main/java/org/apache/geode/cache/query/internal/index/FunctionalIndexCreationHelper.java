@@ -45,7 +45,6 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
@@ -113,8 +112,8 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
     Object[] data = modifyIterDefToSuiteIMQ((CompiledIteratorDef) this.fromClauseIterators.get(0));
     if (data[0] == null || data[1] == null) {
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_FROM_CLAUSE_0
-              .toLocalizedString(fromClause));
+          String.format("Invalid FROM Clause : ' %s '",
+              fromClause));
     }
     this.fromClauseIterators.remove(0);
     this.fromClauseIterators.add(0, data[1]);
@@ -162,8 +161,8 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
     if (list == null) {
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_FROM_CLAUSE_0
-              .toLocalizedString(this.fromClause));
+          String.format("Invalid FROM Clause : ' %s '",
+              this.fromClause));
     }
 
     int size = list.size();
@@ -182,8 +181,9 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
         this.context.bindIterator(rIter);
         if (i != 0 && !iterDef.isDependentOnCurrentScope(this.context)) {
           throw new IndexInvalidException(
-              LocalizedStrings.FunctionalIndexCreationHelper_INVALID_FROM_CLAUSE_0_SUBSEQUENT_ITERATOR_EXPRESSIONS_IN_FROM_CLAUSE_MUST_BE_DEPENDENT_ON_PREVIOUS_ITERATORS
-                  .toLocalizedString(this.fromClause));
+              String.format(
+                  "Invalid FROM Clause : ' %s '; subsequent iterator expressions in from clause must be dependent on previous iterators",
+                  this.fromClause));
         }
 
         String definition = rIter.getDefinition();
@@ -239,8 +239,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 cv = cv.getReceiver();
               } else {
                 throw new IndexInvalidException(
-                    LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSEFROM_CLAUSE_IS_NEITHER_A_COMPILEDPATH_NOR_COMPILEDOPERATION
-                        .toLocalizedString());
+                    "FunctionalIndexCreationHelper::prepareFromClause:From clause is neither a CompiledPath nor CompiledOperation");
               }
               reconstruct.add(0, prevCV.getType());
             }
@@ -261,8 +260,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 this.isFirstIteratorRegionEntry = true;
               } else {
                 throw new IndexInvalidException(
-                    LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSEFROM_CLAUSE_DOES_NOT_EVALUATE_TO_VALID_COLLECTION
-                        .toLocalizedString());
+                    "FunctionalIndexCreationHelper::prepareFromClause:From clause does not evaluate to valid collection");
               }
 
               remove(reconstruct, 2, 0);
@@ -285,13 +283,11 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 } else if (tailID.equals("toList") || tailID.equals("toArray")) {
                   // TODO: add support for toList and toArray
                   throw new IndexInvalidException(
-                      LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSETOLIST_TOARRAY_NOT_SUPPORTED
-                          .toLocalizedString());
+                      "FunctionalIndexCreationHelper::prepareFromClause:toList and toArray not supported");
 
                 } else {
                   throw new IndexInvalidException(
-                      LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSETOLIST_TOARRAY_NOT_SUPPORTED
-                          .toLocalizedString());
+                      "FunctionalIndexCreationHelper::prepareFromClause:toList and toArray not supported");
                 }
                 remove(reconstruct, 2, 0);
 
@@ -335,8 +331,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                   Object obj = args.get(0);
                   if (obj instanceof CompiledBindArgument) {
                     throw new IndexInvalidException(
-                        LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSEENTRIES_METHOD_CALLED_WITH_COMPILEDBINDARGUMENT
-                            .toLocalizedString());
+                        "FunctionalIndexCreationHelper::prepareFromClause:entries method called with CompiledBindArgument");
                   }
                 }
               }
@@ -353,12 +348,10 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 } else if (methodName.equals("toList") || methodName.equals("toArray")) {
                   // TODO: add support for toList and toArray
                   throw new IndexInvalidException(
-                      LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSETOLIST_TOARRAY_NOT_SUPPORTED_YET
-                          .toLocalizedString());
+                      "FunctionalIndexCreationHelper::prepareFromClause:toList and toArray not supported yet");
                 } else {
                   throw new IndexInvalidException(
-                      LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSETOLIST_TOARRAY_NOT_SUPPORTED_YET
-                          .toLocalizedString());
+                      "FunctionalIndexCreationHelper::prepareFromClause:toList and toArray not supported yet");
                 }
 
                 remove(reconstruct, 2, 0);
@@ -401,8 +394,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
             }
           } else {
             throw new IndexInvalidException(
-                LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSEFROM_CLAUSE_IS_NEITHER_A_COMPILEDPATH_NOR_COMPILEDOPERATION
-                    .toLocalizedString());
+                "FunctionalIndexCreationHelper::prepareFromClause:From clause is neither a CompiledPath nor CompiledOperation");
           }
 
           if (!this.isFirstIteratorRegionEntry) {
@@ -427,8 +419,8 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
     }
     if (isFromClauseNull)
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_FROM_CLAUSE_0
-              .toLocalizedString(this.fromClause));
+          String.format("Invalid FROM Clause : ' %s '",
+              this.fromClause));
     this.fromClause = tempBuff.substring(0, tempBuff.length() - 2);
     this.fromClauseIterators = list;
   }
@@ -444,16 +436,16 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
     CompiledValue expr = this.compiler.compileQuery(indexedExpression);
     if (expr == null) {
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_INDEXED_EXPRESSION_0
-              .toLocalizedString(indexedExpression));
+          String.format("Invalid indexed expression : ' %s '",
+              indexedExpression));
     }
 
     if (expr instanceof CompiledUndefined || expr instanceof CompiledLiteral
         || expr instanceof CompiledComparison || expr instanceof CompiledBindArgument
         || expr instanceof CompiledNegation) {
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_INDEXED_EXPRESSION_0
-              .toLocalizedString(indexedExpression));
+          String.format("Invalid indexed expression : ' %s '",
+              indexedExpression));
     }
 
     try {
@@ -512,8 +504,8 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       }
     } catch (Exception e) {
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_INDEXED_EXPRESSION_0
-              .toLocalizedString(indexedExpression),
+          String.format("Invalid indexed expression : ' %s '",
+              indexedExpression),
           e);
     }
     this.indexedExpr = expr;
@@ -523,8 +515,8 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       throws IndexInvalidException {
     if (projectionAttributes != null && !projectionAttributes.equals("*")) {
       throw new IndexInvalidException(
-          LocalizedStrings.FunctionalIndexCreationHelper_INVALID_PROJECTION_ATTRIBUTES_0
-              .toLocalizedString(projectionAttributes));
+          String.format("Invalid projection attributes : ' %s '",
+              projectionAttributes));
     }
     this.projectionAttributes = projectionAttributes;
   }
@@ -561,8 +553,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
             cv = ((CompiledIndexOperation) cv).getReceiver();
           } else {
             throw new IndexInvalidException(
-                LocalizedStrings.FunctionalIndexCreationHelper_FUNCTIONALINDEXCREATIONHELPERPREPAREFROMCLAUSEFROM_CLAUSE_IS_NEITHER_A_COMPILEDPATH_NOR_COMPILEDOPERATION
-                    .toLocalizedString());
+                "FunctionalIndexCreationHelper::prepareFromClause:From clause is neither a CompiledPath nor CompiledOperation");
           }
           reconstruct.add(0, prevCV.getType());
         }

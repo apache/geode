@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene;
 
 import org.apache.geode.GemFireException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A LuceneIndexExistsException is thrown if a Lucene index that already exists is attempted to be
@@ -35,8 +34,8 @@ public class LuceneIndexExistsException extends GemFireException {
 
   @Override
   public String getMessage() {
-    return LocalizedStrings.LuceneIndexExistsException_INDEX_0_ON_REGION_1_ALREADY_EXISTS
-        .toLocalizedString(this.indexName, this.regionPath);
+    return String.format("Lucene index %s on region %s already exists.",
+        this.indexName, this.regionPath);
   }
 
   public String getIndexName() {

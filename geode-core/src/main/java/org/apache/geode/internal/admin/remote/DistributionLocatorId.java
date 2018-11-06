@@ -29,7 +29,6 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -74,7 +73,7 @@ public class DistributionLocatorId implements java.io.Serializable {
       this.host = SocketCreator.getLocalHost();
     } catch (UnknownHostException ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.DistributionLocatorId_FAILED_GETTING_LOCAL_HOST.toLocalizedString(), ex);
+          "Failed getting local host", ex);
     }
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
@@ -110,8 +109,8 @@ public class DistributionLocatorId implements java.io.Serializable {
 
     if (portStartIdx < 0 || portEndIdx < portStartIdx) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributionLocatorId__0_IS_NOT_IN_THE_FORM_HOSTNAMEPORT
-              .toLocalizedString(marshalled));
+          String.format("%s is not in the form hostname[port].",
+              marshalled));
     }
 
     int bindIdx = marshalled.lastIndexOf('@');
@@ -137,8 +136,8 @@ public class DistributionLocatorId implements java.io.Serializable {
       this.port = Integer.parseInt(marshalled.substring(portStartIdx + 1, portEndIdx));
     } catch (NumberFormatException nfe) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributionLocatorId_0_DOES_NOT_CONTAIN_A_VALID_PORT_NUMBER
-              .toLocalizedString(marshalled));
+          String.format("%s does not contain a valid port number",
+              marshalled));
     }
 
     if (bindIdx > -1) {

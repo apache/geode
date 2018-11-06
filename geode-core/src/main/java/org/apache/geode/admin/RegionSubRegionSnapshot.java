@@ -23,8 +23,8 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Region;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
@@ -54,7 +54,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
     } else {
       this.entryCount = reg.entrySet().size();
     }
-    final LogWriterI18n logger = reg.getCache().getLoggerI18n();
+    final LogWriter logger = reg.getCache().getLogger();
     if ((logger != null) && logger.fineEnabled()) {
       logger.fine("RegionSubRegionSnapshot Region entry count =" + this.entryCount + " for region ="
           + this.name);

@@ -33,7 +33,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LinkedStructSet extends LinkedHashSet<Struct>
     implements SelectResults<Struct>, Ordered, DataSerializableFixedID {
@@ -54,7 +53,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   public LinkedStructSet(StructTypeImpl structType) {
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -70,13 +69,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   public boolean add(Struct obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
-              .toLocalizedString());
+          "obj does not have the same StructType");
     }
     return super.add(s);
   }
@@ -114,7 +112,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.structType = (StructTypeImpl) elementType;
   }

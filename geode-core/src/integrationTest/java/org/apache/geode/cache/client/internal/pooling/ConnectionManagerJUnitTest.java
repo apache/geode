@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.client.internal.pooling;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -32,7 +32,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,8 +60,8 @@ import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -174,7 +173,7 @@ public class ConnectionManagerJUnitTest {
         return "waiting for manager " + descrip;
       }
     };
-    Wait.waitForCriterion(ev, 200, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   @Test
@@ -619,7 +618,7 @@ public class ConnectionManagerJUnitTest {
         waitUntilReady(ready, thread1);
         // the other thread will now try to close the connection map but it will block
         // because this thread has locked one of the connections
-        Awaitility.await().atMost(5, SECONDS).until(() -> connectionMap.closing);
+        await().until(() -> connectionMap.closing);
         try {
           connectionManager.borrowConnection(0);
           fail("expected a CacheClosedException");
@@ -647,7 +646,7 @@ public class ConnectionManagerJUnitTest {
   private void waitUntilReady(boolean[] ready, int index) {
     System.out.println(
         Thread.currentThread().getName() + ": waiting for thread" + (index + 1) + " to be ready");
-    Awaitility.await().atMost(20, SECONDS).until(() -> {
+    await().until(() -> {
       synchronized (ready) {
         return (ready[index]);
       }

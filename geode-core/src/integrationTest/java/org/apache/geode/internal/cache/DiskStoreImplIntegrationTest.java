@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -21,9 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -91,14 +90,14 @@ public class DiskStoreImplIntegrationTest {
     File baseDir = temporaryDirectory.newFolder();
     final int QUEUE_SIZE = 50;
     createRegionWithDiskStoreAndAsyncQueue(baseDir, QUEUE_SIZE);
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> diskStoreStats.getQueueSize() == 0);
+    await().until(() -> diskStoreStats.getQueueSize() == 0);
 
     putEntries(QUEUE_SIZE - 1);
-    Awaitility.await().atMost(1, TimeUnit.MINUTES)
+    await()
         .until(() -> diskStoreStats.getQueueSize() == QUEUE_SIZE - 1);
 
     putEntries(1);
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> diskStoreStats.getQueueSize() == 0);
+    await().until(() -> diskStoreStats.getQueueSize() == 0);
   }
 
   private void putEntries(int numToPut) {

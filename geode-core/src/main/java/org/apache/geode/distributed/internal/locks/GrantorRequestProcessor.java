@@ -35,9 +35,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
@@ -187,8 +185,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       InternalDistributedMember newElder, DLockService dls) {
     GrantorRequestContext grc = sys.getGrantorRequestContext();
     grc.waitingToChangeElder = true;
-    final LocalizedMessage message = LocalizedMessage.create(
-        LocalizedStrings.GrantorRequestProcessor_GRANTORREQUESTPROCESSOR_ELDERSYNCWAIT_THE_CURRENT_ELDER_0_IS_WAITING_FOR_THE_NEW_ELDER_1,
+    final String message = String.format(
+        "GrantorRequestProcessor.elderSyncWait: The current Elder %s is waiting for the new Elder %s.",
         new Object[] {grc.currentElder, newElder});
     while (grc.waitingToChangeElder) {
       logger.info(LogMarker.DLS_MARKER, message);

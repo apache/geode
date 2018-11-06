@@ -59,7 +59,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
@@ -97,33 +96,36 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   static {
     helpMap.put("launcher",
-        LocalizedStrings.LocatorLauncher_LOCATOR_LAUNCHER_HELP.toLocalizedString());
-    helpMap.put(Command.START.getName(), LocalizedStrings.LocatorLauncher_START_LOCATOR_HELP
-        .toLocalizedString(String.valueOf(getDefaultLocatorPort())));
+        "A GemFire launcher used to start, stop and determine a Locator's status.");
+    helpMap.put(Command.START.getName(), String.format(
+        "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the GemFire cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
+        String.valueOf(getDefaultLocatorPort())));
     helpMap.put(Command.STATUS.getName(),
-        LocalizedStrings.LocatorLauncher_STATUS_LOCATOR_HELP.toLocalizedString());
+        "Displays the status of a Locator given any combination of the bind-address[port], member name/ID, PID, or the directory in which the Locator is running.");
     helpMap.put(Command.STOP.getName(),
-        LocalizedStrings.LocatorLauncher_STOP_LOCATOR_HELP.toLocalizedString());
+        "Stops a running Locator given a member name/ID, PID, or the directory in which the Locator is running.");
     helpMap.put(Command.VERSION.getName(),
-        LocalizedStrings.LocatorLauncher_VERSION_LOCATOR_HELP.toLocalizedString());
+        "Displays GemFire product version information.");
     helpMap.put("bind-address",
-        LocalizedStrings.LocatorLauncher_LOCATOR_BIND_ADDRESS_HELP.toLocalizedString());
-    helpMap.put("debug", LocalizedStrings.LocatorLauncher_LOCATOR_DEBUG_HELP.toLocalizedString());
+        "Specifies the IP address on which to bind, or on which the Locator is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
+    helpMap.put("debug", "Displays verbose information during the invocation of the launcher.");
     helpMap.put("delete-pid-file-on-stop",
         "Specifies that this Locator's PID file should be deleted on stop.  The default is to not delete this Locator's PID file until JVM exit if --delete-pid-file-on-stop is not specified.");
-    helpMap.put("dir", LocalizedStrings.LocatorLauncher_LOCATOR_DIR_HELP.toLocalizedString());
-    helpMap.put("force", LocalizedStrings.LocatorLauncher_LOCATOR_FORCE_HELP.toLocalizedString());
+    helpMap.put("dir",
+        "Specifies the working directory where the Locator is running.  Defaults to the current working directory.");
+    helpMap.put("force",
+        "Enables any existing Locator PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
     helpMap.put("help",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_TO_PRINT_OUT_INFORMATION_INSTEAD_OF_PERFORMING_THE_COMMAND_THIS_OPTION_IS_SUPPORTED_BY_ALL_COMMANDS
-            .toLocalizedString());
+        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
     helpMap.put("hostname-for-clients",
-        LocalizedStrings.LocatorLauncher_LOCATOR_HOSTNAME_FOR_CLIENTS_HELP.toLocalizedString());
-    helpMap.put("member", LocalizedStrings.LocatorLauncher_LOCATOR_MEMBER_HELP.toLocalizedString());
-    helpMap.put("pid", LocalizedStrings.LocatorLauncher_LOCATOR_PID_HELP.toLocalizedString());
-    helpMap.put("port", LocalizedStrings.LocatorLauncher_LOCATOR_PORT_HELP
-        .toLocalizedString(String.valueOf(getDefaultLocatorPort())));
+        "An option to specify the hostname or IP address to send to clients so they can connect to this Locator. The default is to use the IP address to which the Locator is bound.");
+    helpMap.put("member", "Identifies the Locator by member name or ID in the GemFire cluster.");
+    helpMap.put("pid", "Indicates the OS process ID of the running Locator.");
+    helpMap.put("port", String.format(
+        "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",
+        String.valueOf(getDefaultLocatorPort())));
     helpMap.put("redirect-output",
-        LocalizedStrings.LocatorLauncher_LOCATOR_REDIRECT_OUTPUT_HELP.toLocalizedString());
+        "An option to cause the Locator to redirect standard out and standard error to the GemFire log file.");
   }
 
   private static final Map<Command, String> usageMap = new TreeMap<>();
@@ -651,19 +653,20 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return new LocatorState(this, Status.ONLINE);
       } catch (IOException e) {
         failOnStart(e);
-        throw new RuntimeException(LocalizedStrings.Launcher_Command_START_IO_ERROR_MESSAGE
-            .toLocalizedString(getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
+        throw new RuntimeException(
+            String.format("An IO error occurred while starting a %s in %s on %s: %s",
+                getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
             e);
       } catch (FileAlreadyExistsException e) {
         failOnStart(e);
         throw new RuntimeException(
-            LocalizedStrings.Launcher_Command_START_PID_FILE_ALREADY_EXISTS_ERROR_MESSAGE
-                .toLocalizedString(getServiceName(), getWorkingDirectory(), getId()),
+            String.format("A PID file already exists and a %s may be running in %s on %s.",
+                getServiceName(), getWorkingDirectory(), getId()),
             e);
       } catch (PidUnavailableException e) {
         failOnStart(e);
         throw new RuntimeException(
-            LocalizedStrings.Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE.toLocalizedString(
+            String.format("The process ID could not be determined while starting %s %s in %s: %s",
                 getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
             e);
       } catch (Error | RuntimeException e) {
@@ -677,8 +680,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       }
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.Launcher_Command_START_SERVICE_ALREADY_RUNNING_ERROR_MESSAGE
-              .toLocalizedString(getServiceName(), getWorkingDirectory(), getId()));
+          String.format("A %s is already running in %s on %s.",
+              getServiceName(), getWorkingDirectory(), getId()));
     }
   }
 
@@ -1282,8 +1285,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         }
       } catch (OptionException e) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE
-                .toLocalizedString("Locator", e.getMessage()),
+            String.format("An error occurred while parsing command-line arguments for the %s: %s",
+                "Locator", e.getMessage()),
             e);
       } catch (Exception e) {
         throw new RuntimeException(e.getMessage(), e);
@@ -1524,8 +1527,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           }
         } catch (UnknownHostException e) {
           throw new IllegalArgumentException(
-              LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE
-                  .toLocalizedString("Locator"),
+              String.format("The hostname/IP address to which the %s will be bound is unknown.",
+                  "Locator"),
               e);
         }
       }
@@ -1555,8 +1558,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setHostnameForClients(final String hostnameForClients) {
       if (isBlank(hostnameForClients)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
-                .toLocalizedString());
+            "The hostname used by clients to connect to the Locator must have an argument if the --hostname-for-clients command-line option is specified!");
       }
       this.hostnameForClients = hostnameForClients;
       return this;
@@ -1583,8 +1585,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setMemberName(final String memberName) {
       if (isBlank(memberName)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE
-                .toLocalizedString("Locator"));
+            String.format("The %s member name must be specified.",
+                "Locator"));
       }
       this.memberName = memberName;
       return this;
@@ -1616,7 +1618,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setPid(final Integer pid) {
       if (pid != null && pid < 0) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_PID_ERROR_MESSAGE.toLocalizedString());
+            "A process ID (PID) must be a non-negative integer value.");
       }
       this.pid = pid;
       return this;
@@ -1653,8 +1655,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       // to bind the socket, which we do not want.
       if (port != null && (port < 0 || port > 65535)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE
-                .toLocalizedString("Locator"));
+            String.format(
+                "The port on which the %s will listen must be between 1 and 65535 inclusive.",
+                "Locator"));
       }
       this.port = port;
       return this;
@@ -1727,8 +1730,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setWorkingDirectory(final String workingDirectory) {
       if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-                .toLocalizedString("Locator"),
+            String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
+                "Locator"),
             new FileNotFoundException(workingDirectory));
       }
       this.workingDirectory = workingDirectory;
@@ -1781,14 +1784,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             && !isSet(getDistributedSystemProperties(), NAME)
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(
-              LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-                  .toLocalizedString("Locator"));
+              String.format(
+                  AbstractLauncher.MEMBER_NAME_ERROR_MESSAGE,
+                  "Locator", "Locator"));
         }
 
         if (!CURRENT_DIRECTORY.equalsIgnoreCase(getWorkingDirectory())) {
           throw new IllegalStateException(
-              LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-                  .toLocalizedString("Locator"));
+              String.format(
+                  AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+                  "Locator", "Locator"));
         }
       }
     }

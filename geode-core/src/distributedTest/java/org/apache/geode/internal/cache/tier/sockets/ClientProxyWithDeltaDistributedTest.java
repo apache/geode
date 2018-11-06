@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -138,7 +137,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
     });
 
     client2.invoke(() -> {
-      await().atMost(30, SECONDS)
+      await()
           .until(() -> clientCache.getRegion(CACHING_PROXY_NAME).containsKey(0));
       assertThat(CacheClientUpdater.fullValueRequested).isFalse();
       assertThat(DeltaEnabledObject.fromDeltaInvoked()).isTrue();
@@ -167,7 +166,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
     });
 
     client2.invoke(() -> {
-      await().atMost(30, SECONDS).until(() -> ClientListener.KEY_ZERO_CREATED.get());
+      await().until(() -> ClientListener.KEY_ZERO_CREATED.get());
       assertThat(CacheClientUpdater.fullValueRequested).isFalse();
       assertThat(DeltaEnabledObject.fromDeltaInvoked()).isFalse();
     });

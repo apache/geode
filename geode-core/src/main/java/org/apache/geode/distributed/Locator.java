@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -375,8 +374,8 @@ public abstract class Locator {
    */
   @Override
   public String toString() {
-    return LocalizedStrings.DistributionLocator_DISTRIBUTION_LOCATOR_ON_0
-        .toLocalizedString(asString());
+    return String.format("Distribution Locator on %s",
+        asString());
   }
 
   /**

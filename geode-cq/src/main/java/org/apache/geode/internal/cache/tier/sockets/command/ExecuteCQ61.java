@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.vmotion.VMotionObserver;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
@@ -99,8 +98,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
       if (proxy != null && !proxy.isNotifyBySubscription()) {
         // This should have been taken care at the client.
         String err =
-            LocalizedStrings.ExecuteCQ_SERVER_NOTIFYBYSUBSCRIPTION_MODE_IS_SET_TO_FALSE_CQ_EXECUTION_IS_NOT_SUPPORTED_IN_THIS_MODE
-                .toLocalizedString();
+            "Server notifyBySubscription mode is set to false. CQ execution is not supported in this mode.";
         sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(),
             null, serverConnection);
         return;
@@ -210,7 +208,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
     if (!sendResults && successQuery) {
       // Send OK to client
       sendCqResponse(MessageType.REPLY,
-          LocalizedStrings.ExecuteCQ_CQ_CREATED_SUCCESSFULLY.toLocalizedString(),
+          "cq created successfully.",
           clientMessage.getTransactionId(), null, serverConnection);
 
       long start2 = DistributionStats.getStatTime();

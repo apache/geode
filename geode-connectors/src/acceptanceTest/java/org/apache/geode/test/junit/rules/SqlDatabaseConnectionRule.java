@@ -14,18 +14,17 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import com.palantir.docker.compose.connection.DockerPort;
 import com.palantir.docker.compose.connection.waiting.HealthChecks;
-import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 public abstract class SqlDatabaseConnectionRule extends ExternalResource
@@ -65,7 +64,7 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
   @Override
   public Connection getConnection() throws SQLException {
     String connectionUrl = getConnectionUrl();
-    Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
+    await().ignoreExceptions()
         .untilAsserted(() -> assertThat(DriverManager.getConnection(connectionUrl)).isNotNull());
     Connection connection = DriverManager.getConnection(connectionUrl);
     return connection;

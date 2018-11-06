@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.cq.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -28,10 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -70,7 +69,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -91,7 +89,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
   /**
-   * The port on which the bridge server was started in this VM
+   * The port on which the cache server was started in this VM
    */
   private static int bridgeServerPort;
 
@@ -1071,8 +1069,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
       final CqStateImpl cqState = (CqStateImpl) cQuery.getState();
       // Wait max time, till the CQ state is as expected.
-      Awaitility.await("cqState never became " + state).atMost(MAX_TIME, TimeUnit.MILLISECONDS)
-          .pollInterval(200, TimeUnit.MILLISECONDS)
+      await("cqState never became " + state)
           .until(() -> cqState.getState(), Matchers.equalTo(state));
     });
   }
@@ -2565,8 +2562,8 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     // Create CQs.
     createCQ(client, "testQuery_3", "select * from /" + regions[0]);
     String expectedError =
-        LocalizedStrings.CqQueryImpl_CQ_NOT_SUPPORTED_FOR_REPLICATE_WITH_LOCAL_DESTROY
-            .toLocalizedString("/" + regions[0], EvictionAction.LOCAL_DESTROY);
+        String.format("CQ is not supported for replicated region: %s with eviction action: %s",
+            "/" + regions[0], EvictionAction.LOCAL_DESTROY);
     try {
       executeCQ(client, "testQuery_3", false, expectedError);
     } catch (Exception e) {
@@ -3224,10 +3221,10 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /*
-   * Used only by tests that start and stop a server only to need to start the bridge server again
+   * Used only by tests that start and stop a server only to need to start the cache server again
    */
   private void restartBridgeServer(VM server, final int port) {
-    server.invoke(new CacheSerializableRunnable("Start bridge server") {
+    server.invoke(new CacheSerializableRunnable("Start cache server") {
       public void run2() {
         try {
           restartBridgeServers(getCache());
@@ -3240,7 +3237,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
 
   /**
-   * Starts a bridge server on the given port to serve up the given region.
+   * Starts a cache server on the given port to serve up the given region.
    *
    * @since GemFire 4.0
    */
@@ -3249,7 +3246,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 4.0
@@ -3265,7 +3262,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    *
    * @since GemFire 4.0
    */

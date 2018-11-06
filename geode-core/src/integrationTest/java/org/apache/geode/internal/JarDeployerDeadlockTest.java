@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -25,10 +26,8 @@ import java.lang.management.ThreadMXBean;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -88,7 +87,7 @@ public class JarDeployerDeadlockTest {
     }
 
     executorService.shutdown();
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(executorService::isTerminated);
+    await().until(executorService::isTerminated);
 
     ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     long[] threadIds = threadMXBean.findDeadlockedThreads();

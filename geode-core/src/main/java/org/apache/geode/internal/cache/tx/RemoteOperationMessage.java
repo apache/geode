@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TransactionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -182,8 +181,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
         thr = new RegionDestroyedException(
-            LocalizedStrings.RemoteOperationMessage_0_COULD_NOT_FIND_REGION_1
-                .toLocalizedString(dm.getDistributionManagerId(), regionPath),
+            String.format("%s : could not find region %s",
+                dm.getDistributionManagerId(), regionPath),
             regionPath);
         return; // reply sent in finally block below
       }

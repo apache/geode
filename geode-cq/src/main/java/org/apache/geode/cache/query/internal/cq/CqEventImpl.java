@@ -27,7 +27,6 @@ import org.apache.geode.cache.client.internal.QueueManager;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CqEventImpl implements CqEvent {
 
@@ -123,8 +122,7 @@ public class CqEventImpl implements CqEvent {
   public void setException() {
     // Needs to be changed.
     this.throwable = new Throwable(
-        LocalizedStrings.CqEventImpl_EXCEPTION_OCCURRED_WHILE_APPLYING_QUERY_ON_A_CACHE_EVENT
-            .toLocalizedString());
+        "Exception occurred while applying query on a cache event.");
   }
 
   public void setException(String exceptionText) {

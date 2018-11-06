@@ -29,9 +29,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Provides the ways to send emails to all the registered email id It also provides the way to
@@ -86,8 +84,7 @@ public class MailManager {
 
     if (mailHost == null || mailHost.length() == 0 || emailData == null
         || mailToAddresses.length == 0) {
-      logger.error(LocalizedMessage
-          .create(LocalizedStrings.MailManager_REQUIRED_MAILSERVER_CONFIGURATION_NOT_SPECIFIED));
+      logger.error("Required mail server configuration is not specfied.");
       if (logger.isDebugEnabled()) {
         logger.debug("Exited MailManager:processEmail: Not sending email as conditions not met");
       }
@@ -106,7 +103,7 @@ public class MailManager {
       }
 
       if (subject == null) {
-        subject = LocalizedStrings.MailManager_ALERT_MAIL_SUBJECT.toLocalizedString();
+        subject = "Alert from GemFire Admin Agent";
       }
       mimeMessage.setSubject(subject);
 
@@ -116,9 +113,8 @@ public class MailManager {
       mimeMessage.setText(message);
 
       Transport.send(mimeMessage);
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.MailManager_EMAIL_ALERT_HAS_BEEN_SENT_0_1_2,
-              new Object[] {mailToList, subject, message}));
+      logger.info("Email sent to {}. Subject: {}, Content: {}",
+          new Object[] {mailToList, subject, message});
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -132,21 +128,19 @@ public class MailManager {
       // is still usable:
       SystemFailure.checkFailure();
       StringBuilder buf = new StringBuilder();
-      buf.append(LocalizedStrings.MailManager_AN_EXCEPTION_OCCURRED_WHILE_SENDING_EMAIL
-          .toLocalizedString());
+      buf.append("An exception occurred while sending email.");
       buf.append(
-          LocalizedStrings.MailManager_UNABLE_TO_SEND_EMAIL_PLEASE_CHECK_YOUR_EMAIL_SETTINGS_AND_LOG_FILE
-              .toLocalizedString());
+          "Unable to send email. Please check your mail settings and the log file.");
       buf.append("\n\n").append(
-          LocalizedStrings.MailManager_EXCEPTION_MESSAGE_0.toLocalizedString(ex.getMessage()));
+          String.format("Exception message: %s", ex.getMessage()));
       buf.append("\n\n").append(
-          LocalizedStrings.MailManager_FOLLOWING_EMAIL_WAS_NOT_DELIVERED.toLocalizedString());
+          "Following email was not delivered:");
       buf.append("\n\t")
-          .append(LocalizedStrings.MailManager_MAIL_HOST_0.toLocalizedString(mailHost));
-      buf.append("\n\t").append(LocalizedStrings.MailManager_FROM_0.toLocalizedString(mailFrom));
-      buf.append("\n\t").append(LocalizedStrings.MailManager_TO_0.toLocalizedString(mailToList));
-      buf.append("\n\t").append(LocalizedStrings.MailManager_SUBJECT_0.toLocalizedString(subject));
-      buf.append("\n\t").append(LocalizedStrings.MailManager_CONTENT_0.toLocalizedString(message));
+          .append(String.format("Mail Host: %s", mailHost));
+      buf.append("\n\t").append(String.format("From: %s", mailFrom));
+      buf.append("\n\t").append(String.format("To: %s", mailToList));
+      buf.append("\n\t").append(String.format("Subject: %s", subject));
+      buf.append("\n\t").append(String.format("Content: %s", message));
 
       logger.error(buf.toString(), ex);
     }

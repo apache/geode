@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular app vm to request all the subregions of a given parent
@@ -61,7 +60,7 @@ public class RegionSizeRequest extends RegionAdminRequest implements Cancellable
   }
 
   public RegionSizeRequest() {
-    friendlyName = LocalizedStrings.RegionSizeRequest_FETCH_REGION_SIZE.toLocalizedString();
+    friendlyName = "Fetch region size";
   }
 
   public synchronized void cancel() {

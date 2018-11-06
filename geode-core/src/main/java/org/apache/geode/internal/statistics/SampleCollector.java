@@ -31,10 +31,8 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -276,10 +274,8 @@ public class SampleCollector {
             handler.close();
           }
         } catch (GemFireException ignore) {
-          logger.warn(LogMarker.STATISTICS_MARKER,
-              LocalizedMessage.create(
-                  LocalizedStrings.HostStatSampler_STATISTIC_ARCHIVER_SHUTDOWN_FAILED_BECAUSE__0,
-                  ignore.getMessage()));
+          logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
+              ignore.getMessage());
         }
         StatMonitorHandler handler = this.statMonitorHandler;
         if (handler != null) {

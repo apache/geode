@@ -39,10 +39,12 @@ public abstract class VMProvider {
 
   public void stop(boolean cleanWorkingDir) {
     getVM().invoke(() -> {
+      // this did not clean up the files
       ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
 
+    // clean up all the files under the working dir if asked to do so
     if (cleanWorkingDir) {
       Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
     }
@@ -55,15 +57,13 @@ public abstract class VMProvider {
   }
 
   public boolean isLocator() {
-    return getVM().invoke(() -> {
-      return ClusterStartupRule.getLocator() != null;
-    });
+    return getVM().invoke(() -> ClusterStartupRule.getLocator() != null);
   }
 
+  // a server can be started without a cache server, so as long as this member has no locator,
+  // it's deemed as a server
   public boolean isServer() {
-    return getVM().invoke(() -> {
-      return ClusterStartupRule.getServer() != null;
-    });
+    return getVM().invoke(() -> ClusterStartupRule.getLocator() == null);
   }
 
   public void invoke(final SerializableRunnableIF runnable) {

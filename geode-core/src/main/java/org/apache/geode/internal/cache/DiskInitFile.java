@@ -79,7 +79,6 @@ import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -477,17 +476,17 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     } catch (EOFException ex) {
       // ignore since a partial record write can be caused by a crash
       // throw new
-      // DiskAccessException(LocalizedStrings.Oplog_FAILED_READING_FILE_DURING_RECOVERY_FROM_0
-      // .toLocalizedString(this.ifFile.getPath()), ex, this.parent);
+      // DiskAccessException(String.format("Failed to read file during recovery from %s",
+      // this.ifFile.getPath()), ex, this.parent);
     } catch (ClassNotFoundException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.Oplog_FAILED_READING_FILE_DURING_RECOVERY_FROM_0
-              .toLocalizedString(this.ifFile.getPath()),
+          String.format("Failed to read file during recovery from %s",
+              this.ifFile.getPath()),
           ex, this.parent);
     } catch (IOException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.Oplog_FAILED_READING_FILE_DURING_RECOVERY_FROM_0
-              .toLocalizedString(this.ifFile.getPath()),
+          String.format("Failed to read file during recovery from %s",
+              this.ifFile.getPath()),
           ex, this.parent);
     } catch (CancelException ignore) {
       if (logger.isDebugEnabled()) {
@@ -950,7 +949,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -970,7 +969,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -989,7 +988,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1013,7 +1012,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, true);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1040,7 +1039,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, true);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1064,7 +1063,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, true);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1091,7 +1090,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, doStats);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1297,8 +1296,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb);
     } catch (IOException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_SAVING_INSTANTIATOR_TO_DISK_BECAUSE_0
-              .toLocalizedString(ex),
+          String.format("Failed saving instantiator to disk because: %s",
+              ex),
           this.parent);
     } finally {
       unlock(true);
@@ -1351,8 +1350,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb);
     } catch (IOException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_SAVING_DATA_SERIALIZER_TO_DISK_BECAUSE_0
-              .toLocalizedString(ex),
+          String.format("Failed saving data serializer to disk because: %s",
+              ex),
           this.parent);
     } finally {
       unlock(true);
@@ -1551,7 +1550,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
     } catch (IOException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.DiskRegion_COULD_NOT_OPEN_0.toLocalizedString(this.ifFile.getPath()), ex,
+          String.format("Could not open %s.", this.ifFile.getPath()), ex,
           this.parent);
     }
   }
@@ -1583,7 +1582,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
     } catch (IOException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.DiskRegion_COULD_NOT_OPEN_0.toLocalizedString(this.ifFile.getPath()), ex,
+          String.format("Could not open %s.", this.ifFile.getPath()), ex,
           this.parent);
     }
   }
@@ -1685,7 +1684,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1705,7 +1704,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1742,7 +1741,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1767,7 +1766,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, false);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1786,7 +1785,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, false);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1805,7 +1804,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, true);
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -1859,7 +1858,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       return hdos.toByteArray();
     } catch (IOException ex) {
       throw new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
     }
   }
@@ -1873,13 +1872,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       return result;
     } catch (IOException io) {
       throw new DiskAccessException(
-          LocalizedStrings.Oplog_FAILED_READING_FILE_DURING_RECOVERY_FROM_0
-              .toLocalizedString(this.ifFile.getPath()),
+          String.format("Failed to read file during recovery from %s",
+              this.ifFile.getPath()),
           io, this.parent);
     } catch (ClassNotFoundException cnf) {
       throw new DiskAccessException(
-          LocalizedStrings.Oplog_FAILED_READING_FILE_DURING_RECOVERY_FROM_0
-              .toLocalizedString(this.ifFile.getPath()),
+          String.format("Failed to read file during recovery from %s",
+              this.ifFile.getPath()),
           cnf, this.parent);
     }
   }
@@ -1891,13 +1890,14 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     File f = new File(this.parent.getInfoFileDir().getDir(), "BACKUP" + name + IF_FILE_EXT);
     final boolean didNotExist = !f.exists();
     if (shouldExist && didNotExist) {
-      String msg = LocalizedStrings.DiskInitFile_THE_INIT_FILE_0_DOES_NOT_EXIST
-          .toLocalizedString(new Object[] {f});
+      String msg = String.format("The init file %s does not exist.",
+          new Object[] {f});
       if (!oplogs.isEmpty()) {
         Set<File> allOplogs = new LinkedHashSet(oplogs);
         msg +=
-            LocalizedStrings.DiskInitFile_IF_IT_NO_LONGER_EXISTS_DELETE_FOLLOWING_FILES_TO_CREATE_THIS_DISK_STORE_EXISTING_OPLOGS_0
-                .toLocalizedString(new Object[] {allOplogs});
+            String.format(
+                "If it no longer exists then delete the following files to be able to create this disk store. Existing oplogs are: %s",
+                new Object[] {allOplogs});
       }
       throw new IllegalStateException(msg);
     }
@@ -2015,7 +2015,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(hdos, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);
@@ -2799,7 +2799,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
-          LocalizedStrings.DiskInitFile_FAILED_INIT_FILE_WRITE_BECAUSE_0.toLocalizedString(ex),
+          String.format("Failed writing data to initialization file because: %s", ex),
           this.parent);
       if (!this.compactInProgress) {
         this.parent.handleDiskAccessException(dae);

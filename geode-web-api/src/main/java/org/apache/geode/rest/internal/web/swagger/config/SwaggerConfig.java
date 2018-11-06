@@ -26,7 +26,6 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 @PropertySource({"classpath:swagger.properties"})
 @Configuration
@@ -45,14 +44,16 @@ public class SwaggerConfig {
    */
   private ApiInfo apiInfo() {
     return new ApiInfoBuilder()
-        .title(LocalizedStrings.SwaggerConfig_VENDOR_PRODUCT_LINE.toLocalizedString())
-        .description(LocalizedStrings.SwaggerConfig_DESCRIPTOR.toLocalizedString()).version("1.0")
-        .termsOfServiceUrl(LocalizedStrings.SwaggerConfig_EULA_LINK.toLocalizedString())
+        .title("Apache Geode Developer REST API")
+        .description(
+            "Developer REST API and interface to Geode's distributed, in-memory data grid and cache.")
+        .version("1.0")
+        .termsOfServiceUrl("http://www.apache.org/licenses/")
         .license("Apache License, version 2.0")
-        .licenseUrl(LocalizedStrings.SwaggerConfig_EULA_LINK.toLocalizedString())
+        .licenseUrl("http://www.apache.org/licenses/")
         .contact(new Contact("the Apache Geode Community",
-            LocalizedStrings.SwaggerConfig_PRODUCT_LINK.toLocalizedString(),
-            LocalizedStrings.SwaggerConfig_DEVELOPER_EMAIL.toLocalizedString()))
+            "http://geode.apache.org",
+            "dev@geode.apache.org"))
         .build();
   }
 }

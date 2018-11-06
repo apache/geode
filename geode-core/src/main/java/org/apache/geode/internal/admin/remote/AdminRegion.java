@@ -44,7 +44,6 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a snapshot of a {@link Region}.
@@ -321,127 +320,127 @@ public class AdminRegion implements Region {
 
   public void writeToDisk() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.AdminRegion_SHOULD_NOT_BE_CALLED.toLocalizedString());
+        "Should not be called");
   }
 
   public void registerInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterest(Object key, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterest(Object key, boolean isDurable, boolean receiveValues)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex, boolean isDurable, boolean receiveValues)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public List getInterestList() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public List getInterestListRegex() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public Set keySetOnServer() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public boolean containsKeyOnServer(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   @Override
   public int sizeOnServer() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   @Override
   public boolean isEmptyOnServer() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   @Override // GemStoneAddition

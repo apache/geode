@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.admin.AdminDistributedSystemFactory.defineDistributedSystem;
+import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistributedSystem;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
 import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -78,6 +82,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -86,7 +91,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 
@@ -385,15 +389,15 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testWaitingMemberList() throws Exception {
-    Host host = Host.getHost(0);
+    Host host = getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
     createPersistentRegion(vm2);
 
@@ -410,28 +414,28 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
 
-    LogWriterUtils.getLogWriter().info("closing region in vm0");
+    getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
 
     updateTheEntry(vm1);
 
-    LogWriterUtils.getLogWriter().info("closing region in vm1");
+    getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
 
     updateTheEntry(vm2, "D");
 
-    LogWriterUtils.getLogWriter().info("closing region in vm2");
+    getLogWriter().info("closing region in vm2");
     closeRegion(vm2);
 
 
     // These ought to wait for VM2 to come back
-    LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    getLogWriter().info("Creating region in VM0");
     AsyncInvocation future0 = createPersistentRegionAsync(vm0);
 
     waitForBlockedInitialization(vm0);
     assertTrue(future0.isAlive());
 
-    LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    getLogWriter().info("Creating region in VM1");
     final AsyncInvocation future1 = createPersistentRegionAsync(vm1);
     waitForBlockedInitialization(vm1);
     assertTrue(future1.isAlive());
@@ -444,11 +448,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         DistributedSystemConfig config;
         AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
+          config = defineDistributedSystem(getSystem(), "");
+          adminDS = getDistributedSystem(config);
           adminDS.connect();
           Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-          LogWriterUtils.getLogWriter().info("waiting members=" + missingIds);
+          getLogWriter().info("waiting members=" + missingIds);
           assertEquals(1, missingIds.size());
         } catch (AdminException e) {
           throw new RuntimeException(e);
@@ -468,7 +472,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
 
-    Wait.waitForCriterion(new WaitCriterion() {
+    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
       @Override
       public boolean done() {
@@ -479,7 +483,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       public String description() {
         return "Waiting for blocked initialization to terminate because the cache was closed.";
       }
-    }, 30000, 500, true);
+    });
 
     // Now we should be missing 2 members
     vm3.invoke(new SerializableRunnable("check waiting members again") {
@@ -490,11 +494,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         DistributedSystemConfig config;
         AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
+          config = defineDistributedSystem(getSystem(), "");
+          adminDS = getDistributedSystem(config);
           adminDS.connect();
           final AdminDistributedSystem connectedDS = adminDS;
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
             @Override
             public String description() {
@@ -512,7 +516,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
               return 2 == missingIds.size();
             }
 
-          }, MAX_WAIT, 500, true);
+          });
 
         } catch (AdminException e) {
           throw new RuntimeException(e);
@@ -1233,7 +1237,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       @Override
       public void run() {
         final Cache cache = getCache();
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           @Override
           public String description() {
@@ -1246,7 +1250,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
             return region != null;
           }
 
-        }, MAX_WAIT, 100, true);
+        });
       }
     });
 

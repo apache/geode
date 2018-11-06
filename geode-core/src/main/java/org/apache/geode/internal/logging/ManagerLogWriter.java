@@ -22,9 +22,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
@@ -218,11 +216,11 @@ public class ManagerLogWriter extends LocalLogWriter {
             mainLogWriter = new LocalLogWriter(INFO_LEVEL,
                 new PrintStream(new FileOutputStream(metaLogFile, true), true));
             if (activeLogFile == null) {
-              mainLogWriter.info(LocalizedStrings.ManagerLogWriter_SWITCHING_TO_LOG__0,
-                  config.getLogFile());
+              mainLogWriter.info(String.format("Switching to log %s",
+                  config.getLogFile()));
             }
           } else {
-            mainLogWriter.info(LocalizedStrings.ManagerLogWriter_ROLLING_CURRENT_LOG_TO_0, newLog);
+            mainLogWriter.info(String.format("Rolling current log to %s", newLog));
           }
         }
         boolean renameOK = true;

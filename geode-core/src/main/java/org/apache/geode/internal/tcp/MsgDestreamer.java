@@ -21,17 +21,16 @@ import java.nio.ByteBuffer;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <p>
@@ -186,8 +185,7 @@ public class MsgDestreamer {
         throw (IOException) this.failure;
       } else {
         IOException io =
-            new IOException(LocalizedStrings.MsgDestreamer_FAILURE_DURING_MESSAGE_DESERIALIZATION
-                .toLocalizedString());
+            new IOException("failure during message deserialization");
         io.initCause(this.failure);
         throw io;
       }
@@ -538,11 +536,11 @@ public class MsgDestreamer {
 
   }
 
-  private static LogWriterI18n getLogger() {
-    LogWriterI18n result = null;
+  private static LogWriter getLogger() {
+    LogWriter result = null;
     InternalDistributedSystem ids = InternalDistributedSystem.unsafeGetConnectedInstance();
     if (ids != null) {
-      result = ids.getLogWriter().convertToLogWriterI18n();
+      result = ids.getLogWriter();
     }
     return result;
   }

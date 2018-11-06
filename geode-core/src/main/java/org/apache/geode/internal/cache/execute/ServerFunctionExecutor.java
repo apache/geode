@@ -31,7 +31,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class ServerFunctionExecutor extends AbstractExecution {
 
@@ -231,23 +230,23 @@ public class ServerFunctionExecutor extends AbstractExecution {
   @Override
   public Execution withFilter(Set filter) {
     throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
-            .toLocalizedString("filter"));
+        String.format("Cannot specify %s for data independent functions",
+            "filter"));
   }
 
   @Override
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
-            .toLocalizedString("buckets as filter"));
+        String.format("Cannot specify %s for data independent functions",
+            "buckets as filter"));
   }
 
   @Override
   public Execution setArguments(Object args) {
     if (args == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("args"));
+          String.format("The input %s for the execute function request is null",
+              "args"));
     }
     return new ServerFunctionExecutor(this, args);
   }
@@ -261,8 +260,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("Result Collector"));
+          String.format("The input %s for the execute function request is null",
+              "Result Collector"));
     }
     return new ServerFunctionExecutor(this, rs);
   }
@@ -271,8 +270,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("MemberMapped Args"));
+          String.format("The input %s for the execute function request is null",
+              "MemberMapped Args"));
     }
     return new ServerFunctionExecutor(this, argument);
   }
@@ -288,8 +287,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
     this.isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);

@@ -23,7 +23,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 public class CqTimeTestListener implements CqListener {
@@ -181,7 +181,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got create event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -195,7 +195,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got destroy event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -209,7 +209,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got invalidate event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -223,7 +223,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got update event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 
@@ -237,7 +237,7 @@ public class CqTimeTestListener implements CqListener {
         return "never got close event for CQ " + CqTimeTestListener.this.cqName;
       }
     };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     return true;
   }
 

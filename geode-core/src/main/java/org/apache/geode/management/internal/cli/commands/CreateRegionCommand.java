@@ -41,9 +41,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
@@ -388,7 +386,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
         if (!specifiedGatewaySenders.isEmpty()) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
-              gatewaySenderIds));
+              (String[]) gatewaySenderIds));
         }
       }
     }
@@ -398,7 +396,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
       regionAttributes = functionArgs.getRegionAttributes();
       if (regionAttributes != null && !regionAttributes.getDataPolicy().withPersistence()) {
         String subMessage =
-            LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
+            "Only regions with persistence or overflow to disk can specify DiskStore";
         String message = subMessage + ". "
             + CliStrings.format(
                 CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE,
@@ -430,7 +428,8 @@ public class CreateRegionCommand extends InternalGfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       } else {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID, groups));
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
+                (String[]) groups));
       }
     }
 
@@ -442,8 +441,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
     if (xmlEntity != null) {
       verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-              .addXmlEntity(xmlEntity, groups));
+          () -> getConfigurationPersistenceService().addXmlEntity(xmlEntity, groups));
     }
     return result;
   }
@@ -604,8 +602,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
       if (localMaxMemory != null) {
         if (localMaxMemory < 0) {
           return ResultBuilder.createUserErrorResult(
-              LocalizedStrings.AttributesFactory_PARTITIONATTRIBUTES_LOCALMAXMEMORY_MUST_NOT_BE_NEGATIVE
-                  .toLocalizedString());
+              "PartitionAttributes localMaxMemory must not be negative.");
         }
       }
       Long totalMaxMemory =
@@ -613,8 +610,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
       if (totalMaxMemory != null) {
         if (totalMaxMemory <= 0) {
           return ResultBuilder.createUserErrorResult(
-              LocalizedStrings.AttributesFactory_TOTAL_SIZE_OF_PARTITION_REGION_MUST_BE_0
-                  .toLocalizedString());
+              "Total size of partition region must be > 0.");
         }
       }
       Integer redundantCopies =
@@ -666,7 +662,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
         if (regionShortcut != null && !RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS
             .contains(RegionShortcut.valueOf(regionShortcut))) {
           String subMessage =
-              LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
+              "Only regions with persistence or overflow to disk can specify DiskStore";
           String message = subMessage + ". "
               + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
                   new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
@@ -704,8 +700,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
           || regionTtlAction != null || entryIdleExpiry != null || entryTTTLExpiry != null)
           && (statisticsEnabled == null || !statisticsEnabled)) {
         String message =
-            LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
-                .toLocalizedString();
+            "Statistics must be enabled for expiration";
         return ResultBuilder.createUserErrorResult(message + ".");
       }
 

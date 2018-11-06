@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 
+import org.apache.commons.lang.SystemUtils;
+
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
  * backward-compatibility testing in the geode-core build.gradle file.
@@ -136,8 +138,16 @@ public class VersionManager {
     readVersionsFile(fileName, (version, path) -> {
       Optional<String> parsedVersion = parseVersion(version);
       if (parsedVersion.isPresent()) {
-        classPaths.put(parsedVersion.get(), path);
-        testVersions.add(parsedVersion.get());
+        if (parsedVersion.get().equals("140") && SystemUtils.isJavaVersionAtLeast(900)) {
+          // Serialization filtering was added in 140, but the support for them in java 9+ was added
+          // in 150. As a result, 140 servers and clients will fail categorically when run in
+          // Java 9+ even with the additional libs (jaxb and activation) in the classpath
+          System.err.println(
+              "Geode version 140 is incompatible with Java 9 and higher.  Skipping this version.");
+        } else {
+          classPaths.put(parsedVersion.get(), path);
+          testVersions.add(parsedVersion.get());
+        }
       }
     });
     Collections.sort(testVersions);

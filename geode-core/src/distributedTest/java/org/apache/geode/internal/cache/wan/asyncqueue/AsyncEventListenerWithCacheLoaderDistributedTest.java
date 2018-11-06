@@ -18,11 +18,10 @@ package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -267,7 +266,7 @@ public class AsyncEventListenerWithCacheLoaderDistributedTest implements Seriali
   private void validateAsyncEventForOperationDetail(int expectedSize, OperationType operationType) {
     Map<?, AsyncEvent> eventsMap = (Map<?, AsyncEvent>) getSpyAsyncEventListener().getEventsMap();
 
-    await().atMost(TWO_MINUTES)
+    await()
         .untilAsserted(() -> assertThat(eventsMap.size()).isEqualTo(expectedSize));
 
     for (AsyncEvent<?, ?> asyncEvent : eventsMap.values()) {

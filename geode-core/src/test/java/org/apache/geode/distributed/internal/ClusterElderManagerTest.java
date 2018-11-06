@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -27,11 +28,9 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -179,7 +178,7 @@ public class ClusterElderManagerTest {
 
     Callable<Void> updateMembershipView = () -> {
       // Wait for membership listener to be added
-      Awaitility.await().until(() -> membershipListener.get() != null);
+      await().until(() -> membershipListener.get() != null);
 
       currentMembers.set(Arrays.asList(member0));
       membershipListener.get().memberDeparted(clusterDistributionManager, member1, true);
@@ -278,7 +277,7 @@ public class ClusterElderManagerTest {
     EnumSet<Thread.State> waitingStates =
         EnumSet.of(Thread.State.WAITING, Thread.State.TIMED_WAITING);
     try {
-      Awaitility.await().atMost(1, TimeUnit.MINUTES)
+      await()
           .until(() -> waitingStates.contains(waitThread.getState()));
     } finally {
       waitThread.interrupt();

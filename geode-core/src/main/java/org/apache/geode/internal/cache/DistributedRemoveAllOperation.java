@@ -874,9 +874,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       @Released
       EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), this.context, rgn,
           this.possibleDuplicate, this.needsRouting, this.callbackArg, true, skipCallbacks);
-      // rgn.getLogWriterI18n().info(LocalizedStrings.DEBUG, "RemoveAllMessage.doEntryRemove
+      // rgn.getLogWriterI18n().info(String.format("%s", "RemoveAllMessage.doEntryRemove
       // sender=" + getSender() +
-      // " event="+ev);
+      // " event="+ev));
       // we don't need to set old value here, because the msg is from remote. local old value will
       // get from next step
       try {

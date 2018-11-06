@@ -14,6 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.out;
+import static org.apache.geode.internal.cache.DistributedCacheOperation.SLOW_DISTRIBUTION_MS;
+import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.DuringPackingImage;
+import static org.apache.geode.internal.cache.InitialImageOperation.getGIITestHookForCheckingPurpose;
+import static org.apache.geode.internal.cache.InitialImageOperation.resetGIITestHook;
+import static org.apache.geode.internal.cache.InitialImageOperation.setGIITestHook;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -54,6 +63,7 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -1290,13 +1300,13 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     final DiskStoreID memberR = getMemberID(R);
     final long[] exceptionlist = {4, 5};
 
-    Host host = Host.getHost(0);
+    Host host = getHost(0);
     VM T = host.getVM(2);
     createDistributedRegion(T);
     final DiskStoreID memberT = getMemberID(T);
     closeCache(T);
 
-    assertEquals(0, DistributedCacheOperation.SLOW_DISTRIBUTION_MS);
+    assertEquals(0, SLOW_DISTRIBUTION_MS);
     prepareCommonTestData(3);
     waitForToVerifyRVV(P, memberP, 3, null, 0); // P's rvv=p3, gc=0
     VersionTag expect_tag = getVersionTag(R, "key5");
@@ -1317,8 +1327,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     P.invoke(new SerializableRunnable() {
       public void run() {
         Mycallback myDuringPackingImage =
-            new Mycallback(GIITestHookType.DuringPackingImage, REGION_NAME);
-        InitialImageOperation.setGIITestHook(myDuringPackingImage);
+            new Mycallback(DuringPackingImage, REGION_NAME);
+        setGIITestHook(myDuringPackingImage);
       }
     });
 
@@ -1329,7 +1339,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     // restart R and gii, it will be blocked at test hook
     AsyncInvocation async4 = createDistributedRegionAsync(T);
     // 8
-    waitForCallbackStarted(P, GIITestHookType.DuringPackingImage);
+    waitForCallbackStarted(P, DuringPackingImage);
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         int count = getDeltaGIICount(P);
@@ -1341,7 +1351,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    Wait.waitForCriterion(ev, 30000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     int count = getDeltaGIICount(P);
     assertEquals(2, count);
 
@@ -1351,15 +1361,15 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     changeTombstoneTimout(R, MAX_WAIT);
     changeTombstoneTimout(P, MAX_WAIT);
     changeTombstoneTimout(T, MAX_WAIT);
-    Wait.pause((int) MAX_WAIT);
+    pause((int) MAX_WAIT);
     forceGC(P, 2);
     waitForToVerifyRVV(P, memberP, 7, null, 0); // P's rvv=p7, gc=0
 
     // let GII continue
     P.invoke(
-        () -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, false));
+        () -> resetGIITestHook(DuringPackingImage, false));
     P.invoke(
-        () -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, true));
+        () -> resetGIITestHook(DuringPackingImage, true));
 
     WaitCriterion ev2 = new WaitCriterion() {
       public boolean done() {
@@ -1371,7 +1381,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev2, 30000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev2);
     count = getDeltaGIICount(P);
     assertEquals(0, count);
     verifyTombstoneExist(P, "key2", true, true); // expect key2 is still tombstone during and after
@@ -1428,7 +1438,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     final DiskStoreID memberP = getMemberID(P);
     final DiskStoreID memberR = getMemberID(R);
 
-    assertEquals(0, DistributedCacheOperation.SLOW_DISTRIBUTION_MS);
+    assertEquals(0, SLOW_DISTRIBUTION_MS);
     prepareCommonTestData(6);
 
     // let r4,r5,r6 to succeed
@@ -1455,8 +1465,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     P.invoke(new SerializableRunnable() {
       public void run() {
         Mycallback myDuringPackingImage =
-            new Mycallback(GIITestHookType.DuringPackingImage, REGION_NAME);
-        InitialImageOperation.setGIITestHook(myDuringPackingImage);
+            new Mycallback(DuringPackingImage, REGION_NAME);
+        setGIITestHook(myDuringPackingImage);
       }
     });
 
@@ -1465,7 +1475,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     // restart R and gii, it will be blocked at test hook
     AsyncInvocation async3 = createDistributedRegionAsync(R);
     // 8
-    waitForCallbackStarted(P, GIITestHookType.DuringPackingImage);
+    waitForCallbackStarted(P, DuringPackingImage);
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         int count = getDeltaGIICount(P);
@@ -1477,7 +1487,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    Wait.waitForCriterion(ev, 30000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     int count = getDeltaGIICount(P);
     assertEquals(1, count);
 
@@ -1485,13 +1495,13 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     // Wait for tombstone is GCed at R, but still exists in P
     changeTombstoneTimout(R, MAX_WAIT);
     changeTombstoneTimout(P, MAX_WAIT);
-    Wait.pause((int) MAX_WAIT);
+    pause((int) MAX_WAIT);
     forceGC(R, 3);
     forceGC(P, 3);
 
     // let GII continue
     P.invoke(
-        () -> InitialImageOperation.resetGIITestHook(GIITestHookType.DuringPackingImage, true));
+        () -> resetGIITestHook(DuringPackingImage, true));
     async3.join(MAX_WAIT * 2);
     count = getDeltaGIICount(P);
     assertEquals(0, count);
@@ -1507,7 +1517,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     RegionVersionVector p_rvv = getRVV(P);
     RegionVersionVector r_rvv = getRVV(R);
-    System.out.println("GGG:p_rvv=" + p_rvv.fullToString() + ":r_rvv=" + r_rvv.fullToString());
+    out.println("GGG:p_rvv=" + p_rvv.fullToString() + ":r_rvv=" + r_rvv.fullToString());
 
     waitForToVerifyRVV(R, memberP, 7, null, 4); // R's rvv=p7, gc=4
     waitForToVerifyRVV(R, memberR, 6, null, 5); // R's rvv=r6, gc=5
@@ -2345,9 +2355,9 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
             boolean exceptionListVerified =
                 verifyExceptionList(member, regionversion, rvv, exceptionList);
-            LogWriterUtils.getLogWriter()
+            getLogWriter()
                 .info("DeltaGII:expected:" + expectedRegionVersion + ":" + expectedGCVersion);
-            LogWriterUtils.getLogWriter().info("DeltaGII:actual:" + regionversion + ":" + gcversion
+            getLogWriter().info("DeltaGII:actual:" + regionversion + ":" + gcversion
                 + ":" + exceptionListVerified + ":" + rvv);
 
             boolean match = true;
@@ -2370,7 +2380,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
           }
         };
 
-        Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
         RegionVersionVector rvv = ((LocalRegion) getCache().getRegion(REGION_NAME))
             .getVersionVector().getCloneForTransmission();
         long regionversion = getRegionVersionForMember(rvv, member, false);
@@ -2394,7 +2404,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       public void run() {
 
         final GIITestHook callback =
-            InitialImageOperation.getGIITestHookForCheckingPurpose(callbacktype);
+            getGIITestHookForCheckingPurpose(callbacktype);
         WaitCriterion ev = new WaitCriterion() {
 
           public boolean done() {
@@ -2406,7 +2416,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
           }
         };
 
-        Wait.waitForCriterion(ev, 30000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
         if (callback == null || !callback.isRunning) {
           fail("GII tesk hook is not started yet");
         }
@@ -2445,7 +2455,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
           }
         };
 
-        Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
         String value = (String) ((LocalRegion) getCache().getRegion(REGION_NAME)).get(key);
         assertEquals(expect_value, value);
       }
@@ -2659,7 +2669,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
           }
         };
 
-        Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
         assertTrue(doneVerify());
       }
     };

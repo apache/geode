@@ -34,9 +34,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
 import org.apache.geode.internal.tcp.Connection;
@@ -210,7 +208,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   public void setRecipient(InternalDistributedMember recipient) {
     if (this.recipients != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributionMessage_RECIPIENTS_CAN_ONLY_BE_SET_ONCE.toLocalizedString());
+          "Recipients can only be set once");
     }
     this.recipients = new InternalDistributedMember[] {recipient};
   }
@@ -248,7 +246,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   public void setRecipients(Collection<? extends DistributedMember> recipients) {
     if (this.recipients != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributionMessage_RECIPIENTS_CAN_ONLY_BE_SET_ONCE.toLocalizedString());
+          "Recipients can only be set once");
     }
     this.recipients = recipients
         .toArray(new InternalDistributedMember[recipients.size()]);
@@ -386,8 +384,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LocalizedMessage
-          .create(LocalizedStrings.DistributionMessage_UNCAUGHT_EXCEPTION_PROCESSING__0, this), t);
+      logger.fatal(String.format("Uncaught exception processing %s", this), t);
     } finally {
       if (doDecMessagesBeingReceived) {
         dm.getStats().decMessagesBeingReceived(this.bytesRead);
@@ -442,8 +439,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
         });
       } catch (RejectedExecutionException ex) {
         if (!dm.shutdownInProgress()) { // fix for bug 32395
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.DistributionMessage_0__SCHEDULE_REJECTED, this.toString()), ex);
+          logger.warn(String.format("%s schedule() rejected", this.toString()), ex);
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -457,12 +453,10 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.DistributionMessage_UNCAUGHT_EXCEPTION_PROCESSING__0, this), t);
+        logger.fatal(String.format("Uncaught exception processing %s", this), t);
         // I don't believe this ever happens (DJP May 2007)
         throw new InternalGemFireException(
-            LocalizedStrings.DistributionMessage_UNEXPECTED_ERROR_SCHEDULING_MESSAGE
-                .toLocalizedString(),
+            "Unexpected error scheduling message",
             t);
       }
     } // not inline

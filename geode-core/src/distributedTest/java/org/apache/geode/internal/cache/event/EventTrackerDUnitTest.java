@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.event;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -22,9 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -448,8 +447,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitEntryIsLocal(int i) {
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS)
+    await()
         .until(() -> getCache().getRegion(getName()).getEntry(i) != null);
   }
 

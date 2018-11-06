@@ -29,9 +29,7 @@ import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMSta
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -70,9 +68,8 @@ class DirectReplySender implements ReplySender {
       ConnectExceptions ce = ms.getConnectExceptions();
       if (ce != null && !ce.getMembers().isEmpty()) {
         Assert.assertTrue(ce.getMembers().size() == 1);
-        logger.warn(
-            LocalizedMessage.create(LocalizedStrings.DirectChannel_FAILURE_SENDING_DIRECT_REPLY,
-                ce.getMembers().iterator().next()));
+        logger.warn("Failed sending a direct reply to {}",
+            ce.getMembers().iterator().next());
         return Collections.singleton(ce.getMembers().iterator().next());
       }
       sentReply = true;
@@ -81,7 +78,7 @@ class DirectReplySender implements ReplySender {
       throw new InternalGemFireException(e);
     } catch (IOException ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.DirectChannel_UNKNOWN_ERROR_SERIALIZING_MESSAGE.toLocalizedString(), ex);
+          "Unknown error serializing message", ex);
     } finally {
       try {
         ms.close();

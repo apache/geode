@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -68,12 +67,12 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
+    await().until(() -> threadStarted.get());
 
     Conflatable conf = (Conflatable) hrq.take();
     assertThat(conf, notNullValue());
 
-    await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
+    await().until(() -> !thread.isAlive());
   }
 
   /**
@@ -104,14 +103,14 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
+    await().until(() -> threadStarted.get());
 
     Conflatable conf = (Conflatable) hrq.peek();
     assertThat(conf, notNullValue());
 
     hrq.remove();
 
-    await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
+    await().until(() -> !thread.isAlive());
   }
 
   /**
@@ -146,8 +145,8 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
+    await().until(() -> threadStarted.get());
 
-    await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
+    await().until(() -> !thread.isAlive());
   }
 }

@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Move buckets from one node to another, up to a certain percentage of the source node. Each call
@@ -63,8 +62,9 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
     Member sourceMember = model.getMember(source);
     if (sourceMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), source));
+          String.format(
+              "Source member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), source));
     }
 
     // Figure out how much load we are moving, based on the percentage.
@@ -82,8 +82,9 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
     Member sourceMember = model.getMember(source);
     if (sourceMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), source));
+          String.format(
+              "Source member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), source));
     }
 
 
@@ -103,13 +104,15 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
     Member sourceMember = model.getMember(source);
     if (targetMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_TARGET_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), target));
+          String.format(
+              "Target member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), target));
     }
 
     if (targetMember.equals(sourceMember)) {
-      throw new IllegalStateException(LocalizedStrings.PERCENTAGE_MOVE_TARGET_SAME_AS_SOURCE
-          .toLocalizedString(model.getName(), target));
+      throw new IllegalStateException(String.format(
+          "Target member is the same as source member for the partitioned region %s: %s",
+          model.getName(), target));
     }
 
     // if there is no largest bucket that we can move, we are done.

@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -100,10 +99,10 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
   @Test
   public void senderDoesNotReceiveRegionDestroy() throws Exception {
     server1.invoke(() -> {
-      await().atMost(1, MINUTES).until(() -> cacheRule.getCache().getRegion(regionName) == null);
+      await().until(() -> cacheRule.getCache().getRegion(regionName) == null);
     });
     server2.invoke(() -> {
-      await().atMost(1, MINUTES).until(() -> cacheRule.getCache().getRegion(regionName) == null);
+      await().until(() -> cacheRule.getCache().getRegion(regionName) == null);
     });
 
     Thread.sleep(5 * 1000);

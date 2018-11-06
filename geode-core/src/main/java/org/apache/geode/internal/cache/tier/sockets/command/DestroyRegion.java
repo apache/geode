@@ -30,8 +30,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -96,12 +94,10 @@ public class DestroyRegion extends BaseCommand {
 
     // Process the destroy region request
     if (regionName == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.DestroyRegion_0_THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REGION_REQUEST_IS_NULL,
-          serverConnection.getName()));
+      logger.warn("{}: The input region name for the destroy region request is null",
+          serverConnection.getName());
       errMessage.append(
-          LocalizedStrings.DestroyRegion__THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REGION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input region name for the destroy region request is null.");
 
       writeErrorResponse(clientMessage, MessageType.DESTROY_REGION_DATA_ERROR,
           errMessage.toString(), serverConnection);
@@ -112,8 +108,7 @@ public class DestroyRegion extends BaseCommand {
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason =
-          LocalizedStrings.DestroyRegion_REGION_WAS_NOT_FOUND_DURING_DESTROY_REGION_REQUEST
-              .toLocalizedString();
+          "Region was not found during destroy region request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

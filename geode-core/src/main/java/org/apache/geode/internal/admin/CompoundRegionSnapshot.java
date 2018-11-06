@@ -23,7 +23,6 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Presents an amalgam snapshot of all the {@linkplain org.apache.geode.cache.Region regions} in a
@@ -85,8 +84,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   public void addCache(GemFireVM systemEntity, RegionSnapshot snap) {
     if (!snap.getName().equals(this.name)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.CompoundRegionSnapshot_ALL_SNAPSHOTS_IN_A_COMPOUND_SNAPSHOT_MUST_HAVE_THE_SAME_NAME
-              .toLocalizedString());
+          "All snapshots in a compound snapshot must have the same name");
     }
     // individuals.put(systemEntity, snap);
 

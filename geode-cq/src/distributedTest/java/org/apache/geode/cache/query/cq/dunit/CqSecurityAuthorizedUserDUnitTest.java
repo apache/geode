@@ -15,12 +15,10 @@
 package org.apache.geode.cache.query.cq.dunit;
 
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -84,7 +82,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
         regionName);
 
     specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(1, cqListener.getNumEvent()));
     });
   }
@@ -137,7 +135,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
     putIntoRegion(superUserClient, keys, values, regionName);
 
     specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
     });
   }
@@ -160,7 +158,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
     putIntoRegion(superUserClient, keys, values, regionName);
 
     specificUserClient.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
     });
   }

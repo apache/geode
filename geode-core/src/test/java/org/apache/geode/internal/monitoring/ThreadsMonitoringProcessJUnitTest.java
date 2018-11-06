@@ -63,6 +63,24 @@ public class ThreadsMonitoringProcessJUnitTest {
     threadsMonitoringImpl.close();
   }
 
+  @Test
+  public void monitorHandlesDefunctThread() {
+    final Properties nonDefault = new Properties();
+    final DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+    final long threadID = Long.MAX_VALUE;
+
+    int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
+
+    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadsMonitoringImpl, threadID);
+    absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
+
+    threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
+
+    assertTrue(threadsMonitoringImpl.getThreadsMonitoringProcess().mapValidation());
+
+    threadsMonitoringImpl.close();
+  }
+
   /**
    * Tests that indeed thread is NOT considered stuck when it shouldn't
    */

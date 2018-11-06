@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_D
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.TYPE_CREATE;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClient;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheServer;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,9 +33,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1101,7 +1099,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     CacheClientProxy ccp = ccn.getClientProxy(durableClientId);
     HARegionQueue haRegionQueue = ccp.getHARegionQueue();
     HARegionQueueStats haRegionQueueStats = haRegionQueue.getStatistics();
-    Awaitility.await().atMost(10 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals(
                 "Expected queue removal messages: " + numEvents + " but actual messages: "

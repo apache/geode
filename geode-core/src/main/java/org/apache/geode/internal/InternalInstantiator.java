@@ -33,7 +33,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -45,9 +44,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Contains the implementation of {@link org.apache.geode.Instantiator} registration and
@@ -108,13 +105,12 @@ public class InternalInstantiator {
   private static void _register(Instantiator instantiator, boolean distribute) {
     if (instantiator == null) {
       throw new NullPointerException(
-          LocalizedStrings.InternalInstantiator_CANNOT_REGISTER_A_NULL_INSTANTIATOR
-              .toLocalizedString());
+          "Cannot register a null Instantiator.");
     }
     final int classId = instantiator.getId();
     if (classId == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.Instantiator_INSTANTIATOR_ID_CANNOT_BE_ZERO.toLocalizedString());
+          "Instantiator id cannot be zero");
     }
     Class c = instantiator.getInstantiatedClass();
     final String cName = c.getName();
@@ -122,9 +118,10 @@ public class InternalInstantiator {
       int oldId = getClassId(c);
       if (oldId != 0 && oldId != classId) {
         throw new IllegalStateException(
-            LocalizedStrings.InternalInstantiator_CLASS_0_IS_ALREADY_REGISTERED_WITH_ID_1_SO_IT_CANNOT_BE_REGISTERED_WTH_ID_2
-                .toLocalizedString(
-                    new Object[] {c.getName(), Integer.valueOf(oldId), Integer.valueOf(classId)}));
+            String.format(
+                "Class %s is already registered with id %s so it can not be registered with id %s",
+
+                new Object[] {c.getName(), Integer.valueOf(oldId), Integer.valueOf(classId)}));
       }
     }
     final Integer idx = Integer.valueOf(classId);
@@ -145,9 +142,10 @@ public class InternalInstantiator {
             Class oldClass = ((Instantiator) oldInst).getInstantiatedClass();
             if (!oldClass.getName().equals(cName)) {
               throw new IllegalStateException(
-                  LocalizedStrings.InternalInstantiator_CLASS_ID_0_IS_ALREADY_REGISTERED_FOR_CLASS_1_SO_IT_COULD_NOT_BE_REGISTED_FOR_CLASS_2
-                      .toLocalizedString(
-                          new Object[] {Integer.valueOf(classId), oldClass.getName(), cName}));
+                  String.format(
+                      "Class id %s is already registered for class %s so it could not be registered for class %s",
+
+                      new Object[] {Integer.valueOf(classId), oldClass.getName(), cName}));
             } else {
               return; // it was already registered
             }
@@ -165,8 +163,9 @@ public class InternalInstantiator {
         instantiator.setEventId(new EventID(cache.getDistributedSystem()));
       }
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalInstantiator_REGISTERED,
-          new Object[] {Integer.valueOf(classId), c.getName()}));
+      logger
+          .info("Instantiator registered with id {} class {}",
+              Integer.valueOf(classId), c.getName());
     }
 
     if (distribute) { // originated in this VM
@@ -178,7 +177,7 @@ public class InternalInstantiator {
       sendRegistrationMessageToServers(instantiator);
     }
     // send it to all cache clients irrelevant of distribute
-    // bridge servers send it all the clients irrelevant of
+    // cache servers send it all the clients irrelevant of
     // originator VM
     sendRegistrationMessageToClients(instantiator);
 
@@ -338,7 +337,7 @@ public class InternalInstantiator {
         }
         if (holder.getId() == 0) {
           throw new IllegalArgumentException(
-              LocalizedStrings.Instantiator_INSTANTIATOR_ID_CANNOT_BE_ZERO.toLocalizedString());
+              "Instantiator id cannot be zero");
         }
 
         InstantiatorAttributesHolder iah =
@@ -346,15 +345,17 @@ public class InternalInstantiator {
 
         if (iah != null && iah.getId() != holder.getId()) {
           throw new IllegalStateException(
-              LocalizedStrings.InternalInstantiator_CLASS_0_IS_ALREADY_REGISTERED_WITH_ID_1_SO_IT_CANNOT_BE_REGISTERED_WTH_ID_2
-                  .toLocalizedString(
-                      new Object[] {instantiatorClassName, iah.getId(), holder.getId()}));
+              String.format(
+                  "Class %s is already registered with id %s so it can not be registered with id %s",
+
+                  new Object[] {instantiatorClassName, iah.getId(), holder.getId()}));
         }
 
         idsToHolders.putIfAbsent(holder.getId(), holder);
 
-        logger.info(LocalizedMessage.create(LocalizedStrings.InternalInstantiator_REGISTERED_HOLDER,
-            new Object[] {Integer.valueOf(holder.getId()), holder.getInstantiatedClassName()}));
+        logger.info("Instantiator registered with holder id {} class {}",
+            Integer.valueOf(holder.getId()),
+            holder.getInstantiatedClassName());
 
         if (distribute) {
           sendRegistrationMessageToServers(holder);
@@ -373,10 +374,10 @@ public class InternalInstantiator {
             InternalDataSerializer.getCachedClass(holder.getInstantiatedClassName());
       } catch (ClassNotFoundException cnfe) {
         InternalCache cache = GemFireCacheImpl.getInstance();
-        if (cache != null && cache.getLoggerI18n() != null && cache.getLoggerI18n().infoEnabled()) {
-          cache.getLoggerI18n().info(
-              LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
-              new Object[] {cnfe.getMessage()});
+        if (cache != null && cache.getLogger() != null && cache.getLogger().infoEnabled()) {
+          cache.getLogger().info(
+              String.format("Could not load instantiator class: %s",
+                  new Object[] {cnfe.getMessage()}));
         }
       }
       synchronized (InternalInstantiator.class) {
@@ -458,14 +459,14 @@ public class InternalInstantiator {
   public static synchronized void unregister(Class c, int classId) {
     if (c == null) {
       throw new NullPointerException(
-          LocalizedStrings.InternalInstantiator_CANNOT_UNREGISTER_A_NULL_CLASS.toLocalizedString());
+          "Cannot unregister a null class");
     }
     final Integer idx = Integer.valueOf(classId);
     final Instantiator i = (Instantiator) idsToInstantiators.remove(idx);
     if (i == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.InternalInstantiator_CLASS_0_WAS_NOT_REGISTERED_WITH_ID_1
-              .toLocalizedString(new Object[] {c.getName(), Integer.valueOf(classId)}));
+          String.format("Class %s was not registered with id %s",
+              new Object[] {c.getName(), Integer.valueOf(classId)}));
     } else {
       dsMap.remove(c.getName(), i);
     }
@@ -550,11 +551,10 @@ public class InternalInstantiator {
           }
         } catch (ClassNotFoundException cnfe) {
           InternalCache cache = GemFireCacheImpl.getInstance();
-          if (cache != null && cache.getLoggerI18n() != null
-              && cache.getLoggerI18n().infoEnabled()) {
-            cache.getLoggerI18n().info(
-                LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
-                new Object[] {cnfe.getMessage()});
+          if (cache != null && cache.getLogger() != null
+              && cache.getLogger().infoEnabled()) {
+            cache.getLogger().info(
+                String.format("Could not load instantiator class: %s", cnfe.getMessage()));
           }
         }
       }
@@ -592,8 +592,8 @@ public class InternalInstantiator {
       int id) {
     if (!Instantiator.class.isAssignableFrom(instantiatorClass)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.InternalInstantiator_0_DOES_NOT_EXTEND_INSTANTIATOR
-              .toLocalizedString(instantiatorClass.getName()));
+          String.format("%s does not extend Instantiator.",
+              instantiatorClass.getName()));
     }
 
     Constructor init;
@@ -609,16 +609,16 @@ public class InternalInstantiator {
         types = new Class[] {Class.class, byte.class};
         init = instantiatorClass.getDeclaredConstructor(types);
       } catch (NoSuchMethodException ex2) {
-        StringId msg =
-            LocalizedStrings.InternalInstantiator_CLASS_0_DOES_NOT_HAVE_A_TWOARGUMENT_CLASS_INT_CONSTRUCTOR;
+        String msg =
+            "Class %s does not have a two-argument (Class, int) constructor.";
         Object[] msgArgs = new Object[] {instantiatorClass.getName()};
         if (instantiatorClass.getDeclaringClass() != null) {
           msg =
-              LocalizedStrings.InternalInstantiator_CLASS_0_DOES_NOT_HAVE_A_TWOARGUMENT_CLASS_INT_CONSTRUCTOR_IT_IS_AN_INNER_CLASS_OF_1_SHOULD_IT_BE_A_STATIC_INNER_CLASS;
+              "Class %s does not have a two-argument (Class, int) constructor. It is an inner class of %s. Should it be a static inner class?";
           msgArgs =
               new Object[] {instantiatorClass.getName(), instantiatorClass.getDeclaringClass()};
         }
-        throw new IllegalArgumentException(msg.toLocalizedString(msgArgs));
+        throw new IllegalArgumentException(String.format(msg, msgArgs));
       }
     }
 
@@ -631,20 +631,20 @@ public class InternalInstantiator {
 
     } catch (IllegalAccessException ex) {
       throw new IllegalArgumentException(
-          LocalizedStrings.InternalInstantiator_COULD_NOT_ACCESS_ZEROARGUMENT_CONSTRUCTOR_OF_0
-              .toLocalizedString(instantiatorClass.getName()));
+          String.format("Could not access zero-argument constructor of %s",
+              instantiatorClass.getName()));
 
     } catch (InstantiationException ex) {
       RuntimeException ex2 = new IllegalArgumentException(
-          LocalizedStrings.InternalInstantiator_COULD_NOT_INSTANTIATE_AN_INSTANCE_OF_0
-              .toLocalizedString(instantiatorClass.getName()));
+          String.format("Could not instantiate an instance of %s",
+              instantiatorClass.getName()));
       ex2.initCause(ex);
       throw ex2;
 
     } catch (InvocationTargetException ex) {
       RuntimeException ex2 = new IllegalArgumentException(
-          LocalizedStrings.InternalInstantiator_WHILE_INSTANTIATING_AN_INSTANCE_OF_0
-              .toLocalizedString(instantiatorClass.getName()));
+          String.format("While instantiating an instance of %s",
+              instantiatorClass.getName()));
       ex2.initCause(ex);
       throw ex2;
     }
@@ -676,11 +676,11 @@ public class InternalInstantiator {
           }
         } catch (ClassNotFoundException cnfe) {
           InternalCache cache = GemFireCacheImpl.getInstance();
-          if (cache != null && cache.getLoggerI18n() != null
-              && cache.getLoggerI18n().infoEnabled()) {
-            cache.getLoggerI18n().info(
-                LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
-                new Object[] {cnfe.getMessage()});
+          if (cache != null && cache.getLogger() != null
+              && cache.getLogger().infoEnabled()) {
+            cache.getLogger().info(
+                String.format("Could not load instantiator class: %s",
+                    cnfe.getMessage()));
           }
         }
       }
@@ -914,8 +914,8 @@ public class InternalInstantiator {
                                                                                  // 41206
         } catch (ClassNotFoundException ex) {
           recordFromDataProblem(
-              LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0
-                  .toLocalizedString(ex));
+              String.format("Could not load instantiator class: %s",
+                  ex));
           this.instantiatorClass = null;
         }
         try {
@@ -924,8 +924,8 @@ public class InternalInstantiator {
                                                                                  // 41206
         } catch (ClassNotFoundException ex) {
           recordFromDataProblem(
-              LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATED_CLASS_0
-                  .toLocalizedString(ex));
+              String.format("Could not load instantiated class: %s",
+                  ex));
           this.instantiatedClass = null;
         }
       }
@@ -940,9 +940,9 @@ public class InternalInstantiator {
           : this.instantiatorClass.getName();
       String instatiatedName = (this.instantiatedClass == null) ? this.instantiatedClassName
           : this.instantiatedClass.getName();
-      return LocalizedStrings.InternalInstantiator_REGISTER_INSTANTIATOR_0_OF_CLASS_1_THAT_INSTANTIATES_A_2
-          .toLocalizedString(
-              new Object[] {Integer.valueOf(this.id), instatiatorName, instatiatedName});
+      return String.format("Register Instantiator %s of class %s that instantiates a %s",
+
+          new Object[] {Integer.valueOf(this.id), instatiatorName, instatiatedName});
     }
 
   }
@@ -1016,16 +1016,17 @@ public class InternalInstantiator {
     for (Iterator itr = dsMap.values().iterator(); itr.hasNext();) {
       Instantiator instantiator = (Instantiator) itr.next();
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalInstantiator_REGISTERED,
-          new Object[] {Integer.valueOf(instantiator.getId()),
-              instantiator.getInstantiatedClass().getName()}));
+      logger
+          .info("Instantiator registered with id {} class {}",
+              Integer.valueOf(instantiator.getId()),
+              instantiator.getInstantiatedClass().getName());
     }
 
     for (Iterator itr = idsToHolders.values().iterator(); itr.hasNext();) {
       InstantiatorAttributesHolder holder = (InstantiatorAttributesHolder) itr.next();
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalInstantiator_REGISTERED_HOLDER,
-          new Object[] {Integer.valueOf(holder.getId()), holder.getInstantiatedClassName()}));
+      logger.info("Instantiator registered with holder id {} class {}",
+          Integer.valueOf(holder.getId()), holder.getInstantiatedClassName());
     }
 
   }

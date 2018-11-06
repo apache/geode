@@ -62,7 +62,6 @@ import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -155,7 +154,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     this.versionTag = event.getVersionTag();
     Assert.assertTrue(this.eventId != null);
 
-    // added for old value if available sent over the wire for bridge servers.
+    // added for old value if available sent over the wire for cache servers.
     if (event.hasOldValue()) {
       this.hasOldValue = true;
       event.exportOldValue(this);
@@ -307,7 +306,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.RemoteDestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return p;
   }

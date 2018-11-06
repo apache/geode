@@ -18,7 +18,6 @@ package org.apache.geode.cache;
 
 import java.io.ObjectStreamException;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for region data policy. The data policy specifies how this local cache will
@@ -127,13 +126,13 @@ public class DataPolicy implements java.io.Serializable {
   private DataPolicy(int ordinal, String name) {
     if (ordinal >= VALUES.length) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataPolicy_ONLY_0_DATAPOLICIES_MAY_BE_DEFINED
-              .toLocalizedString(Integer.valueOf(VALUES.length + 1)));
+          String.format("Only %s DataPolicies may be defined",
+              Integer.valueOf(VALUES.length + 1)));
     }
     if (VALUES[ordinal] != null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataPolicy_ORDINAL_0_IS_ALREADY_DEFINED_BY_1
-              .toLocalizedString(new Object[] {Integer.valueOf(ordinal), VALUES[ordinal]}));
+          String.format("Ordinal %s is already defined by %s",
+              new Object[] {Integer.valueOf(ordinal), VALUES[ordinal]}));
     }
     this.name = name;
     this.ordinal = (byte) (ordinal & 0xff);

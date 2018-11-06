@@ -136,7 +136,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     this.numInstance++;
     if (DEBUG)
       Thread.dumpStack();
-    // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
+    // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
   }
 
   public PortfolioPdx(int i) {
@@ -172,7 +172,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
 
     unicodeṤtring = i % 2 == 0 ? "ṤṶẐ" : "ṤẐṶ";
     Assert.assertTrue(unicodeṤtring.length() == 3);
-    // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
+    // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
   }
 
   public PortfolioPdx(int i, int j) {

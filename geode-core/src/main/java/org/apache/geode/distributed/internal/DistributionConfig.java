@@ -196,7 +196,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -1258,7 +1257,7 @@ public interface DistributionConfig extends Config, LogConfig {
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME = CLUSTER_SSL_TRUSTSTORE_PASSWORD;
 
   /**
-   * The name of an internal property that specifies a {@link LogWriterI18n}
+   * The name of an internal property that specifies a {@link org.apache.geode.LogWriter}
    * instance to log to. Set this property with put(), not with setProperty()
    *
    * @since GemFire 4.0
@@ -1802,8 +1801,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
 
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE)
-      ? new int[] {32769, 61000} : new int[] {1024, 65535};
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[] {41000, 61000};
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
   int[] getMembershipPortRange();

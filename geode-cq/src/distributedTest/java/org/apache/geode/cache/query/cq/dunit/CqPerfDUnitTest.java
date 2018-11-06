@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -21,10 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -861,14 +860,14 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
           (CqServiceImpl) ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
       Map matchedCqMap = cqService.getMatchingCqMap();
-      Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+      await()
           .until(matchedCqMap::size, equalTo(mapSize));
 
       if (query != null) {
         assertThat(matchedCqMap.containsKey(query)).isTrue();
 
         Collection cqs = (Collection) matchedCqMap.get(query);
-        Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        await()
             .until(cqs::size, equalTo(numCqSize));
       }
     });

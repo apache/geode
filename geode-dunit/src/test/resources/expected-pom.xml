@@ -46,6 +46,12 @@
       <artifactId>geode-junit</artifactId>
       <version>1.8.0-SNAPSHOT</version>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>geode-core</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>

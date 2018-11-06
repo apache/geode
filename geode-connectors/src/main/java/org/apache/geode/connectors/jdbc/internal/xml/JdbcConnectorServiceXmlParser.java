@@ -27,13 +27,11 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String USER = "user";
   static final String PASSWORD = "password";
   static final String PARAMETERS = "parameters";
-  static final String REGION = "region";
   static final String CONNECTION_NAME = "connection-name";
   static final String TABLE = "table";
-  static final String PDX_CLASS = "pdx-class";
+  static final String PDX_NAME = "pdx-name";
   static final String FIELD_NAME = "field-name";
   static final String COLUMN_NAME = "column-name";
-  static final String PRIMARY_KEY_IN_VALUE = "primary-key-in-value";
 
   @Override
   public String getNamespaceUri() {

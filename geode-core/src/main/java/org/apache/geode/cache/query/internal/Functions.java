@@ -27,7 +27,6 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -56,8 +55,7 @@ public class Functions {
     Object value2 = cv2.evaluate(context);
     if (!(value1 instanceof String) || !(value2 instanceof String)) {
       throw new QueryInvalidException(
-          LocalizedStrings.Functions_PARAMETERS_TO_THE_TO_DATE_FUNCTION_SHOULD_BE_STRICTLY_SIMPLE_STRINGS
-              .toLocalizedString());
+          "Parameters to the to_date function should be strictly simple strings");
     }
     String dateStr = (String) value1;
     String format = (String) value2;
@@ -80,8 +78,8 @@ public class Functions {
 
     } catch (Exception ex) {
       throw new QueryInvalidException(
-          LocalizedStrings.Functions_MALFORMED_DATE_FORMAT_STRING_AS_THE_FORMAT_IS_0
-              .toLocalizedString(format),
+          String.format("Malformed date format string as the format is %s",
+              format),
           ex);
     }
     return dt;
@@ -118,8 +116,8 @@ public class Functions {
     Class clazz = arg.getClass();
     if (!clazz.isArray())
       throw new TypeMismatchException(
-          LocalizedStrings.Functions_THE_ELEMENT_FUNCTION_CANNOT_BE_APPLIED_TO_AN_OBJECT_OF_TYPE_0
-              .toLocalizedString(clazz.getName()));
+          String.format("The 'element' function cannot be applied to an object of type ' %s '",
+              clazz.getName()));
 
     // handle arrays
     if (arg instanceof Object[]) {
@@ -187,15 +185,15 @@ public class Functions {
 
     // did I miss something?
     throw new TypeMismatchException(
-        LocalizedStrings.Functions_THE_ELEMENT_FUNCTION_CANNOT_BE_APPLIED_TO_AN_OBJECT_OF_TYPE_0
-            .toLocalizedString(clazz.getName()));
+        String.format("The 'element' function cannot be applied to an object of type ' %s '",
+            clazz.getName()));
   }
 
   private static void checkSingleton(int size) throws FunctionDomainException {
     if (size != 1)
       throw new FunctionDomainException(
-          LocalizedStrings.Functions_ELEMENT_APPLIED_TO_PARAMETER_OF_SIZE_0
-              .toLocalizedString(Integer.valueOf(size)));
+          String.format("element() applied to parameter of size %s",
+              Integer.valueOf(size)));
   }
 
 

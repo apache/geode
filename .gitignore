@@ -31,3 +31,4 @@ geode-pulse/screenshots/
 .git-together
 bin/
 .metadata/
+/ci/pipelines/meta/meta.properties.local

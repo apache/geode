@@ -15,8 +15,8 @@
 package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -550,7 +550,7 @@ public class HARegionQueueIntegrationTest {
     }
 
     try {
-      await().atMost(10, TimeUnit.SECONDS).until(() -> haEventWrapper.getReferenceCount() == 0);
+      await().until(() -> haEventWrapper.getReferenceCount() == 0);
     } catch (ConditionTimeoutException conditionTimeoutException) {
       throw new TestException(
           "Expected HAEventWrapper reference count to be decremented to 0 by either the queue removal or destroy queue logic, but the actual reference count was "
@@ -616,7 +616,7 @@ public class HARegionQueueIntegrationTest {
     }
 
     try {
-      await().atMost(10, TimeUnit.SECONDS).until(() -> haEventWrapper.getReferenceCount() == 0);
+      await().until(() -> haEventWrapper.getReferenceCount() == 0);
     } catch (ConditionTimeoutException conditionTimeoutException) {
       throw new TestException(
           "Expected HAEventWrapper reference count to be decremented to 0 by either the message dispatcher or destroy queue logic, but the actual reference count was "

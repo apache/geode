@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache.versions;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -75,7 +73,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
 
   private void waitForTombstoneCount(int count) {
     try {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      await().until(() -> {
         return getGemfireCache().getCachePerfStats().getTombstoneCount() == count;
       });
     } catch (Exception e) {

@@ -21,7 +21,7 @@
 export BUILDROOT=$(pwd)
 REPOSITORY_DIR=$(pwd)/geode
 LOCAL_FILE=${BUILDROOT}/results/passing.txt
-DESTINATION_URL=gs://${PUBLIC_BUCKET}/${MAINTENANCE_VERSION}/passing.txt
+DESTINATION_URL=gs://${ARTIFACT_BUCKET}/${MAINTENANCE_VERSION}/passing.txt
 pushd ${REPOSITORY_DIR}
 git rev-parse HEAD > ${LOCAL_FILE}
 popd

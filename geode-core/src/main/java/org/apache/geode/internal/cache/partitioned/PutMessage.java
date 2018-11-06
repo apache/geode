@@ -62,7 +62,6 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -384,14 +383,14 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.PutMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return processor;
   }
 
 
   /**
-   * create a new EntryEvent to be used in notifying listeners, bridge servers, etc. Caller must
+   * create a new EntryEvent to be used in notifying listeners, cache servers, etc. Caller must
    * release result if it is != to sourceEvent
    */
   @Retained
@@ -477,21 +476,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       this.filterInfo = filterInfo;
     }
   }
-  /*
-   * @Override public void appendOldValueToMessage(EntryEventImpl event) { if (event.hasOldValue())
-   * { this.hasOldValue = true; CachedDeserializable cd = (CachedDeserializable)
-   * event.getSerializedOldValue(); if (cd != null) { this.oldValueIsSerialized = true; Object o =
-   * cd.getValue(); if (o instanceof byte[]) { setOldValBytes((byte[])o); } else { // Defer
-   * serialization until toData is called. setOldValObj(o); } } else { Object old =
-   * event.getRawOldValue(); if (old instanceof byte[]) { this.oldValueIsSerialized = false;
-   * setOldValBytes((byte[]) old); } else { this.oldValueIsSerialized = true; setOldValObj(old); } }
-   * } }
-   */
-  /*
-   * private void setOldValBytes(byte[] valBytes){ this.oldValBytes = valBytes; } public final
-   * byte[] getOldValueBytes(){ return this.oldValBytes; } private Object getOldValObj(){ return
-   * this.oldValObj; } private void setOldValObj(Object o){ this.oldValObj = o; }
-   */
 
   public int getDSFID() {
     return PR_PUT_MESSAGE;
@@ -518,11 +502,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
       this.expectedOldValue = DataSerializer.readObject(in);
     }
-    /*
-     * this.hasOldValue = in.readBoolean(); if (this.hasOldValue){
-     * //out.writeBoolean(this.hasOldValue); this.oldValueIsSerialized = in.readBoolean();
-     * setOldValBytes(DataSerializer.readByteArray(in)); }
-     */
     if (this.hasFilterInfo) {
       this.filterInfo = new FilterRoutingInfo();
       InternalDataSerializer.invokeFromData(this.filterInfo, in);
@@ -1055,7 +1034,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       }
       if (this.op == null) {
         throw new ForceReattemptException(
-            LocalizedStrings.PutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());
+            "did not receive a valid reply");
       }
       // try {
       // waitForRepliesUninterruptibly();

@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -155,8 +154,7 @@ public class InetAddressUtil {
           return false;
         } catch (SocketException e) {
           throw new GemFireIOException(
-              LocalizedStrings.InetAddressUtil_UNABLE_TO_QUERY_NETWORK_INTERFACE
-                  .toLocalizedString(),
+              "Unable to query network interface",
               e);
         }
       }

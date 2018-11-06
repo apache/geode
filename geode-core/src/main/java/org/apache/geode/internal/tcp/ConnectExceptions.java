@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.apache.geode.GemFireCheckedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This exception is thrown as a result of one or more failed attempts to connect to a remote
@@ -45,7 +44,7 @@ public class ConnectExceptions extends GemFireCheckedException {
    * Creates a new <code>ConnectExceptions</code>
    */
   public ConnectExceptions() {
-    super(LocalizedStrings.ConnectException_COULD_NOT_CONNECT.toLocalizedString());
+    super("Could not connect");
     this.causes = new ArrayList<>();
     this.members = new ArrayList<>();
   }
@@ -79,11 +78,11 @@ public class ConnectExceptions extends GemFireCheckedException {
     for (InternalDistributedMember member : this.members) {
       sb.append(' ').append(member);
     }
-    sb.append(" ").append(LocalizedStrings.ConnectException_CAUSES.toLocalizedString());
+    sb.append(" ").append("Causes:");
     for (Throwable cause : this.causes) {
       sb.append(" {").append(cause).append("}");
     }
-    return LocalizedStrings.ConnectException_COULD_NOT_CONNECT_TO_0.toLocalizedString(sb);
+    return String.format("Could not connect to: %s", sb);
   }
 
 }

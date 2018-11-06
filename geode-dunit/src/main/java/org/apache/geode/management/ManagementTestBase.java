@@ -39,10 +39,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -200,7 +200,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
   }
 
   protected static void waitForProxy(final ObjectName objectName, final Class interfaceClass) {
-    Wait.waitForCriterion(new WaitCriterion() {
+    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
       @Override
       public String description() {
         return "Waiting for the proxy of " + objectName.getCanonicalName()
@@ -212,7 +212,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
         SystemManagementService service = (SystemManagementService) managementService;
         return service.getMBeanProxy(objectName, interfaceClass) != null;
       }
-    }, MAX_WAIT, 500, true);
+    });
   }
 
   /**
@@ -282,7 +282,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
       final ObjectName objectName) {
     ManagementService service = getManagementService();
 
-    Wait.waitForCriterion(new WaitCriterion() {
+    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
       private int actualRefreshCount = 0;
       private long lastRefreshTime = service.getLastUpdateTime(objectName);
@@ -302,7 +302,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
         }
         return actualRefreshCount >= expectedRefreshCount;
       }
-    }, MAX_WAIT, 500, true);
+    });
   }
 
   protected DistributedMember getMember(final VM vm) {
