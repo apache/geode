@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 /**
  * Tests offline compaction
  */
-public class DiskOfflineCompactionJUnitTest {
+public class CompactOfflineDiskStoreJUnitTest {
 
   // In this test, entry version, region version, member id, each will be 1 byte
   private static final int versionsize = 3;
