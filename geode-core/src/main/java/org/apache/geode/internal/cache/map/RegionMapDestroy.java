@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.map;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
@@ -85,7 +86,7 @@ public class RegionMapDestroy {
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     if (internalRegion == null) {
-      Assert.assertTrue(false, "The internalRegion for RegionMap " + this // "fix" for bug 32440
+      throw new InternalGemFireError("The internalRegion for RegionMap " + this
           + " is null for event " + event);
     }
 
@@ -107,7 +108,6 @@ public class RegionMapDestroy {
     cacheModificationLock.lockForCacheModification(internalRegion, event);
     final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
-
       while (retry) {
         retry = false;
         opCompleted = false;

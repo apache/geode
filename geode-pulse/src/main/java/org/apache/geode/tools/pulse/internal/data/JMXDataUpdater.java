@@ -887,7 +887,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * Add member specific region information on the region
    *
-   * @param regionObjectName: used to construct the jmx objectname. For region name that has special
+   * @param regionObjectName used to construct the jmx objectname. For region name that has special
    *        characters in, it will have double quotes around it.
    */
   private void updateRegionOnMembers(String regionObjectName, String regionFullPath,

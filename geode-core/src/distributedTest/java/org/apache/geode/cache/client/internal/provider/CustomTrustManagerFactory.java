@@ -81,8 +81,7 @@ public abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
     String trustStoreType = "JKS";
     String trustStorePassword = "password";
 
-    try {
-      FileInputStream fileInputStream = new FileInputStream(trustStorePath);
+    try (FileInputStream fileInputStream = new FileInputStream(trustStorePath)) {
       KeyStore trustStore = KeyStore.getInstance(trustStoreType);
       trustStore.load(fileInputStream, trustStorePassword.toCharArray());
       this.customTrustManagerFactory = TrustManagerFactory.getInstance(this.algorithm, "SunJSSE");
