@@ -61,7 +61,7 @@ public class Quote implements Serializable {
     String[] arr4 = {"priceType1", "priceType2", "priceType3", "priceType4", "priceType5",
         "priceType6", "priceType7"};
     priceType = arr4[i % 7];
-    price = (i / 10) * 8;
+    price = (i / 10.0) * 8.0;
     lowerQty = i + 100;
     upperQty = i + 1000;
     if ((i % 12) == 0) {

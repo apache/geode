@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 
 /**
  * A wrapper around an object array for storing values in index data structure with minimal set of
- * operations supported and the maximum size of 128 elements
+ * operations supported and the maximum size of 255 elements
  *
  * @since GemFire 7.0
  */
@@ -54,10 +54,13 @@ public class IndexElemArray implements Iterable, Collection {
    * @param minCapacity the desired minimum capacity
    */
   private void ensureCapacity(int minCapacity) {
+    if (minCapacity > 255) {
+      throw new IllegalStateException("attempt to increase the size beyond 255 elements");
+    }
     int oldCapacity = elementData.length;
     if (minCapacity > oldCapacity) {
       int newCapacity = oldCapacity + 5;
-      if (newCapacity < minCapacity) {
+      if (newCapacity < minCapacity || 255 < newCapacity) {
         newCapacity = minCapacity;
       }
       // minCapacity is usually close to size, so this is a win:
@@ -74,7 +77,7 @@ public class IndexElemArray implements Iterable, Collection {
    * @return the number of elements in this list
    */
   public int size() {
-    return size;
+    return size & 0xff;
   }
 
   /**
@@ -106,12 +109,13 @@ public class IndexElemArray implements Iterable, Collection {
    */
   public int indexOf(Object o) {
     synchronized (lock) {
+      int currentSize = size();
       if (o == null) {
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < currentSize; i++)
           if (elementData[i] == null)
             return i;
       } else {
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < currentSize; i++)
           if (o.equals(elementData[i]))
             return i;
       }
@@ -128,7 +132,7 @@ public class IndexElemArray implements Iterable, Collection {
    */
   public Object get(int index) {
     synchronized (lock) {
-      RangeCheck(index);
+      rangeCheck(index);
       return elementData[index];
     }
   }
@@ -143,7 +147,7 @@ public class IndexElemArray implements Iterable, Collection {
    */
   public Object set(int index, Object element) {
     synchronized (lock) {
-      RangeCheck(index);
+      rangeCheck(index);
 
       Object oldValue = (Object) elementData[index];
       elementData[index] = element;
@@ -160,11 +164,17 @@ public class IndexElemArray implements Iterable, Collection {
    */
   public boolean add(Object e) {
     synchronized (lock) {
-      ensureCapacity(size + 1);
-      elementData[size] = e;
-      ++size;
+      int currentSize = size(); // byte to int
+      ensureCapacity(currentSize + 1);
+      elementData[currentSize] = e;
+      currentSize++;
+      setSize(currentSize);
     }
     return true;
+  }
+
+  private void setSize(int size) {
+    this.size = (byte) (size & 0xff);
   }
 
   /**
@@ -180,14 +190,15 @@ public class IndexElemArray implements Iterable, Collection {
    */
   public boolean remove(Object o) {
     synchronized (lock) {
+      int currentSize = size(); // byte to int
       if (o == null) {
-        for (int index = 0; index < size; index++)
+        for (int index = 0; index < currentSize; index++)
           if (elementData[index] == null) {
             fastRemove(index);
             return true;
           }
       } else {
-        for (int index = 0; index < size; index++)
+        for (int index = 0; index < currentSize; index++)
           if (o.equals(elementData[index])) {
             fastRemove(index);
             return true;
@@ -216,11 +227,8 @@ public class IndexElemArray implements Iterable, Collection {
    * Removes all of the elements from this list. The list will be empty after this call returns.
    */
   public void clear() {
-    // Let gc do its work
     synchronized (lock) {
-      for (int i = 0; i < size; i++) {
-        elementData[i] = null;
-      }
+      Arrays.fill(this.elementData, null);
       size = 0;
     }
   }
@@ -230,9 +238,10 @@ public class IndexElemArray implements Iterable, Collection {
    * method does *not* check if the index is negative: It is always used immediately prior to an
    * array access, which throws an ArrayIndexOutOfBoundsException if index is negative.
    */
-  private void RangeCheck(int index) {
-    if (index >= size) {
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+  private void rangeCheck(int index) {
+    int currentSize = size(); // byte to int
+    if (index >= currentSize) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + currentSize);
     }
   }
 
@@ -241,16 +250,19 @@ public class IndexElemArray implements Iterable, Collection {
     Object[] a = c.toArray();
     int numNew = a.length;
     synchronized (lock) {
-      ensureCapacity(size + numNew);
-      System.arraycopy(a, 0, elementData, size, numNew);
-      size += numNew;
+      int currentSize = size(); // byte to int
+      ensureCapacity(currentSize + numNew);
+      System.arraycopy(a, 0, elementData, currentSize, numNew);
+      setSize(currentSize + numNew);
     }
     return numNew != 0;
   }
 
   @Override
   public Object[] toArray() {
-    return Arrays.copyOf(elementData, size);
+    synchronized (lock) {
+      return Arrays.copyOf(elementData, size);
+    }
   }
 
   @Override
@@ -267,7 +279,7 @@ public class IndexElemArray implements Iterable, Collection {
     IndexArrayListIterator() {
       synchronized (lock) {
         elements = elementData;
-        len = size;
+        len = size();
       }
     }
 

@@ -1887,9 +1887,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
               .append(stampVersion);
         }
         if (difference < 0) {
-          tagVersion += 0x1000000L;
+          tagVersion += 0x1000000;
         } else {
-          stampVersion += 0x1000000L;
+          stampVersion += 0x1000000;
         }
       }
     }

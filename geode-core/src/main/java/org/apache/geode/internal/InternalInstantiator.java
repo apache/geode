@@ -609,16 +609,16 @@ public class InternalInstantiator {
         types = new Class[] {Class.class, byte.class};
         init = instantiatorClass.getDeclaredConstructor(types);
       } catch (NoSuchMethodException ex2) {
-        String msg =
-            "Class %s does not have a two-argument (Class, int) constructor.";
-        Object[] msgArgs = new Object[] {instantiatorClass.getName()};
         if (instantiatorClass.getDeclaringClass() != null) {
-          msg =
-              "Class %s does not have a two-argument (Class, int) constructor. It is an inner class of %s. Should it be a static inner class?";
-          msgArgs =
-              new Object[] {instantiatorClass.getName(), instantiatorClass.getDeclaringClass()};
+          String msg = String.format(
+              "Class %s does not have a two-argument (Class, int) constructor. It is an inner class of %s. Should it be a static inner class?",
+              instantiatorClass.getName(), instantiatorClass.getDeclaringClass());
+          throw new IllegalArgumentException(msg);
         }
-        throw new IllegalArgumentException(String.format(msg, msgArgs));
+        String msg = String.format(
+            "Class %s does not have a two-argument (Class, int) constructor.",
+            instantiatorClass.getName());
+        throw new IllegalArgumentException(msg);
       }
     }
 

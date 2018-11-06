@@ -1174,8 +1174,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
       e.printStackTrace();
-      if (!((e instanceof FunctionInvocationTargetException)
-          || (e.getCause() instanceof FunctionInvocationTargetException))) {
+      if (!(e.getCause() instanceof FunctionInvocationTargetException)) {
         fail("FunctionInvocationTargetException should be thrown");
       }
     }

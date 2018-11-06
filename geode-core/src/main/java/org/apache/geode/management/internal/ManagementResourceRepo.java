@@ -132,7 +132,7 @@ public class ManagementResourceRepo {
    */
   public Object getEntryFromLocalMonitoringRegion(ObjectName name) {
 
-    return localMonitoringRegion.get(name);
+    return localMonitoringRegion.get(name.toString());
   }
 
   /**

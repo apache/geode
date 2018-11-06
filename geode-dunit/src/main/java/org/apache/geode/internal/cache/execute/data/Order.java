@@ -57,4 +57,12 @@ public class Order implements DataSerializable {
     }
     return false;
   }
+
+  @Override
+  public int hashCode() {
+    if (orderName == null) {
+      return super.hashCode();
+    }
+    return orderName.hashCode();
+  }
 }

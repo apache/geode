@@ -28,7 +28,6 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1194,44 +1193,54 @@ public class CacheServerLauncher {
    */
   protected void addToServerCommand(final List<String> commandLine,
       final Map<String, Object> options) {
-    final ListWrapper<String> commandLineWrapper = new ListWrapper<String>(commandLine);
 
     if (Boolean.TRUE.equals(options.get(REBALANCE))) {
-      commandLineWrapper.add("-rebalance");
+      commandLine.add("-rebalance");
     }
 
-    commandLineWrapper.add((String) options.get(DISABLE_DEFAULT_SERVER));
-    commandLineWrapper.add((String) options.get(SERVER_PORT));
-    commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS_NAME));
+    String disableDefaultServer = (String) options.get(DISABLE_DEFAULT_SERVER);
+    if (disableDefaultServer != null) {
+      commandLine.add(disableDefaultServer);
+    }
+
+    String serverPort = (String) options.get(SERVER_PORT);
+    if (serverPort != null) {
+      commandLine.add(serverPort);
+    }
+
+    String serverBindAddressName = (String) options.get(SERVER_BIND_ADDRESS_NAME);
+    if (serverBindAddressName != null) {
+      commandLine.add(serverBindAddressName);
+    }
 
     String criticalHeapThreshold = (String) options.get(CRITICAL_HEAP_PERCENTAGE);
     if (criticalHeapThreshold != null) {
-      commandLineWrapper.add(criticalHeapThreshold);
+      commandLine.add(criticalHeapThreshold);
     }
     String evictionHeapThreshold = (String) options.get(EVICTION_HEAP_PERCENTAGE);
     if (evictionHeapThreshold != null) {
-      commandLineWrapper.add(evictionHeapThreshold);
+      commandLine.add(evictionHeapThreshold);
     }
 
     String criticalOffHeapThreshold = (String) options.get(CRITICAL_OFF_HEAP_PERCENTAGE);
     if (criticalOffHeapThreshold != null) {
-      commandLineWrapper.add(criticalOffHeapThreshold);
+      commandLine.add(criticalOffHeapThreshold);
     }
     String evictionOffHeapThreshold = (String) options.get(EVICTION_OFF_HEAP_PERCENTAGE);
     if (evictionOffHeapThreshold != null) {
-      commandLineWrapper.add(evictionOffHeapThreshold);
+      commandLine.add(evictionOffHeapThreshold);
     }
 
     final Properties props = (Properties) options.get(PROPERTIES);
 
     for (final Object key : props.keySet()) {
-      commandLineWrapper.add(key + "=" + props.getProperty(key.toString()));
+      commandLine.add(key + "=" + props.getProperty(key.toString()));
     }
 
     if (props.getProperty(LOG_FILE) == null && CacheServerLauncher.isLoggingToStdOut()) {
       // Do not allow the cache server to log to stdout; override the logger with
       // #defaultLogFileName
-      commandLineWrapper.add(LOG_FILE + "=" + defaultLogFileName);
+      commandLine.add(LOG_FILE + "=" + defaultLogFileName);
     }
   }
 
@@ -1249,56 +1258,7 @@ public class CacheServerLauncher {
    */
   protected void stopAdditionalServices() throws Exception {}
 
-  /**
-   * A List implementation that disallows null values.
-   *
-   * @param <E> the Class type for the List elements.
-   */
-  protected static class ListWrapper<E> extends AbstractList<E> {
 
-    private static final ThreadLocal<Boolean> addResult = new ThreadLocal<Boolean>();
-
-    private final List<E> list;
-
-    public ListWrapper(final List<E> list) {
-      assert list != null : "The List cannot be null!";
-      this.list = list;
-    }
-
-    @Override
-    public boolean add(final E e) {
-      final boolean localAddResult = super.add(e);
-      return (localAddResult && addResult.get());
-    }
-
-    @Override
-    public void add(final int index, final E element) {
-      if (element != null) {
-        list.add(index, element);
-      }
-      addResult.set(element != null);
-    }
-
-    @Override
-    public E get(final int index) {
-      return this.list.get(index);
-    }
-
-    @Override
-    public E remove(final int index) {
-      return list.remove(index);
-    }
-
-    @Override
-    public E set(final int index, final E element) {
-      return (element != null ? list.set(index, element) : list.get(index));
-    }
-
-    @Override
-    public int size() {
-      return list.size();
-    }
-  }
 
   private class MainLogReporter extends Thread implements StartupStatusListener {
     private String lastLogMessage;

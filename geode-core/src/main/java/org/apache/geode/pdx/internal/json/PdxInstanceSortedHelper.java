@@ -250,8 +250,7 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
         factory.writeObject(key.fieldName, key.value);
         break;
       default:
-        new RuntimeException("Unable to convert json field " + key);
-        break;
+        throw new RuntimeException("Unable to convert json field " + key);
     }
   }
 

@@ -6633,7 +6633,7 @@ public class PartitionedRegion extends LocalRegion
         DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
 
         long ackWaitThreshold = 0;
-        long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000;
+        long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000L;
         boolean suspected = false;
         boolean severeAlertIssued = false;
         DistributedMember lockHolder = null;
@@ -6644,11 +6644,11 @@ public class PartitionedRegion extends LocalRegion
         if (!enableAlerts) {
           // Make sure we only attempt the lock long enough not to
           // get a 15 second warning from the reply processor.
-          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000;
+          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000L;
           waitInterval = ackWaitThreshold - 1;
           startTime = System.currentTimeMillis();
         } else if (ackSAThreshold > 0) {
-          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000;
+          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000L;
           waitInterval = ackWaitThreshold;
           startTime = System.currentTimeMillis();
         } else {
@@ -6719,7 +6719,7 @@ public class PartitionedRegion extends LocalRegion
       }
 
       long ackSAThreshold =
-          cache.getInternalDistributedSystem().getConfig().getAckSevereAlertThreshold() * 1000;
+          cache.getInternalDistributedSystem().getConfig().getAckSevereAlertThreshold() * 1000L;
       boolean suspected = false;
       boolean severeAlertIssued = false;
       DistributedMember lockHolder = null;
@@ -6729,7 +6729,7 @@ public class PartitionedRegion extends LocalRegion
 
       if (ackSAThreshold > 0) {
         ackWaitThreshold =
-            cache.getInternalDistributedSystem().getConfig().getAckWaitThreshold() * 1000;
+            cache.getInternalDistributedSystem().getConfig().getAckWaitThreshold() * 1000L;
         waitInterval = ackWaitThreshold;
         start = System.currentTimeMillis();
       } else {
@@ -7190,7 +7190,7 @@ public class PartitionedRegion extends LocalRegion
           }
         } else {
           try {
-            Thread.sleep(AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME * 1000);
+            Thread.sleep(AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME * 1000L);
           } catch (InterruptedException ignore) {/* ignore */
             // interrupted
           }
@@ -7937,9 +7937,9 @@ public class PartitionedRegion extends LocalRegion
    * synchronization or concurrent safety
    */
   public static class RetryTimeKeeper {
-    private int totalTimeInRetry;
+    private long totalTimeInRetry;
 
-    private final int maxTimeInRetry;
+    private final long maxTimeInRetry;
 
     public RetryTimeKeeper(int maxTime) {
       this.maxTimeInRetry = maxTime;
@@ -7988,7 +7988,7 @@ public class PartitionedRegion extends LocalRegion
       return this.totalTimeInRetry > this.maxTimeInRetry;
     }
 
-    public int getRetryTime() {
+    public long getRetryTime() {
       return this.totalTimeInRetry;
     }
   }

@@ -153,17 +153,17 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     pkid = "" + i;
     status = i % 2 == 0 ? "active" : "inactive";
     type = "type" + (i % 3);
-    position1 = new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000);
+    position1 = new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000L);
     if (i % 2 != 0) {
-      position2 = new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000);
+      position2 = new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000L);
     } else {
       position2 = null;
     }
 
     positions.put(secIds[PositionPdx.cnt % secIds.length],
-        new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000));
+        new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000L));
     positions.put(secIds[PositionPdx.cnt % secIds.length],
-        new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000));
+        new PositionPdx(secIds[PositionPdx.cnt % secIds.length], PositionPdx.cnt * 1000L));
 
     collectionHolderMap.put("0", new CollectionHolder());
     collectionHolderMap.put("1", new CollectionHolder());
@@ -180,7 +180,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     this.position1.portfolioId = j;
     this.position3 = new Object[3];
     for (int k = 0; k < position3.length; k++) {
-      PositionPdx p = new PositionPdx(secIds[k], (k + 1) * 1000);
+      PositionPdx p = new PositionPdx(secIds[k], (k + 1) * 1000L);
       p.portfolioId = (k + 1);
       this.position3[k] = p;
     }
