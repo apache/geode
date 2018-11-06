@@ -21,27 +21,20 @@
 groups:
 - name: main
   jobs:
-  - Build
 {%- for test in tests if not test.name.startswith("Windows") %}
   - {{test.name}}Test
 {%- endfor %}
 resources:
-- name: docker-geode-build-image
-  type: docker-image
-  source:
-    password: ((!docker-password))
-    repository: gcr.io/((gcp-project))/((pipeline-prefix))((!docker-image-name))
-    tag: latest
-    username: ((!docker-username))
 - name: geode
   type: pull-request
   source:
     access_token: ((!github-pr-access-token))
-    base: develop
     ignore_paths:
     - geode-docs/*
     - geode-book/*
-    repo: {{repository.fork}}/geode
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
 - name: geode-ci
   type: git
   source:
@@ -62,9 +55,7 @@ resource_types:
 - name: pull-request
   type: docker-image
   source:
-    repository: jtarchie/pr
-# TODO : Is pipeline_prefix here correct?  is apachegeode-ci?  this bucket maybe doesn't exist?
-# Also see build jinja
+    repository: teliaoss/github-pr-resource
 - name: concourse-metadata-resource
   type: docker-image
   source:
@@ -73,62 +64,6 @@ resource_types:
     tag: latest
     username: ((!docker-username))
 jobs:
-- name: Build
-  public: true
-  plan:
-  - aggregate:
-    - get: geode
-      trigger: true
-      params:
-        fetch_merge: true
-        git:
-          depth: 100
-      version: every
-    - get: geode-ci
-    - get: docker-geode-build-image
-      params:
-        rootfs: true
-  - get: geode-unmerged-request
-    resource: geode
-    params:
-      fetch_merge: false
-    version: every
-  - aggregate:
-    - put: geode
-      params:
-        context: $BUILD_JOB_NAME
-        path: geode-unmerged-request
-        status: pending
-    - task: build
-      config:
-        platform: linux
-        params:
-          MAINTENANCE_VERSION: {{repository.branch}}
-          ARTIFACT_BUCKET: ((artifact-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-        run:
-          path: geode-ci/ci/scripts/build.sh
-        inputs:
-        - name: geode
-        - name: geode-ci
-        outputs:
-        - name: built-geode
-        - name: results
-      image: docker-geode-build-image
-      on_failure:
-        aggregate:
-        - put: geode
-          params:
-            context: $BUILD_JOB_NAME
-            path: geode-unmerged-request
-            status: failure
-      on_success:
-        aggregate:
-        - put: geode
-          params:
-            context: $BUILD_JOB_NAME
-            path: geode-unmerged-request
-            status: success
 {% for test in tests if not test.name.startswith("Windows")%}
 - name: {{test.name}}Test
   public: true
@@ -137,25 +72,17 @@ jobs:
     - aggregate:
       - get: geode
         trigger: true
-        params:
-          fetch_merge: true
-          git:
-            depth: 100
         version: every
       - get: geode-ci
     - aggregate:
       - do:
-        - get: geode-unmerged-request
-          resource: geode
-          params:
-            fetch_merge: false
-          version: every
         - put: pull-request-job-pending
           resource: geode
           params:
-            context: $BUILD_JOB_NAME
-            path: geode-unmerged-request
+            context: {{test.name}}Test
+            path: geode
             status: pending
+          get_params: {skip_download: true}
       - do:
         - put: concourse-metadata-resource
         - task: create_instance
@@ -218,9 +145,10 @@ jobs:
       - put: pull-request-job-failure
         resource: geode
         params:
-          context: $BUILD_JOB_NAME
-          path: geode-unmerged-request
+          context: {{test.name}}Test
+          path: geode
           status: failure
+        get_params: {skip_download: true}
     ensure:
       do:
       - task: rsync_code_down
@@ -268,7 +196,8 @@ jobs:
       - put: pull-request-job-success
         resource: geode
         params:
-          context: $BUILD_JOB_NAME
-          path: geode-unmerged-request
+          context: {{test.name}}Test
+          path: geode
           status: success
+        get_params: {skip_download: true}
 {% endfor %}

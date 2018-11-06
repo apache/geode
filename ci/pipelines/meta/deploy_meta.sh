@@ -97,7 +97,6 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
-    --var concourse-team="main" \
     --var concourse-url=${CONCOURSE_URL} \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
     --var gcp-project=${GCP_PROJECT} \
