@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,7 +33,6 @@ import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.ArrayUtils;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
   private static Logger logger = LogService.getLogger();
@@ -62,7 +63,7 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     int statusCode = actual.getStatusLine().getStatusCode();
     assertThat(statusCode)
         .describedAs(logMessage + "\n" + descriptionText())
-        .isIn(ArrayUtils.toIntegerArray(httpStatus));
+        .isIn(Arrays.stream(httpStatus).boxed().collect(Collectors.toList()));
     return this;
   }
 

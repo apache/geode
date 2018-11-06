@@ -386,7 +386,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
         if (!specifiedGatewaySenders.isEmpty()) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
-              (String[]) gatewaySenderIds));
+              (Object[]) gatewaySenderIds));
         }
       }
     }
@@ -429,7 +429,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
       } else {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
-                (String[]) groups));
+                (Object[]) groups));
       }
     }
 
