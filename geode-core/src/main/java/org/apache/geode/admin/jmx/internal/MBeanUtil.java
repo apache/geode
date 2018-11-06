@@ -303,7 +303,7 @@ public class MBeanUtil {
    * @param refreshInterval the seconds between refreshes
    */
   static void registerRefreshNotification(NotificationListener client, Object userData,
-      RefreshNotificationType type, int refreshInterval) {
+      RefreshNotificationType type, long refreshInterval) {
     if (client == null) {
       throw new IllegalArgumentException(
           "NotificationListener is required");
@@ -371,8 +371,8 @@ public class MBeanUtil {
         timerNotificationId = refreshTimer.addNotification(type.getType(), // type
             type.getMessage(), // message = "refresh"
             userData, // userData
-            new Date(System.currentTimeMillis() + refreshInterval * 1000), // first occurrence
-            refreshInterval * 1000); // period to repeat
+            new Date(System.currentTimeMillis() + refreshInterval * 1000L), // first occurrence
+            refreshInterval * 1000L); // period to repeat
 
         // put an entry into the map for the listener...
         notifications.put(type, timerNotificationId);

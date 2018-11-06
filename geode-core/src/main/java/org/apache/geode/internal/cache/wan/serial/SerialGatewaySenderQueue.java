@@ -20,7 +20,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
@@ -173,10 +172,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private BatchRemovalThread removalThread = null;
 
-  private final boolean keyPutNoSync;
-  private final int maxPendingPuts;
-  private final PriorityQueue<Long> pendingPuts;
-
   private AbstractGatewaySender sender = null;
 
   public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
@@ -195,15 +190,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       this.isDiskSynchronous = abstractSender.isDiskSynchronous();
     } else {
       this.isDiskSynchronous = false;
-    }
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-sync")) {
-      this.keyPutNoSync = false;
-      this.maxPendingPuts = 0;
-      this.pendingPuts = null;
-    } else {
-      this.keyPutNoSync = true;
-      this.maxPendingPuts = Math.max(this.batchSize, 100);
-      this.pendingPuts = new PriorityQueue<Long>(this.maxPendingPuts + 5);
     }
     this.maximumQueueMemory = abstractSender.getMaximumMemeoryPerDispatcherQueue();
     this.stats = abstractSender.getStatistics();
@@ -1005,7 +991,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             boolean interrupted = Thread.interrupted();
             try {
               synchronized (this) {
-                this.wait(messageSyncInterval * 1000);
+                this.wait(messageSyncInterval * 1000L);
               }
             } catch (InterruptedException e) {
               interrupted = true;

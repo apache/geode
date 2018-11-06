@@ -254,7 +254,7 @@ public class MsgStreamer extends OutputStream
       this.overflowBuf.write(b);
       return;
     }
-    this.buffer.put((byte) b);
+    this.buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
@@ -502,7 +502,7 @@ public class MsgStreamer extends OutputStream
       this.overflowBuf.writeShort(v);
       return;
     }
-    this.buffer.putShort((short) v);
+    this.buffer.putShort((short) (v & 0xffff));
   }
 
   /**

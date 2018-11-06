@@ -48,7 +48,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    buffer.put((byte) b);
+    buffer.put((byte) (b & 0xff));
   }
 
   /** override OutputStream's write() */
@@ -133,7 +133,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @exception IOException if an I/O error occurs.
    */
   public void writeShort(int v) throws IOException {
-    buffer.putShort((short) v);
+    buffer.putShort((short) (v & 0xffff));
   }
 
   /**

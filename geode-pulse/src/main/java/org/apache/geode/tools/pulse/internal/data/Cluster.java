@@ -778,12 +778,11 @@ public class Cluster extends Thread {
           existingClient.setUptime(updatedClient.getUptime());
 
           // set cpu usage
-          long lastCPUTime = 0;
-          lastCPUTime = existingClient.getProcessCpuTime();
-          long currCPUTime = 0;
-          currCPUTime = updatedClient.getProcessCpuTime();
+          long lastCPUTime = existingClient.getProcessCpuTime();
+          long currCPUTime = updatedClient.getProcessCpuTime();
 
-          double newCPUTime = (double) (currCPUTime - lastCPUTime) / (elapsedTime * 1000000000);
+          double newCPUTime =
+              (double) (((currCPUTime - lastCPUTime) / elapsedTime) / 1_000_000_000L);
 
           double newCPUUsage = 0;
           int availableCpus = updatedClient.getCpus();
