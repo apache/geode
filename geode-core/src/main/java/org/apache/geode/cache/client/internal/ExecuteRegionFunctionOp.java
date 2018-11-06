@@ -641,10 +641,22 @@ public class ExecuteRegionFunctionOp {
     }
 
     private void addFunctionException(final FunctionException result) {
-      if (this.functionException == null) {
-        this.functionException = result;
+      if (result instanceof FunctionInvocationTargetException) {
+        if (this.functionException == null) {
+          this.functionException = new FunctionException(result);
+        }
+        this.functionException.addException(result);
+      } else if (result instanceof InternalFunctionInvocationTargetException) {
+        if (this.functionException == null) {
+          this.functionException = new FunctionException(result);
+        }
+        this.functionException.addException(result);
+      } else {
+        if (this.functionException == null) {
+          this.functionException = result;
+        }
+        this.functionException.addException(result);
       }
-      this.functionException.addException(result);
     }
 
     @Override
