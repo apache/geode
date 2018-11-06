@@ -84,7 +84,7 @@
         "popd",
 
         "write-output '>>>>>>>>>> Killing all java processes <<<<<<<<<<'",
-        "kill -name java -force",
+        "kill -name java -force -ErrorAction ignore",
         "Start-Sleep 10",
 
         "write-output '>>>>>>>>>> List remaining java processes for debug purposes <<<<<<<<<<'",
