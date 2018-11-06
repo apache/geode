@@ -88,6 +88,7 @@ class ProtobufQueryService implements QueryService {
         for (int i = 0; i < decodedRow.size(); i++) {
           rowMap.put(fieldNames.get(i), decodedRow.get(i));
         }
+        results.add(rowMap);
       }
 
       return results;

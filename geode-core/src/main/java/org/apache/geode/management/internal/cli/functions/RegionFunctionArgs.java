@@ -506,7 +506,10 @@ public class RegionFunctionArgs implements Serializable {
       }
 
       ExpirationAttrs that = (ExpirationAttrs) object;
-      return time == that.time && action == that.action;
+      if (time == null && that.time == null && action == that.action) {
+        return true;
+      }
+      return time != null && time.equals(that.time) && action == that.action;
     }
 
     public boolean isTimeSet() {

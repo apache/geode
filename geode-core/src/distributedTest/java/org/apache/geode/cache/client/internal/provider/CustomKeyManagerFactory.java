@@ -69,8 +69,7 @@ public abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
     String SSL_KEYSTORE_TYPE = "JKS";
     String SSL_KEYSTORE_PASSWORD = "password";
 
-    try {
-      FileInputStream fileInputStream = new FileInputStream(keyStorePath);
+    try (FileInputStream fileInputStream = new FileInputStream(keyStorePath)) {
       KeyStore keyStore = KeyStore.getInstance(SSL_KEYSTORE_TYPE);
       keyStore.load(fileInputStream, SSL_KEYSTORE_PASSWORD.toCharArray());
       this.customKeyManagerFactory = KeyManagerFactory.getInstance(this.algorithm, "SunJSSE");

@@ -694,7 +694,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         default:
           throw new IllegalArgumentException(
               String.format("%s is not in the valid set of options %s",
-                  value,
+                  Arrays.toString(value),
                   StringUtils
                       .join(new String[] {SecurableCommunicationChannel.ALL.getConstant(),
                           SecurableCommunicationChannel.CLUSTER.getConstant(),

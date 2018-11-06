@@ -2597,7 +2597,7 @@ public class CliStrings {
 
   public static final String START_SERVER__EVICTION__HEAP__PERCENTAGE = "eviction-heap-percentage";
   public static final String START_SERVER__EVICTION__HEAP__PERCENTAGE__HELP =
-      "Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately."
+      "Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately. "
           + "Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly. ";
 
   public static final String START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE =
@@ -3107,7 +3107,7 @@ public class CliStrings {
       "Set to true to have PDX deserialization produce a PdxInstance instead of an instance of the domain class. The default value for this options is \"false\"";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS = "ignore-unread-fields";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP =
-      "Control whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be including their data during serialization. But if you configure the cache to ignore unread fields then their data will be lost during serialization."
+      "Control whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be including their data during serialization. But if you configure the cache to ignore unread fields then their data will be lost during serialization. "
           + "You should only set this attribute to true if you know this member will only be reading cache data. In this use case you do not need to pay the cost of preserving the unread fields since you will never be reserializing pdx data.";
   public static final String CONFIGURE_PDX__PERSISTENT = "persistent";
   public static final String CONFIGURE_PDX__PERSISTENT__HELP =
