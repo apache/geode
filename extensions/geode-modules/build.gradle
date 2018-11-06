@@ -42,6 +42,8 @@ dependencies {
   compile('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
 
   testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
+  testCompile('junit:junit:' + project.'junit.version')
+  testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
 
   integrationTestCompile('junit:junit:' + project.'junit.version')
 

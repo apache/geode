@@ -267,6 +267,11 @@ dependencies {
   testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
   testCompile('com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version')
+  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
   testRuntime('commons-collections:commons-collections:' + project.'commons-collections.version')
@@ -287,6 +292,9 @@ dependencies {
   integrationTestCompile('org.apache.bcel:bcel:' + project.'bcel.version')
   integrationTestCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':tests')
   integrationTestCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':test-sources')
+  integrationTestCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  integrationTestCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  integrationTestCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
   integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
   integrationTestCompile('net.spy:spymemcached:' + project.'spymemcached.version')
   integrationTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')

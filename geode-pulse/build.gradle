@@ -29,11 +29,7 @@ dependencies {
   compile('commons-digester:commons-digester:' + project.'commons-digester.version')
   compile('commons-lang:commons-lang:' + project.'commons-lang.version')
   compile('org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version')
-  runtimeOnly('org.springframework:spring-expression:' + project.'springframework.version')
-
-  // added only to ensure common version with other geode modules
-  runtimeOnly('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
-
+  
   compile('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
@@ -61,9 +57,14 @@ dependencies {
   compile('com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version')
   compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
 
-  providedCompile('commons-logging:commons-logging:' + project.'commons-logging.version')
-
   compileOnly('org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version')
+
+  runtimeOnly('org.springframework:spring-expression:' + project.'springframework.version')
+
+  // added only to ensure common version with other geode modules
+  runtimeOnly('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
+
+  providedCompile('commons-logging:commons-logging:' + project.'commons-logging.version')
 
 
   testCompile(project(':geode-junit')) {
@@ -71,6 +72,10 @@ dependencies {
   }
   testCompile(project(':geode-core'))
   testCompile('org.springframework:spring-test:' + project.'springframework.version')
+  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+
 
 
   integrationTestCompile(project(':geode-junit')) {
@@ -78,6 +83,9 @@ dependencies {
   }
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
+  integrationTestCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  integrationTestCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  integrationTestCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
   integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
 
 

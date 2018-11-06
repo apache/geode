@@ -29,7 +29,14 @@ dependencies {
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }
+  
 
+  testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
+  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+
+  integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
   integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')

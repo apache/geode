@@ -151,6 +151,9 @@ dependencies {
 
 
   distributedTestCompile(project(':geode-core'))
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
   distributedTestCompile(project(':extensions:session-testing-war'))
   distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
   distributedTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')

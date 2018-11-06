@@ -39,6 +39,9 @@ dependencies {
   distributedTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
@@ -63,6 +66,7 @@ dependencies {
     ext.optional = true
   }
 
+  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
   integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('junit:junit:4.12')
@@ -80,6 +84,7 @@ dependencies {
   acceptanceTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
   acceptanceTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-core', version: '0.31.1')
+
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
 
   acceptanceTestRuntime(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
