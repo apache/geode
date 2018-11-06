@@ -163,7 +163,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       }
 
       // check if the caller is authorized to do this operation on server
-      functionObject.getRequiredPermissions(regionName).forEach(securityService::authorize);
+      functionObject.getRequiredPermissions(regionName, args).forEach(securityService::authorize);
       ExecuteFunctionOperationContext executeContext =
           getAuthorizedExecuteFunctionOperationContext(args, filter,
               functionObject.optimizeForWrite(), serverConnection.getAuthzRequest(),
