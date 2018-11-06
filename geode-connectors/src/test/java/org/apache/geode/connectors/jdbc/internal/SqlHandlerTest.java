@@ -102,7 +102,7 @@ public class SqlHandlerTest {
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
 
     regionMapping = mock(RegionMapping.class);
-    when(regionMapping.getConnectionConfigName()).thenReturn(DATA_SOURCE_NAME);
+    when(regionMapping.getDataSourceName()).thenReturn(DATA_SOURCE_NAME);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
@@ -133,7 +133,7 @@ public class SqlHandlerTest {
     Region<Object, Object> region2 = mock(Region.class);
     when(region2.getName()).thenReturn("region2");
     RegionMapping regionMapping2 = mock(RegionMapping.class);
-    when(regionMapping2.getConnectionConfigName()).thenReturn("bogus connection name");
+    when(regionMapping2.getDataSourceName()).thenReturn("bogus data source name");
     when(regionMapping2.getRegionName()).thenReturn("region2");
     when(connectorService.getMappingForRegion("region2")).thenReturn(regionMapping2);
 

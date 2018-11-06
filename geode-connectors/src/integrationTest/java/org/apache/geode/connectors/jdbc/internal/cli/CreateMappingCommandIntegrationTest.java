@@ -40,14 +40,14 @@ public class CreateMappingCommandIntegrationTest {
   private CreateMappingCommand createRegionMappingCommand;
 
   private String regionName;
-  private String connectionName;
+  private String dataSourceName;
   private String tableName;
   private String pdxClass;
 
   @Before
   public void setup() {
     regionName = "regionName";
-    connectionName = "connection";
+    dataSourceName = "connection";
     tableName = "testTable";
     pdxClass = "myPdxClass";
 
@@ -66,7 +66,7 @@ public class CreateMappingCommandIntegrationTest {
 
   @Test
   public void createsRegionMappingInService() {
-    ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName,
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
@@ -76,7 +76,7 @@ public class CreateMappingCommandIntegrationTest {
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
-    assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
+    assertThat(regionMapping.getDataSourceName()).isEqualTo(dataSourceName);
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
   }
@@ -86,7 +86,7 @@ public class CreateMappingCommandIntegrationTest {
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ResultModel result;
     result =
-        createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass);
+        createRegionMappingCommand.createMapping(regionName, dataSourceName, tableName, pdxClass);
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     IgnoredException ignoredException =
@@ -94,7 +94,7 @@ public class CreateMappingCommandIntegrationTest {
 
     try {
       result =
-          createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass);
+          createRegionMappingCommand.createMapping(regionName, dataSourceName, tableName, pdxClass);
     } finally {
       ignoredException.remove();
     }
@@ -105,7 +105,7 @@ public class CreateMappingCommandIntegrationTest {
   @Test
   public void createsRegionMappingWithMinimumParams() {
     ResultModel result =
-        createRegionMappingCommand.createMapping(regionName, connectionName, null, null);
+        createRegionMappingCommand.createMapping(regionName, dataSourceName, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -114,7 +114,7 @@ public class CreateMappingCommandIntegrationTest {
 
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
-    assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
+    assertThat(regionMapping.getDataSourceName()).isEqualTo(dataSourceName);
     assertThat(regionMapping.getTableName()).isNull();
     assertThat(regionMapping.getPdxName()).isNull();
   }

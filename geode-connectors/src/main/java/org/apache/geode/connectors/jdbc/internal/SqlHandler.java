@@ -53,15 +53,16 @@ public class SqlHandler {
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-  Connection getConnection(String connectionName) throws SQLException {
-    return getDataSource(connectionName).getConnection();
+  Connection getConnection(String dataSourceName) throws SQLException {
+    return getDataSource(dataSourceName).getConnection();
   }
 
-  DataSource getDataSource(String connectionName) {
-    DataSource dataSource = this.dataSourceFactory.getDataSource(connectionName);
+  DataSource getDataSource(String dataSourceName) {
+    DataSource dataSource = this.dataSourceFactory.getDataSource(dataSourceName);
     if (dataSource == null) {
-      throw new JdbcConnectorException("JDBC connection with name " + connectionName
-          + " not found. Create the connection with the gfsh command 'create jndi-binding'");
+      throw new JdbcConnectorException("JDBC data-source named \"" + dataSourceName
+          + "\" not found. Create it with gfsh 'create data-source --pooled --name="
+          + dataSourceName + "'.");
     }
     return dataSource;
   }
@@ -73,7 +74,7 @@ public class SqlHandler {
 
     RegionMapping regionMapping = getMappingForRegion(region.getName());
     PdxInstance result;
-    try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
+    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
       EntryColumnData entryColumnData =
@@ -160,7 +161,7 @@ public class SqlHandler {
     }
     RegionMapping regionMapping = getMappingForRegion(region.getName());
 
-    try (Connection connection = getConnection(regionMapping.getConnectionConfigName())) {
+    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
       EntryColumnData entryColumnData =

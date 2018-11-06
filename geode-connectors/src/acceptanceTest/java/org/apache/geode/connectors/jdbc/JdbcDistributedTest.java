@@ -58,7 +58,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   static final String DB_NAME = "test";
   private static final String TABLE_NAME = "employees";
   private static final String REGION_NAME = "employees";
-  private static final String CONNECTION_NAME = "TestConnection";
+  private static final String DATA_SOURCE_NAME = "TestDataSource";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -234,10 +234,10 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
-  public void throwsExceptionWhenNoConnectionExists() throws Exception {
+  public void throwsExceptionWhenNoDataSourceExists() throws Exception {
     createTable();
     createRegionUsingGfsh(true, false, false);
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
 
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
@@ -246,7 +246,9 @@ public abstract class JdbcDistributedTest implements Serializable {
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
-              "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jndi-binding'");
+              "JDBC data-source named \"" + DATA_SOURCE_NAME
+                  + "\" not found. Create it with gfsh 'create data-source --pooled --name="
+                  + DATA_SOURCE_NAME + "'.");
     });
   }
 
@@ -261,7 +263,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     });
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     final String key = "emp1";
     final java.sql.Date sqlDate = java.sql.Date.valueOf("1982-09-11");
     final Date jdkDate = new Date(sqlDate.getTime());
@@ -296,7 +298,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     });
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     final String key = "emp1";
     final java.sql.Time sqlTime = java.sql.Time.valueOf("23:59:59");
     final Date jdkDate = new Date(sqlTime.getTime());
@@ -327,7 +329,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     final String key = "emp1";
     final java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1982-09-11 23:59:59.123");
     final Date jdkDate = new Date(sqlTimestamp.getTime());
@@ -365,7 +367,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, false);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
@@ -382,7 +384,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, false);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
@@ -399,7 +401,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(false, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     server.invoke(() -> {
       String key = "emp1";
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
@@ -414,7 +416,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
@@ -443,7 +445,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(false, true, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
@@ -474,7 +476,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName());
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName());
     server.invoke(() -> {
       String key = "id1";
       Employee value = new Employee(key, "Emp1", 55);
@@ -496,7 +498,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName());
     client.invoke(() -> {
       String key = "id1";
       ClassWithSupportedPdxFields value =
@@ -520,7 +522,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName());
     client.invoke(() -> {
       String key = "id1";
       ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(key);
@@ -541,7 +543,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createClientRegion(client);
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName());
     String key = "id1";
     ClassWithSupportedPdxFields value =
         new ClassWithSupportedPdxFields(key, true, (byte) 1, (short) 2,
@@ -570,7 +572,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createClientRegion(client);
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName());
     String key = "id1";
     ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(key);
 
@@ -608,7 +610,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void createJdbcConnection() {
     final String commandStr =
-        "create jndi-binding --type=POOLED --name=" + CONNECTION_NAME + " --url=" + connectionUrl;
+        "create jndi-binding --type=POOLED --name=" + DATA_SOURCE_NAME + " --url=" + connectionUrl;
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
@@ -642,7 +644,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName, String pdxClassName) {
-    final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
+    final String commandStr = "create jdbc-mapping --region=" + regionName + " --data-source="
         + connectionName + (pdxClassName != null ? " --pdx-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
