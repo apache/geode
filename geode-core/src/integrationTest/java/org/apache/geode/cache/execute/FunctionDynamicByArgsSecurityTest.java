@@ -15,21 +15,21 @@
 
 package org.apache.geode.cache.execute;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.test.junit.rules.ConnectionConfiguration;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
 public class FunctionDynamicByArgsSecurityTest {

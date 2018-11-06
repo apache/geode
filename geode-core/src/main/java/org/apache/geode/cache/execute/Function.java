@@ -33,6 +33,7 @@ import org.apache.geode.security.ResourcePermission;
  * return a non-null identifier and register your function using {@link
  * FunctionService#registerFunction(Function)} or the cache.xml <code>function</code> element.
  * </p>
+ *
  * @since GemFire 6.0
  */
 @FunctionalInterface
@@ -49,6 +50,7 @@ public interface Function<T> extends Identifiable<String> {
    * If {@link Function#hasResult()} returns true, {@link ResultCollector#getResult()} blocks and
    * waits for the result of function execution
    * </p>
+   *
    * @return whether this function returns a Result back to the caller.
    * @since GemFire 6.0
    */
@@ -62,6 +64,7 @@ public interface Function<T> extends Identifiable<String> {
    * provided to this function is the one which was built using {@linkplain Execution}. The contexts
    * can be data dependent or data-independent so user should check to see if the context provided
    * in parameter is instance of {@link RegionFunctionContext}.
+   *
    * @param context as created by {@link Execution}
    * @since GemFire 6.0
    */
@@ -70,6 +73,7 @@ public interface Function<T> extends Identifiable<String> {
   /**
    * Return a unique function identifier, used to register the function with {@link
    * FunctionService}
+   *
    * @return string identifying this function
    * @since GemFire 6.0
    */
@@ -91,9 +95,11 @@ public interface Function<T> extends Identifiable<String> {
    * </p>
    *
    * <p>
-   * This method is only consulted when Region passed to FunctionService#onRegion(org.apache.geode.cache.Region)
+   * This method is only consulted when Region passed to
+   * FunctionService#onRegion(org.apache.geode.cache.Region)
    * is a partitioned region
    * </p>
+   *
    * @return false if the function is read only, otherwise returns true
    * @see FunctionService
    * @since GemFire 6.0
@@ -104,6 +110,7 @@ public interface Function<T> extends Identifiable<String> {
 
   /**
    * Specifies whether the function is eligible for re-execution (in case of failure).
+   *
    * @return whether the function is eligible for re-execution.
    * @see RegionFunctionContext#isPossibleDuplicate()
    * @since GemFire 6.5
@@ -128,12 +135,15 @@ public interface Function<T> extends Identifiable<String> {
    * <p>
    * All the permissions returned from this method will be ANDed together.
    * </p>
+   *
    * @param regionName the region this function will be executed on. The regionName is optional and
-   * will only be present when the function is executed by an onRegion() executor. In other cases,
-   * it will be null. This method returns permissions appropriate to the context, independent of the
-   * presence of the regionName parameter.
+   *        will only be present when the function is executed by an onRegion() executor. In other
+   *        cases,
+   *        it will be null. This method returns permissions appropriate to the context, independent
+   *        of the
+   *        presence of the regionName parameter.
    * @return a collection of {@link ResourcePermission}s indicating the permissions required to
-   * execute the function.
+   *         execute the function.
    */
   default Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singletonList(ResourcePermissions.DATA_WRITE);
@@ -155,13 +165,16 @@ public interface Function<T> extends Identifiable<String> {
    * <p>
    * All the permissions returned from this method will be ANDed together.
    * </p>
+   *
    * @param regionName the region this function will be executed on. The regionName is optional and
-   * will only be present when the function is executed by an onRegion() executor. In other cases,
-   * it will be null. This method returns permissions appropriate to the context, independent of the
-   * presence of the regionName parameter.
+   *        will only be present when the function is executed by an onRegion() executor. In other
+   *        cases,
+   *        it will be null. This method returns permissions appropriate to the context, independent
+   *        of the
+   *        presence of the regionName parameter.
    * @param args the arguments to the function.
    * @return a collection of {@link ResourcePermission}s indicating the permissions required to
-   * execute the function.
+   *         execute the function.
    */
   default Collection<ResourcePermission> getRequiredPermissions(String regionName, Object args) {
     return getRequiredPermissions(regionName);

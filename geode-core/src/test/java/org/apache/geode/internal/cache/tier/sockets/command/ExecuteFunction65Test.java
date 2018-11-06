@@ -70,7 +70,7 @@ public class ExecuteFunction65Test {
   private static final String FUNCTION_ID = "function_id";
   private static final boolean OPTIMIZE_FOR_WRITE = false;
   private static final Object CALLBACK_ARG = "arg";
-  private static final byte[] RESULT = new byte[]{Integer.valueOf(0).byteValue()};
+  private static final byte[] RESULT = new byte[] {Integer.valueOf(0).byteValue()};
 
   @Mock
   private SecurityService securityService;
