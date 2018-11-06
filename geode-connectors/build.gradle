@@ -50,13 +50,13 @@ dependencies {
   }
 
   compile('com.zaxxer:HikariCP:3.2.0')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
-  compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  compile('commons-lang:commons-lang')
+  compile('javax.xml.bind:jaxb-api')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
-  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+  compile('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
@@ -66,23 +66,23 @@ dependencies {
     ext.optional = true
   }
 
-  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  testCompile('pl.pragmatists:JUnitParams')
 
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('junit:junit:4.12')
-  integrationTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.assertj:assertj-core')
 
-  distributedTestCompile('junit:junit:' + project.'junit.version')
-  distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('org.assertj:assertj-core')
   distributedTestCompile('org.mockito:mockito-core:2.19.1')
 
-  acceptanceTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  acceptanceTestCompile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  acceptanceTestCompile('junit:junit:' + project.'junit.version')
-  acceptanceTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
-  acceptanceTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
-  acceptanceTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  
+  acceptanceTestCompile('junit:junit')
+  acceptanceTestCompile('org.assertj:assertj-core')
+  acceptanceTestCompile('org.awaitility:awaitility')
+  acceptanceTestCompile('org.mockito:mockito-core')
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-core', version: '0.31.1')
 
   acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
@@ -90,6 +90,38 @@ dependencies {
   acceptanceTestRuntime(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
   acceptanceTestRuntime(group: 'org.apache.derby', name: 'derby', version: project.'derby.version')
   acceptanceTestRuntime(group: 'org.postgresql', name: 'postgresql', version: '42.2.2')
+}
+dependencies {
+  constraints {
+    compile('com.zaxxer:HikariCP:3.2.0')
+    compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+    compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
+    compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+    compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version')
+    compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') 
+
+    testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+
+    integrationTestCompile('junit:junit:' + project.'junit.version')
+    integrationTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+
+    distributedTestCompile('junit:junit:' + project.'junit.version')
+    distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+    distributedTestCompile('org.mockito:mockito-core:2.19.1')
+
+    acceptanceTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version')
+    acceptanceTestCompile('junit:junit:' + project.'junit.version')
+    acceptanceTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+    acceptanceTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+    acceptanceTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+    acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-core', version: '0.31.1')
+
+    acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
+
+    acceptanceTestRuntime(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
+    acceptanceTestRuntime(group: 'org.apache.derby', name: 'derby', version: project.'derby.version')
+    acceptanceTestRuntime(group: 'org.postgresql', name: 'postgresql', version: '42.2.2')
+  }
 }
 
 integrationTest.forkEvery 0
