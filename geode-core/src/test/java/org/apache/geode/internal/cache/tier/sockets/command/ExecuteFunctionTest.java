@@ -68,7 +68,7 @@ public class ExecuteFunctionTest {
   private static final String FUNCTION_ID = "function_id";
   private static final boolean OPTIMIZE_FOR_WRITE = false;
   private static final Object CALLBACK_ARG = "arg";
-  private static final byte[] RESULT = new byte[] {Integer.valueOf(1).byteValue()};
+  private static final byte[] RESULT = new byte[]{Integer.valueOf(1).byteValue()};
 
   @Mock
   private SecurityService securityService;
@@ -131,7 +131,7 @@ public class ExecuteFunctionTest {
 
     when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
     doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
-    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any(),any());
+    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any(), any());
 
     when(this.functionPart.getStringOrObject()).thenReturn(FUNCTION);
 

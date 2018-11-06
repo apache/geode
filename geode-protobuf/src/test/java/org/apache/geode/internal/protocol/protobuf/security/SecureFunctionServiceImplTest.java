@@ -71,33 +71,33 @@ public class SecureFunctionServiceImplTest {
 
   @Test
   public void executeFunctionOnRegionWithoutAuthorization() throws Exception {
-    when(function.getRequiredPermissions(REGION,null))
+    when(function.getRequiredPermissions(REGION, null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
         () -> functionService.executeFunctionOnRegion(FUNCTION_ID, REGION, null, null))
-            .isInstanceOf(NotAuthorizedException.class);
+        .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
   public void executeFunctionOnMemberWithoutAuthorization() throws Exception {
-    when(function.getRequiredPermissions(null,null))
+    when(function.getRequiredPermissions(null, null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
         () -> functionService.executeFunctionOnMember(FUNCTION_ID, null, Arrays.asList("member")))
-            .isInstanceOf(NotAuthorizedException.class);
+        .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
   public void executeFunctionOnGroupsWithoutAuthorization() throws Exception {
-    when(function.getRequiredPermissions(null,null))
+    when(function.getRequiredPermissions(null, null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
         () -> functionService.executeFunctionOnGroups(FUNCTION_ID, null, Arrays.asList("group")))
-            .isInstanceOf(NotAuthorizedException.class);
+        .isInstanceOf(NotAuthorizedException.class);
   }
 
   private void authorize(ResourcePermission.Resource resource,
-      ResourcePermission.Operation operation, String region, String key) {
+                         ResourcePermission.Operation operation, String region, String key) {
     doNothing().when(security).authorize(resource, operation, region, key);
     doNothing().when(security).authorize(new ResourcePermission(resource, operation, region, key));
   }

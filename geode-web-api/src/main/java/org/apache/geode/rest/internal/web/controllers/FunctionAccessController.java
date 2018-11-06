@@ -57,7 +57,6 @@ import org.apache.geode.security.ResourcePermission;
 
 /**
  * The FunctionsController class serving REST Requests related to the function execution
- *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
@@ -73,7 +72,6 @@ public class FunctionAccessController extends AbstractBaseController {
 
   /**
    * Gets the version of the REST API implemented by this @Controller.
-   *
    * @return a String indicating the REST API version.
    */
   @Override
@@ -83,7 +81,6 @@ public class FunctionAccessController extends AbstractBaseController {
 
   /**
    * list all registered functions in Gemfire data node
-   *
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
@@ -110,15 +107,13 @@ public class FunctionAccessController extends AbstractBaseController {
   /**
    * Execute a function on Gemfire data node using REST API call. Arguments to the function are
    * passed as JSON string in the request body.
-   *
    * @param functionId represents function to be executed
    * @param region list of regions on which function to be executed.
    * @param members list of nodes on which function to be executed.
    * @param groups list of groups on which function to be executed.
    * @param filter list of keys which the function will use to determine on which node to execute
-   *        the function.
+   * the function.
    * @param argsInBody function argument as a JSON document
-   *
    * @return result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
@@ -134,11 +129,11 @@ public class FunctionAccessController extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<String> execute(@PathVariable("functionId") String functionId,
-      @RequestParam(value = "onRegion", required = false) String region,
-      @RequestParam(value = "onMembers", required = false) final String[] members,
-      @RequestParam(value = "onGroups", required = false) final String[] groups,
-      @RequestParam(value = "filter", required = false) final String[] filter,
-      @RequestBody(required = false) final String argsInBody) {
+                                        @RequestParam(value = "onRegion", required = false) String region,
+                                        @RequestParam(value = "onMembers", required = false) final String[] members,
+                                        @RequestParam(value = "onGroups", required = false) final String[] groups,
+                                        @RequestParam(value = "filter", required = false) final String[] filter,
+                                        @RequestBody(required = false) final String argsInBody) {
 
     Function function = FunctionService.getFunction(functionId);
 
@@ -154,7 +149,9 @@ public class FunctionAccessController extends AbstractBaseController {
     }
 
     // check for required permissions of the function
-    Collection<ResourcePermission> requiredPermissions = function.getRequiredPermissions(region,args);
+    Collection<ResourcePermission>
+        requiredPermissions =
+        function.getRequiredPermissions(region, args);
     for (ResourcePermission requiredPermission : requiredPermissions) {
       securityService.authorize(requiredPermission);
     }

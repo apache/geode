@@ -21,6 +21,7 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -55,13 +56,16 @@ public class FunctionDynamicByArgsSecurityTest {
   @Test
   @ConnectionConfiguration(user = "DATAREADtestRegion1", password = "DATAREADtestRegion1")
   public void functionDynamicRequireExpectedPermission() throws Exception {
-    gfsh.executeAndAssertThat("execute function --id=" + function.getId() + " --arguments=testRegion1")
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + function.getId() + " --arguments=testRegion1")
         .tableHasRowCount(RESULT_HEADER, 1)
         .tableHasRowWithValues(RESULT_HEADER, "[successfully invoked with argument:testRegion1]")
         .statusIsSuccess();
-    gfsh.executeAndAssertThat("execute function --id=" + function.getId() + " --arguments=testRegion1,testRegion2")
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + function.getId() + " --arguments=testRegion1,testRegion2")
         .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasRowWithValues(RESULT_HEADER, "Exception: DATAREADtestRegion1 not authorized for DATA:READ:testRegion2")
+        .tableHasRowWithValues(RESULT_HEADER,
+            "Exception: DATAREADtestRegion1 not authorized for DATA:READ:testRegion2")
         .statusIsError();
   }
 
@@ -70,13 +74,15 @@ public class FunctionDynamicByArgsSecurityTest {
     public void execute(FunctionContext context) {
       Object args = context.getArguments();
       String[] regions = (String[]) args;
-      context.getResultSender().lastResult("successfully invoked with argument:" + String.join(",",regions));
+      context.getResultSender()
+          .lastResult("successfully invoked with argument:" + String.join(",", regions));
     }
 
     @Override
     public Collection<ResourcePermission> getRequiredPermissions(String regionName, Object args) {
       String[] regions = (String[]) args;
-      return Stream.of(regions).map(s -> new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ, s)).collect(Collectors.toSet());
+      return Stream.of(regions).map(s -> new ResourcePermission(ResourcePermission.Resource.DATA,
+          ResourcePermission.Operation.READ, s)).collect(Collectors.toSet());
     }
   }
 }

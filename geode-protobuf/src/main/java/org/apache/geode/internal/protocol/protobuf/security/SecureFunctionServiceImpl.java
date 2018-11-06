@@ -41,9 +41,9 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
 
   @Override
   public List<Object> executeFunctionOnRegion(String functionID, String regionName,
-      Object arguments, Set<?> keyFilter) {
+                                              Object arguments, Set<?> keyFilter) {
 
-    Function function = authorizeAndGetFunction(regionName, functionID,arguments);
+    Function function = authorizeAndGetFunction(regionName, functionID, arguments);
     Region region = getRegion(regionName);
     Execution execution = FunctionService.onRegion(region);
     if (keyFilter != null) {
@@ -53,7 +53,7 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
   }
 
   private List<Object> executeFunction(Execution execution, String functionID, Function function,
-      Object arguments) {
+                                       Object arguments) {
     if (arguments != null) {
       execution = execution.setArguments(arguments);
     }
@@ -65,7 +65,8 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
     }
   }
 
-  private Function<?> authorizeAndGetFunction(String regionName, String functionID,Object arguments) {
+  private Function<?> authorizeAndGetFunction(String regionName, String functionID,
+                                              Object arguments) {
     final Function<?> function = FunctionService.getFunction(functionID);
     if (function == null) {
       throw new IllegalArgumentException(
@@ -73,23 +74,23 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
               functionID));
     }
 
-    function.getRequiredPermissions(regionName,arguments).forEach(security::authorize);
+    function.getRequiredPermissions(regionName, arguments).forEach(security::authorize);
     return function;
   }
 
   @Override
   public List<Object> executeFunctionOnMember(String functionID, Object arguments,
-      List<String> memberNameList) {
+                                              List<String> memberNameList) {
 
-    Function function = authorizeAndGetFunction(null, functionID,arguments);
+    Function function = authorizeAndGetFunction(null, functionID, arguments);
     Execution execution = FunctionService.onMembers(getMemberIDs(functionID, memberNameList));
     return executeFunction(execution, functionID, function, arguments);
   }
 
   @Override
   public List<Object> executeFunctionOnGroups(String functionID, Object arguments,
-      List<String> groupNameList) {
-    Function function = authorizeAndGetFunction(null, functionID,arguments);
+                                              List<String> groupNameList) {
+    Function function = authorizeAndGetFunction(null, functionID, arguments);
     Execution execution = FunctionService.onMember(groupNameList.toArray(new String[0]));
     return executeFunction(execution, functionID, function, arguments);
   }
