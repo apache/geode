@@ -138,7 +138,7 @@ public class CreateMappingCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    // NOTE: --table is optional so it should not be in the ouput but it is.
+    // NOTE: --table is optional so it should not be in the ouput but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput("You should specify option (--table, --pdx-name) for this command");
   }
