@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
@@ -42,6 +43,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private static final long serialVersionUID = 1856043174458190605L;
 
   public static final String ID = "bootstrapping-function";
+  private final ReentrantLock registerFuntionLock = new ReentrantLock();
 
   private static final int TIME_TO_WAIT_FOR_CACHE =
       Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
@@ -105,7 +107,8 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private void registerFunctions() {
     // Synchronize so that these functions aren't registered twice. The
     // constructor for the CreateRegionFunction creates a meta region.
-    synchronized (ID) {
+    registerFuntionLock.lock();
+    try {
       // Register the create region function if it is not already registered
       if (!FunctionService.isRegistered(CreateRegionFunction.ID)) {
         FunctionService.registerFunction(new CreateRegionFunction());
@@ -125,6 +128,8 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
       if (!FunctionService.isRegistered(RegionSizeFunction.ID)) {
         FunctionService.registerFunction(new RegionSizeFunction());
       }
+    } finally {
+      registerFuntionLock.unlock();
     }
   }
 
@@ -145,7 +150,12 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
 
   @Override
   public String getId() {
-    return ID;
+    registerFuntionLock.lock();
+    try {
+      return ID;
+    } finally {
+      registerFuntionLock.unlock();
+    }
   }
 
   @Override
@@ -166,7 +176,13 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   public int hashCode() {
     // This method is only implemented so that multiple instances of this class
     // don't get added as membership listeners.
-    return ID.hashCode();
+    registerFuntionLock.lock();
+    try {
+      return ID.hashCode();
+    } finally {
+      registerFuntionLock.unlock();
+    }
+
   }
 
   public boolean equals(Object obj) {
