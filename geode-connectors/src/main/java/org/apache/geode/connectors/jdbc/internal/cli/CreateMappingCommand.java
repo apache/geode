@@ -23,6 +23,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -68,6 +69,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
         pdxName, table, dataSourceName);
 
     // action
+    ConfigurationPersistenceService configurationPersistenceService = getConfigurationPersistenceService();
+    if (configurationPersistenceService == null) {
+      return ResultModel.createError("Cluster Configuration must be enabled.");
+    }
+
+    if (!configurationPersistenceService
+        .getCacheConfig(null)
+        .getRegions()
+        .stream()
+        .anyMatch(regionConfig -> regionConfig.getName().equals(mapping.getRegionName()))) {
+      return ResultModel.createError("Cluster Configuration must contain a region named " + regionName);
+    }
+
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
 
