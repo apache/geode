@@ -127,8 +127,8 @@ public abstract class ListExecutor extends AbstractExecutor {
       boolean indexSet = false;
       do {
         Integer existingIndex = (Integer) keyRegion.get(indexKey);
-        if ((pushType == ListDirection.RIGHT && existingIndex < index)
-            || (pushType == ListDirection.LEFT && existingIndex > index))
+        if (index != null && ((pushType == ListDirection.RIGHT && existingIndex < index)
+            || (pushType == ListDirection.LEFT && existingIndex > index)))
           indexSet = keyRegion.replace(indexKey, existingIndex, index);
         else
           break;
