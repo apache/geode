@@ -134,7 +134,7 @@ public class CommandExecutor {
     String members = parseResult.getParamValueAsString("member");
     if (members != null) {
       groupInput = Arrays.stream(members.split(",")).map(member -> "MEMBER_" + member).collect(
-          Collectors.joining());
+          Collectors.joining(","));
     }
     if (groupInput == null) {
       String groups = parseResult.getParamValueAsString("group");
