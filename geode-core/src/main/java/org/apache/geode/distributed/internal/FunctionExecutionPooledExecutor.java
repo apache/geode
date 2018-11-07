@@ -144,12 +144,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
         }
 
         private void launchAdditionalThread(final Runnable r, ThreadPoolExecutor executor) {
-          Thread th = executor.getThreadFactory().newThread(
-              (new Runnable() {
-                public void run() {
-                  r.run();
-                }
-              }));
+          Thread th = executor.getThreadFactory().newThread(r);
           th.start();
         }
       };
