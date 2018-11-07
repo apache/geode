@@ -91,38 +91,17 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
       boolean forFnExec) {
     if (forFnExec) {
       return new RejectedExecutionHandler() {
-        public void rejectedExecution(final Runnable r, ThreadPoolExecutor executor) {
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
           if (executor.isShutdown()) {
             throw new RejectedExecutionException(
                 "executor has been shutdown");
           } else {
-            // The request was rejected due to all threads being in use.
-            //
-            // In the normal case, add the rejected request to the blocking queue.
-            //
-            // If the handler was invoked via the bufferConsumer (the thread that takes from the
-            // blocking queue and offers to the synchronous queue), then spin off a thread directly.
-            // In this case, an offer has already been made to the synchronous queue and failed, so
-            // all the function execution threads are in use.
-            //
-            // If the handler was invoked via a function execution thread, then spin off a thread
-            // directly. In this case, that means a function is executing another function. The
-            // child function request shouldn't be in the queue behind the parent request since the
-            // parent function is dependent on the child function executing.
-            final boolean isBufferConsumer = isBufferConsumer(executor);
-            if (isBufferConsumer || isFunctionExecutionThread()) {
-              if (isBufferConsumer) {
-                logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
-                    + " thread is being launched because all " + executor.getMaximumPoolSize()
-                    + " thread pool threads are in use for greater than " + OFFER_TIME + " ms");
-              } else {
-                if (logger.isDebugEnabled()) {
-                  logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
-                      + " thread is being launched to prevent slow performance due to nested function executions");
-                }
-              }
-              launchAdditionalThread(r, executor);
+            if (isBufferConsumer(executor)) {
+              handleRejectedExecutionForBufferConsumer(r, executor);
+            } else if (isFunctionExecutionThread()) {
+              handleRejectedExecutionForFunctionExecutionThread(r, executor);
             } else {
+              // In the normal case, add the rejected request to the blocking queue.
               try {
                 q.put(r);
               } catch (InterruptedException e) {
@@ -143,7 +122,36 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
           return ClusterDistributionManager.isFunctionExecutionThread();
         }
 
-        private void launchAdditionalThread(final Runnable r, ThreadPoolExecutor executor) {
+        /**
+         * Handle rejected execution for the bufferConsumer (the thread that takes from the blocking
+         * queue and offers to the synchronous queue). Spin off a thread directly in this case,
+         * since an offer has already been made to the synchronous queue and failed. This means that
+         * all the function execution threads are in use.
+         */
+        private void handleRejectedExecutionForBufferConsumer(Runnable r,
+            ThreadPoolExecutor executor) {
+          logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
+              + " thread is being launched because all " + executor.getMaximumPoolSize()
+              + " thread pool threads are in use for greater than " + OFFER_TIME + " ms");
+          launchAdditionalThread(r, executor);
+        }
+
+        /**
+         * Handle rejected execution for a function execution thread. Spin off a thread directly in
+         * this case, since that means a function is executing another function. The child function
+         * request shouldn't be in the queue behind the parent request since the parent function is
+         * dependent on the child function executing.
+         */
+        private void handleRejectedExecutionForFunctionExecutionThread(Runnable r,
+            ThreadPoolExecutor executor) {
+          if (logger.isDebugEnabled()) {
+            logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
+                + " thread is being launched to prevent slow performance due to nested function executions");
+          }
+          launchAdditionalThread(r, executor);
+        }
+
+        private void launchAdditionalThread(Runnable r, ThreadPoolExecutor executor) {
           Thread th = executor.getThreadFactory().newThread(r);
           th.start();
         }
