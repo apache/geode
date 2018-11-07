@@ -32,9 +32,6 @@ dependencies {
 
   testCompile('junit:junit:' + project.'junit.version')
   testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
-  testCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
-  testCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
-  testCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
   testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
 
   integrationTestCompile('junit:junit:' + project.'junit.version')
