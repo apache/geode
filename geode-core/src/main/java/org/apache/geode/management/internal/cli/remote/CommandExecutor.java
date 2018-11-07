@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -22,9 +22,12 @@ import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
@@ -39,8 +42,6 @@ import org.apache.geode.security.NotAuthorizedException;
  * For AuthorizationExceptions, it logs it and then rethrow it.
  */
 public class CommandExecutor {
-  public static final String RUN_ON_MEMBER_CHANGE_NOT_PERSISTED =
-      "Configuration change is not persisted because the command is executed on specific member.";
   public static final String SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED =
       "Cluster configuration service is not running. Configuration change is not persisted.";
 
@@ -133,9 +134,14 @@ public class CommandExecutor {
     String groupInput = null;
     String members = parseResult.getParamValueAsString("member");
     if (members != null) {
-      groupInput = Arrays.stream(members.split(",")).map(member -> "MEMBER_" + member).collect(
+      String[] memberNames = members.split(",");
+      Set<DistributedMember> distributedMembers = CliUtil.findMembers(null, memberNames,
+          (InternalCache) gfshCommand.getCache());
+
+      groupInput = distributedMembers.stream().map(member -> "MEMBER_" + member.getName()).collect(
           Collectors.joining(","));
     }
+
     if (groupInput == null) {
       String groups = parseResult.getParamValueAsString("group");
       groupInput = groups == null ? "cluster" : groups;
