@@ -178,4 +178,26 @@ public class FastLoggerTest {
 
     verify(mockedLogger, never()).getName();
   }
+
+  @Test
+  public void isLevelDisabledAndNotDelegatingWhenDelegating() {
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.TRACE)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.DEBUG)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.INFO)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.WARN)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.ERROR)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.FATAL)).isFalse();
+  }
+
+  @Test
+  public void isLevelDisabledAndNotDelegatingWhenNotDelegating() {
+    FastLogger.setDelegating(false);
+
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.TRACE)).isTrue();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.DEBUG)).isTrue();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.INFO)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.WARN)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.ERROR)).isFalse();
+    assertThat(fastLogger.isLevelDisabledAndNotDelegating(Level.FATAL)).isFalse();
+  }
 }

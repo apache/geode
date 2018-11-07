@@ -32,8 +32,6 @@ import org.apache.logging.log4j.util.Supplier;
 public class FastLogger extends ExtendedLoggerWrapper {
   private static final long serialVersionUID = 7084130827962463327L;
 
-  private static final Level DEFAULT_LEVEL = Level.INFO;
-
   private static volatile boolean delegating = true;
 
   public FastLogger(final Logger logger) {
@@ -51,8 +49,28 @@ public class FastLogger extends ExtendedLoggerWrapper {
   }
 
   @Override
+  public boolean isDebugEnabled() {
+    return delegating && super.isDebugEnabled();
+  }
+
+  @Override
+  public boolean isDebugEnabled(final Marker marker) {
+    return delegating && super.isDebugEnabled(marker);
+  }
+
+  @Override
+  public boolean isTraceEnabled() {
+    return delegating && super.isTraceEnabled();
+  }
+
+  @Override
+  public boolean isTraceEnabled(final Marker marker) {
+    return delegating && super.isTraceEnabled(marker);
+  }
+
+  @Override
   public boolean isEnabled(Level level, Marker marker, Message message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, t);
@@ -60,7 +78,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, CharSequence message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, t);
@@ -68,7 +86,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, Object message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, t);
@@ -76,7 +94,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, t);
@@ -84,7 +102,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message);
@@ -92,7 +110,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object... params) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, params);
@@ -100,7 +118,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0);
@@ -108,7 +126,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1);
@@ -117,7 +135,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2);
@@ -126,7 +144,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3);
@@ -136,7 +154,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3,
       Object p4) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3, p4);
@@ -146,7 +164,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3,
       Object p4, Object p5) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3, p4, p5);
@@ -156,7 +174,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3,
       Object p4, Object p5, Object p6) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3, p4, p5, p6);
@@ -166,7 +184,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3,
       Object p4, Object p5, Object p6, Object p7) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
@@ -176,7 +194,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3,
       Object p4, Object p5, Object p6, Object p7, Object p8) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
@@ -186,7 +204,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
       Object p2, Object p3,
       Object p4, Object p5, Object p6, Object p7, Object p8, Object p9) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
     return super.isEnabled(level, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
@@ -194,7 +212,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, Message message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, t);
@@ -203,7 +221,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, CharSequence message,
       Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, t);
@@ -211,7 +229,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, Object message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, t);
@@ -219,7 +237,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, t);
@@ -227,7 +245,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message);
@@ -236,7 +254,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message,
       Object... params) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, params);
@@ -244,7 +262,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0);
@@ -253,7 +271,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1);
@@ -262,7 +280,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2);
@@ -272,7 +290,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3);
@@ -282,7 +300,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3, Object p4) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3, p4);
@@ -292,7 +310,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3, Object p4, Object p5) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3, p4, p5);
@@ -302,7 +320,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3, Object p4, Object p5, Object p6) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3, p4, p5, p6);
@@ -312,7 +330,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3, Object p4, Object p5, Object p6, Object p7) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
@@ -322,7 +340,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3, Object p4, Object p5, Object p6, Object p7, Object p8) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
@@ -332,24 +350,16 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
       Object p1, Object p2,
       Object p3, Object p4, Object p5, Object p6, Object p7, Object p8, Object p9) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
   }
 
   @Override
-  public void logMessage(String fqcn, Level level, Marker marker, Message message, Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
-      return;
-    }
-    super.logMessage(fqcn, level, marker, message, t);
-  }
-
-  @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, MessageSupplier msgSupplier,
       Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, msgSupplier, t);
@@ -358,7 +368,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message,
       Supplier<?>... paramSuppliers) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, message, paramSuppliers);
@@ -367,7 +377,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, Supplier<?> msgSupplier,
       Throwable t) {
-    if (level.intLevel() > DEFAULT_LEVEL.intLevel() && !delegating) {
+    if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
     super.logIfEnabled(fqcn, level, marker, msgSupplier, t);
@@ -379,5 +389,9 @@ public class FastLogger extends ExtendedLoggerWrapper {
 
   ExtendedLogger getExtendedLogger() {
     return super.logger;
+  }
+
+  boolean isLevelDisabledAndNotDelegating(Level level) {
+    return level.intLevel() > Level.INFO.intLevel() && !delegating;
   }
 }
