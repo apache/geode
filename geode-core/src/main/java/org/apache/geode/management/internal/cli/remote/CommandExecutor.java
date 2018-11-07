@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
@@ -125,15 +128,19 @@ public class CommandExecutor {
       return resultModel;
     }
 
-    if (parseResult.getParamValue("member") != null) {
-      infoResultModel.addLine(RUN_ON_MEMBER_CHANGE_NOT_PERSISTED);
-      return resultModel;
+    // member and group are mutually exclusive options, checked in
+    // CliUtil.findMembers(Set<DistributedMember>, String[], String[])
+    String groupInput = null;
+    String members = parseResult.getParamValueAsString("member");
+    if (members != null) {
+      groupInput = Arrays.stream(members.split(",")).map(member -> "MEMBER_" + member).collect(
+          Collectors.joining());
+    }
+    if (groupInput == null) {
+      String groups = parseResult.getParamValueAsString("group");
+      groupInput = groups == null ? "cluster" : groups;
     }
 
-    String groupInput = parseResult.getParamValueAsString("group");
-    if (groupInput == null) {
-      groupInput = "cluster";
-    }
     String[] groups = groupInput.split(",");
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
