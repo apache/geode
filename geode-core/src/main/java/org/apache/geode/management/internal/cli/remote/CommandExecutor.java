@@ -45,8 +45,6 @@ import org.apache.geode.security.NotAuthorizedException;
  * For AuthorizationExceptions, it logs it and then rethrow it.
  */
 public class CommandExecutor {
-  public static final String RUN_ON_MEMBER_CHANGE_NOT_PERSISTED =
-      "Configuration change is not persisted because the command is executed on specific member.";
   public static final String SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED =
       "Cluster configuration service is not running. Configuration change is not persisted.";
 
@@ -139,13 +137,17 @@ public class CommandExecutor {
       return resultModel;
     }
 
-    if (parseResult.getParamValue("member") != null) {
-      infoResultModel.addLine(RUN_ON_MEMBER_CHANGE_NOT_PERSISTED);
-      return resultModel;
+    // member and group are mutually exclusive options, checked in
+    // CliUtil.findMembers(Set<DistributedMember>, String[], String[])
+    String groupInput = null;
+    String members = parseResult.getParamValueAsString("member");
+    if (members != null) {
+      groupInput = Arrays.stream(members.split(",")).map(member -> "MEMBER_" + member).collect(
+          Collectors.joining(","));
     }
 
     List<String> groupsToUpdate;
-    String groupInput = parseResult.getParamValueAsString("group");
+    groupInput = parseResult.getParamValueAsString("group");
     TabularResultModel table = null;
 
     if (!StringUtils.isBlank(groupInput)) {

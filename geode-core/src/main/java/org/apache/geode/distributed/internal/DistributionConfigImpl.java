@@ -71,6 +71,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,6 +79,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -2622,7 +2624,20 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public String getGroups() {
-    return groups;
+    String internalMemberGroup = null;
+    if (StringUtils.isNotBlank(getName())) {
+      internalMemberGroup = "MEMBER_" + getName();
+    }
+
+    if (StringUtils.isBlank(internalMemberGroup)) {
+      return groups;
+    }
+
+    if (StringUtils.isBlank(groups)) {
+      return internalMemberGroup;
+    }
+
+    return groups + "," + internalMemberGroup;
   }
 
   @Override
@@ -2630,7 +2645,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     if (value == null) {
       value = DEFAULT_GROUPS;
     }
-    groups = value;
+
+    groups = Arrays.stream(value.split(",")).filter(i -> !i.startsWith("MEMBER_"))
+        .collect(Collectors.joining(","));
   }
 
   @Override

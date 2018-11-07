@@ -133,16 +133,14 @@ public class CreateGatewayReceiverCommandTest {
   }
 
   @Test
-  public void gatewayReceiverIsCreatedButNotPersistedWithMemberOption() {
+  public void gatewayReceiverIsCreatedAndConfigIsPersistedWithMemberOption() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command, "create gateway-receiver --member=xyz").statusIsSuccess()
-        .containsOutput(
-            "Configuration change is not persisted because the command is executed on specific member");
-    verify(ccService, never()).addXmlEntity(any(), any());
-    verify(ccService, never()).updateCacheConfig(any(), any());
+        .tableHasRowWithValues("Member", "Status", "Message", "member", "OK", "result1");
+    verify(ccService, times(1)).updateCacheConfig(any(), any());
   }
 
   @Test

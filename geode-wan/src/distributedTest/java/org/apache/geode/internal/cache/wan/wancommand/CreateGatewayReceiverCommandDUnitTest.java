@@ -42,6 +42,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.net.SocketCreator;
@@ -545,6 +546,22 @@ public class CreateGatewayReceiverCommandDUnitTest {
       assertThat(cache).isNotNull();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server2, server3);
+
+    String server1Name = server1.getName();
+    locatorSite1.invoke(() -> {
+      CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("MEMBER_" + server1Name);
+      assertThat(config).isNotNull();
+      assertThat(config.getGatewayReceiver()).isNotNull();
+    });
+
+    server1.getVM().bounce();
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+
+    server1.invoke(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+          100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    });
   }
 
   /**
@@ -580,6 +597,34 @@ public class CreateGatewayReceiverCommandDUnitTest {
     invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
+      assertThat(cache.getGatewayReceivers()).isEmpty();
+    }, server3);
+
+    String server1Name = server1.getName();
+    String server2Name = server2.getName();
+    locatorSite1.invoke(() -> {
+      CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("MEMBER_" + server1Name);
+      assertThat(config).isNotNull();
+      assertThat(config.getGatewayReceiver()).isNotNull();
+      config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("MEMBER_" + server2Name);
+      assertThat(config).isNotNull();
+      assertThat(config.getGatewayReceiver()).isNotNull();
+    });
+
+    server1.getVM().bounce();
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2.getVM().bounce();
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3.getVM().bounce();
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
+
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2);
+
+    invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
   }
