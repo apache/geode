@@ -1430,14 +1430,14 @@ public class PoolImpl implements InternalPool {
       if (cacheCriterion != null) {
         return cacheCriterion.generateCancelledException(e);
       }
-    } else {
-      if (cache == null && dsys != null) {
+      if (dsys != null) {
         cache = dsys.getCache();
         if (cache == null) {
           throw new IllegalStateException(
               "Cache must be created before creating pool");
         }
       }
+    } else {
       if (cacheCriterion == null || cacheCriterion != cache.getCancelCriterion()) {
         cacheCriterion = cache.getCancelCriterion();
       }

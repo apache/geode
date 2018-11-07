@@ -281,9 +281,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
 
     evictionAttributes = new EvictionAttributesImpl(attrs.getEvictionAttributes());
-    if (attrs.getPartitionAttributes() != null && this.evictionAttributes != null
-        && this.evictionAttributes.getAlgorithm().isLRUMemory()
-        && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && this.evictionAttributes
+    if (attrs.getPartitionAttributes() != null && this.evictionAttributes.getAlgorithm()
+        .isLRUMemory() && attrs.getPartitionAttributes().getLocalMaxMemory() != 0
+        && this.evictionAttributes
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
       logger.warn(
           "For region {} with data policy PARTITION, memory LRU eviction attribute maximum has been reset from {}MB to local-max-memory {}MB",

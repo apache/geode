@@ -128,7 +128,7 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
           }
 
           // If compaction happened at all, then prepare the summary
-          if (overallCompactInfo != null && !overallCompactInfo.isEmpty()) {
+          if (!overallCompactInfo.isEmpty()) {
             Set<Map.Entry<DistributedMember, PersistentID>> entries = overallCompactInfo.entrySet();
 
             for (Map.Entry<DistributedMember, PersistentID> entry : entries) {

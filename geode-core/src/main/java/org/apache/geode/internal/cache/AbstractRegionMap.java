@@ -2168,7 +2168,7 @@ public abstract class AbstractRegionMap
       // For distributed transactions, stuff the next region version generated
       // in phase-1 commit into the callbackEvent so that ARE.generateVersionTag can later
       // just apply it and not regenerate it in phase-2 commit
-      if (callbackEvent != null && txEntryState != null
+      if (txEntryState != null
           && txEntryState.getDistTxEntryStates() != null) {
         callbackEvent.setNextRegionVersion(txEntryState.getDistTxEntryStates().getRegionVersion());
       }

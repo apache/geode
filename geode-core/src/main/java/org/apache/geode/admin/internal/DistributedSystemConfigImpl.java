@@ -674,7 +674,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         // {cmd}
         if (!isSwitch && !isHostOrCmd) {
           final String previous =
-              (array == null || array.isEmpty()) ? null : array.get(array.size() - 1);
+              array.isEmpty() ? null : array.get(array.size() - 1);
           final boolean isValueForSwitch = previous != null && previous.startsWith("-");
           final boolean isHostWithUser = string.contains("@") && string.endsWith("{host}");
 
