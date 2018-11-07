@@ -97,7 +97,7 @@ public class MonitorQueryUnderContentionBenchmark {
     LogService.setBaseLogLevel(org.apache.logging.log4j.Level.OFF);
 
     queryMonitor =
-        new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
+        new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
             mock(InternalCache.class), QUERY_MAX_EXECUTION_TIME);
 
     final int numberOfThreads =

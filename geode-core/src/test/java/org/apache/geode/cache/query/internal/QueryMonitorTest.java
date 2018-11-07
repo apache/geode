@@ -55,7 +55,7 @@ public class QueryMonitorTest {
   public void setUp() {
     scheduledThreadPoolExecutor = mock(ScheduledThreadPoolExecutor.class);
     when(scheduledThreadPoolExecutor.getQueue()).thenReturn(new ArrayBlockingQueue<>(1));
-    monitor = new QueryMonitor(() -> scheduledThreadPoolExecutor, mock(InternalCache.class),
+    monitor = new QueryMonitor(scheduledThreadPoolExecutor, mock(InternalCache.class),
         max_execution_time);
     captor = ArgumentCaptor.forClass(Runnable.class);
   }
@@ -102,12 +102,6 @@ public class QueryMonitorTest {
         .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
     assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled)
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
-  }
-
-  @Test
-  public void setLowMemoryTrueShutsDownExecutor() {
-    monitor.setLowMemory(true, 1);
-    Mockito.verify(scheduledThreadPoolExecutor, times(1)).shutdown();
   }
 
   @Test
