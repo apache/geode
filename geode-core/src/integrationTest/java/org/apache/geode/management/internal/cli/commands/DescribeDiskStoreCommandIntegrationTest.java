@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({PersistenceTest.class})
-public class DescribeDiskStoreCommandDUnitTest {
+public class DescribeDiskStoreCommandIntegrationTest {
   private static final String REGION_NAME = "test-region";
   private static final String MEMBER_NAME = "testServer";
   private static final String DISK_STORE_NAME = "testDiskStore";
