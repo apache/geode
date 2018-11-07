@@ -259,18 +259,19 @@ public abstract class JdbcDistributedTest implements Serializable {
       Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute(
-          "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, mydate date)");
+          "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, "
+              + TestDate.DATE_FIELD_NAME + " date)");
     });
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, DATA_SOURCE_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, TestDate.class.getName());
     final String key = "emp1";
     final java.sql.Date sqlDate = java.sql.Date.valueOf("1982-09-11");
     final Date jdkDate = new Date(sqlDate.getTime());
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-              .writeString("id", "key1").writeDate("mydate", jdkDate).create();
+          ClusterStartupRule.getCache().createPdxInstanceFactory(TestDate.class.getName())
+              .writeString("id", "key1").writeDate(TestDate.DATE_FIELD_NAME, jdkDate).create();
 
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
@@ -279,11 +280,10 @@ public abstract class JdbcDistributedTest implements Serializable {
     ClientVM client = getClientVM();
     createClientRegion(client);
     client.invoke(() -> {
-      Region<String, ClassWithSupportedPdxFields> region =
+      Region<String, TestDate> region =
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
-      PdxInstance getResult = (PdxInstance) region.get(key);
-      assertThat(getResult.getField("mydate")).isInstanceOf(java.util.Date.class)
-          .isEqualTo(jdkDate);
+      TestDate getResult = region.get(key);
+      assertThat(getResult.getMyDate()).isEqualTo(jdkDate);
     });
   }
 
@@ -294,18 +294,19 @@ public abstract class JdbcDistributedTest implements Serializable {
       Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute(
-          "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, mytime time)");
+          "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, "
+              + TestDate.DATE_FIELD_NAME + " time)");
     });
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, DATA_SOURCE_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, TestDate.class.getName());
     final String key = "emp1";
     final java.sql.Time sqlTime = java.sql.Time.valueOf("23:59:59");
     final Date jdkDate = new Date(sqlTime.getTime());
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-              .writeString("id", "key1").writeDate("mytime", jdkDate).create();
+          ClusterStartupRule.getCache().createPdxInstanceFactory(TestDate.class.getName())
+              .writeString("id", "key1").writeDate(TestDate.DATE_FIELD_NAME, jdkDate).create();
 
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
@@ -314,29 +315,28 @@ public abstract class JdbcDistributedTest implements Serializable {
     ClientVM client = getClientVM();
     createClientRegion(client);
     client.invoke(() -> {
-      Region<String, ClassWithSupportedPdxFields> region =
+      Region<String, TestDate> region =
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
-      PdxInstance getResult = (PdxInstance) region.get(key);
-      assertThat(getResult.getField("mytime")).isInstanceOf(java.util.Date.class)
-          .isEqualTo(jdkDate);
+      TestDate getResult = region.get(key);
+      assertThat(getResult.getMyDate()).isEqualTo(jdkDate);
     });
   }
 
   @Test
   public void verifyDateToTimestamp() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
-    createTableWithTimeStamp(server, connectionUrl, TABLE_NAME);
+    createTableWithTimeStamp(server, connectionUrl, TABLE_NAME, TestDate.DATE_FIELD_NAME);
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, DATA_SOURCE_NAME);
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, TestDate.class.getName());
     final String key = "emp1";
     final java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1982-09-11 23:59:59.123");
     final Date jdkDate = new Date(sqlTimestamp.getTime());
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-              .writeString("id", "key1").writeDate("mytimestamp", jdkDate).create();
+          ClusterStartupRule.getCache().createPdxInstanceFactory(TestDate.class.getName())
+              .writeString("id", "key1").writeDate(TestDate.DATE_FIELD_NAME, jdkDate).create();
 
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
@@ -345,20 +345,20 @@ public abstract class JdbcDistributedTest implements Serializable {
     ClientVM client = getClientVM();
     createClientRegion(client);
     client.invoke(() -> {
-      Region<String, ClassWithSupportedPdxFields> region =
+      Region<String, TestDate> region =
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
-      PdxInstance getResult = (PdxInstance) region.get(key);
-      assertThat(getResult.getField("mytimestamp")).isInstanceOf(java.util.Date.class)
-          .isEqualTo(jdkDate);
+      TestDate getResult = region.get(key);
+      assertThat(getResult.getMyDate()).isEqualTo(jdkDate);
     });
   }
 
-  protected void createTableWithTimeStamp(MemberVM vm, String connectionUrl, String tableName) {
+  protected void createTableWithTimeStamp(MemberVM vm, String connectionUrl, String tableName,
+      String columnName) {
     vm.invoke(() -> {
       Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute("Create Table " + tableName
-          + " (id varchar(10) primary key not null, mytimestamp timestamp)");
+          + " (id varchar(10) primary key not null, " + columnName + " timestamp)");
     });
   }
 
@@ -431,11 +431,10 @@ public abstract class JdbcDistributedTest implements Serializable {
           (JdbcWriter<Object, Object>) region.getAttributes().getCacheWriter();
       long writeCallsCompletedBeforeGet = writer.getTotalEvents();
 
-      PdxInstance result = (PdxInstance) region.get(key);
-      assertThat(result.getFieldNames()).hasSize(3);
-      assertThat(result.getField("id")).isEqualTo(key);
-      assertThat(result.getField("name")).isEqualTo("Emp1");
-      assertThat(result.getField("age")).isEqualTo(55);
+      Employee result = (Employee) region.get(key);
+      assertThat(result.getId()).isEqualTo(key);
+      assertThat(result.getName()).isEqualTo("Emp1");
+      assertThat(result.getAge()).isEqualTo(55);
       assertThat(writer.getTotalEvents()).isEqualTo(writeCallsCompletedBeforeGet);
     });
   }
@@ -460,11 +459,11 @@ public abstract class JdbcDistributedTest implements Serializable {
         assertThat(asyncWriter.getSuccessfulEvents()).isEqualTo(1);
       });
       region.invalidate(key);
-      PdxInstance result = (PdxInstance) region.get(key);
+      Employee result = (Employee) region.get(key);
 
-      assertThat(result.getField("id")).isEqualTo(pdxEmployee1.getField("id"));
-      assertThat(result.getField("name")).isEqualTo(pdxEmployee1.getField("name"));
-      assertThat(result.getField("age")).isEqualTo(pdxEmployee1.getField("age"));
+      assertThat(result.getId()).isEqualTo(pdxEmployee1.getField("id"));
+      assertThat(result.getName()).isEqualTo(pdxEmployee1.getField("name"));
+      assertThat(result.getAge()).isEqualTo(pdxEmployee1.getField("age"));
       await().untilAsserted(() -> {
         assertThat(asyncWriter.getIgnoredEvents()).isEqualTo(1);
       });
@@ -640,7 +639,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName) {
-    createMapping(regionName, connectionName, null);
+    createMapping(regionName, connectionName, Employee.class.getName());
   }
 
   private void createMapping(String regionName, String connectionName, String pdxClassName) {

@@ -41,7 +41,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class CreateMappingCommandDUnitTest {
 
   private static final String REGION_NAME = "testRegion";
-  private static final String SUBREGION_NAME = REGION_NAME + "/testSubRegion";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -114,12 +113,14 @@ public class CreateMappingCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogus");
     gfsh.executeAndAssertThat(csb.toString()).statusIsError();
 
@@ -127,6 +128,7 @@ public class CreateMappingCommandDUnitTest {
       String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:mapping").contains("myTable")
+          .contains("myPdxClass")
           .doesNotContain("bogus");
     });
   }
