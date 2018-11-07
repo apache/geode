@@ -120,7 +120,8 @@ public class GfshExecution {
     boolean exited = process.waitFor(script.getTimeout(), script.getTimeoutTimeUnit());
 
     try {
-      assertThat(exited).isTrue();
+      assertThat(exited).describedAs("Process of [" + script.toString() + "] did not exit after "
+          + script.getTimeout() + " " + script.getTimeoutTimeUnit().toString()).isTrue();
       assertThat(process.exitValue()).isEqualTo(script.getExpectedExitValue());
     } catch (AssertionError error) {
       printLogFiles();
