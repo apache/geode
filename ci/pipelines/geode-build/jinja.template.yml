@@ -21,12 +21,15 @@
 
 ---
 
-{% macro plan_resource_gets() %}
+{% macro plan_resource_gets(test) %}
 - get: geode-ci
 - aggregate:
   - get: geode
     passed:
     - Build
+    {%- if test.name.startswith("Windows") %}
+    {{- all_gating_jobs() | indent(4) -}}
+    {%- endif %}
   - get: geode-build-version
     passed:
     - Build
@@ -76,7 +79,7 @@ SERVICE_ACCOUNT: ((concourse-gcp-account))
 GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
-{% macro all_gating_jobs(test) %}
+{% macro all_gating_jobs() %}
 {%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
   {%- for java_test_version in (java_test_versions) %}
 - {{test.name}}Test{{java_test_version.name}}
@@ -412,7 +415,7 @@ jobs:
   public: true
   plan:
   - do:
-    {{- plan_resource_gets() |indent(4) }}
+    {{- plan_resource_gets(test) |indent(4) }}
       - put: concourse-metadata-resource
     - aggregate:
       - do:
