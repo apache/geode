@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUE
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.CHECK_REGISTERED_KEYS_INTERVAL;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -2004,6 +2005,45 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_INTERVAL,
       max = MAX_THREAD_MONITOR_INTERVAL)
   String THREAD_MONITOR_INTERVAL_NAME = THREAD_MONITOR_INTERVAL;
+
+
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL}
+   * property.
+   */
+  @ConfigAttributeGetter(name = CHECK_REGISTERED_KEYS_INTERVAL)
+  int getCheckRegisteredKeysInterval();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} property.
+   */
+  @ConfigAttributeSetter(name = CHECK_REGISTERED_KEYS_INTERVAL)
+  void setCheckRegisteredKeysInterval(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} is
+   * <code>60000</code>.
+   */
+  int DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL = 0;
+  /**
+   * The minimum value of {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} is
+   * <code>0</code>.
+   */
+  int MIN_CHECK_REGISTERED_KEYS_INTERVAL = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} is
+   * <code>86400000</code>.
+   */
+  int MAX_CHECK_REGISTERED_KEYS_INTERVAL = 86400000;
+  /**
+   * The name of the {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_CHECK_REGISTERED_KEYS_INTERVAL,
+      max = MAX_CHECK_REGISTERED_KEYS_INTERVAL)
+  String CHECK_REGISTERED_KEYS_INTERVAL_NAME = CHECK_REGISTERED_KEYS_INTERVAL;
+
+
 
   /**
    * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property.

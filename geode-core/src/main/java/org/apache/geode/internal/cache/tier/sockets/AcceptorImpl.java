@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -68,6 +69,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
@@ -317,6 +319,12 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   private final ServerConnectionFactory serverConnectionFactory;
 
+  private final Properties nonDefault = new Properties();
+  private final DistributionConfigImpl distributionConfigImpl =
+      new DistributionConfigImpl(nonDefault);
+
+  private final int checkRegisteredKeysInterval;
+
   /**
    * Initializes this acceptor thread to listen for connections on the given port.
    *
@@ -557,6 +565,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     isPostAuthzCallbackPresent =
         (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) ? true : false;
+
+    checkRegisteredKeysInterval = this.distributionConfigImpl.getCheckRegisteredKeysInterval();
   }
 
   private ExecutorService initializeHandshakerThreadPool() throws IOException {
@@ -971,6 +981,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public void runSelectorLoop() {
     // int zeroEventsCount = 0;
     try {
+      long initialTime = System.currentTimeMillis();
       logger.info("SELECTOR enabled");
       while (this.selector.isOpen() && !Thread.currentThread().isInterrupted()) {
         {
@@ -983,7 +994,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             break;
           }
           ServerConnection sc;
-          registeredKeys = checkRegisteredKeys(registeredKeys);
+          long delta = System.currentTimeMillis() - initialTime;
+          if (delta >= checkRegisteredKeysInterval) {
+            registeredKeys = checkRegisteredKeys(registeredKeys);
+            initialTime = System.currentTimeMillis();
+          }
           if (registeredKeys == 0) {
             // do blocking wait on queue until we get some keys registered
             // with the selector
