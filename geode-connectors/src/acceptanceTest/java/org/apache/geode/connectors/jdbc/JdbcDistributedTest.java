@@ -269,12 +269,12 @@ public abstract class JdbcDistributedTest implements Serializable {
     final java.sql.Date sqlDate = java.sql.Date.valueOf("1982-09-11");
     final Date jdkDate = new Date(sqlDate.getTime());
     server.invoke(() -> {
-      PdxInstance pdxEmployee1 =
+      PdxInstance testDateInput =
           ClusterStartupRule.getCache().createPdxInstanceFactory(TestDate.class.getName())
               .writeString("id", "key1").writeDate(TestDate.DATE_FIELD_NAME, jdkDate).create();
 
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-      region.put(key, pdxEmployee1);
+      region.put(key, testDateInput);
       region.invalidate(key);
     });
     ClientVM client = getClientVM();
@@ -304,12 +304,12 @@ public abstract class JdbcDistributedTest implements Serializable {
     final java.sql.Time sqlTime = java.sql.Time.valueOf("23:59:59");
     final Date jdkDate = new Date(sqlTime.getTime());
     server.invoke(() -> {
-      PdxInstance pdxEmployee1 =
+      PdxInstance testDateInput =
           ClusterStartupRule.getCache().createPdxInstanceFactory(TestDate.class.getName())
               .writeString("id", "key1").writeDate(TestDate.DATE_FIELD_NAME, jdkDate).create();
 
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-      region.put(key, pdxEmployee1);
+      region.put(key, testDateInput);
       region.invalidate(key);
     });
     ClientVM client = getClientVM();
@@ -334,12 +334,12 @@ public abstract class JdbcDistributedTest implements Serializable {
     final java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1982-09-11 23:59:59.123");
     final Date jdkDate = new Date(sqlTimestamp.getTime());
     server.invoke(() -> {
-      PdxInstance pdxEmployee1 =
+      PdxInstance testDateInput =
           ClusterStartupRule.getCache().createPdxInstanceFactory(TestDate.class.getName())
               .writeString("id", "key1").writeDate(TestDate.DATE_FIELD_NAME, jdkDate).create();
 
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-      region.put(key, pdxEmployee1);
+      region.put(key, testDateInput);
       region.invalidate(key);
     });
     ClientVM client = getClientVM();
