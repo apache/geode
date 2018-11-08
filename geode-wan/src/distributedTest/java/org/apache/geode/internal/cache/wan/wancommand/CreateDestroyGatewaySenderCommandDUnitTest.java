@@ -34,7 +34,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -277,6 +279,16 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
       verifySenderState("ln", true, false);
     });
 
+    locatorSite1.invoke(() -> {
+      ConfigurationPersistenceService persistenceService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig config = persistenceService.getCacheConfig("cluster");
+      assertThat(config).isNull();
+
+      config = persistenceService.getCacheConfig("MEMBER_server-3");
+      assertThat(config.getGatewaySenders().size()).isEqualTo(1);
+    });
+
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --member=" + server1.getName()).statusIsSuccess()
@@ -284,6 +296,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
+
+    locatorSite1.invoke(() -> {
+      ConfigurationPersistenceService persistenceService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig config = persistenceService.getCacheConfig("MEMBER_server-3");
+      assertThat(config.getGatewaySenders().size()).isEqualTo(0);
+    });
   }
 
   /**
@@ -299,6 +318,16 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
       verifySenderState("ln", true, false);
     });
 
+    locatorSite1.invoke(() -> {
+      ConfigurationPersistenceService persistenceService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig config = persistenceService.getCacheConfig("cluster");
+      assertThat(config).isNull();
+
+      config = persistenceService.getCacheConfig("senderGroup1");
+      assertThat(config.getGatewaySenders().size()).isEqualTo(1);
+    });
+
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --group=senderGroup1").statusIsSuccess()
@@ -306,6 +335,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
+
+    locatorSite1.invoke(() -> {
+      ConfigurationPersistenceService persistenceService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig config = persistenceService.getCacheConfig("senderGroup1");
+      assertThat(config.getGatewaySenders().size()).isEqualTo(0);
+    });
   }
 
   /**

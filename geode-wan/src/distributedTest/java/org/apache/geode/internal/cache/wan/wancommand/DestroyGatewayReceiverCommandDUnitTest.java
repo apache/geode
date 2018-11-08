@@ -168,7 +168,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("change is not persisted")
+        .containsOutput("No changes were made to the configuration for group 'MEMBER_server-3'")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -176,6 +176,37 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4,
         server5);
+  }
+
+  @Test
+  public void destroyStartedGatewayReceiver_destroysReceiverOnMember() {
+    Integer locator1Port = locatorSite1.getPort();
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
+    server4 = clusterStartupRule.startServerVM(4, locator1Port);
+    server5 = clusterStartupRule.startServerVM(5, locator1Port);
+
+    gfsh.executeAndAssertThat(
+        createGatewayReceiverCommand("false", CliStrings.MEMBER + ":server-3")).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
+        .tableHasColumnWithValuesContaining("Message",
+            "GatewayReceiver created on member \"server-3\"");
+    verifyConfigHasGatewayReceiver("MEMBER_server-3");
+
+    VMProvider
+        .invokeInEveryMember(
+            () -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
+                512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS),
+            server3);
+
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
+            .addOption(CliStrings.MEMBER, server3.getName());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Changes to configuration for group 'MEMBER_server-3' are persisted")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+    verifyConfigDoesNotHaveGatewayReceiver("MEMBER_server-3");
+
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
   }
 
   @Test
@@ -203,7 +234,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("change is not persisted")
+        .containsOutput("No changes were made to the configuration for group 'MEMBER_server-3'")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -237,13 +268,14 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("change is not persisted")
+        .containsOutput("No changes were made to the configuration for group 'MEMBER_server-3'")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
     csb = new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER);
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .doesNotContainOutput("change is not persisted")
+        .doesNotContainOutput(
+            "No changes were made to the configuration for group 'MEMBER_server-3'")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -271,7 +303,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("change is not persisted")
+        .containsOutput("No changes were made to the configuration for group 'MEMBER_server-3'")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -309,7 +341,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("change is not persisted")
+        .containsOutput("No changes were made")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000,
