@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
@@ -100,7 +101,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion {
 
   private static final Logger logger = LogService.getLogger();
-
+  private final ReentrantReadWriteLock readWriteLockForCacheLoader = new ReentrantReadWriteLock();
+  private final ReentrantReadWriteLock readWriteLockForCacheWriter = new ReentrantReadWriteLock();
   /**
    * Identifies the static order in which this region was created in relation to other regions or
    * other instances of this region during the life of this JVM.
@@ -121,8 +123,14 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   private volatile CacheListener[] cacheListeners;
 
+  /**
+   * All access to cacheLoader must be protected by readWriteLockForCacheLoader
+   */
   private volatile CacheLoader cacheLoader;
 
+  /**
+   * All access to cacheWriter must be protected by readWriteLockForCacheWriter
+   */
   private volatile CacheWriter cacheWriter;
 
   protected int entryIdleTimeout;
@@ -519,12 +527,22 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public CacheLoader getCacheLoader() {
-    return this.cacheLoader;
+    readWriteLockForCacheLoader.readLock().lock();
+    try {
+      return this.cacheLoader;
+    } finally {
+      readWriteLockForCacheLoader.readLock().unlock();
+    }
   }
 
   @Override
   public CacheWriter getCacheWriter() {
-    return this.cacheWriter;
+    readWriteLockForCacheWriter.readLock().lock();
+    try {
+      return this.cacheWriter;
+    } finally {
+      readWriteLockForCacheWriter.readLock().unlock();
+    }
   }
 
   /**
@@ -1140,29 +1158,49 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public synchronized CacheLoader setCacheLoader(CacheLoader cacheLoader) {
-    checkReadiness();
-    CacheLoader oldLoader = this.cacheLoader;
-    assignCacheLoader(cacheLoader);
-    cacheLoaderChanged(oldLoader);
-    return oldLoader;
+  public CacheLoader setCacheLoader(CacheLoader cacheLoader) {
+    readWriteLockForCacheLoader.writeLock().lock();
+    try {
+      checkReadiness();
+      CacheLoader oldLoader = this.cacheLoader;
+      this.cacheLoader = cacheLoader;
+      cacheLoaderChanged(oldLoader);
+      return oldLoader;
+    } finally {
+      readWriteLockForCacheLoader.writeLock().unlock();
+    }
   }
 
-  private synchronized void assignCacheLoader(CacheLoader cl) {
-    this.cacheLoader = cl;
+  private void assignCacheLoader(CacheLoader cl) {
+    readWriteLockForCacheLoader.writeLock().lock();
+    try {
+      this.cacheLoader = cl;
+    } finally {
+      readWriteLockForCacheLoader.writeLock().unlock();
+    }
   }
 
   @Override
-  public synchronized CacheWriter setCacheWriter(CacheWriter cacheWriter) {
-    checkReadiness();
-    CacheWriter oldWriter = this.cacheWriter;
-    assignCacheWriter(cacheWriter);
-    cacheWriterChanged(oldWriter);
-    return oldWriter;
+  public CacheWriter setCacheWriter(CacheWriter cacheWriter) {
+    readWriteLockForCacheWriter.writeLock().lock();
+    try {
+      checkReadiness();
+      CacheWriter oldWriter = this.cacheWriter;
+      this.cacheWriter = cacheWriter;
+      cacheWriterChanged(oldWriter);
+      return oldWriter;
+    } finally {
+      readWriteLockForCacheWriter.writeLock().unlock();
+    }
   }
 
-  private synchronized void assignCacheWriter(CacheWriter cacheWriter) {
-    this.cacheWriter = cacheWriter;
+  private void assignCacheWriter(CacheWriter cacheWriter) {
+    readWriteLockForCacheWriter.writeLock().lock();
+    try {
+      this.cacheWriter = cacheWriter;
+    } finally {
+      readWriteLockForCacheWriter.writeLock().unlock();
+    }
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
@@ -1503,9 +1541,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   protected void cacheLoaderChanged(CacheLoader oldLoader) {
-    if (this.cacheLoader != oldLoader) {
-      closeCacheCallback(oldLoader);
+    readWriteLockForCacheLoader.readLock().lock();
+    try {
+      if (this.cacheLoader != oldLoader) {
+        closeCacheCallback(oldLoader);
+      }
+    } finally {
+      readWriteLockForCacheLoader.readLock().unlock();
     }
+
   }
 
   /**
@@ -1519,8 +1563,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   protected void cacheWriterChanged(CacheWriter oldWriter) {
-    if (this.cacheWriter != oldWriter) {
-      closeCacheCallback(oldWriter);
+    readWriteLockForCacheWriter.readLock().lock();
+    try {
+      if (this.cacheWriter != oldWriter) {
+        closeCacheCallback(oldWriter);
+      }
+    } finally {
+      readWriteLockForCacheWriter.readLock().unlock();
     }
   }
 
