@@ -20,10 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,13 +33,19 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -57,6 +65,37 @@ public class CreateRegionCommandDUnitTest {
 
   public static class AnotherTestCacheListener extends CacheListenerAdapter
       implements Serializable {
+  }
+
+  public static class DummyAEQListener implements AsyncEventListener, Declarable {
+    @Override
+    public boolean processEvents(List<AsyncEvent> events) {
+      return false;
+    }
+  }
+
+  public static class DummyPartitionResolver implements PartitionResolver, Declarable {
+    @Override
+    public Object getRoutingObject(EntryOperation opDetails) {
+      return null;
+    }
+
+    @Override
+    public String getName() {
+      return "dummy";
+    }
+  }
+
+  public static class DummyCompressor implements Compressor, Declarable {
+    @Override
+    public byte[] compress(byte[] input) {
+      return new byte[0];
+    }
+
+    @Override
+    public byte[] decompress(byte[] input) {
+      return new byte[0];
+    }
   }
 
   @ClassRule
@@ -229,6 +268,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
   }
+
 
   @Test
   public void cannotSetRegionExpirationForPartitionedTemplate() {
@@ -431,11 +471,12 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void startWithReplicateProxyThenPartitionRegion() {
+  public void startWithReplicateProxyThenPartitionRegion() throws Exception {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE_PROXY --group=group1 --name=" + regionName)
         .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
         .statusIsError().containsOutput("The existing region is not a partitioned region");
     gfsh.executeAndAssertThat(
@@ -558,6 +599,83 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
         .containsOutput("Region /startWithLocalRegion already exists on the cluster");
+  }
+
+  @Test
+  public void cannotDisableCloningWhenCompressorIsSet() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionName
+        + " --type=REPLICATE"
+        + " --compressor=" + DummyCompressor.class.getName()
+        + " --enable-cloning=false").statusIsError();
+  }
+
+  /**
+   * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
+   * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
+   * GEODE-6103
+   */
+  @Ignore
+  @Test
+  public void testCreateRegionFromTemplateWithAsyncEventListeners() {
+    String queueId = "queue1";
+    gfsh.executeAndAssertThat(
+        "create async-event-queue --id=" + queueId
+            + " --listener=" + CreateRegionCommandDUnitTest.DummyAEQListener.class.getName())
+        .statusIsSuccess();
+
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName
+            + " --type=REPLICATE"
+            + " --async-event-queue-id=" + queueId)
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + "-from-template"
+            + " --template-region=" + regionName)
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Region regionFromTemplate = ClusterStartupRule.getCache()
+          .getRegion(regionName + "-from-template");
+      assertThat(regionFromTemplate).isNotNull();
+      assertThat(((InternalRegion) regionFromTemplate).getAsyncEventQueueIds())
+          .contains(queueId);
+    });
+  }
+
+  /**
+   * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
+   * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
+   * GEODE-6103
+   */
+  @Ignore
+  @Test
+  public void testCreateRegionFromTemplateWithPartitionResolver() {
+    String regionName = testName.getMethodName();
+    String regionFromTemplateName = regionName + "-from-template";
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionName
+        + " --type=PARTITION"
+        + " --partition-resolver=" + DummyPartitionResolver.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionFromTemplateName
+        + " --template-region=" + regionName).statusIsSuccess();
+
+    server1.invoke(() -> {
+      Region regionFromTemplate = ClusterStartupRule.getCache()
+          .getRegion(regionName + "-from-template");
+      assertThat(regionFromTemplate).isNotNull();
+      assertThat(((InternalRegion) regionFromTemplate).getPartitionAttributes()
+          .getPartitionResolver())
+              .isNotNull();
+      assertThat(((InternalRegion) regionFromTemplate).getPartitionAttributes()
+          .getPartitionResolver().getName())
+              .isEqualTo(DummyPartitionResolver.class.getName());
+    });
   }
 
   private String getUniversalClassCode(String classname) {

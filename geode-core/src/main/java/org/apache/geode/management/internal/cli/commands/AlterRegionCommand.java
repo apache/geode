@@ -26,7 +26,6 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -139,7 +138,7 @@ public class AlterRegionCommand extends InternalGfshCommand {
     XmlEntity xmlEntity = findXmlEntity(regionAlterResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+          () -> getConfigurationPersistenceService()
               .addXmlEntity(xmlEntity, groups));
     }
     return result;

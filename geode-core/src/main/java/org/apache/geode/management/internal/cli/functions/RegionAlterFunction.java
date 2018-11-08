@@ -111,8 +111,8 @@ public class RegionAlterFunction implements InternalFunction {
 
     AttributesMutator mutator = region.getAttributesMutator();
 
-    if (regionAlterArgs.isCloningEnabled() != null) {
-      mutator.setCloningEnabled(regionAlterArgs.isCloningEnabled());
+    if (regionAlterArgs.getCloningEnabled() != null) {
+      mutator.setCloningEnabled(regionAlterArgs.getCloningEnabled());
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - cloning");
       }
@@ -128,7 +128,7 @@ public class RegionAlterFunction implements InternalFunction {
     // Alter expiration attributes
     final RegionFunctionArgs.ExpirationAttrs newEntryExpirationIdleTime =
         regionAlterArgs.getEntryExpirationIdleTime();
-    if (newEntryExpirationIdleTime.isTimeOrActionSet()) {
+    if (newEntryExpirationIdleTime != null && newEntryExpirationIdleTime.isTimeOrActionSet()) {
       mutator.setEntryIdleTimeout(
           newEntryExpirationIdleTime.getExpirationAttributes(region.getEntryIdleTimeout()));
       if (logger.isDebugEnabled()) {
@@ -138,7 +138,7 @@ public class RegionAlterFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs newEntryExpirationTTL =
         regionAlterArgs.getEntryExpirationTTL();
-    if (newEntryExpirationTTL.isTimeOrActionSet()) {
+    if (newEntryExpirationTTL != null && newEntryExpirationTTL.isTimeOrActionSet()) {
       mutator.setEntryTimeToLive(
           newEntryExpirationTTL.getExpirationAttributes(region.getEntryTimeToLive()));
       if (logger.isDebugEnabled()) {
@@ -167,7 +167,7 @@ public class RegionAlterFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs newRegionExpirationIdleTime =
         regionAlterArgs.getRegionExpirationIdleTime();
-    if (newRegionExpirationIdleTime.isTimeOrActionSet()) {
+    if (newRegionExpirationIdleTime != null && newRegionExpirationIdleTime.isTimeOrActionSet()) {
       mutator.setRegionIdleTimeout(
           newRegionExpirationIdleTime.getExpirationAttributes(region.getRegionIdleTimeout()));
       if (logger.isDebugEnabled()) {
@@ -177,7 +177,7 @@ public class RegionAlterFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs newRegionExpirationTTL =
         regionAlterArgs.getRegionExpirationTTL();
-    if (newRegionExpirationTTL.isTimeOrActionSet()) {
+    if (newRegionExpirationTTL != null && newRegionExpirationTTL.isTimeOrActionSet()) {
       mutator.setRegionTimeToLive(
           newRegionExpirationTTL.getExpirationAttributes(region.getRegionTimeToLive()));
       if (logger.isDebugEnabled()) {

@@ -39,9 +39,12 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
@@ -50,11 +53,13 @@ import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.internal.cli.domain.RegionConfigFactory;
 import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
@@ -63,18 +68,18 @@ import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.RegionPath;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateRegionCommand extends InternalGfshCommand {
+public class CreateRegionCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateRegionCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result createRegion(
+  public ResultModel createRegion(
       @CliOption(key = CliStrings.CREATE_REGION__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__REGION__HELP) String regionPath,
@@ -180,15 +185,13 @@ public class CreateRegionCommand extends InternalGfshCommand {
           help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
-    Result result;
-
     if (regionShortcut != null && templateRegion != null) {
-      return ResultBuilder.createUserErrorResult(
+      return ResultModel.createError(
           CliStrings.CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED);
     }
 
     if (regionShortcut == null && templateRegion == null) {
-      return ResultBuilder.createUserErrorResult(
+      return ResultModel.createError(
           CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
     }
 
@@ -217,6 +220,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
 
       // we first make sure E and C have the compatible data policy
       if (regionShortcut.isPartition() && !existingDataPolicy.contains("PARTITION")) {
+        LogService.getLogger().info("Create region command: got EntityExists exception");
         throw new EntityExistsException("The existing region is not a partitioned region",
             ifNotExists);
       }
@@ -244,7 +248,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
     String parentRegionPath = regionPathData.getParent();
     if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
       if (!regionExists(cache, parentRegionPath)) {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST,
                 new Object[] {regionPath}));
       }
@@ -282,16 +286,17 @@ public class CreateRegionCommand extends InternalGfshCommand {
     RegionAttributes<?, ?> regionAttributes = null;
     if (regionShortcut != null) {
       if (!regionShortcut.name().startsWith("PARTITION") && functionArgs.hasPartitionAttributes()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
             functionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " "
             + CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION,
                 regionPath));
       }
       functionArgs.setRegionShortcut(regionShortcut);
+      functionArgs.setRegionAttributes(cache.getRegionAttributes(regionShortcut.toString()));
     } else { // templateRegion != null
       if (!regionExists(cache, templateRegion)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
             CliStrings.CREATE_REGION__USEATTRIBUTESFROM, templateRegion));
       }
@@ -299,14 +304,14 @@ public class CreateRegionCommand extends InternalGfshCommand {
       RegionAttributesWrapper<?, ?> wrappedAttributes = getRegionAttributes(cache, templateRegion);
 
       if (wrappedAttributes == null) {
-        return ResultBuilder.createGemFireErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS,
             templateRegion));
       }
 
       if (wrappedAttributes.getRegionAttributes().getPartitionAttributes() == null
           && functionArgs.hasPartitionAttributes()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
             functionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " "
             + CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION,
@@ -358,14 +363,14 @@ public class CreateRegionCommand extends InternalGfshCommand {
         DistributedRegionMXBean distributedRegionMXBean =
             mgmtService.getDistributedRegionMXBean(prColocatedWith);
         if (distributedRegionMXBean == null) {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
               CliStrings.CREATE_REGION__COLOCATEDWITH, prColocatedWith));
         }
         String regionType = distributedRegionMXBean.getRegionType();
         if (!(DataPolicy.PARTITION.toString().equals(regionType)
             || DataPolicy.PERSISTENT_PARTITION.toString().equals(regionType))) {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION,
               new Object[] {prColocatedWith}));
         }
@@ -377,14 +382,14 @@ public class CreateRegionCommand extends InternalGfshCommand {
       Set<String> existingGatewaySenders =
           Arrays.stream(dsMBean.listGatewaySenders()).collect(Collectors.toSet());
       if (existingGatewaySenders.size() == 0) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__NO_GATEWAYSENDERS_IN_THE_SYSTEM);
+        return ResultModel
+            .createError(CliStrings.CREATE_REGION__MSG__NO_GATEWAYSENDERS_IN_THE_SYSTEM);
       } else {
         Set<String> specifiedGatewaySenders =
             Arrays.stream(gatewaySenderIds).collect(Collectors.toSet());
         specifiedGatewaySenders.removeAll(existingGatewaySenders);
         if (!specifiedGatewaySenders.isEmpty()) {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
               (Object[]) gatewaySenderIds));
         }
@@ -402,11 +407,11 @@ public class CreateRegionCommand extends InternalGfshCommand {
                 CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE,
                 new Object[] {String.valueOf(functionArgs.getTemplateRegion())});
 
-        return ResultBuilder.createUserErrorResult(message);
+        return ResultModel.createError(message);
       }
 
       if (!diskStoreExists(cache, diskStore)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_DISKSTORE_UNKNOWN_DISKSTORE_0,
             new Object[] {diskStore}));
       }
@@ -425,9 +430,9 @@ public class CreateRegionCommand extends InternalGfshCommand {
     // just in case we found no members with this group name
     if (membersToCreateRegionOn.isEmpty()) {
       if (groups == null || groups.length == 0) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+        return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       } else {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
                 (Object[]) groups));
       }
@@ -436,14 +441,70 @@ public class CreateRegionCommand extends InternalGfshCommand {
     List<CliFunctionResult> regionCreateResults = executeAndGetFunctionResult(
         RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
 
-    result = ResultBuilder.buildResult(regionCreateResults);
-    XmlEntity xmlEntity = findXmlEntity(regionCreateResults);
-    if (xmlEntity != null) {
+    ResultModel resultModel = ResultModel.createMemberStatusResult(regionCreateResults);
+    if (resultModel.isSuccessful()) {
       verifyDistributedRegionMbean(cache, regionPath);
-      persistClusterConfiguration(result,
-          () -> getConfigurationPersistenceService().addXmlEntity(xmlEntity, groups));
+      RegionConfig config = (new RegionConfigFactory()).generate(functionArgs);
+      resultModel.setConfigObject(new CreateRegionResultConfig(config,
+          functionArgs.getRegionPath()));
     }
-    return result;
+
+    return resultModel;
+  }
+
+  private class CreateRegionResultConfig {
+    RegionConfig getRegionConfig() {
+      return regionConfig;
+    }
+
+    String getFullRegionPath() {
+      return fullRegionPath;
+    }
+
+    private final RegionConfig regionConfig;
+    private final String fullRegionPath;
+
+    public CreateRegionResultConfig(RegionConfig regionConfig, String fullRegionPath) {
+      this.regionConfig = regionConfig;
+      this.fullRegionPath = fullRegionPath;
+    }
+  }
+
+  @Override
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
+    if (configObject == null) {
+      return false;
+    }
+
+    CreateRegionResultConfig regionResultConfigObject = (CreateRegionResultConfig) configObject;
+    RegionConfig regionConfig = regionResultConfigObject.getRegionConfig();
+    String regionPath = regionResultConfigObject.getFullRegionPath();
+
+    RegionPath regionPathData = new RegionPath(regionPath);
+    if (regionPathData.getParent() == null) {
+      config.getRegions().add(regionConfig);
+      return true;
+    }
+
+    String[] regionsOnPath = regionPathData.getRegionsOnParentPath();
+    RegionConfig rootConfig = config.getRegions().stream()
+        .filter(r -> r.getName().equals(regionsOnPath[0]))
+        .findFirst()
+        .get();
+
+    RegionConfig currentConfig = rootConfig;
+    for (int i = 1; i < regionsOnPath.length; i++) {
+      final String curRegionName = regionsOnPath[i];
+      currentConfig = currentConfig.getRegions()
+          .stream()
+          .filter(r -> r.getName().equals(curRegionName))
+          .findFirst()
+          .get();
+    }
+
+    currentConfig.getRegions().add(regionConfig);
+
+    return true;
   }
 
   boolean verifyDistributedRegionMbean(InternalCache cache, String regionName) {
@@ -653,6 +714,14 @@ public class CreateRegionCommand extends InternalGfshCommand {
       if (compressor != null && !ClassName.isClassNameValid(compressor)) {
         return ResultBuilder.createUserErrorResult(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
+      }
+
+      Boolean cloningEnabled =
+          (Boolean) parseResult.getParamValue(CliStrings.CREATE_REGION__CLONINGENABLED);
+      if (compressor != null && cloningEnabled != null && !cloningEnabled) {
+        return ResultBuilder.createUserErrorResult(CliStrings
+            .format(CliStrings.CREATE_REGION__MSG__CANNOT_DISABLE_CLONING_WITH_COMPRESSOR,
+                new Object[] {compressor}));
       }
 
       String diskStore = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__DISKSTORE);

@@ -226,29 +226,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   /**
-   * Finds xml element in a group's xml, with the tagName that has given attribute and value
-   */
-  public Element getXmlElement(String group, String tagName, String attribute, String value)
-      throws IOException, SAXException, ParserConfigurationException {
-    if (group == null) {
-      group = "cluster";
-    }
-    Configuration config = getConfiguration(group);
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    NodeList elements = document.getElementsByTagName(tagName);
-    if (elements == null || elements.getLength() == 0) {
-      return null;
-    } else {
-      for (int i = 0; i < elements.getLength(); i++) {
-        Element eachElement = (Element) elements.item(i);
-        if (eachElement.getAttribute(attribute).equals(value))
-          return eachElement;
-      }
-    }
-    return null;
-  }
-
-  /**
    * Adds/replaces the xml entity in the shared configuration we don't need to trigger the change
    * listener for this modification, so it's ok to operate on the original configuration object
    */

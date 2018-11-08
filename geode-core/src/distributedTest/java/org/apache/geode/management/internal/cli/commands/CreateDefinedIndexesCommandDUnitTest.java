@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.result.model.ResultModel.MEMBER_STATUS_SECTION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -188,13 +189,15 @@ public class CreateDefinedIndexesCommandDUnitTest {
     CommandResult result = gfsh
         .executeCommand("create region --name=" + region1Name + " --type=REPLICATE --group=group1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent("0", "0").get("Member")).contains("server-1",
+    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member")).contains(
+        "server-1",
         "server-2");
 
     result = gfsh
         .executeCommand("create region --name=" + region2Name + " --type=REPLICATE --group=group1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent("0", "0").get("Member")).contains("server-1",
+    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member")).contains(
+        "server-1",
         "server-2");
 
     VMProvider.invokeInEveryMember(() -> {
@@ -251,13 +254,15 @@ public class CreateDefinedIndexesCommandDUnitTest {
     CommandResult result = gfsh
         .executeCommand("create region --name=" + region1Name + " --type=REPLICATE --group=group1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent("0", "0").get("Member")).contains("server-1",
+    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member")).contains(
+        "server-1",
         "server-2");
 
     result = gfsh
         .executeCommand("create region --name=" + region2Name + " --type=REPLICATE --group=group2");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent("0", "0").get("Member")).contains("server-3");
+    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member"))
+        .contains("server-3");
 
     gfsh.executeAndAssertThat(
         "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name)
