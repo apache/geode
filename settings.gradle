@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import org.gradle.util.GradleVersion
+
 rootProject.name = 'geode'
 
 // We want to see all test results.  This is equivalent to setting --continue on the command line.
