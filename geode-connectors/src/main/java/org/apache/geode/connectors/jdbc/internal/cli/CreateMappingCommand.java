@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 
+
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -79,12 +81,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
       return ResultModel.createError("Cluster Configuration must be enabled.");
     }
 
-    RegionConfig regionConfig = configurationPersistenceService.getCacheConfig(null)
-        .getRegions().stream().filter(region -> region.getName().equals(mapping.getRegionName()))
-        .findFirst().orElse(null);
+    CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(null);
+
+    RegionConfig regionConfig = cacheConfig.getRegions().stream()
+        .filter(region -> region.getName().equals(mapping.getRegionName())).findFirst()
+        .orElse(null);
     if (regionConfig == null) {
       return ResultModel
-          .createError("Cluster Configuration must contain a region named " + regionName);
+          .createError("A region named " + regionName + " must already exist.");
     }
 
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
@@ -98,6 +102,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
                 + loaderDeclarable.getClassName());
       }
     }
+    String queueName = getAsyncEventQueueName(regionName);
+    AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
+        .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
+    if (asyncEventQueue != null) {
+      return ResultModel
+          .createError("An async-event-queue named " + queueName + " must not already exist.");
+    }
+
 
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
@@ -106,6 +118,10 @@ public class CreateMappingCommand extends SingleGfshCommand {
         ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
     result.setConfigObject(mapping);
     return result;
+  }
+
+  String getAsyncEventQueueName(String regionName) {
+    return "JDBC-" + regionName;
   }
 
   @Override

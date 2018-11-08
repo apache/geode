@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -158,7 +159,7 @@ public class CreateMappingCommandTest {
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
-        .contains("Cluster Configuration must contain a region named " + regionName);
+        .contains("A region named " + regionName + " must already exist.");
   }
 
   @Test
@@ -186,6 +187,38 @@ public class CreateMappingCommandTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("The existing region " + regionName
         + " must not already have a cache-loader, but it has MyCacheLoaderClass");
+  }
+
+
+  @Test
+  public void createsMappingReturnsStatusERRORWhenAsycnEventQueueAlreadyExists() {
+    results.add(successFunctionResult);
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<RegionAttributesType> attributes = new ArrayList<>();
+    RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
+    when(loaderAttribute.getCacheLoader()).thenReturn(null);
+    attributes.add(loaderAttribute);
+    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
+    AsyncEventQueue matchingQueue = mock(AsyncEventQueue.class);
+    String queueName = createRegionMappingCommand.getAsyncEventQueueName(regionName);
+    when(matchingQueue.getId()).thenReturn(queueName);
+    asyncEventQueues.add(matchingQueue);
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+    assertThat(result.toString())
+        .contains("An async-event-queue named " + queueName + " must not already exist.");
   }
 
   @Test
