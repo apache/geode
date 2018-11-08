@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__GATEWAYSENDER_MXBEAN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
@@ -34,7 +34,9 @@ import javax.management.ObjectName;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -51,13 +53,12 @@ import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.test.fake.Fakes;
 
 public class DistributedSystemBridgeJUnitTest {
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private GemFireCacheImpl cache;
   private BackupService backupService;
-
   private DistributedSystemBridge bridge;
-
-  private ObjectName name1, name2, name3, name4;
   private GatewaySenderMXBean bean1, bean2, bean3, bean4;
 
   @Before
@@ -74,13 +75,13 @@ public class DistributedSystemBridgeJUnitTest {
 
     DLockService.addLockServiceForTests(BackupLockService.LOCK_SERVICE_NAME, dlock);
 
-    name1 = ObjectName
+    ObjectName name1 = ObjectName
         .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender1", "server1"));
-    name2 = ObjectName
+    ObjectName name2 = ObjectName
         .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender2", "server2"));
-    name3 = ObjectName
+    ObjectName name3 = ObjectName
         .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender3", "server3"));
-    name4 = ObjectName
+    ObjectName name4 = ObjectName
         .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender4", "server4"));
 
     bean1 = mock(GatewaySenderMXBean.class);
@@ -109,7 +110,7 @@ public class DistributedSystemBridgeJUnitTest {
   public void testSuccessfulBackup() throws Exception {
     DistributionManager dm = cache.getDistributionManager();
 
-    bridge.backupAllMembers("/tmp", null);
+    bridge.backupAllMembers(temporaryFolder.getRoot().getAbsolutePath(), null);
 
     InOrder inOrder = inOrder(dm, backupService);
     inOrder.verify(dm).putOutgoing(isA(PrepareBackupRequest.class));
@@ -119,7 +120,7 @@ public class DistributedSystemBridgeJUnitTest {
   }
 
   @Test
-  public void testPrepareErrorAbortsBackup() throws Exception {
+  public void testPrepareErrorAbortsBackup() {
     DistributionManager dm = cache.getDistributionManager();
     PersistentMemberManager memberManager = mock(PersistentMemberManager.class);
     BackupService backupService = mock(BackupService.class);
@@ -128,12 +129,9 @@ public class DistributedSystemBridgeJUnitTest {
     when(cache.getBackupService()).thenReturn(backupService);
     when(dm.putOutgoing(isA(PrepareBackupRequest.class)))
         .thenThrow(new RuntimeException("Fail the prepare"));
-
-    try {
-      bridge.backupAllMembers("/tmp", null);
-      fail("Should have failed with an exception");
-    } catch (RuntimeException expected) {
-    }
+    assertThatThrownBy(
+        () -> bridge.backupAllMembers(temporaryFolder.getRoot().getAbsolutePath(), null))
+            .isInstanceOf(RuntimeException.class).hasMessage("Fail the prepare");
 
     verify(dm).putOutgoing(isA(AbortBackupRequest.class));
     verify(backupService).abortBackup();
