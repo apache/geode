@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 subprojects {
-  //Task to dump all depencies of all projects, in a way
-  //that can be diffed before and after dependency changes
+  // Task to dump all dependencies of all projects, in a way
+  // that can be diffed before and after dependency changes
   task dumpDependencies() {
     doLast {
       description "Dump all of the dependencies as a flat, sorted list"
@@ -65,18 +65,17 @@ subprojects {
       println "========"
       sourceFiles.visit{ file ->
         if(!file.isDirectory()) {
-          boolean matches = false;
+          boolean matches = false
           file.file.eachLine { line ->
           def matcher = line =~ /^import (.*)\..*;/
             if(matcher) {
               def pack = matcher[0][1]
-//              println pack
               matches |= packages.contains(pack)
             }
           }
 
           if(matches) {
-            println file.relativePath;
+            println file.relativePath
           }
         }
       }

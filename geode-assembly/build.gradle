@@ -538,7 +538,7 @@ task dumpInstalledJars(dependsOn: installDist) {
           println ""
           println file.name
           println("==========================")
-          printJars(warContents);
+          printJars(warContents)
       }
     }
   }

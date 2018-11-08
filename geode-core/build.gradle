@@ -180,17 +180,17 @@ dependencies {
   }
   compile('it.unimi.dsi:fastutil:' + project.'fastutil.version')
   compile('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
-    ext.optional = true;
+    ext.optional = true
   }
   compile('javax.resource:javax.resource-api:' + project.'javax.resource-api.version')
   compile('mx4j:mx4j:' + project.'mx4j.version') {
-    ext.optional = true;
+    ext.optional = true
   }
   compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
-    ext.optional = true;
+    ext.optional = true
   }
   compile('mx4j:mx4j-tools:' + project.'mx4j-tools.version') {
-    ext.optional = true;
+    ext.optional = true
   }
   compile('net.java.dev.jna:jna:' + project.'jna.version')
 
