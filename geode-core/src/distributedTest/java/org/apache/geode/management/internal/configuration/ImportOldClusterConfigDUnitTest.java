@@ -62,7 +62,7 @@ public class ImportOldClusterConfigDUnitTest {
   }
 
   @Test
-  public void importOldConfigThenCreateRegionCorruptsCachXml() throws Exception {
+  public void importOldConfigThenCreateRegionCorruptsCacheXml() throws Exception {
     locator = lsRule.startLocatorVM(0);
 
     gfsh.connectAndVerify(locator);

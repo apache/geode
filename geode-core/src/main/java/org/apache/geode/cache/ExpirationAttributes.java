@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.configuration.ExpirationAttributesType;
 import org.apache.geode.internal.InternalDataSerializer;
 
 /**
@@ -149,12 +150,25 @@ public class ExpirationAttributes implements DataSerializable {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.timeout = in.readInt();
-    this.action = (ExpirationAction) DataSerializer.readObject(in);
+    this.action = DataSerializer.readObject(in);
 
   }
 
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.timeout);
     DataSerializer.writeObject(this.action, out);
+  }
+
+  public ExpirationAttributesType toConfigType() {
+    ExpirationAttributesType t = new ExpirationAttributesType();
+    t.setTimeout(Integer.toString(this.timeout));
+    t.setAction(this.action.toXmlString());
+
+    return t;
+  }
+
+  public boolean isDefault() {
+    return (this.action == null || this.action == ExpirationAction.INVALIDATE)
+        && (this.timeout == 0);
   }
 }

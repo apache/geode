@@ -172,31 +172,31 @@ public class CreateRegionCommandTest {
     assertThat(args.isIfNotExists()).isFalse();
     assertThat(args.getKeyConstraint()).isNull();
     assertThat(args.getValueConstraint()).isNull();
-    assertThat(args.isStatisticsEnabled()).isNull();
+    assertThat(args.getStatisticsEnabled()).isNull();
 
     ExpirationAttrs empty = new ExpirationAttrs(null, null);
-    assertThat(args.getEntryExpirationIdleTime()).isEqualTo(empty);
-    assertThat(args.getEntryExpirationTTL()).isEqualTo(empty);
-    assertThat(args.getRegionExpirationIdleTime()).isEqualTo(empty);
-    assertThat(args.getRegionExpirationTTL()).isEqualTo(empty);
+    assertThat(args.getEntryExpirationIdleTime()).isNull();
+    assertThat(args.getEntryExpirationTTL()).isNull();
+    assertThat(args.getRegionExpirationIdleTime()).isNull();
+    assertThat(args.getRegionExpirationTTL()).isNull();
 
     assertThat(args.getDiskStore()).isNull();
-    assertThat(args.isDiskSynchronous()).isNull();
-    assertThat(args.isEnableAsyncConflation()).isNull();
-    assertThat(args.isEnableSubscriptionConflation()).isNull();
+    assertThat(args.getDiskSynchronous()).isNull();
+    assertThat(args.getEnableAsyncConflation()).isNull();
+    assertThat(args.getEnableSubscriptionConflation()).isNull();
     assertThat(args.getCacheListeners()).isEmpty();
     assertThat(args.getCacheLoader()).isNull();
     assertThat(args.getCacheWriter()).isNull();
     assertThat(args.getAsyncEventQueueIds()).isEmpty();
     assertThat(args.getGatewaySenderIds()).isEmpty();
-    assertThat(args.isConcurrencyChecksEnabled()).isNull();
-    assertThat(args.isCloningEnabled()).isNull();
-    assertThat(args.isMcastEnabled()).isNull();
+    assertThat(args.getConcurrencyChecksEnabled()).isNull();
+    assertThat(args.getCloningEnabled()).isNull();
+    assertThat(args.getMcastEnabled()).isNull();
     assertThat(args.getConcurrencyLevel()).isNull();
-    assertThat(args.getPartitionArgs()).isNotNull();
+    assertThat(args.getPartitionArgs()).isNull();
     assertThat(args.getEvictionMax()).isNull();
     assertThat(args.getCompressor()).isNull();
-    assertThat(args.isOffHeap()).isNull();
+    assertThat(args.getOffHeap()).isNull();
     assertThat(args.getRegionAttributes()).isNull();
   }
 

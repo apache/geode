@@ -51,6 +51,7 @@ public class JAXBService {
       marshaller = jaxbContext.createMarshaller();
       unmarshaller = jaxbContext.createUnmarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+      marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
       String schemas = Arrays.stream(xsdRootClasses).map(c -> {
         XSDRootElement element = c.getAnnotation(XSDRootElement.class);
@@ -69,7 +70,7 @@ public class JAXBService {
 
   public void validateWith(URL url) {
     SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-    Schema schema = null;
+    Schema schema;
     try {
       schema = factory.newSchema(url);
     } catch (SAXException e) {
@@ -88,6 +89,7 @@ public class JAXBService {
   public String marshall(Object object) {
     StringWriter sw = new StringWriter();
     try {
+      sw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
       marshaller.marshal(object, sw);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
