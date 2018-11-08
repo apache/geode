@@ -32,6 +32,8 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -157,6 +159,33 @@ public class CreateMappingCommandTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
         .contains("Cluster Configuration must contain a region named " + regionName);
+  }
+
+  @Test
+  public void createsMappingReturnsStatusERRORWhenClusterConfigRegionHasLoader() {
+    results.add(successFunctionResult);
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<RegionAttributesType> attributes = new ArrayList<>();
+    RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
+    DeclarableType loaderDeclarable = mock(DeclarableType.class);
+    when(loaderDeclarable.getClassName()).thenReturn("MyCacheLoaderClass");
+    when(loaderAttribute.getCacheLoader()).thenReturn(loaderDeclarable);
+    attributes.add(loaderAttribute);
+    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+    assertThat(result.toString()).contains("The existing region " + regionName
+        + " must not already have a cache-loader, but it has MyCacheLoaderClass");
   }
 
   @Test

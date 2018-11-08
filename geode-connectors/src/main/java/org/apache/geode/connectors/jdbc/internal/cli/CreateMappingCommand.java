@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +23,9 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.RegionAttributesType;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
@@ -75,13 +79,24 @@ public class CreateMappingCommand extends SingleGfshCommand {
       return ResultModel.createError("Cluster Configuration must be enabled.");
     }
 
-    if (!configurationPersistenceService
-        .getCacheConfig(null)
-        .getRegions()
-        .stream()
-        .anyMatch(regionConfig -> regionConfig.getName().equals(mapping.getRegionName()))) {
+    RegionConfig regionConfig = configurationPersistenceService.getCacheConfig(null)
+        .getRegions().stream().filter(region -> region.getName().equals(mapping.getRegionName()))
+        .findFirst().orElse(null);
+    if (regionConfig == null) {
       return ResultModel
           .createError("Cluster Configuration must contain a region named " + regionName);
+    }
+
+    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
+        .filter(attributes -> attributes.getCacheLoader() != null).findFirst().orElse(null);
+    if (regionAttributes != null) {
+      DeclarableType loaderDeclarable = regionAttributes.getCacheLoader();
+      if (loaderDeclarable != null) {
+        return ResultModel
+            .createError("The existing region " + regionName
+                + " must not already have a cache-loader, but it has "
+                + loaderDeclarable.getClassName());
+      }
     }
 
     List<CliFunctionResult> results =
