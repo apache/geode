@@ -31,7 +31,7 @@ allprojects {
       // Intended to strip off 'extensions/' from the modules so that artifacts
       // don't end up in libs/extensions/
       def parts = project.name.split("/")
-      return parts[parts.length - 1];
+      return parts[parts.length - 1]
     }
 
     disableMavenPublishing = {
