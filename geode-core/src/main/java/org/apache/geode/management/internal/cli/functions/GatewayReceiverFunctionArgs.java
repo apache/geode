@@ -16,12 +16,15 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
 
+import lombok.Getter;
+
 import org.apache.geode.cache.configuration.CacheConfig.GatewayReceiver;
 import org.apache.geode.cache.configuration.DeclarableType;
 
 /**
  * This class stores the arguments provided in the create gateway-receiver command.
  */
+@Getter
 public class GatewayReceiverFunctionArgs implements Serializable {
   private static final long serialVersionUID = -5158224572470173267L;
 
@@ -60,41 +63,5 @@ public class GatewayReceiverFunctionArgs implements Serializable {
         : null;
     this.hostnameForSenders = configuration.getHostnameForSenders();
     this.ifNotExists = ifNotExists;
-  }
-
-  public Boolean isManualStart() {
-    return this.manualStart;
-  }
-
-  public Integer getStartPort() {
-    return this.startPort;
-  }
-
-  public Integer getEndPort() {
-    return this.endPort;
-  }
-
-  public String getBindAddress() {
-    return this.bindAddress;
-  }
-
-  public Integer getSocketBufferSize() {
-    return this.socketBufferSize;
-  }
-
-  public Integer getMaximumTimeBetweenPings() {
-    return this.maximumTimeBetweenPings;
-  }
-
-  public String[] getGatewayTransportFilters() {
-    return this.gatewayTransportFilters;
-  }
-
-  public String getHostnameForSenders() {
-    return hostnameForSenders;
-  }
-
-  public Boolean getIfNotExists() {
-    return ifNotExists;
   }
 }

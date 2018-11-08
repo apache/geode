@@ -138,11 +138,11 @@ public class CreateGatewaySenderCommandTest {
         any(Set.class));
     assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isEqualTo(
         GatewaySender.OrderPolicy.THREAD.toString());
-    assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
+    assertThat(argsArgumentCaptor.getValue().getRemoteDSId()).isEqualTo(1);
     assertThat(argsArgumentCaptor.getValue().getDispatcherThreads()).isEqualTo(2);
-    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).containsExactly("test1",
+    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilters()).containsExactly("test1",
         "test2");
-    assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).containsExactly("test1",
+    assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilters()).containsExactly("test1",
         "test2");
   }
 

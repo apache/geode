@@ -37,9 +37,9 @@ public class RegionFunctionArgsTest {
 
   @Test
   public void defaultRegionFunctionArgs() throws Exception {
-    assertThat(args.isDiskSynchronous()).isNull();
-    assertThat(args.isCloningEnabled()).isNull();
-    assertThat(args.isConcurrencyChecksEnabled()).isNull();
+    assertThat(args.getDiskSynchronous()).isNull();
+    assertThat(args.getCloningEnabled()).isNull();
+    assertThat(args.getConcurrencyChecksEnabled()).isNull();
     assertThat(args.getConcurrencyLevel()).isNull();
     assertThat(args.getPartitionArgs()).isNotNull();
     assertThat(args.getPartitionArgs().hasPartitionAttributes()).isFalse();

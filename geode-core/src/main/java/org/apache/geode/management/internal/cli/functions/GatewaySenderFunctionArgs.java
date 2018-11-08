@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
+
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 
-
+@Getter
 public class GatewaySenderFunctionArgs implements Serializable {
   private static final long serialVersionUID = 4636678328980816780L;
 
@@ -79,77 +81,5 @@ public class GatewaySenderFunctionArgs implements Serializable {
 
   private Integer string2int(String x) {
     return Optional.ofNullable(x).map(Integer::valueOf).orElse(null);
-  }
-
-  public String getId() {
-    return this.id;
-  }
-
-  public Integer getRemoteDistributedSystemId() {
-    return this.remoteDSId;
-  }
-
-  public Boolean isParallel() {
-    return this.parallel;
-  }
-
-  public Boolean isManualStart() {
-    return this.manualStart;
-  }
-
-  public Integer getSocketBufferSize() {
-    return this.socketBufferSize;
-  }
-
-  public Integer getSocketReadTimeout() {
-    return this.socketReadTimeout;
-  }
-
-  public Boolean isBatchConflationEnabled() {
-    return this.enableBatchConflation;
-  }
-
-  public Integer getBatchSize() {
-    return this.batchSize;
-  }
-
-  public Integer getBatchTimeInterval() {
-    return this.batchTimeInterval;
-  }
-
-  public Boolean isPersistenceEnabled() {
-    return this.enablePersistence;
-  }
-
-  public String getDiskStoreName() {
-    return this.diskStoreName;
-  }
-
-  public Boolean isDiskSynchronous() {
-    return this.diskSynchronous;
-  }
-
-  public Integer getMaxQueueMemory() {
-    return this.maxQueueMemory;
-  }
-
-  public Integer getAlertThreshold() {
-    return this.alertThreshold;
-  }
-
-  public Integer getDispatcherThreads() {
-    return this.dispatcherThreads;
-  }
-
-  public String getOrderPolicy() {
-    return this.orderPolicy;
-  }
-
-  public List<String> getGatewayEventFilter() {
-    return this.gatewayEventFilters;
-  }
-
-  public List<String> getGatewayTransportFilter() {
-    return this.gatewayTransportFilters;
   }
 }

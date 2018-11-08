@@ -242,24 +242,24 @@ public class RegionCreateFunction implements InternalFunction {
       factory.setDiskStoreName(diskStore);
     }
 
-    if (regionCreateArgs.isDiskSynchronous() != null) {
-      factory.setDiskSynchronous(regionCreateArgs.isDiskSynchronous());
+    if (regionCreateArgs.getDiskSynchronous() != null) {
+      factory.setDiskSynchronous(regionCreateArgs.getDiskSynchronous());
     }
 
-    if (regionCreateArgs.isOffHeap() != null) {
-      factory.setOffHeap(regionCreateArgs.isOffHeap());
+    if (regionCreateArgs.getOffHeap() != null) {
+      factory.setOffHeap(regionCreateArgs.getOffHeap());
     }
 
-    if (regionCreateArgs.isStatisticsEnabled() != null) {
-      factory.setStatisticsEnabled(regionCreateArgs.isStatisticsEnabled());
+    if (regionCreateArgs.getStatisticsEnabled() != null) {
+      factory.setStatisticsEnabled(regionCreateArgs.getStatisticsEnabled());
     }
 
-    if (regionCreateArgs.isEnableAsyncConflation() != null) {
-      factory.setEnableAsyncConflation(regionCreateArgs.isEnableAsyncConflation());
+    if (regionCreateArgs.getEnableAsyncConflation() != null) {
+      factory.setEnableAsyncConflation(regionCreateArgs.getEnableAsyncConflation());
     }
 
-    if (regionCreateArgs.isEnableSubscriptionConflation() != null) {
-      factory.setEnableSubscriptionConflation(regionCreateArgs.isEnableSubscriptionConflation());
+    if (regionCreateArgs.getEnableSubscriptionConflation() != null) {
+      factory.setEnableSubscriptionConflation(regionCreateArgs.getEnableSubscriptionConflation());
     }
 
     // Gateway Sender Ids
@@ -278,20 +278,20 @@ public class RegionCreateFunction implements InternalFunction {
       }
     }
 
-    if (regionCreateArgs.isConcurrencyChecksEnabled() != null) {
-      factory.setConcurrencyChecksEnabled(regionCreateArgs.isConcurrencyChecksEnabled());
+    if (regionCreateArgs.getConcurrencyChecksEnabled() != null) {
+      factory.setConcurrencyChecksEnabled(regionCreateArgs.getConcurrencyChecksEnabled());
     }
 
     if (regionCreateArgs.getConcurrencyLevel() != null) {
       factory.setConcurrencyLevel(regionCreateArgs.getConcurrencyLevel());
     }
 
-    if (regionCreateArgs.isCloningEnabled() != null) {
-      factory.setCloningEnabled(regionCreateArgs.isCloningEnabled());
+    if (regionCreateArgs.getCloningEnabled() != null) {
+      factory.setCloningEnabled(regionCreateArgs.getCloningEnabled());
     }
 
-    if (regionCreateArgs.isMcastEnabled() != null) {
-      factory.setMulticastEnabled(regionCreateArgs.isMcastEnabled());
+    if (regionCreateArgs.getMcastEnabled() != null) {
+      factory.setMulticastEnabled(regionCreateArgs.getMcastEnabled());
     }
 
     // Set plugins

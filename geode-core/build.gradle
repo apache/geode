@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'io.franzbecker.gradle-lombok' version '1.14'
+}
 
 apply plugin: 'antlr'
 apply plugin: 'me.champeau.gradle.jmh'
@@ -153,6 +156,8 @@ dependencies {
   antlr 'antlr:antlr:' + project.'antlr.version'
 
   // External
+  compileOnly('org.projectlombok:lombok:' + project.'lombok.version' )
+  apt('org.projectlombok:lombok:' + project.'lombok.version' )
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile('com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version')
   compile('org.jgroups:jgroups:' + project.'jgroups.version')

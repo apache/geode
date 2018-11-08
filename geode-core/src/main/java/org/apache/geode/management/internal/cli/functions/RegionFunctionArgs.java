@@ -23,6 +23,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
@@ -44,6 +49,9 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  *
  * @since GemFire 7.0
  */
+@Getter
+@Setter
+@NoArgsConstructor
 public class RegionFunctionArgs implements Serializable {
   private static final long serialVersionUID = 2204943186081037302L;
 
@@ -74,60 +82,11 @@ public class RegionFunctionArgs implements Serializable {
   private Boolean cloningEnabled;
   private Boolean mcastEnabled;
   private Integer concurrencyLevel;
-  private PartitionArgs partitionArgs;
+  private PartitionArgs partitionArgs = new PartitionArgs();
   private Integer evictionMax;
   private String compressor;
   private Boolean offHeap;
   private RegionAttributes<?, ?> regionAttributes;
-
-  public RegionFunctionArgs() {
-    this.partitionArgs = new PartitionArgs();
-  }
-
-  public void setRegionPath(String regionPath) {
-    this.regionPath = regionPath;
-  }
-
-  public void setTemplateRegion(String templateRegion) {
-    this.templateRegion = templateRegion;
-  }
-
-  public void setRegionShortcut(RegionShortcut regionShortcut) {
-    this.regionShortcut = regionShortcut;
-  }
-
-
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
-  }
-
-  public void setKeyConstraint(String keyConstraint) {
-    this.keyConstraint = keyConstraint;
-  }
-
-  public void setValueConstraint(String valueConstraint) {
-    this.valueConstraint = valueConstraint;
-  }
-
-  public void setStatisticsEnabled(Boolean statisticsEnabled) {
-    this.statisticsEnabled = statisticsEnabled;
-  }
-
-  public void setEntryExpirationIdleTime(Integer timeout, ExpirationAction action) {
-    this.entryExpirationIdleTime = new ExpirationAttrs(timeout, action);
-  }
-
-  public void setEntryExpirationTTL(Integer timeout, ExpirationAction action) {
-    this.entryExpirationTTL = new ExpirationAttrs(timeout, action);
-  }
-
-  public void setRegionExpirationIdleTime(Integer timeout, ExpirationAction action) {
-    this.regionExpirationIdleTime = new ExpirationAttrs(timeout, action);
-  }
-
-  public void setRegionExpirationTTL(Integer timeout, ExpirationAction action) {
-    this.regionExpirationTTL = new ExpirationAttrs(timeout, action);
-  }
 
   public void setEvictionAttributes(String action, Integer maxMemory, Integer maxEntryCount,
       String objectSizer) {
@@ -138,34 +97,10 @@ public class RegionFunctionArgs implements Serializable {
     this.evictionAttributes = new EvictionAttrs(action, maxEntryCount, maxMemory, objectSizer);
   }
 
-  public void setDiskStore(String diskStore) {
-    this.diskStore = diskStore;
-  }
-
-  public void setDiskSynchronous(Boolean diskSynchronous) {
-    this.diskSynchronous = diskSynchronous;
-  }
-
-  public void setEnableAsyncConflation(Boolean enableAsyncConflation) {
-    this.enableAsyncConflation = enableAsyncConflation;
-  }
-
-  public void setEnableSubscriptionConflation(Boolean enableSubscriptionConflation) {
-    this.enableSubscriptionConflation = enableSubscriptionConflation;
-  }
-
   public void setCacheListeners(ClassName<CacheListener>[] cacheListeners) {
     if (cacheListeners != null) {
       this.cacheListeners = Arrays.stream(cacheListeners).collect(Collectors.toSet());
     }
-  }
-
-  public void setCacheLoader(ClassName<CacheLoader> cacheLoader) {
-    this.cacheLoader = cacheLoader;
-  }
-
-  public void setCacheWriter(ClassName<CacheWriter> cacheWriter) {
-    this.cacheWriter = cacheWriter;
   }
 
   public void setAsyncEventQueueIds(String[] asyncEventQueueIds) {
@@ -178,22 +113,6 @@ public class RegionFunctionArgs implements Serializable {
     if (gatewaySenderIds != null) {
       this.gatewaySenderIds = Arrays.stream(gatewaySenderIds).collect(Collectors.toSet());
     }
-  }
-
-  public void setConcurrencyChecksEnabled(Boolean concurrencyChecksEnabled) {
-    this.concurrencyChecksEnabled = concurrencyChecksEnabled;
-  }
-
-  public void setCloningEnabled(Boolean cloningEnabled) {
-    this.cloningEnabled = cloningEnabled;
-  }
-
-  public void setMcastEnabled(Boolean mcastEnabled) {
-    this.mcastEnabled = mcastEnabled;
-  }
-
-  public void setConcurrencyLevel(Integer concurrencyLevel) {
-    this.concurrencyLevel = concurrencyLevel;
   }
 
   public void setPartitionArgs(String prColocatedWith, Integer prLocalMaxMemory,
@@ -209,131 +128,6 @@ public class RegionFunctionArgs implements Serializable {
     partitionArgs.setPartitionResolver(partitionResolver);
   }
 
-  public void setEvictionMax(Integer evictionMax) {
-    this.evictionMax = evictionMax;
-  }
-
-  public void setCompressor(String compressor) {
-    this.compressor = compressor;
-  }
-
-  public void setOffHeap(Boolean offHeap) {
-    this.offHeap = offHeap;
-  }
-
-  public void setRegionAttributes(RegionAttributes<?, ?> regionAttributes) {
-    this.regionAttributes = regionAttributes;
-  }
-
-  /**
-   * @return the regionPath
-   */
-  public String getRegionPath() {
-    return this.regionPath;
-  }
-
-  /**
-   * @return the regionShortcut
-   */
-  public RegionShortcut getRegionShortcut() {
-    return this.regionShortcut;
-  }
-
-  /**
-   * @return the templateRegion
-   */
-  public String getTemplateRegion() {
-    return this.templateRegion;
-  }
-
-  /**
-   * @return the ifNotExists
-   */
-  public Boolean isIfNotExists() {
-    return this.ifNotExists;
-  }
-
-  /**
-   * @return the keyConstraint
-   */
-  public String getKeyConstraint() {
-    return this.keyConstraint;
-  }
-
-  /**
-   * @return the valueConstraint
-   */
-  public String getValueConstraint() {
-    return this.valueConstraint;
-  }
-
-  /**
-   * @return the statisticsEnabled
-   */
-  public Boolean isStatisticsEnabled() {
-    return this.statisticsEnabled;
-  }
-
-  /**
-   * @return the entryExpirationIdleTime
-   */
-  public ExpirationAttrs getEntryExpirationIdleTime() {
-    return this.entryExpirationIdleTime;
-  }
-
-  /**
-   * @return the entryExpirationTTL
-   */
-  public ExpirationAttrs getEntryExpirationTTL() {
-    return this.entryExpirationTTL;
-  }
-
-  /**
-   * @return the regionExpirationIdleTime
-   */
-  public ExpirationAttrs getRegionExpirationIdleTime() {
-    return this.regionExpirationIdleTime;
-  }
-
-  /**
-   * @return the regionExpirationTTL
-   */
-  public ExpirationAttrs getRegionExpirationTTL() {
-    return this.regionExpirationTTL;
-  }
-
-  /**
-   * @return the diskStore
-   */
-  public String getDiskStore() {
-    return this.diskStore;
-  }
-
-  /**
-   * @return the diskSynchronous
-   */
-  public Boolean isDiskSynchronous() {
-    return this.diskSynchronous;
-  }
-
-  public Boolean isOffHeap() {
-    return this.offHeap;
-  }
-
-  /**
-   * @return the enableAsyncConflation
-   */
-  public Boolean isEnableAsyncConflation() {
-    return this.enableAsyncConflation;
-  }
-
-  /**
-   * @return the enableSubscriptionConflation
-   */
-  public Boolean isEnableSubscriptionConflation() {
-    return this.enableSubscriptionConflation;
-  }
-
   /**
    * @return the cacheListeners
    */
@@ -342,20 +136,6 @@ public class RegionFunctionArgs implements Serializable {
       return null;
     }
     return Collections.unmodifiableSet(this.cacheListeners);
-  }
-
-  /**
-   * @return the cacheLoader
-   */
-  public ClassName<CacheLoader> getCacheLoader() {
-    return this.cacheLoader;
-  }
-
-  /**
-   * @return the cacheWriter
-   */
-  public ClassName<CacheWriter> getCacheWriter() {
-    return this.cacheWriter;
   }
 
   /**
@@ -378,34 +158,6 @@ public class RegionFunctionArgs implements Serializable {
     return Collections.unmodifiableSet(this.gatewaySenderIds);
   }
 
-  /**
-   * @return the concurrencyChecksEnabled
-   */
-  public Boolean isConcurrencyChecksEnabled() {
-    return this.concurrencyChecksEnabled;
-  }
-
-  /**
-   * @return the cloningEnabled
-   */
-  public Boolean isCloningEnabled() {
-    return this.cloningEnabled;
-  }
-
-  /**
-   * @return the mcastEnabled setting
-   */
-  public Boolean isMcastEnabled() {
-    return this.mcastEnabled;
-  }
-
-  /**
-   * @return the concurrencyLevel
-   */
-  public Integer getConcurrencyLevel() {
-    return this.concurrencyLevel;
-  }
-
   public boolean withPartitioning() {
     return hasPartitionAttributes()
         || (this.regionShortcut != null && this.regionShortcut.name().startsWith("PARTITION"));
@@ -416,27 +168,6 @@ public class RegionFunctionArgs implements Serializable {
    */
   public boolean hasPartitionAttributes() {
     return this.partitionArgs.hasPartitionAttributes();
-  }
-
-  /**
-   * @return the partitionArgs
-   */
-  public PartitionArgs getPartitionArgs() {
-    return this.partitionArgs;
-  }
-
-  /**
-   * @return the evictionMax
-   */
-  public Integer getEvictionMax() {
-    return this.evictionMax;
-  }
-
-  /**
-   * @return the compressor.
-   */
-  public String getCompressor() {
-    return this.compressor;
   }
 
   public EvictionAttributes getEvictionAttributes() {
@@ -451,26 +182,27 @@ public class RegionFunctionArgs implements Serializable {
     return (RegionAttributes<K, V>) this.regionAttributes;
   }
 
-  public ClassName<CustomExpiry> getEntryIdleTimeCustomExpiry() {
-    return entryIdleTimeCustomExpiry;
+  public void setEntryExpirationIdleTime(Integer timeout, ExpirationAction action) {
+    this.entryExpirationIdleTime = new ExpirationAttrs(timeout, action);
   }
 
-  public void setEntryIdleTimeCustomExpiry(ClassName<CustomExpiry> entryIdleTimeCustomExpiry) {
-    this.entryIdleTimeCustomExpiry = entryIdleTimeCustomExpiry;
+  public void setEntryExpirationTTL(Integer timeout, ExpirationAction action) {
+    this.entryExpirationTTL = new ExpirationAttrs(timeout, action);
   }
 
-  public ClassName<CustomExpiry> getEntryTTLCustomExpiry() {
-    return entryTTLCustomExpiry;
+  public void setRegionExpirationIdleTime(Integer timeout, ExpirationAction action) {
+    this.regionExpirationIdleTime = new ExpirationAttrs(timeout, action);
   }
 
-  public void setEntryTTLCustomExpiry(ClassName<CustomExpiry> entryTTLCustomExpiry) {
-    this.entryTTLCustomExpiry = entryTTLCustomExpiry;
+  public void setRegionExpirationTTL(Integer timeout, ExpirationAction action) {
+    this.regionExpirationTTL = new ExpirationAttrs(timeout, action);
   }
 
   /**
    * the difference between this and ExpirationAttributes is that this allows time and action to be
    * null
    */
+  @Getter
   public static class ExpirationAttrs implements Serializable {
     private static final long serialVersionUID = 1474255033398008063L;
 
@@ -480,14 +212,6 @@ public class RegionFunctionArgs implements Serializable {
     public ExpirationAttrs(Integer time, ExpirationAction action) {
       this.time = time;
       this.action = action;
-    }
-
-    public Integer getTime() {
-      return time;
-    }
-
-    public ExpirationAction getAction() {
-      return action;
     }
 
     @Override
@@ -544,37 +268,15 @@ public class RegionFunctionArgs implements Serializable {
     }
   }
 
+  @Getter
+  @RequiredArgsConstructor
   public static class EvictionAttrs implements Serializable {
     private static final long serialVersionUID = 9015454906371076014L;
 
-    private String evictionAction;
-    private Integer maxEntryCount;
-    private Integer maxMemory;
-    private String objectSizer;
-
-    public EvictionAttrs(String evictionAction, Integer maxEntryCount, Integer maxMemory,
-        String objectSizer) {
-      this.evictionAction = evictionAction;
-      this.maxEntryCount = maxEntryCount;
-      this.maxMemory = maxMemory;
-      this.objectSizer = objectSizer;
-    }
-
-    public String getEvictionAction() {
-      return evictionAction;
-    }
-
-    public Integer getMaxEntryCount() {
-      return maxEntryCount;
-    }
-
-    public Integer getMaxMemory() {
-      return maxMemory;
-    }
-
-    public String getObjectSizer() {
-      return objectSizer;
-    }
+    private final String evictionAction;
+    private final Integer maxEntryCount;
+    private final Integer maxMemory;
+    private final String objectSizer;
 
     public EvictionAttributes convertToEvictionAttributes() {
       EvictionAction action = EvictionAction.parseAction(evictionAction);
@@ -603,7 +305,8 @@ public class RegionFunctionArgs implements Serializable {
     }
   }
 
-
+  @Getter
+  @Setter
   public static class PartitionArgs implements Serializable {
     private static final long serialVersionUID = 5907052187323280919L;
 
@@ -657,110 +360,6 @@ public class RegionFunctionArgs implements Serializable {
       }
 
       return userSpecifiedPartitionAttributes;
-    }
-
-    public void setPrColocatedWith(String prColocatedWith) {
-      if (prColocatedWith != null) {
-        this.prColocatedWith = prColocatedWith;
-      }
-    }
-
-    public void setPrLocalMaxMemory(Integer prLocalMaxMemory) {
-      if (prLocalMaxMemory != null) {
-        this.prLocalMaxMemory = prLocalMaxMemory;
-      }
-    }
-
-    public void setPrRecoveryDelay(Long prRecoveryDelay) {
-      if (prRecoveryDelay != null) {
-        this.prRecoveryDelay = prRecoveryDelay;
-      }
-    }
-
-    public void setPrRedundantCopies(Integer prRedundantCopies) {
-      if (prRedundantCopies != null) {
-        this.prRedundantCopies = prRedundantCopies;
-      }
-    }
-
-    public void setPrStartupRecoveryDelay(Long prStartupRecoveryDelay) {
-      if (prStartupRecoveryDelay != null) {
-        this.prStartupRecoveryDelay = prStartupRecoveryDelay;
-      }
-    }
-
-    public void setPrTotalMaxMemory(Long prTotalMaxMemory) {
-      if (prTotalMaxMemory != null) {
-        this.prTotalMaxMemory = prTotalMaxMemory;
-      }
-    }
-
-    public void setPrTotalNumBuckets(Integer prTotalNumBuckets) {
-      if (prTotalNumBuckets != null) {
-        this.prTotalNumBuckets = prTotalNumBuckets;
-      }
-    }
-
-    public void setPartitionResolver(String partitionResolver) {
-      if (partitionResolver != null) {
-        this.partitionResolver = partitionResolver;
-      }
-    }
-
-    /**
-     * @return the prColocatedWith
-     */
-    public String getPrColocatedWith() {
-      return prColocatedWith;
-    }
-
-    /**
-     * @return the prLocalMaxMemory
-     */
-    public Integer getPrLocalMaxMemory() {
-      return prLocalMaxMemory;
-    }
-
-    /**
-     * @return the prRecoveryDelay
-     */
-    public Long getPrRecoveryDelay() {
-      return prRecoveryDelay;
-    }
-
-    /**
-     * @return the prRedundantCopies
-     */
-    public Integer getPrRedundantCopies() {
-      return prRedundantCopies;
-    }
-
-    /**
-     * @return the prStartupRecoveryDelay
-     */
-    public Long getPrStartupRecoveryDelay() {
-      return prStartupRecoveryDelay;
-    }
-
-    /**
-     * @return the prTotalMaxMemory
-     */
-    public Long getPrTotalMaxMemory() {
-      return prTotalMaxMemory;
-    }
-
-    /**
-     * @return the prTotalNumBuckets
-     */
-    public Integer getPrTotalNumBuckets() {
-      return prTotalNumBuckets;
-    }
-
-    /**
-     * @return the partition resolver
-     */
-    public String getPartitionResolver() {
-      return partitionResolver;
     }
   }
 }

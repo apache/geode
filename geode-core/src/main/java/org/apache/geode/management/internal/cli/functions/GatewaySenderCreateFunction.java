@@ -72,12 +72,12 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       GatewaySenderFunctionArgs gatewaySenderCreateArgs) {
     GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
 
-    Boolean isParallel = gatewaySenderCreateArgs.isParallel();
+    Boolean isParallel = gatewaySenderCreateArgs.getParallel();
     if (isParallel != null) {
       gateway.setParallel(isParallel);
     }
 
-    Boolean manualStart = gatewaySenderCreateArgs.isManualStart();
+    Boolean manualStart = gatewaySenderCreateArgs.getManualStart();
     if (manualStart != null) {
       gateway.setManualStart(manualStart);
     }
@@ -97,7 +97,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       gateway.setBatchTimeInterval(batchTimeInterval);
     }
 
-    Boolean enableBatchConflation = gatewaySenderCreateArgs.isBatchConflationEnabled();
+    Boolean enableBatchConflation = gatewaySenderCreateArgs.getEnableBatchConflation();
     if (enableBatchConflation != null) {
       gateway.setBatchConflationEnabled(enableBatchConflation);
     }
@@ -125,7 +125,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       gateway.setOrderPolicy(OrderPolicy.valueOf(orderPolicy));
     }
 
-    Boolean isPersistenceEnabled = gatewaySenderCreateArgs.isPersistenceEnabled();
+    Boolean isPersistenceEnabled = gatewaySenderCreateArgs.getEnablePersistence();
     if (isPersistenceEnabled != null) {
       gateway.setPersistenceEnabled(isPersistenceEnabled);
     }
@@ -135,12 +135,12 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       gateway.setDiskStoreName(diskStoreName);
     }
 
-    Boolean isDiskSynchronous = gatewaySenderCreateArgs.isDiskSynchronous();
+    Boolean isDiskSynchronous = gatewaySenderCreateArgs.getDiskSynchronous();
     if (isDiskSynchronous != null) {
       gateway.setDiskSynchronous(isDiskSynchronous);
     }
 
-    List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
+    List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilters();
     if (gatewayEventFilters != null) {
       for (String gatewayEventFilter : gatewayEventFilters) {
         Class gatewayEventFilterKlass =
@@ -150,7 +150,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       }
     }
 
-    List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
+    List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilters();
     if (gatewayTransportFilters != null) {
       for (String gatewayTransportFilter : gatewayTransportFilters) {
         Class gatewayTransportFilterKlass = forName(gatewayTransportFilter,
@@ -160,7 +160,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
       }
     }
     return gateway.create(gatewaySenderCreateArgs.getId(),
-        gatewaySenderCreateArgs.getRemoteDistributedSystemId());
+        gatewaySenderCreateArgs.getRemoteDSId());
   }
 
   @SuppressWarnings("unchecked")
