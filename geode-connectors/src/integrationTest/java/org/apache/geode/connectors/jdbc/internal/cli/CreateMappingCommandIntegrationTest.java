@@ -105,7 +105,7 @@ public class CreateMappingCommandIntegrationTest {
   @Test
   public void createsRegionMappingWithMinimumParams() {
     ResultModel result =
-        createRegionMappingCommand.createMapping(regionName, dataSourceName, null, null);
+        createRegionMappingCommand.createMapping(regionName, dataSourceName, null, pdxClass);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -116,6 +116,6 @@ public class CreateMappingCommandIntegrationTest {
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
     assertThat(regionMapping.getDataSourceName()).isEqualTo(dataSourceName);
     assertThat(regionMapping.getTableName()).isNull();
-    assertThat(regionMapping.getPdxName()).isNull();
+    assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
   }
 }

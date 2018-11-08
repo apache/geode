@@ -91,16 +91,6 @@ public class SqlToPdxInstanceCreatorTest {
   }
 
   @Test
-  public void usesPdxFactoryForNoPdxClassWhenClassNonExistent() throws Exception {
-    when(resultSet.next()).thenReturn(false);
-
-    createPdxInstance();
-
-    verify(cache).createPdxInstanceFactory("no class", false);
-    verifyNoMoreInteractions(cache);
-  }
-
-  @Test
   public void readReturnsNullIfNoResultsReturned() throws Exception {
     when(resultSet.next()).thenReturn(false);
 
@@ -114,13 +104,24 @@ public class SqlToPdxInstanceCreatorTest {
     setupResultSetForTwoObjectColumns(resultSet);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
-    when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
         .thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2), any()))
         .thenReturn(PDX_FIELD_NAME_2);
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getKeyColumnName()).thenReturn(COLUMN_NAME_1);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    PdxType pdxType = mock(PdxType.class);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
+    PdxField pdxField = mock(PdxField.class);
+    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
+    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
+    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_2, pdxClassName)).thenReturn(pdxType);
+    when(pdxType.getPdxField(PDX_FIELD_NAME_2)).thenReturn(pdxField);
 
     createPdxInstance();
 
@@ -134,11 +135,23 @@ public class SqlToPdxInstanceCreatorTest {
     setupResultSetForTwoObjectColumns(resultSet);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
         .thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2), any()))
         .thenReturn(PDX_FIELD_NAME_2);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    PdxType pdxType = mock(PdxType.class);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
+    PdxField pdxField = mock(PdxField.class);
+    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
+    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
+    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_2, pdxClassName)).thenReturn(pdxType);
+    when(pdxType.getPdxField(PDX_FIELD_NAME_2)).thenReturn(pdxField);
 
     createPdxInstance();
 
@@ -149,12 +162,21 @@ public class SqlToPdxInstanceCreatorTest {
 
   @Test
   public void usesMappedPdxFieldNameWhenReading() throws Exception {
-    setupResultSetForTwoObjectColumns(resultSet);
+    setupResultSet(resultSet, FieldType.OBJECT, COLUMN_VALUE_1);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
-    when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
     String fieldName1 = "pdxFieldName1";
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any())).thenReturn(fieldName1);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    PdxType pdxType = mock(PdxType.class);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(pdxTypeRegistry.getPdxTypeForField(fieldName1, pdxClassName)).thenReturn(pdxType);
+    PdxField pdxField = mock(PdxField.class);
+    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
+    when(pdxType.getPdxField(fieldName1)).thenReturn(pdxField);
 
     createPdxInstance();
 
@@ -478,12 +500,24 @@ public class SqlToPdxInstanceCreatorTest {
 
   @Test
   public void throwsExceptionIfMoreThanOneResultReturned() throws Exception {
-    setupResultSetForTwoObjectColumns(resultSet);
+    setupResultSet(resultSet, FieldType.OBJECT);
     when(resultSet.next()).thenReturn(true);
     when(resultSet.getStatement()).thenReturn(mock(PreparedStatement.class));
-    when(cache.createPdxInstanceFactory(anyString(), anyBoolean()))
-        .thenReturn(mock(PdxInstanceFactory.class));
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    PdxType pdxType = mock(PdxType.class);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
+    PdxField pdxField = mock(PdxField.class);
+    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
+    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
     thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Multiple rows returned for query: ");
 
     createPdxInstance();
   }
