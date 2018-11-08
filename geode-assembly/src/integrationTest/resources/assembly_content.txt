@@ -318,6 +318,8 @@ javadoc/org/apache/geode/cache/configuration/PdxType.html
 javadoc/org/apache/geode/cache/configuration/PoolType.Locator.html
 javadoc/org/apache/geode/cache/configuration/PoolType.Server.html
 javadoc/org/apache/geode/cache/configuration/PoolType.html
+javadoc/org/apache/geode/cache/configuration/RegionAttributeGetFunction.html
+javadoc/org/apache/geode/cache/configuration/RegionAttributeSetFunction.html
 javadoc/org/apache/geode/cache/configuration/RegionAttributesDataPolicy.html
 javadoc/org/apache/geode/cache/configuration/RegionAttributesIndexUpdateType.html
 javadoc/org/apache/geode/cache/configuration/RegionAttributesMirrorType.html
@@ -341,6 +343,7 @@ javadoc/org/apache/geode/cache/configuration/RegionAttributesType.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.Entry.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.Index.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.html
+javadoc/org/apache/geode/cache/configuration/RegionConfigFactory.html
 javadoc/org/apache/geode/cache/configuration/ResourceManagerType.html
 javadoc/org/apache/geode/cache/configuration/SerializationRegistrationType.Instantiator.html
 javadoc/org/apache/geode/cache/configuration/SerializationRegistrationType.Serializer.html

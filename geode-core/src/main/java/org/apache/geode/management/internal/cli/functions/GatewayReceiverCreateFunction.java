@@ -123,7 +123,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       gatewayReceiverFactory.setSocketBufferSize(socketBufferSize);
     }
 
-    Boolean manualStart = gatewayReceiverCreateArgs.isManualStart();
+    Boolean manualStart = gatewayReceiverCreateArgs.getManualStart();
     if (manualStart != null) {
       gatewayReceiverFactory.setManualStart(manualStart);
     }

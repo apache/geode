@@ -431,11 +431,12 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void startWithReplicateProxyThenPartitionRegion() {
+  public void startWithReplicateProxyThenPartitionRegion() throws Exception {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE_PROXY --group=group1 --name=" + regionName)
         .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
         .statusIsError().containsOutput("The existing region is not a partitioned region");
     gfsh.executeAndAssertThat(

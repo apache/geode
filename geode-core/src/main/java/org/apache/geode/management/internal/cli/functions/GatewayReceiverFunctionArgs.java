@@ -24,23 +24,14 @@ import org.apache.geode.cache.configuration.DeclarableType;
  */
 public class GatewayReceiverFunctionArgs implements Serializable {
   private static final long serialVersionUID = -5158224572470173267L;
-
   private final Boolean manualStart;
-
   private final Integer startPort;
-
   private final Integer endPort;
-
   private final String bindAddress;
-
   private final Integer socketBufferSize;
-
   private final Integer maximumTimeBetweenPings;
-
   private final String[] gatewayTransportFilters;
-
   private final String hostnameForSenders;
-
   private final Boolean ifNotExists;
 
   public GatewayReceiverFunctionArgs(GatewayReceiver configuration, Boolean ifNotExists) {
@@ -62,7 +53,7 @@ public class GatewayReceiverFunctionArgs implements Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  public Boolean isManualStart() {
+  public Boolean getManualStart() {
     return this.manualStart;
   }
 
@@ -91,10 +82,10 @@ public class GatewayReceiverFunctionArgs implements Serializable {
   }
 
   public String getHostnameForSenders() {
-    return hostnameForSenders;
+    return this.hostnameForSenders;
   }
 
   public Boolean getIfNotExists() {
-    return ifNotExists;
+    return this.ifNotExists;
   }
 }

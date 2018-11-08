@@ -83,9 +83,11 @@ public class CommandExecutor {
     // if entity not found, depending on the thrower's intention, report either as success or error
     // no need to log since this is a user error
     catch (EntityNotFoundException e) {
+      logger.info("Got EntityNotFound exception: " + e.getMessage());
       if (e.isStatusOK()) {
         return ResultModel.createInfo("Skipping: " + e.getMessage());
       } else {
+        logger.info("Got EntityNotFound exception: " + e.getMessage());
         return ResultModel.createError(e.getMessage());
       }
     }

@@ -110,8 +110,8 @@ public class RegionAlterFunction implements InternalFunction {
 
     AttributesMutator mutator = region.getAttributesMutator();
 
-    if (regionAlterArgs.isCloningEnabled() != null) {
-      mutator.setCloningEnabled(regionAlterArgs.isCloningEnabled());
+    if (regionAlterArgs.getCloningEnabled() != null) {
+      mutator.setCloningEnabled(regionAlterArgs.getCloningEnabled());
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - cloning");
       }

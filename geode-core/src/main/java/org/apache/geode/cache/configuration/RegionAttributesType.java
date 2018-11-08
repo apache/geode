@@ -1795,6 +1795,17 @@ public class RegionAttributesType {
     @XmlElement(name = "lru-memory-size", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruMemorySize lruMemorySize;
 
+    public String toStringRep() {
+      return "lru-entry-count: " +
+          this.lruEntryCount.getMaximum() + ", " +
+          this.lruEntryCount.getAction().toString() + ", " +
+          "\nlru-heap-percentage: " +
+          this.lruHeapPercentage.getAction().toString() +
+          "\nlru-memory-size: " +
+          this.lruMemorySize.getMaximum() +
+          this.lruMemorySize.getAction().toString();
+    }
+
     /**
      * Gets the value of the lruEntryCount property.
      *

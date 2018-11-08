@@ -22,10 +22,8 @@ import java.util.stream.Collectors;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 
-
 public class GatewaySenderFunctionArgs implements Serializable {
   private static final long serialVersionUID = 4636678328980816780L;
-
   private final String id;
   private final Integer remoteDSId;
   private final Boolean parallel;
@@ -63,18 +61,12 @@ public class GatewaySenderFunctionArgs implements Serializable {
     this.alertThreshold = string2int(sender.getAlertThreshold());
     this.dispatcherThreads = string2int(sender.getDispatcherThreads());
     this.orderPolicy = sender.getOrderPolicy();
-    this.gatewayEventFilters =
-        Optional.of(sender.getGatewayEventFilters())
-            .map(filters -> filters
-                .stream().map(DeclarableType::getClassName)
-                .collect(Collectors.toList()))
-            .orElse(null);
-    this.gatewayTransportFilters =
-        Optional.of(sender.getGatewayTransportFilters())
-            .map(filters -> filters
-                .stream().map(DeclarableType::getClassName)
-                .collect(Collectors.toList()))
-            .orElse(null);
+    this.gatewayEventFilters = Optional.of(sender.getGatewayEventFilters()).map(
+        filters -> filters.stream().map(DeclarableType::getClassName).collect(Collectors.toList()))
+        .orElse(null);
+    this.gatewayTransportFilters = Optional.of(sender.getGatewayTransportFilters()).map(
+        filters -> filters.stream().map(DeclarableType::getClassName).collect(Collectors.toList()))
+        .orElse(null);
   }
 
   private Integer string2int(String x) {
@@ -85,15 +77,15 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.id;
   }
 
-  public Integer getRemoteDistributedSystemId() {
+  public Integer getRemoteDSId() {
     return this.remoteDSId;
   }
 
-  public Boolean isParallel() {
+  public Boolean getParallel() {
     return this.parallel;
   }
 
-  public Boolean isManualStart() {
+  public Boolean getManualStart() {
     return this.manualStart;
   }
 
@@ -105,7 +97,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.socketReadTimeout;
   }
 
-  public Boolean isBatchConflationEnabled() {
+  public Boolean getEnableBatchConflation() {
     return this.enableBatchConflation;
   }
 
@@ -117,7 +109,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.batchTimeInterval;
   }
 
-  public Boolean isPersistenceEnabled() {
+  public Boolean getEnablePersistence() {
     return this.enablePersistence;
   }
 
@@ -125,7 +117,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.diskStoreName;
   }
 
-  public Boolean isDiskSynchronous() {
+  public Boolean getDiskSynchronous() {
     return this.diskSynchronous;
   }
 
@@ -145,11 +137,11 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.orderPolicy;
   }
 
-  public List<String> getGatewayEventFilter() {
+  public List<String> getGatewayEventFilters() {
     return this.gatewayEventFilters;
   }
 
-  public List<String> getGatewayTransportFilter() {
+  public List<String> getGatewayTransportFilters() {
     return this.gatewayTransportFilters;
   }
 }

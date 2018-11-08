@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
-
 apply plugin: 'antlr'
 apply plugin: 'me.champeau.gradle.jmh'
+
+repositories {
+  mavenCentral()
+}
 
 sourceSets {
   jca {

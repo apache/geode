@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,21 +84,22 @@ public class RegionCreateFunction implements InternalFunction {
     if (regionCreateArgs.isIfNotExists()) {
       Region<Object, Object> region = cache.getRegion(regionCreateArgs.getRegionPath());
       if (region != null) {
-        resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
-            CliStrings.format(
-                CliStrings.CREATE_REGION__MSG__SKIPPING_0_REGION_PATH_1_ALREADY_EXISTS,
-                memberNameOrId, regionCreateArgs.getRegionPath())));
+        resultSender
+            .lastResult(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+                CliStrings.format(
+                    CliStrings.CREATE_REGION__MSG__SKIPPING_0_REGION_PATH_1_ALREADY_EXISTS,
+                    memberNameOrId, regionCreateArgs.getRegionPath())));
         return;
       }
     }
 
     try {
       Region<?, ?> createdRegion = createRegion(cache, regionCreateArgs);
-      XmlEntity xmlEntity = getXmlEntityForRegion(createdRegion);
 
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
-              createdRegion.getFullPath(), memberNameOrId)));
+      resultSender
+          .lastResult(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+              CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
+                  createdRegion.getFullPath(), memberNameOrId)));
     } catch (IllegalStateException e) {
       String exceptionMsg = e.getMessage();
       String localizedString =
@@ -196,7 +198,7 @@ public class RegionCreateFunction implements InternalFunction {
     // Expiration attributes
     final RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime =
         regionCreateArgs.getEntryExpirationIdleTime();
-    if (entryExpirationIdleTime.isTimeOrActionSet()) {
+    if (entryExpirationIdleTime != null && entryExpirationIdleTime.isTimeOrActionSet()) {
       factory.setEntryIdleTimeout(entryExpirationIdleTime.getExpirationAttributes());
     }
 
@@ -212,21 +214,23 @@ public class RegionCreateFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
         regionCreateArgs.getEntryExpirationTTL();
-    if (entryExpirationTTL.isTimeOrActionSet()) {
+    if (entryExpirationTTL != null && entryExpirationTTL.isTimeOrActionSet()) {
       factory.setEntryTimeToLive(entryExpirationTTL.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime =
         regionCreateArgs.getRegionExpirationIdleTime();
-    if (regionExpirationIdleTime.isTimeOrActionSet()) {
+    if (regionExpirationIdleTime != null && regionExpirationIdleTime.isTimeOrActionSet()) {
       factory.setRegionIdleTimeout(regionExpirationIdleTime.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL =
         regionCreateArgs.getRegionExpirationTTL();
-    if (regionExpirationTTL.isTimeOrActionSet()) {
+    if (regionExpirationTTL != null && regionExpirationTTL.isTimeOrActionSet()) {
       factory.setRegionTimeToLive(regionExpirationTTL.getExpirationAttributes());
     }
 
-    EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();
+    EvictionAttributes evictionAttributes = Optional
+        .ofNullable(regionCreateArgs.getEvictionAttributes())
+        .map(a -> a.convertToEvictionAttributes()).orElse(null);
     if (evictionAttributes != null) {
       ObjectSizer sizer = evictionAttributes.getObjectSizer();
       if (sizer != null && !(sizer instanceof Declarable)) {
@@ -242,24 +246,24 @@ public class RegionCreateFunction implements InternalFunction {
       factory.setDiskStoreName(diskStore);
     }
 
-    if (regionCreateArgs.isDiskSynchronous() != null) {
-      factory.setDiskSynchronous(regionCreateArgs.isDiskSynchronous());
+    if (regionCreateArgs.getDiskSynchronous() != null) {
+      factory.setDiskSynchronous(regionCreateArgs.getDiskSynchronous());
     }
 
-    if (regionCreateArgs.isOffHeap() != null) {
-      factory.setOffHeap(regionCreateArgs.isOffHeap());
+    if (regionCreateArgs.getOffHeap() != null) {
+      factory.setOffHeap(regionCreateArgs.getOffHeap());
     }
 
-    if (regionCreateArgs.isStatisticsEnabled() != null) {
-      factory.setStatisticsEnabled(regionCreateArgs.isStatisticsEnabled());
+    if (regionCreateArgs.getStatisticsEnabled() != null) {
+      factory.setStatisticsEnabled(regionCreateArgs.getStatisticsEnabled());
     }
 
-    if (regionCreateArgs.isEnableAsyncConflation() != null) {
-      factory.setEnableAsyncConflation(regionCreateArgs.isEnableAsyncConflation());
+    if (regionCreateArgs.getEnableAsyncConflation() != null) {
+      factory.setEnableAsyncConflation(regionCreateArgs.getEnableAsyncConflation());
     }
 
-    if (regionCreateArgs.isEnableSubscriptionConflation() != null) {
-      factory.setEnableSubscriptionConflation(regionCreateArgs.isEnableSubscriptionConflation());
+    if (regionCreateArgs.getEnableSubscriptionConflation() != null) {
+      factory.setEnableSubscriptionConflation(regionCreateArgs.getEnableSubscriptionConflation());
     }
 
     // Gateway Sender Ids
@@ -278,20 +282,20 @@ public class RegionCreateFunction implements InternalFunction {
       }
     }
 
-    if (regionCreateArgs.isConcurrencyChecksEnabled() != null) {
-      factory.setConcurrencyChecksEnabled(regionCreateArgs.isConcurrencyChecksEnabled());
+    if (regionCreateArgs.getConcurrencyChecksEnabled() != null) {
+      factory.setConcurrencyChecksEnabled(regionCreateArgs.getConcurrencyChecksEnabled());
     }
 
     if (regionCreateArgs.getConcurrencyLevel() != null) {
       factory.setConcurrencyLevel(regionCreateArgs.getConcurrencyLevel());
     }
 
-    if (regionCreateArgs.isCloningEnabled() != null) {
-      factory.setCloningEnabled(regionCreateArgs.isCloningEnabled());
+    if (regionCreateArgs.getCloningEnabled() != null) {
+      factory.setCloningEnabled(regionCreateArgs.getCloningEnabled());
     }
 
-    if (regionCreateArgs.isMcastEnabled() != null) {
-      factory.setMulticastEnabled(regionCreateArgs.isMcastEnabled());
+    if (regionCreateArgs.getMcastEnabled() != null) {
+      factory.setMulticastEnabled(regionCreateArgs.getMcastEnabled());
     }
 
     // Set plugins
@@ -340,9 +344,8 @@ public class RegionCreateFunction implements InternalFunction {
   @SuppressWarnings("unchecked")
   private static <K, V> PartitionAttributes<K, V> extractPartitionAttributes(Cache cache,
       RegionAttributes<K, V> regionAttributes, RegionFunctionArgs regionCreateArgs) {
-    RegionFunctionArgs.PartitionArgs partitionArgs = regionCreateArgs.getPartitionArgs();
 
-    PartitionAttributesFactory<K, V> prAttrFactory = null;
+    PartitionAttributesFactory<K, V> prAttrFactory;
 
     PartitionAttributes<K, V> partitionAttributes = regionAttributes.getPartitionAttributes();
     if (partitionAttributes != null) {
@@ -351,46 +354,49 @@ public class RegionCreateFunction implements InternalFunction {
       prAttrFactory = new PartitionAttributesFactory<>();
     }
 
-    String colocatedWith = partitionArgs.getPrColocatedWith();
-    if (colocatedWith != null) {
-      Region<Object, Object> colocatedWithRegion = cache.getRegion(colocatedWith);
-      if (colocatedWithRegion == null) {
-        throw new IllegalArgumentException(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_DOES_NOT_EXIST, colocatedWith));
+    if (regionCreateArgs.hasPartitionAttributes()) {
+      RegionFunctionArgs.PartitionArgs partitionArgs = regionCreateArgs.getPartitionArgs();
+      String colocatedWith = partitionArgs.getPrColocatedWith();
+      if (colocatedWith != null) {
+        Region<Object, Object> colocatedWithRegion = cache.getRegion(colocatedWith);
+        if (colocatedWithRegion == null) {
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_DOES_NOT_EXIST, colocatedWith));
+        }
+        if (!colocatedWithRegion.getAttributes().getDataPolicy().withPartitioning()) {
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION,
+              colocatedWith));
+        }
+        prAttrFactory.setColocatedWith(colocatedWith);
       }
-      if (!colocatedWithRegion.getAttributes().getDataPolicy().withPartitioning()) {
-        throw new IllegalArgumentException(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION,
-            colocatedWith));
+      if (partitionArgs.getPrLocalMaxMemory() != null) {
+        prAttrFactory.setLocalMaxMemory(partitionArgs.getPrLocalMaxMemory());
       }
-      prAttrFactory.setColocatedWith(colocatedWith);
-    }
-    if (partitionArgs.getPrLocalMaxMemory() != null) {
-      prAttrFactory.setLocalMaxMemory(partitionArgs.getPrLocalMaxMemory());
-    }
-    if (partitionArgs.getPrTotalMaxMemory() != null) {
-      prAttrFactory.setTotalMaxMemory(partitionArgs.getPrTotalMaxMemory());
-    }
-    if (partitionArgs.getPrTotalNumBuckets() != null) {
-      prAttrFactory.setTotalNumBuckets(partitionArgs.getPrTotalNumBuckets());
-    }
-    if (partitionArgs.getPrRedundantCopies() != null) {
-      prAttrFactory.setRedundantCopies(partitionArgs.getPrRedundantCopies());
-    }
-    if (partitionArgs.getPrRecoveryDelay() != null) {
-      prAttrFactory.setRecoveryDelay(partitionArgs.getPrRecoveryDelay());
-    }
-    if (partitionArgs.getPrStartupRecoveryDelay() != null) {
-      prAttrFactory.setStartupRecoveryDelay(partitionArgs.getPrStartupRecoveryDelay());
-    }
+      if (partitionArgs.getPrTotalMaxMemory() != null) {
+        prAttrFactory.setTotalMaxMemory(partitionArgs.getPrTotalMaxMemory());
+      }
+      if (partitionArgs.getPrTotalNumBuckets() != null) {
+        prAttrFactory.setTotalNumBuckets(partitionArgs.getPrTotalNumBuckets());
+      }
+      if (partitionArgs.getPrRedundantCopies() != null) {
+        prAttrFactory.setRedundantCopies(partitionArgs.getPrRedundantCopies());
+      }
+      if (partitionArgs.getPrRecoveryDelay() != null) {
+        prAttrFactory.setRecoveryDelay(partitionArgs.getPrRecoveryDelay());
+      }
+      if (partitionArgs.getPrStartupRecoveryDelay() != null) {
+        prAttrFactory.setStartupRecoveryDelay(partitionArgs.getPrStartupRecoveryDelay());
+      }
 
-    if (regionCreateArgs.getPartitionArgs().getPartitionResolver() != null) {
-      Class<PartitionResolver> partitionResolverClass =
-          forName(regionCreateArgs.getPartitionArgs().getPartitionResolver(),
-              CliStrings.CREATE_REGION__PARTITION_RESOLVER);
-      prAttrFactory
-          .setPartitionResolver((PartitionResolver<K, V>) newInstance(partitionResolverClass,
-              CliStrings.CREATE_REGION__PARTITION_RESOLVER));
+      if (regionCreateArgs.getPartitionArgs().getPartitionResolver() != null) {
+        Class<PartitionResolver> partitionResolverClass =
+            forName(regionCreateArgs.getPartitionArgs().getPartitionResolver(),
+                CliStrings.CREATE_REGION__PARTITION_RESOLVER);
+        prAttrFactory
+            .setPartitionResolver((PartitionResolver<K, V>) newInstance(partitionResolverClass,
+                CliStrings.CREATE_REGION__PARTITION_RESOLVER));
+      }
     }
     return prAttrFactory.create();
   }
