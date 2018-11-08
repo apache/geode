@@ -57,6 +57,7 @@ public class CreateMappingCommandTest {
   private CliFunctionResult successFunctionResult;
   private RegionMapping mapping;
   private CacheConfig cacheConfig;
+  RegionConfig matchingRegion;
 
   @Before
   public void setup() {
@@ -83,10 +84,26 @@ public class CreateMappingCommandTest {
     when(mapping.getRegionName()).thenReturn(regionName);
 
     cacheConfig = mock(CacheConfig.class);
+
+    matchingRegion = mock(RegionConfig.class);
+    when(matchingRegion.getName()).thenReturn(regionName);
+
+  }
+
+  private void setupRequiredPreconditions() {
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
   }
 
   @Test
   public void createsMappingReturnsStatusOKWhenFunctionResultSuccess() {
+    setupRequiredPreconditions();
     results.add(successFunctionResult);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
@@ -103,6 +120,7 @@ public class CreateMappingCommandTest {
 
   @Test
   public void createsMappingReturnsStatusERRORWhenFunctionResultIsEmpty() {
+    setupRequiredPreconditions();
     results.clear();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
@@ -126,8 +144,10 @@ public class CreateMappingCommandTest {
   @Test
   public void createsMappingReturnsStatusERRORWhenClusterConfigDoesNotContainRegion() {
     results.add(successFunctionResult);
-    ConfigurationPersistenceService configurationPersistenceService = mock(ConfigurationPersistenceService.class);
-    doReturn(configurationPersistenceService).when(createRegionMappingCommand).getConfigurationPersistenceService();
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
     when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
@@ -135,7 +155,8 @@ public class CreateMappingCommandTest {
         tableName, pdxClass);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
-    assertThat(result.toString()).contains("Cluster Configuration must contain a region named " + regionName);
+    assertThat(result.toString())
+        .contains("Cluster Configuration must contain a region named " + regionName);
   }
 
   @Test
@@ -149,8 +170,6 @@ public class CreateMappingCommandTest {
   public void testUpdateClusterConfigWithOneMatchingRegionAndNoExistingElement() {
     doReturn(null).when(cacheConfig).findCustomRegionElement(any(), any(), any());
     List<RegionConfig> list = new ArrayList<>();
-    RegionConfig matchingRegion = mock(RegionConfig.class);
-    when(matchingRegion.getName()).thenReturn(regionName);
     List<CacheElement> listCacheElements = new ArrayList<>();
     when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
     list.add(matchingRegion);

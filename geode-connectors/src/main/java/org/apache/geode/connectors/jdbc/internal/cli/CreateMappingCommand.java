@@ -69,7 +69,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
         pdxName, table, dataSourceName);
 
     // action
-    ConfigurationPersistenceService configurationPersistenceService = getConfigurationPersistenceService();
+    ConfigurationPersistenceService configurationPersistenceService =
+        getConfigurationPersistenceService();
     if (configurationPersistenceService == null) {
       return ResultModel.createError("Cluster Configuration must be enabled.");
     }
@@ -79,7 +80,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
         .getRegions()
         .stream()
         .anyMatch(regionConfig -> regionConfig.getName().equals(mapping.getRegionName()))) {
-      return ResultModel.createError("Cluster Configuration must contain a region named " + regionName);
+      return ResultModel
+          .createError("Cluster Configuration must contain a region named " + regionName);
     }
 
     List<CliFunctionResult> results =
