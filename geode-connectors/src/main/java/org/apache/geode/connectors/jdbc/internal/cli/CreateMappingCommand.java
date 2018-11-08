@@ -61,7 +61,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__DATA_SOURCE_NAME__HELP) String dataSourceName,
       @CliOption(key = CREATE_MAPPING__TABLE_NAME,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
-      @CliOption(key = CREATE_MAPPING__PDX_NAME,
+      @CliOption(key = CREATE_MAPPING__PDX_NAME, mandatory = true,
           help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);

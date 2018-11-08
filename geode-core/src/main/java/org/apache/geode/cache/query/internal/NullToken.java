@@ -54,6 +54,11 @@ public class NullToken implements DataSerializableFixedID, Comparable {
   }
 
   @Override
+  public int hashCode() {
+    return NullToken.class.hashCode();
+  }
+
+  @Override
   public int getDSFID() {
     return NULL_TOKEN;
   }

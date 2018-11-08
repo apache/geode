@@ -1590,14 +1590,14 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     final int extra_byte_num_per_entry =
         InternalDataSerializer.calculateBytesForTSandDSID(getDSID((LocalRegion) region));
     final int key3_size =
-        DiskOfflineCompactionJUnitTest.getSize4Create(extra_byte_num_per_entry, "key3", val);
+        CompactOfflineDiskStoreJUnitTest.getSize4Create(extra_byte_num_per_entry, "key3", val);
     final int tombstone_key1 =
-        DiskOfflineCompactionJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key1");
+        CompactOfflineDiskStoreJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key1");
     final int tombstone_key2 =
-        DiskOfflineCompactionJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key2");
+        CompactOfflineDiskStoreJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key2");
 
     CountDownLatch putsCompleted = new CountDownLatch(1);
-    // TODO: move static methods from DiskOfflineCompactionJUnitTest to shared util class
+    // TODO: move static methods from CompactOfflineDiskStoreJUnitTest to shared util class
     StatSizeTestCacheObserverAdapter testObserver = new StatSizeTestCacheObserverAdapter(dr,
         key3_size, tombstone_key1, tombstone_key2, putsCompleted);
     CacheObserver old = CacheObserverHolder.setInstance(testObserver);
@@ -1991,10 +1991,10 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
         // _2.drf contained a rvvgc with drMap.size()==1
         int expectedDrfSize = Oplog.OPLOG_DISK_STORE_REC_SIZE + Oplog.OPLOG_MAGIC_SEQ_REC_SIZE
             + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE
-            + DiskOfflineCompactionJUnitTest.getRVVSize(1, new int[] {0}, true);
+            + CompactOfflineDiskStoreJUnitTest.getRVVSize(1, new int[] {0}, true);
         int expectedCrfSize = Oplog.OPLOG_DISK_STORE_REC_SIZE + Oplog.OPLOG_MAGIC_SEQ_REC_SIZE
             + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE
-            + DiskOfflineCompactionJUnitTest.getRVVSize(1, new int[] {1}, false)
+            + CompactOfflineDiskStoreJUnitTest.getRVVSize(1, new int[] {1}, false)
             + Oplog.OPLOG_NEW_ENTRY_BASE_REC_SIZE + key3Size + tombstoneKey1 + tombstoneKey2;
         int oplog2Size = expectedDrfSize + expectedCrfSize;
         if (after != oplog2Size) {

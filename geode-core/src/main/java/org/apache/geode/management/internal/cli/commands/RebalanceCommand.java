@@ -606,6 +606,11 @@ public class RebalanceCommand extends InternalGfshCommand {
     public boolean equals(Object o2) {
       return o2 != null && this.region.equals(((MemberPRInfo) o2).region);
     }
+
+    @Override
+    public int hashCode() {
+      return this.region.hashCode();
+    }
   }
 
   private List<MemberPRInfo> getMemberRegionList(InternalCache cache,

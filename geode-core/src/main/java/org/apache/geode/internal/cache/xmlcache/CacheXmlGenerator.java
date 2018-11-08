@@ -1166,8 +1166,14 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       return (((Region) o1).getFullPath().compareTo(((Region) o2).getFullPath()));
     }
 
+    @Override
     public boolean equals(Object anObj) {
       return ((Region) this).getFullPath().equals(((Region) anObj).getFullPath());
+    }
+
+    @Override
+    public int hashCode() {
+      return ((Region) this).getFullPath().hashCode();
     }
   }
 

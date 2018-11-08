@@ -43,6 +43,18 @@ class SerializableMonth implements DataSerializable {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SerializableMonth)) {
+      return false;
+    }
+    SerializableMonth that = (SerializableMonth) o;
+    return month == that.month;
+  }
+
+  @Override
   public int hashCode() {
     if (month < 4) {
       return 1;

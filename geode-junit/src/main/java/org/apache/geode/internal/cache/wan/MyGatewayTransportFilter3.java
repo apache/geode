@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 
@@ -53,4 +54,10 @@ public class MyGatewayTransportFilter3 implements GatewayTransportFilter, Serial
     MyGatewayTransportFilter3 filter = (MyGatewayTransportFilter3) obj;
     return this.Id.equals(filter.Id);
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Id);
+  }
+
 }
