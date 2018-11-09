@@ -91,7 +91,8 @@ public class DestroyIndexCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+  public boolean updateClusterConfig(String group, CacheConfig config, Object element,
+      ResultModel resultModel) {
     RegionConfig.Index indexFromCommand = (RegionConfig.Index) element;
     String indexName = indexFromCommand.getName();
 
@@ -117,6 +118,7 @@ public class DestroyIndexCommand extends SingleGfshCommand {
         CacheElement.removeElement(r.getIndexes(), indexName);
       }
     }
+    return true;
   }
 
 }

@@ -61,7 +61,8 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object configObject) {
+  public boolean updateClusterConfig(String group, CacheConfig cacheConfig, Object configObject,
+      ResultModel resultModel) {
     String region = (String) configObject;
     RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement("/" + region,
         RegionMapping.ELEMENT_ID, RegionMapping.class);
@@ -73,6 +74,8 @@ public class DestroyMappingCommand extends SingleGfshCommand {
           .filter(regionConfig -> regionConfig.getName().equals(region))
           .forEach(
               regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+      return true;
     }
+    return false;
   }
 }
