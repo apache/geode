@@ -1589,14 +1589,13 @@ public class InitialImageOperation {
         }
         return true;
       }
-      if (!rgn.getVersionVector().isRVVGCDominatedBy(requesterRVV)) {
+      if (!rgn.getVersionVector().isRvvGcDominatedByRequesterRvv(requesterRVV)) {
         if (logger.isDebugEnabled()) {
           logger.debug("Region {}'s local RVVGC is not dominated by remote RVV={}, do full GII",
               rgn.getFullPath(), requesterRVV);
         }
         return true;
       }
-      // TODO GGG: verify GII after UpgradeDiskStore
       return false;
     }
 

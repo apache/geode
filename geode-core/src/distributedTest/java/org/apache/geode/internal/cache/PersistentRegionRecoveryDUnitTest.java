@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -407,6 +408,87 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
       assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
       assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
     });
+  }
+
+  @Test
+  public void testRecoveryFromBackupAndRequestingDeltaGiiDoesFullGiiIfTombstoneGCVersionDiffers()
+      throws Exception {
+    getBlackboard().initBlackboard();
+    vm1.invoke(() -> cacheRule.createCache());
+
+    vm0.invoke(() -> createAsyncDiskRegion(true));
+    vm0.invoke(() -> {
+      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+      region.put("KEY-1", "VALUE-1");
+      region.put("KEY-2", "VALUE-2");
+      flushAsyncDiskRegion();
+    });
+
+    vm1.invoke(() -> createAsyncDiskRegion(true));
+    vm1.invoke(() -> {
+      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+      region.put("KEY-1", "VALUE-1");
+      region.put("KEY-2", "VALUE-2");
+      region.put("KEY-1", "VALUE-3");
+      region.put("KEY-2", "VALUE-4");
+      flushAsyncDiskRegion();
+    });
+
+    vm0.invoke(() -> {
+      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+      region.destroy("KEY-1");
+    });
+
+    vm0.bounceForcibly();
+
+    vm1.invoke(() -> flushAsyncDiskRegion());
+
+    vm1.invoke(() -> {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
+            @Override
+            public void beforeProcessMessage(ClusterDistributionManager dm,
+                DistributionMessage message) {
+              if (message instanceof InitialImageOperation.RequestImageMessage) {
+                InitialImageOperation.RequestImageMessage rim =
+                    (InitialImageOperation.RequestImageMessage) message;
+                if (rim.regionPath.contains(regionName)) {
+                  getBlackboard().signalGate("GotRegionIIRequest");
+                  await().until(() -> getBlackboard().isGateSignaled("TombstoneGCDone"));
+                }
+              }
+            }
+          });
+    });
+
+    AsyncInvocation vm0createRegion = vm0.invokeAsync(() -> createAsyncDiskRegion(true));
+
+    vm1.invoke(() -> {
+      await().until(() -> getBlackboard().isGateSignaled("GotRegionIIRequest"));
+      cacheRule.getCache().getTombstoneService().forceBatchExpirationForTests(1);
+      flushAsyncDiskRegion();
+      getBlackboard().signalGate("TombstoneGCDone");
+    });
+
+    vm0createRegion.join();
+
+    vm1.invoke(() -> {
+      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+      assertThat(region.get("KEY-1")).isEqualTo(null);
+      assertThat(region.get("KEY-2")).isEqualTo("VALUE-4");
+    });
+
+    vm0.invoke(() -> {
+      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+      assertThat(region.get("KEY-1")).isEqualTo(null);
+      assertThat(region.get("KEY-2")).isEqualTo("VALUE-4");
+    });
+  }
+
+  private void flushAsyncDiskRegion() {
+    for (DiskStore store : cacheRule.getCache().listDiskStoresIncludingRegionOwned()) {
+      ((DiskStoreImpl) store).forceFlush();
+    }
   }
 
   private void createSyncDiskRegion() throws IOException {
