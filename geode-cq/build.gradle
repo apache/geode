@@ -45,7 +45,7 @@ dependencies {
   integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
 
-  distributedTestCompile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  distributedTestCompile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   distributedTestCompile('junit:junit:' + project.'junit.version')
   distributedTestCompile('mx4j:mx4j:' + project.'mx4j.version')
   distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')

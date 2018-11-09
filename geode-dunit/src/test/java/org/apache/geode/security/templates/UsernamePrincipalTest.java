@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

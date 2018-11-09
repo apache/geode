@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;

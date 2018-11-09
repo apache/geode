@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;

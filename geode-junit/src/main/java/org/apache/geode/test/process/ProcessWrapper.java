@@ -43,7 +43,8 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -394,7 +395,7 @@ public class ProcessWrapper {
     // -d64 is not a valid option for java 9 and above
     final int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
     if (bits == 64 && !(System.getProperty("os.name").toLowerCase().contains("windows"))
-        && !SystemUtils.isJavaVersionAtLeast(1.9f)) {
+        && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       argumentList.add("-d64");
     }
 

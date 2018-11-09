@@ -23,7 +23,7 @@ import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 

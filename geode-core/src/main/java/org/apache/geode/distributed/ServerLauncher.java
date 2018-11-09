@@ -14,11 +14,11 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
-import static org.apache.commons.lang.StringUtils.defaultIfBlank;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.lowerCase;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
@@ -50,7 +50,7 @@ import javax.management.ObjectName;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
@@ -1273,7 +1273,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   private ServerState createNoResponseState(final Exception cause, final String errorMessage) {
-    debug(ExceptionUtils.getFullStackTrace(cause) + errorMessage);
+    debug(ExceptionUtils.getStackTrace(cause) + errorMessage);
     return new ServerState(this, Status.NOT_RESPONDING, errorMessage);
   }
 

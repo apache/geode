@@ -20,7 +20,8 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -42,7 +43,7 @@ public class ConnectCommandAcceptanceTest {
   @Test
   public void useCurrentGfshToConnectToOlderLocator() throws Exception {
     // this test can only be run with pre-9 jdk since it needs to run older version of gfsh
-    assumeTrue(!SystemUtils.isJavaVersionAtLeast(900));
+    assumeTrue(!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
     GfshScript.of("start locator").execute(gfsh130);
     GfshExecution connect = GfshScript.of("connect").expectFailure().execute(gfshDefault);
 

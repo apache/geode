@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.ExecutionStrategy;
 import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ParseResult;

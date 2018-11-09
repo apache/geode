@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;

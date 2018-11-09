@@ -77,7 +77,7 @@ import javax.transaction.TransactionManager;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;

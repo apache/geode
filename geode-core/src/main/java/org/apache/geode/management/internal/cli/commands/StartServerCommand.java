@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -569,7 +569,7 @@ public class StartServerCommand extends InternalGfshCommand {
     jarFilePathnames.add(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     // include all extension dependencies on the CLASSPATH...
     for (String extensionsJarPathname : getExtensionsJars()) {
-      if (org.apache.commons.lang.StringUtils.isNotBlank(extensionsJarPathname)) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(extensionsJarPathname)) {
         jarFilePathnames.add(extensionsJarPathname);
       }
     }

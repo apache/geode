@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.SerializationException;
+import org.apache.commons.lang3.SerializationException;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
