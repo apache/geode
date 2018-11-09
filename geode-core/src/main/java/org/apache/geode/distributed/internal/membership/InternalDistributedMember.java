@@ -522,12 +522,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     // Discard null cases
     if (myAddr == null && otherAddr == null) {
-      if (myPort < otherPort)
-        return -1;
-      else if (myPort > otherPort)
-        return 1;
-      else
-        return 0;
+      return 0;
     } else if (myAddr == null) {
       return -1;
     } else if (otherAddr == null)

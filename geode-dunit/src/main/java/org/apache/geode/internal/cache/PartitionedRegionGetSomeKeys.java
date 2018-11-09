@@ -55,10 +55,6 @@ public class PartitionedRegionGetSomeKeys {
       for (int i = 0; i < bucketIds.length; i++) {
         try {
           int whichBucket = random.nextInt(bucketIds.length);
-          if (whichBucket >= bucketIds.length) {
-            // The GSRandom.nextInt(int) may return a value that includes the maximum.
-            whichBucket = bucketIds.length - 1;
-          }
           bucketId = (Integer) bucketIds[whichBucket];
 
           InternalDistributedMember member = partitionedRegion.getNodeForBucketRead(bucketId);

@@ -1207,14 +1207,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
         break;
       else if (tab == table) {
         int rs = resizeStamp(n);
-        if (sc < 0) {
-          Node<V>[] nt;
-          if ((sc >>> RESIZE_STAMP_SHIFT) != rs || sc == rs + 1 || sc == rs + MAX_RESIZERS
-              || (nt = nextTable) == null || transferIndex <= 0)
-            break;
-          if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1))
-            transfer(tab, nt);
-        } else if (U.compareAndSwapInt(this, SIZECTL, sc, (rs << RESIZE_STAMP_SHIFT) + 2))
+        if (U.compareAndSwapInt(this, SIZECTL, sc, (rs << RESIZE_STAMP_SHIFT) + 2))
           transfer(tab, null);
       }
     }
