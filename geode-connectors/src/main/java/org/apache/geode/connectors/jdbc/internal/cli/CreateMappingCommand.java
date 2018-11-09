@@ -91,6 +91,12 @@ public class CreateMappingCommand extends SingleGfshCommand {
           .createError("A region named " + regionName + " must already exist.");
     }
 
+    if (regionConfig.getCustomRegionElements().stream()
+        .anyMatch(element -> element instanceof RegionMapping)) {
+      return ResultModel
+          .createError("A jdbc-mapping for " + regionName + " already exists.");
+    }
+
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
         .filter(attributes -> attributes.getCacheLoader() != null).findFirst().orElse(null);
     if (regionAttributes != null) {
@@ -120,29 +126,25 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return result;
   }
 
-  String getAsyncEventQueueName(String regionName) {
+  static String getAsyncEventQueueName(String regionName) {
     return "JDBC-" + regionName;
   }
 
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
     RegionMapping newCacheElement = (RegionMapping) element;
-    RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(
-        newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);
-
-    if (existingCacheElement != null) {
-      cacheConfig
-          .getRegions()
-          .stream()
-          .filter(regionConfig -> regionConfig.getName().equals(newCacheElement.getRegionName()))
-          .forEach(
-              regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+    RegionConfig regionConfig = cacheConfig.getRegions().stream()
+        .filter(region -> region.getName().equals(newCacheElement.getRegionName())).findFirst()
+        .orElse(null);
+    if (regionConfig != null) {
+      regionConfig.getCustomRegionElements().add(newCacheElement);
     }
-
-    cacheConfig
-        .getRegions()
-        .stream()
-        .filter(regionConfig -> regionConfig.getName().equals(newCacheElement.getRegionName()))
-        .forEach(regionConfig -> regionConfig.getCustomRegionElements().add(newCacheElement));
+    AsyncEventQueue asyncEventQueue = new AsyncEventQueue();
+    asyncEventQueue.setId(getAsyncEventQueueName(newCacheElement.getRegionName()));
+    boolean isPartitioned = regionConfig.getRegionAttributes().stream()
+        .anyMatch(attributes -> attributes.getPartitionAttributes() != null);
+    asyncEventQueue.setParallel(isPartitioned);
+    cacheConfig.getAsyncEventQueues().add(asyncEventQueue);
+    // TODO alter region config
   }
 }

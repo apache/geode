@@ -16,7 +16,11 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
+import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -37,9 +41,14 @@ public class CreateMappingFunction extends CliFunction<RegionMapping> {
     // input
     RegionMapping regionMapping = context.getArguments();
 
-    verifyRegionExists(context, regionMapping);
+    String regionName = regionMapping.getRegionName();
+    Region<?, ?> region = verifyRegionExists(context, regionName);
 
     // action
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    createAsyncEventQueue(context.getCache(), queueName,
+        region.getAttributes().getPartitionAttributes() != null);
+    alterRegion(region, queueName);
     createRegionMapping(service, regionMapping);
 
     // output
@@ -49,14 +58,36 @@ public class CreateMappingFunction extends CliFunction<RegionMapping> {
     return new CliFunctionResult(member, true, message);
   }
 
-  private void verifyRegionExists(FunctionContext<RegionMapping> context,
-      RegionMapping regionMapping) {
+  /**
+   * Change the existing region to have
+   * the JdbcLoader as its cache-loader
+   * and the given async-event-queue as one of its queues.
+   */
+  private void alterRegion(Region<?, ?> region, String queueName) {
+    region.getAttributesMutator().setCacheLoader(new JdbcLoader());
+    region.getAttributesMutator().addAsyncEventQueueId(queueName);
+  }
+
+  /**
+   * Create an async-event-queue with the given name.
+   * For a partitioned region a parallel queue is created.
+   * Otherwise a serial queue is created.
+   */
+  private void createAsyncEventQueue(Cache cache, String queueName, boolean isPartitioned) {
+    AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
+    asyncEventQueueFactory.setParallel(isPartitioned);
+    asyncEventQueueFactory.create(queueName, new JdbcAsyncWriter());
+  }
+
+  private Region<?, ?> verifyRegionExists(FunctionContext<RegionMapping> context,
+      String regionName) {
     Cache cache = context.getCache();
-    String regionName = regionMapping.getRegionName();
-    if (cache.getRegion(regionName) == null) {
+    Region<?, ?> result = cache.getRegion(regionName);
+    if (result == null) {
       throw new IllegalStateException(
           "create jdbc-mapping requires that the region \"" + regionName + "\" exists.");
     }
+    return result;
   }
 
   /**

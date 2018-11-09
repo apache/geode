@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -32,7 +33,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
@@ -53,6 +58,8 @@ public class CreateMappingFunctionTest {
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
   private InternalCache cache;
+  private Region region;
+  private AsyncEventQueueFactory asyncEventQueueFactory;
 
   private CreateMappingFunction function;
 
@@ -61,7 +68,7 @@ public class CreateMappingFunctionTest {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     cache = mock(InternalCache.class);
-    Region region = mock(Region.class);
+    region = mock(Region.class);
     DistributedSystem system = mock(DistributedSystem.class);
     distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
@@ -75,6 +82,10 @@ public class CreateMappingFunctionTest {
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(regionMapping);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
+    when(region.getAttributes()).thenReturn(mock(RegionAttributes.class));
+    when(region.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
+    asyncEventQueueFactory = mock(AsyncEventQueueFactory.class);
+    when(cache.createAsyncEventQueueFactory()).thenReturn(asyncEventQueueFactory);
 
     function = new CreateMappingFunction();
   }
@@ -130,9 +141,48 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeCreatesMapping() throws Exception {
-    function.execute(context);
+    function.executeFunction(context);
 
     verify(service, times(1)).createRegionMapping(regionMapping);
+  }
+
+  @Test
+  public void executeAlterRegionLoader() throws Exception {
+    function.executeFunction(context);
+
+    verify(service, times(1)).createRegionMapping(regionMapping);
+    AttributesMutator mutator = region.getAttributesMutator();
+    verify(mutator, times(1)).setCacheLoader(any());
+  }
+
+  @Test
+  public void executeAlterRegionAsyncEventQueue() throws Exception {
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(REGION_NAME);
+    function.executeFunction(context);
+
+    verify(service, times(1)).createRegionMapping(regionMapping);
+    AttributesMutator mutator = region.getAttributesMutator();
+    verify(mutator, times(1)).addAsyncEventQueueId(queueName);
+  }
+
+  @Test
+  public void executeCreatesSerialAsyncQueueForNonPartitionedRegion() throws Exception {
+    RegionAttributes attributes = region.getAttributes();
+    when(attributes.getPartitionAttributes()).thenReturn(null);
+    function.executeFunction(context);
+
+    verify(asyncEventQueueFactory, times(1)).create(any(), any());
+    verify(asyncEventQueueFactory, times(1)).setParallel(false);
+  }
+
+  @Test
+  public void executeCreatesParallelAsyncQueueForPartitionedRegion() throws Exception {
+    RegionAttributes attributes = region.getAttributes();
+    when(attributes.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+    function.executeFunction(context);
+
+    verify(asyncEventQueueFactory, times(1)).create(any(), any());
+    verify(asyncEventQueueFactory, times(1)).setParallel(true);
   }
 
   @Test

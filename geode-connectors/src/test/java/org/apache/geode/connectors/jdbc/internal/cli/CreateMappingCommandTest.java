@@ -163,6 +163,37 @@ public class CreateMappingCommandTest {
   }
 
   @Test
+  public void createsMappingReturnsStatusERRORWhenRegionMappingExists() {
+    results.add(successFunctionResult);
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<RegionAttributesType> attributes = new ArrayList<>();
+    RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
+    DeclarableType loaderDeclarable = mock(DeclarableType.class);
+    when(loaderDeclarable.getClassName()).thenReturn(null);
+    when(loaderAttribute.getCacheLoader()).thenReturn(loaderDeclarable);
+    attributes.add(loaderAttribute);
+    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    List<CacheElement> customList = new ArrayList<>();
+    RegionMapping existingMapping = mock(RegionMapping.class);
+    customList.add(existingMapping);
+    when(matchingRegion.getCustomRegionElements()).thenReturn(customList);
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+    assertThat(result.toString()).contains("A jdbc-mapping for " + regionName + " already exists.");
+  }
+
+
+  @Test
   public void createsMappingReturnsStatusERRORWhenClusterConfigRegionHasLoader() {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
@@ -222,15 +253,14 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void testUpdateClusterConfigWithNoRegionsAndNoExistingElement() {
-    doReturn(null).when(cacheConfig).findCustomRegionElement(any(), any(), any());
+  public void testUpdateClusterConfigWithNoRegions() {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
+
     createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
   }
 
   @Test
-  public void testUpdateClusterConfigWithOneMatchingRegionAndNoExistingElement() {
-    doReturn(null).when(cacheConfig).findCustomRegionElement(any(), any(), any());
+  public void testUpdateClusterConfigWithOneMatchingRegion() {
     List<RegionConfig> list = new ArrayList<>();
     List<CacheElement> listCacheElements = new ArrayList<>();
     when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
@@ -244,8 +274,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void testUpdateClusterConfigWithOneNonMatchingRegionAndNoExistingElement() {
-    doReturn(null).when(cacheConfig).findCustomRegionElement(any(), any(), any());
+  public void testUpdateClusterConfigWithOneNonMatchingRegion() {
     List<RegionConfig> list = new ArrayList<>();
     RegionConfig nonMatchingRegion = mock(RegionConfig.class);
     when(nonMatchingRegion.getName()).thenReturn("nonMatchingRegion");
@@ -257,44 +286,6 @@ public class CreateMappingCommandTest {
     createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
 
     assertThat(listCacheElements).isEmpty();
-  }
-
-  @Test
-  public void testUpdateClusterConfigWithOneMatchingRegionAndExistingElement() {
-    RegionMapping existingMapping = mock(RegionMapping.class);
-    doReturn(existingMapping).when(cacheConfig).findCustomRegionElement(any(), any(), any());
-    RegionConfig matchingRegion = mock(RegionConfig.class);
-    when(matchingRegion.getName()).thenReturn(regionName);
-    List<CacheElement> listCacheElements = new ArrayList<>();
-    listCacheElements.add(existingMapping);
-    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
-    List<RegionConfig> list = new ArrayList<>();
-    list.add(matchingRegion);
-    when(cacheConfig.getRegions()).thenReturn(list);
-
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
-
-    assertThat(listCacheElements.size()).isEqualTo(1);
-    assertThat(listCacheElements).contains(mapping);
-  }
-
-  @Test
-  public void testUpdateClusterConfigWithOneNonMatchingRegionAndExistingElement() {
-    RegionMapping existingMapping = mock(RegionMapping.class);
-    doReturn(existingMapping).when(cacheConfig).findCustomRegionElement(any(), any(), any());
-    List<RegionConfig> list = new ArrayList<>();
-    RegionConfig nonMatchingRegion = mock(RegionConfig.class);
-    when(nonMatchingRegion.getName()).thenReturn("nonMatchingRegion");
-    List<CacheElement> listCacheElements = new ArrayList<>();
-    listCacheElements.add(existingMapping);
-    when(nonMatchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
-    list.add(nonMatchingRegion);
-    when(cacheConfig.getRegions()).thenReturn(list);
-
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
-
-    assertThat(listCacheElements.size()).isEqualTo(1);
-    assertThat(listCacheElements).contains(existingMapping);
   }
 
 }
