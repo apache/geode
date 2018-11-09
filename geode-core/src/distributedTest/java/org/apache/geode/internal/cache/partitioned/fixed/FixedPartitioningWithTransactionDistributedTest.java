@@ -252,8 +252,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     Throwable caughtException = catchThrowable(() -> doFunctionTransactionAndSuspend(region,
         txManager, new MyTransactionFunction(), Type.ON_MEMBER));
 
-    assertThat(caughtException).isInstanceOf(FunctionException.class);
-    assertThat(caughtException.getCause()).isInstanceOf(UnsupportedOperationException.class);
+    assertThat(caughtException).isInstanceOf(UnsupportedOperationException.class);
     txManager.rollback();
   }
 

@@ -104,11 +104,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
           String.format("No member found for executing function : %s.",
               function.getId()));
     }
-    try {
-      validateExecution(function, dest);
-    } catch (Exception exception) {
-      throw new FunctionException(exception);
-    }
+    validateExecution(function, dest);
     setExecutionNodes(dest);
 
     final InternalDistributedMember localVM =
