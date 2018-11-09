@@ -109,8 +109,9 @@ public class ConfigurePDXCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
     config.setPdx((PdxType) configObject);
+    return true;
   }
 
   /**

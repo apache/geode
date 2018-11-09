@@ -153,8 +153,9 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
     DiskStoreType diskStoreType = (DiskStoreType) configObject;
     config.getDiskStores().add(diskStoreType);
+    return true;
   }
 }

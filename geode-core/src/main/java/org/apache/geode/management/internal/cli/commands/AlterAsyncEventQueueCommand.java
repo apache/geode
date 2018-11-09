@@ -22,27 +22,29 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_HELP;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -50,7 +52,7 @@ import org.apache.geode.security.ResourcePermission;
  * this command currently only updates the cluster configuration. Requires server restart to pick up
  * the changes.
  */
-public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
+public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
 
   public static final String GROUP_STATUS_SECTION = "group-status";
   static final String COMMAND_NAME = "alter async-event-queue";
@@ -81,82 +83,103 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
       @CliOption(key = MAX_QUEUE_MEMORY, help = MAXIMUM_QUEUE_MEMORY_HELP) Integer maxQueueMemory,
       @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean ifExists)
-      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+      throws IOException, SAXException, ParserConfigurationException, TransformerException,
+      EntityNotFoundException {
 
     // need not check if any running servers has this async-event-queue. A server with this queue id
     // may be shutdown, but we still need to update Cluster Configuration.
-    InternalConfigurationPersistenceService service =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
-
-    if (service == null) {
+    if (getConfigurationPersistenceService() == null) {
       return ResultModel.createError("Cluster Configuration Service is not available. "
           + "Please connect to a locator with running Cluster Configuration Service.");
     }
 
-    boolean locked = service.lockSharedConfiguration();
-    if (!locked) {
-      return ResultModel.createCommandProcessingError("Unable to lock the cluster configuration.");
-    }
-
-    ResultModel result = new ResultModel();
-    TabularResultModel tableData = result.addTable(GROUP_STATUS_SECTION);
-    boolean xmlUpdated = false;
-    try {
-      Region<String, Configuration> configRegion = service.getConfigurationRegion();
-      for (String group : configRegion.keySet()) {
-        Configuration config = configRegion.get(group);
-        if (config.getCacheXmlContent() == null) {
-          // skip to the next group
-          continue;
-        }
-
-        Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-        NodeList nodeList = document.getElementsByTagName("async-event-queue");
-        for (int i = 0; i < nodeList.getLength(); i++) {
-          Element item = (Element) nodeList.item(i);
-          String queueId = item.getAttribute("id");
-          if (!id.equals(queueId)) {
-            // skip to the next async-event-queue found in this xml
-            continue;
-          }
-          // this node is the async-event-queue with the correct id
-          if (batchSize != null) {
-            item.setAttribute(BATCH_SIZE, batchSize + "");
-          }
-          if (batchTimeInterval != null) {
-            item.setAttribute(BATCH_TIME_INTERVAL, batchTimeInterval + "");
-          }
-          if (maxQueueMemory != null) {
-            item.setAttribute(MAXIMUM_QUEUE_MEMORY, maxQueueMemory + "");
-          }
-          // each group should have only one queue with this id defined
-          tableData.accumulate("Group", group);
-          tableData.accumulate("Status", "Cluster Configuration Updated");
-          xmlUpdated = true;
-          break;
-        }
-
-        if (xmlUpdated) {
-          String newXml = XmlUtils.prettyXml(document.getFirstChild());
-          config.setCacheXmlContent(newXml);
-          configRegion.put(group, config);
-        }
-      }
-    } finally {
-      service.unlockSharedConfiguration();
-    }
-
-    if (!xmlUpdated) {
+    if (findAEQ(id) == null) {
       String message = String.format("Can not find an async event queue with id '%s'.", id);
       throw new EntityNotFoundException(message, ifExists);
     }
 
-    // some configurations are changed, print out the warning message as well.
-    tableData.setFooter(System.lineSeparator()
-        + "These changes won't take effect on the running servers. " + System.lineSeparator()
-        + "Please restart the servers in these groups for the changes to take effect.");
+    CacheConfig.AsyncEventQueue aeqConfiguration = new CacheConfig.AsyncEventQueue();
+    aeqConfiguration.setId(id);
+
+    if (batchSize != null) {
+      aeqConfiguration.setBatchSize(batchSize + "");
+    }
+    if (batchTimeInterval != null) {
+      aeqConfiguration.setBatchTimeInterval(batchTimeInterval + "");
+    }
+    if (maxQueueMemory != null) {
+      aeqConfiguration.setMaximumQueueMemory(maxQueueMemory + "");
+    }
+
+    ResultModel result = new ResultModel();
+    result.setConfigObject(aeqConfiguration);
 
     return result;
+  }
+
+  CacheConfig.AsyncEventQueue findAEQ(String aeqId) {
+    CacheConfig.AsyncEventQueue queue = null;
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) this.getConfigurationPersistenceService();
+    if (ccService == null) {
+      return null;
+    }
+
+    Set<String> groups = ccService.getGroups();
+    for (String group : groups) {
+      queue =
+          CacheElement.findElement(ccService.getCacheConfig(group).getAsyncEventQueues(), aeqId);
+      if (queue != null) {
+        return queue;
+      }
+    }
+    return queue;
+  }
+
+  @Override
+  public boolean updateAllConfigs(Map<String, CacheConfig> configs, ResultModel resultModel) {
+    CacheConfig.AsyncEventQueue aeqConfiguration =
+        (CacheConfig.AsyncEventQueue) resultModel.getConfigObject();
+    List<GroupQueuePair> queuesToAlter = configs.keySet()
+        .stream()
+        .map(group -> GroupQueuePair.of(group, CacheElement.findElement(
+            configs.get(group).getAsyncEventQueues(),
+            aeqConfiguration.getId())))
+        .filter(p -> p.snd != null)
+        .collect(Collectors.toList());
+
+    if (queuesToAlter.isEmpty()) {
+      return false;
+    }
+
+    TabularResultModel tableData = resultModel.addTable(GROUP_STATUS_SECTION);
+    tableData.setColumnHeader("Group", "Status");
+    queuesToAlter.forEach(p -> {
+      String group = p.fst;
+      CacheConfig.AsyncEventQueue queue = p.snd;
+
+      if (StringUtils.isNotBlank(aeqConfiguration.getBatchSize())) {
+        queue.setBatchSize(aeqConfiguration.getBatchSize());
+      }
+
+      if (StringUtils.isNotBlank(aeqConfiguration.getBatchTimeInterval())) {
+        queue.setBatchTimeInterval(aeqConfiguration.getBatchTimeInterval());
+      }
+
+      if (StringUtils.isNotBlank(aeqConfiguration.getMaximumQueueMemory())) {
+        queue.setMaximumQueueMemory(aeqConfiguration.getMaximumQueueMemory());
+      }
+
+      tableData.addRow(group, "Cluster Configuration Updated");
+    });
+
+    tableData.setFooter(
+        System.lineSeparator()
+            + "These changes won't take effect on the running servers. "
+            + System.lineSeparator()
+            + "Please restart the servers in these groups for the changes to take effect.");
+
+    return true;
   }
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
@@ -170,6 +193,20 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
         return ResultModel.createError("need to specify at least one option to modify.");
       }
       return new ResultModel();
+    }
+  }
+
+  static class GroupQueuePair {
+    public GroupQueuePair(String fst, CacheConfig.AsyncEventQueue snd) {
+      this.fst = fst;
+      this.snd = snd;
+    }
+
+    final String fst;
+    final CacheConfig.AsyncEventQueue snd;
+
+    static GroupQueuePair of(String group, CacheConfig.AsyncEventQueue queue) {
+      return new GroupQueuePair(group, queue);
     }
   }
 }

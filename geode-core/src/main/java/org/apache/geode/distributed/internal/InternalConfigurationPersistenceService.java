@@ -716,6 +716,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return getConfigurationRegion().getAll(keys);
   }
 
+  public Set<String> getGroups() {
+    return getConfigurationRegion().keySet();
+  }
+
   /**
    * Returns the path of Shared configuration directory
    *
@@ -988,4 +992,20 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
   }
 
+  public void replaceCacheConfig(String group, CacheConfig newConfig) {
+    lockSharedConfiguration();
+    try {
+      if (newConfig == null) {
+        return;
+      }
+      Configuration configuration = getConfiguration(group);
+      if (configuration == null) {
+        configuration = new Configuration(group);
+      }
+      configuration.setCacheXmlContent(jaxbService.marshall(newConfig));
+      getConfigurationRegion().put(group, configuration);
+    } finally {
+      unlockSharedConfiguration();
+    }
+  }
 }
