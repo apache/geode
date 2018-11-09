@@ -352,6 +352,18 @@ public class QueryMonitor {
     final AtomicBoolean queryCanceledThreadLocal =
         DefaultQuery.queryCanceled.get();
 
+    /*
+     * This is where the GoF "State" design pattern comes home to roost.
+     *
+     * memoryState.schedule() is going to either schedule or throw an exception depending on what
+     * state we are _currently_ in. Remember the switching of that state (reference) happens
+     * in a separate thread, up in the setLowMemory() method, generally called by the
+     * HeapMemoryMonitor.
+     *
+     * The first line of the lambda/closure, when it _eventually_ runs (in yet another thread--
+     * a thread from the executor), will access what is _then_ the current state, through
+     * memoryState, to createCancelationException().
+     */
     return memoryState.schedule(() -> {
       final CacheRuntimeException exception = memoryState
           .createCancelationException(timeLimitMillis, query);
