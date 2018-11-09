@@ -55,7 +55,7 @@ public class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 95;
+  public static final int HIGHEST_VERSION = 100;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
 
