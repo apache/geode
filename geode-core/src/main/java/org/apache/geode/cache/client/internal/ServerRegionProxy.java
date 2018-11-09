@@ -670,8 +670,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         serverRegionExecutor, resultCollector, Byte.valueOf(hasResult));
 
     int retryAttempts = pool.getRetryAttempts();
+    boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
 
-    if (this.pool.getPRSingleHopEnabled()) {
+    if (this.pool.getPRSingleHopEnabled() && !inTransaction) {
       ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
         if (serverRegionExecutor.getFilter().isEmpty()) {
