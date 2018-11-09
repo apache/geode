@@ -171,8 +171,8 @@ public class MemberFunctionExecutor extends AbstractExecution {
       } else {
         assert dest.size() == 1;
         if (cache.isClient()) {
-          // client function execution on members is not supported with transaction
-          throw new UnsupportedOperationException();
+          throw new UnsupportedOperationException(
+              "Client function execution on members is not supported with transaction");
         }
         DistributedMember funcTarget = (DistributedMember) dest.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
