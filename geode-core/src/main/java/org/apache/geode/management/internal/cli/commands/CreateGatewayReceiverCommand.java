@@ -57,7 +57,8 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
-          help = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART__HELP) Boolean manualStart,
+          help = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART__HELP,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean manualStart,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT,
           help = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT__HELP) Integer startPort,
