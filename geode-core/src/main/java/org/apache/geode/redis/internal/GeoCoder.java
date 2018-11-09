@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.github.davidmoten.geo.GeoHash;
@@ -89,16 +90,18 @@ public class GeoCoder {
         hash = element.getHash().get();
       }
 
-      if (distStr != "" || !coord.isEmpty() || hash != "") {
+      if (!Objects.equals(distStr, "") || !coord.isEmpty() || !Objects.equals(hash, "")) {
         List<Object> elementData = new ArrayList<>();
         elementData.add(name);
-        if (distStr != "")
+        if (!Objects.equals(distStr, "")) {
           elementData.add(distStr);
-        if (!coord.isEmpty())
+        }
+        if (!coord.isEmpty()) {
           elementData.add(coord);
-        if (hash != "")
+        }
+        if (!Objects.equals(hash, "")) {
           elementData.add(hash);
-
+        }
         responseElements.add(elementData);
       } else {
         responseElements.add(name);
@@ -125,14 +128,14 @@ public class GeoCoder {
    * @param hash2 geohash of second point
    * @return distance in meters
    */
-  public static Double geoDist(String hash1, String hash2) {
+  public static double geoDist(String hash1, String hash2) {
     LatLong coord1 = geoPos(hash1);
     LatLong coord2 = geoPos(hash2);
 
-    Double lat1 = Math.toRadians(coord1.getLat());
-    Double long1 = Math.toRadians(coord1.getLon());
-    Double lat2 = Math.toRadians(coord2.getLat());
-    Double long2 = Math.toRadians(coord2.getLon());
+    double lat1 = Math.toRadians(coord1.getLat());
+    double long1 = Math.toRadians(coord1.getLon());
+    double lat2 = Math.toRadians(coord2.getLat());
+    double long2 = Math.toRadians(coord2.getLon());
 
     return dist(long1, lat1, long2, lat2);
   }
@@ -145,8 +148,8 @@ public class GeoCoder {
    * @return geohash as base32
    */
   public static String geohash(byte[] lon, byte[] lat) throws IllegalArgumentException {
-    Double longitude = Coder.bytesToDouble(lon);
-    Double latitude = Coder.bytesToDouble(lat);
+    double longitude = Coder.bytesToDouble(lon);
+    double latitude = Coder.bytesToDouble(lat);
     return GeoHash.encodeHash(latitude, longitude);
   }
 
@@ -184,15 +187,15 @@ public class GeoCoder {
     return new HashArea(minlon, maxlon, minlat, maxlat);
   }
 
-  public static Double dist(Double long1, Double lat1, Double long2, Double lat2) {
-    Double hav =
+  public static double dist(double long1, double lat1, double long2, double lat2) {
+    double hav =
         haversine(lat2 - lat1) + (Math.cos(lat1) * Math.cos(lat2) * haversine(long2 - long1));
-    Double distAngle = Math.acos(1 - (2 * hav));
+    double distAngle = Math.acos(1 - (2 * hav));
 
     return EARTH_RADIUS_IN_METERS * distAngle;
   }
 
-  public static double haversine(Double rad) {
+  public static double haversine(double rad) {
     return 0.5 * (1 - Math.cos(rad));
   }
 
