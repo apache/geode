@@ -104,7 +104,11 @@ public class MemberFunctionExecutor extends AbstractExecution {
           String.format("No member found for executing function : %s.",
               function.getId()));
     }
-    validateExecution(function, dest);
+    try {
+      validateExecution(function, dest);
+    } catch (Exception exception) {
+      throw new FunctionException(exception);
+    }
     setExecutionNodes(dest);
 
     final InternalDistributedMember localVM =
@@ -166,6 +170,10 @@ public class MemberFunctionExecutor extends AbstractExecution {
             "Function inside a transaction cannot execute on more than one node");
       } else {
         assert dest.size() == 1;
+        if (cache.isClient()) {
+          // client function execution on members is not supported with transaction
+          throw new UnsupportedOperationException();
+        }
         DistributedMember funcTarget = (DistributedMember) dest.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {
