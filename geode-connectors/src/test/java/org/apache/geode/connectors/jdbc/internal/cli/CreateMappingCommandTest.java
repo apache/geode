@@ -40,6 +40,7 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionAttributesType.PartitionAttributes;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -311,8 +312,11 @@ public class CreateMappingCommandTest {
 
     assertThat(queueList.size()).isEqualTo(1);
     String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
-    assertThat(queueList.get(0).getId()).isEqualTo(queueName);
-    assertThat(queueList.get(0).isParallel()).isFalse();
+    AsyncEventQueue createdQueue = queueList.get(0);
+    assertThat(createdQueue.getId()).isEqualTo(queueName);
+    assertThat(createdQueue.isParallel()).isFalse();
+    assertThat(createdQueue.getAsyncEventListener().getClassName())
+        .isEqualTo(JdbcAsyncWriter.class.getName());
   }
 
   @Test
