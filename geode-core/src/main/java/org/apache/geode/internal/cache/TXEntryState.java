@@ -160,6 +160,38 @@ public class TXEntryState implements Releasable {
 
   private static final byte OP_PUT = 23;
 
+  static byte getOpCreate() {
+    return OP_CREATE;
+  }
+
+  static byte getOpSearchCreate() {
+    return OP_SEARCH_CREATE;
+  }
+
+  static byte getOpLloadCreate() {
+    return OP_LLOAD_CREATE;
+  }
+
+  static byte getOpNloadCreate() {
+    return OP_NLOAD_CREATE;
+  }
+
+  static byte getOpPut() {
+    return OP_PUT;
+  }
+
+  static byte getOpSearchPut() {
+    return OP_SEARCH_PUT;
+  }
+
+  static byte getOpLloadPut() {
+    return OP_LLOAD_PUT;
+  }
+
+  static byte getOpNloadPut() {
+    return OP_NLOAD_PUT;
+  }
+
   private static final byte OP_SEARCH_PUT = 24;
 
   private static final byte OP_LLOAD_PUT = 25;
@@ -174,6 +206,8 @@ public class TXEntryState implements Releasable {
     Assert.assertTrue(OP_NLOAD_PUT - OP_PUT == OP_NLOAD_CREATE - OP_CREATE,
         "nload offset inconsistent");
   }
+
+
 
   /**
    * System property to be set when read conflicts should be detected. Benefits of read conflict

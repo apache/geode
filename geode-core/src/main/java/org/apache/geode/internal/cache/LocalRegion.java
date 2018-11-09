@@ -6109,11 +6109,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     if (shouldNotifyBridgeClients()) {
-      if (numBS > 0) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: notifying {} cache servers of event: {}", this.getName(), numBS,
-              event);
-        }
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: notifying {} cache servers of event: {}", this.getName(), numBS,
+            event);
       }
 
       Operation op = event.getOperation();

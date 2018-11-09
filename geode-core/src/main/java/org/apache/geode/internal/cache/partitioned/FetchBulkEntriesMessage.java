@@ -562,7 +562,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
                 // null should signal the end of the set of keys
                 boolean bucketHasMore = DataSerializer.readPrimitiveBoolean(in);
                 synchronized (this.returnValue) {
-                  if (!bucketHasMore && currentId != -1) {
+                  if (!bucketHasMore) {
                     this.receivedBuckets.add(currentId);
                   }
                 }
