@@ -28,6 +28,7 @@ import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
@@ -83,9 +84,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
     CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(null);
 
-    RegionConfig regionConfig = cacheConfig.getRegions().stream()
-        .filter(region -> region.getName().equals(mapping.getRegionName())).findFirst()
-        .orElse(null);
+    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
       return ResultModel
           .createError("A region named " + regionName + " must already exist.");
@@ -133,18 +132,70 @@ public class CreateMappingCommand extends SingleGfshCommand {
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
     RegionMapping newCacheElement = (RegionMapping) element;
-    RegionConfig regionConfig = cacheConfig.getRegions().stream()
-        .filter(region -> region.getName().equals(newCacheElement.getRegionName())).findFirst()
-        .orElse(null);
-    if (regionConfig != null) {
-      regionConfig.getCustomRegionElements().add(newCacheElement);
+    String regionName = newCacheElement.getRegionName();
+    String queueName = getAsyncEventQueueName(regionName);
+    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
+    if (regionConfig == null) {
+      return;
     }
+    RegionAttributesType attributes = getRegionAttributes(regionConfig);
+    addMappingToRegion(newCacheElement, regionConfig);
+    createAsyncQueue(cacheConfig, attributes, queueName);
+    alterRegion(queueName, attributes);
+  }
+
+  private void alterRegion(String queueName, RegionAttributesType attributes) {
+    setCacheLoader(attributes);
+    addAsyncEventQueueId(queueName, attributes);
+  }
+
+  private void addMappingToRegion(RegionMapping newCacheElement, RegionConfig regionConfig) {
+    regionConfig.getCustomRegionElements().add(newCacheElement);
+  }
+
+  private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {
+    return cacheConfig.getRegions().stream()
+        .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
+  }
+
+  private void createAsyncQueue(CacheConfig cacheConfig, RegionAttributesType attributes,
+      String queueName) {
     AsyncEventQueue asyncEventQueue = new AsyncEventQueue();
-    asyncEventQueue.setId(getAsyncEventQueueName(newCacheElement.getRegionName()));
-    boolean isPartitioned = regionConfig.getRegionAttributes().stream()
-        .anyMatch(attributes -> attributes.getPartitionAttributes() != null);
+    asyncEventQueue.setId(queueName);
+    boolean isPartitioned = attributes.getPartitionAttributes() != null;
     asyncEventQueue.setParallel(isPartitioned);
     cacheConfig.getAsyncEventQueues().add(asyncEventQueue);
-    // TODO alter region config
+  }
+
+  private void addAsyncEventQueueId(String queueName, RegionAttributesType attributes) {
+    String asyncEventQueueList = attributes.getAsyncEventQueueIds();
+    if (asyncEventQueueList == null) {
+      asyncEventQueueList = "";
+    }
+    if (!asyncEventQueueList.contains(queueName)) {
+      if (asyncEventQueueList.length() > 0) {
+        asyncEventQueueList += ',';
+      }
+      asyncEventQueueList += queueName;
+      attributes.setAsyncEventQueueIds(asyncEventQueueList);
+    }
+  }
+
+  private void setCacheLoader(RegionAttributesType attributes) {
+    DeclarableType loader = new DeclarableType();
+    loader.setClassName(JdbcLoader.class.getName());
+    attributes.setCacheLoader(loader);
+  }
+
+  private RegionAttributesType getRegionAttributes(RegionConfig regionConfig) {
+    RegionAttributesType attributes;
+    List<RegionAttributesType> attributesList = regionConfig.getRegionAttributes();
+    if (attributesList.isEmpty()) {
+      attributes = new RegionAttributesType();
+      attributesList.add(attributes);
+    } else {
+      attributes = attributesList.get(0);
+    }
+    return attributes;
   }
 }

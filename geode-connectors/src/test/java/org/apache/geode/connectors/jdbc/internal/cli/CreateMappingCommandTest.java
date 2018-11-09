@@ -18,7 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -29,12 +31,14 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
+import org.apache.geode.cache.configuration.RegionAttributesType.PartitionAttributes;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -61,6 +65,7 @@ public class CreateMappingCommandTest {
   private RegionMapping mapping;
   private CacheConfig cacheConfig;
   RegionConfig matchingRegion;
+  RegionAttributesType matchingRegionAttributes;
 
   @Before
   public void setup() {
@@ -90,6 +95,10 @@ public class CreateMappingCommandTest {
 
     matchingRegion = mock(RegionConfig.class);
     when(matchingRegion.getName()).thenReturn(regionName);
+    List<RegionAttributesType> attributesList = new ArrayList<>();
+    matchingRegionAttributes = mock(RegionAttributesType.class);
+    attributesList.add(matchingRegionAttributes);
+    when(matchingRegion.getRegionAttributes()).thenReturn(attributesList);
 
   }
 
@@ -253,14 +262,14 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void testUpdateClusterConfigWithNoRegions() {
+  public void updateClusterConfigWithNoRegionsDoesNotThrowException() {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
     createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
   }
 
   @Test
-  public void testUpdateClusterConfigWithOneMatchingRegion() {
+  public void updateClusterConfigWithOneMatchingRegionAddsMappingToRegion() {
     List<RegionConfig> list = new ArrayList<>();
     List<CacheElement> listCacheElements = new ArrayList<>();
     when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
@@ -274,7 +283,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void testUpdateClusterConfigWithOneNonMatchingRegion() {
+  public void updateClusterConfigWithOneNonMatchingRegionDoesNotAddMapping() {
     List<RegionConfig> list = new ArrayList<>();
     RegionConfig nonMatchingRegion = mock(RegionConfig.class);
     when(nonMatchingRegion.getName()).thenReturn("nonMatchingRegion");
@@ -288,4 +297,128 @@ public class CreateMappingCommandTest {
     assertThat(listCacheElements).isEmpty();
   }
 
+  @Test
+  public void updateClusterConfigWithOneMatchingRegionCreatesAsyncEventQueue() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    assertThat(queueList.size()).isEqualTo(1);
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    assertThat(queueList.get(0).getId()).isEqualTo(queueName);
+    assertThat(queueList.get(0).isParallel()).isFalse();
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingPartitionedRegionCreatesParallelAsyncEventQueue() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    when(matchingRegionAttributes.getPartitionAttributes())
+        .thenReturn(mock(PartitionAttributes.class));
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    assertThat(queueList.get(0).isParallel()).isTrue();
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingRegionCallsSetCacheLoader() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    verify(matchingRegionAttributes).setCacheLoader(any());
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingRegionAndNullQueuesAddsAsyncEventQueueIdToRegion() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(null);
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+    verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    assertThat(argument.getValue()).isEqualTo(queueName);
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingRegionAndEmptyQueuesAddsAsyncEventQueueIdToRegion() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("");
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+    verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    assertThat(argument.getValue()).isEqualTo(queueName);
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingRegionAndExistingQueuesAddsAsyncEventQueueIdToRegion() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("q1,q2");
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+    verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    assertThat(argument.getValue()).isEqualTo("q1,q2," + queueName);
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingRegionAndQueuesContainingDuplicateDoesNotModifyAsyncEventQueueIdOnRegion() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    String existingQueues = "q1," + queueName + ",q2";
+    when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(existingQueues);
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+
+    verify(matchingRegionAttributes, never()).setAsyncEventQueueIds(any());
+  }
 }
