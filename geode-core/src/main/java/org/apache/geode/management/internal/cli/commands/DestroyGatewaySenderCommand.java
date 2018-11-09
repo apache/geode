@@ -71,7 +71,9 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object id) {
+  public boolean updateClusterConfig(String group, CacheConfig config, Object id,
+      ResultModel resultModel) {
     config.getGatewaySenders().removeIf((sender) -> sender.getId().equals(id));
+    return true;
   }
 }

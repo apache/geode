@@ -180,8 +180,10 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+  public boolean updateClusterConfig(String group, CacheConfig config, Object element,
+      ResultModel resultModel) {
     config.getJndiBindings().add((JndiBindingsType.JndiBinding) element);
+    return true;
   }
 
   public enum DATASOURCE_TYPE {
