@@ -26,10 +26,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -66,7 +67,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createsMappingWithAllOptions() {
+  public void createMappingUpdatesServiceAndClusterConfig() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
@@ -75,36 +76,42 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
-          .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:mapping");
-    });
-
     server.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      RegionMapping mapping =
-          cache.getService(JdbcConnectorService.class).getMappingForRegion(REGION_NAME);
+      RegionMapping mapping = getRegionMappingFromService();
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
     });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
+      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+    });
   }
 
   @Test
-  public void createsRegionMappingUpdatesClusterConfig() {
+  public void createMappingWithNoTable() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
+    server.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService();
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+    });
+
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
-          .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:mapping");
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(regionMapping.getTableName()).isNull();
+      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
     });
   }
 
@@ -119,18 +126,39 @@ public class CreateMappingCommandDUnitTest {
 
     csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogus");
-    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "bogusConnection");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "bogusPdxClass");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogusTable");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("A jdbc-mapping for " + REGION_NAME + " already exists");
+
+    server.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService();
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+    });
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
-          .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:mapping").contains("myTable")
-          .contains("myPdxClass")
-          .doesNotContain("bogus");
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
+      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
     });
+  }
+
+  private static RegionMapping getRegionMappingFromClusterConfig() {
+    CacheConfig cacheConfig =
+        InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
+    RegionConfig regionConfig = cacheConfig.getRegions().stream()
+        .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
+    return (RegionMapping) regionConfig.getCustomRegionElements().stream()
+        .filter(element -> element instanceof RegionMapping).findFirst().orElse(null);
+  }
+
+  private static RegionMapping getRegionMappingFromService() {
+    return ClusterStartupRule.getCache().getService(JdbcConnectorService.class)
+        .getMappingForRegion(REGION_NAME);
   }
 
   @Test
