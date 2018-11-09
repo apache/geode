@@ -12,27 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor;
 
+package org.apache.geode.redis.internal;
+
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+public class HashNeighbors {
+  public String center;
+  public String west;
+  public String east;
+  public String north;
+  public String south;
+  public String northwest;
+  public String northeast;
+  public String southwest;
+  public String southeast;
 
-public class EchoExecutor extends AbstractExecutor {
-
-  @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ECHO));
-      return;
-    }
-
-    byte[] echoMessage = commandElems.get(1);
-    respondBulkStrings(command, context, echoMessage);
+  public List<String> get() {
+    return Arrays
+        .asList(center, west, east, north, south, northwest, northeast, southwest, southeast)
+        .stream()
+        .filter(n -> n != null)
+        .distinct()
+        .collect(Collectors.toList());
   }
-
 }

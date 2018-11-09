@@ -56,7 +56,6 @@ public class MSetExecutor extends StringExecutor {
     r.putAll(map);
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
-
   }
 
 }

@@ -31,7 +31,8 @@ public class RedisConstants {
    */
   static final String PARSING_EXCEPTION_MESSAGE =
       "The command received by GeodeRedisServer was improperly formatted";
-  static final String SERVER_ERROR_MESSAGE = "The server had an internal error please try again";
+  public static final String SERVER_ERROR_MESSAGE =
+      "The server had an internal error please try again";
   static final String SERVER_ERROR_UNKNOWN_RESPONSE = "Unkown response";
   static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
   static final String ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION =
@@ -39,7 +40,10 @@ public class RedisConstants {
   static final String ERROR_TRANSACTION_EXCEPTION =
       "This transcation cannot be initiated, make sure the command is executed against a replicate region or your data is collocated. If you are using persistent regions, make sure transactions are enabled";
   public static final String ERROR_NOT_NUMERIC = "Illegal non numeric argument";
-  public static final String ERROR_UNKOWN_COMMAND = "Unable to process uknown command";
+  public static final String ERROR_INVALID_ARGUMENT_UNIT_NUM =
+      "Either illegal non numeric argument or invalid unit" +
+          "(please use either km/m/ft/mi)";
+  public static final String ERROR_UNKOWN_COMMAND = "Unable to process unknown command";
   public static final String ERROR_COMMIT_CONFLICT =
       "There has been a conflict with another transaction";
   public static final String ERROR_REGION_CREATION =
@@ -50,6 +54,7 @@ public class RedisConstants {
       "Keys cannot be watched or unwatched because GemFire watches all keys by default for transactions";
   public static final String ERROR_ILLEGAL_GLOB = "Incorrect syntax for given glob regex";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
+  public static final String ERROR_INVALID_LATLONG = "Invalid longitude-latitude pair";
   public static final String ERROR_NESTED_MULTI = "The MULTI command cannot be nested";
   public static final String ERROR_NAN_INF_INCR = "increment would produce NaN or Infinity";
   public static final String ERROR_NO_PASS =
@@ -57,6 +62,7 @@ public class RedisConstants {
   public static final String ERROR_INVALID_PWD =
       "Attemping to authenticate with an invalid password";
   public static final String ERROR_NOT_AUTH = "Must authenticate before sending any requests";
+  public static final String ERROR_ZSET_MEMBER_NOT_FOUND = "could not decode requested zset member";
 
   public static class ArityDef {
 
@@ -244,6 +250,22 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
     public static final String ZSCORE =
         "The wrong number of arguments or syntax was provided, the format for the ZSCORE command is \"ZSCORE key member\"";
+
+    /*
+     * Geospatial
+     */
+    public static final String GEOADD =
+        "The wrong number of arguments or syntax was provided, the format for the GEOADD command is \"GEOADD key longitude latitude member [longitude latitude member ...]\", or not every latitude/longitude pair matches to a member";
+    public static final String GEOHASH =
+        "The wrong number of arguments or syntax was provided, the format for the GEOHASH command is \"GEOHASH key member [member...]\"";
+    public static final String GEOPOS =
+        "The wrong number of arguments or syntax was provided, the format for the GEOPOS command is \"GEOPOS key member [member...]\"";
+    public static final String GEODIST =
+        "The wrong number of arguments or syntax was provided, the format for the GEODIST command is \"GEODIST key member member [unit]\"";
+    public static final String GEORADIUS =
+        "The wrong number of arguments or syntax was provided, the format for the GEORADIUS command is \"GEORADIUS key longitude latitude radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
+    public static final String GEORADIUSBYMEMBER =
+        "The wrong number of arguments or syntax was provided, the format for the GEORADIUSBYMEMBER command is \"GEORADIUSBYMEMBER key member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
 
     /*
      * String

@@ -66,8 +66,7 @@ public class SRandMemberExecutor extends SetExecutor {
     int members = keyRegion.size();
 
     if (members <= count && count != 1) {
-      command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(),
-          new HashSet<ByteArrayWrapper>(keyRegion.keySet())));
+      respondBulkStrings(command, context, new HashSet<ByteArrayWrapper>(keyRegion.keySet()));
       return;
     }
 
@@ -77,16 +76,14 @@ public class SRandMemberExecutor extends SetExecutor {
 
     if (count == 1) {
       ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), randEntry.toBytes()));
+      respondBulkStrings(command, context, randEntry);
     } else if (count > 0) {
       Set<ByteArrayWrapper> randEntries = new HashSet<ByteArrayWrapper>();
       do {
         ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
         randEntries.add(s);
       } while (randEntries.size() < count);
-      command.setResponse(
-          Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), randEntries));
+      respondBulkStrings(command, context, randEntries);
     } else {
       count = -count;
       List<ByteArrayWrapper> randEntries = new ArrayList<ByteArrayWrapper>();
@@ -94,8 +91,7 @@ public class SRandMemberExecutor extends SetExecutor {
         ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
         randEntries.add(s);
       }
-      command.setResponse(
-          Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), randEntries));
+      respondBulkStrings(command, context, randEntries);
     }
   }
 }
