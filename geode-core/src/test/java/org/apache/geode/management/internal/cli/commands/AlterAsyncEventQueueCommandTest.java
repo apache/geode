@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -92,8 +91,6 @@ public class AlterAsyncEventQueueCommandTest {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test --batch-size=100")
         .statusIsError().containsOutput("Can not find an async event queue");
 
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   @Test
@@ -102,8 +99,6 @@ public class AlterAsyncEventQueueCommandTest {
         "alter async-event-queue --id=test --batch-size=100 --if-exists").statusIsSuccess()
         .containsOutput("Skipping: Can not find an async event queue with id");
 
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   @Test
@@ -122,8 +117,6 @@ public class AlterAsyncEventQueueCommandTest {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue")
         .statusIsError().containsOutput("Can not find an async event queue");
 
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   @Test
@@ -147,9 +140,6 @@ public class AlterAsyncEventQueueCommandTest {
     assertThat(element.getAttribute(BATCH_SIZE)).isEqualTo("100");
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
     assertThat(element.getAttribute(MAX_QUEUE_MEMORY)).isEqualTo("");
-
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   @Test
@@ -168,8 +158,6 @@ public class AlterAsyncEventQueueCommandTest {
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("100");
     assertThat(element.getAttribute(MAX_QUEUE_MEMORY)).isEqualTo("");
 
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   @Test
@@ -187,8 +175,6 @@ public class AlterAsyncEventQueueCommandTest {
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
     assertThat(element.getAttribute(MAXIMUM_QUEUE_MEMORY)).isEqualTo("100");
 
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   @Test
@@ -217,8 +203,6 @@ public class AlterAsyncEventQueueCommandTest {
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
     assertThat(element.getAttribute(MAX_QUEUE_MEMORY)).isEqualTo("");
 
-    verify(service).lockSharedConfiguration();
-    verify(service).unlockSharedConfiguration();
   }
 
   private Element findAsyncEventQueueElement(String xml, int index) throws Exception {

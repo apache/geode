@@ -22,6 +22,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_HELP;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -33,10 +34,12 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -77,7 +80,20 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
       @CliOption(key = MAX_QUEUE_MEMORY, help = MAXIMUM_QUEUE_MEMORY_HELP) Integer maxQueueMemory,
       @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean ifExists)
-      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+      throws IOException, SAXException, ParserConfigurationException, TransformerException,
+      EntityNotFoundException {
+
+    // need not check if any running servers has this async-event-queue. A server with this queue id
+    // may be shutdown, but we still need to update Cluster Configuration.
+    if (getConfigurationPersistenceService() == null) {
+      return ResultModel.createError("Cluster Configuration Service is not available. "
+          + "Please connect to a locator with running Cluster Configuration Service.");
+    }
+
+    if (findAEQ(id) == null) {
+      String message = String.format("Can not find an async event queue with id '%s'.", id);
+      throw new EntityNotFoundException(message, ifExists);
+    }
 
     CacheConfig.AsyncEventQueue aeqConfiguration = new CacheConfig.AsyncEventQueue();
     aeqConfiguration.setId(id);
@@ -92,12 +108,6 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
       aeqConfiguration.setMaximumQueueMemory(maxQueueMemory + "");
     }
 
-    // need not check if any running servers has this async-event-queue. A server with this queue id
-    // may be shutdown, but we still need to update Cluster Configuration.
-    if (getConfigurationPersistenceService() == null) {
-      return ResultModel.createError("Cluster Configuration Service is not available. "
-          + "Please connect to a locator with running Cluster Configuration Service.");
-    }
 
     ResultModel result = new ResultModel();
     TabularResultModel tableData = result.addTable(GROUP_STATUS_SECTION);
@@ -107,14 +117,34 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
     return result;
   }
 
+  CacheConfig.AsyncEventQueue findAEQ(String aeqId) {
+    CacheConfig.AsyncEventQueue queue = null;
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) this.getConfigurationPersistenceService();
+    if (ccService == null) {
+      return null;
+    }
+
+    Set<String> groups = ccService.getGroups();
+    for (String group : groups) {
+      queue =
+          CacheElement.findElement(ccService.getCacheConfig(group).getAsyncEventQueues(), aeqId);
+      if (queue != null) {
+        return queue;
+      }
+    }
+    return queue;
+  }
+
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
+      ResultModel result) {
     CacheConfig.AsyncEventQueue aeqConfiguration = (CacheConfig.AsyncEventQueue) configObject;
     CacheConfig.AsyncEventQueue queue =
         CacheElement.findElement(config.getAsyncEventQueues(), aeqConfiguration.getId());
 
     if (queue == null) {
-      return;
+      return false;
     }
 
     if (StringUtils.isNotBlank(aeqConfiguration.getBatchSize())) {
@@ -128,6 +158,8 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
     if (StringUtils.isNotBlank(aeqConfiguration.getMaximumQueueMemory())) {
       queue.setMaximumQueueMemory(aeqConfiguration.getMaximumQueueMemory());
     }
+
+    return true;
 
     // // need not check if any running servers has this async-event-queue. A server with this queue
     // id

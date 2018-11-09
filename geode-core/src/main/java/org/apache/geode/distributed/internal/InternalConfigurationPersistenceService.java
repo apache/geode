@@ -716,6 +716,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return getConfigurationRegion().getAll(keys);
   }
 
+  public Set<String> getGroups() {
+    return getConfigurationRegion().keySet();
+  }
+
   /**
    * Returns the path of Shared configuration directory
    *
