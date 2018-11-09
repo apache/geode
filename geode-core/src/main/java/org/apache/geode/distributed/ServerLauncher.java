@@ -332,22 +332,22 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets a reference to the Cache that was created when the GemFire Server was started.
+   * Gets a reference to the {@code Cache} that was created by this {@code ServerLauncher}.
    *
-   * @return a reference to the Cache created by the GemFire Server start operation.
-   * @see org.apache.geode.cache.Cache
+   * @return a reference to the Cache
+   * @see Cache
    */
-  Cache getCache() {
-    if (this.cache != null) {
-      boolean isReconnecting = this.cache.isReconnecting();
+  public Cache getCache() {
+    if (cache != null) {
+      boolean isReconnecting = cache.isReconnecting();
       if (isReconnecting) {
-        Cache newCache = this.cache.getReconnectedCache();
+        Cache newCache = cache.getReconnectedCache();
         if (newCache != null) {
-          this.cache = newCache;
+          cache = newCache;
         }
       }
     }
-    return this.cache;
+    return cache;
   }
 
   /**
@@ -847,7 +847,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
   }
 
-  private Cache createCache(Properties gemfireProperties) {
+  Cache createCache(Properties gemfireProperties) {
     ServiceLoader<ServerLauncherCacheProvider> loader =
         ServiceLoader.load(ServerLauncherCacheProvider.class);
     for (ServerLauncherCacheProvider provider : loader) {
