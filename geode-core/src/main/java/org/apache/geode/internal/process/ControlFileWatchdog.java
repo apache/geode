@@ -59,6 +59,7 @@ class ControlFileWatchdog implements Runnable {
   @Override
   public void run() {
     try { // always set alive before stopping
+      deleteExistingStatusResponseFile();
       while (isAlive()) {
         doWork();
       }
@@ -66,6 +67,12 @@ class ControlFileWatchdog implements Runnable {
       synchronized (this) {
         alive = false;
       }
+    }
+  }
+
+  private void deleteExistingStatusResponseFile() throws IllegalStateException {
+    if (!file.delete() && file.exists()) {
+      throw new IllegalStateException("Unable delete file: " + file);
     }
   }
 
