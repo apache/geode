@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -27,6 +29,7 @@ import org.junit.Test;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -66,13 +69,16 @@ public class QueryMonitorIntegrationTest {
 
     try {
       queryMonitor = new QueryMonitor(
-          () -> scheduledThreadPoolExecutor,
+          scheduledThreadPoolExecutor,
           cache,
           NEVER_EXPIRE_MILLIS);
 
       queryMonitor.monitorQueryThread(query);
 
       queryMonitor.setLowMemory(true, 1);
+
+      verify(query, times(1))
+          .setQueryCanceledException(any(QueryExecutionLowMemoryException.class));
 
       assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled,
           "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.",
@@ -95,7 +101,7 @@ public class QueryMonitorIntegrationTest {
   public void monitorQueryThreadCancelsLongRunningQueriesAndSetsExceptionAndThrowsException() {
 
     QueryMonitor queryMonitor = new QueryMonitor(
-        () -> new ScheduledThreadPoolExecutor(1),
+        new ScheduledThreadPoolExecutor(1),
         cache,
         EXPIRE_QUICK_MILLIS);
 

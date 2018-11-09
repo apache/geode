@@ -4468,7 +4468,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
 
           this.queryMonitor =
-              new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
+              new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
                   QUERY_MONITOR_THREAD_POOL_SIZE,
                   (runnable) -> new LoggingThread("QueryMonitor Thread", runnable)),
                   this,
