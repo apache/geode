@@ -1190,7 +1190,7 @@ lib/commons-codec-1.10.jar
 lib/commons-collections-3.2.2.jar
 lib/commons-digester-2.1.jar
 lib/commons-io-2.6.jar
-lib/commons-lang-2.6.jar
+lib/commons-lang3-3.8.1.jar
 lib/commons-logging-1.2.jar
 lib/commons-math3-3.2.jar
 lib/commons-modeler-2.0.1.jar
