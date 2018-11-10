@@ -470,7 +470,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
       getBlackboard().signalGate("TombstoneGCDone");
     });
 
-    vm0createRegion.join();
+    vm0createRegion.await();
 
     vm1.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
@@ -482,6 +482,10 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       assertThat(region.get("KEY-1")).isEqualTo(null);
       assertThat(region.get("KEY-2")).isEqualTo("VALUE-4");
+
+      CachePerfStats stats = ((LocalRegion) region).getRegionPerfStats();
+      assertThat(stats.getDeltaGetInitialImagesCompleted()).isEqualTo(0);
+      assertThat(stats.getGetInitialImagesCompleted()).isEqualTo(1);
     });
   }
 
