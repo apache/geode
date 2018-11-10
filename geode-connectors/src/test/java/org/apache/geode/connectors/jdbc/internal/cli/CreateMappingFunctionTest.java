@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.AttributesMutator;
-import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -59,6 +59,7 @@ public class CreateMappingFunctionTest {
   private JdbcConnectorService service;
   private InternalCache cache;
   private Region region;
+  private RegionAttributes attributes;
   private AsyncEventQueueFactory asyncEventQueueFactory;
 
   private CreateMappingFunction function;
@@ -82,7 +83,9 @@ public class CreateMappingFunctionTest {
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(regionMapping);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
-    when(region.getAttributes()).thenReturn(mock(RegionAttributes.class));
+    attributes = mock(RegionAttributes.class);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(region.getAttributes()).thenReturn(attributes);
     when(region.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
     asyncEventQueueFactory = mock(AsyncEventQueueFactory.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(asyncEventQueueFactory);
@@ -167,8 +170,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeCreatesSerialAsyncQueueForNonPartitionedRegion() throws Exception {
-    RegionAttributes attributes = region.getAttributes();
-    when(attributes.getPartitionAttributes()).thenReturn(null);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     function.executeFunction(context);
 
     verify(asyncEventQueueFactory, times(1)).create(any(), any());
@@ -177,8 +179,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeCreatesParallelAsyncQueueForPartitionedRegion() throws Exception {
-    RegionAttributes attributes = region.getAttributes();
-    when(attributes.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     function.executeFunction(context);
 
     verify(asyncEventQueueFactory, times(1)).create(any(), any());

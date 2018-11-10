@@ -37,8 +37,8 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
-import org.apache.geode.cache.configuration.RegionAttributesType.PartitionAttributes;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -98,6 +98,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getName()).thenReturn(regionName);
     List<RegionAttributesType> attributesList = new ArrayList<>();
     matchingRegionAttributes = mock(RegionAttributesType.class);
+    when(matchingRegionAttributes.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
     attributesList.add(matchingRegionAttributes);
     when(matchingRegion.getRegionAttributes()).thenReturn(attributesList);
 
@@ -328,8 +329,8 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(list);
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
-    when(matchingRegionAttributes.getPartitionAttributes())
-        .thenReturn(mock(PartitionAttributes.class));
+    when(matchingRegionAttributes.getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.PARTITION);
 
     createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
 
