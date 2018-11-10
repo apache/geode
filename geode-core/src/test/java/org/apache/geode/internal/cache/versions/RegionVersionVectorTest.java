@@ -680,7 +680,7 @@ public class RegionVersionVectorTest {
         new VMRegionVersionVector(lostMember, memberToRegionVersionHolder,
             0, null, 0, true, null);
 
-    assertThat(providerRvv.isRvvGcDominatedByRequesterRvv(requesterRvv)).isTrue();
+    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isTrue();
   }
 
   @Test
@@ -702,7 +702,7 @@ public class RegionVersionVectorTest {
         new VMRegionVersionVector(lostMember, memberToRegionVersionHolder,
             0, null, 0, true, null);
 
-    assertThat(providerRvv.isRvvGcDominatedByRequesterRvv(requesterRvv)).isFalse();
+    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isFalse();
   }
 
   @Test
@@ -724,7 +724,7 @@ public class RegionVersionVectorTest {
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
             0, null, 0, false, null);
 
-    assertThat(providerRvv.isRvvGcDominatedByRequesterRvv(requesterRvv)).isFalse();
+    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isFalse();
   }
 
   @Test
@@ -748,7 +748,7 @@ public class RegionVersionVectorTest {
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
             0, null, 0, false, null);
 
-    assertThat(providerRvv.isRvvGcDominatedByRequesterRvv(requesterRvv)).isTrue();
+    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isTrue();
   }
 
   @Test
@@ -771,7 +771,7 @@ public class RegionVersionVectorTest {
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
             2, null, 0, false, regionVersionHolder);
 
-    assertThat(providerRvv.isRvvGcDominatedByRequesterRvv(requesterRvv)).isTrue();
+    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isTrue();
   }
 
   @Test
@@ -797,7 +797,7 @@ public class RegionVersionVectorTest {
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
             2, null, 0, false, regionVersionHolder);
 
-    assertThat(providerRvv.isRvvGcDominatedByRequesterRvv(requesterRvv)).isFalse();
+    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isFalse();
   }
 
   private RegionVersionVector createRegionVersionVector(InternalDistributedMember ownerId,

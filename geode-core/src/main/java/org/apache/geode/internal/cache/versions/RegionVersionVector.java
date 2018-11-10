@@ -990,7 +990,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * See if this vector's rvvgc has updates that has not seen.
    */
-  public synchronized boolean isRvvGcDominatedByRequesterRvv(RegionVersionVector<T> requesterRVV) {
+  public synchronized boolean isRVVGCDominatedBy(RegionVersionVector<T> requesterRVV) {
     if (requesterRVV.singleMember) {
       // do the diff for only a single member. This is typically a member that
       // recently crashed.
