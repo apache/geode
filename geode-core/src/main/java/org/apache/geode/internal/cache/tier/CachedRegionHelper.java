@@ -31,7 +31,7 @@ public class CachedRegionHelper {
   private volatile boolean shutdown = false;
 
   public CachedRegionHelper(InternalCache cache) {
-    this.cache = cache;
+    this.cache = cache.getCacheForProcessingClientRequests();
   }
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
