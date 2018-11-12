@@ -148,7 +148,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
     ResultModel result =
         ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
-    result.setConfigObject(mapping);
+    result.setConfigObject(arguments);
     return result;
   }
 
