@@ -127,12 +127,15 @@ public class CreateMappingCommandTest {
         tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-    RegionMapping regionMapping = (RegionMapping) result.getConfigObject();
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    boolean synchronous = (boolean) results[1];
     assertThat(regionMapping).isNotNull();
     assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
     assertThat(regionMapping.getDataSourceName()).isEqualTo(dataSourceName);
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
+    assertThat(synchronous).isFalse();
   }
 
   @Test
