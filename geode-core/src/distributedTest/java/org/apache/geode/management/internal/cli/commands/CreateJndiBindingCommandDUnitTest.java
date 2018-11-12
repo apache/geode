@@ -73,10 +73,10 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // verify cluster config is updated
     locator.invoke(() -> {
-      InternalLocator locator = ClusterStartupRule.getLocator();
-      assertThat(locator).isNotNull();
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
+      assertThat(internalLocator).isNotNull();
       InternalConfigurationPersistenceService ccService =
-          locator.getConfigurationPersistenceService();
+          internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
       String xmlContent = configuration.getCacheXmlContent();
 

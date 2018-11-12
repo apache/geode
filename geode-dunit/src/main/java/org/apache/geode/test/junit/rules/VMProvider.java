@@ -30,8 +30,10 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 public abstract class VMProvider {
 
   public static void invokeInEveryMember(SerializableRunnableIF runnableIF, VMProvider... members) {
-    if (ArrayUtils.isEmpty(members))
+    if (ArrayUtils.isEmpty(members)) {
       throw new IllegalArgumentException("Array of members must not be null nor empty.");
+    }
+
     Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
   }
 
