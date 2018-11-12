@@ -14,8 +14,8 @@
  */
 package org.apache.geode.test.compiler;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 public class UncompiledSourceCode {
   public String simpleClassName;

@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Streams;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 

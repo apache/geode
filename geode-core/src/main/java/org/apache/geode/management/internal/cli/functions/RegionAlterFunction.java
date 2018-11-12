@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;

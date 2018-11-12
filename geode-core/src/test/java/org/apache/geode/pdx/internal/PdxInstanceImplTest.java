@@ -14,7 +14,7 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static org.apache.commons.lang.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.geode.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

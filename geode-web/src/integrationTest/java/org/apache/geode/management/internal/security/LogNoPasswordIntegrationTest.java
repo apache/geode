@@ -22,7 +22,7 @@ import java.io.File;
 import java.util.Properties;
 import java.util.Scanner;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

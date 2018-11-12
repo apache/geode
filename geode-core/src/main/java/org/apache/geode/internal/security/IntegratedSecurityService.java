@@ -20,8 +20,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.SerializationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;

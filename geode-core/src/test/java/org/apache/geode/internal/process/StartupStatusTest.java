@@ -108,7 +108,7 @@ public class StartupStatusTest {
     Object[] params = new Object[0];
 
     // act/assert
-    assertThatThrownBy(() -> startup(stringId, params)).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> startup(stringId, params)).isInstanceOf(NullPointerException.class)
         .hasMessage("Invalid msgId 'null' specified");
   }
 

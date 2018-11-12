@@ -28,7 +28,7 @@ dependencies {
   }
 
   compile('org.apache.lucene:lucene-core:' + project.'lucene.version')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('mx4j:mx4j:' + project.'mx4j.version')
   compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
   testCompile('com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version')

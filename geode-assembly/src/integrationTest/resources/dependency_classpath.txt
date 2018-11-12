@@ -6,7 +6,7 @@ commons-beanutils-1.9.3.jar
 commons-codec-1.10.jar
 commons-collections-3.2.2.jar
 commons-io-2.6.jar
-commons-lang-2.6.jar
+commons-lang3-3.8.1.jar
 commons-logging-1.2.jar
 commons-validator-1.6.jar
 fastutil-8.2.1.jar

@@ -16,7 +16,7 @@ package org.apache.geode.test.compiler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
 
 
