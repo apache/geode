@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -55,7 +56,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * Commands for the cluster configuration
  */
 @SuppressWarnings("unused")
-public class ExportClusterConfigurationCommand extends InternalGfshCommand {
+public class ExportClusterConfigurationCommand extends SingleGfshCommand {
   private static Logger logger = LogService.getLogger();
   public static final String XML_FILE = "xml-file";
 
@@ -79,14 +80,15 @@ public class ExportClusterConfigurationCommand extends InternalGfshCommand {
     }
 
     ResultModel result = new ResultModel();
+    InternalConfigurationPersistenceService configPersistenceService =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (zipFileName != null) {
       Path tempDir = Files.createTempDirectory("temp");
       Path exportedDir = tempDir.resolve("cluster_config");
       Path zipFile = tempDir.resolve(FilenameUtils.getName(zipFileName));
-      InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
       try {
-        for (Configuration config : sc.getEntireConfiguration().values()) {
-          sc.writeConfigToFile(config, exportedDir.toFile());
+        for (Configuration config : configPersistenceService.getEntireConfiguration().values()) {
+          configPersistenceService.writeConfigToFile(config, exportedDir.toFile());
         }
         ZipUtils.zipDirectory(exportedDir, zipFile);
         result.addFile(zipFile.toFile(), FileResultModel.FILE_TYPE_BINARY);
@@ -96,7 +98,7 @@ public class ExportClusterConfigurationCommand extends InternalGfshCommand {
         FileUtils.deleteQuietly(tempDir.toFile());
       }
     } else {
-      Configuration configuration = getConfigurationPersistenceService().getConfiguration(group);
+      Configuration configuration = configPersistenceService.getConfiguration(group);
       if (configuration == null) {
         return ResultModel.createError("No cluster configuration for '" + group + "'.");
       }
