@@ -101,7 +101,7 @@ public class TcpServer {
   // GossipServer.
   public static final int OLDGOSSIPVERSION = 1001;
 
-  private static final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
+  private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap<>();
 
   // For test purpose only
   public static boolean isTesting = false;
@@ -558,7 +558,7 @@ public class TcpServer {
     return TcpServer.isTesting ? TcpServer.OLDTESTVERSION : TcpServer.OLDGOSSIPVERSION;
   }
 
-  public static Map getGossipVersionMapForTestOnly() {
+  public static Map<Integer, Short> getGossipVersionMapForTestOnly() {
     return GOSSIP_TO_GEMFIRE_VERSION_MAP;
   }
 

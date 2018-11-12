@@ -16,10 +16,11 @@ package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Properties;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,9 +53,9 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
       Properties props = getBasicProperties(locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
       system = getConnectedDistributedSystem(props);
-
+      fail("Should not have reached this line, it should have caught the exception.");
     } catch (GemFireConfigException gce) {
-      Assert.assertTrue(gce.getMessage().contains("Rejecting findCoordinatorRequest"));
+      assertThat(gce.getMessage()).contains("Rejecting findCoordinatorRequest");
     } finally {
       vm.invoke(LocatorDUnitTest::stopLocator);
     }
