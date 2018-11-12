@@ -154,7 +154,7 @@ public class ClusterDistributionManager implements DistributionManager {
   private static final int MAX_PR_THREADS = Integer.getInteger("DistributionManager.MAX_PR_THREADS",
       Math.max(Runtime.getRuntime().availableProcessors() * 4, 16)).intValue();
 
-  private static final int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
+  public static final int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
       Math.max(Runtime.getRuntime().availableProcessors() * 4, 16)).intValue();
 
 
@@ -193,7 +193,8 @@ public class ClusterDistributionManager implements DistributionManager {
   static final int MAX_SERIAL_QUEUE_THREAD =
       Integer.getInteger("DistributionManager.MAX_SERIAL_QUEUE_THREAD", 20).intValue();
 
-
+  protected static final String FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
+      "Function Execution Processor";
 
   /** The DM type for regular distribution managers */
   public static final int NORMAL_DM_TYPE = 10;
@@ -745,13 +746,15 @@ public class ClusterDistributionManager implements DistributionManager {
       }
       if (MAX_FE_THREADS > 1) {
         this.functionExecutionPool =
-            LoggingExecutors.newFunctionThreadPoolWithFeedStatistics("Function Execution Processor",
+            LoggingExecutors.newFunctionThreadPoolWithFeedStatistics(
+                FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
                 thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
                 MAX_FE_THREADS, this.stats.getFunctionExecutionPoolHelper(), threadMonitor,
                 INCOMING_QUEUE_LIMIT, this.stats.getFunctionExecutionQueueHelper());
       } else {
         this.functionExecutionThread =
-            LoggingExecutors.newSerialThreadPoolWithFeedStatistics("Function Execution Processor",
+            LoggingExecutors.newSerialThreadPoolWithFeedStatistics(
+                FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
                 thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
                 this.stats.getFunctionExecutionPoolHelper(), threadMonitor,
                 INCOMING_QUEUE_LIMIT, this.stats.getFunctionExecutionQueueHelper());
