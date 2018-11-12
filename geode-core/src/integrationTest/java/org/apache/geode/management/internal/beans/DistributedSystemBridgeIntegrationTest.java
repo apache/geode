@@ -52,7 +52,7 @@ import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.test.fake.Fakes;
 
-public class DistributedSystemBridgeJUnitTest {
+public class DistributedSystemBridgeIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
