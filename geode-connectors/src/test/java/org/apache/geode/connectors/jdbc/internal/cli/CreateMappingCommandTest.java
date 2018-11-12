@@ -64,6 +64,7 @@ public class CreateMappingCommandTest {
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
   private RegionMapping mapping;
+  private final Object[] arguments = new Object[2];
   private CacheConfig cacheConfig;
   RegionConfig matchingRegion;
   RegionAttributesType matchingRegionAttributes;
@@ -102,6 +103,8 @@ public class CreateMappingCommandTest {
     attributesList.add(matchingRegionAttributes);
     when(matchingRegion.getRegionAttributes()).thenReturn(attributesList);
 
+    arguments[0] = mapping;
+    arguments[1] = false;
   }
 
   private void setupRequiredPreconditions() {
@@ -121,7 +124,7 @@ public class CreateMappingCommandTest {
     results.add(successFunctionResult);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     RegionMapping regionMapping = (RegionMapping) result.getConfigObject();
@@ -138,7 +141,7 @@ public class CreateMappingCommandTest {
     results.clear();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
   }
@@ -149,7 +152,7 @@ public class CreateMappingCommandTest {
     doReturn(null).when(createRegionMappingCommand).getConfigurationPersistenceService();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("Cluster Configuration must be enabled.");
@@ -166,7 +169,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
@@ -197,12 +200,11 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getCustomRegionElements()).thenReturn(customList);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("A jdbc-mapping for " + regionName + " already exists.");
   }
-
 
   @Test
   public void createsMappingReturnsStatusERRORWhenClusterConfigRegionHasLoader() {
@@ -224,11 +226,67 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("The existing region " + regionName
         + " must not already have a cache-loader, but it has MyCacheLoaderClass");
+  }
+
+  @Test
+  public void createMappingWithSynchronousReturnsStatusERRORWhenClusterConfigRegionHasWriter() {
+    results.add(successFunctionResult);
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<RegionAttributesType> attributes = new ArrayList<>();
+    RegionAttributesType writerAttribute = mock(RegionAttributesType.class);
+    DeclarableType writerDeclarable = mock(DeclarableType.class);
+    when(writerDeclarable.getClassName()).thenReturn("MyCacheWriterClass");
+    when(writerAttribute.getCacheWriter()).thenReturn(writerDeclarable);
+    attributes.add(writerAttribute);
+    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, true);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+    assertThat(result.toString()).contains("The existing region " + regionName
+        + " must not already have a cache-writer, but it has MyCacheWriterClass");
+  }
+
+  @Test
+  public void createMappingWithSynchronousReturnsStatusOKWhenAsycnEventQueueAlreadyExists() {
+    results.add(successFunctionResult);
+    ConfigurationPersistenceService configurationPersistenceService =
+        mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+        .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<RegionAttributesType> attributes = new ArrayList<>();
+    RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
+    when(loaderAttribute.getCacheLoader()).thenReturn(null);
+    attributes.add(loaderAttribute);
+    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
+    AsyncEventQueue matchingQueue = mock(AsyncEventQueue.class);
+    String queueName = createRegionMappingCommand.getAsyncEventQueueName(regionName);
+    when(matchingQueue.getId()).thenReturn(queueName);
+    asyncEventQueues.add(matchingQueue);
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, true);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
   }
 
 
@@ -256,7 +314,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass);
+        tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
@@ -267,7 +325,7 @@ public class CreateMappingCommandTest {
   public void updateClusterConfigWithNoRegionsDoesNotThrowException() {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
   }
 
   @Test
@@ -278,7 +336,7 @@ public class CreateMappingCommandTest {
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     assertThat(listCacheElements.size()).isEqualTo(1);
     assertThat(listCacheElements).contains(mapping);
@@ -294,7 +352,7 @@ public class CreateMappingCommandTest {
     list.add(nonMatchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     assertThat(listCacheElements).isEmpty();
   }
@@ -309,7 +367,7 @@ public class CreateMappingCommandTest {
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     assertThat(queueList.size()).isEqualTo(1);
     String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
@@ -332,7 +390,7 @@ public class CreateMappingCommandTest {
     when(matchingRegionAttributes.getDataPolicy())
         .thenReturn(RegionAttributesDataPolicy.PARTITION);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     assertThat(queueList.get(0).isParallel()).isTrue();
   }
@@ -347,7 +405,7 @@ public class CreateMappingCommandTest {
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes).setCacheLoader(any());
   }
@@ -363,7 +421,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(null);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
@@ -382,7 +440,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("");
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
@@ -401,7 +459,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("q1,q2");
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
@@ -422,8 +480,55 @@ public class CreateMappingCommandTest {
     String existingQueues = "q1," + queueName + ",q2";
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(existingQueues);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, mapping);
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes, never()).setAsyncEventQueueIds(any());
+  }
+
+  @Test
+  public void updateClusterConfigWithSynchronousSetsTheCacheWriterOnTheMatchingRegion() {
+    arguments[1] = true;
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+
+    verify(matchingRegionAttributes).setCacheWriter(any());
+  }
+
+  @Test
+  public void updateClusterConfigWithSynchronousAndOneMatchingRegionAndExistingQueuesDoesNotAddsAsyncEventQueueIdToRegion() {
+    arguments[1] = true;
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("q1,q2");
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+
+    verify(matchingRegionAttributes, never()).setAsyncEventQueueIds(any());
+  }
+
+  @Test
+  public void updateClusterConfigWithSynchronousAndOneMatchingRegionDoesNotCreateAsyncEventQueue() {
+    arguments[1] = true;
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+
+    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+
+    assertThat(queueList).isEmpty();
   }
 }

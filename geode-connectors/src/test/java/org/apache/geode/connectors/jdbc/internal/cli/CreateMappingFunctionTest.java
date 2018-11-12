@@ -22,6 +22,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,7 +54,7 @@ public class CreateMappingFunctionTest {
   private static final String REGION_NAME = "testRegion";
 
   private RegionMapping regionMapping;
-  private FunctionContext<RegionMapping> context;
+  private FunctionContext<Object[]> context;
   private DistributedMember distributedMember;
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
@@ -61,6 +62,7 @@ public class CreateMappingFunctionTest {
   private Region region;
   private RegionAttributes attributes;
   private AsyncEventQueueFactory asyncEventQueueFactory;
+  private final Object[] functionInputs = new Object[2];
 
   private CreateMappingFunction function;
 
@@ -81,7 +83,9 @@ public class CreateMappingFunctionTest {
     when(cache.getDistributedSystem()).thenReturn(system);
     when(cache.getRegion(REGION_NAME)).thenReturn(region);
     when(system.getDistributedMember()).thenReturn(distributedMember);
-    when(context.getArguments()).thenReturn(regionMapping);
+    functionInputs[0] = regionMapping;
+    setupAsynchronous();
+    when(context.getArguments()).thenReturn(functionInputs);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
     attributes = mock(RegionAttributes.class);
     when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
@@ -92,6 +96,15 @@ public class CreateMappingFunctionTest {
 
     function = new CreateMappingFunction();
   }
+
+  private void setupAsynchronous() {
+    functionInputs[1] = false;
+  }
+
+  private void setupSynchronous() {
+    functionInputs[1] = true;
+  }
+
 
   @Test
   public void isHAReturnsFalse() {
@@ -156,6 +169,32 @@ public class CreateMappingFunctionTest {
     verify(service, times(1)).createRegionMapping(regionMapping);
     AttributesMutator mutator = region.getAttributesMutator();
     verify(mutator, times(1)).setCacheLoader(any());
+  }
+
+  @Test
+  public void executeWithSynchronousAltersRegionWriter() throws Exception {
+    setupSynchronous();
+    function.executeFunction(context);
+
+    AttributesMutator mutator = region.getAttributesMutator();
+    verify(mutator, times(1)).setCacheWriter(any());
+  }
+
+  @Test
+  public void executeWithSynchronousNeverAltersRegionAsyncEventQueue() throws Exception {
+    setupSynchronous();
+    function.executeFunction(context);
+
+    AttributesMutator mutator = region.getAttributesMutator();
+    verify(mutator, never()).addAsyncEventQueueId(any());
+  }
+
+  @Test
+  public void executeWithSynchronousNeverCreatesAsyncQueue() throws Exception {
+    setupSynchronous();
+    function.executeFunction(context);
+
+    verify(asyncEventQueueFactory, never()).create(any(), any());
   }
 
   @Test

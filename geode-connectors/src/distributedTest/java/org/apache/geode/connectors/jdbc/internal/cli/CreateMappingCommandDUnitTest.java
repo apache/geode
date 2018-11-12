@@ -18,6 +18,7 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +36,7 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -120,15 +122,19 @@ public class CreateMappingCommandDUnitTest {
     assertThat(queue.isParallel()).isEqualTo(isParallel);
   }
 
-  private static void validateRegionAlteredInClusterConfig() {
+  private static void validateRegionAlteredInClusterConfig(boolean synchronous) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
     RegionConfig regionConfig = cacheConfig.getRegions().stream()
         .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
     RegionAttributesType attributes = regionConfig.getRegionAttributes().get(0);
     assertThat(attributes.getCacheLoader().getClassName()).isEqualTo(JdbcLoader.class.getName());
-    String queueName = CreateMappingCommand.getAsyncEventQueueName(REGION_NAME);
-    assertThat(attributes.getAsyncEventQueueIds()).isEqualTo(queueName);
+    if (synchronous) {
+      assertThat(attributes.getCacheWriter().getClassName()).isEqualTo(JdbcWriter.class.getName());
+    } else {
+      String queueName = CreateMappingCommand.getAsyncEventQueueName(REGION_NAME);
+      assertThat(attributes.getAsyncEventQueueIds()).isEqualTo(queueName);
+    }
   }
 
   private static void validateAsyncEventQueueCreatedOnServer(boolean isParallel) {
@@ -140,12 +146,16 @@ public class CreateMappingCommandDUnitTest {
     assertThat(queue.isParallel()).isEqualTo(isParallel);
   }
 
-  private static void validateRegionAlteredOnServer() {
+  private static void validateRegionAlteredOnServer(boolean synchronous) {
     InternalCache cache = ClusterStartupRule.getCache();
-    String queueName = CreateMappingCommand.getAsyncEventQueueName(REGION_NAME);
     Region<?, ?> region = cache.getRegion(REGION_NAME);
     assertThat(region.getAttributes().getCacheLoader()).isInstanceOf(JdbcLoader.class);
-    assertThat(region.getAttributes().getAsyncEventQueueIds()).contains(queueName);
+    if (synchronous) {
+      assertThat(region.getAttributes().getCacheWriter()).isInstanceOf(JdbcWriter.class);
+    } else {
+      String queueName = CreateMappingCommand.getAsyncEventQueueName(REGION_NAME);
+      assertThat(region.getAttributes().getAsyncEventQueueIds()).contains(queueName);
+    }
   }
 
   @Test
@@ -164,7 +174,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer();
+      validateRegionAlteredOnServer(false);
       validateAsyncEventQueueCreatedOnServer(false);
     });
 
@@ -173,8 +183,37 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig();
+      validateRegionAlteredInClusterConfig(false);
       validateAsyncEventQueueCreatedInClusterConfig(false);
+    });
+  }
+
+  @Test
+  public void createSynchronousMappingUpdatesServiceAndClusterConfig() {
+    setupReplicate();
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__SYNCHRONOUS_NAME, "true");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService();
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      validateRegionAlteredOnServer(true);
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
+      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      validateRegionAlteredInClusterConfig(true);
     });
   }
 
@@ -194,7 +233,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer();
+      validateRegionAlteredOnServer(false);
       validateAsyncEventQueueCreatedOnServer(true);
     });
 
@@ -203,7 +242,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig();
+      validateRegionAlteredInClusterConfig(false);
       validateAsyncEventQueueCreatedInClusterConfig(true);
     });
   }
@@ -223,7 +262,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer();
+      validateRegionAlteredOnServer(false);
       validateAsyncEventQueueCreatedOnServer(false);
     });
 
@@ -232,7 +271,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isNull();
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig();
+      validateRegionAlteredInClusterConfig(false);
       validateAsyncEventQueueCreatedInClusterConfig(false);
     });
   }

@@ -31,6 +31,7 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
@@ -58,6 +59,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "Name of database table for values to be written to.";
   static final String CREATE_MAPPING__DATA_SOURCE_NAME = "data-source";
   static final String CREATE_MAPPING__DATA_SOURCE_NAME__HELP = "Name of JDBC data source to use.";
+  static final String CREATE_MAPPING__SYNCHRONOUS_NAME = "synchronous";
+  static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
+      "By default, writes will be asynchronous. If true, writes will be synchronous.";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -71,13 +75,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_MAPPING__TABLE_NAME,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
       @CliOption(key = CREATE_MAPPING__PDX_NAME, mandatory = true,
-          help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName) {
+          help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
+      @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
+          help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName,
         pdxName, table, dataSourceName);
 
-    // action
+    // check required preconditions
     ConfigurationPersistenceService configurationPersistenceService =
         getConfigurationPersistenceService();
     if (configurationPersistenceService == null) {
@@ -109,17 +116,35 @@ public class CreateMappingCommand extends SingleGfshCommand {
                 + loaderDeclarable.getClassName());
       }
     }
-    String queueName = getAsyncEventQueueName(regionName);
-    AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
-        .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
-    if (asyncEventQueue != null) {
-      return ResultModel
-          .createError("An async-event-queue named " + queueName + " must not already exist.");
+
+    if (synchronous) {
+      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes().stream()
+          .filter(attributes -> attributes.getCacheWriter() != null).findFirst().orElse(null);
+      if (writerAttributes != null) {
+        DeclarableType writerDeclarable = writerAttributes.getCacheWriter();
+        if (writerDeclarable != null) {
+          return ResultModel
+              .createError("The existing region " + regionName
+                  + " must not already have a cache-writer, but it has "
+                  + writerDeclarable.getClassName());
+        }
+      }
     }
 
+    if (!synchronous) {
+      String queueName = getAsyncEventQueueName(regionName);
+      AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
+          .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
+      if (asyncEventQueue != null) {
+        return ResultModel
+            .createError("An async-event-queue named " + queueName + " must not already exist.");
+      }
+    }
 
+    // action
+    Object[] arguments = new Object[] {mapping, synchronous};
     List<CliFunctionResult> results =
-        executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
+        executeAndGetFunctionResult(new CreateMappingFunction(), arguments, targetMembers);
 
     ResultModel result =
         ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
@@ -133,7 +158,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
-    RegionMapping newCacheElement = (RegionMapping) element;
+    Object[] arguments = (Object[]) element;
+    RegionMapping newCacheElement = (RegionMapping) arguments[0];
+    boolean synchronous = (Boolean) arguments[1];
     String regionName = newCacheElement.getRegionName();
     String queueName = getAsyncEventQueueName(regionName);
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
@@ -142,13 +169,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
     }
     RegionAttributesType attributes = getRegionAttributes(regionConfig);
     addMappingToRegion(newCacheElement, regionConfig);
-    createAsyncQueue(cacheConfig, attributes, queueName);
-    alterRegion(queueName, attributes);
+    if (!synchronous) {
+      createAsyncQueue(cacheConfig, attributes, queueName);
+    }
+    alterRegion(queueName, attributes, synchronous);
   }
 
-  private void alterRegion(String queueName, RegionAttributesType attributes) {
+  private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {
     setCacheLoader(attributes);
-    addAsyncEventQueueId(queueName, attributes);
+    if (synchronous) {
+      setCacheWriter(attributes);
+    } else {
+      addAsyncEventQueueId(queueName, attributes);
+    }
   }
 
   private void addMappingToRegion(RegionMapping newCacheElement, RegionConfig regionConfig) {
@@ -191,6 +224,12 @@ public class CreateMappingCommand extends SingleGfshCommand {
     DeclarableType loader = new DeclarableType();
     loader.setClassName(JdbcLoader.class.getName());
     attributes.setCacheLoader(loader);
+  }
+
+  private void setCacheWriter(RegionAttributesType attributes) {
+    DeclarableType writer = new DeclarableType();
+    writer.setClassName(JdbcWriter.class.getName());
+    attributes.setCacheWriter(writer);
   }
 
   private RegionAttributesType getRegionAttributes(RegionConfig regionConfig) {
