@@ -536,7 +536,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
 
     this.cache = internalCache;
-    this.crHelper = new CachedRegionHelper(this.cache);
+    this.crHelper = new CachedRegionHelper(cache);
 
     this.clientNotifier = CacheClientNotifier.getInstance(cache, this.stats, maximumMessageCount,
         messageTimeToLive, connectionListener, overflowAttributesList, isGatewayReceiver);

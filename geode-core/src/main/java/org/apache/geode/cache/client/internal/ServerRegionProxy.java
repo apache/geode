@@ -125,7 +125,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    *
    */
   public Object putForMetaRegion(Object key, Object value, byte[] deltaBytes, EntryEventImpl event,
-      Object callbackArg, boolean isMetaRegionPutOp) {
+      Object callbackArg) {
     if (this.region == null) {
       return PutOp.execute(this.pool, this.regionName, key, value, deltaBytes, event,
           Operation.CREATE, false, null, callbackArg, this.pool.getPRSingleHopEnabled());

@@ -18,6 +18,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 
 /**
  * Helper class that maintains a weak hashmap of referenced regions
@@ -27,11 +28,13 @@ import org.apache.geode.internal.cache.InternalCache;
 public class CachedRegionHelper {
 
   private final InternalCache cache;
+  private final InternalCache realCache;
 
   private volatile boolean shutdown = false;
 
   public CachedRegionHelper(InternalCache cache) {
-    this.cache = cache.getCacheForProcessingClientRequests();
+    this.realCache = cache;
+    this.cache = new InternalCacheForClientAccess(cache);
   }
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
@@ -44,6 +47,10 @@ public class CachedRegionHelper {
 
   public InternalCache getCache() {
     return this.cache;
+  }
+
+  public InternalCache getCacheForGatewayCommand() {
+    return this.realCache;
   }
 
   public void setShutdown(boolean shutdown) {
