@@ -319,7 +319,8 @@ public class CreateMappingCommandDUnitTest {
 
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .containsOutput("You should specify option (--table, --pdx-name) for this command");
+        .containsOutput(
+            "You should specify option (--table, --pdx-name, --synchronous) for this command");
   }
 
   @Test
