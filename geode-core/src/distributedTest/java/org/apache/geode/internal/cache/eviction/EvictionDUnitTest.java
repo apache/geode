@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -100,6 +101,19 @@ public class EvictionDUnitTest {
         cache.getResourceManager().setEvictionHeapPercentage(85);
       }
     }, server0, server1);
+  }
+
+  /**
+   * This test suite has 10 tests in it and is memory intensive. some later test would fail due to
+   * the fact that at server startup time, its memory usage is already very large and eviction
+   * threshold is reached before it can insert any data, so the eviction count is not as expected.
+   *
+   * So a bounce is added after each test to mitigate this issue.
+   */
+  @After
+  public void after() {
+    server0.getVM().bounce();
+    server1.getVM().bounce();
   }
 
   @Test
