@@ -309,7 +309,6 @@ public class CreateMappingCommandDUnitTest {
     });
   }
 
-
   @Test
   public void createMappingWithoutPdxNameFails() {
     setupReplicate();

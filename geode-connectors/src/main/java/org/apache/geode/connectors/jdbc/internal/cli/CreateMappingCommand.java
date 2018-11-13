@@ -63,6 +63,10 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
 
+  public static String getAsyncEventQueueName(String regionName) {
+    return "JDBC-" + regionName;
+  }
+
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -81,64 +85,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
-    RegionMapping mapping = new RegionMapping(regionName,
-        pdxName, table, dataSourceName);
+    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName);
 
-    // check required preconditions
-    ConfigurationPersistenceService configurationPersistenceService =
-        getConfigurationPersistenceService();
-    if (configurationPersistenceService == null) {
-      return ResultModel.createError("Cluster Configuration must be enabled.");
-    }
-
-    CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(null);
-
-    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
-    if (regionConfig == null) {
-      return ResultModel
-          .createError("A region named " + regionName + " must already exist.");
-    }
-
-    if (regionConfig.getCustomRegionElements().stream()
-        .anyMatch(element -> element instanceof RegionMapping)) {
-      return ResultModel
-          .createError("A jdbc-mapping for " + regionName + " already exists.");
-    }
-
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
-        .filter(attributes -> attributes.getCacheLoader() != null).findFirst().orElse(null);
-    if (regionAttributes != null) {
-      DeclarableType loaderDeclarable = regionAttributes.getCacheLoader();
-      if (loaderDeclarable != null) {
-        return ResultModel
-            .createError("The existing region " + regionName
-                + " must not already have a cache-loader, but it has "
-                + loaderDeclarable.getClassName());
-      }
-    }
-
-    if (synchronous) {
-      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes().stream()
-          .filter(attributes -> attributes.getCacheWriter() != null).findFirst().orElse(null);
-      if (writerAttributes != null) {
-        DeclarableType writerDeclarable = writerAttributes.getCacheWriter();
-        if (writerDeclarable != null) {
-          return ResultModel
-              .createError("The existing region " + regionName
-                  + " must not already have a cache-writer, but it has "
-                  + writerDeclarable.getClassName());
-        }
-      }
-    }
-
-    if (!synchronous) {
-      String queueName = getAsyncEventQueueName(regionName);
-      AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
-          .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
-      if (asyncEventQueue != null) {
-        return ResultModel
-            .createError("An async-event-queue named " + queueName + " must not already exist.");
-      }
+    try {
+      ConfigurationPersistenceService configurationPersistenceService =
+          checkForClusterConfiguration();
+      CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(null);
+      RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
+      checkForExistingMapping(regionName, regionConfig);
+      checkForCacheLoader(regionName, regionConfig);
+      checkForCacheWriter(regionName, synchronous, regionConfig);
+      checkForAsyncQueue(regionName, synchronous, cacheConfig);
+    } catch (PreconditionException ex) {
+      return ResultModel.createError(ex.getMessage());
     }
 
     // action
@@ -152,8 +111,73 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return result;
   }
 
-  public static String getAsyncEventQueueName(String regionName) {
-    return "JDBC-" + regionName;
+  private ConfigurationPersistenceService checkForClusterConfiguration()
+      throws PreconditionException {
+    ConfigurationPersistenceService result = getConfigurationPersistenceService();
+    if (result == null) {
+      throw new PreconditionException("Cluster Configuration must be enabled.");
+    }
+    return result;
+  }
+
+  private RegionConfig checkForRegion(String regionName, CacheConfig cacheConfig)
+      throws PreconditionException {
+    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
+    if (regionConfig == null) {
+      throw new PreconditionException("A region named " + regionName + " must already exist.");
+    }
+    return regionConfig;
+  }
+
+  private void checkForExistingMapping(String regionName, RegionConfig regionConfig)
+      throws PreconditionException {
+    if (regionConfig.getCustomRegionElements().stream()
+        .anyMatch(element -> element instanceof RegionMapping)) {
+      throw new PreconditionException("A jdbc-mapping for " + regionName + " already exists.");
+    }
+  }
+
+  private void checkForCacheLoader(String regionName, RegionConfig regionConfig)
+      throws PreconditionException {
+    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
+        .filter(attributes -> attributes.getCacheLoader() != null).findFirst().orElse(null);
+    if (regionAttributes != null) {
+      DeclarableType loaderDeclarable = regionAttributes.getCacheLoader();
+      if (loaderDeclarable != null) {
+        throw new PreconditionException("The existing region " + regionName
+            + " must not already have a cache-loader, but it has "
+            + loaderDeclarable.getClassName());
+      }
+    }
+  }
+
+  private void checkForCacheWriter(String regionName, boolean synchronous,
+      RegionConfig regionConfig) throws PreconditionException {
+    if (synchronous) {
+      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes().stream()
+          .filter(attributes -> attributes.getCacheWriter() != null).findFirst().orElse(null);
+      if (writerAttributes != null) {
+        DeclarableType writerDeclarable = writerAttributes.getCacheWriter();
+        if (writerDeclarable != null) {
+          throw new PreconditionException("The existing region " + regionName
+              + " must not already have a cache-writer, but it has "
+              + writerDeclarable.getClassName());
+        }
+      }
+    }
+  }
+
+  private void checkForAsyncQueue(String regionName, boolean synchronous, CacheConfig cacheConfig)
+      throws PreconditionException {
+    if (!synchronous) {
+      String queueName = getAsyncEventQueueName(regionName);
+      AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
+          .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
+      if (asyncEventQueue != null) {
+        throw new PreconditionException(
+            "An async-event-queue named " + queueName + " must not already exist.");
+      }
+    }
   }
 
   @Override
