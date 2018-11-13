@@ -63,8 +63,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
 
-  public static String getAsyncEventQueueName(String regionName) {
-    return "JDBC-" + regionName;
+  public static String createAsyncEventQueueName(String regionPath) {
+    return "JDBC#" + regionPath.replace('/', '_');
   }
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
@@ -170,7 +170,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private void checkForAsyncQueue(String regionName, boolean synchronous, CacheConfig cacheConfig)
       throws PreconditionException {
     if (!synchronous) {
-      String queueName = getAsyncEventQueueName(regionName);
+      String queueName = createAsyncEventQueueName(regionName);
       AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
           .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
       if (asyncEventQueue != null) {
@@ -186,7 +186,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     RegionMapping newCacheElement = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];
     String regionName = newCacheElement.getRegionName();
-    String queueName = getAsyncEventQueueName(regionName);
+    String queueName = createAsyncEventQueueName(regionName);
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
       return;

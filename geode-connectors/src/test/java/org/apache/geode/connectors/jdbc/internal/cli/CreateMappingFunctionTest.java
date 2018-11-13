@@ -199,7 +199,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeAlterRegionAsyncEventQueue() throws Exception {
-    String queueName = CreateMappingCommand.getAsyncEventQueueName(REGION_NAME);
+    String queueName = CreateMappingCommand.createAsyncEventQueueName(REGION_NAME);
     function.executeFunction(context);
 
     verify(service, times(1)).createRegionMapping(regionMapping);

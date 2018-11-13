@@ -53,7 +53,7 @@ public class CreateMappingFunction extends CliFunction<Object[]> {
     Region<?, ?> region = verifyRegionExists(context.getCache(), regionName);
 
     // action
-    String queueName = CreateMappingCommand.getAsyncEventQueueName(regionName);
+    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
     if (!synchronous) {
       createAsyncEventQueue(context.getCache(), queueName,
           region.getAttributes().getDataPolicy().withPartitioning());

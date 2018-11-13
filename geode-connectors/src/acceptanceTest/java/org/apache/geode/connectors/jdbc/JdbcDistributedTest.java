@@ -459,7 +459,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       String key = "id1";
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
-          .getAsyncEventQueue(CreateMappingCommand.getAsyncEventQueueName(REGION_NAME))
+          .getAsyncEventQueue(CreateMappingCommand.createAsyncEventQueueName(REGION_NAME))
           .getAsyncEventListener();
 
       region.put(key, pdxEmployee1);
@@ -653,7 +653,8 @@ public abstract class JdbcDistributedTest implements Serializable {
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
     if (!synchronous) {
       final String alterAsyncQueue =
-          "alter async-event-queue --id=" + CreateMappingCommand.getAsyncEventQueueName(regionName)
+          "alter async-event-queue --id="
+              + CreateMappingCommand.createAsyncEventQueueName(regionName)
               + " --batch-size=1 --batch-time-interval=0";
       gfsh.executeAndAssertThat(alterAsyncQueue).statusIsSuccess();
     }
