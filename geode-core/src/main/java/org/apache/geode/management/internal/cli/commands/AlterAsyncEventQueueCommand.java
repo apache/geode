@@ -22,6 +22,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_HELP;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -137,11 +138,16 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
-      ResultModel result) {
+  public boolean updateAllConfigs(Map<String, CacheConfig> configs, Object configObject) {
     CacheConfig.AsyncEventQueue aeqConfiguration = (CacheConfig.AsyncEventQueue) configObject;
-    CacheConfig.AsyncEventQueue queue =
-        CacheElement.findElement(config.getAsyncEventQueues(), aeqConfiguration.getId());
+    CacheConfig.AsyncEventQueue queue = configs.values()
+        .stream()
+        .filter(config -> CacheElement.findElement(config.getAsyncEventQueues(),
+            aeqConfiguration.getId()) != null)
+        .findFirst()
+        .map(config -> CacheElement.findElement(config.getAsyncEventQueues(),
+            aeqConfiguration.getId()))
+        .orElse(null);
 
     if (queue == null) {
       return false;
@@ -160,82 +166,6 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand {
     }
 
     return true;
-
-    // // need not check if any running servers has this async-event-queue. A server with this queue
-    // id
-    // // may be shutdown, but we still need to update Cluster Configuration.
-    // InternalConfigurationPersistenceService service =
-    // (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
-    //
-    // if (service == null) {
-    // return ResultModel.createError("Cluster Configuration Service is not available. "
-    // + "Please connect to a locator with running Cluster Configuration Service.");
-    // }
-    //
-    // boolean locked = service.lockSharedConfiguration();
-    // if (!locked) {
-    // return ResultModel.createCommandProcessingError("Unable to lock the cluster configuration.");
-    // }
-    //
-    // ResultModel result = new ResultModel();
-    // TabularResultModel tableData = result.addTable(GROUP_STATUS_SECTION);
-    // boolean xmlUpdated = false;
-    // try {
-    // Region<String, Configuration> configRegion = service.getConfigurationRegion();
-    // for (String group : configRegion.keySet()) {
-    // Configuration config = configRegion.get(group);
-    // if (config.getCacheXmlContent() == null) {
-    // // skip to the next group
-    // continue;
-    // }
-    //
-    // Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    // NodeList nodeList = document.getElementsByTagName("async-event-queue");
-    // for (int i = 0; i < nodeList.getLength(); i++) {
-    // Element item = (Element) nodeList.item(i);
-    // String queueId = item.getAttribute("id");
-    // if (!id.equals(queueId)) {
-    // // skip to the next async-event-queue found in this xml
-    // continue;
-    // }
-    // // this node is the async-event-queue with the correct id
-    // if (batchSize != null) {
-    // item.setAttribute(BATCH_SIZE, batchSize + "");
-    // }
-    // if (batchTimeInterval != null) {
-    // item.setAttribute(BATCH_TIME_INTERVAL, batchTimeInterval + "");
-    // }
-    // if (maxQueueMemory != null) {
-    // item.setAttribute(MAXIMUM_QUEUE_MEMORY, maxQueueMemory + "");
-    // }
-    // // each group should have only one queue with this id defined
-    // tableData.accumulate("Group", group);
-    // tableData.accumulate("Status", "Cluster Configuration Updated");
-    // xmlUpdated = true;
-    // break;
-    // }
-    //
-    // if (xmlUpdated) {
-    // String newXml = XmlUtils.prettyXml(document.getFirstChild());
-    // config.setCacheXmlContent(newXml);
-    // configRegion.put(group, config);
-    // }
-    // }
-    // } finally {
-    // service.unlockSharedConfiguration();
-    // }
-    //
-    // if (!xmlUpdated) {
-    // String message = String.format("Can not find an async event queue with id '%s'.", id);
-    // throw new EntityNotFoundException(message, ifExists);
-    // }
-    //
-    // // some configurations are changed, print out the warning message as well.
-    // tableData.setFooter(System.lineSeparator()
-    // + "These changes won't take effect on the running servers. " + System.lineSeparator()
-    // + "Please restart the servers in these groups for the changes to take effect.");
-    //
-    // return result;
   }
 
   public static class Interceptor extends AbstractCliAroundInterceptor {

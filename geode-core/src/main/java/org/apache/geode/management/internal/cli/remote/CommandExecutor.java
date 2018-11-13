@@ -14,11 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -119,7 +123,8 @@ public class CommandExecutor {
 
     // if command result is ok, we will need to see if we need to update cluster configuration
     InfoResultModel infoResultModel = resultModel.addInfo(ResultModel.INFO_SECTION);
-    ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) gfshCommand.getConfigurationPersistenceService();
     if (ccService == null) {
       infoResultModel.addLine(SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       return resultModel;
@@ -138,8 +143,7 @@ public class CommandExecutor {
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
         try {
-          if (gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject(),
-              resultModel)) {
+          if (gfshCommand.updateGroupConfig(group, cc, resultModel.getConfigObject())) {
             infoResultModel
                 .addLine("Changes to configuration for group '" + group + "' are persisted.");
           } else {
@@ -157,6 +161,17 @@ public class CommandExecutor {
         return cc;
       });
     }
+
+    Map<String, CacheConfig> configMap = ccService.getGroups()
+        .stream()
+        .filter(group -> ccService.getCacheConfig(group) != null)
+        .collect(Collectors.toMap(group -> group, group -> ccService.getCacheConfig(group)));
+
+    if (gfshCommand.updateAllConfigs(configMap, resultModel.getConfigObject())) {
+      ccService.getGroups()
+          .forEach(group -> ccService.replaceCacheConfig(group, configMap.get(group)));
+    }
+
     return resultModel;
   }
 }

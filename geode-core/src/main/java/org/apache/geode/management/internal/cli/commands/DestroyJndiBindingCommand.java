@@ -84,8 +84,7 @@ public class DestroyJndiBindingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object element,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object element) {
     CacheElement.removeElement(config.getJndiBindings(), (String) element);
     return true;
   }

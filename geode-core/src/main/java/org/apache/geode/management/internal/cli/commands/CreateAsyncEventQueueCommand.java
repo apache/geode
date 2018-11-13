@@ -139,8 +139,7 @@ public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object configObject) {
     config.getAsyncEventQueues().add((CacheConfig.AsyncEventQueue) configObject);
     return true;
   }

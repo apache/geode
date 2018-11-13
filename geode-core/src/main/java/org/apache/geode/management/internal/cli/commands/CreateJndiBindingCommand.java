@@ -180,8 +180,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object element,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object element) {
     config.getJndiBindings().add((JndiBindingsType.JndiBinding) element);
     return true;
   }

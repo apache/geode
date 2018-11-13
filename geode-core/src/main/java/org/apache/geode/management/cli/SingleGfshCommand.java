@@ -17,9 +17,10 @@
 
 package org.apache.geode.management.cli;
 
+import java.util.Map;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  * Command class that extends this class can only have one single command method,
@@ -29,7 +30,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 public abstract class SingleGfshCommand extends GfshCommand {
 
   /**
-   * implement this method for updating the cluster configuration of the group
+   * implement this method for updating the configuration of a given group
    *
    * the implementation should update the passed in config object with appropriate changes
    * if for any reason config can't be updated. throw a RuntimeException stating the reason.
@@ -40,8 +41,21 @@ public abstract class SingleGfshCommand extends GfshCommand {
    *        return value of your command method.
    * @return a boolean indicating whether a change to the cluster configuration was persisted.
    */
-  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object configObject) {
+    return false;
+  }
+
+  /**
+   * implement this method for updating a configuration of a given group or groups, when the group
+   * is
+   * not specified by the command (and hence is unavailable to be passed in as a parameter)
+   *
+   * @param groupConfigs map of group name -> cache config object representing config for the group.
+   * @param configObject the return value of CommandResult.getConfigObject. CommandResult is the
+   *        return value of your command method.
+   * @return a boolean indicating whether a change to the cluster configuration was persisted.
+   */
+  public boolean updateAllConfigs(Map<String, CacheConfig> groupConfigs, Object configObject) {
     return false;
   }
 }

@@ -73,8 +73,7 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object configObject) {
     Set<RegionConfig.Index> updatedIndexes = (Set<RegionConfig.Index>) configObject;
     if (updatedIndexes == null) {
       return false;

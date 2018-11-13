@@ -231,7 +231,7 @@ public class CreateDataSourceCommandTest {
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
-    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any(), any());
+    verify(command).updateGroupConfig(eq("cluster"), eq(cacheConfig), any());
   }
 
   @Test
@@ -305,7 +305,7 @@ public class CreateDataSourceCommandTest {
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
-    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any(), any());
+    verify(command).updateGroupConfig(eq("cluster"), eq(cacheConfig), any());
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);

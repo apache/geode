@@ -78,8 +78,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig cacheConfig, Object element,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig cacheConfig, Object element) {
     RegionMapping newCacheElement = (RegionMapping) element;
     RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement(
         newCacheElement.getRegionName(), newCacheElement.getId(), RegionMapping.class);

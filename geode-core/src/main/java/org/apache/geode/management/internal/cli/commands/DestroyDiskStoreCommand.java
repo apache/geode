@@ -67,8 +67,7 @@ public class DestroyDiskStoreCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object configObject) {
     String diskStoreName = (String) configObject;
     CacheElement.removeElement(config.getDiskStores(), diskStoreName);
     return true;

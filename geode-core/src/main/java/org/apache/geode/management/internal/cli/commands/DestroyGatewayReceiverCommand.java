@@ -69,8 +69,7 @@ public class DestroyGatewayReceiverCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object element,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object element) {
     if (config.getGatewayReceiver() != null) {
       config.setGatewayReceiver(null);
       return true;

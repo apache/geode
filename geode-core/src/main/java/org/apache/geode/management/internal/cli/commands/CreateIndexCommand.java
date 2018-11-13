@@ -102,8 +102,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object element,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object element) {
     RegionConfig.Index index = (RegionConfig.Index) element;
     String regionPath = getValidRegionName(index.getFromClause(), config);
 

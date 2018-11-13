@@ -102,8 +102,7 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
   }
 
   @Override
-  public boolean updateClusterConfig(String group, CacheConfig config, Object configObject,
-      ResultModel resultModel) {
+  public boolean updateGroupConfig(String group, CacheConfig config, Object configObject) {
     config.setGatewayReceiver((CacheConfig.GatewayReceiver) configObject);
     return true;
   }
