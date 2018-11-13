@@ -175,6 +175,17 @@ function unpausePipeline {
   (set -x ; fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE})
 }
 
+function exposePipeline {
+  PIPELINE=$1
+  (set -x ; fly -t ${FLY_TARGET} expose-pipeline -p ${PIPELINE})
+}
+
+function exposePipelines {
+  for PIPELINE; do
+    exposePipeline $PIPELINE
+  done
+}
+
 function awaitJob {
   PIPELINE=$1
   JOB=$2
@@ -216,18 +227,19 @@ set +x
 
 if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
   echo "Disabling unnecessary jobs for forks."
-  pauseJobs ${META_PIPELINE} set-images set-reaper
-  pauseNewJobs ${META_PIPELINE} set-metrics
+  pauseJobs ${META_PIPELINE} set-images-pipeline set-reaper-pipeline
+  pauseNewJobs ${META_PIPELINE} set-metrics-pipeline
 elif [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   echo "Disabling optional jobs for develop"
-  pauseNewJobs ${META_PIPELINE} set-pr set-images set-metrics set-examples
+  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-images-pipeline set-metrics-pipeline set-examples-pipeline
 else
   echo "Disabling unnecessary jobs for release branches."
   echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
-  pauseJobs ${META_PIPELINE} set-pr set-images set-reaper
-  pauseNewJobs ${META_PIPELINE} set-metrics set-examples
+  pauseJobs ${META_PIPELINE} set-images-pipeline set-reaper-pipeline
+  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-metrics-pipeline set-examples-pipeline
 fi
 
+pauseNewJobs ${META_PIPELINE} set-pipeline
 unpausePipeline ${META_PIPELINE}
 driveToGreen $META_PIPELINE build-meta-mini-docker-image
 driveToGreen $META_PIPELINE set-images-pipeline
@@ -238,6 +250,11 @@ driveToGreen $META_PIPELINE set-pipeline
 unpausePipeline ${PIPELINE_PREFIX}main
 echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
 
-if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
-  unpauseJobs set-pr set-metrics set-examples
+if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
+  unpauseJobs set-metrics-pipeline
+  exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}metrics ${PIPELINE_PREFIX}images
+  if [[ "$GEODE_BRANCH" == "develop" ]]; then
+    unpauseJobs set-pr-pipeline set-examples-pipeline
+    exposePipelines ${PIPELINE_PREFIX}pr ${PIPELINE_PREFIX}examples
+  fi
 fi
