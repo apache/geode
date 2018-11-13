@@ -152,7 +152,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return result;
   }
 
-  static String getAsyncEventQueueName(String regionName) {
+  public static String getAsyncEventQueueName(String regionName) {
     return "JDBC-" + regionName;
   }
 
