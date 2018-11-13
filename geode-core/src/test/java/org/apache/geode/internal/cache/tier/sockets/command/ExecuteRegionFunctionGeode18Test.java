@@ -46,20 +46,21 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class ExecuteRegionFunction66Test {
+public class ExecuteRegionFunctionGeode18Test {
   private static final String FUNCTION_ID = "function_id";
 
   @Mock
   private Function functionObject;
 
-  private ExecuteRegionFunction66 executeRegionFunction66;
+  private ExecuteRegionFunctionGeode18 executeRegionFunctionGeode18;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
-    this.executeRegionFunction66 = (ExecuteRegionFunction66) ExecuteRegionFunction66.getCommand();
+    this.executeRegionFunctionGeode18 =
+        (ExecuteRegionFunctionGeode18) ExecuteRegionFunctionGeode18.getCommand();
 
     this.functionObject = mock(Function.class);
     when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
@@ -67,32 +68,32 @@ public class ExecuteRegionFunction66Test {
   }
 
   @Test
-  public void executingFunctionInPreGeode18ByStringWithNoHAShouldNotSetWaitOnException() {
+  public void executingFunctionByStringWithNoHAShouldSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunction66.executeFunctionWithResult(functionName,
+    this.executeRegionFunctionGeode18.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE, functionObject, execution);
-    verify(execution, times(0)).setWaitOnExceptionFlag(true);
+    verify(execution, times(1)).setWaitOnExceptionFlag(true);
   }
 
   @Test
-  public void executingFunctionInPreGeode18ByStringWithNoHAWithOptimizeForWriteShouldNotSetWaitOnException() {
+  public void executingFunctionByStringWithNoHAWithOptimizeForWriteShouldSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunction66.executeFunctionWithResult(functionName,
+    this.executeRegionFunctionGeode18.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
-    verify(execution, times(0)).setWaitOnExceptionFlag(true);
+    verify(execution, times(1)).setWaitOnExceptionFlag(true);
   }
 
   @Test
-  public void executingFunctionObjectInPreGeode18ShouldNotSetWaitOnException() {
+  public void executeFunctionObjectShouldSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunction66.executeFunctionWithResult(functionObject,
+    this.executeRegionFunctionGeode18.executeFunctionWithResult(functionObject,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
-    verify(execution, times(0)).setWaitOnExceptionFlag(true);
+    verify(execution, times(1)).setWaitOnExceptionFlag(true);
   }
 
   @Test
@@ -100,7 +101,7 @@ public class ExecuteRegionFunction66Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input region for the execute function request is null",
-        this.executeRegionFunction66.generateNullArgumentMessage(null, null));
+        this.executeRegionFunctionGeode18.generateNullArgumentMessage(null, null));
   }
 
   @Test
@@ -108,7 +109,7 @@ public class ExecuteRegionFunction66Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input function for the execute function request is null",
-        this.executeRegionFunction66.generateNullArgumentMessage("someRegion", null));
+        this.executeRegionFunctionGeode18.generateNullArgumentMessage("someRegion", null));
   }
 
   @Test
@@ -131,7 +132,7 @@ public class ExecuteRegionFunction66Test {
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
     int filterSize = 3;
-    Set filter = this.executeRegionFunction66.populateFilters(clientMessage, filterSize);
+    Set filter = this.executeRegionFunctionGeode18.populateFilters(clientMessage, filterSize);
     assertSame(filterSize, filter.size());
     assertTrue(filter.contains(object1));
     assertTrue(filter.contains(object2));
@@ -157,7 +158,7 @@ public class ExecuteRegionFunction66Test {
     when(clientMessage.getPart(7)).thenReturn(part1);
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
-    Set nodes = this.executeRegionFunction66.populateRemovedNodes(clientMessage, 3, 6);
+    Set nodes = this.executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
     assertTrue(nodes.contains(object1));
     assertTrue(nodes.contains(object2));
     assertTrue(nodes.contains(object3));
@@ -170,7 +171,8 @@ public class ExecuteRegionFunction66Test {
     String functionName = "functionName";
     String regionPath = "regionPath";
     ExecuteFunctionOperationContext context =
-        executeRegionFunction66.getAuthorizedExecuteFunctionOperationContext(null, null, true, null,
+        executeRegionFunctionGeode18.getAuthorizedExecuteFunctionOperationContext(null, null, true,
+            null,
             functionName, regionPath);
     assertNull(context);
   }
@@ -186,7 +188,7 @@ public class ExecuteRegionFunction66Test {
         .thenReturn(mock(ExecuteFunctionOperationContext.class));
 
     ExecuteFunctionOperationContext context =
-        executeRegionFunction66.getAuthorizedExecuteFunctionOperationContext(null, null, true,
+        executeRegionFunctionGeode18.getAuthorizedExecuteFunctionOperationContext(null, null, true,
             request, functionName, regionPath);
     assertNotNull(context);
   }
