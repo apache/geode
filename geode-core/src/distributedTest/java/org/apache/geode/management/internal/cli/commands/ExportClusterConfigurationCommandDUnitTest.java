@@ -91,7 +91,7 @@ public class ExportClusterConfigurationCommandDUnitTest {
 
     assertThat(xmlFile).exists();
     String content = FileUtils.readFileToString(xmlFile, Charset.defaultCharset());
-    assertThat(content).startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
+    assertThat(content).startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>")
         .contains("<region name=\"regionA\">");
   }
 
