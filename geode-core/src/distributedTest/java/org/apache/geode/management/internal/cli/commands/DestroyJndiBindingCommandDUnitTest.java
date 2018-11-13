@@ -26,6 +26,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
@@ -35,7 +36,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class DestroyJndiBindingCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;
@@ -60,20 +61,24 @@ public class DestroyJndiBindingCommandDUnitTest {
   }
 
   @Test
-  public void testDestroyJndiBinding() throws Exception {
+  public void testDestroyJndiBinding() {
     // assert that there is a datasource
-    VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getBindingNamesRecursively(JNDIInvoker.getJNDIContext()))
-            .containsKey("jndi1").containsValue(
-                "org.apache.geode.internal.datasource.GemFireBasicDataSource"));
+    VMProvider
+        .invokeInEveryMember(
+            () -> assertThat(JNDIInvoker.getBindingNamesRecursively(JNDIInvoker.getJNDIContext()))
+                .containsKey("java:jndi1").containsValue(
+                    "org.apache.geode.internal.datasource.GemFireBasicDataSource"),
+            server1, server2);
 
     gfsh.executeAndAssertThat("destroy jndi-binding --name=jndi1").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated
     locator.invoke(() -> {
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
+      assertThat(internalLocator).isNotNull();
       InternalConfigurationPersistenceService ccService =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+          internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
       Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
@@ -91,9 +96,9 @@ public class DestroyJndiBindingCommandDUnitTest {
       assertThat(found).isFalse();
     });
 
-    // verify datasource exists
+    // verify datasource does not exists
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
 
     // bounce server1 and assert that there is still no datasource received from cluster config
     server1.stop(false);

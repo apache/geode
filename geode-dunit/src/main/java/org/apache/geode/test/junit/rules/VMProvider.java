@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallableIF;
@@ -27,7 +28,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 public abstract class VMProvider {
+
   public static void invokeInEveryMember(SerializableRunnableIF runnableIF, VMProvider... members) {
+    if (ArrayUtils.isEmpty(members)) {
+      throw new IllegalArgumentException("Array of members must not be null nor empty.");
+    }
+
     Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
   }
 

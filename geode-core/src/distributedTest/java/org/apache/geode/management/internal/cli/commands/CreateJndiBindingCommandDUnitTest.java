@@ -20,11 +20,13 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -33,9 +35,11 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
+@Category(GfshTest.class)
 public class CreateJndiBindingCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;
@@ -57,10 +61,10 @@ public class CreateJndiBindingCommandDUnitTest {
   }
 
   @Test
-  public void testCreateJndiBinding() throws Exception {
+  public void testCreateJndiBinding() {
     // assert that is no datasource
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
 
     // create the binding
     gfsh.executeAndAssertThat(
@@ -69,8 +73,10 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // verify cluster config is updated
     locator.invoke(() -> {
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
+      assertThat(internalLocator).isNotNull();
       InternalConfigurationPersistenceService ccService =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+          internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
       String xmlContent = configuration.getCacheXmlContent();
 
@@ -94,7 +100,7 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // verify datasource exists
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1));
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1), server1, server2);
 
     // bounce server1
     server1.stop(false);
