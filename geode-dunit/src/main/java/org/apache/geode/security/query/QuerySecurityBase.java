@@ -44,8 +44,12 @@ import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
+/**
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
+ */
 public abstract class QuerySecurityBase extends JUnit4DistributedTestCase {
 
   public RegionShortcut getRegionType() {

@@ -16,9 +16,17 @@ package org.apache.geode.test.dunit;
 
 
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 /**
  * This class is the superclass of all distributed unit tests.
+ *
+ * @deprecated this class used to be the base for distributed test cases, but due to its complexity
+ *             and the complexity of inheritance in test classes, {@link ClusterStartupRule} or
+ *             manual configuration should be used instead. {@link VM}s can be acquired via
+ *             {@link VM#getVM(int)}, and used to run commands via the
+ *             {@link VM#invoke(SerializableRunnableIF)} family of methods.
+ *
  */
 
 @SuppressWarnings("serial")

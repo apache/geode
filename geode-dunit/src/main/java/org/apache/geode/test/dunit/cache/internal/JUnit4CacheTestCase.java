@@ -52,10 +52,13 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4 that require the creation of
  * a {@link Cache}.
+ *
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
  */
 public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     implements CacheTestFixture {

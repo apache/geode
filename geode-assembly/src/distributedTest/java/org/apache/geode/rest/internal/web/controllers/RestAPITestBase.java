@@ -57,8 +57,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.RestAPITest;
 
+/**
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
+ */
 @Category({RestAPITest.class})
 class RestAPITestBase extends JUnit4DistributedTestCase {
 

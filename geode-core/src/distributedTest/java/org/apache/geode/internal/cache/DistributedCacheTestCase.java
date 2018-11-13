@@ -37,10 +37,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 /**
  * This is the abstract superclass of tests that validate the functionality of GemFire's distributed
  * caches. It provides a number of convenient helper classes.
+ *
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
  */
 public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase {
 

@@ -61,7 +61,11 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
+/**
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
+ */
 public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

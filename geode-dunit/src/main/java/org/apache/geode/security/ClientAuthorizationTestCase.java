@@ -88,6 +88,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
@@ -95,6 +96,8 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
  * the authorization tests from client to server.
  *
  * @since GemFire 5.5
+ *
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
  */
 public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestCase {
 

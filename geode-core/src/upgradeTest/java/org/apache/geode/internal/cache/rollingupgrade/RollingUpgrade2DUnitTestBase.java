@@ -96,6 +96,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -111,6 +112,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * need to be set to true so that bouncing a vm doesn't lead to a NPE.
  *
  * @author jhuynh
+ *
+ * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
  */
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
