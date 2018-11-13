@@ -42,7 +42,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -64,7 +64,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * Commands for the cluster configuration
  */
 @SuppressWarnings("unused")
-public class ImportClusterConfigurationCommand extends SingleGfshCommand {
+public class ImportClusterConfigurationCommand extends GfshCommand {
   public static Logger logger = LogService.getLogger();
   public static final String XML_FILE = "xml-file";
   public static final String ACTION = "action";
