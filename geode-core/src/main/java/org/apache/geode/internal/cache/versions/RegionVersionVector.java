@@ -977,34 +977,35 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     return false;
   }
 
-  private boolean isGCVersionDominatedByHolder(Long gcVersion, RegionVersionHolder<T> otherHolder) {
+  private boolean isGCVersionDominatedByOtherHolder(Long gcVersion,
+      RegionVersionHolder<T> otherHolder) {
     if (gcVersion == null || gcVersion.longValue() == 0) {
       return true;
     } else {
       RegionVersionHolder<T> holder = new RegionVersionHolder<T>(gcVersion.longValue());
-      return !holder.isNewerThanOrCanFillExceptionsFor(otherHolder);
+      return otherHolder.dominates(holder);
     }
   }
 
   /**
-   * Test to see if this vector's rvvgc has updates that has not seen.
+   * See if this vector's rvvgc has updates that has not seen.
    */
-  public synchronized boolean isRVVGCDominatedBy(RegionVersionVector<T> other) {
-    if (other.singleMember) {
+  public synchronized boolean isRVVGCDominatedBy(RegionVersionVector<T> requesterRVV) {
+    if (requesterRVV.singleMember) {
       // do the diff for only a single member. This is typically a member that
       // recently crashed.
       Map.Entry<T, RegionVersionHolder<T>> entry =
-          other.memberToVersion.entrySet().iterator().next();
+          requesterRVV.memberToVersion.entrySet().iterator().next();
 
       Long gcVersion = this.memberToGCVersion.get(entry.getKey());
-      return isGCVersionDominatedByHolder(gcVersion, entry.getValue());
+      return isGCVersionDominatedByOtherHolder(gcVersion, entry.getValue());
     }
 
     boolean isDominatedByRemote = true;
     long localgcversion = this.localGCVersion.get();
     if (localgcversion > 0) {
-      RegionVersionHolder<T> otherHolder = other.memberToVersion.get(this.myId);
-      isDominatedByRemote = isGCVersionDominatedByHolder(localgcversion, otherHolder);
+      RegionVersionHolder<T> otherHolder = requesterRVV.memberToVersion.get(this.myId);
+      isDominatedByRemote = isGCVersionDominatedByOtherHolder(localgcversion, otherHolder);
       if (isDominatedByRemote == false) {
         return false;
       }
@@ -1014,12 +1015,12 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       T mbr = entry.getKey();
       Long gcVersion = entry.getValue();
       RegionVersionHolder<T> otherHolder = null;
-      if (mbr.equals(other.getOwnerId())) {
-        otherHolder = localExceptions;
+      if (mbr.equals(requesterRVV.getOwnerId())) {
+        otherHolder = requesterRVV.localExceptions;
       } else {
-        otherHolder = other.memberToVersion.get(mbr);
+        otherHolder = requesterRVV.memberToVersion.get(mbr);
       }
-      isDominatedByRemote = isGCVersionDominatedByHolder(gcVersion, otherHolder);
+      isDominatedByRemote = isGCVersionDominatedByOtherHolder(gcVersion, otherHolder);
       if (isDominatedByRemote == false) {
         return false;
       }
