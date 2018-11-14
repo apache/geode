@@ -62,6 +62,7 @@ import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
@@ -110,6 +111,12 @@ public abstract class AbstractBaseController implements InitializingBean {
   }
 
   protected InternalCache getCache() {
+    InternalCache cache = cacheProvider.getCacheForClientAccess();
+    Assert.state(cache != null, "The Gemfire Cache reference was not properly initialized");
+    return cache;
+  }
+
+  protected InternalCache getCacheForServerAccess() {
     InternalCache cache = cacheProvider.getInternalCache();
     Assert.state(cache != null, "The Gemfire Cache reference was not properly initialized");
     return cache;
@@ -402,7 +409,7 @@ public abstract class AbstractBaseController implements InitializingBean {
   }
 
   Region<String, String> getQueryStore(final String namePath) {
-    return ValidationUtils.returnValueThrowOnNull(getCache().<String, String>getRegion(namePath),
+    return ValidationUtils.returnValueThrowOnNull(getCacheForServerAccess().<String, String>getRegion(namePath),
         new GemfireRestException(String.format("Query store does not exist!", namePath)));
   }
 

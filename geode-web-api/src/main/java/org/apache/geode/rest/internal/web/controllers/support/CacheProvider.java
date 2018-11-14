@@ -14,9 +14,12 @@
  */
 package org.apache.geode.rest.internal.web.controllers.support;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 
 public interface CacheProvider {
 
   InternalCache getInternalCache();
+
+  InternalCache getCacheForClientAccess();
 }
