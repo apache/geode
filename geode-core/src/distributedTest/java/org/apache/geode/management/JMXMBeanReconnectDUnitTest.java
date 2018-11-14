@@ -38,7 +38,6 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import com.google.common.base.Stopwatch;
-import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -193,7 +192,7 @@ public class JMXMBeanReconnectDUnitTest {
       if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
         fail("Condition was not true within " + TIMEOUT + " seconds.\n"
             + " Member's stop did not federate to other members.\n"
-            + "Locator2 had beans: " + intermediateL2Beans);
+            + "Locator2 had beans:\n" + intermediateL2Beans);
       }
 
       if (intermediateL2Beans.size() == NUM_BEANS) {
@@ -229,10 +228,9 @@ public class JMXMBeanReconnectDUnitTest {
 
       // check that the timeout has not been reached or exceeded
       if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        throw new ConditionTimeoutException(
-            "Condition was not true within " + TIMEOUT + " seconds.\n"
-                + " Member's restart did not federate to members.\n"
-                + "Locator2 had beans: " + intermediateL2Beans);
+        fail("Condition was not true within " + TIMEOUT + " seconds.\n"
+            + " Member's restart did not federate to members.\n"
+            + "Locator2 had beans:\n" + intermediateL2Beans);
       }
 
       if (finalL2Beans.size() != NUM_BEANS) {
@@ -290,8 +288,8 @@ public class JMXMBeanReconnectDUnitTest {
       if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
         fail("Condition was not true within " + TIMEOUT + " seconds.\n"
             + " Member's stop did not federate to other members.\n"
-            + "Locator1 had beans: " + intermediateL1Beans + "\n"
-            + "Locator2 had beans: " + intermediateL2Beans);
+            + "Locator1 had beans:\n" + intermediateL1Beans + "\n"
+            + "Locator2 had beans:\n" + intermediateL2Beans);
       }
 
       if (intermediateL1Beans.size() != intermediateL2Beans.size()) {
@@ -329,11 +327,10 @@ public class JMXMBeanReconnectDUnitTest {
 
       // check if the timeout has been reached or exceeded
       if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        throw new ConditionTimeoutException(
-            "Condition was not true within " + TIMEOUT + " seconds.\n"
-                + " Member's restart did not federate to members.\n"
-                + "Locator1 had beans: " + intermediateL1Beans + "\n"
-                + "Locator2 had beans: " + intermediateL2Beans);
+        fail("Condition was not true within " + TIMEOUT + " seconds.\n"
+            + " Member's restart did not federate to members.\n"
+            + "Locator1 had beans:\n" + intermediateL1Beans + "\n"
+            + "Locator2 had beans:\n" + intermediateL2Beans);
       }
 
       if (finalL1Beans.size() != NUM_BEANS && finalL2Beans.size() != NUM_BEANS) {
