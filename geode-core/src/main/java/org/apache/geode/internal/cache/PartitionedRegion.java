@@ -7633,7 +7633,9 @@ public class PartitionedRegion extends LocalRegion
       colocatedWithRegion.getColocatedByList().remove(this);
     }
 
-    bucketSorter.shutdown();
+    if (bucketSorter != null) {
+      bucketSorter.shutdown();
+    }
 
     RegionLogger.logDestroy(getName(),
         this.cache.getInternalDistributedSystem().getDistributedMember(), null, op.isClose());
