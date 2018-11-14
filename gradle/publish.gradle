@@ -130,7 +130,7 @@ subprojects {
   }
 
   signing {
-    required({project.isReleaseVersion})
+    required({project.isReleaseVersion && project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile')})
     sign publishing.publications.maven
   }
 
