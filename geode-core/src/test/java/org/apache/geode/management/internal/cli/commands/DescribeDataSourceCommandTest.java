@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -29,10 +31,12 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class DescribeDataSourceCommandTest {
@@ -41,25 +45,23 @@ public class DescribeDataSourceCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DescribeDataSourceCommand command;
-  private InternalCache cache;
+  // private InternalCache cache;
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
+  InternalConfigurationPersistenceService clusterConfigService;
 
   private static String COMMAND = "describe data-source";
+  private static String DATA_SOURCE_NAME = "myDataSource";
 
   @Before
   public void setUp() throws Exception {
-    cache = mock(InternalCache.class);
-    when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
     command = spy(DescribeDataSourceCommand.class);
-    command.setCache(cache);
 
     binding = new JndiBindingsType.JndiBinding();
-    binding.setJndiName("name");
+    binding.setJndiName(DATA_SOURCE_NAME);
     binding.setType(DATASOURCE_TYPE.POOLED.getType());
     bindings = new ArrayList<>();
-    InternalConfigurationPersistenceService clusterConfigService =
-        mock(InternalConfigurationPersistenceService.class);
+    clusterConfigService = mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     when(cacheConfig.getJndiBindings()).thenReturn(bindings);
     bindings.add(binding);
@@ -76,7 +78,147 @@ public class DescribeDataSourceCommandTest {
 
   @Test
   public void nameWorks() {
-    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess();
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=" + DATA_SOURCE_NAME).statusIsSuccess();
   }
 
+  @Test
+  public void describeDataSourceWithNoClusterConfigurationServerFails() {
+    doReturn(null).when(command).getConfigurationPersistenceService();
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
+    assertThat(result.toString()).contains("Cluster configuration service must be enabled.");
+  }
+
+  @Test
+  public void describeDataSourceWithNoClusterConfigFails() {
+    doReturn(null).when(clusterConfigService).getCacheConfig(any());
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
+    assertThat(result.toString()).contains("Cluster configuration is not available.");
+  }
+
+  @Test
+  public void describeDataSourceWithWrongNameFails() {
+    ResultModel result = command.describeDataSource("bogusName");
+
+    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
+    assertThat(result.toString()).contains("Data source: bogusName not found");
+  }
+
+  @Test
+  public void describeDataSourceWithUnsupportedTypeFails() {
+    binding.setType(DATASOURCE_TYPE.MANAGED.getType());
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
+    assertThat(result.toString()).contains("Unknown data source type: ManagedDataSource");
+  }
+
+  @Test
+  public void describeDataSourceWithSimpleTypeReturnsPooledFalse() {
+    binding.setType(DATASOURCE_TYPE.SIMPLE.getType());
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(3)).isEqualTo(Arrays.asList("pooled", "false"));
+  }
+
+  @Test
+  public void describeDataSourceWithPooledTypeReturnsPooledTrue() {
+    binding.setType(DATASOURCE_TYPE.POOLED.getType());
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(3)).isEqualTo(Arrays.asList("pooled", "true"));
+  }
+
+  @Test
+  public void describeDataSourceTypeReturnsName() {
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0)).isEqualTo(Arrays.asList("name", DATA_SOURCE_NAME));
+  }
+
+  @Test
+  public void describeDataSourceWithUrlReturnsUrl() {
+    binding.setConnectionUrl("myUrl");
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(1)).isEqualTo(Arrays.asList("url", "myUrl"));
+  }
+
+  @Test
+  public void describeDataSourceWithUsernameReturnsUsername() {
+    binding.setUserName("myUserName");
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(2)).isEqualTo(Arrays.asList("username", "myUserName"));
+  }
+
+  @Test
+  public void describeDataSourceWithPooledDataSourceFactoryClassShowsItInTheResult() {
+    binding.setType(DATASOURCE_TYPE.POOLED.getType());
+    binding.setConnPooledDatasourceClass("myPooledDataSourceFactoryClass");
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(4)).isEqualTo(
+        Arrays.asList("pooled-data-source-factory-class", "myPooledDataSourceFactoryClass"));
+  }
+
+  @Test
+  public void describeDataSourceWithPasswordDoesNotShowPasswordInResult() {
+    binding.setType(DATASOURCE_TYPE.POOLED.getType());
+    binding.setPassword("myPassword");
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    assertThat(result.toString()).doesNotContain("myPassword");
+  }
+
+  @Test
+  public void describeDataSourceWithPoolPropertiesDoesNotShowsItInTheResult() {
+    binding.setType(DATASOURCE_TYPE.SIMPLE.getType());
+    List<ConfigProperty> configProperties = binding.getConfigProperties();
+    configProperties.add(new ConfigProperty("name1", "value1"));
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    assertThat(result.toString()).doesNotContain("name1");
+    assertThat(result.toString()).doesNotContain("value1");
+  }
+
+  @Test
+  public void describeDataSourceWithPoolPropertiesShowsItInTheResult() {
+    binding.setType(DATASOURCE_TYPE.POOLED.getType());
+    List<ConfigProperty> configProperties = binding.getConfigProperties();
+    configProperties.add(new ConfigProperty("name1", "value1"));
+    configProperties.add(new ConfigProperty("name2", "value2"));
+
+    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+
+    TabularResultModel section =
+        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(5)).isEqualTo(Arrays.asList("name1", "value1"));
+    assertThat(section.getValuesInRow(6)).isEqualTo(Arrays.asList("name2", "value2"));
+  }
 }

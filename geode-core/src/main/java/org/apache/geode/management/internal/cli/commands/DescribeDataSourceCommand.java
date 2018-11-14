@@ -51,12 +51,11 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
     ResultModel resultModel = new ResultModel();
     TabularResultModel tabularData = resultModel.addTable(DATA_SOURCE_PROPERTIES_SECTION);
 
-    InternalConfigurationPersistenceService ccService =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService == null) {
       return ResultModel.createError("Cluster configuration service must be enabled.");
     }
-    CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+    CacheConfig cacheConfig = ccService.getCacheConfig(null);
     if (cacheConfig == null) {
       return ResultModel.createError("Cluster configuration is not available.");
     }
