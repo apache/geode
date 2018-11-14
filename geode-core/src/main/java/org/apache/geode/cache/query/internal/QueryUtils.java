@@ -722,13 +722,18 @@ public class QueryUtils {
       } else if (currentLevel.getCmpIteratorDefn().getCollectionExpr()
           .getType() == OQLLexerTokenTypes.LITERAL_select) {
         useDerivedResults = false;
-      } else {
-        key = getCompiledIdFromPath(currentLevel.getCmpIteratorDefn().getCollectionExpr()).getId()
-            + ':' + currentLevel.getDefinition();
       }
       SelectResults c;
-      if (useDerivedResults && derivedResults != null && derivedResults.containsKey(key)) {
-        c = derivedResults.get(key);
+      CompiledValue path = currentLevel.getCmpIteratorDefn().getCollectionExpr();
+      if (useDerivedResults && derivedResults != null && hasIdentifierAtLeafNode(path)) {
+        key = getCompiledIdFromPath(path).getId()
+            + ':' + currentLevel.getDefinition();
+        if (derivedResults.containsKey(key)) {
+          c = derivedResults.get(key);
+        }
+        else {
+          c =currentLevel.evaluateCollection(context);
+        }
       } else {
         c = currentLevel.evaluateCollection(context);
       }
@@ -749,6 +754,19 @@ public class QueryUtils {
       }
       expansionItrs.previous();
     }
+  }
+
+  private static boolean hasIdentifierAtLeafNode(CompiledValue path) {
+    try {
+      if (path.getType() == OQLLexerTokenTypes.Identifier) {
+        return true;
+      } else {
+        return hasIdentifierAtLeafNode(path.getReceiver());
+      }
+    }catch (UnsupportedOperationException ex){
+      return false;
+    }
+
   }
 
   /**
