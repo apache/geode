@@ -183,16 +183,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
   @Override
   public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
     Object[] arguments = (Object[]) element;
-    RegionMapping newCacheElement = (RegionMapping) arguments[0];
+    RegionMapping regionMapping = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];
-    String regionName = newCacheElement.getRegionName();
+    String regionName = regionMapping.getRegionName();
     String queueName = createAsyncEventQueueName(regionName);
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
       return;
     }
     RegionAttributesType attributes = getRegionAttributes(regionConfig);
-    addMappingToRegion(newCacheElement, regionConfig);
+    addMappingToRegion(regionMapping, regionConfig);
     if (!synchronous) {
       createAsyncQueue(cacheConfig, attributes, queueName);
     }
