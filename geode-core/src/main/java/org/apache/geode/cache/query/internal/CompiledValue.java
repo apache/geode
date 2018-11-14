@@ -141,4 +141,8 @@ public interface CompiledValue {
   }
 
   CompiledValue getReceiver();
+
+  default boolean hasIdentifierAtLeafNode() {
+    return false;
+  }
 }

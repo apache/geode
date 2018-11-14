@@ -531,6 +531,12 @@ javadoc/org/apache/geode/cache/query/data/PortfolioData.html
 javadoc/org/apache/geode/cache/query/data/PortfolioNoDS.html
 javadoc/org/apache/geode/cache/query/data/PortfolioPdx.Day.html
 javadoc/org/apache/geode/cache/query/data/PortfolioPdx.html
+javadoc/org/apache/geode/cache/query/data/Limit.html
+javadoc/org/apache/geode/cache/query/data/PortfolioMetric.html
+javadoc/org/apache/geode/cache/query/data/PortfolioWithMetrics.html
+javadoc/org/apache/geode/cache/query/data/QuerySupportService.QueryContext.html
+javadoc/org/apache/geode/cache/query/data/QuerySupportService.html
+javadoc/org/apache/geode/cache/query/data/TempLimit.html
 javadoc/org/apache/geode/cache/query/data/Position.html
 javadoc/org/apache/geode/cache/query/data/PositionNoDS.html
 javadoc/org/apache/geode/cache/query/data/PositionPdx.html
