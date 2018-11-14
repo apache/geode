@@ -722,13 +722,17 @@ public class QueryUtils {
       } else if (currentLevel.getCmpIteratorDefn().getCollectionExpr()
           .getType() == OQLLexerTokenTypes.LITERAL_select) {
         useDerivedResults = false;
-      } else {
-        key = getCompiledIdFromPath(currentLevel.getCmpIteratorDefn().getCollectionExpr()).getId()
-            + ':' + currentLevel.getDefinition();
       }
       SelectResults c;
-      if (useDerivedResults && derivedResults != null && derivedResults.containsKey(key)) {
-        c = derivedResults.get(key);
+      CompiledValue path = currentLevel.getCmpIteratorDefn().getCollectionExpr();
+      if (useDerivedResults && derivedResults != null && path.hasIdentifierAtLeafNode()) {
+        key = getCompiledIdFromPath(path).getId()
+            + ':' + currentLevel.getDefinition();
+        if (derivedResults.containsKey(key)) {
+          c = derivedResults.get(key);
+        } else {
+          c = currentLevel.evaluateCollection(context);
+        }
       } else {
         c = currentLevel.evaluateCollection(context);
       }

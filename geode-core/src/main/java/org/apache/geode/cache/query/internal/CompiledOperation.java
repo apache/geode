@@ -91,6 +91,15 @@ public class CompiledOperation extends AbstractCompiledValue {
   }
 
   @Override
+  public boolean hasIdentifierAtLeafNode() {
+    if (this.receiver.getType() == Identifier) {
+      return true;
+    } else {
+      return this.receiver.hasIdentifierAtLeafNode();
+    }
+  }
+
+  @Override
   public CompiledValue getReceiver() {
     return this.getReceiver(null);
   }
