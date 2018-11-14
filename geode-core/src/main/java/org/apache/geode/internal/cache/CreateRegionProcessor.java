@@ -542,7 +542,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       Set<String> otherGatewaySenderIds = ((LocalRegion) rgn).getGatewaySenderIds();
       Set<String> myGatewaySenderIds = profile.gatewaySenderIds;
       if (!otherGatewaySenderIds.equals(myGatewaySenderIds)) {
-        if (!rgn.getFullPath().contains(DynamicRegionFactory.dynamicRegionListName)) {
+        if (!rgn.getFullPath().contains(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME)) {
           result =
               String.format(
                   "Cannot create Region %s with %s gateway sender ids because another cache has the same region defined with %s gateway sender ids",

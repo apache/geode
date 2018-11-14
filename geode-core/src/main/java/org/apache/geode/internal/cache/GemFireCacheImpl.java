@@ -3805,7 +3805,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     if (!sender.isParallel()) {
-      Region dynamicMetaRegion = getRegion(DynamicRegionFactory.dynamicRegionListName);
+      Region dynamicMetaRegion = getRegion(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME);
       if (dynamicMetaRegion == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(" The dynamic region is null. ");
