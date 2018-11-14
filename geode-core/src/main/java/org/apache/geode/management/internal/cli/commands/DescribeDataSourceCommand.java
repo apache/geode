@@ -27,6 +27,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -68,18 +69,18 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
     }
     boolean pooled;
     String type = binding.getType();
-    if ("SimpleDataSource".equals(type)) {
+    if (DATASOURCE_TYPE.SIMPLE.getType().equals(type)) {
       pooled = false;
-    } else if ("PooledDataSource".equals(type)) {
+    } else if (DATASOURCE_TYPE.POOLED.getType().equals(type)) {
       pooled = true;
     } else {
       return ResultModel.createError(String.format("Unknown data source type: %s", type));
     }
 
-    addTableRow(tabularData, CreateDataSourceCommand.POOLED, Boolean.toString(pooled));
     addTableRow(tabularData, CreateDataSourceCommand.NAME, binding.getJndiName());
-    addTableRow(tabularData, CreateDataSourceCommand.USERNAME, binding.getUserName());
     addTableRow(tabularData, CreateDataSourceCommand.URL, binding.getConnectionUrl());
+    addTableRow(tabularData, CreateDataSourceCommand.USERNAME, binding.getUserName());
+    addTableRow(tabularData, CreateDataSourceCommand.POOLED, Boolean.toString(pooled));
     if (pooled) {
       addTableRow(tabularData, CreateDataSourceCommand.POOLED_DATA_SOURCE_FACTORY_CLASS,
           binding.getConnPooledDatasourceClass());
