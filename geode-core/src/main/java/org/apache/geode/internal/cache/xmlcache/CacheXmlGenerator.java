@@ -2027,7 +2027,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           || ((RegionAttributesCreation) attrs).hasGatewaySenderId())) {
         Set<String> senderIds = new HashSet<String>(attrs.getGatewaySenderIds());
         StringBuilder senderStringBuff = new StringBuilder();
-        if (senderIds != null && senderIds.size() != 0) {
+        if (senderIds.size() != 0) {
           for (String senderId : senderIds) {
             if (!(senderStringBuff.length() == 0)) {
               senderStringBuff.append(",");
@@ -2045,7 +2045,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           || ((RegionAttributesCreation) attrs).hasAsyncEventListeners())) {
         Set<String> asyncEventQueueIds = new HashSet<String>(attrs.getAsyncEventQueueIds());
         StringBuilder asyncEventQueueStringBuff = new StringBuilder();
-        if (asyncEventQueueIds != null && asyncEventQueueIds.size() != 0) {
+        if (asyncEventQueueIds.size() != 0) {
           for (String asyncEventQueueId : asyncEventQueueIds) {
             if (!(asyncEventQueueStringBuff.length() == 0)) {
               asyncEventQueueStringBuff.append(",");

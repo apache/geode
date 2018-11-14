@@ -1675,8 +1675,7 @@ public class CqServiceImpl implements CqService {
 
           if ((!cQuery.isRunning() && cQuery.getQueuedEvents() == null)) {
             if (isDebugEnabled) {
-              logger.debug("Unable to invoke CqListener, {}, CqName : {}",
-                  ((cQuery == null) ? "CQ not found" : " CQ is Not running"), cqName);
+              logger.debug("Unable to invoke CqListener, CQ is Not running, CqName : {}", cqName);
             }
             continue;
           }

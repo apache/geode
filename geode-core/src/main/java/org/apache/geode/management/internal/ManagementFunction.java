@@ -18,10 +18,8 @@ import java.io.Serializable;
 
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -121,17 +119,11 @@ public class ManagementFunction implements InternalFunction {
       if (cache != null && !cache.isClosed()) {
         sendException(e, fc);
       }
-    } catch (ReflectionException e) {
-      sendException(e, fc);
-    } catch (MBeanException e) {
-      sendException(e, fc);
-    } catch (NullPointerException e) {
-      sendException(e, fc);
     } catch (Exception e) {
       sendException(e, fc);
     } finally {
       if (!executedSuccessfully) {
-        if (cache == null || (cache != null && cache.isClosed())) {
+        if (cache == null || cache.isClosed()) {
           Exception e =
               new Exception("Member Is Shutting down");
           sendException(e, fc);

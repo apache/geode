@@ -197,19 +197,17 @@ public class GetMemberConfigInformationFunction implements InternalFunction {
     // Make a copy to avoid the CME's
     Set<String> attributesSet = new HashSet<String>(attributesMap.keySet());
 
-    if (attributesSet != null) {
-      for (String attribute : attributesSet) {
-        String attributeValue = attributesMap.get(attribute);
-        String defaultValue = defaultAttributesMap.get(attribute);
+    for (String attribute : attributesSet) {
+      String attributeValue = attributesMap.get(attribute);
+      String defaultValue = defaultAttributesMap.get(attribute);
 
-        if (attributeValue != null) {
-          if (attributeValue.equals(defaultValue)) {
-            attributesMap.remove(attribute);
-          }
-        } else {
-          if (defaultValue == null || defaultValue.equals("")) {
-            attributesMap.remove(attribute);
-          }
+      if (attributeValue != null) {
+        if (attributeValue.equals(defaultValue)) {
+          attributesMap.remove(attribute);
+        }
+      } else {
+        if (defaultValue == null || defaultValue.equals("")) {
+          attributesMap.remove(attribute);
         }
       }
     }

@@ -774,7 +774,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     }
     if (collector != null) {
       GemFireVM vm = getMemberById(sender);
-      if (vm != null && collector != null) {
+      if (vm != null) {
         collector.resultsReturned(results, vm, snapshotId);
       }
     }
