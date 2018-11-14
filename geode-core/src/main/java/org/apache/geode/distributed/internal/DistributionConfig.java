@@ -2023,7 +2023,7 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The default value of {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} is
-   * <code>60000</code>.
+   * <code>0</code>.
    */
   int DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL = 0;
   /**

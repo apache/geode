@@ -2169,8 +2169,7 @@ public interface ConfigurationProperties {
    * name="check-registered-keys-interval-ms"/a>
    * <p>
    * <U>Description</U>: Defines the time interval (in milliseconds) with which checkRegisteredKeys
-   * function
-   * can be called.
+   * function can be called.
    * <p>
    * <U>Default</U>: "0"
    * <p>

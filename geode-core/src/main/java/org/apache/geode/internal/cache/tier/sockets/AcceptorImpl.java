@@ -981,7 +981,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public void runSelectorLoop() {
     // int zeroEventsCount = 0;
     try {
-      long initialTime = System.currentTimeMillis();
+      long lastCheckedTime = System.currentTimeMillis();
       logger.info("SELECTOR enabled");
       while (this.selector.isOpen() && !Thread.currentThread().isInterrupted()) {
         {
@@ -994,10 +994,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             break;
           }
           ServerConnection sc;
-          long delta = System.currentTimeMillis() - initialTime;
+          long delta = System.currentTimeMillis() - lastCheckedTime;
           if (delta >= checkRegisteredKeysInterval) {
             registeredKeys = checkRegisteredKeys(registeredKeys);
-            initialTime = System.currentTimeMillis();
+            lastCheckedTime = System.currentTimeMillis();
           }
           if (registeredKeys == 0) {
             // do blocking wait on queue until we get some keys registered
