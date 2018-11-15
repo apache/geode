@@ -148,6 +148,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   QueryService getLocalQueryService();
 
+  <K, V> Region<K, V> getQueryStore(String storeName);
+
   void registerInterestStarted();
 
   void registerInterestCompleted();

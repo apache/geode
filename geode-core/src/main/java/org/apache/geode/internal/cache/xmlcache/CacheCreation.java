@@ -1127,6 +1127,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public Region getQueryStore(String path) {
+    return getRegion(path);
+  }
+
+  @Override
   public CacheServer addCacheServer() {
     return addCacheServer(false);
   }

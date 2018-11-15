@@ -138,6 +138,12 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  public <K, V> Region<K, V> getQueryStore(String path) {
+    Region<K, V> result = delegate.getRegion(path);
+    return result;
+  }
+
+  @Override
   public Region getRegion(String path, boolean returnDestroyedRegion) {
     Region result = delegate.getRegion(path, returnDestroyedRegion);
     checkForInternalRegion(result);
