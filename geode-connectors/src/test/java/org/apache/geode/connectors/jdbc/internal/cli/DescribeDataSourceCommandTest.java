@@ -107,7 +107,7 @@ public class DescribeDataSourceCommandTest {
     ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
 
     assertThat(result.getStatus()).isEqualTo(Status.ERROR);
-    assertThat(result.toString()).contains("Cluster configuration is not available.");
+    assertThat(result.toString()).contains("Data source: " + DATA_SOURCE_NAME + " not found");
   }
 
   @Test

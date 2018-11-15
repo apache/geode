@@ -40,7 +40,7 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class DescribeDataSourceCommand extends InternalGfshCommand {
   static final String DESCRIBE_DATA_SOURCE = "describe data-source";
-  private static final String DESCRIBE_DATA_SOURCE__HELP =
+  private static final String DESCRIBE_DATA_SOURCE__HELP = EXPERIMENTAL +
       "Describe the configuration of the given data source.";
 
   static final String DATA_SOURCE_PROPERTIES_SECTION = "data-source-properties";
@@ -54,6 +54,7 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
       help = "Name of the data source to describe") String dataSourceName) {
 
     ResultModel resultModel = new ResultModel();
+    resultModel.setHeader(EXPERIMENTAL);
     TabularResultModel tabularData = resultModel.addTable(DATA_SOURCE_PROPERTIES_SECTION);
 
     InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
@@ -62,7 +63,7 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
     }
     CacheConfig cacheConfig = ccService.getCacheConfig(null);
     if (cacheConfig == null) {
-      return ResultModel.createError("Cluster configuration is not available.");
+      return ResultModel.createError(String.format("Data source: %s not found", dataSourceName));
     }
 
     List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
