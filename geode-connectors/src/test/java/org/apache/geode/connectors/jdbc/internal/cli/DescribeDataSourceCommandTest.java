@@ -288,4 +288,40 @@ public class DescribeDataSourceCommandTest {
 
     assertThat(result).isEqualTo(Collections.singletonList("regionName"));
   }
+
+  @Test
+  public void getRegionsThatUseDataSourceGivenMultipleRegionConfigsReturnsAllRegionNames() {
+    RegionMapping regionMapping;
+    {
+      RegionConfig regionConfig1 = mock(RegionConfig.class, "regionConfig1");
+      when(regionConfig1.getName()).thenReturn("regionName1");
+      regionMapping = mock(RegionMapping.class, "regionMapping1");
+      when(regionMapping.getDataSourceName()).thenReturn("dataSourceName");
+      when(regionConfig1.getCustomRegionElements())
+          .thenReturn(Arrays.asList(regionMapping));
+      regionConfigs.add(regionConfig1);
+    }
+    {
+      RegionConfig regionConfig2 = mock(RegionConfig.class, "regionConfig2");
+      when(regionConfig2.getName()).thenReturn("regionName2");
+      regionMapping = mock(RegionMapping.class, "regionMapping2");
+      when(regionMapping.getDataSourceName()).thenReturn("otherDataSourceName");
+      when(regionConfig2.getCustomRegionElements())
+          .thenReturn(Arrays.asList(regionMapping));
+      regionConfigs.add(regionConfig2);
+    }
+    {
+      RegionConfig regionConfig3 = mock(RegionConfig.class, "regionConfig3");
+      when(regionConfig3.getName()).thenReturn("regionName3");
+      regionMapping = mock(RegionMapping.class, "regionMapping3");
+      when(regionMapping.getDataSourceName()).thenReturn("dataSourceName");
+      when(regionConfig3.getCustomRegionElements())
+          .thenReturn(Arrays.asList(regionMapping));
+      regionConfigs.add(regionConfig3);
+    }
+
+    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "dataSourceName");
+
+    assertThat(result).isEqualTo(Arrays.asList("regionName1", "regionName3"));
+  }
 }
