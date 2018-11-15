@@ -2037,7 +2037,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   int MAX_CHECK_REGISTERED_KEYS_INTERVAL = 86400000;
   /**
-   * The name of the {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} property.
+   * The name of the {@link ConfigurationProperties#CHECK_REGISTERED_KEYS_INTERVAL} property
    */
   @ConfigAttribute(type = Integer.class, min = MIN_CHECK_REGISTERED_KEYS_INTERVAL,
       max = MAX_CHECK_REGISTERED_KEYS_INTERVAL)
