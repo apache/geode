@@ -151,6 +151,9 @@ dependencies {
 
 
   distributedTestCompile(project(':geode-core'))
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
   distributedTestCompile(project(':extensions:session-testing-war'))
   distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
   distributedTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
@@ -247,7 +250,7 @@ def cp = {
         it.contains('commons-io') ||
         it.contains('classgraph') ||
         it.contains('commons-collections') ||
-        it.contains('commons-lang') ||
+        it.contains('commons-lang3') ||
         it.contains('commons-logging') ||
         it.contains('commons-validator') ||
         it.contains('commons-beanutils') ||
@@ -535,7 +538,7 @@ task dumpInstalledJars(dependsOn: installDist) {
           println ""
           println file.name
           println("==========================")
-          printJars(warContents);
+          printJars(warContents)
       }
     }
   }

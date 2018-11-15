@@ -71,7 +71,7 @@ public abstract class ListExecutor extends AbstractExecutor {
     String oppositeKey = pushType == ListDirection.RIGHT ? "head" : "tail";
     Integer index = (Integer) keyRegion.get(indexKey);
     Integer opp = (Integer) keyRegion.get(oppositeKey);
-    if (index != opp)
+    if (index != null && (!index.equals(opp)))
       index += pushType == ListDirection.LEFT ? -1 : 1; // Subtract index if left push, add if right
                                                         // push
 
@@ -127,8 +127,8 @@ public abstract class ListExecutor extends AbstractExecutor {
       boolean indexSet = false;
       do {
         Integer existingIndex = (Integer) keyRegion.get(indexKey);
-        if ((pushType == ListDirection.RIGHT && existingIndex < index)
-            || (pushType == ListDirection.LEFT && existingIndex > index))
+        if (index != null && ((pushType == ListDirection.RIGHT && existingIndex < index)
+            || (pushType == ListDirection.LEFT && existingIndex > index)))
           indexSet = keyRegion.replace(indexKey, existingIndex, index);
         else
           break;

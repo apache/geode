@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -48,7 +49,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class QueryCommand extends InternalGfshCommand {
+public class QueryCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = "query", help = CliStrings.QUERY__HELP)

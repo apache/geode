@@ -16,6 +16,11 @@
  */
 
 dependencies {
-  distributedTestCompile('junit:junit:' + project.'junit.version')
   compile(project(':geode-core'))
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
+
+
+  distributedTestCompile('junit:junit:' + project.'junit.version')
 }

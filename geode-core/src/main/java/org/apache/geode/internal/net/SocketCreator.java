@@ -73,7 +73,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
@@ -1047,7 +1047,7 @@ public class SocketCreator {
         sslSocket.setSSLParameters(sslParameters);
       } else {
         logger.warn("Your SSL configuration disables hostname validation. "
-            + "Future releases of Apache GEODE will mandate hostname validation. "
+            + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
             + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
       }
 

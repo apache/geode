@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.result;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -384,10 +384,6 @@ public class ResultBuilder {
 
         @Override
         public SectionResultData addSection(String keyToRetrieve) {
-          throw new UnsupportedOperationException("This is read only result data");
-        }
-
-        public CompositeResultData addSeparator(char buildSeparatorFrom) {
           throw new UnsupportedOperationException("This is read only result data");
         }
       };

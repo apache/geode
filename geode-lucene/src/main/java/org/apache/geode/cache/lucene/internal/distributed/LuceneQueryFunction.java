@@ -135,7 +135,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     }
 
     int resultLimit = searchContext.getLimit();
-    CollectorManager manager = (searchContext == null) ? null : searchContext.getCollectorManager();
+    CollectorManager manager = searchContext.getCollectorManager();
     if (manager == null) {
       manager = new TopEntriesCollectorManager(null, resultLimit);
     }

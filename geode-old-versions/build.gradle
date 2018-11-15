@@ -39,18 +39,18 @@ task createGeodeClasspathsFile {
   addOldVersion('test170', '1.7.0', true)
 
   doLast {
-    Properties versions = new Properties();
+    Properties versions = new Properties()
     project(':geode-old-versions').sourceSets.each {
       versions.setProperty(it.name,it.runtimeClasspath.getAsPath())
     }
 
-    classpathsFile.getParentFile().mkdirs();
+    classpathsFile.getParentFile().mkdirs()
 
     new FileOutputStream(classpathsFile).withStream { fos ->
       versions.store(fos, '')
     }
 
-    installsFile.getParentFile().mkdirs();
+    installsFile.getParentFile().mkdirs()
 
     new FileOutputStream(installsFile).withStream { fos ->
       project.ext.installs.store(fos, '')

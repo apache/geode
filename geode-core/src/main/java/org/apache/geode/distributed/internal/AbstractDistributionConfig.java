@@ -194,7 +194,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
@@ -694,7 +694,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         default:
           throw new IllegalArgumentException(
               String.format("%s is not in the valid set of options %s",
-                  value,
+                  Arrays.toString(value),
                   StringUtils
                       .join(new String[] {SecurableCommunicationChannel.ALL.getConstant(),
                           SecurableCommunicationChannel.CLUSTER.getConstant(),
@@ -1488,6 +1488,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   @Override
   protected Map getAttDescMap() {
     return dcAttDescriptions;
+  }
+
+  @Override
+  public boolean isLoner() {
+    return getLocators().equals("") && getMcastPort() == 0;
   }
 
   static InetAddress _getDefaultMcastAddress() {

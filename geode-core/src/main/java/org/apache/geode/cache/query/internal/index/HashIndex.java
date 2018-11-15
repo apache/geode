@@ -590,7 +590,7 @@ public class HashIndex extends AbstractIndex {
       boolean applyOrderBy, boolean asc, long iteratorCreationTime) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryObserver observer = QueryObserverHolder.getInstance();
-    if (result == null || (limit != -1 && result != null && result.size() == limit)) {
+    if (result == null || limit != -1 && result.size() == limit) {
       return;
     }
     List orderedKeys = null;

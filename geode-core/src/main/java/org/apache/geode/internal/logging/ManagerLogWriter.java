@@ -21,20 +21,20 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.util.LogFileUtils;
 
 /**
- * Implementation of {@link LogWriterI18n} for distributed system members. It's just like
+ * Implementation of {@link LogWriter} for distributed system members. It's just like
  * {@link LocalLogWriter} except it has support for rolling and alerts.
  *
  * @since Geode 1.0
  */
-public class ManagerLogWriter extends LocalLogWriter {
+public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
 
   private static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "logging.test.fileSizeLimitInKB";
@@ -62,16 +62,19 @@ public class ManagerLogWriter extends LocalLogWriter {
 
   private boolean started;
 
+  private final boolean loner;
+
   /**
    * Creates a writer that logs to <code>printStream</code>.
    *
    * @param level only messages greater than or equal to this value will be logged.
    * @param printStream is the stream that message will be printed to.
+   * @param loner if the distributed member is not part of a cluster
    *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public ManagerLogWriter(int level, PrintStream printStream) {
-    this(level, printStream, null);
+  public ManagerLogWriter(final int level, final PrintStream printStream, final boolean loner) {
+    this(level, printStream, null, loner);
   }
 
   /**
@@ -80,23 +83,30 @@ public class ManagerLogWriter extends LocalLogWriter {
    * @param level only messages greater than or equal to this value will be logged.
    * @param printStream is the stream that message will be printed to.
    * @param connectionName Name of the connection associated with this logger
+   * @param loner if the distributed member is not part of a cluster
    *
    * @throws IllegalArgumentException if level is not in legal range
    *
    * @since GemFire 3.5
    */
-  public ManagerLogWriter(int level, PrintStream printStream, String connectionName) {
+  public ManagerLogWriter(final int level, final PrintStream printStream,
+      final String connectionName, final boolean loner) {
     super(level, printStream, connectionName);
     fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
     rollingFileHandler = new MainWithChildrenRollingFileHandler();
+    this.loner = loner;
   }
 
   /**
    * Sets the config that should be used by this manager to decide how to manage its logging.
    */
-  public void setConfig(LogConfig config) {
+  public void setConfig(final LogConfig config) {
     this.config = config;
     configChanged();
+  }
+
+  public LogConfig getConfig() {
+    return config;
   }
 
   /**
@@ -126,16 +136,24 @@ public class ManagerLogWriter extends LocalLogWriter {
     }
   }
 
+  @Override
   public File getChildLogFile() {
     return activeLogFile;
   }
 
+  @Override
   public File getLogDir() {
     return logDir;
   }
 
+  @Override
   public int getMainLogId() {
     return mainLogId;
+  }
+
+  @Override
+  public boolean useChildLogging() {
+    return useChildLogging;
   }
 
   private File getNextChildLogFile() {
@@ -156,10 +174,6 @@ public class ManagerLogWriter extends LocalLogWriter {
     } else {
       return result;
     }
-  }
-
-  public boolean useChildLogging() {
-    return useChildLogging;
   }
 
   private long getLogFileSizeLimit() {
@@ -184,7 +198,7 @@ public class ManagerLogWriter extends LocalLogWriter {
     return result * (1024 * 1024);
   }
 
-  private String getMetaLogFileName(String baseLogFileName, int mainLogId) {
+  private String getMetaLogFileName(final String baseLogFileName, final int mainLogId) {
     String metaLogFile = null;
     int extIndex = baseLogFileName.lastIndexOf('.');
     String ext = "";
@@ -202,7 +216,7 @@ public class ManagerLogWriter extends LocalLogWriter {
     return metaLogFile;
   }
 
-  private synchronized void switchLogs(File newLog, boolean newIsMain) {
+  private synchronized void switchLogs(final File newLog, final boolean newIsMain) {
     rolling = true;
     try {
       try {
@@ -244,8 +258,8 @@ public class ManagerLogWriter extends LocalLogWriter {
               File tempLogDir = rollingFileHandler.getParentFile(config.getLogFile());
               tempFile = File.createTempFile("mlw", null, tempLogDir);
               // close the old print writer down before we do the rename
-              PrintStream tempPrintStream = OSProcess.redirectOutput(tempFile,
-                  AlertAppender.getInstance().isAlertingDisabled()/* See #49492 */);
+              // do not redirect if loner -- see #49492
+              PrintStream tempPrintStream = OSProcess.redirectOutput(tempFile, !loner);
               PrintWriter oldPrintWriter = setTarget(new PrintWriter(tempPrintStream, true));
               if (oldPrintWriter != null) {
                 oldPrintWriter.close();
@@ -265,8 +279,7 @@ public class ManagerLogWriter extends LocalLogWriter {
         activeLogFile = new File(oldName);
         // Don't redirect sysouts/syserrs to client log file. See #49492.
         // IMPORTANT: This assumes that only a loner would have sendAlert set to false.
-        PrintStream printStream = OSProcess.redirectOutput(activeLogFile,
-            AlertAppender.getInstance().isAlertingDisabled());
+        PrintStream printStream = OSProcess.redirectOutput(activeLogFile, !loner);
         PrintWriter oldPrintWriter =
             setTarget(new PrintWriter(printStream, true), activeLogFile.length());
         if (oldPrintWriter != null) {
@@ -312,7 +325,7 @@ public class ManagerLogWriter extends LocalLogWriter {
     }
   }
 
-  public static File getLogNameForOldMainLog(File log, boolean useOldFile) {
+  public static File getLogNameForOldMainLog(final File log, final boolean useOldFile) {
     // this is just searching for the existing logfile name we need to search for meta log file name
     RollingFileHandler rollingFileHandler = new MainWithChildrenRollingFileHandler();
     File dir = rollingFileHandler.getParentFile(log.getAbsoluteFile());
@@ -339,7 +352,7 @@ public class ManagerLogWriter extends LocalLogWriter {
     return new File(sb.toString());
   }
 
-  private void checkDiskSpace(File newLog) {
+  private void checkDiskSpace(final File newLog) {
     rollingFileHandler.checkDiskSpace("log", newLog, getLogDiskSpaceLimit(), logDir, mainLogWriter);
   }
 
@@ -351,7 +364,7 @@ public class ManagerLogWriter extends LocalLogWriter {
     rollLog(true);
   }
 
-  private void rollLog(boolean ifFull) {
+  private void rollLog(final boolean ifFull) {
     if (!useChildLogging()) {
       return;
     }
@@ -393,7 +406,7 @@ public class ManagerLogWriter extends LocalLogWriter {
   }
 
   @Override
-  public void writeFormattedMessage(String message) {
+  public void writeFormattedMessage(final String message) {
     rollLogIfFull();
     super.writeFormattedMessage(message);
   }

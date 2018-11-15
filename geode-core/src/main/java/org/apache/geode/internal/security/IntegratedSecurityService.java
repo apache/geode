@@ -14,14 +14,16 @@
  */
 package org.apache.geode.internal.security;
 
+import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.SerializationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -53,7 +55,7 @@ import org.apache.geode.security.SecurityManager;
  * Security service with SecurityManager and an optional PostProcessor.
  */
 public class IntegratedSecurityService implements SecurityService {
-  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
+  private static Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
   public static final String CREDENTIALS_SESSION_ATTRIBUTE = "credentials";
 
   private final PostProcessor postProcessor;

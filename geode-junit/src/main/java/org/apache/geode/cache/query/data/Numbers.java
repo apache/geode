@@ -40,7 +40,7 @@ public class Numbers implements Serializable {
     avg1 = (id + id1 + id2) / 3;
     max1 = id;
     range = (id - id1);
-    l = id * 100000000;
+    l = id * 100000000L;
   }
 
 }

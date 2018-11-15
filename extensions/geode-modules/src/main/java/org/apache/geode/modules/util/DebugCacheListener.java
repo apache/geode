@@ -64,4 +64,11 @@ public class DebugCacheListener extends CacheListenerAdapter implements Declarab
 
     return true;
   }
+
+
+  @Override
+  public int hashCode() {
+    return DebugCacheListener.class.hashCode();
+  }
+
 }

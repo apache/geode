@@ -56,6 +56,19 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     return getId();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MultiAttrDefinitionImpl)) {
+      return false;
+    }
+    MultiAttrDefinitionImpl that = (MultiAttrDefinitionImpl) o;
+    return _id == that._id;
+  }
+
+
   public boolean verify(StatisticsFactory factory) {
     boolean result = false;
 

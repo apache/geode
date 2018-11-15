@@ -122,7 +122,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     while (!this.stopRequested) {
       SystemFailure.checkFailure();
       try {
-        Thread.sleep(interval * 1000);
+        Thread.sleep(interval * 1000L);
         List status = new ArrayList();
         eval.evaluate(status);
 

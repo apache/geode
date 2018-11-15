@@ -361,7 +361,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   @Override
   public int hashCode() {
-    int result = 0;
+    long result = 0;
 
     if (this.isSynchronous()) {
       if (this.isRollOplogs()) {
@@ -373,7 +373,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       result += this.getBytesThreshold();
     }
     result += this.getMaxOplogSize();
-    return result;
+    return (int) (result & 0xFFFFFFFF);
   }
 
   @Override

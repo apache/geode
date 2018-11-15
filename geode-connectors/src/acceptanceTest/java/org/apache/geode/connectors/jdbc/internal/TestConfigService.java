@@ -31,16 +31,16 @@ public class TestConfigService {
 
   public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl)
       throws RegionMappingExistsException {
-    return getTestConfigService(createMockCache(), null, false, connectionUrl);
+    return getTestConfigService(createMockCache(), null, connectionUrl);
   }
 
   public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
-      String pdxClassName, boolean primaryKeyInValue, String connectionUrl)
+      String pdxClassName, String connectionUrl)
       throws RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
     service.init(cache);
-    service.createRegionMapping(createRegionMapping(pdxClassName, primaryKeyInValue));
+    service.createRegionMapping(createRegionMapping(pdxClassName));
     return service;
   }
 
@@ -50,8 +50,7 @@ public class TestConfigService {
     return cache;
   }
 
-  private static RegionMapping createRegionMapping(String pdxClassName,
-      boolean primaryKeyInValue) {
+  private static RegionMapping createRegionMapping(String pdxClassName) {
     return new RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
         CONNECTION_CONFIG_NAME);
   }

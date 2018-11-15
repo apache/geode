@@ -24,7 +24,7 @@ dependencies {
   compile('com.jayway.jsonpath:json-path:' + project.'json-path.version')
   compile('org.assertj:assertj-core:' + project.'assertj-core.version')
   compile('commons-io:commons-io:' + project.'commons-io.version')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('com.google.guava:guava:' + project.'guava.version')
   compile('org.mockito:mockito-core:' + project.'mockito-core.version')
   compile('org.awaitility:awaitility:' + project.'awaitility.version')
@@ -39,6 +39,8 @@ dependencies {
   }
 
   compile('org.bouncycastle:bcpkix-jdk15on:' + project.'bouncycastle.version')
+
+  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
   runtimeOnly(project(':geode-old-versions'))
 }

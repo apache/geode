@@ -92,12 +92,10 @@ public class CloseCQ extends BaseCQCommand {
         AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
         if (authzRequest != null) {
 
-          if (cqQuery != null) {
-            String queryStr = cqQuery.getQueryString();
-            Set cqRegionNames = new HashSet();
-            cqRegionNames.add(cqQuery.getRegionName());
-            authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
-          }
+          String queryStr = cqQuery.getQueryString();
+          Set cqRegionNames = new HashSet();
+          cqRegionNames.add(cqQuery.getRegionName());
+          authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
 
         }
 

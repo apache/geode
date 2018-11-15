@@ -68,6 +68,7 @@ public class AddFreeItemToOrders implements Function {
     } catch (CacheClosedException ex) {
       vals.add("NoCacheFoundResult");
       context.getResultSender().lastResult(vals);
+      throw ex;
     }
 
     String oql =
@@ -80,33 +81,27 @@ public class AddFreeItemToOrders implements Function {
     SelectResults result = null;
     try {
       result = (SelectResults) query.execute(queryArgs);
-      int resultSize = result.size();
 
       if (result instanceof Collection<?>)
         for (Object item : result) {
           keys.add(item);
         }
     } catch (FunctionDomainException e) {
-      if (cache != null)
-        cache.getLogger()
-            .info("Caught FunctionDomainException while executing function AddFreeItemToOrders: "
-                + e.getMessage());
-
+      cache.getLogger()
+          .info("Caught FunctionDomainException while executing function AddFreeItemToOrders: "
+              + e.getMessage());
     } catch (TypeMismatchException e) {
-      if (cache != null)
-        cache.getLogger()
-            .info("Caught TypeMismatchException while executing function AddFreeItemToOrders: "
-                + e.getMessage());
+      cache.getLogger()
+          .info("Caught TypeMismatchException while executing function AddFreeItemToOrders: "
+              + e.getMessage());
     } catch (NameResolutionException e) {
-      if (cache != null)
-        cache.getLogger()
-            .info("Caught NameResolutionException while executing function AddFreeItemToOrders: "
-                + e.getMessage());
+      cache.getLogger()
+          .info("Caught NameResolutionException while executing function AddFreeItemToOrders: "
+              + e.getMessage());
     } catch (QueryInvocationTargetException e) {
-      if (cache != null)
-        cache.getLogger().info(
-            "Caught QueryInvocationTargetException while executing function AddFreeItemToOrders"
-                + e.getMessage());
+      cache.getLogger().info(
+          "Caught QueryInvocationTargetException while executing function AddFreeItemToOrders"
+              + e.getMessage());
     }
 
     // class has to be in classpath.

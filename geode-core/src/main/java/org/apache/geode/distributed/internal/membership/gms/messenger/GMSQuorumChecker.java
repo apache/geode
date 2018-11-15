@@ -53,7 +53,7 @@ public class GMSQuorumChecker implements QuorumChecker {
   private boolean quorumAchieved = false;
   private final JChannel channel;
   private JGAddress myAddress;
-  private final int partitionThreshold;
+  private final long partitionThreshold;
   private Set<DistributedMember> oldDistributedMemberIdentifiers;
 
   public GMSQuorumChecker(NetView jgView, int partitionThreshold, JChannel channel,

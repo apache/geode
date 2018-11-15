@@ -477,8 +477,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       fail("Expected ServerConnectivityException not thrown!");
     } catch (Exception ex) {
       if (!(ex.getCause() instanceof ServerConnectivityException)
-          && !((ex instanceof FunctionInvocationTargetException
-              || ex.getCause() instanceof FunctionInvocationTargetException))) {
+          && !(ex.getCause() instanceof FunctionInvocationTargetException)) {
         throw ex;
       }
     }

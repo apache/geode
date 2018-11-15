@@ -39,7 +39,7 @@ public class Restricted implements Serializable {
         "auto transport", "mortgage"};
     quoteType = arr1[i % 7];
     uniqueQuoteType = "quoteType" + Integer.toString(i);
-    price = (i / 10) * 8;
+    price = (i / 10.0) * 8.0;
     minQty = i + 100;
     maxQty = i + 1000;
     if ((i % 12) == 0) {

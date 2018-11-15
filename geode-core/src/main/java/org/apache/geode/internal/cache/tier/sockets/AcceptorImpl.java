@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
+import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_REFUSED;
 
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -535,7 +536,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
 
     this.cache = internalCache;
-    this.crHelper = new CachedRegionHelper(this.cache);
+    this.crHelper = new CachedRegionHelper(cache);
 
     this.clientNotifier = CacheClientNotifier.getInstance(cache, this.stats, maximumMessageCount,
         messageTimeToLive, connectionListener, overflowAttributesList, isGatewayReceiver);
@@ -1436,9 +1437,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       }
     }
   }
-
-  static final byte REPLY_REFUSED = (byte) 60;
-  static final byte REPLY_INVALID = (byte) 61;
 
   void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
 

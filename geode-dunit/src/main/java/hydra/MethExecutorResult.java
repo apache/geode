@@ -38,6 +38,10 @@ public class MethExecutorResult implements Serializable {
       return o != null && this.getClass().equals(o.getClass());
     }
 
+    public int hashCode() {
+      return this.getClass().hashCode();
+    }
+
     public String toString() {
       return "EXCEPTION_OCCURRED";
     }
@@ -50,6 +54,10 @@ public class MethExecutorResult implements Serializable {
     public boolean equals(Object o) {
       // Allows instances to be compared across VMs
       return o != null && this.getClass().equals(o.getClass());
+    }
+
+    public int hashCode() {
+      return this.getClass().hashCode();
     }
 
     public String toString() {

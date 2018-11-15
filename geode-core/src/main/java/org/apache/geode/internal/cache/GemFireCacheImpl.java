@@ -77,7 +77,7 @@ import javax.transaction.TransactionManager;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -834,7 +834,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Creates a new instance of GemFireCache and populates it according to the {@code cache.xml}, if
    * appropriate.
    *
-   * @param typeRegistry: currently only unit tests set this parameter to a non-null value
+   * Currently only unit tests set the typeRegistry parameter to a non-null value
    */
   private GemFireCacheImpl(boolean isClient, PoolFactory pf, InternalDistributedSystem system,
       CacheConfig cacheConfig, boolean asyncEventListeners, TypeRegistry typeRegistry) {
@@ -3805,7 +3805,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     if (!sender.isParallel()) {
-      Region dynamicMetaRegion = getRegion(DynamicRegionFactory.dynamicRegionListName);
+      Region dynamicMetaRegion = getRegion(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME);
       if (dynamicMetaRegion == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(" The dynamic region is null. ");
@@ -4468,7 +4468,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
 
           this.queryMonitor =
-              new QueryMonitor(() -> (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
+              new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
                   QUERY_MONITOR_THREAD_POOL_SIZE,
                   (runnable) -> new LoggingThread("QueryMonitor Thread", runnable)),
                   this,

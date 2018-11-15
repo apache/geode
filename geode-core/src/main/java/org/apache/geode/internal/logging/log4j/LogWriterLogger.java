@@ -30,7 +30,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.logging.GemFireHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
@@ -85,25 +85,6 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   public static LogWriterLogger create(final Logger logger) {
     return new LogWriterLogger(logger, null, false);
-  }
-
-  public void setLevel(final Level level) {
-    if (getLevel().isLessSpecificThan(Level.DEBUG) || level.isLessSpecificThan(Level.DEBUG)) {
-      debug("Changing level for Logger '{}' from {} to {}", loggerName, getLevel(), level);
-    }
-
-    if (LogService.MAIN_LOGGER_NAME.equals(loggerName)) {
-      LogService.setBaseLogLevel(level);
-    } else if (LogService.SECURITY_LOGGER_NAME.equals(loggerName)) {
-      LogService.setSecurityLogLevel(level);
-    } else {
-      Configurator.setLevel(loggerName, level);
-    }
-  }
-
-  @Override
-  public void setLogWriterLevel(final int logWriterLevel) {
-    setLevel(LogLevel.getLog4jLevel(logWriterLevel));
   }
 
   /**
@@ -1379,7 +1360,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   }
 
   public void log(int logWriterLevel, final String message, final Throwable throwable) {
-    Level level = LogLevel.getLog4jLevel(logWriterLevel);
+    Level level = LogWriterLevelConverter.toLevel(LogWriterLevel.find(logWriterLevel));
     logWrapper.logIfEnabled(loggerName, level, null, message, throwable);
   }
 

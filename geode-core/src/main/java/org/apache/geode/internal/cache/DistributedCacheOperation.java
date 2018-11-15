@@ -355,11 +355,6 @@ public abstract class DistributedCacheOperation {
             logger.debug("Computed this filter routing: {}", filterRouting);
           }
         }
-        // if there's one secondary bucket holder needs two messages, then send two messages to all
-        // the secondary bcukets
-        if (!twoMessages.isEmpty()) {
-          twoMessages = recipients;
-        }
       }
 
       // some members need PR notification of the change for client/wan
@@ -510,20 +505,7 @@ public abstract class DistributedCacheOperation {
         }
 
         Set failures = null;
-        boolean inhibitAllNotifications = false;
-        if (event instanceof EntryEventImpl) {
-          inhibitAllNotifications = ((EntryEventImpl) event).inhibitAllNotifications();
-        }
         CacheOperationMessage msg = createMessage();
-        if (!twoMessages.isEmpty() && event instanceof EntryEventImpl) {
-          // If it's message for PR and needs 2 messages, let the distribution message not to
-          // trigger callback
-          ((EntryEventImpl) event).setInhibitAllNotifications(true);
-          logger.info(
-              "after setInhibitAllNotifications:recipients for {}: {} with adjunct messages to: {}",
-              event, recipients,
-              adjunctRecipients);
-        }
         initMessage(msg, this.processor);
 
         if (DistributedCacheOperation.internalBeforePutOutgoing != null) {
@@ -540,8 +522,7 @@ public abstract class DistributedCacheOperation {
           if (r.isUsedForPartitionedRegionBucket() && event.getOperation().isEntry()) {
             PartitionMessage pm = ((EntryEventImpl) event).getPartitionMessage();
             if (pm != null && pm.getSender() != null
-                && !pm.getSender()
-                    .equals(r.getDistributionManager().getDistributionManagerId())) {
+                && !pm.getSender().equals(r.getDistributionManager().getDistributionManagerId())) {
               // PR message sent by another member
               ReplyProcessor21.setShortSevereAlertProcessing(true);
             }
@@ -648,10 +629,6 @@ public abstract class DistributedCacheOperation {
               .getCacheDistributionAdvisor().adviseCacheServers();
           adjunctRecipientsWithNoCacheServer.removeAll(adviseCacheServers);
 
-          // set to its original status
-          if (event instanceof EntryEventImpl) {
-            ((EntryEventImpl) event).setInhibitAllNotifications(inhibitAllNotifications);
-          }
           if (isPutAll) {
             ((BucketRegion) region).performPutAllAdjunctMessaging((DistributedPutAllOperation) this,
                 recipients, adjunctRecipients, filterRouting, this.processor);
@@ -746,7 +723,8 @@ public abstract class DistributedCacheOperation {
           Long cqID = e.getKey();
           // For the CQs satisfying the event with destroy CQEvent, remove
           // the entry form CQ cache.
-          if (cq.getFilterID() == cqID && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
+          if (cq != null && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
+              && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
             cq.removeFromCqResultKeys(((EntryOperation) event).getKey(), true);
           }
         }
@@ -1484,6 +1462,9 @@ public abstract class DistributedCacheOperation {
       }
       if (this.versionTag instanceof DiskVersionTag) {
         bits |= PERSISTENT_TAG_MASK;
+      }
+      if (inhibitAllNotifications) {
+        bits |= INHIBIT_NOTIFICATIONS_MASK;
       }
       return bits;
     }

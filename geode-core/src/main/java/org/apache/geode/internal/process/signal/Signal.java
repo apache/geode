@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.process.signal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Signals defined in the enumerated type were based on Open BSD and the IBM JVM...

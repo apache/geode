@@ -54,7 +54,8 @@ public class SPopExecutor extends SetExecutor {
     if (keyRegion.isEmpty()) {
       context.getRegionProvider().removeKey(key);
     }
-    command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), pop.toBytes()));
+
+    respondBulkStrings(command, context, pop);
   }
 
 }

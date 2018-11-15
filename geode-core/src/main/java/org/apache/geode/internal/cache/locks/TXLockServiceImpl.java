@@ -146,12 +146,9 @@ public class TXLockServiceImpl extends TXLockService {
       Thread.currentThread().interrupt();
       logger.debug("[TXLockServiceImpl.txLock] was interrupted", e);
       if (gotLocks) {
-        if (txLockId != null) {
-          synchronized (this.txLockIdList) {
-            this.txLockIdList.remove(txLockId);
-          }
+        synchronized (this.txLockIdList) {
+          this.txLockIdList.remove(txLockId);
         }
-        gotLocks = false;
       }
       // TODO: change to be TransactionFailedException (after creating TFE)...
       throw new CommitConflictException(

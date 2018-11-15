@@ -206,6 +206,7 @@ public class ClientServerHostNameVerificationDistributedTest {
     if (expectedExceptionOnClient != null) {
       IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
       IgnoredException.addIgnoredException("java.net.SocketException");
+      IgnoredException.addIgnoredException("java.security.cert.CertificateException");
 
       Region<String, String> clientRegion = regionFactory.create("region");
       assertThatExceptionOfType(expectedExceptionOnClient)

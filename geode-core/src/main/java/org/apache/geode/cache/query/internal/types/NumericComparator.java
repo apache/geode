@@ -32,6 +32,12 @@ class NumericComparator implements Comparator {
     return obj instanceof NumericComparator;
   }
 
+  @Override
+  public int hashCode() {
+    return NumericComparator.class.hashCode();
+  }
+
+
   // throws ClassCastExcepton if obj1 or obj2 is not a Number
   public int compare(Object obj1, Object obj2) {
     Number num1 = (Number) obj1;

@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;

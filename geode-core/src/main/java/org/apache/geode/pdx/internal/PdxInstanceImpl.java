@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DMStats;

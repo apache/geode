@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIR
 
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 

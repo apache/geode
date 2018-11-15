@@ -61,4 +61,11 @@ public class SessionCustomExpiry
 
     return true;
   }
+
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
+
 }

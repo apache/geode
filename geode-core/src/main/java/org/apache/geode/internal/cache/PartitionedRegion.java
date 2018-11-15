@@ -3646,11 +3646,6 @@ public class PartitionedRegion extends LocalRegion
             targetNode = getOrCreateNodeForBucketRead(bucketId);
           }
         }
-        if (targetNode == null) {
-          throw new FunctionException(
-              String.format("No target node found for KEY, %s",
-                  key));
-        }
       } else {
         execution.clearFailedNodes();
       }
@@ -6633,7 +6628,7 @@ public class PartitionedRegion extends LocalRegion
         DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
 
         long ackWaitThreshold = 0;
-        long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000;
+        long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000L;
         boolean suspected = false;
         boolean severeAlertIssued = false;
         DistributedMember lockHolder = null;
@@ -6644,11 +6639,11 @@ public class PartitionedRegion extends LocalRegion
         if (!enableAlerts) {
           // Make sure we only attempt the lock long enough not to
           // get a 15 second warning from the reply processor.
-          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000;
+          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000L;
           waitInterval = ackWaitThreshold - 1;
           startTime = System.currentTimeMillis();
         } else if (ackSAThreshold > 0) {
-          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000;
+          ackWaitThreshold = dm.getConfig().getAckWaitThreshold() * 1000L;
           waitInterval = ackWaitThreshold;
           startTime = System.currentTimeMillis();
         } else {
@@ -6719,7 +6714,7 @@ public class PartitionedRegion extends LocalRegion
       }
 
       long ackSAThreshold =
-          cache.getInternalDistributedSystem().getConfig().getAckSevereAlertThreshold() * 1000;
+          cache.getInternalDistributedSystem().getConfig().getAckSevereAlertThreshold() * 1000L;
       boolean suspected = false;
       boolean severeAlertIssued = false;
       DistributedMember lockHolder = null;
@@ -6729,7 +6724,7 @@ public class PartitionedRegion extends LocalRegion
 
       if (ackSAThreshold > 0) {
         ackWaitThreshold =
-            cache.getInternalDistributedSystem().getConfig().getAckWaitThreshold() * 1000;
+            cache.getInternalDistributedSystem().getConfig().getAckWaitThreshold() * 1000L;
         waitInterval = ackWaitThreshold;
         start = System.currentTimeMillis();
       } else {
@@ -7190,7 +7185,7 @@ public class PartitionedRegion extends LocalRegion
           }
         } else {
           try {
-            Thread.sleep(AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME * 1000);
+            Thread.sleep(AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME * 1000L);
           } catch (InterruptedException ignore) {/* ignore */
             // interrupted
           }
@@ -7937,9 +7932,9 @@ public class PartitionedRegion extends LocalRegion
    * synchronization or concurrent safety
    */
   public static class RetryTimeKeeper {
-    private int totalTimeInRetry;
+    private long totalTimeInRetry;
 
-    private final int maxTimeInRetry;
+    private final long maxTimeInRetry;
 
     public RetryTimeKeeper(int maxTime) {
       this.maxTimeInRetry = maxTime;
@@ -7988,7 +7983,7 @@ public class PartitionedRegion extends LocalRegion
       return this.totalTimeInRetry > this.maxTimeInRetry;
     }
 
-    public int getRetryTime() {
+    public long getRetryTime() {
       return this.totalTimeInRetry;
     }
   }
@@ -8083,7 +8078,7 @@ public class PartitionedRegion extends LocalRegion
 
           InternalDistributedMember lastTarget = bucketNode;
           bucketNode = getOrCreateNodeForBucketRead(lbucket);
-          if (lastTarget != null && lastTarget.equals(bucketNode)) {
+          if (lastTarget.equals(bucketNode)) {
             if (retryTime.overMaximum()) {
               break;
             }
@@ -8685,7 +8680,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Check if the returned value is instance of Index (this means the index is
     // not in create phase, its created successfully).
-    if (prIndex == null || !(prIndex instanceof Index)) {
+    if (!(prIndex instanceof Index)) {
       logger.info("This index {} is not on this partitoned region :  {}",
           ind, this);
       return numBuckets;
@@ -8704,10 +8699,8 @@ public class PartitionedRegion extends LocalRegion
 
     // After removing from region wait for removing from index manager and
     // marking the index invalid.
-    if (prIndex != null) {
-      PartitionedIndex index = (PartitionedIndex) prIndex;
-      index.acquireIndexWriteLockForRemove();
-    }
+    PartitionedIndex index = (PartitionedIndex) prIndex;
+    index.acquireIndexWriteLockForRemove();
 
     this.indexes.remove(indexTask);
 

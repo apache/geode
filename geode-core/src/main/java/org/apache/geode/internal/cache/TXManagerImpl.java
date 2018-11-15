@@ -1799,7 +1799,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (this.cache.isClosed()) {
       return;
     }
-    long timeout = getTransactionTimeToLive() * 1000;
+    long timeout = getTransactionTimeToLive() * 1000L;
     if (timeout <= 0) {
       removeTransactionsSentFromDepartedProxy(proxyServer);
     } else {

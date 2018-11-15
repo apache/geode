@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -75,7 +75,7 @@ public class PartitionRegionConfigTest {
     PartitionRegionConfig config = new PartitionRegionConfig();
     byte[] bytes = SerializationUtils.serialize(config);
     assertThat(bytes).isNotNull().isNotEmpty();
-    assertThat(SerializationUtils.deserialize(bytes)).isNotSameAs(config)
+    assertThat((PartitionRegionConfig) SerializationUtils.deserialize(bytes)).isNotSameAs(config)
         .isInstanceOf(PartitionRegionConfig.class);
   }
 }

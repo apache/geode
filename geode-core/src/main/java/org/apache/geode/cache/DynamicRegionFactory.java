@@ -138,7 +138,7 @@ import org.apache.geode.security.GemFireSecurityException;
 @Deprecated
 public abstract class DynamicRegionFactory {
 
-  public static final String dynamicRegionListName = "__DynamicRegions";
+  public static final String DYNAMIC_REGION_LIST_NAME = "__DynamicRegions";
 
   private Region dynamicRegionList = null;
 
@@ -220,7 +220,7 @@ public abstract class DynamicRegionFactory {
   }
 
   public static boolean regionIsDynamicRegionList(String regionPath) {
-    return regionPath != null && regionPath.equals('/' + dynamicRegionListName);
+    return regionPath != null && regionPath.equals('/' + DYNAMIC_REGION_LIST_NAME);
   }
 
   /**
@@ -240,7 +240,7 @@ public abstract class DynamicRegionFactory {
 
     try {
       this.cache = theCache;
-      this.dynamicRegionList = theCache.getRegion(dynamicRegionListName);
+      this.dynamicRegionList = theCache.getRegion(DYNAMIC_REGION_LIST_NAME);
       final boolean isClient = this.config.getPoolName() != null;
       if (this.dynamicRegionList == null) {
         InternalRegionArguments ira = new InternalRegionArguments().setDestroyLockFlag(true)
@@ -276,6 +276,8 @@ public abstract class DynamicRegionFactory {
           ira.setInternalMetaRegion(new LocalMetaRegion(af.create(), ira));
         } else {
           af.setScope(Scope.DISTRIBUTED_ACK);
+          af.setValueConstraint(DynamicRegionAttributes.class);
+
           if (!this.config.getPersistBackup()) { // if persistBackup, the data policy has already
                                                  // been set
             af.setDataPolicy(DataPolicy.REPLICATE);
@@ -289,7 +291,8 @@ public abstract class DynamicRegionFactory {
         }
 
         try {
-          this.dynamicRegionList = theCache.createVMRegion(dynamicRegionListName, af.create(), ira);
+          this.dynamicRegionList =
+              theCache.createVMRegion(DYNAMIC_REGION_LIST_NAME, af.create(), ira);
         } catch (IOException e) {
           // only if loading snapshot, not here
           throw new InternalGemFireError(
@@ -873,7 +876,7 @@ public abstract class DynamicRegionFactory {
   // the meta data
   private class LocalMetaRegion extends LocalRegion {
     protected LocalMetaRegion(RegionAttributes attrs, InternalRegionArguments ira) {
-      super(dynamicRegionListName, attrs, null, DynamicRegionFactory.this.cache, ira);
+      super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache, ira);
       Assert.assertTrue(attrs.getScope().isLocal());
     }
 
@@ -982,7 +985,7 @@ public abstract class DynamicRegionFactory {
   // distribution and notification order on the BridgeServer
   private class DistributedMetaRegion extends DistributedRegion {
     protected DistributedMetaRegion(RegionAttributes attrs) {
-      super(dynamicRegionListName, attrs, null, DynamicRegionFactory.this.cache,
+      super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache,
           new InternalRegionArguments());
     }
 

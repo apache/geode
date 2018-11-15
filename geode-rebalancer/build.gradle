@@ -30,6 +30,10 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
+  testCompile('junit:junit:' + project.'junit.version')
+  testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+
   integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
   integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')

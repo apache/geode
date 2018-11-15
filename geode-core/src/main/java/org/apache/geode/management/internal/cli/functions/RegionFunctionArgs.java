@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -490,6 +491,11 @@ public class RegionFunctionArgs implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+      return Objects.hash(time, action);
+    }
+
+    @Override
     public boolean equals(Object object) {
       if (object == null) {
         return false;
@@ -500,7 +506,10 @@ public class RegionFunctionArgs implements Serializable {
       }
 
       ExpirationAttrs that = (ExpirationAttrs) object;
-      return time == that.time && action == that.action;
+      if (time == null && that.time == null && action == that.action) {
+        return true;
+      }
+      return time != null && time.equals(that.time) && action == that.action;
     }
 
     public boolean isTimeSet() {

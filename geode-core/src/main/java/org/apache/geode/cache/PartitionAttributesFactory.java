@@ -169,15 +169,6 @@ public class PartitionAttributesFactory<K, V> {
   }
 
   /**
-   * Sets the cache writer for the next <code>PartitionAttributes</code> created. <i>Currently
-   * unsupported for the early access release.</i>
-   *
-   * @param cacheWriter the cache writer or null if no cache writer
-   * @return this public PartitionAttributesFactory<K,V> setCacheWriter(CacheWriter cacheWriter) {
-   *         this.partitionAttributes.setCacheWriter(cacheWriter); return this; }
-   */
-
-  /**
    * Sets the maximum amount of memory, in megabytes, to be used by the region in this process. If
    * not set, a default of 90% of available heap is used.
    */

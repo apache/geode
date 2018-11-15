@@ -1155,7 +1155,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         }
       } else {
         try {
-          Thread.sleep(AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME * 1000);
+          Thread.sleep(AbstractGatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME * 1000L);
         } catch (InterruptedException e) {/* ignore */
           // interrupted
         }

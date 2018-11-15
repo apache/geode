@@ -1994,7 +1994,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       // Make sure that the entry isn't stale...
       long shunTime = shunnedMembers.get(m).longValue();
       long now = System.currentTimeMillis();
-      if (shunTime + SHUNNED_SUNSET * 1000 > now) {
+      if (shunTime + SHUNNED_SUNSET * 1000L > now) {
         return true;
       }
 
@@ -2088,7 +2088,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * @param m the member to add
    */
   private void addShunnedMember(InternalDistributedMember m) {
-    long deathTime = System.currentTimeMillis() - SHUNNED_SUNSET * 1000;
+    long deathTime = System.currentTimeMillis() - SHUNNED_SUNSET * 1000L;
 
     surpriseMembers.remove(m); // for safety
 
@@ -2366,6 +2366,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         } else {
           List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
           l.remove(mth);
+          this.membershipTestHooks = l;
         }
       }
     } finally {
@@ -2505,7 +2506,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     services.setShutdownCause(shutdownCause);
     services.getCancelCriterion().cancel(reason);
 
-    AlertAppender.getInstance().shuttingDown();
+    AlertAppender.getInstance().stopSession();
 
     if (!inhibitForceDisconnectLogging) {
       logger.fatal(

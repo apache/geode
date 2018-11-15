@@ -21,10 +21,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.Configuration;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 
@@ -33,7 +34,7 @@ class DiskStoreCommandsUtils {
   static void configureLogging(final List<String> commandList) {
     String configFilePropertyValue = System.getProperty(CONFIGURATION_FILE_PROPERTY);
     if (StringUtils.isBlank(configFilePropertyValue)) {
-      URL configUrl = LogService.class.getResource(LogService.CLI_CONFIG);
+      URL configUrl = LogService.class.getResource(Configuration.CLI_CONFIG);
       configFilePropertyValue = configUrl.toString();
     }
     commandList.add("-D" + CONFIGURATION_FILE_PROPERTY + "=" + configFilePropertyValue);

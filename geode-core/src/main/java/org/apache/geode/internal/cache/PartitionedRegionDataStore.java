@@ -1138,29 +1138,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   /**
-   * Querys the buckets in this data store for query specified by queryPredicate.
-   *
-   * @param parameters the parameters to be used to execute the query
-   * @param buckets to be queried
-   * @throws QueryException TODO-javadocs
-   */
-  /*
-   * public void queryLocalNode(DefaultQuery query, Object[] parameters, List buckets,
-   * PRQueryResultCollector resultCollector) throws QueryException, InterruptedException {
-   * Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
-   * invokeBucketReadHook();
-   *
-   * // Check if QueryMonitor is enabled, if so add query to be monitored. QueryMonitor queryMonitor
-   * = null; if( GemFireCacheImpl.getInstance() != null) { queryMonitor =
-   * GemFireCacheImpl.getInstance().getQueryMonitor(); }
-   *
-   * try { if (queryMonitor != null) { // Add current thread to be monitored by QueryMonitor.
-   * queryMonitor.monitorQueryThread(Thread.currentThread(), query); } new PRQueryProcessor(this,
-   * query, parameters, buckets).executeQuery(resultCollector); } finally { if (queryMonitor !=
-   * null) { queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), query); } } }
-   */
-
-  /**
    * This method returns name of this Partitioned Region
    *
    * @return Partitioned Region name
@@ -2151,7 +2128,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         throw new PRLocallyDestroyedException(rde);
       } else {
         this.getPartitionedRegion().checkReadiness();
-        if (r != null && r.isBucketDestroyed()) {
+        if (r.isBucketDestroyed()) {
           // bucket moved by rebalance
           throw new ForceReattemptException("Bucket removed during remoteGetKeys", rde);
         } else {

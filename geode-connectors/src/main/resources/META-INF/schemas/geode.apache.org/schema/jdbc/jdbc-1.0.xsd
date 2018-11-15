@@ -40,9 +40,9 @@ XML schema for JDBC Connector Service in Geode.
     </xsd:annotation>
         <xsd:element name="mapping">
             <xsd:complexType>
-                <xsd:attribute type="xsd:string" name="connection-name" use="optional"/>
+                <xsd:attribute type="xsd:string" name="data-source" use="required"/>
                 <xsd:attribute type="xsd:string" name="table" use="optional"/>
-                <xsd:attribute type="xsd:string" name="pdx-name" use="optional"/>
+                <xsd:attribute type="xsd:string" name="pdx-name" use="required"/>
             </xsd:complexType>
         </xsd:element>
 </xsd:schema>

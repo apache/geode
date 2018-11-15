@@ -125,7 +125,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    *
    */
   public Object putForMetaRegion(Object key, Object value, byte[] deltaBytes, EntryEventImpl event,
-      Object callbackArg, boolean isMetaRegionPutOp) {
+      Object callbackArg) {
     if (this.region == null) {
       return PutOp.execute(this.pool, this.regionName, key, value, deltaBytes, event,
           Operation.CREATE, false, null, callbackArg, this.pool.getPRSingleHopEnabled());
@@ -670,8 +670,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         serverRegionExecutor, resultCollector, Byte.valueOf(hasResult));
 
     int retryAttempts = pool.getRetryAttempts();
+    boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
 
-    if (this.pool.getPRSingleHopEnabled()) {
+    if (this.pool.getPRSingleHopEnabled() && !inTransaction) {
       ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
         if (serverRegionExecutor.getFilter().isEmpty()) {

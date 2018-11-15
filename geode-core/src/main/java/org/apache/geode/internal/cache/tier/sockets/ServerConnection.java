@@ -37,7 +37,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
@@ -379,7 +379,7 @@ public abstract class ServerConnection implements Runnable {
           // is this branch ever taken?
           this.crHelper.checkCancelInProgress(null); // bug 37113?
           logger.warn("Received Unknown handshake reply code.");
-          refuseHandshake("Received Unknown handshake reply code.", AcceptorImpl.REPLY_INVALID);
+          refuseHandshake("Received Unknown handshake reply code.", Handshake.REPLY_INVALID);
           return false;
         }
       }
@@ -393,7 +393,7 @@ public abstract class ServerConnection implements Runnable {
   }
 
   private void handleHandshakeException(Exception ex) {
-    refuseHandshake(ex.getMessage(), AcceptorImpl.REPLY_REFUSED);
+    refuseHandshake(ex.getMessage(), Handshake.REPLY_REFUSED);
     failConnectionAttempt();
   }
 
@@ -896,7 +896,7 @@ public abstract class ServerConnection implements Runnable {
         MutableInt numRefs = getCleanupTable().get(this.handshake);
         if (numRefs != null) {
           numRefs.decrement();
-          if (numRefs.toInteger() <= 0) {
+          if (numRefs.intValue() <= 0) {
             clientDeparted = true;
             getCleanupTable().remove(this.handshake);
             this.stats.decCurrentClients();
@@ -916,7 +916,7 @@ public abstract class ServerConnection implements Runnable {
         MutableInt numRefs = getCleanupProxyIdTable().get(this.proxyId);
         if (numRefs != null) {
           numRefs.decrement();
-          if (numRefs.toInteger() <= 0) {
+          if (numRefs.intValue() <= 0) {
             unregisterClient = true;
             getCleanupProxyIdTable().remove(this.proxyId);
             // here we can remove entry multiuser map for client

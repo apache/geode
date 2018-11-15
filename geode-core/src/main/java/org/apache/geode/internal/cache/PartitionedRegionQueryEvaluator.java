@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
@@ -130,7 +129,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private final ConcurrentMap<InternalDistributedMember, Collection<Collection>> resultsPerMember;
   private ConcurrentLinkedQueue<PRQueryTraceInfo> prQueryTraceInfoList = null;
   private final Set<Integer> bucketsToQuery;
-  private final IntOpenHashSet successfulBuckets;
   // set of members failed to execute query
   private Set<InternalDistributedMember> failedMembers;
 
@@ -152,7 +150,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     this.parameters = parameters;
     this.cumulativeResults = cumulativeResults;
     this.bucketsToQuery = bucketsToQuery;
-    this.successfulBuckets = new IntOpenHashSet(this.bucketsToQuery.size());
     this.resultsPerMember =
         new ConcurrentHashMap<InternalDistributedMember, Collection<Collection>>();
     this.node2bucketIds = Collections.emptyMap();

@@ -87,12 +87,13 @@ public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
   }
 
   @Override
-  protected void createTableWithTimeStamp(MemberVM vm, String connectionUrl, String tableName) {
+  protected void createTableWithTimeStamp(MemberVM vm, String connectionUrl, String tableName,
+      String columnName) {
     vm.invoke(() -> {
       Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute("CREATE TABLE " + tableName
-          + " (id varchar(10) primary key not null, mytimestamp timestamp(3))");
+          + " (id varchar(10) primary key not null, " + columnName + " timestamp(3))");
     });
   }
 }

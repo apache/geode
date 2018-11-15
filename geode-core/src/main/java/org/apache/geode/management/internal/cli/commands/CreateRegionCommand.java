@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -386,7 +386,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
         if (!specifiedGatewaySenders.isEmpty()) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
-              (String[]) gatewaySenderIds));
+              (Object[]) gatewaySenderIds));
         }
       }
     }
@@ -429,7 +429,7 @@ public class CreateRegionCommand extends InternalGfshCommand {
       } else {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
-                (String[]) groups));
+                (Object[]) groups));
       }
     }
 

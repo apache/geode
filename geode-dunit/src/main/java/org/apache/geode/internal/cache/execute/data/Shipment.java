@@ -23,7 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
 
 public class Shipment implements DataSerializable {
-  String shipmentName;
+  private String shipmentName;
 
   public Shipment() {
 
@@ -57,4 +57,13 @@ public class Shipment implements DataSerializable {
     }
     return false;
   }
+
+  @Override
+  public int hashCode() {
+    if (shipmentName == null) {
+      return super.hashCode();
+    }
+    return shipmentName.hashCode();
+  }
+
 }

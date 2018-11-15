@@ -17,8 +17,8 @@ package org.apache.geode.distributed.internal;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Used by build to generate a default configuration properties file for use by applications

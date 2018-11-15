@@ -104,7 +104,7 @@ public class ControlFileWatchdogIntegrationTest {
     // act/assert
     assertThatThrownBy(
         () -> new ControlFileWatchdog(directory, requestFileName, requestHandler, stopAfterRequest))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -115,7 +115,7 @@ public class ControlFileWatchdogIntegrationTest {
     // act/assert
     assertThatThrownBy(
         () -> new ControlFileWatchdog(directory, requestFileName, requestHandler, stopAfterRequest))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -126,7 +126,7 @@ public class ControlFileWatchdogIntegrationTest {
     // act/assert
     assertThatThrownBy(
         () -> new ControlFileWatchdog(directory, requestFileName, requestHandler, stopAfterRequest))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(NullPointerException.class);
   }
 
   @Test

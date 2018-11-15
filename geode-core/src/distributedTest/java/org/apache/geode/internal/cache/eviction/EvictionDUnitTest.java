@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import static java.lang.Math.abs;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -124,12 +123,6 @@ public class EvictionDUnitTest {
     int server0ExpectedEviction = server0.invoke(() -> sendEventAndWaitForExpectedEviction("PR1"));
     int server1ExpectedEviction = server1.invoke(() -> sendEventAndWaitForExpectedEviction("PR1"));
 
-    Long server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
-    Long server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
-
-    assertThat(server0EvictionCount + server1EvictionCount)
-        .isEqualTo(server0ExpectedEviction + server1ExpectedEviction);
-
     // do 4 puts again in PR1
     server0.invoke(() -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
@@ -138,8 +131,8 @@ public class EvictionDUnitTest {
       }
     });
 
-    server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
-    server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
+    long server0EvictionCount = server0.invoke(() -> getActualEviction("PR1"));
+    long server1EvictionCount = server1.invoke(() -> getActualEviction("PR1"));
 
     assertThat(server0EvictionCount + server1EvictionCount)
         .isEqualTo(4 + server0ExpectedEviction + server1ExpectedEviction);
@@ -214,9 +207,7 @@ public class EvictionDUnitTest {
         dr1.put(counter, new byte[ENTRY_SIZE]);
       }
 
-      int expectedEviction = sendEventAndWaitForExpectedEviction("DR1");
-
-      assertThat(dr1.getTotalEvictions()).isEqualTo(expectedEviction);
+      sendEventAndWaitForExpectedEviction("DR1");
     });
   }
 
@@ -246,7 +237,7 @@ public class EvictionDUnitTest {
     int expectedEviction = (int) Math.ceil((double) totalBytesToEvict / (double) entrySize);
 
     GeodeAwaitility.await()
-        .until(() -> (abs(region.getTotalEvictions() - expectedEviction) <= 1));
+        .untilAsserted(() -> assertThat(region.getTotalEvictions()).isEqualTo(expectedEviction));
     return expectedEviction;
   }
 

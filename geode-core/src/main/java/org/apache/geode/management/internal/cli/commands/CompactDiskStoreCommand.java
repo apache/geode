@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -128,7 +128,7 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
           }
 
           // If compaction happened at all, then prepare the summary
-          if (overallCompactInfo != null && !overallCompactInfo.isEmpty()) {
+          if (!overallCompactInfo.isEmpty()) {
             Set<Map.Entry<DistributedMember, PersistentID>> entries = overallCompactInfo.entrySet();
 
             for (Map.Entry<DistributedMember, PersistentID> entry : entries) {

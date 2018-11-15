@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Streams;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
@@ -120,7 +120,8 @@ public class GfshExecution {
     boolean exited = process.waitFor(script.getTimeout(), script.getTimeoutTimeUnit());
 
     try {
-      assertThat(exited).isTrue();
+      assertThat(exited).describedAs("Process of [" + script.toString() + "] did not exit after "
+          + script.getTimeout() + " " + script.getTimeoutTimeUnit().toString()).isTrue();
       assertThat(process.exitValue()).isEqualTo(script.getExpectedExitValue());
     } catch (AssertionError error) {
       printLogFiles();

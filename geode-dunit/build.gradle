@@ -28,7 +28,7 @@ dependencies {
   compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
   compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
   compile('commons-io:commons-io:' + project.'commons-io.version')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
     exclude module: 'aopalliance'
     exclude module: 'asm'

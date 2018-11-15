@@ -103,40 +103,12 @@ public abstract class JdbcLoaderIntegrationTest {
   }
 
   @Test
-  public void verifySimpleGet() throws Exception {
-    createEmployeeTable();
-    statement
-        .execute("Insert into " + REGION_TABLE_NAME + " (id, name, age) values('1', 'Emp1', 21)");
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
-    PdxInstance pdx = region.get("1");
-
-    assertThat(pdx.getFieldNames()).hasSize(3);
-    assertThat(pdx.getField("id")).isEqualTo("1");
-    assertThat(pdx.getField("name")).isEqualTo("Emp1");
-    assertThat(pdx.getField("age")).isEqualTo(21);
-  }
-
-  @Test
-  public void verifySimpleGetWithPrimaryKeyInValue() throws Exception {
-    createEmployeeTable();
-    statement
-        .execute("Insert into " + REGION_TABLE_NAME + " (id, name, age) values('1', 'Emp1', 21)");
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, true);
-    PdxInstance pdx = region.get("1");
-
-    assertThat(pdx.getFieldNames()).hasSize(3);
-    assertThat(pdx.getField("id")).isEqualTo("1");
-    assertThat(pdx.getField("name")).isEqualTo("Emp1");
-    assertThat(pdx.getField("age")).isEqualTo(21);
-  }
-
-  @Test
   public void verifyGetWithPdxClassName() throws Exception {
     createEmployeeTable();
     statement
         .execute("Insert into " + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
     Region<String, Employee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), false);
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName());
     createPdxType();
 
     Employee value = region.get("1");
@@ -152,7 +124,7 @@ public abstract class JdbcLoaderIntegrationTest {
         createClassWithSupportedPdxFieldsForInsert("1");
     insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
     Region<String, ClassWithSupportedPdxFields> region = createRegionWithJDBCLoader(
-        REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+        REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName());
 
     createPdxType(classWithSupportedPdxFields);
 
@@ -172,24 +144,23 @@ public abstract class JdbcLoaderIntegrationTest {
   @Test
   public void verifySimpleMiss() throws Exception {
     createEmployeeTable();
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null);
     PdxInstance pdx = region.get("1");
     assertThat(pdx).isNull();
   }
 
-  private SqlHandler createSqlHandler(String pdxClassName, boolean primaryKeyInValue)
+  private SqlHandler createSqlHandler(String pdxClassName)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            primaryKeyInValue, getConnectionUrl()),
+            getConnectionUrl()),
         testDataSourceFactory);
   }
 
-  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
-      boolean primaryKeyInValue)
+  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName)
       throws RegionMappingExistsException {
     JdbcLoader<K, V> jdbcLoader =
-        new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue), cache);
+        new JdbcLoader<>(createSqlHandler(pdxClassName), cache);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);
