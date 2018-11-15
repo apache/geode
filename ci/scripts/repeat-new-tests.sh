@@ -29,15 +29,20 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 function changes_for_path() {
   cd geode
-  local path="$1" # only expand once in the line below
-  git diff --name-only HEAD $(git merge-base HEAD origin/develop) -- $path
+  local path; path="$1" # only expand once in the line below
+  local merge_base; merge_base=$(git merge-base HEAD origin/develop) || exit $?
+  git diff --name-only HEAD $merge_base -- $path
 }
 
-UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java')
-INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java')
-DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java')
-ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java')
-UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java')
+cd geode
+git fetch https://github.com/apache/geode.git develop:origin/develop
+cd ..
+
+UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java') || exit $?
+INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java') || exit $?
+DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java') || exit $?
+ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
+UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java') || exit $?
 
 CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
