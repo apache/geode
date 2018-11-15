@@ -13,9 +13,10 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -23,11 +24,15 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -89,6 +94,29 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
     }
 
     return resultModel;
+  }
+
+  List<String> getRegionsThatUseDataSource(CacheConfig cacheConfig, String dataSourceName) {
+    return cacheConfig.getRegions()
+        .stream()
+        .filter(regionConfig -> hasJdbcMappingThatUsesDataSource(regionConfig, dataSourceName))
+        .map(RegionConfig::getName)
+        .collect(Collectors.toList());
+  }
+
+  private boolean hasJdbcMappingThatUsesDataSource(RegionConfig regionConfig,
+      String dataSourceName) {
+    return regionConfig.getCustomRegionElements()
+        .stream()
+        .anyMatch(cacheElement -> isRegionMappingUsingDataSource(cacheElement, dataSourceName));
+  }
+
+  private boolean isRegionMappingUsingDataSource(CacheElement cacheElement, String dataSourceName) {
+    if (!(cacheElement instanceof RegionMapping)) {
+      return false;
+    }
+    RegionMapping regionMapping = (RegionMapping) cacheElement;
+    return dataSourceName.equals(regionMapping.getDataSourceName());
   }
 
   private void addTableRow(TabularResultModel table, String property, String value) {

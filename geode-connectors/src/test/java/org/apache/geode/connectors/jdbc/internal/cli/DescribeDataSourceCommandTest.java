@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -30,8 +31,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
@@ -45,16 +49,18 @@ public class DescribeDataSourceCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DescribeDataSourceCommand command;
-  // private InternalCache cache;
-  JndiBindingsType.JndiBinding binding;
-  List<JndiBindingsType.JndiBinding> bindings;
-  InternalConfigurationPersistenceService clusterConfigService;
+
+  private JndiBindingsType.JndiBinding binding;
+  private List<JndiBindingsType.JndiBinding> bindings;
+  private InternalConfigurationPersistenceService clusterConfigService;
+  private CacheConfig cacheConfig;
+  private List<RegionConfig> regionConfigs;
 
   private static String COMMAND = "describe data-source";
   private static String DATA_SOURCE_NAME = "myDataSource";
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     command = spy(DescribeDataSourceCommand.class);
 
     binding = new JndiBindingsType.JndiBinding();
@@ -62,9 +68,11 @@ public class DescribeDataSourceCommandTest {
     binding.setType(DATASOURCE_TYPE.POOLED.getType());
     bindings = new ArrayList<>();
     clusterConfigService = mock(InternalConfigurationPersistenceService.class);
-    CacheConfig cacheConfig = mock(CacheConfig.class);
+    cacheConfig = mock(CacheConfig.class);
     when(cacheConfig.getJndiBindings()).thenReturn(bindings);
     bindings.add(binding);
+    regionConfigs = new ArrayList<>();
+    when(cacheConfig.getRegions()).thenReturn(regionConfigs);
 
     doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
@@ -220,5 +228,64 @@ public class DescribeDataSourceCommandTest {
         result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
     assertThat(section.getValuesInRow(5)).isEqualTo(Arrays.asList("name1", "value1"));
     assertThat(section.getValuesInRow(6)).isEqualTo(Arrays.asList("name2", "value2"));
+  }
+
+  @Test
+  public void getRegionsThatUseDataSourceGivenNoRegionsReturnsEmptyList() {
+    regionConfigs.clear();
+
+    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "");
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void getRegionsThatUseDataSourceGivenRegionConfigWithNoCustomRegionElementsReturnsEmptyList() {
+    RegionConfig regionConfig = mock(RegionConfig.class);
+    when(regionConfig.getCustomRegionElements()).thenReturn(Collections.emptyList());
+    regionConfigs.add(regionConfig);
+
+    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "");
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void getRegionsThatUseDataSourceGivenRegionConfigWithNonRegionMappingElementReturnsEmptyList() {
+    RegionConfig regionConfig = mock(RegionConfig.class);
+    when(regionConfig.getCustomRegionElements())
+        .thenReturn(Collections.singletonList(mock(CacheElement.class)));
+    regionConfigs.add(regionConfig);
+
+    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "");
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void getRegionsThatUseDataSourceGivenRegionConfigWithRegionMappingForOtherDataSourceReturnsEmptyList() {
+    RegionConfig regionConfig = mock(RegionConfig.class);
+    when(regionConfig.getCustomRegionElements())
+        .thenReturn(Collections.singletonList(mock(RegionMapping.class)));
+    regionConfigs.add(regionConfig);
+
+    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "bogusDataSource");
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void getRegionsThatUseDataSourceGivenRegionConfigWithRegionMappingForDataSourceReturnsRegionName() {
+    RegionConfig regionConfig = mock(RegionConfig.class);
+    when(regionConfig.getName()).thenReturn("regionName");
+    RegionMapping regionMapping = mock(RegionMapping.class);
+    when(regionMapping.getDataSourceName()).thenReturn("dataSourceName");
+    when(regionConfig.getCustomRegionElements())
+        .thenReturn(Collections.singletonList(regionMapping));
+    regionConfigs.add(regionConfig);
+
+    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "dataSourceName");
+
+    assertThat(result).isEqualTo(Collections.singletonList("regionName"));
   }
 }

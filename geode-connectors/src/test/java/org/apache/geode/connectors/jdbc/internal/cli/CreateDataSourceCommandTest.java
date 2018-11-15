@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,6 +38,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -49,7 +49,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.commands.CreateDataSourceCommand.PoolProperty;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -70,7 +69,7 @@ public class CreateDataSourceCommandTest {
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
     when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
-    command = spy(CreateDataSourceCommand.class);
+    command = Mockito.spy(CreateDataSourceCommand.class);
     command.setCache(cache);
 
     binding = new JndiBindingsType.JndiBinding();
@@ -101,8 +100,8 @@ public class CreateDataSourceCommandTest {
         + " --pooled --name=name --url=url "
         + "--pool-properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}");
 
-    PoolProperty[] poolProperties =
-        (PoolProperty[]) result
+    CreateDataSourceCommand.PoolProperty[] poolProperties =
+        (CreateDataSourceCommand.PoolProperty[]) result
             .getParamValue("pool-properties");
     assertThat(poolProperties).hasSize(2);
     assertThat(poolProperties[0].getName()).isEqualTo("name1");

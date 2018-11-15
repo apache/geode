@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
