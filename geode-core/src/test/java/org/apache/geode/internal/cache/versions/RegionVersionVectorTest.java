@@ -43,6 +43,7 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
@@ -602,17 +603,39 @@ public class RegionVersionVectorTest {
   }
 
   @Test
-  public void testRecordVersionAfterRegionInitThrowsException() {
+  public void recordVersionIntoLocalMemberShouldFailIfRegionIsPersistent() {
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(true);
+    when(mockRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     final String local = getIPLiteral();
-    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
-    VMVersionTag tag = new VMVersionTag();
-    tag.setRegionVersion(1L);
+    DiskStoreID ownerId = new DiskStoreID();
 
-    RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+    DiskRegionVersionVector rvv = new DiskRegionVersionVector(ownerId, mockRegion);
+
+    DiskVersionTag tag = new DiskVersionTag();
+    tag.setRegionVersion(1L);
+    tag.setMemberID(ownerId);
+
     expectedException.expect(InternalGemFireError.class);
     rvv.recordVersion(ownerId, tag);
+  }
+
+  @Test
+  public void recordVersionIntoLocalMemberShouldPassfRegionIsNonPersistent() {
+    LocalRegion mockRegion = mock(LocalRegion.class);
+    when(mockRegion.isInitialized()).thenReturn(true);
+    when(mockRegion.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    final String local = getIPLiteral();
+    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
+    RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+
+    VMVersionTag tag = new VMVersionTag();
+    tag.setRegionVersion(1);
+    tag.setMemberID(ownerId);
+
+    rvv.recordVersion(ownerId, tag);
+    assertEquals(1, rvv.getLocalExceptions().version);
+    assertEquals(2, rvv.getNextVersion());
   }
 
   @Test
