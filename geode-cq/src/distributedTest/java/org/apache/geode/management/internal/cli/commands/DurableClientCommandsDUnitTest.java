@@ -16,9 +16,9 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -30,6 +30,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqExistsException;
@@ -40,7 +43,9 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -55,13 +60,15 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @SuppressWarnings("serial")
 public class DurableClientCommandsDUnitTest {
 
-  private static final String REGION_NAME = "stocks";
+  private static final String STOCKS_REGION = "stocks";
+  private static final String BONDS_REGION = "bonds";
   private static final String CQ1 = "cq1";
   private static final String CQ2 = "cq2";
   private static final String CQ3 = "cq3";
   private static final String CLIENT_NAME = "dc1";
+  private static final String CQ_GROUP = "cq-group";
 
-  private MemberVM locator, server;
+  private MemberVM locator;
 
   private ClientVM client;
 
@@ -75,17 +82,21 @@ public class DurableClientCommandsDUnitTest {
   public void setup() throws Exception {
     int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "fine");
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
     props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + jmxPort);
     locator = lsRule.startLocatorVM(0, props);
 
     int locatorPort = locator.getPort();
-    server = lsRule.startServerVM(1,
-        thisServer -> thisServer.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
+    lsRule.startServerVM(1,
+        thisServer -> thisServer.withRegion(RegionShortcut.REPLICATE, STOCKS_REGION)
+            .withProperty("groups", CQ_GROUP)
             .withConnectionToLocator(locatorPort));
 
-    client = lsRule.startClientVM(2, getClientProps(CLIENT_NAME, "300"), (ccf) -> {
+    lsRule.startServerVM(2,
+        thisServer -> thisServer.withRegion(RegionShortcut.REPLICATE, BONDS_REGION)
+            .withConnectionToLocator(locatorPort));
+
+    client = lsRule.startClientVM(3, getClientProps(CLIENT_NAME, "300"), (ccf) -> {
       ccf.setPoolSubscriptionEnabled(true);
       ccf.addPoolLocator("localhost", locatorPort);
     });
@@ -95,15 +106,16 @@ public class DurableClientCommandsDUnitTest {
 
 
   @Test
-  public void testListDurableClientCqs() {
+  public void testListDurableClientCqsForOneGroup() {
     setupCqs();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_DURABLE_CQS);
     csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
+    csb.addOption(CliStrings.GROUP, CQ_GROUP);
     String commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(CQ1)
-        .containsOutput(CQ2).containsOutput(CQ3);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("CQ Name", "cq1", "cq2", "cq3");
 
     closeCq(CQ1);
     closeCq(CQ2);
@@ -112,9 +124,40 @@ public class DurableClientCommandsDUnitTest {
     csb = new CommandStringBuilder(CliStrings.LIST_DURABLE_CQS);
     csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
     commandString = csb.toString();
-    String errorMessage =
-        CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, CLIENT_NAME);
-    gfsh.executeAndAssertThat(commandString).statusIsError().containsOutput(errorMessage);
+
+    gfsh.executeAndAssertThat(commandString).statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("CQ Name",
+            CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, CLIENT_NAME),
+            CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__REGISTERED));
+  }
+
+  @Test
+  public void testListDurableClientCqsWhenNoneExist() {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_DURABLE_CQS);
+    csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(commandString).statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("CQ Name",
+            CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME),
+            CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME));
+  }
+
+  @Test
+  public void testListDurableClientCqsWithMixedResults() {
+    setupCqs();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_DURABLE_CQS);
+    csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(commandString).statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("CQ Name", "cq1", "cq2", "cq3",
+            "No client found with client-id : dc1");
+
+    closeCq(CQ1);
+    closeCq(CQ2);
+    closeCq(CQ3);
   }
 
   @Test
@@ -124,10 +167,13 @@ public class DurableClientCommandsDUnitTest {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CLIENTS);
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, CLIENT_NAME);
+    csb.addOption(CliStrings.GROUP, CQ_GROUP);
     String commandString = csb.toString();
 
     await().untilAsserted(() -> {
-      gfsh.executeAndAssertThat(commandString).statusIsSuccess();
+      gfsh.executeAndAssertThat(commandString).statusIsSuccess()
+          .tableHasColumnWithExactValuesInAnyOrder("Message",
+              "Closed the durable client : \"dc1\".");
     });
 
     String errorMessage = CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME);
@@ -144,35 +190,38 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.CLOSE_DURABLE_CQS__NAME, CQ1);
     String commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
+    CommandResult result = gfsh.executeCommand(commandString);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(result.getTableColumnValues("Message")).containsExactlyInAnyOrder(
+        "Closed the durable cq : \"cq1\" for the durable client : \"dc1\".",
+        "No client found with client-id : dc1");
 
-    csb = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CQS);
-    csb.addOption(CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID, CLIENT_NAME);
-    csb.addOption(CliStrings.CLOSE_DURABLE_CQS__NAME, CQ1);
-    commandString = csb.toString();
-
-    gfsh.executeAndAssertThat(commandString).statusIsError();
+    result = gfsh.executeCommand(commandString);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
   }
 
   @Test
   public void testCountSubscriptionQueueSize() {
     setupCqs();
 
-    doPuts(REGION_NAME, Host.getHost(0).getVM(1));
+    doPuts(STOCKS_REGION, Host.getHost(0).getVM(1));
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.COUNT_DURABLE_CQ_EVENTS);
     csb.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID, CLIENT_NAME);
+    csb.addOption(CliStrings.GROUP, CQ_GROUP);
     String commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput("4");
-
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Queue Size", "4");
 
     csb = new CommandStringBuilder(CliStrings.COUNT_DURABLE_CQ_EVENTS);
     csb.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID, CLIENT_NAME);
     csb.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME, CQ3);
+    csb.addOption(CliStrings.GROUP, CQ_GROUP);
     commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Queue Size", "0");
 
     // CLOSE all the cqs
     closeCq(CQ1);
@@ -235,15 +284,21 @@ public class DurableClientCommandsDUnitTest {
   }
 
   private void setupCqs() {
+    int locatorPort = locator.getPort();
     client.invoke(() -> {
-      QueryService qs = ClusterStartupRule.getClientCache().getQueryService();
+      PoolFactory poolFactory = PoolManager.createFactory().setServerGroup(CQ_GROUP);
+      poolFactory.addLocator("localhost", locatorPort);
+      poolFactory.setSubscriptionEnabled(true);
+      Pool pool = poolFactory.create("DEFAULT");
+
+      QueryService qs = pool.getQueryService();
       CqAttributesFactory cqAf = new CqAttributesFactory();
 
       try {
-        qs.newCq(CQ1, "select * from /" + REGION_NAME, cqAf.create(), true).execute();
-        qs.newCq(CQ2, "select * from /" + REGION_NAME + " where id = 1", cqAf.create(), true)
+        qs.newCq(CQ1, "select * from /" + STOCKS_REGION, cqAf.create(), true).execute();
+        qs.newCq(CQ2, "select * from /" + STOCKS_REGION + " where id = 1", cqAf.create(), true)
             .execute();
-        qs.newCq(CQ3, "select * from /" + REGION_NAME + " where id > 2", cqAf.create(), true)
+        qs.newCq(CQ3, "select * from /" + STOCKS_REGION + " where id > 2", cqAf.create(), true)
             .execute();
       } catch (CqException | CqExistsException | RegionNotFoundException e) {
         throw new RuntimeException(e);

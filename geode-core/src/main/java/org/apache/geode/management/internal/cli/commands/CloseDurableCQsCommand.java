@@ -25,25 +25,25 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.MemberResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CloseDurableCqFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CloseDurableCQsCommand extends InternalGfshCommand {
-  DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
+public class CloseDurableCQsCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.CLOSE_DURABLE_CQS, help = CliStrings.CLOSE_DURABLE_CQS__HELP)
   @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result closeDurableCqs(@CliOption(key = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID,
-      mandatory = true,
-      help = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID__HELP) final String durableClientId,
+  public ResultModel closeDurableCqs(
+      @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID,
+          mandatory = true,
+          help = CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID__HELP) final String durableClientId,
 
       @CliOption(key = CliStrings.CLOSE_DURABLE_CQS__NAME, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CQS__NAME__HELP) final String cqName,
@@ -55,29 +55,20 @@ public class CloseDurableCQsCommand extends InternalGfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CLOSE_DURABLE_CQS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
-    Result result;
-    try {
-      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
-      String[] params = new String[2];
-      params[0] = durableClientId;
-      params[1] = cqName;
-
-      final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new CloseDurableCqFunction(), params, targetMembers);
-      final List<MemberResult> results = (List<MemberResult>) rc.getResult();
-      String failureHeader =
-          CliStrings.format(CliStrings.CLOSE_DURABLE_CQS__FAILURE__HEADER, cqName, durableClientId);
-      String successHeader =
-          CliStrings.format(CliStrings.CLOSE_DURABLE_CQS__SUCCESS, cqName, durableClientId);
-      result = builder.buildResult(results, successHeader, failureHeader);
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+    if (targetMembers.isEmpty()) {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
-    return result;
+
+    String[] params = new String[2];
+    params[0] = durableClientId;
+    params[1] = cqName;
+
+    final ResultCollector<?, ?> rc =
+        CliUtil.executeFunction(new CloseDurableCqFunction(), params, targetMembers);
+    final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
+    return ResultModel.createMemberStatusResult(results);
   }
 }

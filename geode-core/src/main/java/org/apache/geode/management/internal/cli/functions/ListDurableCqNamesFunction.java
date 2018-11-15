@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
@@ -54,38 +53,55 @@ public class ListDurableCqNamesFunction implements InternalFunction {
     final Cache cache = context.getCache();
     final DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     String memberNameOrId = CliUtil.getMemberNameOrId(member);
-    DurableCqNamesResult result = new DurableCqNamesResult(memberNameOrId);
 
     String durableClientId = (String) context.getArguments();
 
+    context.getResultSender().lastResult(createFunctionResult(memberNameOrId, durableClientId));
+  }
+
+  private List<CliFunctionResult> createFunctionResult(String memberNameOrId,
+      String durableClientId) {
+    List<CliFunctionResult> results = new ArrayList<>();
+
     try {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
-      if (ccn != null) {
-        CacheClientProxy ccp = ccn.getClientProxy(durableClientId);
-        if (ccp != null) {
-          CqService cqService = ccp.getCache().getCqService();
-          if (cqService != null && cqService.isRunning()) {
-            List<String> durableCqNames = cqService.getAllDurableClientCqs(ccp.getProxyID());
-            if (durableCqNames != null && !durableCqNames.isEmpty()) {
-              result.setCqNamesList(new ArrayList<String>(durableCqNames));
-            } else {
-              result.setErrorMessage(CliStrings
-                  .format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, durableClientId));
-            }
-          } else {
-            result.setErrorMessage(CliStrings.LIST_DURABLE_CQS__NO__CQS__REGISTERED);
-          }
-        } else {
-          result.setErrorMessage(
-              CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
-        }
-      } else {
-        result.setErrorMessage(CliStrings.NO_CLIENT_FOUND);
+      if (ccn == null) {
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.NO_CLIENT_FOUND));
+        return results;
       }
+
+      CacheClientProxy ccp = ccn.getClientProxy(durableClientId);
+      if (ccp == null) {
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId)));
+        return results;
+      }
+
+      CqService cqService = ccp.getCache().getCqService();
+      if (cqService == null || !cqService.isRunning()) {
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.LIST_DURABLE_CQS__NO__CQS__REGISTERED));
+        return results;
+      }
+
+      List<String> durableCqNames = cqService.getAllDurableClientCqs(ccp.getProxyID());
+      if (durableCqNames == null || durableCqNames.isEmpty()) {
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings
+                .format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, durableClientId)));
+        return results;
+      }
+
+      for (String cqName : durableCqNames) {
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+            cqName));
+      }
+      return results;
     } catch (Exception e) {
-      result.setExceptionMessage(e.getMessage());
-    } finally {
-      context.getResultSender().lastResult(result);
+      results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+          e.getMessage()));
+      return results;
     }
   }
 }

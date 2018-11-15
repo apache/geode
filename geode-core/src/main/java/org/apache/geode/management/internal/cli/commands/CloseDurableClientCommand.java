@@ -25,24 +25,23 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.MemberResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CloseDurableClientFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CloseDurableClientCommand extends InternalGfshCommand {
-  DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
+public class CloseDurableClientCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.CLOSE_DURABLE_CLIENTS,
       help = CliStrings.CLOSE_DURABLE_CLIENTS__HELP)
   @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result closeDurableClient(
+  public ResultModel closeDurableClient(
       @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
@@ -52,26 +51,16 @@ public class CloseDurableClientCommand extends InternalGfshCommand {
           help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
-    Result result;
-    try {
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
-      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
-
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
-      final List<MemberResult> results = (List<MemberResult>) rc.getResult();
-      String failureHeader =
-          CliStrings.format(CliStrings.CLOSE_DURABLE_CLIENTS__FAILURE__HEADER, durableClientId);
-      String successHeader =
-          CliStrings.format(CliStrings.CLOSE_DURABLE_CLIENTS__SUCCESS, durableClientId);
-      result = builder.buildResult(results, successHeader, failureHeader);
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+    if (targetMembers.isEmpty()) {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
-    return result;
+
+    final ResultCollector<?, ?> rc =
+        CliUtil.executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
+    final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
+
+    return ResultModel.createMemberStatusResult(results);
   }
 }
