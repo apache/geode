@@ -37,6 +37,15 @@ public abstract class VMProvider {
     Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
   }
 
+  public static void invokeInEveryMember(String name, SerializableRunnableIF runnableIF,
+      VMProvider... members) {
+    if (ArrayUtils.isEmpty(members)) {
+      throw new IllegalArgumentException("Array of members must not be null nor empty.");
+    }
+
+    Arrays.stream(members).forEach(member -> member.invoke(name, runnableIF));
+  }
+
   public abstract VM getVM();
 
   public void stop() {
