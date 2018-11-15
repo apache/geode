@@ -62,7 +62,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
 public class RegionMapping implements CacheElement {
-  private static final String MAPPINGS_DELIMITER = ":";
 
   @XmlAttribute(name = "data-source")
   protected String dataSourceName;
@@ -147,22 +146,11 @@ public class RegionMapping implements CacheElement {
   }
 
   public String getFieldNameForColumn(String columnName, TypeRegistry typeRegistry) {
-    String fieldName = null;
-    if (getPdxName() == null) {
-      if (columnName.equals(columnName.toUpperCase())) {
-        fieldName = columnName.toLowerCase();
-      } else {
-        fieldName = columnName;
-      }
-    } else {
-      Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
-      fieldName = findExactMatch(columnName, pdxTypes);
-      if (fieldName == null) {
-        fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
-      }
+    Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
+    String fieldName = findExactMatch(columnName, pdxTypes);
+    if (fieldName == null) {
+      fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
     }
-    assert fieldName != null;
-
     return fieldName;
   }
 
@@ -232,8 +220,7 @@ public class RegionMapping implements CacheElement {
     if (regionName != null ? !regionName.equals(that.regionName) : that.regionName != null) {
       return false;
     }
-    if (pdxName != null ? !pdxName.equals(that.pdxName)
-        : that.pdxName != null) {
+    if (!pdxName.equals(that.pdxName)) {
       return false;
     }
     if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
@@ -249,7 +236,7 @@ public class RegionMapping implements CacheElement {
   @Override
   public int hashCode() {
     int result = regionName != null ? regionName.hashCode() : 0;
-    result = 31 * result + (pdxName != null ? pdxName.hashCode() : 0);
+    result = 31 * result + pdxName.hashCode();
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
     return result;

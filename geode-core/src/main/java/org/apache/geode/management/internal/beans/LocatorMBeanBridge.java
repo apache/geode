@@ -122,15 +122,11 @@ public class LocatorMBeanBridge {
       mainTail = "";
     }
 
-    if (mainTail == null) {
-      return "No log file configured, log messages will be directed to stdout.";
-    } else {
-      StringBuffer result = new StringBuffer();
-      if (mainTail != null) {
-        result.append(mainTail);
-      }
-      return result.toString();
+    StringBuffer result = new StringBuffer();
+    if (mainTail != null) {
+      result.append(mainTail);
     }
+    return result.toString();
   }
 
 }

@@ -20,12 +20,12 @@ import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.UnknownHostException;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.net.SocketCreator;
 
 public class VersionDescription {
@@ -75,6 +75,10 @@ public class VersionDescription {
    * Constant for the build Java version Resource Property entry
    */
   public static final String BUILD_JAVA_VERSION = "Build-Java-Version";
+
+  static final String NATIVE_VERSION = "Native version";
+
+  static final String RUNNING_ON = "Running on";
 
   /**
    * the version properties
@@ -128,28 +132,21 @@ public class VersionDescription {
     }
 
     // not stored in the description map
-    pw.println("Native version: " + getNativeCodeVersion());
-    printHostInfo(pw);
+    pw.println(NATIVE_VERSION + ": " + getNativeCodeVersion());
+    pw.println(getRunningOnInfo());
   }
 
-  private void printHostInfo(PrintWriter pw) throws Error {
+  private static String getRunningOnInfo() {
+    String line = getLocalHost() + ", " + Runtime.getRuntime().availableProcessors() + " cpu(s), "
+        + getOsArchitecture() + ' ' + getOsName() + ' ' + getOsVersion() + ' ';
+    return String.format(RUNNING_ON + ": %s", line);
+  }
+
+  private static String getLocalHost() {
     try {
-      String sb = SocketCreator.getLocalHost().toString() + ", "
-          + Runtime.getRuntime().availableProcessors() + " cpu(s), " + getOsArchitecture() + ' '
-          + getOsName() + ' ' + getOsVersion() + ' ';
-      pw.println(String.format("Running on: %s", sb));
-    } catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error. We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    } catch (Throwable t) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above). However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
+      return SocketCreator.getLocalHost().toString();
+    } catch (UnknownHostException e) {
+      return e.getMessage();
     }
   }
 

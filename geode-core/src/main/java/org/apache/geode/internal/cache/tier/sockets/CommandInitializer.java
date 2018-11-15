@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction70;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction65;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction66;
+import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctionGeode18;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctionSingleHop;
 import org.apache.geode.internal.cache.tier.sockets.command.GatewayReceiverCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.Get70;
@@ -329,8 +330,13 @@ public class CommandInitializer {
     ALL_COMMANDS.put(Version.GEODE_150, commands);
     ALL_COMMANDS.put(Version.GEODE_160, commands);
     ALL_COMMANDS.put(Version.GEODE_170, commands);
-    ALL_COMMANDS.put(Version.GEODE_180, commands);
 
+    Map<Integer, Command> geode18Commands = new HashMap<Integer, Command>();
+    geode18Commands.putAll(ALL_COMMANDS.get(Version.GEODE_170));
+    geode18Commands.put(MessageType.EXECUTE_REGION_FUNCTION,
+        ExecuteRegionFunctionGeode18.getCommand());
+    ALL_COMMANDS.put(Version.GEODE_180, geode18Commands);
+    ALL_COMMANDS.put(Version.GEODE_190, geode18Commands);
   }
 
   public static Map<Integer, Command> getCommands(Version version) {

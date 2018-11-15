@@ -14,10 +14,10 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.commons.lang.StringUtils.defaultIfBlank;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.lowerCase;
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
@@ -49,8 +49,9 @@ import javax.management.ObjectName;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -282,12 +283,32 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the reference to the Locator object representing the running GemFire Locator.
+   * Gets a reference to the {@code Cache} that was created by this {@code LocatorLauncher}.
+   *
+   * @return a reference to the Cache
+   * @see Cache
+   */
+  public Cache getCache() {
+    return getInternalLocator().getCache();
+  }
+
+  /**
+   * Gets a reference to the {@code Locator} that was created by this {@code LocatorLauncher}.
    *
    * @return a reference to the Locator.
+   * @see Locator
    */
-  InternalLocator getLocator() {
-    return this.locator;
+  public Locator getLocator() {
+    return locator;
+  }
+
+  /**
+   * Gets a reference to the {@code Locator} as an {@code InternalLocator}. For internal use only.
+   *
+   * @return a reference to the Locator as an InternalLocator.
+   */
+  InternalLocator getInternalLocator() {
+    return locator;
   }
 
   /**
@@ -734,12 +755,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     try {
       // make sure the Locator was started and the reference was set
-      assert getLocator() != null : "The Locator must first be started with a call to start!";
+      assert getInternalLocator() != null : "The Locator must first be started with a call to start!";
 
       debug("Waiting on Locator (%1$s) to stop...", getId());
 
       // prevent the JVM from exiting by joining the Locator Thread
-      getLocator().waitToStop();
+      getInternalLocator().waitToStop();
     } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
       t = handled;
@@ -968,7 +989,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    *         process with an embedded Locator).
    */
   protected boolean isStoppable() {
-    return (isRunning() && getLocator() != null);
+    return (isRunning() && getInternalLocator() != null);
   }
 
   /**
@@ -1093,7 +1114,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   private LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
-    debug(ExceptionUtils.getFullStackTrace(cause) + errorMessage);
+    debug(ExceptionUtils.getStackTrace(cause) + errorMessage);
     return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
 

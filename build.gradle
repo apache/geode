@@ -29,7 +29,6 @@ buildscript {
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
-    classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6.35-SNAPSHOT"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
     classpath "com.netflix.nebula:nebula-project-plugin:4.0.1"
   }
@@ -52,26 +51,15 @@ allprojects {
   version = versionNumber + releaseQualifier + releaseType
   ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-  // We want to see all test results.  This is equivalent to setting --continue
-  // on the command line.
-  gradle.startParameter.continueOnFailure = true
-
   repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/release" }
   }
 
-  group = "org.apache.geode"
-
   buildRoot = buildRoot.trim()
   if (!buildRoot.isEmpty()) {
     buildDir = buildRoot + project.path.replace(":", "/") + "/build"
   }
-}
-
-// allow external projects to override include location
-if (name == 'geode') {
-  ext.scriptDir = 'gradle'
 }
 
 // utilities.gradle MUST be read before publish.gradle for reasons
@@ -151,4 +139,7 @@ task writeBuildInfo {
 task generate() {
   group = 'Build'
   description = "Top-level target for all source generation. Helps IDE integration"
+  // This task is a no-op, with other tasks (such as geode-protobuf-messages:generateProto)
+  // injecting themselves as a task dependency into this task.  E.g., via
+  // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
 }

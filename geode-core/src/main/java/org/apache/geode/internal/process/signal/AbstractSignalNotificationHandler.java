@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.process.signal;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.util.Arrays;
 import java.util.Collections;

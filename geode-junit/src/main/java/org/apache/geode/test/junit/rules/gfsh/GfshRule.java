@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static org.apache.commons.lang.SystemUtils.PATH_SEPARATOR;
+import static org.apache.commons.lang3.SystemUtils.PATH_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

@@ -20,7 +20,7 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.DiskAccessException;

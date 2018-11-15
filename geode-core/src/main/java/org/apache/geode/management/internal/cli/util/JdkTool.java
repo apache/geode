@@ -20,6 +20,8 @@ import java.io.FileNotFoundException;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
+import org.apache.commons.lang3.JavaVersion;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
@@ -42,7 +44,7 @@ public class JdkTool {
         return getJdkToolPathname("jvisualvm" + getExecutableSuffix(),
             new VisualVmNotFoundException(CliStrings.START_JVISUALVM__NOT_FOUND_ERROR_MESSAGE));
       } catch (VisualVmNotFoundException e) {
-        if (!org.apache.commons.lang.SystemUtils.isJavaVersionAtLeast(1.6f)) {
+        if (!org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_6)) {
           throw new VisualVmNotFoundException(
               CliStrings.START_JVISUALVM__EXPECTED_JDK_VERSION_ERROR_MESSAGE);
         }

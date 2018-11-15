@@ -26,15 +26,15 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class DescribeOfflineDiskStoreCommand extends InternalGfshCommand {
+public class DescribeOfflineDiskStoreCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE,
       help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  public Result describeOfflineDiskStore(
+  public ResultModel describeOfflineDiskStore(
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
@@ -51,24 +51,24 @@ public class DescribeOfflineDiskStoreCommand extends InternalGfshCommand {
       }
 
       if (Region.SEPARATOR.equals(regionName)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.INVALID_REGION_NAME);
+        return ResultModel.createError(CliStrings.INVALID_REGION_NAME);
       }
 
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       PrintStream printStream = new PrintStream(outputStream);
 
       DiskStoreImpl.dumpInfo(printStream, diskStoreName, dirs, regionName, listPdxTypes);
-      return ResultBuilder.createInfoResult(outputStream.toString());
+      return ResultModel.createInfo(outputStream.toString());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable th) {
       SystemFailure.checkFailure();
       if (th.getMessage() == null) {
-        return ResultBuilder.createGemFireErrorResult(
+        return ResultModel.createError(
             "An error occurred while describing offline disk stores: " + th);
       }
-      return ResultBuilder.createGemFireErrorResult(
+      return ResultModel.createError(
           "An error occurred while describing offline disk stores: " + th.getMessage());
     }
   }

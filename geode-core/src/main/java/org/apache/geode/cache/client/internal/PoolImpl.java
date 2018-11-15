@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -1430,14 +1430,14 @@ public class PoolImpl implements InternalPool {
       if (cacheCriterion != null) {
         return cacheCriterion.generateCancelledException(e);
       }
-    } else {
-      if (cache == null && dsys != null) {
+      if (dsys != null) {
         cache = dsys.getCache();
         if (cache == null) {
           throw new IllegalStateException(
               "Cache must be created before creating pool");
         }
       }
+    } else {
       if (cacheCriterion == null || cacheCriterion != cache.getCancelCriterion()) {
         cacheCriterion = cache.getCancelCriterion();
       }

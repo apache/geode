@@ -376,4 +376,11 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
     assertDeletionOf(getPidFile());
   }
+
+  @Test
+  public void getCacheReturnsTheCache() {
+    givenRunningServer();
+
+    assertThat(launcher.getCache()).isInstanceOf(Cache.class);
+  }
 }

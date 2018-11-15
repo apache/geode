@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
@@ -180,6 +181,11 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
   @Override
   protected void process(ClusterDistributionManager dm) {
     throw new IllegalStateException("this message should not be executed");
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(senderId, view, registrants, requestId);
   }
 
   @Override

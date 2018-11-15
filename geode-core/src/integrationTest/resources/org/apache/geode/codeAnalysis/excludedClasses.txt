@@ -14,11 +14,14 @@ org/apache/geode/distributed/internal/membership/gms/mgr/GMSMembershipManager$Bo
 org/apache/geode/distributed/internal/tcpserver/LocatorCancelException
 org/apache/geode/internal/AbstractConfig$SortedProperties
 org/apache/geode/internal/AvailablePort$Keeper
+org/apache/geode/internal/Banner$BannerHeader
 org/apache/geode/internal/DSCODE
 org/apache/geode/internal/ExitCode
 org/apache/geode/internal/JarDeployer
 org/apache/geode/internal/ObjIdConcurrentMap
 org/apache/geode/internal/ObjIdConcurrentMap$Segment
+org/apache/geode/internal/alerting/AlertLevel
+org/apache/geode/internal/alerting/AlertingSession$State
 org/apache/geode/internal/cache/DiskStoreMonitor$DiskState
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/cache/Oplog$OPLOG_TYPE
@@ -47,8 +50,12 @@ org/apache/geode/internal/hll/HyperLogLogPlus$Builder
 org/apache/geode/internal/hll/HyperLogLogPlus$Format
 org/apache/geode/internal/hll/HyperLogLogPlus$HyperLogLogPlusMergeException
 org/apache/geode/internal/hll/HyperLogLogPlus$SerializationHolder
+org/apache/geode/internal/logging/Configuration$LogLevelUpdateOccurs
+org/apache/geode/internal/logging/Configuration$LogLevelUpdateScope
+org/apache/geode/internal/logging/LogMessageRegex$Group
+org/apache/geode/internal/logging/LogWriterLevel
+org/apache/geode/internal/logging/SessionContext$State
 org/apache/geode/internal/logging/log4j/FastLogger
-org/apache/geode/internal/logging/log4j/LogWriterAppenders$Identifier
 org/apache/geode/internal/logging/log4j/LogWriterLogger
 org/apache/geode/internal/logging/log4j/message/GemFireParameterizedMessage
 org/apache/geode/internal/logging/log4j/message/GemFireParameterizedMessageFactory
@@ -85,6 +92,10 @@ org/apache/geode/distributed/internal/RuntimeDistributionConfigImpl
 org/apache/geode/pdx/internal/PdxInstanceEnum
 org/apache/geode/pdx/internal/PdxInstanceImpl
 org/apache/geode/pdx/internal/WritablePdxInstanceImpl
+org/apache/geode/cache/query/internal/QueryMonitor$MemoryStateImpl
+org/apache/geode/cache/query/internal/QueryMonitor$MemoryStateImpl$1
+org/apache/geode/cache/query/internal/QueryMonitor$MemoryStateImpl$2
+org/apache/geode/cache/query/internal/parse/ASTArithmeticOp
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$1
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$2
@@ -92,6 +103,5 @@ org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$3
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$4
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$5
 org/apache/geode/cache/client/internal/pooling/ConnectionManagerImpl$ClosedPoolConnectionList
-org/apache/geode/cache/query/internal/parse/ASTArithmeticOp
 org/apache/geode/internal/cache/partitioned/ManageBackupBucketMessage$ReplyType
 org/apache/geode/internal/cache/AfterCompletion$Action

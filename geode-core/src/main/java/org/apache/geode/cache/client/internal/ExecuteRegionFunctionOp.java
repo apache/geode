@@ -335,6 +335,7 @@ public class ExecuteRegionFunctionOp {
 
     private FunctionException functionException;
 
+
     public ExecuteRegionFunctionOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
         Set<String> removedNodes) {
@@ -376,6 +377,22 @@ public class ExecuteRegionFunctionOp {
       this.hasResult = functionState;
       this.failedNodes = removedNodes;
       this.isHA = function.isHA();
+    }
+
+    // For testing only
+    ExecuteRegionFunctionOpImpl() {
+      super(MessageType.EXECUTE_REGION_FUNCTION,
+          0);
+      resultCollector = null;
+      function = null;
+      isReExecute = (byte) 0;
+      regionName = "";
+      executor = null;
+      hasResult = (byte) 0;
+      failedNodes = null;
+      functionId = null;
+      executeOnBucketSet = true;
+      isHA = true;
     }
 
     public ExecuteRegionFunctionOpImpl(String region, String function,
@@ -640,13 +657,13 @@ public class ExecuteRegionFunctionOp {
       return null;
     }
 
-    private void addFunctionException(final FunctionException result) {
-      if (result instanceof FunctionInvocationTargetException) {
+    void addFunctionException(final FunctionException result) {
+      if (result.getCause() instanceof FunctionInvocationTargetException) {
         if (this.functionException == null) {
-          this.functionException = new FunctionException(result);
+          this.functionException = result;
         }
-        this.functionException.addException(result);
-      } else if (result instanceof InternalFunctionInvocationTargetException) {
+        this.functionException.addException(result.getCause());
+      } else if (result instanceof FunctionInvocationTargetException) {
         if (this.functionException == null) {
           this.functionException = new FunctionException(result);
         }
@@ -657,6 +674,10 @@ public class ExecuteRegionFunctionOp {
         }
         this.functionException.addException(result);
       }
+    }
+
+    FunctionException getFunctionException() {
+      return functionException;
     }
 
     @Override

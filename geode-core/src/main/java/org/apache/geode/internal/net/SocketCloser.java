@@ -68,7 +68,7 @@ public class SocketCloser {
   private final int asyncClosePoolMaxThreads;
   private final long asyncCloseWaitTime;
   private final TimeUnit asyncCloseWaitUnits;
-  private Boolean closed = Boolean.FALSE;
+  private boolean closed;
 
   public SocketCloser() {
     this(ASYNC_CLOSE_POOL_KEEP_ALIVE_SECONDS, ASYNC_CLOSE_POOL_MAX_THREADS,
@@ -132,7 +132,7 @@ public class SocketCloser {
    * called then the asyncClose will be done synchronously.
    */
   public void close() {
-    synchronized (closed) {
+    synchronized (this) {
       if (!this.closed) {
         this.closed = true;
       } else {
@@ -167,7 +167,7 @@ public class SocketCloser {
     boolean doItInline = false;
     try {
       Future submittedTask = null;
-      synchronized (closed) {
+      synchronized (this) {
         if (closed) {
           // this SocketCloser has been closed so do a synchronous, inline, close
           doItInline = true;

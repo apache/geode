@@ -115,7 +115,6 @@ public class DistributionLocator {
     }
     SystemFailure.loadEmergencyClasses();
 
-    // log.info(Banner.getString(args));
     final int port = parsePort(args[0]);
     InetAddress address = null;
     boolean peerLocator = true;

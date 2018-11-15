@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -487,6 +488,11 @@ public class RegionFunctionArgs implements Serializable {
 
     public ExpirationAction getAction() {
       return action;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(time, action);
     }
 
     @Override

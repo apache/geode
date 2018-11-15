@@ -140,7 +140,7 @@ public class DefaultQueryService implements InternalQueryService {
     if (QueryMonitor.isLowMemory()) {
       String reason = String.format(
           "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
-          QueryMonitor.getMemoryUsedDuringLowMemory());
+          QueryMonitor.getMemoryUsedBytes());
       throw new QueryExecutionLowMemoryException(reason);
     }
     if (queryString == null)

@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.result;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;

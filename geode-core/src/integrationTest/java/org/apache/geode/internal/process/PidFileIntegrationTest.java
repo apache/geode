@@ -107,7 +107,7 @@ public class PidFileIntegrationTest {
 
     // act/assert
     assertThatThrownBy(() -> new PidFile(pidFile).readPid())
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

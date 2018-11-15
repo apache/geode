@@ -21,27 +21,22 @@
 groups:
 - name: main
   jobs:
-  - Build
 {%- for test in tests if not test.name.startswith("Windows") %}
-  - {{test.name}}Test
+  {%- for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+  {%- endfor %}
 {%- endfor %}
 resources:
-- name: docker-geode-build-image
-  type: docker-image
-  source:
-    password: ((!docker-password))
-    repository: gcr.io/((gcp-project))/((pipeline-prefix))((!docker-image-name))
-    tag: latest
-    username: ((!docker-username))
 - name: geode
   type: pull-request
   source:
     access_token: ((!github-pr-access-token))
-    base: develop
     ignore_paths:
     - geode-docs/*
     - geode-book/*
-    repo: {{repository.fork}}/geode
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
 - name: geode-ci
   type: git
   source:
@@ -62,9 +57,7 @@ resource_types:
 - name: pull-request
   type: docker-image
   source:
-    repository: jtarchie/pr
-# TODO : Is pipeline_prefix here correct?  is apachegeode-ci?  this bucket maybe doesn't exist?
-# Also see build jinja
+    repository: teliaoss/github-pr-resource
 - name: concourse-metadata-resource
   type: docker-image
   source:
@@ -73,92 +66,29 @@ resource_types:
     tag: latest
     username: ((!docker-username))
 jobs:
-- name: Build
-  public: true
-  plan:
-  - aggregate:
-    - get: geode
-      trigger: true
-      params:
-        fetch_merge: true
-        git:
-          depth: 100
-      version: every
-    - get: geode-ci
-    - get: docker-geode-build-image
-      params:
-        rootfs: true
-  - get: geode-unmerged-request
-    resource: geode
-    params:
-      fetch_merge: false
-    version: every
-  - aggregate:
-    - put: geode
-      params:
-        context: $BUILD_JOB_NAME
-        path: geode-unmerged-request
-        status: pending
-    - task: build
-      config:
-        platform: linux
-        params:
-          MAINTENANCE_VERSION: {{repository.branch}}
-          ARTIFACT_BUCKET: ((artifact-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-        run:
-          path: geode-ci/ci/scripts/build.sh
-        inputs:
-        - name: geode
-        - name: geode-ci
-        outputs:
-        - name: built-geode
-        - name: results
-      image: docker-geode-build-image
-      on_failure:
-        aggregate:
-        - put: geode
-          params:
-            context: $BUILD_JOB_NAME
-            path: geode-unmerged-request
-            status: failure
-      on_success:
-        aggregate:
-        - put: geode
-          params:
-            context: $BUILD_JOB_NAME
-            path: geode-unmerged-request
-            status: success
 {% for test in tests if not test.name.startswith("Windows")%}
-- name: {{test.name}}Test
+  {%- for java_test_version in (java_test_versions) %}
+- name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:
   - do:
     - aggregate:
       - get: geode
         trigger: true
-        params:
-          fetch_merge: true
-          git:
-            depth: 100
         version: every
       - get: geode-ci
     - aggregate:
       - do:
-        - get: geode-unmerged-request
-          resource: geode
-          params:
-            fetch_merge: false
-          version: every
         - put: pull-request-job-pending
           resource: geode
           params:
-            context: $BUILD_JOB_NAME
-            path: geode-unmerged-request
+            context: {{test.name}}Test{{java_test_version.name}}
+            path: geode
             status: pending
+          get_params: {skip_download: true}
       - do:
         - put: concourse-metadata-resource
-        - task: create_instance
+        - task: create_instance-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}
             params:
               CPUS: {{test.CPUS}}
@@ -167,6 +97,8 @@ jobs:
               UPSTREAM_FORK: ((upstream-fork))
               GCP_PROJECT: ((gcp-project))
               RAM: {{test.RAM}}
+              JAVA_BUILD_VERSION: {{ java_build_version.version }}
+              JAVA_TEST_VERSION: {{ java_test_version.version }}
             run:
               path: geode-ci/ci/scripts/create_instance.sh
             inputs:
@@ -177,7 +109,7 @@ jobs:
             - name: instance-data
           timeout: 15m
           attempts: 100
-    - task: rsync_code_up
+    - task: rsync_code_up-{{java_test_version.name}}
       {{- alpine_tools_config()|indent(6) }}
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
@@ -186,12 +118,12 @@ jobs:
         - name: geode-ci
         - name: instance-data
       timeout: 5m
-    - task: execute_tests
+    - task: execute_tests-{{java_test_version.name}}
       {{- alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
-          JAVA_BUILD_VERSION: 8
-          JAVA_TEST_VERSION: 8
+          JAVA_BUILD_VERSION: {{ java_build_version.version }}
+          JAVA_TEST_VERSION: {{ java_test_version.version }}
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
           DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
@@ -218,12 +150,13 @@ jobs:
       - put: pull-request-job-failure
         resource: geode
         params:
-          context: $BUILD_JOB_NAME
-          path: geode-unmerged-request
+          context: {{test.name}}Test{{java_test_version.name}}
+          path: geode
           status: failure
+        get_params: {skip_download: true}
     ensure:
       do:
-      - task: rsync_code_down
+      - task: rsync_code_down-{{java_test_version.name}}
         {{- alpine_tools_config()|indent(8) }}
           params:
             JAVA_BUILD_VERSION: 8
@@ -239,7 +172,7 @@ jobs:
         timeout: 5m
       ensure:
         aggregate:
-        - task: archive-results
+        - task: archive-results-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}
             params:
               ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
@@ -254,7 +187,7 @@ jobs:
             - name: geode
             - name: geode-ci
             - name: geode-results
-        - task: delete_instance
+        - task: delete_instance-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}
             run:
               path: geode-ci/ci/scripts/delete_instance.sh
@@ -268,7 +201,9 @@ jobs:
       - put: pull-request-job-success
         resource: geode
         params:
-          context: $BUILD_JOB_NAME
-          path: geode-unmerged-request
+          context: {{test.name}}Test{{java_test_version.name}}
+          path: geode
           status: success
+        get_params: {skip_download: true}
+{% endfor %}
 {% endfor %}

@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import java.security.Principal;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;

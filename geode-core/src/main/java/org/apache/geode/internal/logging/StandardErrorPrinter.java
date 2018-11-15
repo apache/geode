@@ -20,16 +20,16 @@ package org.apache.geode.internal.logging;
 class StandardErrorPrinter extends LocalLogWriter {
 
   /**
-   * Creates a writer that logs to <code>System.err</code>. All messages will be logged.
+   * Creates a writer that logs to {@code System.err}. All messages will be logged.
    *
    * @throws IllegalArgumentException if level is not in legal range
    */
   StandardErrorPrinter() {
-    this(InternalLogWriter.ALL_LEVEL);
+    this(ALL_LEVEL);
   }
 
   /**
-   * Creates a writer that logs to <code>System.err</code>.
+   * Creates a writer that logs to {@code System.err}.
    *
    * @param level only messages greater than or equal to this value will be logged.
    *

@@ -21,12 +21,15 @@
 
 ---
 
-{% macro plan_resource_gets() %}
+{% macro plan_resource_gets(test) %}
 - get: geode-ci
 - aggregate:
   - get: geode
     passed:
     - Build
+    {%- if test.name.startswith("Windows") %}
+    {{- all_gating_jobs() | indent(4) -}}
+    {%- endif %}
   - get: geode-build-version
     passed:
     - Build
@@ -76,9 +79,11 @@ SERVICE_ACCOUNT: ((concourse-gcp-account))
 GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
-{% macro all_gating_jobs(test) %}
-{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") %}
-- {{test.name}}Test
+{% macro all_gating_jobs() %}
+{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
+  {%- for java_test_version in (java_test_versions) %}
+- {{test.name}}Test{{java_test_version.name}}
+  {%- endfor -%}
 {%- endfor -%}
 {% endmacro %}
 
@@ -94,19 +99,39 @@ groups:
 - name: complete
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if not test.name=="StressNew" %}
-  - {{test.name}}Test
+  {%- for test in (tests) if not test.name=="StressNew" -%}
+    {%- for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
   {%- endfor -%}
   {%- if repository.sanitized_fork == repository.upstream_fork %}
   - UpdatePassingRef
   - PublishArtifacts
   {%- endif %}
+- name: linux
+  jobs:
+  - {{ build_test.name }}
+  {%- for test in (tests) if not test.name.startswith("Windows") and not test.name=="StressNew" -%}
+    {% for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
+  {%- endfor %}
 - name: windows
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if test.name.startswith("Windows") %}
-  - {{test.name}}Test
+  {%- for test in (tests) if test.name.startswith("Windows") -%}
+    {% for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
   {%- endfor %}
+{%- for java_test_version in (java_test_versions) %}
+- name: {{java_test_version.name}}
+  jobs:
+  - {{ build_test.name }}
+  {%- for test in (tests) if not test.name=="StressNew" %}
+  - {{test.name}}Test{{java_test_version.name}}
+  {%- endfor -%}
+{%- endfor %}
 
 resources:
 {% if repository.sanitized_fork == repository.upstream_fork %}
@@ -382,14 +407,17 @@ jobs:
 {%- for test in tests if not test.name=="StressNew" %}
   {%- set parameters = {} %}
   {%- do deep_merge(parameters, test) %}
-- name: {{test.name}}Test
+  {%- for java_test_version in (java_test_versions) %}
+    {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
+      {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
+    {%- endif %}
+- name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:
   - do:
-    {{- plan_resource_gets() |indent(4) }}
+    {{- plan_resource_gets(test) |indent(4) }}
       - put: concourse-metadata-resource
     - aggregate:
-  {%- for java_test_version in (java_test_versions) %}
       - do:
         - task: create_instance-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}

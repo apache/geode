@@ -33,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -48,51 +49,51 @@ import org.apache.geode.internal.process.ProcessType;
 public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrationTestCase {
 
   @Before
-  public void setUpLocatorLauncherLocalIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherLocalIntegrationTest() {
     disconnectFromDS();
     System.setProperty(ProcessType.PROPERTY_TEST_PREFIX, getUniqueName() + "-");
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isTrue();
   }
 
   @After
-  public void tearDownLocatorLauncherLocalIntegrationTest() throws Exception {
+  public void tearDownLocatorLauncherLocalIntegrationTest() {
     disconnectFromDS();
   }
 
   @Test
-  public void usesLocatorPortAsDefaultPort() throws Exception {
+  public void usesLocatorPortAsDefaultPort() {
     launcher = givenLocatorLauncher();
 
     assertThat(launcher.getPort()).isEqualTo(defaultLocatorPort);
   }
 
   @Test
-  public void startReturnsOnline() throws Exception {
+  public void startReturnsOnline() {
     launcher = givenLocatorLauncher();
 
     assertThat(launcher.start().getStatus()).isEqualTo(ONLINE);
   }
 
   @Test
-  public void startWithPortUsesPort() throws Exception {
+  public void startWithPortUsesPort() {
     LocatorLauncher launcher = startLocator(newBuilder().setPort(defaultLocatorPort));
 
-    assertThat(launcher.getLocator().getPort()).isEqualTo(defaultLocatorPort);
+    assertThat(launcher.getInternalLocator().getPort()).isEqualTo(defaultLocatorPort);
   }
 
   @Test
-  public void startWithPortZeroUsesAnEphemeralPort() throws Exception {
+  public void startWithPortZeroUsesAnEphemeralPort() {
     LocatorLauncher launcher = startLocator(newBuilder().setPort(0));
 
-    assertThat(launcher.getLocator().getPort()).isGreaterThan(0);
-    assertThat(launcher.getLocator().isPeerLocator()).isTrue();
+    assertThat(launcher.getInternalLocator().getPort()).isGreaterThan(0);
+    assertThat(launcher.getInternalLocator().isPeerLocator()).isTrue();
   }
 
   @Test
-  public void startUsesBuilderValues() throws Exception {
+  public void startUsesBuilderValues() {
     LocatorLauncher launcher = startLocator(newBuilder().setPort(nonDefaultLocatorPort));
 
-    InternalLocator locator = launcher.getLocator();
+    InternalLocator locator = launcher.getInternalLocator();
     assertThat(locator.getPort()).isEqualTo(nonDefaultLocatorPort);
 
     DistributedSystem system = locator.getDistributedSystem();
@@ -103,21 +104,21 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void startCreatesPidFile() throws Exception {
+  public void startCreatesPidFile() {
     startLocator();
 
     assertThat(getPidFile()).exists();
   }
 
   @Test
-  public void pidFileContainsServerPid() throws Exception {
+  public void pidFileContainsServerPid() {
     startLocator();
 
     assertThat(getLocatorPid()).isEqualTo(localPid);
   }
 
   @Test
-  public void startDeletesStaleControlFiles() throws Exception {
+  public void startDeletesStaleControlFiles() {
     File stopRequestFile = givenControlFile(getProcessType().getStopRequestFileName());
     File statusRequestFile = givenControlFile(getProcessType().getStatusRequestFileName());
     File statusFile = givenControlFile(getProcessType().getStatusFileName());
@@ -130,7 +131,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void startOverwritesStalePidFile() throws Exception {
+  public void startOverwritesStalePidFile() {
     givenPidFile(fakePid);
 
     startLocator();
@@ -139,7 +140,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void startWithDefaultPortInUseFailsWithBindException() throws Exception {
+  public void startWithDefaultPortInUseFailsWithBindException() {
     givenLocatorPortInUse(defaultLocatorPort);
 
     launcher = new Builder().build();
@@ -149,12 +150,12 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void startWithLocatorPortInUseFailsWithBindException() throws Exception {
+  public void startWithLocatorPortInUseFailsWithBindException() {
     givenServerPortInUse(nonDefaultLocatorPort);
 
     launcher = new Builder().setPort(nonDefaultLocatorPort).build();
 
-    assertThatThrownBy(() -> this.launcher.start()).isInstanceOf(RuntimeException.class)
+    assertThatThrownBy(() -> launcher.start()).isInstanceOf(RuntimeException.class)
         .hasCauseInstanceOf(BindException.class);
   }
 
@@ -198,7 +199,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
+  public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
     givenEmptyPidFile();
 
     LocatorLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
@@ -232,7 +233,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
    * This test takes > 1 minute to run in {@link LocatorLauncherLocalFileIntegrationTest}.
    */
   @Test
-  public void statusWithStalePidFileReturnsNotResponding() throws Exception {
+  public void statusWithStalePidFileReturnsNotResponding() {
     givenPidFile(fakePid);
 
     LocatorState locatorState =
@@ -242,7 +243,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void stopWithPidReturnsStopped() throws Exception {
+  public void stopWithPidReturnsStopped() {
     givenRunningLocator();
 
     LocatorState locatorState = new Builder().setPid(localPid).build().stop();
@@ -251,7 +252,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void stopWithPidDeletesPidFile() throws Exception {
+  public void stopWithPidDeletesPidFile() {
     givenRunningLocator(newBuilder().setDeletePidFileOnStop(true));
 
     new Builder().setPid(localPid).build().stop();
@@ -260,7 +261,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void stopWithWorkingDirectoryReturnsStopped() throws Exception {
+  public void stopWithWorkingDirectoryReturnsStopped() {
     givenRunningLocator();
 
     LocatorState locatorState =
@@ -270,11 +271,25 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   }
 
   @Test
-  public void stopWithWorkingDirectoryDeletesPidFile() throws Exception {
+  public void stopWithWorkingDirectoryDeletesPidFile() {
     givenRunningLocator(newBuilder().setDeletePidFileOnStop(true));
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
 
     assertDeletionOf(getPidFile());
+  }
+
+  @Test
+  public void getCacheReturnsTheCache() {
+    givenRunningLocator();
+
+    assertThat(launcher.getCache()).isInstanceOf(Cache.class);
+  }
+
+  @Test
+  public void getLocatorReturnsTheLocator() {
+    givenRunningLocator();
+
+    assertThat(launcher.getLocator()).isInstanceOf(Locator.class);
   }
 }

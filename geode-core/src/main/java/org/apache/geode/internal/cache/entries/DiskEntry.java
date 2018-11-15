@@ -146,9 +146,9 @@ public interface DiskEntry extends RegionEntry {
       dr.acquireReadLock();
       try {
         synchronized (id) {
-          if (id == null || (dr.isBackup() && id.getKeyId() == DiskRegion.INVALID_ID)
-              || (!entry.isValueNull() && id.needsToBeWritten()
-                  && !EntryBits.isRecoveredFromDisk(id.getUserBits()))/* fix for bug 41942 */) {
+          if (dr.isBackup() && id.getKeyId() == DiskRegion.INVALID_ID || !entry.isValueNull() && id
+              .needsToBeWritten() && !EntryBits
+                  .isRecoveredFromDisk(id.getUserBits())/* fix for bug 41942 */) {
             return null;
           }
 
@@ -177,7 +177,7 @@ public interface DiskEntry extends RegionEntry {
       dr.acquireReadLock();
       try {
         synchronized (did) {
-          if (did == null || (dr.isBackup() && did.getKeyId() == DiskRegion.INVALID_ID)) {
+          if (dr.isBackup() && did.getKeyId() == DiskRegion.INVALID_ID) {
             return null;
           } else if (!entry.isValueNull() && did.needsToBeWritten()
               && !EntryBits.isRecoveredFromDisk(did.getUserBits())/* fix for bug 41942 */) {

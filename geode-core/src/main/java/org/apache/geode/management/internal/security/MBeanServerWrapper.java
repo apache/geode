@@ -43,7 +43,7 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.ManagementConstants;

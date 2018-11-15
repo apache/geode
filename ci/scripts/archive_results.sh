@@ -51,9 +51,9 @@ GEODE_BUILD=${DEST_DIR}/geode
 GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" ${GEODE_BUILD}/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
 BUILD_TIMESTAMP=$(date +%s)
 
-GEODE_PULL_REQUEST_ID_FILE=${GEODE_BUILD}/.git/id
+GEODE_PULL_REQUEST_ID_FILE=${BUILDROOT}/geode/.git/resource/version.json
 if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
-  GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
+  GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE} | jq --raw-output '.["pr"]')
 fi
 
 

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
@@ -61,6 +62,7 @@ public class CustomerIDPartitionResolver implements PartitionResolver {
 
   public void close() {}
 
+  @Override
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -73,4 +75,8 @@ public class CustomerIDPartitionResolver implements PartitionResolver {
 
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
+  }
 }

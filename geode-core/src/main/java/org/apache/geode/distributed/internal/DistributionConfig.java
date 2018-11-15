@@ -203,6 +203,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 
@@ -216,7 +217,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer;
  * @see Config
  * @since GemFire 2.1
  */
-public interface DistributionConfig extends Config, LogConfig {
+public interface DistributionConfig extends Config, LogConfig, StatisticsConfig {
 
   /**
    * The static String definition of the prefix used to defined ssl-* properties
@@ -2491,6 +2492,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return the current security log-level
    */
+  @Override
   @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL)
   int getSecurityLogLevel();
 
@@ -2516,6 +2518,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return <code>null</code> if logging information goes to standard out
    */
+  @Override
   @ConfigAttributeGetter(name = SECURITY_LOG_FILE)
   File getSecurityLogFile();
 
@@ -5245,6 +5248,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * Current value is a pattern for rejecting everything <code>"!*"</code>
    */
   String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "!*";
+
+  /**
+   * Returns true if locators and mcast-port are not configured.
+   */
+  @Override
+  boolean isLoner();
 
   // *************** Initializers to gather all the annotations in this class
   // ************************
