@@ -39,9 +39,7 @@ import org.apache.geode.cache.query.CqExistsException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -80,11 +78,7 @@ public class DurableClientCommandsDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + jmxPort);
-    locator = lsRule.startLocatorVM(0, props);
+    locator = lsRule.startLocatorVM(0);
 
     int locatorPort = locator.getPort();
     lsRule.startServerVM(1,
@@ -115,7 +109,9 @@ public class DurableClientCommandsDUnitTest {
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("CQ Name", "cq1", "cq2", "cq3");
+        .hasTableSection()
+        .hasColumn("CQ Name")
+        .containsExactlyInAnyOrder("cq1", "cq2", "cq3");
 
     closeCq(CQ1);
     closeCq(CQ2);
@@ -126,7 +122,9 @@ public class DurableClientCommandsDUnitTest {
     commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
-        .tableHasColumnWithExactValuesInAnyOrder("CQ Name",
+        .hasTableSection()
+        .hasColumn("CQ Name")
+        .containsExactlyInAnyOrder(
             CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, CLIENT_NAME),
             CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__REGISTERED));
   }
@@ -138,7 +136,9 @@ public class DurableClientCommandsDUnitTest {
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
-        .tableHasColumnWithExactValuesInAnyOrder("CQ Name",
+        .hasTableSection()
+        .hasColumn("CQ Name")
+        .containsExactlyInAnyOrder(
             CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME),
             CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME));
   }
@@ -152,8 +152,9 @@ public class DurableClientCommandsDUnitTest {
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
-        .tableHasColumnWithExactValuesInAnyOrder("CQ Name", "cq1", "cq2", "cq3",
-            "No client found with client-id : dc1");
+        .hasTableSection()
+        .hasColumn("CQ Name")
+        .containsExactlyInAnyOrder("cq1", "cq2", "cq3", "No client found with client-id : dc1");
 
     closeCq(CQ1);
     closeCq(CQ2);
@@ -172,8 +173,9 @@ public class DurableClientCommandsDUnitTest {
 
     await().untilAsserted(() -> {
       gfsh.executeAndAssertThat(commandString).statusIsSuccess()
-          .tableHasColumnWithExactValuesInAnyOrder("Message",
-              "Closed the durable client : \"dc1\".");
+          .hasTableSection()
+          .hasColumn("Message")
+          .containsExactlyInAnyOrder("Closed the durable client : \"dc1\".");
     });
 
     String errorMessage = CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME);
@@ -212,7 +214,9 @@ public class DurableClientCommandsDUnitTest {
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Queue Size", "4");
+        .hasTableSection()
+        .hasColumn("Queue Size")
+        .containsExactlyInAnyOrder("4");
 
     csb = new CommandStringBuilder(CliStrings.COUNT_DURABLE_CQ_EVENTS);
     csb.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID, CLIENT_NAME);
@@ -221,7 +225,9 @@ public class DurableClientCommandsDUnitTest {
     commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Queue Size", "0");
+        .hasTableSection()
+        .hasColumn("Queue Size")
+        .containsExactlyInAnyOrder("0");
 
     // CLOSE all the cqs
     closeCq(CQ1);

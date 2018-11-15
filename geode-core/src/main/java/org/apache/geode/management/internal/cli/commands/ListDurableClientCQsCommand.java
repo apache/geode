@@ -27,7 +27,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -61,7 +60,7 @@ public class ListDurableClientCQsCommand extends GfshCommand {
     }
 
     final ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
+        executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
     final List<List<CliFunctionResult>> results = (List<List<CliFunctionResult>>) rc.getResult();
 
     ResultModel result = new ResultModel();

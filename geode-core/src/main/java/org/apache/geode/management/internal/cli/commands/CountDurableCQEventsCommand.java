@@ -27,7 +27,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GetSubscriptionQueueSizeFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -65,7 +64,7 @@ public class CountDurableCQEventsCommand extends GfshCommand {
     params[0] = durableClientId;
     params[1] = cqName;
     final ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(new GetSubscriptionQueueSizeFunction(), params, targetMembers);
+        executeFunction(new GetSubscriptionQueueSizeFunction(), params, targetMembers);
     final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
     ResultModel result = new ResultModel();

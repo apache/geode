@@ -26,7 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CloseDurableCqFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -67,7 +66,7 @@ public class CloseDurableCQsCommand extends GfshCommand {
     params[1] = cqName;
 
     final ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(new CloseDurableCqFunction(), params, targetMembers);
+        executeFunction(new CloseDurableCqFunction(), params, targetMembers);
     final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
     return ResultModel.createMemberStatusResult(results);
   }
