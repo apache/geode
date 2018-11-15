@@ -244,7 +244,7 @@ public class QueryAccessController extends AbstractBaseController {
       Query compiledQuery = compiledQueries.get(queryId);
       if (compiledQuery == null) {
         // This is first time the query is seen by this server.
-        final String oql = getValue(PARAMETERIZED_QUERIES_REGION, queryId, false);
+        final String oql = getQueryStore(PARAMETERIZED_QUERIES_REGION).get(queryId);
 
         ValidationUtils.returnValueThrowOnNull(oql, new ResourceNotFoundException(
             String.format("No Query with ID (%1$s) was found!", queryId)));
