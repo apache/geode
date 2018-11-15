@@ -136,10 +136,21 @@ public class CommandExecutor {
     }
 
     String groupInput = parseResult.getParamValueAsString("group");
+    String[] groups;
     if (groupInput == null) {
-      groupInput = "cluster";
+      groups = new String[] {"cluster"};
+      Map<String, CacheConfig> configMap = ccService.getGroups()
+          .stream()
+          .filter(group -> ccService.getCacheConfig(group) != null)
+          .collect(Collectors.toMap(group -> group, group -> ccService.getCacheConfig(group)));
+      if (gfshCommand.updateAllConfigs(configMap, resultModel)) {
+        ccService.getGroups()
+            .forEach(group -> ccService.updateCacheConfig(group, cc -> configMap.get(group)));
+      }
+    } else {
+      groups = groupInput.split(",");
     }
-    String[] groups = groupInput.split(",");
+
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
         try {
@@ -161,17 +172,6 @@ public class CommandExecutor {
         return cc;
       });
     }
-
-    Map<String, CacheConfig> configMap = ccService.getGroups()
-        .stream()
-        .filter(group -> ccService.getCacheConfig(group) != null)
-        .collect(Collectors.toMap(group -> group, group -> ccService.getCacheConfig(group)));
-
-    if (gfshCommand.updateAllConfigs(configMap, resultModel)) {
-      ccService.getGroups()
-          .forEach(group -> ccService.replaceCacheConfig(group, configMap.get(group)));
-    }
-
     return resultModel;
   }
 }

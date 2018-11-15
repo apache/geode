@@ -991,21 +991,4 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       unlockSharedConfiguration();
     }
   }
-
-  public void replaceCacheConfig(String group, CacheConfig newConfig) {
-    lockSharedConfiguration();
-    try {
-      if (newConfig == null) {
-        return;
-      }
-      Configuration configuration = getConfiguration(group);
-      if (configuration == null) {
-        configuration = new Configuration(group);
-      }
-      configuration.setCacheXmlContent(jaxbService.marshall(newConfig));
-      getConfigurationRegion().put(group, configuration);
-    } finally {
-      unlockSharedConfiguration();
-    }
-  }
 }
