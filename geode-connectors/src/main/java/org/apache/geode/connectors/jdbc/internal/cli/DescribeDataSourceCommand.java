@@ -18,7 +18,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -29,10 +28,10 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -40,11 +39,12 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DescribeDataSourceCommand extends InternalGfshCommand {
-  public static final String DATA_SOURCE_PROPERTIES_SECTION = "data-source-properties";
-  private static final Logger logger = LogService.getLogger();
   static final String DESCRIBE_DATA_SOURCE = "describe data-source";
   private static final String DESCRIBE_DATA_SOURCE__HELP =
       "Describe the configuration of the given data source.";
+
+  static final String DATA_SOURCE_PROPERTIES_SECTION = "data-source-properties";
+  static final String REGIONS_USING_DATA_SOURCE_SECTION = "regions-using-data-source";
 
   @CliCommand(value = DESCRIBE_DATA_SOURCE, help = DESCRIBE_DATA_SOURCE__HELP)
   @CliMetaData
@@ -91,6 +91,15 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
       for (JndiBindingsType.JndiBinding.ConfigProperty confProp : binding.getConfigProperties()) {
         addTableRow(tabularData, confProp.getName(), confProp.getValue());
       }
+    }
+
+    InfoResultModel regionsUsingSection = resultModel.addInfo(REGIONS_USING_DATA_SOURCE_SECTION);
+    List<String> regionsUsing = getRegionsThatUseDataSource(cacheConfig, dataSourceName);
+    regionsUsingSection.setHeader("Regions Using Data Source:");
+    if (regionsUsing.isEmpty()) {
+      regionsUsingSection.addLine("no regions are using " + dataSourceName);
+    } else {
+      regionsUsingSection.setContent(regionsUsing);
     }
 
     return resultModel;
