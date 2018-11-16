@@ -67,10 +67,11 @@ public class ClientAuthDUnitTest {
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
     int serverPort = server.getPort();
-    ClientVM clientVM = lsRule.startClientVM(0, getClientAuthProperties("data", "data"), ccf -> {
-      ccf.setPoolSubscriptionEnabled(true);
-      ccf.addPoolServer("localhost", serverPort);
-    }, clientVersion);
+    ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
+        getClientAuthProperties("data", "data"), ccf -> {
+          ccf.setPoolSubscriptionEnabled(true);
+          ccf.addPoolServer("localhost", serverPort);
+        });
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
@@ -90,19 +91,21 @@ public class ClientAuthDUnitTest {
     // authentication error will happen at this step.
     if (Arrays.asList("100", "110", "111", "120", "130", "140").contains(clientVersion)) {
       assertThatThrownBy(
-          () -> lsRule.startClientVM(0, getClientAuthProperties("test", "invalidPassword"), ccf -> {
-            ccf.setPoolSubscriptionEnabled(true);
-            ccf.addPoolServer("localhost", serverPort);
-          }, clientVersion))
-              .isInstanceOf(AuthenticationFailedException.class);
+          () -> lsRule.startClientVM(0, clientVersion,
+              getClientAuthProperties("test", "invalidPassword"), ccf -> {
+                ccf.setPoolSubscriptionEnabled(true);
+                ccf.addPoolServer("localhost", serverPort);
+              }))
+                  .isInstanceOf(AuthenticationFailedException.class);
       return;
     }
 
     ClientVM clientVM =
-        lsRule.startClientVM(0, getClientAuthProperties("test", "invalidPassword"), ccf -> {
-          ccf.setPoolSubscriptionEnabled(true);
-          ccf.addPoolServer("localhost", serverPort);
-        }, clientVersion);
+        lsRule.startClientVM(0, clientVersion, getClientAuthProperties("test", "invalidPassword"),
+            ccf -> {
+              ccf.setPoolSubscriptionEnabled(true);
+              ccf.addPoolServer("localhost", serverPort);
+            });
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
@@ -118,10 +121,11 @@ public class ClientAuthDUnitTest {
     int serverPort = server.getPort();
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
     ClientVM clientVM =
-        lsRule.startClientVM(0, getClientAuthProperties("test", "invalidPassword"), ccf -> {
-          ccf.setPoolSubscriptionEnabled(false);
-          ccf.addPoolServer("localhost", serverPort);
-        }, clientVersion);
+        lsRule.startClientVM(0, clientVersion, getClientAuthProperties("test", "invalidPassword"),
+            ccf -> {
+              ccf.setPoolSubscriptionEnabled(false);
+              ccf.addPoolServer("localhost", serverPort);
+            });
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
