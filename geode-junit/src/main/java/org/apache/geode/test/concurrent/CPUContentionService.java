@@ -1,6 +1,5 @@
 package org.apache.geode.test.concurrent;
 
-import static java.util.Collections.synchronizedSet;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -8,10 +7,9 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,11 +61,10 @@ import java.util.function.BooleanSupplier;
  * pool.
  */
 public class CPUContentionService {
-  private final List<Future<?>> tasks = new ArrayList<>();
+  private final List<Future<BigInteger>> tasks = new ArrayList<>();
   private final AtomicReference<Future<?>> stopWatcher = new AtomicReference<>();
   private final ExecutorService executor;
   private final int threadCount;
-  private final Set<BigInteger> primes = synchronizedSet(new HashSet<>());
 
   public CPUContentionService(int numberOfThreads) {
     this.executor = newFixedThreadPool(numberOfThreads);
@@ -96,7 +93,7 @@ public class CPUContentionService {
     }
     stopWatcher.set(executor.submit(watchForStop(stopCondition)));
     for (int i = 1; i < threadCount; i++) {
-      tasks.add(executor.submit(generatePrimes(primes)));
+      tasks.add(executor.submit(generateProbablePrimes()));
     }
   }
 
@@ -120,15 +117,18 @@ public class CPUContentionService {
     tasks.clear();
   }
 
-  private static Runnable generatePrimes(Set<BigInteger> primes) {
+  private static Callable<BigInteger> generateProbablePrimes() {
     return () -> {
       Random random = new Random();
-      while (true) {
-        if (Thread.currentThread().isInterrupted()) {
-          return;
-        }
-        primes.add(BigInteger.probablePrime(1000, random));
+      // To keep the CPU busy, we must prevent the Java and JIT compilers from optimizing this loop
+      // out of existence. To do that, we save the the most recently generated prime, and return it
+      // when the task is cancelled. Our assumption is that the compilers can't predict that the
+      // return value is unused, and is therefore forced to calculate a new prime on each iteration.
+      BigInteger prime = BigInteger.valueOf(0);
+      while (!Thread.currentThread().isInterrupted()) {
+        prime = BigInteger.probablePrime(1000, random);
       }
+      return prime;
     };
   }
 
