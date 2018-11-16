@@ -55,11 +55,6 @@ public class DestroyMappingFunction extends CliFunction<String> {
 
   private void cleanupRegionAndQueue(Cache cache, String regionName) {
     String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
-    InternalAsyncEventQueue queue = (InternalAsyncEventQueue) cache.getAsyncEventQueue(queueName);
-
-    if (queue != null) {
-      queue.stop();
-    }
 
     Region<?, ?> region = cache.getRegion(regionName);
     if (region != null) {
@@ -77,7 +72,9 @@ public class DestroyMappingFunction extends CliFunction<String> {
       }
     }
 
+    InternalAsyncEventQueue queue = (InternalAsyncEventQueue) cache.getAsyncEventQueue(queueName);
     if (queue != null) {
+      queue.stop();
       queue.destroy();
     }
   }
