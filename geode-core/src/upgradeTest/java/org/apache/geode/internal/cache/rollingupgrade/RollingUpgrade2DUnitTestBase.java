@@ -97,6 +97,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -111,9 +112,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * talk to one another due to one using a magic number and the other not. Also turnOffBounce will
  * need to be set to true so that bouncing a vm doesn't lead to a NPE.
  *
- * @author jhuynh
- *
- * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
  */
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)

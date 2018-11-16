@@ -62,9 +62,8 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * @deprecated this class used to be the base for distributed test cases, but due to its complexity
- *             and the complexity of inheritance in test classes, {@link ClusterStartupRule} or
- *             manual configuration should be used instead.
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
  */
 public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
   private static final Logger logger = LogService.getLogger();

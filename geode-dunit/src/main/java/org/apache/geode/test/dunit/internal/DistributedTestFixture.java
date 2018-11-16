@@ -17,15 +17,14 @@ package org.apache.geode.test.dunit.internal;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 /**
  * Defines the {@code DistributedTestCase} methods that can be overridden by its subclasses.
  *
- * @deprecated in favor of {@link ClusterStartupRule} or manual configuration using the public APIs
- *             and {@link VM#invoke(SerializableRunnableIF)} and similar.
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
  */
 public interface DistributedTestFixture extends Serializable {
 

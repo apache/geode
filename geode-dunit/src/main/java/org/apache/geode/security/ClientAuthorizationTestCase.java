@@ -89,6 +89,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
@@ -97,7 +98,8 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
  *
  * @since GemFire 5.5
  *
- * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
  */
 public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestCase {
 

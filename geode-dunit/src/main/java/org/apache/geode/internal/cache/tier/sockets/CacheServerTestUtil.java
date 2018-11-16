@@ -62,9 +62,12 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
+
 
 /**
- * @deprecated use {@link ClusterStartupRule} or the public APIs instead.
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
  */
 public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
