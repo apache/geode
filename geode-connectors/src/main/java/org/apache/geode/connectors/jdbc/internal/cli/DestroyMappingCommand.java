@@ -39,8 +39,6 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   static final String DESTROY_MAPPING__REGION_NAME = "region";
   static final String DESTROY_MAPPING__REGION_NAME__HELP = "Name of the region mapping to destroy.";
 
-  private static final String ERROR_PREFIX = "ERROR: ";
-
   @CliCommand(value = DESTROY_MAPPING, help = DESTROY_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
