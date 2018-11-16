@@ -922,7 +922,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.resourceAdvisor = ResourceAdvisor.createResourceAdvisor(this);
 
       // Initialize the advisor here, but wait to exchange profiles until cache is fully built
-      this.jmxAdvisor = JmxManagerAdvisor.createJmxManagerAdvisor(new JmxManagerAdvisee(this));
+      this.jmxAdvisor = JmxManagerAdvisor
+          .createJmxManagerAdvisor(new JmxManagerAdvisee(getCacheForProcessingClientRequests()));
 
       this.resourceManager = InternalResourceManager.createResourceManager(this);
       this.serialNumber = DistributionAdvisor.createSerialNumber();

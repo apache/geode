@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.ManagementService;
 
@@ -69,7 +70,7 @@ public abstract class BaseManagementService extends ManagementService {
    *
    * @param cache defines the scope of resources to be managed
    */
-  public static ManagementService getManagementService(InternalCache cache) {
+  public static ManagementService getManagementService(InternalCacheForClientAccess cache) {
     synchronized (instances) {
       BaseManagementService service = instances.get(cache);
       if (service == null) {
@@ -83,7 +84,7 @@ public abstract class BaseManagementService extends ManagementService {
 
   public static ManagementService getExistingManagementService(InternalCache cache) {
     synchronized (instances) {
-      BaseManagementService service = (BaseManagementService) instances.get(cache);
+      BaseManagementService service = instances.get(cache.getCacheForProcessingClientRequests());
       return service;
     }
   }

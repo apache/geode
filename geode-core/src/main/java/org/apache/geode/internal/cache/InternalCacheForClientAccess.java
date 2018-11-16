@@ -143,8 +143,7 @@ public class InternalCacheForClientAccess implements InternalCache {
    * from a client.
    */
   public <K, V> Region<K, V> getInternalRegion(String path) {
-    Region<K, V> result = delegate.getRegion(path);
-    return result;
+    return delegate.getRegion(path);
   }
 
   @Override
