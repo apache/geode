@@ -18,6 +18,7 @@ import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQ
 
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
@@ -104,14 +105,18 @@ public class CommandExecutor {
     }
   }
 
+  protected Object callInvokeMethod(Object command, GfshParseResult parseResult) {
+    return ReflectionUtils.invokeMethod(parseResult.getMethod(), command,
+        parseResult.getArguments());
+  }
+
   protected Object invokeCommand(Object command, GfshParseResult parseResult) {
     // if no command instance is passed in, use the one in the parseResult
     if (command == null) {
       command = parseResult.getInstance();
     }
 
-    Object result =
-        ReflectionUtils.invokeMethod(parseResult.getMethod(), command, parseResult.getArguments());
+    Object result = callInvokeMethod(command, parseResult);
 
     if (!(command instanceof SingleGfshCommand)) {
       return result;
@@ -137,20 +142,22 @@ public class CommandExecutor {
       return resultModel;
     }
 
-    String groupInput = "";
+    String groupsToUpdate = "";
+    String groupInput = parseResult.getParamValueAsString("group");
     TabularResultModel table = null;
-    if (gfshCommand instanceof UpdateAllConfigurationGroups) {
-      groupInput = ccService.getGroups().stream().collect(Collectors.joining(","));
+    if (StringUtils.isBlank(groupInput) && gfshCommand instanceof UpdateAllConfigurationGroups) {
+      groupsToUpdate = ccService.getGroups().stream().collect(Collectors.joining(","));
       table = resultModel.addTable(GROUP_STATUS_SECTION);
       table.setColumnHeader("Group", "Status");
     } else {
-      groupInput = parseResult.getParamValueAsString("group");
-      if (groupInput == null) {
-        groupInput = "cluster";
+      if (StringUtils.isBlank(groupInput)) {
+        groupsToUpdate = "cluster";
+      } else {
+        groupsToUpdate = groupInput;
       }
     }
 
-    String[] groups = groupInput.split(",");
+    String[] groups = groupsToUpdate.split(",");
     final TabularResultModel finalTable = table;
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
