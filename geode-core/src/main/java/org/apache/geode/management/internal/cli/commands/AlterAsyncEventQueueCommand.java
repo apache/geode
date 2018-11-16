@@ -38,7 +38,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
-import org.apache.geode.management.cli.UpdateAllConfigurationGroups;
+import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
@@ -51,7 +51,7 @@ import org.apache.geode.security.ResourcePermission;
  * the changes.
  */
 public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
-    UpdateAllConfigurationGroups {
+    UpdateAllConfigurationGroupsMarker {
 
   public static final String GROUP_STATUS_SECTION = "group-status";
   static final String COMMAND_NAME = "alter async-event-queue";

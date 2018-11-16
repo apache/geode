@@ -41,7 +41,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
-import org.apache.geode.management.cli.UpdateAllConfigurationGroups;
+import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
@@ -63,7 +63,7 @@ public class CommandExecutorTest {
     result = new ResultModel();
     executor = spy(CommandExecutor.class);
     testCommand = mock(SingleGfshCommand.class,
-        withSettings().extraInterfaces(UpdateAllConfigurationGroups.class));
+        withSettings().extraInterfaces(UpdateAllConfigurationGroupsMarker.class));
     ccService = spy(InternalConfigurationPersistenceService.class);
     configRegion = mock(AbstractRegion.class);
 

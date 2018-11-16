@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
-import org.apache.geode.management.cli.UpdateAllConfigurationGroups;
+import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
@@ -145,7 +145,8 @@ public class CommandExecutor {
     String groupsToUpdate = "";
     String groupInput = parseResult.getParamValueAsString("group");
     TabularResultModel table = null;
-    if (StringUtils.isBlank(groupInput) && gfshCommand instanceof UpdateAllConfigurationGroups) {
+    if (StringUtils.isBlank(groupInput)
+        && gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
       groupsToUpdate = ccService.getGroups().stream().collect(Collectors.joining(","));
       table = resultModel.addTable(GROUP_STATUS_SECTION);
       table.setColumnHeader("Group", "Status");
