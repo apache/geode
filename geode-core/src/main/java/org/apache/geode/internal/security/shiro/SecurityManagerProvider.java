@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.security.shiro;
 
-import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
-
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.config.Ini;
@@ -29,7 +27,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.SecurityManager;
 
 public class SecurityManagerProvider {
-  private static Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
+  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
   private org.apache.shiro.mgt.SecurityManager shiroManager;
   private SecurityManager securityManager;

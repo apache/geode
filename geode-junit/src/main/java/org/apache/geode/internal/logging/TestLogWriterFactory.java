@@ -89,10 +89,9 @@ public class TestLogWriterFactory extends Assert {
       }
 
       if (isSecurityLog) {
-        mlw =
-            new SecurityManagerLogWriter(config.getSecurityLogLevel(), out, config.getName(), true);
+        mlw = new SecurityManagerLogWriter(config.getSecurityLogLevel(), out, config.getName());
       } else {
-        mlw = new ManagerLogWriter(config.getLogLevel(), out, config.getName(), true);
+        mlw = new ManagerLogWriter(config.getLogLevel(), out, config.getName());
       }
       ((ManagerLogWriter) mlw).setConfig(config);
     }

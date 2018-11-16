@@ -35,6 +35,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 
 @State(Scope.Thread)
 @Fork(1)
@@ -87,9 +88,14 @@ public class MonitorQueryUnderContentionBenchmark {
   private DefaultQuery query;
   private Random random;
   private ScheduledThreadPoolExecutor loadGenerationExecutorService;
+  private org.apache.logging.log4j.Level originalBaseLogLevel;
 
   @Setup(Level.Trial)
   public void trialSetup() throws InterruptedException {
+
+    originalBaseLogLevel = LogService.getBaseLogLevel();
+    LogService.setBaseLogLevel(org.apache.logging.log4j.Level.OFF);
+
     queryMonitor =
         new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
             mock(InternalCache.class), QUERY_MAX_EXECUTION_TIME);
@@ -128,6 +134,8 @@ public class MonitorQueryUnderContentionBenchmark {
   public void trialTeardown() {
     loadGenerationExecutorService.shutdownNow();
     queryMonitor.stopMonitoring();
+
+    LogService.setBaseLogLevel(originalBaseLogLevel);
   }
 
   @Benchmark

@@ -44,9 +44,9 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.net.SocketCloser;
 
 /**
@@ -172,9 +172,18 @@ public class ConnectionTable {
   boolean threadOwnsResources() {
     DistributionManager d = getDM();
     if (d != null) {
-      return d.getSystem().threadOwnsResources() && !AlertingAction.isThreadAlerting();
+      return d.getSystem().threadOwnsResources() && !AlertAppender.isThreadAlerting();
     }
     return false;
+
+    // Boolean b = getThreadOwnsResourcesRegistration();
+    // if (b == null) {
+    // // thread does not have a preference so return default
+    // return !this.owner.shareSockets;
+    // return false;
+    // } else {
+    // return b.booleanValue();
+    // }
   }
 
   public static Boolean getThreadOwnsResourcesRegistration() {
@@ -205,6 +214,13 @@ public class ConnectionTable {
           Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME);
     }
   }
+
+  /** conduit sends connected() after establishing the server socket */
+  // protected void connected() {
+  // /* NOMUX: if (TCPConduit.useNIO) {
+  // inputMuxManager.connected();
+  // }*/
+  // }
 
   /** conduit calls acceptConnection after an accept */
   protected void acceptConnection(Socket sock, PeerConnectionFactory peerConnectionFactory)
@@ -402,7 +418,7 @@ public class ConnectionTable {
     } else { // we have existing connection
       if (mEntry instanceof PendingConnection) {
 
-        if (AlertingAction.isThreadAlerting()) {
+        if (AlertAppender.isThreadAlerting()) {
           // do not change the text of this exception - it is looked for in exception handlers
           throw new IOException("Cannot form connection to alert listener " + id);
         }

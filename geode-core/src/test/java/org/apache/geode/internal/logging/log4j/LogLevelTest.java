@@ -24,14 +24,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/**
- * Unit tests for {@link LogLevel}.
- */
 @Category(LoggingTest.class)
 public class LogLevelTest {
 
   @Test
-  public void getLevel_levelName_returnsLevel() {
+  public void getLevel_log4J2LevelName_returnsLevel() {
     assertThat(LogLevel.getLevel(Level.OFF.name())).isEqualTo(Level.OFF);
     assertThat(LogLevel.getLevel(Level.FATAL.name())).isEqualTo(Level.FATAL);
     assertThat(LogLevel.getLevel(Level.ERROR.name())).isEqualTo(Level.ERROR);
@@ -43,7 +40,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void getLevel_levelName_toLowerCase_returnsLevel() {
+  public void getLevel_log4J2LevelName_toLowerCase_returnsLevel() {
     assertThat(LogLevel.getLevel(Level.OFF.name().toLowerCase())).isEqualTo(Level.OFF);
     assertThat(LogLevel.getLevel(Level.FATAL.name().toLowerCase())).isEqualTo(Level.FATAL);
     assertThat(LogLevel.getLevel(Level.ERROR.name().toLowerCase())).isEqualTo(Level.ERROR);
@@ -55,7 +52,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void getLevel_levelName_toUpperCase_returnsLevel() {
+  public void getLevel_log4J2LevelName_toUpperCase_returnsLevel() {
     assertThat(LogLevel.getLevel(Level.OFF.name().toUpperCase())).isEqualTo(Level.OFF);
     assertThat(LogLevel.getLevel(Level.FATAL.name().toUpperCase())).isEqualTo(Level.FATAL);
     assertThat(LogLevel.getLevel(Level.ERROR.name().toUpperCase())).isEqualTo(Level.ERROR);
@@ -120,7 +117,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void resolveLevel_levelName_returnsLevel() {
+  public void resolveLevel_log4J2LevelName_returnsLevel() {
     assertThat(LogLevel.resolveLevel(Level.OFF.name())).isEqualTo(Level.OFF);
     assertThat(LogLevel.resolveLevel(Level.FATAL.name())).isEqualTo(Level.FATAL);
     assertThat(LogLevel.resolveLevel(Level.ERROR.name())).isEqualTo(Level.ERROR);
@@ -132,7 +129,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void resolveLevel_levelName_toLowerCase_returnsLevel() {
+  public void resolveLevel_log4J2LevelName_toLowerCase_returnsLevel() {
     assertThat(LogLevel.resolveLevel(Level.OFF.name().toLowerCase())).isEqualTo(Level.OFF);
     assertThat(LogLevel.resolveLevel(Level.FATAL.name().toLowerCase())).isEqualTo(Level.FATAL);
     assertThat(LogLevel.resolveLevel(Level.ERROR.name().toLowerCase())).isEqualTo(Level.ERROR);
@@ -144,7 +141,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void resolveLevel_levelName_toUpperCase_returnsLevel() {
+  public void resolveLevel_log4J2LevelName_toUpperCase_returnsLevel() {
     assertThat(LogLevel.resolveLevel(Level.OFF.name().toUpperCase())).isEqualTo(Level.OFF);
     assertThat(LogLevel.resolveLevel(Level.FATAL.name().toUpperCase())).isEqualTo(Level.FATAL);
     assertThat(LogLevel.resolveLevel(Level.ERROR.name().toUpperCase())).isEqualTo(Level.ERROR);
@@ -221,135 +218,185 @@ public class LogLevelTest {
   }
 
   @Test
-  public void getLogWriterLevel_levelName_returnsLogWriterLevelValue() {
+  public void getLog4jLevel_logWriterLevel_returnsLevel() {
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.NONE.getLogWriterLevel()))
+        .isEqualTo(Level.OFF);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.SEVERE.getLogWriterLevel()))
+        .isEqualTo(Level.FATAL);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.ERROR.getLogWriterLevel()))
+        .isEqualTo(Level.ERROR);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.WARNING.getLogWriterLevel()))
+        .isEqualTo(Level.WARN);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.INFO.getLogWriterLevel()))
+        .isEqualTo(Level.INFO);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.CONFIG.getLogWriterLevel()))
+        .isEqualTo(Level.INFO);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.FINE.getLogWriterLevel()))
+        .isEqualTo(Level.DEBUG);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.FINER.getLogWriterLevel()))
+        .isEqualTo(Level.TRACE);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.FINEST.getLogWriterLevel()))
+        .isEqualTo(Level.TRACE);
+    assertThat(LogLevel.getLog4jLevel(LogWriterLevel.ALL.getLogWriterLevel())).isEqualTo(Level.ALL);
+  }
+
+  @Test
+  public void getLog4jLevel_nonLevel_throwsIllegalArgumentException() {
+    assertThatThrownBy(() -> LogLevel.getLog4jLevel(123123123))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Unknown LogWriter level");
+  }
+
+  @Test
+  public void getLogWriterLevel_log4j2Level_returnsLogWriterLevelValue() {
+    assertThat(LogLevel.getLogWriterLevel(Level.OFF))
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.FATAL))
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.ERROR))
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.WARN))
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.INFO))
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.DEBUG))
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.TRACE))
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
+    assertThat(LogLevel.getLogWriterLevel(Level.ALL))
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
+  }
+
+  @Test
+  public void getLogWriterLevel_log4j2LevelName_returnsLogWriterLevelValue() {
     assertThat(LogLevel.getLogWriterLevel(Level.OFF.name()))
-        .isEqualTo(LogWriterLevel.NONE.intLevel());
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.FATAL.name()))
-        .isEqualTo(LogWriterLevel.SEVERE.intLevel());
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.ERROR.name()))
-        .isEqualTo(LogWriterLevel.ERROR.intLevel());
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.WARN.name()))
-        .isEqualTo(LogWriterLevel.WARNING.intLevel());
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.INFO.name()))
-        .isEqualTo(LogWriterLevel.INFO.intLevel());
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.DEBUG.name()))
-        .isEqualTo(LogWriterLevel.FINE.intLevel());
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.TRACE.name()))
-        .isEqualTo(LogWriterLevel.FINEST.intLevel());
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.ALL.name()))
-        .isEqualTo(LogWriterLevel.ALL.intLevel());
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
   }
 
   @Test
-  public void getLogWriterLevel_levelName_toLowerCase_returnsLogWriterLevelValue() {
+  public void getLogWriterLevel_log4j2LevelName_toLowerCase_returnsLogWriterLevelValue() {
     assertThat(LogLevel.getLogWriterLevel(Level.OFF.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.NONE.intLevel());
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.FATAL.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.SEVERE.intLevel());
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.ERROR.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.ERROR.intLevel());
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.WARN.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.WARNING.intLevel());
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.INFO.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.INFO.intLevel());
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.DEBUG.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.FINE.intLevel());
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.TRACE.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.FINEST.intLevel());
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.ALL.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.ALL.intLevel());
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
   }
 
   @Test
-  public void getLogWriterLevel_levelName_toUpperCase_returnsLogWriterLevelValue() {
+  public void getLogWriterLevel_log4j2LevelName_toUpperCase_returnsLogWriterLevelValue() {
     assertThat(LogLevel.getLogWriterLevel(Level.OFF.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.NONE.intLevel());
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.FATAL.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.SEVERE.intLevel());
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.ERROR.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.ERROR.intLevel());
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.WARN.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.WARNING.intLevel());
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.INFO.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.INFO.intLevel());
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.DEBUG.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.FINE.intLevel());
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.TRACE.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.FINEST.intLevel());
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(Level.ALL.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.ALL.intLevel());
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
   }
 
   @Test
   public void getLogWriterLevel_logWriterLevelName_returnsLogWriterLevelValue() {
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.NONE.name()))
-        .isEqualTo(LogWriterLevel.NONE.intLevel());
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.SEVERE.name()))
-        .isEqualTo(LogWriterLevel.SEVERE.intLevel());
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.ERROR.name()))
-        .isEqualTo(LogWriterLevel.ERROR.intLevel());
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.WARNING.name()))
-        .isEqualTo(LogWriterLevel.WARNING.intLevel());
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.CONFIG.name()))
-        .isEqualTo(LogWriterLevel.CONFIG.intLevel());
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.INFO.name()))
-        .isEqualTo(LogWriterLevel.INFO.intLevel());
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINE.name()))
-        .isEqualTo(LogWriterLevel.FINE.intLevel());
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINER.name()))
-        .isEqualTo(LogWriterLevel.FINER.intLevel());
+        .isEqualTo(LogWriterLevel.FINER.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINEST.name()))
-        .isEqualTo(LogWriterLevel.FINEST.intLevel());
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.ALL.name()))
-        .isEqualTo(LogWriterLevel.ALL.intLevel());
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
   }
 
   @Test
   public void getLogWriterLevel_logWriterLevelName_toLowerCase_returnsLogWriterLevelValue() {
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.NONE.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.NONE.intLevel());
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.SEVERE.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.SEVERE.intLevel());
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.ERROR.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.ERROR.intLevel());
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.WARNING.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.WARNING.intLevel());
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.INFO.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.INFO.intLevel());
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.CONFIG.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.CONFIG.intLevel());
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINE.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.FINE.intLevel());
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINER.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.FINER.intLevel());
+        .isEqualTo(LogWriterLevel.FINER.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINEST.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.FINEST.intLevel());
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.ALL.name().toLowerCase()))
-        .isEqualTo(LogWriterLevel.ALL.intLevel());
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
   }
 
   @Test
   public void getLogWriterLevel_logWriterLevelName_toUpperCase_returnsLogWriterLevelValue() {
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.NONE.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.NONE.intLevel());
+        .isEqualTo(LogWriterLevel.NONE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.SEVERE.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.SEVERE.intLevel());
+        .isEqualTo(LogWriterLevel.SEVERE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.ERROR.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.ERROR.intLevel());
+        .isEqualTo(LogWriterLevel.ERROR.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.WARNING.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.WARNING.intLevel());
+        .isEqualTo(LogWriterLevel.WARNING.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.INFO.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.INFO.intLevel());
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.CONFIG.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.CONFIG.intLevel());
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINE.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.FINE.intLevel());
+        .isEqualTo(LogWriterLevel.FINE.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINER.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.FINER.intLevel());
+        .isEqualTo(LogWriterLevel.FINER.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.FINEST.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.FINEST.intLevel());
+        .isEqualTo(LogWriterLevel.FINEST.getLogWriterLevel());
     assertThat(LogLevel.getLogWriterLevel(LogWriterLevel.ALL.name().toUpperCase()))
-        .isEqualTo(LogWriterLevel.ALL.intLevel());
+        .isEqualTo(LogWriterLevel.ALL.getLogWriterLevel());
   }
 
   @Test
@@ -374,6 +421,8 @@ public class LogLevelTest {
   @Test
   public void getLogWriterLevel_test_returns() {
     assertThatThrownBy(() -> LogLevel.getLogWriterLevel("test"))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "Unknown log-level \"test\". Valid levels are: OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL.");
   }
 }

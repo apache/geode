@@ -16,8 +16,6 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.SHUTDOWN_HOOK_NAME;
-
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,13 +23,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
- * This class delegates to a static singleton that handles all exceptions not caught by any thread
- * created in geode. So all interactions with it are done with static methods.
+ * This class delegates to a static singleton that handles all
+ * exceptions not caught by any thread created in geode.
+ * So all interactions with it are done with static methods.
  */
 public class LoggingUncaughtExceptionHandler {
-
   private static final Implementation handler =
       new Implementation(LogService.getLogger(), error -> SystemFailure.setFailure(error));
 
@@ -42,7 +41,7 @@ public class LoggingUncaughtExceptionHandler {
   /**
    * Sets the logging uncaught exception handler on the given thread.
    */
-  public static void setOnThread(final Thread thread) {
+  public static void setOnThread(Thread thread) {
     handler.setOnThread(thread);
   }
 
@@ -59,42 +58,41 @@ public class LoggingUncaughtExceptionHandler {
   }
 
   // non-private for unit testing
-  interface FailureSetter {
-
+  interface FailureSettor {
     void setFailure(VirtualMachineError error);
   }
 
   // non-private for unit testing
   static class Implementation implements UncaughtExceptionHandler {
-
     private final Logger logger;
-    private final FailureSetter failureSetter;
+    private final FailureSettor failureSettor;
     private final AtomicInteger uncaughtExceptionsCount = new AtomicInteger();
 
-    Implementation(final Logger logger, final FailureSetter failureSetter) {
+    Implementation(Logger logger, FailureSettor failureSettor) {
       this.logger = logger;
-      this.failureSetter = failureSetter;
+      this.failureSettor = failureSettor;
     }
 
     @Override
-    public void uncaughtException(final Thread t, final Throwable e) {
-      if (e instanceof VirtualMachineError) {
-        failureSetter.setFailure((VirtualMachineError) e);
+    public void uncaughtException(Thread t, Throwable ex) {
+      if (ex instanceof VirtualMachineError) {
+        this.failureSettor.setFailure((VirtualMachineError) ex);
       }
       // Solution to treat the shutdown hook error as a special case.
       // Do not change the hook's thread name without also changing it here.
-      if (e instanceof NoClassDefFoundError && t.getName().equals(SHUTDOWN_HOOK_NAME)) {
+      if ((ex instanceof NoClassDefFoundError)
+          && (t.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
         logger.info(
             "Uncaught exception in thread {} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {}",
-            t, e);
+            t, ex);
       } else {
         String message = MessageFormat.format("Uncaught exception in thread {0}", t);
-        logger.fatal(message, e);
+        logger.fatal(message, ex);
       }
       uncaughtExceptionsCount.incrementAndGet();
     }
 
-    void setOnThread(final Thread thread) {
+    void setOnThread(Thread thread) {
       thread.setUncaughtExceptionHandler(this);
     }
 

@@ -17,7 +17,6 @@ package org.apache.geode.internal.statistics;
 import java.io.File;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -29,7 +28,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -93,31 +91,18 @@ public abstract class HostStatSampler
 
   private final NanoTimer timer;
 
-  private final LogFile logFile;
-
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats) {
     this(stopper, samplerStats, new NanoTimer());
   }
 
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
       NanoTimer timer) {
-    this(stopper, samplerStats, timer, null);
-  }
-
-  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
-      LogFile logFile) {
-    this(stopper, samplerStats, new NanoTimer(), logFile);
-  }
-
-  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
-      LogFile logFile) {
     this.stopper = stopper;
     this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
     this.fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
     this.callbackSampler = new CallbackSampler(stopper, samplerStats);
     this.timer = timer;
-    this.logFile = logFile;
   }
 
   public StatSamplerStats getStatSamplerStats() {
@@ -166,11 +151,6 @@ public abstract class HostStatSampler
     } catch (UnknownHostException ignore) {
       return "";
     }
-  }
-
-  @Override
-  public Optional<LogFile> getLogFile() {
-    return Optional.ofNullable(logFile);
   }
 
   @Override

@@ -72,13 +72,13 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
@@ -490,8 +490,6 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private final Object shutdownMutex = new Object();
 
-  private final AlertingService alertingService;
-
   ////////////////////// Static Methods //////////////////////
 
   /**
@@ -533,8 +531,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
       long start = System.currentTimeMillis();
 
-      distributionManager =
-          new ClusterDistributionManager(system, transport, system.getAlertingService());
+      distributionManager = new ClusterDistributionManager(system, transport);
       distributionManager.assertDistributionManagerType();
 
       beforeJoined = false; // we have now joined the system
@@ -630,12 +627,11 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private ClusterDistributionManager(RemoteTransportConfig transport,
-      InternalDistributedSystem system, AlertingService alertingService) {
+      InternalDistributedSystem system) {
 
     this.dmType = transport.getVmKind();
     this.system = system;
     this.transport = transport;
-    this.alertingService = alertingService;
 
     this.membershipListeners = new ConcurrentHashMap<>();
     this.distributedSystemId = system.getConfig().getDistributedSystemId();
@@ -892,8 +888,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param system The distributed system to which this distribution manager will send messages.
    */
   private ClusterDistributionManager(InternalDistributedSystem system,
-      RemoteTransportConfig transport, AlertingService alertingService) {
-    this(transport, system, alertingService);
+      RemoteTransportConfig transport) {
+    this(transport, system);
 
     boolean finishedConstructor = false;
     try {
@@ -1923,11 +1919,6 @@ public class ClusterDistributionManager implements DistributionManager {
     return this.system;
   }
 
-  @Override
-  public AlertingService getAlertingService() {
-    return alertingService;
-  }
-
   /**
    * Returns the transport configuration for this distribution manager
    */
@@ -2643,7 +2634,7 @@ public class ClusterDistributionManager implements DistributionManager {
   public void handleManagerDeparture(InternalDistributedMember theId, boolean p_crashed,
       String p_reason) {
 
-    alertingService.removeAlertListener(theId);
+    AlertAppender.getInstance().removeAlertListener(theId);
 
     int vmType = theId.getVmKind();
     if (vmType == ADMIN_ONLY_DM_TYPE) {

@@ -20,7 +20,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 @Documented
-@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
+@Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 public @interface TestingOnly {
 
   /** Optional description */

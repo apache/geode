@@ -14,328 +14,314 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.log4j.AlertLevelConverter.hasAlertLevel;
+import static org.apache.geode.internal.logging.log4j.AlertLevel.alertLevelToLogLevel;
+import static org.apache.geode.internal.logging.log4j.AlertLevel.logLevelToAlertLevel;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Core;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.plugins.Plugin;
-import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
-import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.alerting.AlertLevel;
-import org.apache.geode.internal.alerting.AlertMessaging;
-import org.apache.geode.internal.alerting.AlertingAction;
-import org.apache.geode.internal.alerting.AlertingProvider;
-import org.apache.geode.internal.alerting.AlertingProviderRegistry;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.admin.remote.AlertListenerMessage;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.tcp.ReenteredConnectException;
 
-@Plugin(name = AlertAppender.PLUGIN_NAME, category = Core.CATEGORY_NAME,
-    elementType = Appender.ELEMENT_TYPE, printObject = true)
-@SuppressWarnings("unused")
-public class AlertAppender extends AbstractAppender
-    implements PausableAppender, DebuggableAppender, AlertingProvider {
+/**
+ * A Log4j Appender which will notify listeners whenever a message of the requested level is written
+ * to the log file.
+ *
+ */
+public class AlertAppender extends AbstractAppender implements PropertyChangeListener {
+  private static final String APPENDER_NAME = AlertAppender.class.getName();
+  private static final Logger logger = LogService.getLogger();
+  private static final AlertAppender instance = createAlertAppender();
 
-  public static final String PLUGIN_NAME = "GeodeAlert";
-
-  private static final boolean START_PAUSED_BY_DEFAULT = true;
-
-  private static final AtomicReference<AlertAppender> instanceRef = new AtomicReference<>();
-
-  private final AtomicReference<AlertMessaging> alertMessagingRef = new AtomicReference<>();
+  /** Is this thread in the process of alerting? */
+  private static final ThreadLocal<Boolean> alerting = new ThreadLocal<Boolean>() {
+    @Override
+    protected Boolean initialValue() {
+      return Boolean.FALSE;
+    }
+  };
 
   // Listeners are ordered with the narrowest levels (e.g. FATAL) at the end
-  private final CopyOnWriteArrayList<AlertListener> listeners;
+  private final CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
-  private final AlertingProviderRegistry alertingProviderRegistry;
+  private final AppenderContext appenderContext = LogService.getAppenderContext();
 
-  private final boolean debug;
-  private final List<LogEvent> events;
+  private final AtomicReference<InternalDistributedSystem> systemRef = new AtomicReference<>();
 
-  private volatile boolean paused;
+  // This can be set by a loner distributed sytem to disable alerting
+  private volatile boolean alertingDisabled = false;
 
-  protected AlertAppender(final String name,
-      final Layout<? extends Serializable> layout,
-      final Filter filter) {
-    this(name, layout, filter, AlertingProviderRegistry.get(), START_PAUSED_BY_DEFAULT, false);
+  private static AlertAppender createAlertAppender() {
+    AlertAppender alertAppender = new AlertAppender();
+    alertAppender.start();
+    return alertAppender;
   }
 
-  protected AlertAppender(final String name,
-      final Layout<? extends Serializable> layout,
-      final Filter filter,
-      final AlertingProviderRegistry alertingProviderRegistry,
-      final boolean startPaused,
-      final boolean debug) {
-    super(name, filter, layout);
-    listeners = new CopyOnWriteArrayList<>();
-    this.alertingProviderRegistry = alertingProviderRegistry;
-    this.debug = debug;
-    if (debug) {
-      events = Collections.synchronizedList(new ArrayList<>());
-    } else {
-      events = Collections.emptyList();
-    }
-    paused = true;
+  private AlertAppender() {
+    super(APPENDER_NAME, null, PatternLayout.createDefaultLayout());
   }
 
-  @PluginBuilderFactory
-  public static <B extends AlertAppender.Builder<B>> B newBuilder() {
-    return new AlertAppender.Builder<B>().asBuilder();
+  public void onConnect(final InternalDistributedSystem system) {
+    this.systemRef.set(system);
+  }
+
+  public static AlertAppender getInstance() {
+    return instance;
   }
 
   /**
-   * Builds AlertAppender instances.
-   *
-   * @param <B> The type to build
+   * Returns true if the current thread is in the process of delivering an alert message.
    */
-  public static class Builder<B extends Builder<B>> extends AbstractAppender.Builder<B>
-      implements org.apache.logging.log4j.core.util.Builder<AlertAppender> {
-
-    @PluginBuilderAttribute
-    private boolean debug;
-
-    @PluginBuilderAttribute
-    private boolean startPaused = START_PAUSED_BY_DEFAULT;
-
-    public B setStartPaused(final boolean shouldStartPaused) {
-      startPaused = shouldStartPaused;
-      return asBuilder();
-    }
-
-    public boolean isStartPaused() {
-      return debug;
-    }
-
-    public B setDebug(final boolean shouldDebug) {
-      debug = shouldDebug;
-      return asBuilder();
-    }
-
-    public boolean isDebug() {
-      return debug;
-    }
-
-    @Override
-    public AlertAppender build() {
-      Layout<? extends Serializable> layout = getOrCreateLayout();
-      instanceRef.set(new AlertAppender(getName(), layout, getFilter(),
-          AlertingProviderRegistry.get(), startPaused, debug));
-      return instanceRef.get();
-    }
+  public static boolean isThreadAlerting() {
+    return alerting.get();
   }
 
+  public boolean isAlertingDisabled() {
+    return alertingDisabled;
+  }
+
+  public void setAlertingDisabled(final boolean alertingDisabled) {
+    this.alertingDisabled = alertingDisabled;
+  }
+
+  public static void setIsAlerting(boolean isAlerting) {
+    alerting.set(isAlerting ? Boolean.TRUE : Boolean.FALSE);
+  }
+
+  /**
+   * This method is optimized with the assumption that at least one listener has set a level which
+   * requires that the event be sent. This is ensured by modifying the appender's configuration
+   * whenever a listener is added or removed.
+   */
   @Override
   public void append(final LogEvent event) {
-    LOGGER.trace("Handling append of {} in {}.", event, this);
-    if (isPaused()) {
-      LOGGER.trace("Skipping append of {} because {} is paused.", event, this);
-      return;
-    }
-    if (!hasAlertLevel(event.getLevel())) {
-      LOGGER.trace("Skipping append of {} because level is {}.", event, event.getLevel());
-      return;
-    }
-    if (AlertingAction.isThreadAlerting()) {
-      // If already appending then don't send to avoid infinite recursion
-      LOGGER.trace("Skipping append of {} because {} is alerting.", event, Thread.currentThread());
-      return;
-    }
-    AlertingAction.execute(() -> doAppend(event));
-  }
-
-  private void doAppend(final LogEvent event) {
-    sendAlertMessage(event);
-    if (debug) {
-      events.add(event);
-    }
-  }
-
-  private void sendAlertMessage(final LogEvent event) {
-    AlertMessaging alertMessaging = alertMessagingRef.get();
-    if (alertMessaging == null || listeners.isEmpty()) {
-      LOGGER.trace("Skipping alert messaging for {} because listeners is empty.", event);
+    if (this.alertingDisabled) {
       return;
     }
 
-    AlertLevel alertLevel = AlertLevelConverter.fromLevel(event.getLevel());
-    Date date = new Date(event.getTimeMillis());
-    String threadName = event.getThreadName();
-    String formattedMessage = event.getMessage().getFormattedMessage();
-    String stackTrace = getStackTrace(event);
+    // If already appending then don't send to avoid infinite recursion
+    if ((alerting.get())) {
+      return;
+    }
+    setIsAlerting(true);
 
-    for (AlertListener listener : listeners) {
-      if (event.getLevel().intLevel() > listener.getLevel().intLevel()) {
-        break;
+    try {
+
+      final boolean isDebugEnabled = logger.isDebugEnabled();
+      if (isDebugEnabled) {
+        logger.debug("Delivering an alert event: {}", event);
       }
 
-      LOGGER.trace("Sending alert message for {} to {}.", event, listener.getMember());
-      alertMessaging.sendAlert(listener.getMember(), alertLevel, date, threadName, formattedMessage,
-          stackTrace);
-    }
-  }
-
-  private String getStackTrace(final LogEvent event) {
-    return event.getThrown() == null ? null : ExceptionUtils.getStackTrace(event.getThrown());
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("Starting {}.", this);
-    LOGGER.debug("Registering {} with AlertingProviderRegistry.", this);
-    try {
-      alertingProviderRegistry.registerAlertingProvider(this);
-    } finally {
-      super.start();
-    }
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("Stopping {}.", this);
-
-    // stop LogEvents from coming to this appender
-    super.stop();
-
-    // unregister as provider
-    cleanUp(true);
-
-    LOGGER.info("{} has stopped.", this);
-  }
-
-  @Override
-  public void pause() {
-    LOGGER.debug("Pausing {}.", this);
-    paused = true;
-  }
-
-  @Override
-  public void resume() {
-    LOGGER.debug("Resuming {}.", this);
-    paused = false;
-  }
-
-  @Override
-  public boolean isPaused() {
-    return paused;
-  }
-
-  @Override
-  public void clearLogEvents() {
-    events.clear();
-  }
-
-  @Override
-  public List<LogEvent> getLogEvents() {
-    return events;
-  }
-
-  @Override
-  public synchronized void createSession(final AlertMessaging alertMessaging) {
-    LOGGER.info("Creating session in {} with {}.", this, alertMessaging);
-    setAlertMessaging(alertMessaging);
-  }
-
-  @Override
-  public synchronized void startSession() {
-    LOGGER.info("Starting session in {}.", this);
-    resume();
-  }
-
-  @Override
-  public synchronized void stopSession() {
-    LOGGER.info("Stopping session in {}.", this);
-    cleanUp(false);
-  }
-
-  private synchronized void cleanUp(boolean unregister) {
-    pause();
-    if (unregister) {
-      LOGGER.debug("Unregistering {} with AlertingProviderRegistry.", this);
-      alertingProviderRegistry.unregisterAlertingProvider(this);
-    }
-    listeners.clear();
-    setAlertMessaging(null);
-  }
-
-  void setAlertMessaging(final AlertMessaging alertMessaging) {
-    alertMessagingRef.set(alertMessaging);
-  }
-
-  AlertMessaging getAlertMessaging() {
-    return alertMessagingRef.get();
-  }
-
-  @Override
-  public synchronized void addAlertListener(final DistributedMember member,
-      final AlertLevel alertLevel) {
-    if (alertLevel == AlertLevel.NONE) {
-      return;
-    }
-    Level level = AlertLevelConverter.toLevel(alertLevel);
-    AlertListener listener = new AlertListener(level, member);
-
-    // Add (or replace) a listener to the list of sorted listeners such that listeners with a
-    // narrower level (e.g. FATAL) will be at the end of the list.
-    listeners.remove(listener);
-    for (int i = 0; i < listeners.size(); i++) {
-      if (listener.getLevel().compareTo(listeners.get(i).getLevel()) >= 0) {
-        listeners.add(i, listener);
+      InternalDistributedSystem ds = this.systemRef.get();
+      if (ds == null) {
+        // Use info level to avoid triggering another alert
+        logger.info("Did not append alert event because the distributed system is set to null.");
         return;
       }
-    }
-    listeners.add(listener);
+      ClusterDistributionManager distMgr = (ClusterDistributionManager) ds.getDistributionManager();
 
-    LOGGER.debug("Added/Replaced alert listener for member {} at level {}.", member, level);
+      final int intLevel = logLevelToAlertLevel(event.getLevel());
+      final Date date = new Date(event.getTimeMillis());
+      final String threadName = event.getThreadName();
+      final String logMessage = event.getMessage().getFormattedMessage();
+      final String stackTrace =
+          (event.getThrown() == null) ? null : ExceptionUtils.getStackTrace(event.getThrown());
+      final String connectionName = ds.getConfig().getName();
+
+      for (Listener listener : this.listeners) {
+        if (event.getLevel().intLevel() > listener.getLevel().intLevel()) {
+          break;
+        }
+
+        try {
+          AlertListenerMessage alertMessage =
+              AlertListenerMessage.create(listener.getMember(), intLevel, date, connectionName,
+                  threadName, Thread.currentThread().getId(), logMessage, stackTrace);
+
+          if (listener.getMember().equals(distMgr.getDistributionManagerId())) {
+            if (isDebugEnabled) {
+              logger.debug("Delivering local alert message: {}, {}, {}, {}, {}, [{}], [{}].",
+                  listener.getMember(), intLevel, date, connectionName, threadName, logMessage,
+                  stackTrace);
+            }
+            alertMessage.process(distMgr);
+          } else {
+            if (isDebugEnabled) {
+              logger.debug("Delivering remote alert message: {}, {}, {}, {}, {}, [{}], [{}].",
+                  listener.getMember(), intLevel, date, connectionName, threadName, logMessage,
+                  stackTrace);
+            }
+            distMgr.putOutgoing(alertMessage);
+          }
+        } catch (ReenteredConnectException e) {
+          // OK. We can't send to this recipient because we're in the middle of
+          // trying to connect to it.
+        }
+      }
+    } finally {
+      setIsAlerting(false);
+    }
   }
 
-  @Override
-  public synchronized boolean removeAlertListener(final DistributedMember member) {
-    boolean memberWasFound = listeners.remove(new AlertListener(null, member));
-    if (memberWasFound) {
-      LOGGER.debug("Removed alert listener for member {}.", member);
+  public synchronized void addAlertListener(final DistributedMember member, final int alertLevel) {
+    final Level level = LogService.toLevel(alertLevelToLogLevel(alertLevel));
+
+    if (this.listeners.size() == 0) {
+      this.appenderContext.getLoggerContext().addPropertyChangeListener(this);
     }
+
+    addListenerToSortedList(new Listener(level, member));
+
+    LoggerConfig loggerConfig = this.appenderContext.getLoggerConfig();
+    loggerConfig.addAppender(this, this.listeners.get(0).getLevel(), null);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Added/Replaced alert listener for member {} at level {}", member, level);
+    }
+  }
+
+  public synchronized boolean removeAlertListener(final DistributedMember member) {
+    final boolean memberWasFound = this.listeners.remove(new Listener(null, member));
+
+    if (memberWasFound) {
+      if (this.listeners.size() == 0) {
+        this.appenderContext.getLoggerContext().removePropertyChangeListener(this);
+        this.appenderContext.getLoggerConfig().removeAppender(APPENDER_NAME);
+
+      } else {
+        LoggerConfig loggerConfig = this.appenderContext.getLoggerConfig();
+        loggerConfig.addAppender(this, this.listeners.get(0).getLevel(), null);
+      }
+      if (logger.isDebugEnabled()) {
+        logger.debug("Removed alert listener for member {}", member);
+      }
+    }
+
     return memberWasFound;
   }
 
-  @Override
   public synchronized boolean hasAlertListener(final DistributedMember member,
-      final AlertLevel alertLevel) {
-    Level level = AlertLevelConverter.toLevel(alertLevel);
+      final int alertLevel) {
+    final Level level = LogService.toLevel(alertLevelToLogLevel(alertLevel));
 
-    for (AlertListener listener : listeners) {
+    for (Listener listener : this.listeners) {
       if (listener.getMember().equals(member) && listener.getLevel().equals(level)) {
         return true;
       }
+    }
+
+    // Special case for alert level Alert.OFF (NONE_LEVEL), because we can never have an actual
+    // listener with
+    // this level (see AlertLevelChangeMessage.process()).
+    if (alertLevel == Alert.OFF) {
+      for (Listener listener : this.listeners) {
+        if (listener.getMember().equals(member)) {
+          return false;
+        }
+      }
+      return true;
     }
 
     return false;
   }
 
   @Override
-  public String toString() {
-    return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ":" + getName()
-        + " {alertMessaging=" + alertMessagingRef.get() + ", listeners=" + listeners + ", paused="
-        + paused + ", debug=" + debug + "}";
+  public synchronized void propertyChange(final PropertyChangeEvent evt) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Responding to a property change event. Property name is {}.",
+          evt.getPropertyName());
+    }
+    if (evt.getPropertyName().equals(LoggerContext.PROPERTY_CONFIG)) {
+      LoggerConfig loggerConfig = this.appenderContext.getLoggerConfig();
+      if (!loggerConfig.getAppenders().containsKey(APPENDER_NAME)) {
+        loggerConfig.addAppender(this, this.listeners.get(0).getLevel(), null);
+      }
+    }
   }
 
-  public synchronized List<AlertListener> getAlertListeners() {
-    return listeners;
+  /**
+   * Will add (or replace) a listener to the list of sorted listeners such that listeners with a
+   * narrower level (e.g. FATAL) will be at the end of the list.
+   *
+   * @param listener The listener to add to the list.
+   */
+  private void addListenerToSortedList(final Listener listener) {
+    if (this.listeners.contains(listener)) {
+      this.listeners.remove(listener);
+    }
+
+    for (int i = 0; i < this.listeners.size(); i++) {
+      if (listener.getLevel().compareTo(this.listeners.get(i).getLevel()) >= 0) {
+        this.listeners.add(i, listener);
+        return;
+      }
+    }
+
+    this.listeners.add(listener);
   }
 
-  public static AlertAppender getInstance() {
-    return instanceRef.get();
+  public synchronized void shuttingDown() {
+    this.listeners.clear();
+    this.appenderContext.getLoggerContext().removePropertyChangeListener(this);
+    this.appenderContext.getLoggerConfig().removeAppender(APPENDER_NAME);
+    this.systemRef.set(null);
+  }
+
+  /**
+   * Simple value object which holds an InteralDistributedMember and Level pair.
+   */
+  static class Listener {
+    private Level level;
+    private DistributedMember member;
+
+    public Level getLevel() {
+      return this.level;
+    }
+
+    public DistributedMember getMember() {
+      return this.member;
+    }
+
+    Listener(final Level level, final DistributedMember member) {
+      this.level = level;
+      this.member = member;
+    }
+
+    /**
+     * Never used, but maintain the hashCode/equals contract.
+     */
+    @Override
+    public int hashCode() {
+      return 31 + ((this.member == null) ? 0 : this.member.hashCode());
+    }
+
+    /**
+     * Ignore the level when determining equality.
+     */
+    @Override
+    public boolean equals(Object other) {
+      return (this.member.equals(((Listener) other).member)) ? true : false;
+    }
+
+    @Override
+    public String toString() {
+      return "Listener [level=" + this.level + ", member=" + this.member + "]";
+    }
   }
 }

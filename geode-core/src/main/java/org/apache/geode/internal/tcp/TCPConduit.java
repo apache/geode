@@ -48,10 +48,10 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -978,7 +978,7 @@ public class TCPConduit implements Runnable {
         } catch (IOException e) {
           problem = e;
           // bug #43962 don't keep trying to connect to an alert listener
-          if (AlertingAction.isThreadAlerting()) {
+          if (AlertAppender.isThreadAlerting()) {
             if (logger.isDebugEnabled()) {
               logger.debug("Giving up connecting to alert listener {}", memberAddress);
             }

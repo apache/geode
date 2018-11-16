@@ -377,6 +377,7 @@ org/apache/geode/internal/hll/CardinalityMergeException,false
 org/apache/geode/internal/jta/TransactionManagerImpl,true,5033392316185449821,globalTransactionMap:java/util/Map,gtxSet:java/util/SortedSet,isActive:boolean,transactionMap:java/util/Map
 org/apache/geode/internal/jta/TransactionManagerImpl$GlobalTransactionComparator,false
 org/apache/geode/internal/jta/UserTransactionImpl,true,2994652455204901910,storedTimeOut:int,tm:javax/transaction/TransactionManager
+org/apache/geode/internal/logging/LogWriterLevel,false,logWriterLevel:int
 org/apache/geode/internal/memcached/Command,false
 org/apache/geode/internal/memcached/Command$1,false,processor:org/apache/geode/internal/memcached/CommandProcessor
 org/apache/geode/internal/memcached/Command$10,false,processor:org/apache/geode/internal/memcached/CommandProcessor

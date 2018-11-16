@@ -14,358 +14,203 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static java.lang.Boolean.FALSE;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
-import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Core;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.plugins.Plugin;
-import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
-import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigListener;
-import org.apache.geode.internal.logging.LogConfigSupplier;
-import org.apache.geode.internal.logging.LogFile;
-import org.apache.geode.internal.logging.LoggingSessionListener;
-import org.apache.geode.internal.logging.LoggingSessionListeners;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.ManagerLogWriter;
-import org.apache.geode.internal.logging.ManagerLogWriterFactory;
-import org.apache.geode.internal.logging.ManagerLogWriterFactory.LogFileRolloverDetails;
-import org.apache.geode.internal.logging.NullLogWriter;
-import org.apache.geode.internal.logging.SessionContext;
-import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.internal.logging.PureLogWriter;
 
-@Plugin(name = LogWriterAppender.PLUGIN_NAME, category = Core.CATEGORY_NAME,
-    elementType = Appender.ELEMENT_TYPE, printObject = true)
-@SuppressWarnings("unused")
-public class LogWriterAppender extends AbstractAppender
-    implements PausableAppender, DebuggableAppender, LoggingSessionListener, LogConfigListener {
+/**
+ * A Log4j Appender which will copy all output to a LogWriter.
+ *
+ */
+public class LogWriterAppender extends AbstractAppender implements PropertyChangeListener {
+  private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
 
-  public static final String PLUGIN_NAME = "GeodeLogWriter";
-
-  private static final boolean START_PAUSED_BY_DEFAULT = true;
-
-  /**
-   * True if this thread is in the process of appending.
-   */
-  private static final ThreadLocal<Boolean> APPENDING = ThreadLocal.withInitial(() -> FALSE);
-
-  private final String eagerMemberName;
-  private volatile String lazyMemberName;
-  private final MemberNameSupplier memberNameSupplier;
-
-  /**
-   * appendLog used to be controlled by undocumented system property gemfire.append-log
-   */
-  private final boolean appendLog;
-  private final boolean security;
-  private final boolean debug;
-  private final List<LogEvent> events;
-  private final LoggingSessionListeners loggingSessionListeners;
-
-  private volatile ManagerLogWriter logWriter;
-  private volatile LogConfigSupplier logConfigSupplier;
-  private volatile LogFileRolloverDetails logFileRolloverDetails;
-  private volatile boolean paused;
-
-  protected LogWriterAppender(final String name,
-      final Layout<? extends Serializable> layout,
-      final Filter filter,
-      final ManagerLogWriter logWriter) {
-    this(name, layout, filter, MemberNamePatternConverter.INSTANCE.getMemberNameSupplier(), null,
-        true, false, START_PAUSED_BY_DEFAULT, false, LoggingSessionListeners.get());
-  }
-
-  protected LogWriterAppender(final String name,
-      final Layout<? extends Serializable> layout,
-      final Filter filter,
-      final MemberNameSupplier memberNameSupplier,
-      final String eagerMemberName,
-      final boolean appendLog,
-      final boolean security,
-      final boolean startPaused,
-      final boolean debug,
-      final LoggingSessionListeners loggingSessionListeners) {
-    super(name, filter, layout);
-    this.memberNameSupplier = memberNameSupplier;
-    if (eagerMemberName != null) {
-      memberNameSupplier.set(eagerMemberName);
-    }
-    this.eagerMemberName = eagerMemberName;
-    this.appendLog = appendLog;
-    this.security = security;
-    this.debug = debug;
-    if (debug) {
-      events = Collections.synchronizedList(new ArrayList<>());
-    } else {
-      events = Collections.emptyList();
-    }
-    this.loggingSessionListeners = loggingSessionListeners;
-    paused = startPaused;
-  }
-
-  @PluginBuilderFactory
-  public static <B extends LogWriterAppender.Builder<B>> B newBuilder() {
-    return new LogWriterAppender.Builder<B>().asBuilder();
-  }
-
-  /**
-   * Builds LogWriterAppender instances.
-   *
-   * @param <B> The type to build
-   */
-  public static class Builder<B extends Builder<B>> extends AbstractAppender.Builder<B>
-      implements org.apache.logging.log4j.core.util.Builder<LogWriterAppender> {
-
-    @PluginBuilderAttribute
-    private String memberName;
-
-    @PluginBuilderAttribute
-    private boolean security;
-
-    @PluginBuilderAttribute
-    private boolean appendLog = true;
-
-    @PluginBuilderAttribute
-    private boolean startPaused = START_PAUSED_BY_DEFAULT;
-
-    @PluginBuilderAttribute
-    private boolean debug;
-
-    // GEODE-5785: add file permissions support similar to FileAppender
-
-    public B withMemberName(final String memberName) {
-      this.memberName = memberName;
-      return asBuilder();
-    }
-
-    public String getMemberName() {
-      return memberName;
-    }
-
-    public B setSecurity(final boolean security) {
-      this.security = security;
-      return asBuilder();
-    }
-
-    public boolean isSecurity() {
-      return security;
-    }
-
-    public B setAppendLog(final boolean shouldAppendLog) {
-      appendLog = shouldAppendLog;
-      return asBuilder();
-    }
-
-    public boolean isAppendLog() {
-      return appendLog;
-    }
-
-    public B setStartPaused(final boolean shouldStartPaused) {
-      startPaused = shouldStartPaused;
-      return asBuilder();
-    }
-
-    public boolean isStartPaused() {
-      return debug;
-    }
-
-    public B setDebug(final boolean shouldDebug) {
-      debug = shouldDebug;
-      return asBuilder();
-    }
-
-    public boolean isDebug() {
-      return debug;
-    }
-
+  /** Is this thread in the process of appending? */
+  private static final ThreadLocal<Boolean> appending = new ThreadLocal<Boolean>() {
     @Override
-    public LogWriterAppender build() {
-      Layout<? extends Serializable> layout = getOrCreateLayout();
-      return new LogWriterAppender(getName(), layout, getFilter(),
-          MemberNamePatternConverter.INSTANCE.getMemberNameSupplier(), memberName, appendLog,
-          security, startPaused, debug, LoggingSessionListeners.get());
+    protected Boolean initialValue() {
+      return Boolean.FALSE;
     }
+  };
+
+  private final PureLogWriter logWriter;
+  private final FileOutputStream fos; // TODO:LOG:CLEANUP: why do we track this outside
+                                      // ManagerLogWriter? doesn't rolling invalidate it?
+
+  private final AppenderContext[] appenderContexts;
+  private final String appenderName;
+  private final String logWriterLoggerName;
+
+  private LogWriterAppender(final AppenderContext[] appenderContexts, final String name,
+      final PureLogWriter logWriter, final FileOutputStream fos) {
+    super(LogWriterAppender.class.getName() + "-" + name, null,
+        PatternLayout.createDefaultLayout());
+    this.appenderContexts = appenderContexts;
+    this.appenderName = LogWriterAppender.class.getName() + "-" + name;
+    this.logWriterLoggerName = name;
+    this.logWriter = logWriter;
+    this.fos = fos;
+  }
+
+  /**
+   * Used by LogWriterAppenders and tests to create a new instance.
+   *
+   * @return The new instance.
+   */
+  static LogWriterAppender create(final AppenderContext[] contexts, final String name,
+      final PureLogWriter logWriter, final FileOutputStream fos) {
+    LogWriterAppender appender = new LogWriterAppender(contexts, name, logWriter, fos);
+    for (AppenderContext context : appender.appenderContexts) {
+      context.getLoggerContext().addPropertyChangeListener(appender);
+    }
+    appender.start();
+    for (AppenderContext context : appender.appenderContexts) {
+      context.getLoggerConfig().addAppender(appender, Level.ALL, null);
+    }
+    return appender;
   }
 
   @Override
   public void append(final LogEvent event) {
-    if (isPaused()) {
+    // If already appending then don't send to avoid infinite recursion
+    if ((appending.get())) {
       return;
     }
-    doAppendIfNotAppending(event);
+    appending.set(Boolean.TRUE);
+    try {
+      this.logWriter.put(LogLevel.getLogWriterLevel(event.getLevel()),
+          event.getMessage().getFormattedMessage(), event.getThrown());
+    } finally {
+      appending.set(Boolean.FALSE);
+    }
   }
 
   @Override
-  public void start() {
-    LOGGER.info("Starting {}.", this);
-    LOGGER.debug("Adding {} to {}.", this, loggingSessionListeners);
-    loggingSessionListeners.addLoggingLifecycleListener(this);
-    super.start();
+  public synchronized void propertyChange(final PropertyChangeEvent evt) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Responding to a property change event. Property name is {}.",
+          evt.getPropertyName());
+    }
+    if (evt.getPropertyName().equals(LoggerContext.PROPERTY_CONFIG)) {
+      for (AppenderContext context : this.appenderContexts) {
+        LoggerConfig loggerConfig = context.getLoggerConfig();
+        if (!loggerConfig.getAppenders().containsKey(this.appenderName)) {
+          loggerConfig.addAppender(this, Level.ALL, null);
+        }
+      }
+    }
+  }
+
+  /**
+   * Stop the appender and remove it from the Log4j configuration.
+   */
+  protected void destroy() { // called 1st during disconnect
+    // add stdout appender to MAIN_LOGGER_NAME only if isUsingGemFireDefaultConfig -- see #51819
+    if (LogService.MAIN_LOGGER_NAME.equals(this.logWriterLoggerName)
+        && LogService.isUsingGemFireDefaultConfig()) {
+      LogService.restoreConsoleAppender();
+    }
+    for (AppenderContext context : this.appenderContexts) {
+      context.getLoggerContext().removePropertyChangeListener(this);
+      context.getLoggerConfig().removeAppender(appenderName);
+    }
+    for (AppenderContext context : this.appenderContexts) { // do this second as log4j 2.6+ will
+                                                            // re-add
+      context.getLoggerContext().updateLoggers();
+    }
+    stop();
+    cleanUp(); // 3rd
+    if (logger.isDebugEnabled()) {
+      logger.debug("A LogWriterAppender has been destroyed and cleanup is finished.");
+    }
+  }
+
+  private void cleanUp() { // was closingLogFile() -- called from destroy() as the final step
+    if (this.logWriter instanceof ManagerLogWriter) {
+      ((ManagerLogWriter) this.logWriter).closingLogFile();
+    }
+    if (this.fos != null) {
+      try {
+        this.fos.close();
+      } catch (IOException ignore) {
+      }
+    }
   }
 
   @Override
   public void stop() {
-    LOGGER.info("Stopping {}.", this);
-
-    // stop LogEvents from coming to this appender
-    super.stop();
-
-    // clean up
-    loggingSessionListeners.removeLoggingLifecycleListener(this);
-    stopSession();
-
-    LOGGER.info("{} has stopped.", this);
-  }
-
-  @Override
-  public void pause() {
-    LOGGER.debug("Pausing {}.", this);
-    paused = true;
-  }
-
-  @Override
-  public void resume() {
-    LOGGER.debug("Resuming {}.", this);
-    paused = false;
-  }
-
-  @Override
-  public boolean isPaused() {
-    return paused;
-  }
-
-  @Override
-  public void clearLogEvents() {
-    events.clear();
-  }
-
-  @Override
-  public List<LogEvent> getLogEvents() {
-    return events;
-  }
-
-  @Override
-  public synchronized void createSession(final SessionContext sessionContext) {
-    logConfigSupplier = sessionContext.getLogConfigSupplier();
-
-    LOGGER.info("Creating session in {} with {}.", this, logConfigSupplier);
-
-    logConfigSupplier.addLogConfigListener(this);
-
-    LogConfig logConfig = logConfigSupplier.getLogConfig();
-    if (eagerMemberName == null && lazyMemberName == null) {
-      String memberName = logConfig.getName();
-      memberNameSupplier.set(memberName);
-      lazyMemberName = memberName;
-    }
-
-    StatisticsConfig statisticsConfig = logConfigSupplier.getStatisticsConfig();
-    ManagerLogWriterFactory managerLogWriterFactory = new ManagerLogWriterFactory()
-        .setSecurity(security).setAppendLog(appendLog);
-
-    logWriter = managerLogWriterFactory.create(logConfig, statisticsConfig);
-
-    if (logWriter == null) {
-      logWriter = new NullLogWriter();
-    }
-
-    logFileRolloverDetails = managerLogWriterFactory.getLogFileRolloverDetails();
-  }
-
-  @Override
-  public synchronized void startSession() {
-    LOGGER.info("Starting session in {}.", this);
-
-    logWriter.startupComplete();
-
-    resume();
-
-    logRolloverDetails(logFileRolloverDetails);
-
-    logFileRolloverDetails = null;
-    logConfigSupplier = null;
-  }
-
-  @Override
-  public synchronized void stopSession() {
-    LOGGER.info("Stopping session in {}.", this);
-    logWriter.shuttingDown();
-    pause();
-    logWriter.closingLogFile();
-  }
-
-  @Override
-  public Optional<LogFile> getLogFile() {
-    return Optional.of(new LogFile(logWriter));
-  }
-
-  @Override
-  public void configChanged() {
-    logWriter.configChanged();
-  }
-
-  @Override
-  public String toString() {
-    return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ":" + getName()
-        + " {eagerMemberName=" + eagerMemberName + ", lazyMemberName=" + lazyMemberName
-        + "appendLog=" + appendLog + ", security=" + security + ", paused=" + paused
-        + ", loggingSessionListeners=" + loggingSessionListeners + ", logWriter=" + logWriter
-        + ", debug=" + debug + "}";
-  }
-
-  ManagerLogWriter getLogWriter() {
-    return logWriter;
-  }
-
-  private void doAppendIfNotAppending(final LogEvent event) {
-    if (APPENDING.get()) {
-      // If already appending then don't send to avoid infinite recursion
-      return;
-    }
-    APPENDING.set(Boolean.TRUE);
     try {
-      ManagerLogWriter currentLogWriter = logWriter;
-      if (currentLogWriter == null || currentLogWriter instanceof NullLogWriter) {
-        return;
+      if (this.logWriter instanceof ManagerLogWriter) {
+        ((ManagerLogWriter) this.logWriter).shuttingDown();
       }
-      doAppendToLogWriter(currentLogWriter, event);
-    } finally {
-      APPENDING.set(FALSE);
+    } catch (RuntimeException e) {
+      logger.warn("RuntimeException encountered while shuttingDown LogWriterAppender", e);
+    }
+
+    super.stop();
+  }
+
+  protected void startupComplete() {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      ((ManagerLogWriter) this.logWriter).startupComplete();
     }
   }
 
-  private void doAppendToLogWriter(final ManagerLogWriter logWriter, final LogEvent event) {
-    byte[] bytes = getLayout().toByteArray(event);
-    if (bytes != null && bytes.length > 0) {
-      // TODO:KIRK:PERF: creating new String - change to event.getMessage().getFormattedMessage()?
-      logWriter.writeFormattedMessage(new String(bytes, Charset.defaultCharset()));
-    }
-    if (debug) {
-      events.add(event);
+  protected void setConfig(final LogConfig cfg) {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      ((ManagerLogWriter) this.logWriter).setConfig(cfg);
     }
   }
 
-  private void logRolloverDetails(final LogFileRolloverDetails logFileRolloverDetails) {
-    // log the first msg about renaming logFile for rolling if it pre-existed
-    if (logFileRolloverDetails.exists()) {
-      if (logFileRolloverDetails.isWarning()) {
-        LogManager.getLogger().warn(logFileRolloverDetails.getMessage());
-      } else {
-        LogManager.getLogger().info(logFileRolloverDetails.getMessage());
-      }
+  public File getChildLogFile() {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      return ((ManagerLogWriter) this.logWriter).getChildLogFile();
+    } else {
+      return null;
+    }
+  }
+
+  public File getLogDir() {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      return ((ManagerLogWriter) this.logWriter).getLogDir();
+    } else {
+      return null;
+    }
+  }
+
+  public int getMainLogId() {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      return ((ManagerLogWriter) this.logWriter).getMainLogId();
+    } else {
+      return -1;
+    }
+  }
+
+  public boolean useChildLogging() {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      return ((ManagerLogWriter) this.logWriter).useChildLogging();
+    } else {
+      return false;
+    }
+  }
+
+  protected void configChanged() {
+    if (this.logWriter instanceof ManagerLogWriter) {
+      ((ManagerLogWriter) this.logWriter).configChanged();
     }
   }
 }

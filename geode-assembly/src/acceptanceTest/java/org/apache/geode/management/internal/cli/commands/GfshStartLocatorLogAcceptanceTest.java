@@ -14,46 +14,46 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.internal.logging.Configuration.STARTUP_CONFIGURATION;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
-import org.junit.Before;
+import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.Banner;
-import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-@Category({LoggingTest.class, GfshTest.class})
+@Category({GfshTest.class, LoggingTest.class})
 public class GfshStartLocatorLogAcceptanceTest {
-
-  private File logFile;
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
 
-  @Before
-  public void setUp() {
+  @Test
+  public void bannerOnlyLogsOnce() throws Exception {
+    final String banner = "Licensed to the Apache Software Foundation (ASF)";
+    String lines = getExecutionLogs();
+    assertThat(lines.indexOf(banner)).isEqualTo(lines.lastIndexOf(banner));
+  }
+
+  @Test
+  public void startupConfigsOnlyLogsOnce() throws Exception {
+    final String startupConfigs = "### GemFire Properties using default values ###";
+    String lines = getExecutionLogs();
+    assertThat(lines.indexOf(startupConfigs)).isEqualTo(lines.lastIndexOf(startupConfigs));
+  }
+
+  private String getExecutionLogs() throws Exception {
     GfshExecution gfshExecution = GfshScript.of("start locator").execute(gfshRule);
     File[] files = gfshExecution.getWorkingDir().listFiles();
     String logName = files[0].getAbsolutePath() + "/" + files[0].getName() + ".log";
-    logFile = new File(logName);
-  }
-
-  @Test
-  public void bannerIsLoggedOnlyOnce() {
-    LogFileAssert.assertThat(logFile).containsOnlyOnce(Banner.BannerHeader.displayValues());
-  }
-
-  @Test
-  public void startupConfigIsLoggedOnlyOnce() {
-    LogFileAssert.assertThat(logFile).containsOnlyOnce(STARTUP_CONFIGURATION);
+    return Files.readLines(new File(logName), StandardCharsets.UTF_8).toString();
   }
 }

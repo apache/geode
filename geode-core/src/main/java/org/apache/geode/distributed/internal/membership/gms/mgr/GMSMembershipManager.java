@@ -2506,7 +2506,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     services.setShutdownCause(shutdownCause);
     services.getCancelCriterion().cancel(reason);
 
-    AlertAppender.getInstance().stopSession();
+    AlertAppender.getInstance().shuttingDown();
 
     if (!inhibitForceDisconnectLogging) {
       logger.fatal(

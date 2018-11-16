@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
-
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.Properties;
@@ -55,7 +53,7 @@ import org.apache.geode.security.SecurityManager;
  * Security service with SecurityManager and an optional PostProcessor.
  */
 public class IntegratedSecurityService implements SecurityService {
-  private static Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
+  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
   public static final String CREDENTIALS_SESSION_ATTRIBUTE = "credentials";
 
   private final PostProcessor postProcessor;

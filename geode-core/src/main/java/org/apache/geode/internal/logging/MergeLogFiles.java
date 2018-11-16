@@ -41,15 +41,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ExitCode;
 
 /**
  * This program merges entries from multiple GemFire log files (those written using a
- * {@link LogWriter} together, sorting them by their timestamp. Note that this program assumes that
- * the entries in the individual log files are themselves sorted by timestamp.
+ * {@link org.apache.geode.LogWriter} together, sorting them by their timestamp. Note that
+ * this program assumes that the entries in the individual log files are themselves sorted by
+ * timestamp.
  * <p>
  *
  * MergeLogFiles has several command line options:<br>
@@ -92,16 +92,17 @@ import org.apache.geode.internal.ExitCode;
  * @see SortLogFile
  * @see LogFileParser
  *
+ *
+ *
  * @since GemFire 2.0 (-pids, -threads, -align, and -noblanks added in 5.1)
  */
 public class MergeLogFiles {
-
-  private static final PrintStream out = System.out;
-  private static final PrintStream err = System.err;
+  private static PrintStream out = System.out;
+  private static PrintStream err = System.err;
 
   /**
    * Merges the log files from a given set of <code>InputStream</code>s into a
-   * <code>PrintWriter</code>.
+   * <code>PrinWriter</code>.
    *
    * @param logFiles The log files to be merged
    * @param mergedFile Where the merged logs are printed to
@@ -111,14 +112,13 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as the
    *         length of <code>logFileNames</code>
    */
-  public static boolean mergeLogFiles(final Map<String, InputStream> logFiles,
-      final PrintWriter mergedFile) {
+  public static boolean mergeLogFiles(Map<String, InputStream> logFiles, PrintWriter mergedFile) {
     return mergeLogFiles(logFiles, mergedFile, false, false, false, new LinkedList());
   }
 
   /**
    * Merges the log files from a given set of <code>InputStream</code>s into a
-   * <code>PrintWriter</code>.
+   * <code>PrinWriter</code>.
    *
    * @param logFiles The log files to be merged
    * @param mergedFile Where the merged logs are printed to
@@ -130,17 +130,20 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as the
    *         length of <code>logFileNames</code>
    */
-  public static boolean mergeLogFiles(final Map<String, InputStream> logFiles,
-      final PrintWriter mergedFile, final boolean tabOut, final boolean suppressBlanks,
-      final boolean multithreaded, final List<String> patterns) {
-    return Sorter.mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks, multithreaded,
-        patterns);
+  public static boolean mergeLogFiles(Map<String, InputStream> logFiles,
+      PrintWriter mergedFile, boolean tabOut, boolean suppressBlanks, boolean multithreaded,
+      List<String> patterns) {
+    return Sorter.mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks,
+        multithreaded, patterns);
   }
+
+
+  // ////////////////// Main Program ////////////////////
 
   /**
    * Prints usage information about this program
    */
-  private static void usage(final String s) {
+  private static void usage(String s) {
     // note that we don't document the -pids switch because it is tailored
     // to how hydra works and would not be useful for customers
     err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
@@ -158,15 +161,18 @@ public class MergeLogFiles {
         + "Suppress output of blank lines");
     err.println("-threaded        "
         + "Use multithreading to take advantage of multiple CPUs");
-    err.println();
+    // err.println("-regex pattern Case-insensitive search for a regular expression.");
+    // err.println(" May be used multiple times. Use Java regular ");
+    // err.println(" expression syntax (see java.util.regex.Pattern).");
+    err.println("");
     err.println(
         "Merges multiple GemFire log files and sorts them by timestamp.");
     err.println(
         "The merged log file is written to System.out (or a file).");
-    err.println();
+    err.println("");
     err.println(
         "If a directory is specified, all .log files in that directory are merged.");
-    err.println();
+    err.println("");
     ExitCode.FATAL.doSystemExit();
   }
 
@@ -176,7 +182,7 @@ public class MergeLogFiles {
    * @param dirName directory to search
    * @return all of the .log files found (Files)
    */
-  static ArrayList<File> getLogFiles(final String dirName) {
+  static ArrayList<File> getLogFiles(String dirName) {
     ArrayList<File> result = new ArrayList<>();
 
     File dir = new File(dirName);
@@ -192,7 +198,7 @@ public class MergeLogFiles {
     return result;
   }
 
-  public static void main(final String... args) throws IOException {
+  public static void main(String[] args) throws IOException {
     File mergeFile = null;
     ArrayList files = new ArrayList();
     List nickNames = null;
@@ -201,7 +207,7 @@ public class MergeLogFiles {
     boolean tabOut = false;
     boolean suppressBlanks = false;
     boolean multithreaded = false;
-    List<String> patterns = new LinkedList<>();
+    List<String> patterns = new LinkedList();
 
     // Parse command line
     for (int i = 0; i < args.length; i++) {
@@ -299,7 +305,7 @@ public class MergeLogFiles {
       File file = (File) files.get(i);
 
       String logFileName;
-      if (findPIDs && nickNames.get(i) != null) {
+      if (findPIDs && (nickNames.get(i) != null)) {
         if (file.getCanonicalPath().toLowerCase().endsWith("gz")) {
           logFileName = nickNames.get(i) + ".gz";
         } else {
@@ -331,6 +337,8 @@ public class MergeLogFiles {
     ExitCode.NORMAL.doSystemExit();
   }
 
+  ////////////////////// Inner Classes //////////////////////
+
   /**
    * hydra log files usually have the process's PID in their path name. This method extracts the PID
    * number and assigns the corresponding File a nickname using the PID and the position of the File
@@ -340,15 +348,18 @@ public class MergeLogFiles {
    * gemfire_1043/system.log --> 1043-2<br>
    * gemfire_1043/system_01_00.log --> 1043-3<br>
    */
-  private static ArrayList findPIDs(final ArrayList files, final PrintWriter output) {
+  private static ArrayList findPIDs(ArrayList files, PrintWriter output) {
     int pidTable[] = new int[files.size()];
     int pidTableCounter[] = new int[pidTable.length];
     ArrayList nickNames = new ArrayList();
     char sep = File.separatorChar;
 
+    // System.out.println("findPids() invoked");
+
     for (Iterator it = files.iterator(); it.hasNext();) {
       File f = (File) it.next();
       String name = f.getPath();
+      // System.out.println("considering " + name);
 
       String slashdotslash = "" + sep + "." + sep;
       int startIdx = name.lastIndexOf(slashdotslash);
@@ -365,9 +376,11 @@ public class MergeLogFiles {
         startIdx--;
         char c = name.charAt(startIdx);
         if (!('0' <= c && c <= '9')) {
+          // System.out.println("no number found in directory name");
           startIdx = 0;
         } else {
-          // see if this is a hydra-generated test directory name, like parReg-0504-161349
+          // see if this is a hydra-generated test directory name, like
+          // parReg-0504-161349
           int testIdx = startIdx - 1;
           while (testIdx > 0 && '0' <= name.charAt(testIdx) && name.charAt(testIdx) <= '9') {
             testIdx--;
@@ -375,6 +388,7 @@ public class MergeLogFiles {
           if (testIdx < 1 || name.charAt(testIdx) == '-') {
             startIdx = 0;
           }
+          // System.out.println("using directory name: '" + name.substring(0, startIdx+1) + "'");
         }
       }
 
@@ -389,21 +403,26 @@ public class MergeLogFiles {
         } else if (startIdx > 3 && name.charAt(startIdx) == 'g' && name.charAt(startIdx - 1) == 'o'
             && name.charAt(startIdx - 2) == 'l' && name.charAt(startIdx - 3) == '.') {
           startIdx -= 4;
+          // System.out.println("using file name: '" + name.substring(0,startIdx+1) + "'");
         }
+        // else {
+        // System.out.println("could not find a PID");
+        // }
       }
 
-      // find the string of numbers at the end of the test area and use it as a PID
-      String PID;
+      // find the string of numbers at the end of the test area and use it
+      // as a PID
+      String PID = null;
       for (int i = startIdx; i >= 0; i--) {
         char c = name.charAt(i);
         // System.out.println("charAt("+i+")="+c);
         if (!('0' <= c && c <= '9')) {
-          if (i < name.length() - 1) { // have a number
+          if (i < (name.length() - 1)) { // have a number
             // there's a number - assume it's a PID if it's not zero
             PID = name.substring(i + 1, startIdx + 1);
             // System.out.println("parsing '" + PID + "'");
             try {
-              int iPID = Integer.valueOf(PID);
+              int iPID = Integer.valueOf(PID).intValue();
               if (iPID > 0) {
                 // System.out.println("Found PID " + iPID);
                 int p = 0;
@@ -442,7 +461,6 @@ public class MergeLogFiles {
 
   /** interface for threaded and non-threaded reader classes */
   interface Reader {
-
     LogFileParser.LogEntry peek();
 
     LogFileParser.LogEntry poll();
@@ -454,23 +472,37 @@ public class MergeLogFiles {
     int getUniqueId();
   }
 
+
   /**
    * Thread that reads an entry from a GemFire log file and adds it a bounded queue. The entries are
    * consumed by a {@link MergeLogFiles.Sorter}.
    */
   static class NonThreadedReader implements Reader {
 
+    /** The maximum size of the entry queue */
+    // private static int QUEUE_CAPACITY = 1000;
+
+    //////////////////// Instance Methods ////////////////////
+
     /** The log file */
     private BufferedReader logFile;
 
     /** The name of the log file */
-    private final String logFileName;
+    private String logFileName;
 
-    private final LogFileParser parser;
+    /** whether to suppress blank lines */
+    // private boolean suppressBlanks;
+
+    /** whether to align non-timestamped lines with timestamped lines */
+    // private boolean tabOut;
+
+    private LogFileParser parser;
 
     private LogFileParser.LogEntry nextEntry;
 
-    private final List<Pattern> patterns;
+    private List<Pattern> patterns;
+
+    //////////////////// Constructors ////////////////////
 
     /**
      * Creates a new <code>Reader</code> that reads from the given log file with the given name.
@@ -478,9 +510,9 @@ public class MergeLogFiles {
      *
      * @param patterns java regular expressions that an entry must match one or more of
      */
-    public NonThreadedReader(final InputStream logFile, final String logFileName,
-        final ThreadGroup group, final boolean tabOut, final boolean suppressBlanks,
-        final List<Pattern> patterns) {
+    public NonThreadedReader(InputStream logFile, String logFileName, ThreadGroup group,
+        boolean tabOut, boolean suppressBlanks, List<Pattern> patterns) {
+      // super(group, "Reader for " + ((logFileName != null) ? logFileName : logFile.toString()));
       if (logFileName.endsWith(".gz")) {
         try {
           this.logFile = new BufferedReader(new InputStreamReader(new GZIPInputStream(logFile)));
@@ -493,26 +525,25 @@ public class MergeLogFiles {
       }
       this.logFileName = logFileName;
       this.patterns = patterns;
-      parser = new LogFileParser(this.logFileName, this.logFile, tabOut, suppressBlanks);
+      // this.suppressBlanks = suppressBlanks;
+      // this.tabOut = tabOut;
+      this.parser = new LogFileParser(this.logFileName, this.logFile, tabOut, suppressBlanks);
     }
 
     /** returns the file name being read */
-    @Override
     public String getFileName() {
-      return logFileName;
+      return this.logFileName;
     }
 
     /** unique identifier, used for sorting instead of file name */
     private int uniqueId;
 
     /** set the unique identifier for this reader */
-    @Override
-    public void setUniqueId(final int id) {
+    public void setUniqueId(int id) {
       uniqueId = id;
     }
 
     /** retrieve the unique identifier for this reader */
-    @Override
     public int getUniqueId() {
       return uniqueId;
     }
@@ -523,9 +554,8 @@ public class MergeLogFiles {
      *
      * @return <code>null</code> if interrupted while waiting
      */
-    @Override
     public synchronized LogFileParser.LogEntry peek() {
-      while (nextEntry == null) {
+      while (this.nextEntry == null) {
         try {
           nextEntry = parser.getNextEntry();
           if (nextEntry == null) {
@@ -543,8 +573,8 @@ public class MergeLogFiles {
 
 
     /** return true if the entry matches one or more regex patterns */
-    private boolean patternMatch(final LogFileParser.LogEntry entry) {
-      if (patterns == null || patterns.isEmpty()) {
+    private boolean patternMatch(LogFileParser.LogEntry entry) {
+      if (this.patterns == null || this.patterns.isEmpty()) {
         return true;
       }
       for (Pattern p : patterns) {
@@ -558,11 +588,10 @@ public class MergeLogFiles {
     /**
      * Removes the old log entry read from the log file
      */
-    @Override
     public LogFileParser.LogEntry poll() {
       LogFileParser.LogEntry returnValue = null;
-      if (nextEntry != null) {
-        returnValue = nextEntry;
+      if (this.nextEntry != null) {
+        returnValue = this.nextEntry;
         nextEntry = null;
       } else {
         while (returnValue == null) {
@@ -589,33 +618,41 @@ public class MergeLogFiles {
   static class ThreadedReader extends Thread implements Reader {
 
     /** The maximum size of the entry queue */
-    private static final int QUEUE_CAPACITY = 1000;
+    private static int QUEUE_CAPACITY = 1000;
+
+    //////////////////// Instance Methods ////////////////////
 
     /** The log file */
     private BufferedReader logFile;
 
     /** The name of the log file */
-    private final String logFileName;
+    private String logFileName;
 
     /** The queue containing log entries */
-    private final BlockingQueue queue;
+    private BlockingQueue queue;
 
     /** whether to suppress blank lines */
-    private final boolean suppressBlanks;
+    private boolean suppressBlanks;
 
     /** whether to align non-timestamped lines with timestamped lines */
-    private final boolean tabOut;
+    private boolean tabOut;
 
-    private final List<Pattern> patterns;
+    private List<Pattern> patterns;
+
+    //////////////////// Constructors ////////////////////
 
     /**
      * Creates a new <code>Reader</code> that reads from the given log file with the given name.
      * Invoking this constructor will start this reader thread. The InputStream is closed at the
      * end of processing.
+     *
+     * @param patterns TODO
+     *
+     * @see #run
      */
-    public ThreadedReader(final InputStream logFile, final String logFileName,
-        final ThreadGroup group, final boolean tabOut, final boolean suppressBlanks,
-        final List<Pattern> patterns) {
+    public ThreadedReader(InputStream logFile, String logFileName, ThreadGroup group,
+        boolean tabOut, boolean suppressBlanks, List<Pattern> patterns) {
+      // super(group, "Reader for " + ((logFileName != null) ? logFileName : logFile.toString()));
       super(group, "Log File Reader");
       if (logFileName.endsWith(".gz")) {
         try {
@@ -628,30 +665,29 @@ public class MergeLogFiles {
         this.logFile = new BufferedReader(new InputStreamReader(logFile));
       }
       this.logFileName = logFileName;
-      queue = new LinkedBlockingQueue(QUEUE_CAPACITY);
+      this.queue = new LinkedBlockingQueue(QUEUE_CAPACITY);
+      // new UnsharedMessageQueue(QUEUE_CAPACITY,
+      // (75 * QUEUE_CAPACITY) / 100);
       this.suppressBlanks = suppressBlanks;
       this.tabOut = tabOut;
       this.patterns = patterns;
-      start();
+      this.start();
     }
 
     /** returns the file name being read */
-    @Override
     public String getFileName() {
-      return logFileName;
+      return this.logFileName;
     }
 
     /** unique identifier, used for sorting instead of file name */
     private int uniqueId;
 
     /** set the unique identifier for this reader */
-    @Override
-    public void setUniqueId(final int id) {
+    public void setUniqueId(int id) {
       uniqueId = id;
     }
 
     /** retrieve the unique identifier for this reader */
-    @Override
     public int getUniqueId() {
       return uniqueId;
     }
@@ -664,17 +700,17 @@ public class MergeLogFiles {
     @Override
     public void run() {
       LogFileParser parser =
-          new LogFileParser(logFileName, logFile, tabOut, suppressBlanks);
+          new LogFileParser(this.logFileName, this.logFile, tabOut, suppressBlanks);
 
       try {
         while (true) {
           SystemFailure.checkFailure();
           LogFileParser.LogEntry entry = parser.getNextEntry();
           if (entry.isLast() || patternMatch(entry)) {
-            queue.put(entry);
+            this.queue.put(entry);
 
             synchronized (this) {
-              notify();
+              this.notify();
             }
           }
           if (entry.isLast()) {
@@ -697,8 +733,8 @@ public class MergeLogFiles {
     }
 
     /** return true if the entry matches one or more regex patterns */
-    private boolean patternMatch(final LogFileParser.LogEntry entry) {
-      if (patterns == null || patterns.isEmpty()) {
+    private boolean patternMatch(LogFileParser.LogEntry entry) {
+      if (this.patterns == null || this.patterns.isEmpty()) {
         return true;
       }
       for (Pattern p : patterns) {
@@ -715,17 +751,17 @@ public class MergeLogFiles {
      *
      * @return <code>null</code> if interrupted while waiting
      */
-    @Override
     public LogFileParser.LogEntry peek() {
-      LogFileParser.LogEntry entry = (LogFileParser.LogEntry) queue.peek();
+      // out.println(this.getName() + " size " + this.queue.size());
+      LogFileParser.LogEntry entry = (LogFileParser.LogEntry) this.queue.peek();
       if (entry == null) {
         synchronized (this) {
-          entry = (LogFileParser.LogEntry) queue.peek();
+          entry = (LogFileParser.LogEntry) this.queue.peek();
           while (entry == null) {
             boolean interrupted = Thread.interrupted();
             try {
-              wait();
-              entry = (LogFileParser.LogEntry) queue.peek();
+              this.wait();
+              entry = (LogFileParser.LogEntry) this.queue.peek();
             } catch (InterruptedException e) {
               interrupted = true;
             } finally {
@@ -742,9 +778,8 @@ public class MergeLogFiles {
     /**
      * Removes the old log entry read from the log file
      */
-    @Override
     public LogFileParser.LogEntry poll() {
-      return (LogFileParser.LogEntry) queue.poll();
+      return (LogFileParser.LogEntry) this.queue.poll();
     }
   }
 
@@ -752,21 +787,20 @@ public class MergeLogFiles {
    * A thread group that contains the reader threads and logs uncaught exceptions to standard error.
    */
   static class ReaderGroup extends ThreadGroup {
-
     /** Did an uncaught exception occur? */
     private boolean exceptionOccurred;
 
-    ReaderGroup(final String groupName) {
+    ReaderGroup(String groupName) {
       super(groupName);
-      exceptionOccurred = false;
+      this.exceptionOccurred = false;
     }
 
     @Override
-    public void uncaughtException(final Thread t, final Throwable e) {
+    public void uncaughtException(Thread t, Throwable e) {
       if (e instanceof VirtualMachineError) {
         SystemFailure.setFailure((VirtualMachineError) e); // don't throw
       }
-      exceptionOccurred = true;
+      this.exceptionOccurred = true;
       System.err.println(String.format("Exception in %s", t));
       e.printStackTrace(System.err);
     }
@@ -775,7 +809,7 @@ public class MergeLogFiles {
      * Returns whether or not an uncaught exception occurred in one of the threads in this group.
      */
     public boolean exceptionOccurred() {
-      return exceptionOccurred;
+      return this.exceptionOccurred;
     }
   }
 
@@ -793,15 +827,16 @@ public class MergeLogFiles {
      * @param mergedFile Where the merged logs are printed to
      * @param tabOut Whether to align non-timestamped lines with others
      * @param suppressBlanks Whether to suppress output of blank lines
+     * @param patterns TODO
      * @return Whether or not problems occurred while merging the log files.
      *
      * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as
      *         the length of <code>logFileNames</code>
      */
-    public static boolean mergeLogFiles(final Map<String, InputStream> logFiles,
-        final PrintWriter mergedFile, final boolean tabOut, final boolean suppressBlanks,
-        final boolean multithreaded, final List<String> patterns) {
-      List<Pattern> compiledPatterns = new LinkedList<>();
+    public static boolean mergeLogFiles(Map<String, InputStream> logFiles,
+        PrintWriter mergedFile, boolean tabOut, boolean suppressBlanks, boolean multithreaded,
+        List<String> patterns) {
+      List<Pattern> compiledPatterns = new LinkedList<Pattern>();
       for (String pattern : patterns) {
         compiledPatterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
       }
@@ -827,7 +862,7 @@ public class MergeLogFiles {
       Set sorted = sortReaders(readers);
 
       while (!readers.isEmpty()) {
-        Reader oldest;
+        Reader oldest = null;
         Iterator sortedIt = sorted.iterator();
         if (!sortedIt.hasNext()) {
           break;
@@ -836,7 +871,7 @@ public class MergeLogFiles {
         sortedIt.remove();
 
         String nextReaderTimestamp = null;
-        Reader nextInLine;
+        Reader nextInLine = null;
         if (sortedIt.hasNext()) {
           nextInLine = (Reader) sortedIt.next();
           nextReaderTimestamp = nextInLine.peek().getTimestamp();
@@ -849,7 +884,7 @@ public class MergeLogFiles {
           lastOldest = oldest;
         }
 
-        LogFileParser.LogEntry entry;
+        LogFileParser.LogEntry entry = null;
         // write until we hit the next file's time-stamp
         do {
           entry = oldest.peek();
@@ -876,7 +911,7 @@ public class MergeLogFiles {
       return group.exceptionOccurred();
     }
 
-    private static Set sortReaders(final Collection readers) {
+    private static Set sortReaders(Collection readers) {
       Set sorted = new TreeSet(new ReaderComparator());
       int uniqueId = 1;
       for (Iterator iter = readers.iterator(); iter.hasNext();) {
@@ -889,12 +924,12 @@ public class MergeLogFiles {
       }
       return sorted;
     }
+
   }
 
   protected static class ReaderComparator implements Comparator {
 
-    @Override
-    public int compare(final Object o1, final Object o2) {
+    public int compare(Object o1, Object o2) {
       Reader reader1 = (Reader) o1;
       int id1 = reader1.getUniqueId();
       Reader reader2 = (Reader) o2;
@@ -928,4 +963,5 @@ public class MergeLogFiles {
       return compare;
     }
   }
+
 }

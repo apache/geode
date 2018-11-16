@@ -53,7 +53,6 @@ import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.geode.internal.statistics.StatisticsConfig;
 
 /**
  * An implementation of the configuration object for an <code>AdminDistributedSystem</code>. After a
@@ -283,16 +282,6 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       }
 
       @Override
-      public File getSecurityLogFile() {
-        return null;
-      }
-
-      @Override
-      public int getSecurityLogLevel() {
-        return LogLevel.getLogWriterLevel(DistributedSystemConfigImpl.this.getLogLevel());
-      }
-
-      @Override
       public int getLogFileSizeLimit() {
         return DistributedSystemConfigImpl.this.getLogFileSizeLimit();
       }
@@ -310,41 +299,6 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       @Override
       public String toLoggerString() {
         return DistributedSystemConfigImpl.this.toString();
-      }
-
-      @Override
-      public boolean isLoner() {
-        return false;
-      }
-    };
-  }
-
-  public StatisticsConfig createStatisticsConfig() {
-    return new StatisticsConfig() {
-
-      @Override
-      public File getStatisticArchiveFile() {
-        return null;
-      }
-
-      @Override
-      public int getArchiveFileSizeLimit() {
-        return 0;
-      }
-
-      @Override
-      public int getArchiveDiskSpaceLimit() {
-        return 0;
-      }
-
-      @Override
-      public int getStatisticSampleRate() {
-        return 0;
-      }
-
-      @Override
-      public boolean getStatisticSamplingEnabled() {
-        return false;
       }
     };
   }

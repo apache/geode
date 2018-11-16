@@ -17,21 +17,14 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
-import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URL;
-
-import org.apache.logging.log4j.junit.LoggerContextRule;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -43,34 +36,18 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category({ClientServerTest.class, LoggingTest.class})
 public class SingleHopClientExecutorWithLoggingIntegrationTest {
 
-  private static String configFilePath;
-
-  @ClassRule
-  public static SystemOutRule systemOutRule = new SystemOutRule().enableLog();
-
-  @ClassRule
-  public static SystemErrRule systemErrRule = new SystemErrRule().enableLog();
-
-  @ClassRule
-  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule
+  public SystemErrRule systemErrRule = new SystemErrRule().enableLog();
 
   @Rule
-  public LoggerContextRule loggerContextRule = new LoggerContextRule(configFilePath);
-
-  @BeforeClass
-  public static void setUpLogConfigFile() throws Exception {
-    String configFileName =
-        SingleHopClientExecutorWithLoggingIntegrationTest.class.getSimpleName() + "_log4j2.xml";
-    URL resource = getResource(configFileName);
-    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), configFileName)
-        .getAbsolutePath();
-  }
+  public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   /**
    * Refer: GEODE-2109 This test verifies that any exception thrown from forked thread is logged
    * into log.
    */
   @Test
+  @Ignore("Until GEODE-5637 is fixed")
   public void submittedTaskShouldLogFailure() {
     String message = "I am expecting this to be logged";
 
@@ -82,6 +59,7 @@ public class SingleHopClientExecutorWithLoggingIntegrationTest {
     /*
      * Sometimes need to wait for more than sec as thread execution takes time.
      */
-    await().untilAsserted(() -> assertThat(systemOutRule.getLog()).contains(message));
+    await()
+        .untilAsserted(() -> assertThat(systemErrRule.getLog()).contains(message));
   }
 }

@@ -12,6 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
+
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
@@ -27,8 +29,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+
 
 public class TailLogResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();
@@ -42,15 +46,17 @@ public class TailLogResponse extends AdminResponse {
     m.setRecipient(recipient);
     try {
       InternalDistributedSystem sys = dm.getSystem();
-      if (sys.getLogFile().isPresent()) {
-        LogFile logFile = sys.getLogFile().get();
-        m.childTail = tailSystemLog(logFile.getChildLogFile());
+      LogWriterAppender lwa = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
+      if (lwa != null) {
+        m.childTail = tailSystemLog(lwa.getChildLogFile());
         m.tail = tailSystemLog(sys.getConfig());
         if (m.tail == null) {
           m.tail =
               "No log file was specified in the configuration, messages will be directed to stdout.";
         }
       } else {
+        // Assert.assertTrue(false, "TailLogRequest/Response processed in application vm with shared
+        // logging.");
         m.childTail = tailSystemLog((File) null);
         m.tail = tailSystemLog(sys.getConfig());
         if (m.tail == null) {
@@ -65,7 +71,6 @@ public class TailLogResponse extends AdminResponse {
     return m;
   }
 
-  @Override
   public int getDSFID() {
     return TAIL_LOG_RESPONSE;
   }
@@ -124,6 +129,28 @@ public class TailLogResponse extends AdminResponse {
     return messageString.trim();
   }
 
+  // private static String readSystemLog(File logFile) throws IOException {
+  // if (logFile == null || logFile.equals(new File(""))) {
+  // return null;
+  // }
+  // long fileLength = logFile.length();
+  // byte[] buffer = new byte[(int)fileLength];
+  // BufferedInputStream in = new BufferedInputStream(new FileInputStream(logFile));
+  // in.read(buffer, 0, buffer.length);
+  // return new String(buffer).trim();
+  // }
+
+  // private static String readSystemLog(DistributionConfig sc) throws IOException {
+  // File logFile = sc.getLogFile();
+  // if (logFile == null || logFile.equals(new File(""))) {
+  // return null;
+  // }
+  // if (!logFile.isAbsolute()) {
+  // logFile = new File(logFile.getAbsolutePath());
+  // }
+  // return readSystemLog(logFile);
+  // }
+
   private static String tailSystemLog(DistributionConfig sc) throws IOException {
     File logFile = sc.getLogFile();
     if (logFile == null || logFile.equals(new File(""))) {
@@ -134,4 +161,5 @@ public class TailLogResponse extends AdminResponse {
     }
     return tailSystemLog(logFile);
   }
+
 }

@@ -35,13 +35,13 @@ public class GemFireHandler extends Handler {
 
   public GemFireHandler(LogWriter logWriter) {
     this.logWriter = logWriter;
-    setFormatter(new GemFireFormatter());
+    this.setFormatter(new GemFireFormatter(logWriter));
   }
 
   @Override
   public void close() {
     // clear the reference to GFE LogWriter
-    logWriter = null;
+    this.logWriter = null;
   }
 
   @Override
@@ -49,25 +49,25 @@ public class GemFireHandler extends Handler {
     // nothing needed
   }
 
-  private String getMessage(final LogRecord record) {
-    StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append('(').append("tid=").append(record.getThreadID())
-        .append(" msgId=").append(record.getSequenceNumber()).append(") ");
+  private String getMessage(LogRecord record) {
+    final StringBuilder b = new StringBuilder();
+    b.append('(').append("tid=" + record.getThreadID())
+        .append(" msgId=" + record.getSequenceNumber()).append(") ");
     if (record.getMessage() != null) {
-      stringBuilder.append(getFormatter().formatMessage(record));
+      b.append(getFormatter().formatMessage(record));
     }
-    return stringBuilder.toString();
+    return b.toString();
   }
 
   @Override
-  public void publish(final LogRecord record) {
+  public void publish(LogRecord record) {
     if (isLoggable(record)) {
       try {
-        if (logWriter instanceof LogWriterLogger) {
-          ((LogWriterLogger) logWriter).log(record.getLevel().intValue(), getMessage(record),
+        if (this.logWriter instanceof LogWriterLogger) {
+          ((LogWriterLogger) this.logWriter).log(record.getLevel().intValue(), getMessage(record),
               record.getThrown());
         } else {
-          ((LogWriterImpl) logWriter).put(record.getLevel().intValue(), getMessage(record),
+          ((LogWriterImpl) this.logWriter).put(record.getLevel().intValue(), getMessage(record),
               record.getThrown());
         }
       } catch (GemFireException ex) {

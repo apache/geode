@@ -49,8 +49,6 @@ import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.alerting.AlertingService;
-import org.apache.geode.internal.alerting.NullAlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -1429,10 +1427,5 @@ public class LonerDistributionManager implements DistributionManager {
   /** returns the Threads Monitoring instance */
   public ThreadsMonitoring getThreadMonitoring() {
     return this.threadMonitor;
-  }
-
-  @Override
-  public AlertingService getAlertingService() {
-    return NullAlertingService.get();
   }
 }

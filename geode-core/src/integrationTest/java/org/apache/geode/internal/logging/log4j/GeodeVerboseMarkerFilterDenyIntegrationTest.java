@@ -32,27 +32,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/**
- * Integration tests for using {@link LogMarker#GEMFIRE_VERBOSE} with {@code MarkerFilter} having
- * {@code onMatch} of {@code DENY} and {@code onMismatch} of {@code ACCEPT}.
- */
 @Category(LoggingTest.class)
 public class GeodeVerboseMarkerFilterDenyIntegrationTest {
 
-  private static final String CONFIG_FILE_NAME =
-      "GeodeVerboseMarkerFilterDenyIntegrationTest_log4j2.xml";
   private static final String APPENDER_NAME = "LIST";
 
   private static String configFilePath;
 
-  private ListAppender listAppender;
   private Logger logger;
   private String logMessage;
+  private ListAppender listAppender;
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -60,21 +53,24 @@ public class GeodeVerboseMarkerFilterDenyIntegrationTest {
   @Rule
   public LoggerContextRule loggerContextRule = new LoggerContextRule(configFilePath);
 
-  @Rule
-  public TestName testName = new TestName();
-
   @BeforeClass
   public static void setUpLogConfigFile() throws Exception {
-    URL resource = getResource(CONFIG_FILE_NAME);
-    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), CONFIG_FILE_NAME)
+    String configFileName =
+        GeodeVerboseMarkerFilterDenyIntegrationTest.class.getSimpleName() + "_log4j2.xml";
+    URL resource = getResource(configFileName);
+    configFilePath = createFileFromResource(resource, temporaryFolder.getRoot(), configFileName)
         .getAbsolutePath();
   }
 
   @Before
   public void setUp() throws Exception {
-    listAppender = loggerContextRule.getListAppender(APPENDER_NAME);
     logger = LogService.getLogger();
-    logMessage = "Logging in " + testName.getMethodName();
+    logMessage = "this is a log statement";
+
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
+        .isFalse();
+
+    listAppender = loggerContextRule.getListAppender(APPENDER_NAME);
   }
 
   @Test

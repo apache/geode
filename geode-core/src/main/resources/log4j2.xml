@@ -15,22 +15,15 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j">
+<Configuration status="FATAL" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j">
   <Properties>
     <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
     <Property name="geode-default">true</Property>
   </Properties>
   <Appenders>
-    <GeodeConsole name="STDOUT" target="SYSTEM_OUT">
+    <Console name="STDOUT" target="SYSTEM_OUT">
       <PatternLayout pattern="${geode-pattern}"/>
-    </GeodeConsole>
-    <GeodeLogWriter name="LOGWRITER">
-      <PatternLayout pattern="${geode-pattern}"/>
-    </GeodeLogWriter>
-    <GeodeLogWriter name="SECURITYLOGWRITER" security="true">
-      <PatternLayout pattern="${geode-pattern}"/>
-    </GeodeLogWriter>
-    <GeodeAlert name="ALERT"/>
+    </Console>
   </Appenders>
   <Loggers>
     <Logger name="com.gemstone" level="INFO" additivity="true"/>
@@ -39,15 +32,10 @@
       <MarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
     </filters>
     </Logger>
-    <Logger name="org.apache.geode.security" level="INFO" additivity="false">
-      <AppenderRef ref="SECURITYLOGWRITER"/>
-    </Logger>
     <Logger name="org.jgroups" level="FATAL" additivity="true"/>
     <Logger name="org.eclipse.jetty" level="FATAL" additivity="true"/>
     <Root level="INFO">
       <AppenderRef ref="STDOUT"/>
-      <AppenderRef ref="LOGWRITER"/>
-      <AppenderRef ref="ALERT"/>
     </Root>
   </Loggers>
 </Configuration>

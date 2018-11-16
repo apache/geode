@@ -93,9 +93,9 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
-import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 
 /**
@@ -151,6 +151,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   private volatile Set<AlertListener> alertListeners = Collections.emptySet();
   private final Object alertLock = new Object();
 
+  private LogWriterAppender logWriterAppender;
+
   private InternalLogWriter logWriter;
 
   /** The membership listeners registered on this distributed system */
@@ -161,8 +163,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   // for feature requests #32887
   private volatile List cacheListeners = Collections.EMPTY_LIST;
   private final Object cacheListLock = new Object();
-
-  private final LoggingSession loggingSession;
 
   /**
    * reference to AdminDistributedSystemImpl instance for feature requests #32887.
@@ -191,17 +191,12 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   // Constructor(s)
   // -------------------------------------------------------------------------
 
-  private static LoggingSession createLoggingSession() {
-    return NullLoggingSession.create();
-  }
-
   /**
    * Constructs new DistributedSystemImpl with the given configuration.
    *
    * @param config configuration defining this distributed system
    */
   public AdminDistributedSystemImpl(DistributedSystemConfigImpl config) {
-    loggingSession = createLoggingSession();
 
     // init from config...
     this.config = config;
@@ -220,7 +215,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     }
 
     // LOG: create LogWriterAppender unless one already exists
-    loggingSession.startSession();
+    this.logWriterAppender = LogWriterAppenders.getOrCreateAppender(
+        LogWriterAppenders.Identifier.MAIN, false, this.config.createLogConfig(), false);
 
     // LOG: look in DistributedSystemConfigImpl for existing LogWriter to use
     InternalLogWriter existingLogWriter = this.config.getInternalLogWriter();
@@ -228,7 +224,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       this.logWriter = existingLogWriter;
     } else {
       // LOG: create LogWriterLogger
-      this.logWriter = LogWriterFactory.createLogWriterLogger(this.config.createLogConfig(), false);
+      this.logWriter = LogWriterFactory.createLogWriterLogger(false, false,
+          this.config.createLogConfig(), false);
       if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
         // LOG: changed statement from config to info
         this.logWriter.info(Banner.getString(null));
@@ -910,7 +907,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    */
   public void disconnect() {
     synchronized (CONNECTION_SYNC) {
-      loggingSession.stopSession();
+      if (this.logWriterAppender != null) {
+        LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+      }
       try {
         if (thisAdminDS == this) {
           thisAdminDS = null;
@@ -929,7 +928,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           ((DistributedSystemConfigImpl) this.config).setDistributedSystem(null);
         }
       } finally {
-        loggingSession.shutdown();
+        if (logWriterAppender != null) {
+          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
+        }
       }
     }
   }

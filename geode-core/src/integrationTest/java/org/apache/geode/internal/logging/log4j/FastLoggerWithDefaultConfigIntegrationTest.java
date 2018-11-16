@@ -14,44 +14,49 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.junit.Assert.assertThat;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.Configuration;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Integration tests for {@link FastLogger} when using the default {@code log4j2.xml} for Geode.
+ * Integration tests for FastLogger when using the default log4j2 config for GemFire.
  */
 @Category(LoggingTest.class)
 public class FastLoggerWithDefaultConfigIntegrationTest {
 
+  private static final String TEST_LOGGER_NAME = FastLogger.class.getPackage().getName();
+
   private Logger logger;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
-    LogConfig logConfig = mock(LogConfig.class);
-    LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
+    System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
+    LogService.reconfigure();
+  }
 
-    when(logConfig.getLogLevel()).thenReturn(INFO.intLevel());
-    when(logConfig.getSecurityLogLevel()).thenReturn(INFO.intLevel());
-    when(logConfigSupplier.getLogConfig()).thenReturn(logConfig);
-
-    Configuration configuration =
-        Configuration.create(LogLevelUpdateOccurs.ALWAYS, LogLevelUpdateScope.GEODE_LOGGERS);
-    configuration.initialize(logConfigSupplier);
+  /**
+   * System property "log4j.configurationFile" should be
+   * "/org/apache/geode/internal/logging/log4j/log4j2-default.xml"
+   */
+  @Test
+  public void configurationFilePropertyIsDefaultConfig() {
+    assertThat(System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY),
+        isEmptyOrNullString());
   }
 
   /**
@@ -59,7 +64,7 @@ public class FastLoggerWithDefaultConfigIntegrationTest {
    */
   @Test
   public void isUsingGemFireDefaultConfig() {
-    assertThat(Log4jAgent.isUsingGemFireDefaultConfig()).isTrue();
+    assertThat(LogService.isUsingGemFireDefaultConfig(), is(true));
   }
 
   /**
@@ -67,9 +72,9 @@ public class FastLoggerWithDefaultConfigIntegrationTest {
    */
   @Test
   public void logServiceReturnsFastLoggers() {
-    logger = LogService.getLogger();
+    logger = LogService.getLogger(TEST_LOGGER_NAME);
 
-    assertThat(logger).isInstanceOf(FastLogger.class);
+    assertThat(logger, is(instanceOf(FastLogger.class)));
   }
 
   /**
@@ -77,8 +82,8 @@ public class FastLoggerWithDefaultConfigIntegrationTest {
    */
   @Test
   public void isDelegatingShouldBeFalse() {
-    logger = LogService.getLogger();
+    logger = LogService.getLogger(TEST_LOGGER_NAME);
 
-    assertThat(((FastLogger) logger).isDelegating()).isFalse();
+    assertThat(((FastLogger) logger).isDelegating(), is(false));
   }
 }

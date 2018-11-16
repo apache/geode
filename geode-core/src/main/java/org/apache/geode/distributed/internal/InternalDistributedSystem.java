@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -58,6 +57,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
@@ -80,10 +80,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.alerting.AlertLevel;
-import org.apache.geode.internal.alerting.AlertMessaging;
-import org.apache.geode.internal.alerting.AlertingService;
-import org.apache.geode.internal.alerting.AlertingSession;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -94,15 +90,12 @@ import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigListener;
-import org.apache.geode.internal.logging.LogConfigSupplier;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.NullLoggingSession;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -111,7 +104,6 @@ import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
@@ -130,7 +122,7 @@ import org.apache.geode.security.SecurityManager;
  * @since GemFire 3.0
  */
 public class InternalDistributedSystem extends DistributedSystem
-    implements OsStatisticsFactory, StatisticsManager, LogConfigSupplier {
+    implements OsStatisticsFactory, StatisticsManager {
 
   /**
    * True if the user is allowed lock when memory resources appear to be overcommitted.
@@ -210,6 +202,13 @@ public class InternalDistributedSystem extends DistributedSystem
    * Distributed System clock
    */
   private DSClock clock;
+
+  // /** The log writer was provided by an external entity */
+  // private boolean externalLogWriterProvided = false;
+  //
+  private LogWriterAppender logWriterAppender = null;
+
+  private LogWriterAppender securityLogWriterAppender = null;
 
   /**
    * Time this system was created
@@ -325,12 +324,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * full value to the server for a delta-update operation.
    */
   private boolean deltaEnabledOnServer = true;
-
-  private final AlertingSession alertingSession;
-  private final AlertingService alertingService;
-
-  private final LoggingSession loggingSession;
-  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
 
   public boolean isDeltaEnabledOnServer() {
     return deltaEnabledOnServer;
@@ -517,9 +510,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * @see DistributedSystem#connect
    */
   private InternalDistributedSystem(Properties nonDefault) {
-    alertingSession = AlertingSession.create();
-    alertingService = new AlertingService();
-    loggingSession = LoggingSession.create();
 
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
@@ -658,15 +648,38 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       SocketCreatorFactory.setDistributionConfig(config);
 
-      boolean logBanner = !attemptingToReconnect;
-      boolean logConfiguration = !attemptingToReconnect;
-      loggingSession.createSession(this, logBanner, logConfiguration);
+      AlertAppender.getInstance().onConnect(this);
+
+      // LOG: create LogWriterAppender(s) if log-file or security-log-file is specified
+      final boolean hasLogFile =
+          this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
+      final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null
+          && !this.config.getSecurityLogFile().equals(new File(""));
+      LogService.configureLoggers(hasLogFile, hasSecurityLogFile);
+      if (hasLogFile || hasSecurityLogFile) {
+
+        // main log file
+        if (hasLogFile) {
+          // if log-file then create logWriterAppender
+          this.logWriterAppender = LogWriterAppenders.getOrCreateAppender(
+              LogWriterAppenders.Identifier.MAIN, this.isLoner, this.config, true);
+        }
+
+        // security log file
+        if (hasSecurityLogFile) {
+          // if security-log-file then create securityLogWriterAppender
+          this.securityLogWriterAppender = LogWriterAppenders.getOrCreateAppender(
+              LogWriterAppenders.Identifier.SECURITY, this.isLoner, this.config, false);
+        } else {
+          // let security route to regular log-file or stdout
+        }
+      }
 
       // LOG: create LogWriterLogger(s) for backwards compatibility of getLogWriter and
       // getSecurityLogWriter
       if (this.logWriter == null) {
         this.logWriter =
-            LogWriterFactory.createLogWriterLogger(this.config, false);
+            LogWriterFactory.createLogWriterLogger(this.isLoner, false, this.config, true);
         this.logWriter.fine("LogWriter is created.");
       }
 
@@ -675,14 +688,12 @@ public class InternalDistributedSystem extends DistributedSystem
       if (this.securityLogWriter == null) {
         // LOG: whole new LogWriterLogger instance for security
         this.securityLogWriter =
-            LogWriterFactory.createLogWriterLogger(this.config, true);
+            LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
         this.securityLogWriter.fine("SecurityLogWriter is created.");
       }
 
       Services.setLogWriter(this.logWriter);
       Services.setSecurityLogWriter(this.securityLogWriter);
-
-      loggingSession.startSession();
 
       this.clock = new DSClock(this.isLoner);
 
@@ -802,17 +813,16 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       if (!statsDisabled) {
-        Optional<LogFile> logFile = loggingSession.getLogFile();
-        if (logFile.isPresent()) {
-          sampler = new GemFireStatSampler(this, logFile.get());
-        } else {
-          sampler = new GemFireStatSampler(this);
-        }
+        this.sampler = new GemFireStatSampler(this);
         this.sampler.start();
       }
 
-      alertingSession.createSession(new AlertMessaging(this));
-      alertingSession.startSession();
+      if (this.logWriterAppender != null) {
+        LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.MAIN);
+      }
+      if (this.securityLogWriterAppender != null) {
+        LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.SECURITY);
+      }
 
       // Log any instantiators that were registered before the log writer
       // was created
@@ -850,10 +860,9 @@ public class InternalDistributedSystem extends DistributedSystem
     }
     DistributionLocatorId locId = new DistributionLocatorId(locatorString);
     try {
-      this.startedLocator =
-          InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
-              logWriter, securityLogWriter, locId.getHost().getAddress(),
-              locId.getHostnameForClients(), originalConfig.toProperties(), false);
+      this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, this.logWriter,
+          this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
+          this.originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);
@@ -1397,8 +1406,16 @@ public class InternalDistributedSystem extends DistributedSystem
         }
 
         if (!this.attemptingToReconnect) {
-          alertingSession.stopSession();
+          if (this.logWriterAppender != null) {
+            LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+          }
+          if (this.securityLogWriterAppender != null) {
+            // LOG:SECURITY: old code did NOT invoke this
+            LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
+          }
         }
+
+        AlertAppender.getInstance().shuttingDown();
 
       } finally { // be ABSOLUTELY CERTAIN that dm closed
         try {
@@ -1440,7 +1457,12 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       if (!this.attemptingToReconnect) {
-        loggingSession.stopSession();
+        if (this.logWriterAppender != null) {
+          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
+        }
+        if (this.securityLogWriterAppender != null) {
+          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+        }
       }
 
       EventID.unsetDS();
@@ -1453,10 +1475,6 @@ public class InternalDistributedSystem extends DistributedSystem
       } finally {
         try {
           removeSystem(this);
-          if (!this.attemptingToReconnect) {
-            loggingSession.shutdown();
-          }
-          alertingSession.shutdown();
           // Close the config object
           this.config.close();
         } finally {
@@ -1590,40 +1608,6 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public DistributionConfig getConfig() {
     return this.config;
-  }
-
-  public AlertingService getAlertingService() {
-    return alertingService;
-  }
-
-  @Override
-  public LogConfig getLogConfig() {
-    return config;
-  }
-
-  @Override
-  public StatisticsConfig getStatisticsConfig() {
-    return config;
-  }
-
-  @Override
-  public void addLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.add(logConfigListener);
-  }
-
-  @Override
-  public void removeLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.remove(logConfigListener);
-  }
-
-  public Optional<LogFile> getLogFile() {
-    return loggingSession.getLogFile();
-  }
-
-  void logConfigChanged() {
-    for (LogConfigListener listener : logConfigListeners) {
-      listener.configChanged();
-    }
   }
 
   /**
@@ -3000,11 +2984,12 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   public boolean hasAlertListenerFor(DistributedMember member) {
-    return hasAlertListenerFor(member, AlertLevel.WARNING.intLevel());
+    return hasAlertListenerFor(member, AlertLevel.WARNING.getSeverity());
   }
 
+
   public boolean hasAlertListenerFor(DistributedMember member, int severity) {
-    return alertingService.hasAlertListener(member, AlertLevel.find(severity));
+    return AlertAppender.getInstance().hasAlertListener(member, severity);
   }
 
   /**

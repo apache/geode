@@ -20,6 +20,7 @@ import java.util.Date;
 
 /**
  * Defines the common date format for GemFire and provides DateFormat instances.
+ *
  */
 public class DateFormatter {
 
@@ -28,7 +29,7 @@ public class DateFormatter {
    */
   public static final String FORMAT_STRING = "yyyy/MM/dd HH:mm:ss.SSS z";
 
-  private static final DateFormat TIME_FORMATTER = createDateFormat();
+  private static final DateFormat timeFormatter = createDateFormat();
 
   /**
    * Creates a SimpleDateFormat using {@link #FORMAT_STRING}.
@@ -38,7 +39,7 @@ public class DateFormatter {
    * format concurrently, it must be synchronized externally.
    */
   public static DateFormat createDateFormat() {
-    return new SimpleDateFormat(FORMAT_STRING);
+    return new SimpleDateFormat(DateFormatter.FORMAT_STRING);
   }
 
   /**
@@ -63,11 +64,11 @@ public class DateFormatter {
    * @param d a Date to format as a timestamp String.
    * @return a String representation of the current time.
    */
-  public static String formatDate(final Date d) {
+  public static String formatDate(Date d) {
     try {
-      synchronized (TIME_FORMATTER) {
+      synchronized (timeFormatter) {
         // Need sync: see bug 21858
-        return TIME_FORMATTER.format(d);
+        return timeFormatter.format(d);
       }
     } catch (Exception e1) {
       // Fix bug 21857
@@ -86,7 +87,5 @@ public class DateFormatter {
   /**
    * Do not instantiate this class.
    */
-  private DateFormatter() {
-    // do not instantiate this class
-  }
+  private DateFormatter() {}
 }

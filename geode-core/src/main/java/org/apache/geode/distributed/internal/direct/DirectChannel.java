@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.distributed.internal.direct;
 
 import java.io.IOException;
@@ -44,9 +45,9 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
@@ -225,7 +226,7 @@ public class DirectChannel {
   boolean threadOwnsResources() {
     DistributionManager d = getDM();
     if (d != null) {
-      return d.getSystem().threadOwnsResources() && !AlertingAction.isThreadAlerting();
+      return d.getSystem().threadOwnsResources() && !AlertAppender.isThreadAlerting();
     }
     return false;
 

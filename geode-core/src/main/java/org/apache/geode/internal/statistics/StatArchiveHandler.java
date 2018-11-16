@@ -27,9 +27,10 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
@@ -433,13 +434,13 @@ public class StatArchiveHandler implements SampleHandler {
       // leave mainArchiveId as is. Bump archiveId.
     } else {
       archiveDir = archive.getAbsoluteFile().getParentFile();
+      LogWriterAppender lwa = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
       boolean mainArchiveIdCalculated = false;
-      if (config.getLogFile().isPresent()) {
-        LogFile logFile = config.getLogFile().get();
-        File logDir = logFile.getLogDir();
+      if (lwa != null) {
+        File logDir = lwa.getLogDir();
         if (archiveDir.equals(logDir)) {
-          mainArchiveId = logFile.getMainLogId();
-          if (mainArchiveId > 1 && logFile.useChildLogging()) {
+          mainArchiveId = lwa.getMainLogId();
+          if (mainArchiveId > 1 && lwa.useChildLogging()) {
             mainArchiveId--;
           }
           mainArchiveIdCalculated = true;
@@ -526,12 +527,12 @@ public class StatArchiveHandler implements SampleHandler {
       return;
     }
     archiveDir = archive.getAbsoluteFile().getParentFile();
+    LogWriterAppender lwa = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
     boolean mainArchiveIdCalculated = false;
-    if (config.getLogFile().isPresent()) {
-      LogFile logFile = config.getLogFile().get();
-      File logDir = logFile.getLogDir();
+    if (lwa != null) {
+      File logDir = lwa.getLogDir();
       if (archiveDir.equals(logDir)) {
-        mainArchiveId = logFile.getMainLogId();
+        mainArchiveId = lwa.getMainLogId();
         mainArchiveIdCalculated = true;
       }
     }

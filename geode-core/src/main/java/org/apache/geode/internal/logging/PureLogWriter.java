@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -24,11 +25,10 @@ import java.io.StringWriter;
 import java.util.Date;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.i18n.StringId;
 
 /**
- * Implementation of {@link LogWriter} that will write to a local stream
+ * Implementation of {@link org.apache.geode.LogWriter} that will write to a local stream
  * and only use pure java features.
  */
 public class PureLogWriter extends LogWriterImpl {
@@ -111,6 +111,11 @@ public class PureLogWriter extends LogWriterImpl {
    */
   public void setLevel(final int level) {
     this.level = level;
+  }
+
+  @Override
+  public void setLogWriterLevel(final int logWriterLevel) {
+    setLevel(logWriterLevel);
   }
 
   protected String getThreadName() {

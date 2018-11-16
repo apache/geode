@@ -40,7 +40,7 @@ public class LoggingThreadFactory implements ThreadFactory {
   private final AtomicInteger threadCount = new AtomicInteger(1);
 
   public interface ThreadInitializer {
-    void initialize(Thread thread);
+    public void initialize(Thread thread);
   }
 
   public interface CommandWrapper {
@@ -48,7 +48,7 @@ public class LoggingThreadFactory implements ThreadFactory {
      * Invoke the current method passing it a runnable that it can
      * decide to call when it wants.
      */
-    void invoke(Runnable runnable);
+    public void invoke(Runnable runnable);
   }
 
   /**
@@ -111,20 +111,20 @@ public class LoggingThreadFactory implements ThreadFactory {
   }
 
   private String getUniqueName() {
-    return baseName + threadCount.getAndIncrement();
+    return this.baseName + threadCount.getAndIncrement();
   }
 
   @Override
   public Thread newThread(Runnable runnable) {
     Runnable commandToRun;
-    if (commandWrapper != null) {
-      commandToRun = () -> commandWrapper.invoke(runnable);
+    if (this.commandWrapper != null) {
+      commandToRun = () -> this.commandWrapper.invoke(runnable);
     } else {
       commandToRun = runnable;
     }
     Thread thread = new LoggingThread(getUniqueName(), isDaemon, commandToRun);
-    if (threadInitializer != null) {
-      threadInitializer.initialize(thread);
+    if (this.threadInitializer != null) {
+      this.threadInitializer.initialize(thread);
     }
     return thread;
   }

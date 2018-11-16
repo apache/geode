@@ -22,38 +22,40 @@ import java.util.Map;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+
 
 /**
+ *
  * Class for change log level function
  *
- * @since 8.0
+ * since 8.0
+ *
  */
+
 public class ChangeLogLevelFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
-  private static final long serialVersionUID = 1L;
 
   public static final String ID = ChangeLogLevelFunction.class.getName();
+  private static final long serialVersionUID = 1L;
 
   @Override
   public void execute(FunctionContext context) {
-    InternalCache cache = (InternalCache) context.getCache();
-    Map<String, String> result = new HashMap<>();
+    Cache cache = context.getCache();
+    Map<String, String> result = new HashMap<String, String>();
     try {
+      LogWriterLogger logwriterLogger = (LogWriterLogger) cache.getLogger();
       Object[] args = (Object[]) context.getArguments();
-      String logLevel = (String) args[0];
-
+      final String logLevel = (String) args[0];
       Level log4jLevel = LogLevel.getLevel(logLevel);
-      int logWriterLevel = LogLevel.getLogWriterLevel(logLevel);
-
-      cache.getInternalDistributedSystem().getConfig().setLogLevel(logWriterLevel);
-
+      logwriterLogger.setLevel(log4jLevel);
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
       logger.info(LogMarker.CONFIG_MARKER, "GFSH Changed log level to {}", log4jLevel);
       result.put(cache.getDistributedSystem().getDistributedMember().getId(),
@@ -70,7 +72,8 @@ public class ChangeLogLevelFunction implements InternalFunction {
 
   @Override
   public String getId() {
-    return ID;
+    return ChangeLogLevelFunction.ID;
+
   }
 
   @Override
@@ -88,4 +91,5 @@ public class ChangeLogLevelFunction implements InternalFunction {
   public boolean isHA() {
     return false;
   }
+
 }

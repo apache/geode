@@ -81,8 +81,8 @@ public class LogWriterUtils {
     DistributedTestUtils.addHydraProperties(nonDefault);
 
     DistributionConfig dc = new DistributionConfigImpl(nonDefault);
-    LogWriter logger = LogWriterFactory.createLogWriterLogger(/* isLoner */
-        dc, false/* isSecurityLog */);
+    LogWriter logger = LogWriterFactory.createLogWriterLogger(false/* isLoner */,
+        false/* isSecurityLog */, dc, false);
 
     // if config was non-null, then these will be added to it...
     nonDefault.put(DistributionConfig.LOG_WRITER_NAME, logger);

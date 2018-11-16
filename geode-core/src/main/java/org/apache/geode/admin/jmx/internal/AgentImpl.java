@@ -20,10 +20,8 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -57,19 +55,19 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigListener;
-import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 
 /**
  * The GemFire JMX Agent provides the ability to administrate one GemFire distributed system via
@@ -78,7 +76,7 @@ import org.apache.geode.internal.statistics.StatisticsConfig;
  * @since GemFire 3.5
  */
 public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
-    org.apache.geode.admin.jmx.internal.ManagedResource, LogConfigSupplier {
+    org.apache.geode.admin.jmx.internal.ManagedResource {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -132,6 +130,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   // -------------------------------------------------------------------------
 
   /** This Agent's log writer */
+  private LogWriterAppender logWriterAppender;
   private InternalLogWriter logWriter;
 
   /** This Agent's JMX http adaptor from MX4J */
@@ -171,9 +170,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
   private MBeanServer mBeanServer;
 
-  private final LoggingSession loggingSession;
-  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
-
   // -------------------------------------------------------------------------
   // Constructor(s)
   // -------------------------------------------------------------------------
@@ -186,8 +182,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @throws IllegalArgumentException if agentConfig is null
    */
   public AgentImpl(AgentConfigImpl agentConfig) throws AdminException, IllegalArgumentException {
-    loggingSession = LoggingSession.create();
-
     shutdownHook = new LoggingThread("Shutdown", false, () -> disconnectFromSystem());
     addShutdownHook();
     if (agentConfig == null) {
@@ -245,12 +239,10 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   // Public operations
   // -------------------------------------------------------------------------
 
-  @Override
   public AgentConfig getConfig() {
     return this.agentConfig;
   }
 
-  @Override
   public AdminDistributedSystem getDistributedSystem() {
     return this.system;
   }
@@ -261,7 +253,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @throws GemFireIOException if unable to persist the configuration to props
    * @see #getPropertyFile
    */
-  @Override
   public void saveProperties() {
     throw new GemFireIOException("saveProperties is no longer supported for security reasons");
   }
@@ -269,7 +260,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Starts the jmx agent
    */
-  @Override
   public void start() {
     checkDebug();
 
@@ -282,8 +272,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     try {
       startHttpAdaptor();
     } catch (StartupException e) {
-      loggingSession.stopSession();
-      loggingSession.shutdown();
+      AlertAppender.getInstance().shuttingDown();
+      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
       throw e;
     }
 
@@ -291,8 +282,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       startRMIConnectorServer();
     } catch (StartupException e) {
       stopHttpAdaptor();
-      loggingSession.stopSession();
-      loggingSession.shutdown();
+      AlertAppender.getInstance().shuttingDown();
+      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
       throw e;
     }
 
@@ -301,8 +293,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     } catch (StartupException e) {
       stopRMIConnectorServer();
       stopHttpAdaptor();
-      loggingSession.stopSession();
-      loggingSession.shutdown();
+      AlertAppender.getInstance().shuttingDown();
+      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
+      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
       throw e;
     }
 
@@ -328,6 +321,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     } // getAutoConnect
 
     logger.info("GemFire JMX Agent is running...");
+    LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.MAIN);
 
     if (memberInfoWithStatsMBean == null) {
       initializeHelperMbean();
@@ -337,12 +331,11 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Deregisters everything this Agent registered and releases the MBeanServer.
    */
-  @Override
   public void stop() {
     try {
       logger.info("Stopping JMX agent");
-
-      loggingSession.stopSession();
+      AlertAppender.getInstance().shuttingDown();
+      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
 
       // stop the GemFire Distributed System
       stopDistributedSystem();
@@ -363,7 +356,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
       logger.info("Agent has stopped");
     } finally {
-      loggingSession.shutdown();
+      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
     }
 
   }
@@ -386,7 +379,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     }
   }
 
-  @Override
   public ObjectName manageDistributedSystem() throws MalformedObjectNameException {
     synchronized (CONN_SYNC) {
       if (isConnected()) {
@@ -402,7 +394,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    *
    * @return the object name of the system that the Agent is now connected to
    */
-  @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "This is only a style warning.")
@@ -450,7 +441,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Disconnects from the current DistributedSystem (if connected to one).
    */
-  @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "This is only a style warning.")
@@ -490,9 +480,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @return snapshot of the current log
    */
   public String getLog() {
-    File childLogFile = loggingSession.getLogFile().isPresent()
-        ? loggingSession.getLogFile().get().getChildLogFile() : null;
-    String childTail = tailFile(childLogFile);
+    String childTail = tailFile(this.logWriterAppender.getChildLogFile());
     String mainTail = tailFile(new File(this.agentConfig.getLogFile()));
     if (childTail == null && mainTail == null) {
       return "No log file configured, log messages will be directed to stdout.";
@@ -522,7 +510,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   // -------------------------------------------------------------------------
 
   /** Returns true if this Agent is currently connected to a system. */
-  @Override
   public boolean isConnected() {
     boolean result = false;
     synchronized (CONN_SYNC) {
@@ -708,7 +695,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    */
   public void setLogFileSizeLimit(int logFileSizeLimit) {
     this.agentConfig.setLogFileSizeLimit(logFileSizeLimit);
-    logConfigChanged();
+    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
 
   /**
@@ -727,7 +714,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    */
   public void setLogDiskSpaceLimit(int logDiskSpaceLimit) {
     this.agentConfig.setLogDiskSpaceLimit(logDiskSpaceLimit);
-    logConfigChanged();
+    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
 
   /**
@@ -746,7 +733,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    */
   public void setLogFile(String logFile) {
     this.agentConfig.setLogFile(logFile);
-    logConfigChanged();
+    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
 
   /**
@@ -765,7 +752,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    */
   public void setLogLevel(String logLevel) {
     this.agentConfig.setLogLevel(logLevel);
-    logConfigChanged();
+    LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
 
   /** Returns true if the Agent is set to auto connect to a system. */
@@ -826,7 +813,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    *
    * @return the GemFire mbeanServer
    */
-  @Override
   public MBeanServer getMBeanServer() {
     return mBeanServer;
   }
@@ -836,7 +822,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    *
    * @return the logWriter
    */
-  @Override
   public LogWriter getLogWriter() {
     return this.logWriter;
   }
@@ -866,12 +851,11 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
       justification = "Return value for file delete is not important here.")
   private void initLogWriter() throws org.apache.geode.admin.AdminException {
-    loggingSession.createSession(this);
-
     final LogConfig logConfig = this.agentConfig.createLogConfig();
 
     // LOG: create logWriterAppender here
-    loggingSession.startSession();
+    this.logWriterAppender = LogWriterAppenders
+        .getOrCreateAppender(LogWriterAppenders.Identifier.MAIN, false, logConfig, false);
 
     // LOG: look in AgentConfigImpl for existing LogWriter to use
     InternalLogWriter existingLogWriter = this.agentConfig.getInternalLogWriter();
@@ -879,16 +863,21 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       this.logWriter = existingLogWriter;
     } else {
       // LOG: create LogWriterLogger
-      this.logWriter = LogWriterFactory.createLogWriterLogger(logConfig, false);
+      this.logWriter = LogWriterFactory.createLogWriterLogger(false, false, logConfig, false);
+      // LOG: changed statement from config to info
+      this.logWriter.info(Banner.getString(null));
       // Set this log writer in AgentConfigImpl
       this.agentConfig.setInternalLogWriter(this.logWriter);
     }
 
     // LOG: create logWriter here
-    this.logWriter = LogWriterFactory.createLogWriterLogger(logConfig, false);
+    this.logWriter = LogWriterFactory.createLogWriterLogger(false, false, logConfig, false);
 
     // Set this log writer in AgentConfig
     this.agentConfig.setInternalLogWriter(this.logWriter);
+
+    // Print Banner information
+    logger.info(Banner.getString(this.agentConfig.getOriginalArgs()));
 
     // LOG:CONFIG: changed next three statements from config to info
     logger.info(LogMarker.CONFIG_MARKER,
@@ -1423,59 +1412,27 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   // ManagedResource implementation
   // -------------------------------------------------------------------------
 
-  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
-  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
-  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
-  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
-  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.AGENT;
   }
 
-  @Override
   public void cleanupResource() {}
-
-  @Override
-  public LogConfig getLogConfig() {
-    return agentConfig.createLogConfig();
-  }
-
-  @Override
-  public StatisticsConfig getStatisticsConfig() {
-    return agentConfig.createStatisticsConfig();
-  }
-
-  @Override
-  public void addLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.add(logConfigListener);
-  }
-
-  @Override
-  public void removeLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.remove(logConfigListener);
-  }
-
-  void logConfigChanged() {
-    for (LogConfigListener listener : logConfigListeners) {
-      listener.configChanged();
-    }
-  }
 
   static class StartupException extends GemFireException {
     private static final long serialVersionUID = 6614145962199330348L;
@@ -1563,7 +1520,6 @@ class ConnectionNotificationAdapter implements NotificationListener {
    *        resent, without modification, to the listener. The MBean object should not use or modify
    *        the object. (NOTE: copied from javax.management.NotificationListener)
    */
-  @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "BC_UNCONFIRMED_CAST",
       justification = "Only JMXConnectionNotification instances are used.")
   public void handleNotification(Notification notification, Object handback) {
@@ -1603,7 +1559,6 @@ class ConnectionNotificationFilterImpl implements NotificationFilter {
    * @param notification The notification to be sent.
    * @return true if the notification has to be sent to the listener, false otherwise.
    */
-  @Override
   public boolean isNotificationEnabled(Notification notification) {
     boolean isThisNotificationEnabled = false;
     if (notification.getType().equals(JMXConnectionNotification.OPENED)

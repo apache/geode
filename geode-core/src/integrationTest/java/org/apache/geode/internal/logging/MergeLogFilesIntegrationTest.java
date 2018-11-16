@@ -44,7 +44,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Integration tests for (new multi-threaded) {@link MergeLogFiles} utility.
+ * This class tests the functionality of the (new multi-threaded) {@link MergeLogFiles} utility.
  */
 @Category(LoggingTest.class)
 public class MergeLogFilesIntegrationTest {

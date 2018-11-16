@@ -18,11 +18,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.AlertLevel;
-import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -42,8 +40,6 @@ import org.apache.geode.management.internal.AlertDetails;
  * {@code Awaitility}.
  */
 public class AlertListenerMessage extends PooledDistributionMessage implements AdminMessageType {
-
-  private static final AtomicReference<Listener> listenerRef = new AtomicReference<>();
 
   private int alertLevel;
   private Date date;
@@ -82,11 +78,6 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    Listener listener = getListener();
-    if (listener != null) {
-      listener.received(this);
-    }
-
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
       RemoteGemFireVM manager = agent.getMemberById(getSender());
@@ -95,11 +86,6 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
       }
       Alert alert = new RemoteAlert(manager, alertLevel, date, connectionName, threadName, threadId,
           message, exceptionText, getSender());
-
-      if (listener != null) {
-        listener.created(alert);
-      }
-
       agent.callAlertListener(alert);
     } else {
       /*
@@ -108,11 +94,6 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
        */
       AlertDetails alertDetail = new AlertDetails(alertLevel, date, connectionName, threadName,
           threadId, message, exceptionText, getSender());
-
-      if (listener != null) {
-        listener.created(alertDetail);
-      }
-
       dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
     }
   }
@@ -154,30 +135,5 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   @Override
   public String toString() {
     return "Alert \"" + message + "\" level " + AlertLevel.forSeverity(alertLevel);
-  }
-
-  @TestingOnly
-  public static void addListener(Listener listener) {
-    listenerRef.compareAndSet(null, listener);
-  }
-
-  @TestingOnly
-  public static void removeListener(Listener listener) {
-    listenerRef.compareAndSet(listener, null);
-  }
-
-  @TestingOnly
-  public static Listener getListener() {
-    return listenerRef.get();
-  }
-
-  @TestingOnly
-  public interface Listener {
-
-    void received(AlertListenerMessage message);
-
-    void created(Alert alert);
-
-    void created(AlertDetails alertDetails);
   }
 }

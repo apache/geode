@@ -12,6 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
+
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
@@ -21,15 +23,15 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.alerting.AlertLevel;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
- * administration console that just connected.
+ * administation console that just connected.
  */
 public class AdminConsoleMessage extends PooledDistributionMessage {
   // instance variables
-  private int level;
+  int level;
 
   public static AdminConsoleMessage create(int level) {
     AdminConsoleMessage m = new AdminConsoleMessage();
@@ -43,13 +45,12 @@ public class AdminConsoleMessage extends PooledDistributionMessage {
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    if (level != Alert.OFF) {
-      dm.getAlertingService().addAlertListener(getSender(), AlertLevel.find(level));
+    if (this.level != Alert.OFF) {
+      AlertAppender.getInstance().addAlertListener(this.getSender(), this.level);
     }
-    dm.addAdminConsole(getSender());
+    dm.addAdminConsole(this.getSender());
   }
 
-  @Override
   public int getDSFID() {
     return ADMIN_CONSOLE_MESSAGE;
   }
@@ -57,18 +58,18 @@ public class AdminConsoleMessage extends PooledDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeInt(level);
+    out.writeInt(this.level);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    level = in.readInt();
+    this.level = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "AdminConsoleMessage from " + getSender() + " level=" + level;
+    return "AdminConsoleMessage from " + this.getSender() + " level=" + level;
   }
 
 }
