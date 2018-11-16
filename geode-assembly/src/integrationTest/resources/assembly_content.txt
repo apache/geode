@@ -849,7 +849,7 @@ javadoc/org/apache/geode/management/cli/GfshCommand.html
 javadoc/org/apache/geode/management/cli/Result.Status.html
 javadoc/org/apache/geode/management/cli/Result.html
 javadoc/org/apache/geode/management/cli/SingleGfshCommand.html
-javadoc/org/apache/geode/management/cli/UpdateAllConfigurationGroups.html
+javadoc/org/apache/geode/management/cli/UpdateAllConfigurationGroupsMarker.html
 javadoc/org/apache/geode/management/cli/package-frame.html
 javadoc/org/apache/geode/management/cli/package-summary.html
 javadoc/org/apache/geode/management/cli/package-tree.html
