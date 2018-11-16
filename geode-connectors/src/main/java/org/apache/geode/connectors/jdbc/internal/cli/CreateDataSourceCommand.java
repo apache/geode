@@ -67,10 +67,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       "Skip the create operation when a data source with the same name already exists.  Without specifying this option, this command execution results into an error.";
   static final String POOL_PROPERTIES = "pool-properties";
   static final String POOL_PROPERTIES_HELP =
-      "Properties for a pooled data source. Only valid if --pooled. These properties will be used to configure the database data source unless the name begins with \"pool.\"."
-          + " If that prefix is used it will be used to configure the pool data source."
+      "Used to configure pool properties of a pooled data source . Only valid if --pooled is specified."
           + "The value is a comma separated list of json strings. Each json string contains a name and value. "
-          + "For example: --properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}";
+          + "For example: --pool-properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}";
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
