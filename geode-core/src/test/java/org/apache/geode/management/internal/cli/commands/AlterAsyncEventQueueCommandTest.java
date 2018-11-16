@@ -15,10 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,8 +29,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class AlterAsyncEventQueueCommandTest {
@@ -38,26 +42,33 @@ public class AlterAsyncEventQueueCommandTest {
 
   private AlterAsyncEventQueueCommand command;
   private InternalConfigurationPersistenceService service;
+  private Region configRegion;
   private Set<String> groupSet = new HashSet<>();
 
   @Before
   public void before() throws Exception {
     command = spy(AlterAsyncEventQueueCommand.class);
-    service = mock(InternalConfigurationPersistenceService.class);
+    service = spy(InternalConfigurationPersistenceService.class);
+    configRegion = mock(AbstractRegion.class);
 
     doReturn(service).when(command).getConfigurationPersistenceService();
 
     groupSet.add("group1");
     groupSet.add("group2");
-    when(service.getGroups()).thenReturn(groupSet);
+    doReturn(groupSet).when(service).getGroups();
 
     CacheConfig config = new CacheConfig();
     CacheConfig.AsyncEventQueue aeq1 = new CacheConfig.AsyncEventQueue();
     aeq1.setId("queue1");
 
     config.getAsyncEventQueues().add(aeq1);
-    when(service.getCacheConfig("group1")).thenReturn(config);
-    when(service.getCacheConfig("group2")).thenReturn(new CacheConfig());
+    doReturn(config).when(service).getCacheConfig("group1");
+    doReturn(new CacheConfig()).when(service).getCacheConfig("group2");
+    doReturn(true).when(service).lockSharedConfiguration();
+    doNothing().when(service).unlockSharedConfiguration();
+    doReturn(null).when(service).getConfiguration(any());
+    doReturn(configRegion).when(service).getConfigurationRegion();
+    doCallRealMethod().when(service).updateCacheConfig(any(), any());
   }
 
   @Test
@@ -105,9 +116,9 @@ public class AlterAsyncEventQueueCommandTest {
   @Test
   public void queueIdFoundInTheMap_updateBatchSize() throws Exception {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue1")
-        .statusIsSuccess().tableHasRowCount("Group", 1)
+        .statusIsSuccess().tableHasRowCount("Group", 2)
         .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
-        .containsOutput("Please restart the servers");
+        .containsOutput("Please restart the servers to apply any changed configuration");
   }
 
   @Test
@@ -115,9 +126,9 @@ public class AlterAsyncEventQueueCommandTest {
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --batch-time-interval=100 --id=queue1")
         .statusIsSuccess()
-        .tableHasRowCount("Group", 1)
+        .tableHasRowCount("Group", 2)
         .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
-        .containsOutput("Please restart the servers");
+        .containsOutput("Please restart the servers to apply any changed configuration");
 
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --batch-time-interval=100 --id=queue1").statusIsSuccess()
@@ -127,8 +138,8 @@ public class AlterAsyncEventQueueCommandTest {
   @Test
   public void queueIdFoundInTheMap_updateMaxMemory() throws Exception {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --max-queue-memory=100 --id=queue1")
-        .statusIsSuccess().tableHasRowCount("Group", 1)
+        .statusIsSuccess().tableHasRowCount("Group", 2)
         .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
-        .containsOutput("Please restart the servers");
+        .containsOutput("Please restart the servers to apply any changed configuration");
   }
 }

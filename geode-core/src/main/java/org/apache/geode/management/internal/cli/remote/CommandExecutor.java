@@ -14,23 +14,25 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import java.util.Map;
+import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand.GROUP_STATUS_SECTION;
+
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.UpdateAllConfigurationGroups;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -135,31 +137,39 @@ public class CommandExecutor {
       return resultModel;
     }
 
-    String groupInput = parseResult.getParamValueAsString("group");
-    String[] groups;
-    if (groupInput == null) {
-      groups = new String[] {"cluster"};
-      Map<String, CacheConfig> configMap = ccService.getGroups()
-          .stream()
-          .filter(group -> ccService.getCacheConfig(group) != null)
-          .collect(Collectors.toMap(group -> group, group -> ccService.getCacheConfig(group)));
-      if (gfshCommand.updateAllConfigs(configMap, resultModel)) {
-        ccService.getGroups()
-            .forEach(group -> ccService.updateCacheConfig(group, cc -> configMap.get(group)));
-      }
+    String groupInput = "";
+    TabularResultModel table = null;
+    if (gfshCommand instanceof UpdateAllConfigurationGroups) {
+      groupInput = ccService.getGroups().stream().collect(Collectors.joining(","));
+      table = resultModel.addTable(GROUP_STATUS_SECTION);
+      table.setColumnHeader("Group", "Status");
     } else {
-      groups = groupInput.split(",");
+      groupInput = parseResult.getParamValueAsString("group");
+      if (groupInput == null) {
+        groupInput = "cluster";
+      }
     }
 
+    String[] groups = groupInput.split(",");
+    final TabularResultModel finalTable = table;
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
         try {
           if (gfshCommand.updateConfigForGroup(group, cc, resultModel.getConfigObject())) {
-            infoResultModel
-                .addLine("Changes to configuration for group '" + group + "' are persisted.");
+            if (finalTable != null) {
+              finalTable.addRow(group, "Cluster Configuration Updated");
+            } else {
+              infoResultModel
+                  .addLine("Changes to configuration for group '" + group + "' are persisted.");
+            }
           } else {
-            infoResultModel
-                .addLine("No changes were made to the configuration for group '" + group + "'");
+            if (finalTable != null) {
+              finalTable.addRow(group, "Cluster Configuration not updated");
+
+            } else {
+              infoResultModel
+                  .addLine("No changes were made to the configuration for group '" + group + "'");
+            }
           }
         } catch (Exception e) {
           String message = "failed to update cluster config for " + group;
@@ -172,6 +182,7 @@ public class CommandExecutor {
         return cc;
       });
     }
+
     return resultModel;
   }
 }

@@ -148,6 +148,14 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     jaxbService.validateWithLocalCacheXSD();
   }
 
+  @TestingOnly
+  InternalConfigurationPersistenceService() {
+    configDirPath = null;
+    configDiskDirPath = null;
+    cache = null;
+    jaxbService = new JAXBService(CacheConfig.class);
+  }
+
   public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
       throws IOException {
     this.cache = cache;
