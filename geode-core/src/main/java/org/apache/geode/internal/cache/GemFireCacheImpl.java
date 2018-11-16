@@ -265,6 +265,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public static final boolean DEFAULT_COPY_ON_READ = false;
 
   /**
+   * getcachefor
    * The default amount of time to wait for a {@code netSearch} to complete
    */
   public static final int DEFAULT_SEARCH_TIMEOUT =
@@ -5329,7 +5330,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new InternalCacheForClientAccess(this);
 
   @Override
-  public InternalCache getCacheForProcessingClientRequests() {
+  public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return cacheForClients;
   }
 

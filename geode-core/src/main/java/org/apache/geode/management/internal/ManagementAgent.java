@@ -55,6 +55,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -142,6 +143,14 @@ public class ManagementAgent {
         && !cache.isClient());
   }
 
+  public static InternalCacheForClientAccess getCache() {
+    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+    if (cache != null) {
+      return cache.getCacheForProcessingClientRequests();
+    }
+    return null;
+  }
+
   public synchronized void startAgent(InternalCache cache) {
     // Do not start Management REST service if developer REST service is already
     // started.
@@ -191,7 +200,7 @@ public class ManagementAgent {
 
   private void startHttpService(boolean isServer) {
     final SystemManagementService managementService = (SystemManagementService) ManagementService
-        .getManagementService(CacheFactory.getAnyInstance());
+        .getManagementService(getCache());
 
     final ManagerMXBean managerBean = managementService.getManagerMXBean();
 
@@ -305,7 +314,7 @@ public class ManagementAgent {
 
           // set cache property for developer REST service running
           if (isRestWebAppAdded) {
-            InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+            InternalCache cache = getCache();
             cache.setRESTServiceRunning(true);
 
             // create region to hold query information (queryId, queryString).

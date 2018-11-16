@@ -21,8 +21,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -203,7 +201,7 @@ public class JmxManagerLocator implements TcpHandler {
     @Override
     public void execute(FunctionContext context) {
       try {
-        Cache cache = CacheFactory.getAnyInstance();
+        InternalCache cache = ManagementAgent.getCache();
         if (cache != null) {
           ManagementService ms = ManagementService.getExistingManagementService(cache);
           if (ms != null) {

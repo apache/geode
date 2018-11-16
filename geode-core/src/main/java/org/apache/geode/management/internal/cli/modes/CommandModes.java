@@ -27,7 +27,8 @@ import org.json.JSONObject;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.ManagementAgent;
 
 public class CommandModes {
 
@@ -86,7 +87,10 @@ public class CommandModes {
   }
 
   private void logException(Exception e) {
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = ManagementAgent.getCache();
+    if (cache != null && cache instanceof InternalCache) {
+      cache = ((InternalCache) cache).getCacheForProcessingClientRequests();
+    }
     LogWriter logger = cache.getLogger();
     logger.warning("Error parsing command mode descriptor", e);
   }

@@ -151,7 +151,7 @@ public class LocalManager extends Manager {
 
         try {
           repo.setLocalMonitoringRegion(
-              cache.createVMRegion(ManagementConstants.MONITORING_REGION + "_" + appender,
+              cache.createInternalRegion(ManagementConstants.MONITORING_REGION + "_" + appender,
                   monitoringRegionAttrs, internalArgs));
           monitoringRegionCreated = true;
 
@@ -167,7 +167,7 @@ public class LocalManager extends Manager {
 
         try {
           repo.setLocalNotificationRegion(
-              cache.createVMRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender,
+              cache.createInternalRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender,
                   notifRegionAttrs, internalArgs));
           notifRegionCreated = true;
         } catch (TimeoutException e) {
