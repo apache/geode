@@ -75,6 +75,7 @@ dependencies {
   distributedTestCompile('junit:junit:' + project.'junit.version')
   distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
   distributedTestCompile('org.mockito:mockito-core:2.19.1')
+  distributedTestRuntime('org.apache.derby:derby:' + project.'derby.version')
 
   acceptanceTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'

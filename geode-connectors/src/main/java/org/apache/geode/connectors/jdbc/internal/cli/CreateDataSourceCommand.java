@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.List;
 import java.util.Set;
@@ -74,7 +74,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
-      interceptor = "org.apache.geode.management.internal.cli.commands.CreateDataSourceInterceptor")
+      interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createJDNIBinding(
