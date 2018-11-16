@@ -14,5 +14,13 @@
  */
 package org.apache.geode.management.cli;
 
+/**
+ * This interface is implemented by gfsh commands that can potentially update the configuration for
+ * all groups (including the cluster-wide group, "cluster").
+ * </p>
+ * CommandExecutor will builds the list of groups for configuration updating to include all groups
+ * if the command implements UpdateAllConfigurationGroups. Otherwise, the list of groups are those
+ * specified with a command --group option, or "cluster" if there is no --group option.
+ */
 public interface UpdateAllConfigurationGroups {
 }
