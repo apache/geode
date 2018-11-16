@@ -87,8 +87,10 @@ groups:
   jobs:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
-  {%- if repository.sanitized_fork == repository.upstream_fork %}
+  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
+  {%- endif %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
 - name: complete
@@ -97,8 +99,10 @@ groups:
   {%- for test in (tests) if not test.name=="StressNew" %}
   - {{test.name}}Test
   {%- endfor -%}
-  {%- if repository.sanitized_fork == repository.upstream_fork %}
+  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
+  {%- endif %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
 - name: windows
@@ -288,7 +292,7 @@ jobs:
               - name: instance-data
             timeout: 1h
 
-{% if repository.sanitized_fork == repository.upstream_fork %}
+{% if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
 - name: UpdatePassingRef
   public: true
   serial: true
@@ -311,6 +315,8 @@ jobs:
       - name: geode-ci
       outputs:
       - name: results
+{% endif %}
+{% if repository.upstream_fork != "apache" or repository.branch == "develop" %}
 - name: PublishArtifacts
   public: true
   plan:
