@@ -206,7 +206,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(USE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
     system = getConnectedDistributedSystem(properties);
-      assertThat(system.getDistributedMember().getVmKind())
+    assertThat(system.getDistributedMember().getVmKind())
         .describedAs("expected the VM to have NORMAL vmKind")
         .isEqualTo(ClusterDistributionManager.NORMAL_DM_TYPE);
 
@@ -872,22 +872,22 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
         public void run() {
-        DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
-        msys.getLogWriter()
-            .info("<ExpectedException action=add>service failure</ExpectedException>");
-        msys.getLogWriter().info(
-            "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
-        msys.getLogWriter().info(
-            "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-        msys.getLogWriter()
-            .info("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
-        hook = new TestHook();
-        MembershipManagerHelper.getMembershipManager(msys).registerTestHook(hook);
-        try {
-          MembershipManagerHelper.crashDistributedSystem(msys);
-        } finally {
-          hook.reset();
-        }
+          DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
+          msys.getLogWriter()
+              .info("<ExpectedException action=add>service failure</ExpectedException>");
+          msys.getLogWriter().info(
+              "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
+          msys.getLogWriter().info(
+              "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
+          msys.getLogWriter()
+              .info("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
+          hook = new TestHook();
+          MembershipManagerHelper.getMembershipManager(msys).registerTestHook(hook);
+          try {
+            MembershipManagerHelper.crashDistributedSystem(msys);
+          } finally {
+            hook.reset();
+          }
         }
       };
 
@@ -918,26 +918,26 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
         @Override
         public void run() {
-        DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
-        MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(msys);
+          DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
+          MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(msys);
 
-        // check for shutdown cause in MembershipManager. Following call should
-        // throw DistributedSystemDisconnectedException which should have cause as
-        // ForceDisconnectException.
-        try {
-          msys.getLogWriter().info(
-              "<ExpectedException action=add>Membership: requesting removal of </ExpectedException>");
-          mmgr.requestMemberRemoval(mem1, "test reasons");
-          msys.getLogWriter().info(
-              "<ExpectedException action=remove>Membership: requesting removal of </ExpectedException>");
-          fail("It should have thrown exception in requestMemberRemoval");
-        } catch (DistributedSystemDisconnectedException e) {
-          Throwable cause = e.getCause();
+          // check for shutdown cause in MembershipManager. Following call should
+          // throw DistributedSystemDisconnectedException which should have cause as
+          // ForceDisconnectException.
+          try {
+            msys.getLogWriter().info(
+                "<ExpectedException action=add>Membership: requesting removal of </ExpectedException>");
+            mmgr.requestMemberRemoval(mem1, "test reasons");
+            msys.getLogWriter().info(
+                "<ExpectedException action=remove>Membership: requesting removal of </ExpectedException>");
+            fail("It should have thrown exception in requestMemberRemoval");
+          } catch (DistributedSystemDisconnectedException e) {
+            Throwable cause = e.getCause();
             assertTrue("This should have been ForceDisconnectException but found " + cause,
                 cause instanceof ForcedDisconnectException);
-        } finally {
-          hook.reset();
-        }
+          } finally {
+            hook.reset();
+          }
         }
       });
 
@@ -993,21 +993,27 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       DistributedSystem testRunnerLocatorDS = locator.getDistributedSystem();
       testRunnerLocatorDS.getLogWriter().info(
           "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-      assertThat(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS)).
-          describedAs("There was a lead member when there should not be.").isNull();
+      assertThat(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS))
+          .describedAs("There was a lead member when there should not be.").isNull();
 
-      DistributedMember distributedMemberThatWillBeShutdown = memberThatWillBeShutdownVM.invoke(() -> getDistributedMember(properties));
-      memberThatWillBeShutdownVM.invoke(() -> MembershipManagerHelper.inhibitForcedDisconnectLogging(true));
+      DistributedMember distributedMemberThatWillBeShutdown =
+          memberThatWillBeShutdownVM.invoke(() -> getDistributedMember(properties));
+      memberThatWillBeShutdownVM
+          .invoke(() -> MembershipManagerHelper.inhibitForcedDisconnectLogging(true));
 
       DistributedMember distributedMember = memberVM.invoke(() -> getDistributedMember(properties));
 
-      DistributedMember locatorMemberToBeShutdown = locatorThatWillBeShutdownVM.invoke(LocatorDUnitTest::getLocatorDistributedMember);
+      DistributedMember locatorMemberToBeShutdown =
+          locatorThatWillBeShutdownVM.invoke(LocatorDUnitTest::getLocatorDistributedMember);
 
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(distributedMemberThatWillBeShutdown, testRunnerLocatorDS);
+      waitForMemberToBecomeLeadMemberOfDistributedSystem(distributedMemberThatWillBeShutdown,
+          testRunnerLocatorDS);
       DistributedMember oldLeader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
 
-      assertThat(locatorMemberToBeShutdown).isEqualTo(MembershipManagerHelper.getCoordinator(testRunnerLocatorDS));
-      DistributedMember oldCoordinator = MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
+      assertThat(locatorMemberToBeShutdown)
+          .isEqualTo(MembershipManagerHelper.getCoordinator(testRunnerLocatorDS));
+      DistributedMember oldCoordinator =
+          MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
 
       // crash the lead locator. Should be okay
       locatorThatWillBeShutdownVM.invoke("crash locator", () -> {
@@ -1032,13 +1038,15 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       // disconnect the first vm and demonstrate that the non-lead vm and the
       // locator notice the failure and continue to run
       memberThatWillBeShutdownVM.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      GeodeAwaitility.await().until(() -> memberThatWillBeShutdownVM.invoke(() -> !LocatorDUnitTest.isSystemConnected()));
+      GeodeAwaitility.await().until(
+          () -> memberThatWillBeShutdownVM.invoke(() -> !LocatorDUnitTest.isSystemConnected()));
       GeodeAwaitility.await().until(() -> memberVM.invoke(LocatorDUnitTest::isSystemConnected));
 
       assertThat(memberVM.invoke(LocatorDUnitTest::isSystemConnected))
           .describedAs("Distributed system should not have disconnected").isTrue();
 
-      GeodeAwaitility.await("waiting for the old coordinator to drop out").until(() -> MembershipManagerHelper.getCoordinator(testRunnerLocatorDS) != oldCoordinator);
+      GeodeAwaitility.await("waiting for the old coordinator to drop out").until(
+          () -> MembershipManagerHelper.getCoordinator(testRunnerLocatorDS) != oldCoordinator);
 
       GeodeAwaitility.await().until(() -> {
         DistributedMember survivingDistributedMember = testRunnerLocatorDS.getDistributedMember();
@@ -1047,15 +1055,15 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         return true;
       });
 
-      GeodeAwaitility.await("Waiting for the old leader to drop out").pollInterval(1, TimeUnit.SECONDS).until(() -> {
-        DistributedMember leader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
-        logger.warn("***MLH leader = " + leader);
-        logger.warn("***MLH oldLeader = " + oldLeader);
-        return leader != oldLeader;
-      });
+      GeodeAwaitility.await("Waiting for the old leader to drop out")
+          .pollInterval(1, TimeUnit.SECONDS).until(() -> {
+            DistributedMember leader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
+            return leader != oldLeader;
+          });
 
       GeodeAwaitility.await().until(() -> {
-        assertThat(distributedMember).isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS));
+        assertThat(distributedMember)
+            .isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS));
         return true;
       });
 
@@ -1792,7 +1800,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void waitForMemberToBecomeLeadMemberOfDistributedSystem(final DistributedMember member, final DistributedSystem sys) {
+  private void waitForMemberToBecomeLeadMemberOfDistributedSystem(final DistributedMember member,
+      final DistributedSystem sys) {
     GeodeAwaitility.await().until(() -> {
       DistributedMember lead = MembershipManagerHelper.getLeadMember(sys);
       if (member != null) {
