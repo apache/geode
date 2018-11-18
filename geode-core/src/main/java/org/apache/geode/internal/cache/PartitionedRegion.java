@@ -467,6 +467,9 @@ public class PartitionedRegion extends LocalRegion
     colocationListeners.remove(colocationListener);
   }
 
+  ScheduledExecutorService getBucketSorter() {
+    return bucketSorter;
+  }
 
   static PRIdMap getPrIdToPR() {
     return prIdToPR;
@@ -7628,6 +7631,10 @@ public class PartitionedRegion extends LocalRegion
       colocatedWithRegion.getColocatedByList().remove(this);
     }
 
+    if (bucketSorter != null) {
+      bucketSorter.shutdown();
+    }
+
     RegionLogger.logDestroy(getName(),
         this.cache.getInternalDistributedSystem().getDistributedMember(), null, op.isClose());
   }
@@ -9243,11 +9250,11 @@ public class PartitionedRegion extends LocalRegion
   public List<BucketRegion> getSortedBuckets() {
     if (!bucketSorterStarted.get()) {
       bucketSorterStarted.set(true);
-      this.bucketSorter.scheduleAtFixedRate(new BucketSorterThread(), 0,
+      this.bucketSorter.scheduleAtFixedRate(new BucketSorterRunnable(), 0,
           HeapEvictor.BUCKET_SORTING_INTERVAL, TimeUnit.MILLISECONDS);
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "Started BucketSorter to sort the buckets according to numver of entries in each bucket for every {} milliseconds",
+            "Started BucketSorter to sort the buckets according to number of entries in each bucket for every {} milliseconds",
             HeapEvictor.BUCKET_SORTING_INTERVAL);
       }
     }
@@ -9259,7 +9266,7 @@ public class PartitionedRegion extends LocalRegion
     return bucketList;
   }
 
-  class BucketSorterThread implements Runnable {
+  class BucketSorterRunnable implements Runnable {
     @Override
     public void run() {
       try {
@@ -9290,7 +9297,7 @@ public class PartitionedRegion extends LocalRegion
         }
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("BucketSorterThread : encountered Exception ", e);
+          logger.debug("BucketSorterRunnable : encountered Exception ", e);
         }
       }
     }

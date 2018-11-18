@@ -137,6 +137,17 @@ public class InternalCacheForClientAccess implements InternalCache {
     return result;
   }
 
+  /**
+   * Server-side code using an InternalCacheForClientAccess may need to
+   * get an Internal Region not normally accesible and may use this method to
+   * do so. The REST API, for instance, needs to get at a Query store
+   * region that is not otherwise accessible through the getRegion methods.
+   */
+  public <K, V> Region<K, V> getInternalRegion(String path) {
+    Region<K, V> result = delegate.getRegion(path);
+    return result;
+  }
+
   @Override
   public Region getRegion(String path, boolean returnDestroyedRegion) {
     Region result = delegate.getRegion(path, returnDestroyedRegion);

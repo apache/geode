@@ -2979,7 +2979,7 @@ public class CliStrings {
   public static final String LIST_DURABLE_CQS__EXCEPTION__OCCURRED__ON =
       "Members with exceptions while retrieving durable cqs.";
   public static final String LIST_DURABLE_CQS__NO__CQS__REGISTERED =
-      "No durable cq's registered on this member.";
+      "No durable cqs registered on this member.";
   public static final String LIST_DURABLE_CQS__NAME = "durable-cq-name";
   public static final String LIST_DURABLE_CQS__FAILURE__HEADER =
       "Unable to list durable-cqs for durable-client-id : \"{0}\" due to following reasons.";

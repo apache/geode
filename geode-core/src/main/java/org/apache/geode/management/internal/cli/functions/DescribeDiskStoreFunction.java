@@ -120,7 +120,7 @@ public class DescribeDiskStoreFunction implements InternalFunction {
         } else {
           context.getResultSender()
               .sendException(new EntityNotFoundException(
-                  String.format("A disk store with name (%1$s) was not found on member (%2$s).",
+                  String.format("A disk store with name '%1$s' was not found on member '%2$s'.",
                       diskStoreName, memberName)));
         }
       }

@@ -162,6 +162,15 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     return receiver;
   }
 
+  @Override
+  public boolean hasIdentifierAtLeafNode() {
+    if (this.receiver.getType() == Identifier) {
+      return true;
+    } else {
+      return this.receiver.hasIdentifierAtLeafNode();
+    }
+  }
+
   public CompiledValue getExpression() {
     return indexExpr;
   }

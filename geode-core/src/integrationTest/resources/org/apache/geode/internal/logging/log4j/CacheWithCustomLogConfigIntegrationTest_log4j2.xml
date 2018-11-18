@@ -25,15 +25,15 @@
         <List name="CUSTOM"/>
     </Appenders>
     <Loggers>
-        <Logger name="com.gemstone" level="INFO" additivity="true"/>
-        <Logger name="org.apache.geode" level="INFO" additivity="true">
+        <Logger name="com.gemstone" level="WARN" additivity="true"/>
+        <Logger name="org.apache.geode" level="WARN" additivity="true">
             <filters>
                 <MarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
             </filters>
         </Logger>
-        <Logger name="org.apache.geode.internal.logging.log4j.custom" level="DEBUG" additivity="true"/>
+        <Logger name="org.apache.geode.internal.logging.log4j.custom" level="WARN" additivity="true"/>
         <Logger name="org.jgroups" level="FATAL" additivity="true"/>
-        <Root level="INFO">
+        <Root level="WARN">
             <AppenderRef ref="CUSTOM"/>
             <AppenderRef ref="STDOUT"/>
         </Root>

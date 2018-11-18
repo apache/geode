@@ -62,6 +62,13 @@ public class RestServersIntegrationTest {
   }
 
   @Test
+  public void testGetOnInternalRegion() {
+    assertResponse(
+        restClient.doGet("/__PR", null, null))
+            .hasStatusCode(HttpStatus.SC_NOT_FOUND);
+  }
+
+  @Test
   public void testServerStartedOnDefaultPort() throws Exception {
     JsonNode jsonArray = assertResponse(restClient.doGet("/servers", null, null))
         .hasStatusCode(HttpStatus.SC_OK).getJsonObject();

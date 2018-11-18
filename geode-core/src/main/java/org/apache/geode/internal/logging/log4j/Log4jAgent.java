@@ -102,23 +102,29 @@ public class Log4jAgent implements ProviderAgent {
   @Override
   public void configure(final LogConfig logConfig, final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope) {
-    Level loggerLevel = toLevel(LogWriterLevel.find(logConfig.getLogLevel()));
-    updateLogLevel(loggerLevel, getLoggerConfig(MAIN_LOGGER_NAME));
+    if (shouldUpdateLogLevels(logLevelUpdateOccurs)) {
+      Level loggerLevel = toLevel(LogWriterLevel.find(logConfig.getLogLevel()));
+      updateLogLevel(loggerLevel, getLoggerConfig(MAIN_LOGGER_NAME));
 
-    Level securityLoggerLevel = toLevel(LogWriterLevel.find(logConfig.getSecurityLogLevel()));
-    updateLogLevel(securityLoggerLevel, getLoggerConfig(SECURITY_LOGGER_NAME));
+      Level securityLoggerLevel = toLevel(LogWriterLevel.find(logConfig.getSecurityLogLevel()));
+      updateLogLevel(securityLoggerLevel, getLoggerConfig(SECURITY_LOGGER_NAME));
 
-    if (!LogConfig.hasSecurityLogFile(logConfig)) {
-      configuredSecurityAppenders =
-          configureSecurityAppenders(SECURITY_LOGGER_NAME, securityLoggerLevel);
+      if (!LogConfig.hasSecurityLogFile(logConfig)) {
+        configuredSecurityAppenders =
+            configureSecurityAppenders(SECURITY_LOGGER_NAME, securityLoggerLevel);
+      }
     }
 
-    if (logLevelUpdateOccurs.always() ||
-        logLevelUpdateOccurs.onlyWhenUsingDefaultConfig() && isUsingGemFireDefaultConfig()) {
+    if (shouldUpdateLogLevels(logLevelUpdateOccurs)) {
       updateLogLevel(logConfig, logLevelUpdateScope);
     }
 
     configureFastLoggerDelegating();
+  }
+
+  private boolean shouldUpdateLogLevels(final LogLevelUpdateOccurs logLevelUpdateOccurs) {
+    return logLevelUpdateOccurs.always() ||
+        logLevelUpdateOccurs.onlyWhenUsingDefaultConfig() && isUsingGemFireDefaultConfig();
   }
 
   @Override

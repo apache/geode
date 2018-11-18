@@ -30,7 +30,7 @@ public class UsernamePasswordInterceptor extends AbstractCliAroundInterceptor {
   }
 
   // Constructor for unit test
-  UsernamePasswordInterceptor(Gfsh gfsh) {
+  public UsernamePasswordInterceptor(Gfsh gfsh) {
     this.gfsh = gfsh;
   }
 
