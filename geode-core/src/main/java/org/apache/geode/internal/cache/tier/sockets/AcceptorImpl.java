@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -69,7 +68,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
@@ -239,6 +237,25 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public static final String BACKLOG_PROPERTY_NAME = "BridgeServer.backlog";
 
   /**
+   * The name of a system property that Defines the time interval (in nano-seconds) with which
+   * checkRegisteredKeys function can be called.
+   */
+  public static final String CHECK_REGISTERED_KEYS_INTERVAL_NAME =
+      "check-registered-keys-interval-ns";
+
+  /**
+   * The default value of {@link #CHECK_REGISTERED_KEYS_INTERVAL_NAME} system property.
+   */
+  public static final int DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS = 0;
+
+  /**
+   * Set value of check registered keys interval
+   */
+  private final int checkRegisteredKeysInterval = Integer
+      .getInteger(CHECK_REGISTERED_KEYS_INTERVAL_NAME, DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS)
+      .intValue();
+
+  /**
    * Current number of ServerConnection instances that are CLIENT_TO_SERVER cons.
    */
   public final AtomicInteger clientServerCnxCount = new AtomicInteger();
@@ -318,12 +335,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private final SecurityService securityService;
 
   private final ServerConnectionFactory serverConnectionFactory;
-
-  private final Properties nonDefault = new Properties();
-  private final DistributionConfigImpl distributionConfigImpl =
-      new DistributionConfigImpl(nonDefault);
-
-  private final int checkRegisteredKeysInterval;
 
   /**
    * Initializes this acceptor thread to listen for connections on the given port.
@@ -565,8 +576,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     isPostAuthzCallbackPresent =
         (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) ? true : false;
-
-    checkRegisteredKeysInterval = this.distributionConfigImpl.getCheckRegisteredKeysInterval();
   }
 
   private ExecutorService initializeHandshakerThreadPool() throws IOException {
@@ -981,7 +990,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public void runSelectorLoop() {
     // int zeroEventsCount = 0;
     try {
-      long lastCheckedTime = System.currentTimeMillis();
+      long lastCheckedTime = System.nanoTime();
       logger.info("SELECTOR enabled");
       while (this.selector.isOpen() && !Thread.currentThread().isInterrupted()) {
         {
@@ -994,10 +1003,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             break;
           }
           ServerConnection sc;
-          long delta = System.currentTimeMillis() - lastCheckedTime;
-          if (delta >= checkRegisteredKeysInterval) {
+          long delta = System.nanoTime() - lastCheckedTime;
+          if (checkRegisteredKeysInterval == 0 || delta >= checkRegisteredKeysInterval) {
             registeredKeys = checkRegisteredKeys(registeredKeys);
-            lastCheckedTime = System.currentTimeMillis();
+            lastCheckedTime = System.nanoTime();
           }
           if (registeredKeys == 0) {
             // do blocking wait on queue until we get some keys registered

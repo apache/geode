@@ -23,7 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUE
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.CHECK_REGISTERED_KEYS_INTERVAL;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -1466,9 +1465,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Defines whether thread monitoring is to be enabled.");
     m.put(THREAD_MONITOR_TIME_LIMIT,
         "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
-
-    m.put(CHECK_REGISTERED_KEYS_INTERVAL,
-        "Defines the time interval (in milliseconds) with which checkRegisteredKeys function can be called.");
     dcAttDescriptions = Collections.unmodifiableMap(m);
   }
 

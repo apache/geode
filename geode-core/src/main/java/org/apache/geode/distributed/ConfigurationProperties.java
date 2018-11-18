@@ -2164,15 +2164,4 @@ public interface ConfigurationProperties {
    * <p>
    */
   String THREAD_MONITOR_TIME_LIMIT = "thread-monitor-time-limit-ms";
-  /**
-   * The static String definition of the <i>"check-registered-keys-interval-ms"</i> property <a
-   * name="check-registered-keys-interval-ms"/a>
-   * <p>
-   * <U>Description</U>: Defines the time interval (in milliseconds) with which checkRegisteredKeys
-   * function can be called.
-   * <p>
-   * <U>Default</U>: "0"
-   * <p>
-   */
-  String CHECK_REGISTERED_KEYS_INTERVAL = "check-registered-keys-interval-ms";
 }

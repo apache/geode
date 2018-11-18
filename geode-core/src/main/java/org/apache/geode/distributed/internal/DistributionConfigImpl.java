@@ -654,11 +654,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
   /**
-   * the thread monitoring interval
-   */
-  private int checkRegisteredKeysInterval = DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL;
-
-  /**
    * Create a new <code>DistributionConfigImpl</code> from the contents of another
    * <code>DistributionConfig</code>.
    */
@@ -686,7 +681,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     threadMonitorEnabled = other.getThreadMonitorEnabled();
     threadMonitorInterval = other.getThreadMonitorInterval();
     threadMonitorTimeLimit = other.getThreadMonitorTimeLimit();
-    checkRegisteredKeysInterval = other.getCheckRegisteredKeysInterval();
     statisticSampleRate = other.getStatisticSampleRate();
     statisticArchiveFile = other.getStatisticArchiveFile();
     ackWaitThreshold = other.getAckWaitThreshold();
@@ -3251,8 +3245,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
         .append(threadMonitorEnabled, that.threadMonitorEnabled)
         .append(threadMonitorInterval, that.threadMonitorInterval)
-        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit)
-        .append(checkRegisteredKeysInterval, that.checkRegisteredKeysInterval).isEquals();
+        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit).isEquals();
   }
 
   /**
@@ -3323,7 +3316,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
         .append(modifiable).append(threadMonitorEnabled).append(threadMonitorInterval)
-        .append(threadMonitorTimeLimit).append(checkRegisteredKeysInterval).toHashCode();
+        .append(threadMonitorTimeLimit).toHashCode();
   }
 
   /**
@@ -3839,15 +3832,5 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setThreadMonitorTimeLimit(int newValue) {
     threadMonitorTimeLimit = newValue;
-  }
-
-  @Override
-  public int getCheckRegisteredKeysInterval() {
-    return checkRegisteredKeysInterval;
-  }
-
-  @Override
-  public void setCheckRegisteredKeysInterval(int newValue) {
-    checkRegisteredKeysInterval = newValue;
   }
 }
