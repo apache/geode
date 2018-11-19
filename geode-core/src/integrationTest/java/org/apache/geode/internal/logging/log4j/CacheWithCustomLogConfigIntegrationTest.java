@@ -17,6 +17,7 @@ package org.apache.geode.internal.logging.log4j;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +28,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
@@ -44,6 +46,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -62,8 +65,10 @@ public class CacheWithCustomLogConfigIntegrationTest {
   private static String configFilePath;
 
   private Cache cache;
-  private LogWriterLogger logWriterLogger;
-  private String logMessage;
+  private Logger geodeLogger;
+  private Logger logger;
+  private String infoMessage;
+  private String warnMessage;
   private ListAppender listAppender;
 
   @ClassRule
@@ -93,12 +98,14 @@ public class CacheWithCustomLogConfigIntegrationTest {
     Properties config = new Properties();
     config.setProperty(LOCATORS, "");
     config.setProperty(MCAST_PORT, "0");
-    config.setProperty(LOG_LEVEL, "info");
+    config.setProperty(LOG_LEVEL, INFO.name());
 
     cache = new CacheFactory(config).create();
 
-    logWriterLogger = (LogWriterLogger) cache.getLogger();
-    logMessage = "Logging in " + testName.getMethodName();
+    geodeLogger = (LogWriterLogger) cache.getLogger();
+    logger = LogService.getLogger();
+    infoMessage = "INFO in " + testName.getMethodName();
+    warnMessage = "WARN in " + testName.getMethodName();
     listAppender = loggerContextRule.getListAppender("CUSTOM");
 
     systemOutRule.clearLog();
@@ -111,19 +118,53 @@ public class CacheWithCustomLogConfigIntegrationTest {
   }
 
   @Test
-  public void cacheLogWriterMessageShouldMatchCustomConfig() {
-    logWriterLogger.info(logMessage);
+  public void loggedMessageShouldMatchCustomLayout() {
+    geodeLogger.warn(warnMessage);
 
-    LogEvent logEvent = findLogEventContaining(logMessage);
-
-    assertThat(logEvent.getLoggerName()).isEqualTo(logWriterLogger.getName());
-    assertThat(logEvent.getLevel()).isEqualTo(Level.INFO);
-    assertThat(logEvent.getMessage().getFormattedMessage()).isEqualTo(logMessage);
-
-    assertThat(systemOutRule.getLog()).contains(Level.INFO.name());
-    assertThat(systemOutRule.getLog()).contains(logMessage);
+    assertThat(systemOutRule.getLog()).contains(Level.WARN.name());
+    assertThat(systemOutRule.getLog()).contains(warnMessage);
     assertThat(systemOutRule.getLog()).contains(CONFIG_LAYOUT_PREFIX);
     assertThat(CUSTOM_REGEX.matcher(systemOutRule.getLog()).matches()).isTrue();
+  }
+
+  @Test
+  public void cacheLogWriterInfoMessageIsSuppressed() {
+    geodeLogger.info(infoMessage);
+
+    assertThat(findLogEventContaining(infoMessage)).as(logEventContaining(infoMessage)).isNull();
+  }
+
+  @Test
+  public void cacheLogWriterWarnMessageIsLogged() {
+    geodeLogger.warn(warnMessage);
+
+    LogEvent logEvent = findLogEventContaining(warnMessage);
+    assertThat(logEvent).as(logEventContaining(warnMessage)).isNotNull();
+    assertThat(logEvent.getLoggerName()).isEqualTo(geodeLogger.getName());
+    assertThat(logEvent.getLevel()).isEqualTo(Level.WARN);
+    assertThat(logEvent.getMessage().getFormattedMessage()).isEqualTo(warnMessage);
+  }
+
+  @Test
+  public void loggerInfoMessageIsSuppressed() {
+    logger.info(infoMessage);
+
+    assertThat(findLogEventContaining(infoMessage)).as(logEventContaining(infoMessage)).isNull();
+  }
+
+  @Test
+  public void loggerWarnMessageIsLogged() {
+    logger.warn(warnMessage);
+
+    LogEvent logEvent = findLogEventContaining(warnMessage);
+    assertThat(logEvent).as(logEventContaining(warnMessage)).isNotNull();
+    assertThat(logEvent.getLoggerName()).isEqualTo(logger.getName());
+    assertThat(logEvent.getLevel()).isEqualTo(Level.WARN);
+    assertThat(logEvent.getMessage().getFormattedMessage()).isEqualTo(warnMessage);
+  }
+
+  private String logEventContaining(final String logMessage) {
+    return "LogEvent containing " + logMessage;
   }
 
   private LogEvent findLogEventContaining(final String logMessage) {
@@ -133,7 +174,6 @@ public class CacheWithCustomLogConfigIntegrationTest {
         return logEvent;
       }
     }
-    throw new AssertionError(
-        "Failed to find LogEvent containing " + logMessage + " in " + logEvents);
+    return null;
   }
 }

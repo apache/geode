@@ -150,13 +150,9 @@ public class ReadWriteFile {
           }
         }
       }
-      if (input != null) {
-        input.close();
-      }
-      if (output != null) {
-        output.flush();
-        output.close();
-      }
+      input.close();
+      output.flush();
+      output.close();
       return ("Successfully written file " + logFileName);
     } catch (FunctionException ex) {
       return ("readWriteFile FunctionException " + ex.getMessage());

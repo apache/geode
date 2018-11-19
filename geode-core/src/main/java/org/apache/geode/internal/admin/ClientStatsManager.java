@@ -86,7 +86,7 @@ public class ClientStatsManager {
       EntryEventImpl event = new EntryEventImpl((Object) null);
       try {
         event.setEventId(eventId);
-        regionProxy.putForMetaRegion(ds.getDistributedMember(), stats, null, event, null, true);
+        regionProxy.putForMetaRegion(ds.getDistributedMember(), stats, null, event, null);
       } finally {
         event.release();
       }

@@ -17,13 +17,11 @@ package org.apache.geode.cache.query.internal;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -62,10 +60,14 @@ public class QueryMonitorTest {
 
   @After
   public void afterClass() {
-    // cleanup the thread local of the queryCancelled status
-    DefaultQuery query = mock(DefaultQuery.class);
-    doReturn(Optional.empty()).when(query).getCancelationTask();
-    monitor.stopMonitoringQueryThread(query);
+    /*
+     * If the query cancelation task is run, it will set the queryCanceled
+     * thread local on the query to true.
+     *
+     * We need to clean up that state between tests because they can run on this same thread.
+     * In production, this cleanup is done in DefaultQuery after the query executes.
+     */
+    DefaultQuery.queryCanceled.get().set(false);
     monitor.setLowMemory(false, 100);
   }
 

@@ -365,6 +365,28 @@ public class DiskStoreCommandsDUnitTest {
   }
 
   @Test
+  public void testDescribeMissingDiskStoreCommand() throws Exception {
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+
+    gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+
+    createDiskStoreAndRegion(server1, 1);
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region r = cache.getRegion(REGION_1);
+      r.put("A", "B");
+    });
+
+    CommandResult result = gfsh.executeCommand(
+        String.format("describe disk-store --member=%s --name=%s", server1.getName(), "UNKNOWN"));
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getErrorMessage())
+        .isEqualTo("A disk store with name 'UNKNOWN' was not found on member 'server-0'.");
+  }
+
+  @Test
   public void testUpgradeOfflineDiskStoreCommandFailsAsExpected() throws Exception {
     MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 

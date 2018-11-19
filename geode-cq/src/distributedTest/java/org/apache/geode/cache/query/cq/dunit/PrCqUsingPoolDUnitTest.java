@@ -236,7 +236,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
 
     // create values
-    final int size = 1000;
+    final int size = 200;
     createValues(server1, regions[0], size);
 
     // wait for last creates...
@@ -458,7 +458,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
 
     // create values
-    final int size = 400;
+    final int size = 200;
     createValues(server1, regions[0], size);
 
     // wait for last creates...
@@ -543,7 +543,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
 
     // create values
-    final int size = 400;
+    final int size = 200;
     createValues(server1, regions[0], size);
 
     // wait for last creates...
@@ -630,7 +630,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
 
     // create values
-    final int size = 400;
+    final int size = 200;
     createValues(server1, regions[0], size);
 
     // wait for last creates...
@@ -721,7 +721,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
 
     // create values
-    final int size = 400;
+    final int size = 200;
 
     createValues(client2, regions[0], size);
 
@@ -818,7 +818,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     cqHelper.executeCQ(client, "testCQEvents_1", false, null);
 
     // create values
-    final int size = 400;
+    final int size = 200;
     createValues(client2, regions[0], size);
     createValues(client2, regions[1], size);
 
@@ -939,7 +939,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     cqHelper.executeCQ(client, "testPRWithCQsAndProfileUpdates_1", false, null);
 
     // create values
-    final int size = 400;
+    final int size = 200;
     createValues(client2, regions[0], size);
     createValues(client2, regions[1], size);
 

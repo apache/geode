@@ -36,6 +36,7 @@ import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
@@ -44,7 +45,7 @@ import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CompactDiskStoreCommand extends InternalGfshCommand {
+public class CompactDiskStoreCommand extends GfshCommand {
   @CliCommand(value = CliStrings.COMPACT_DISK_STORE, help = CliStrings.COMPACT_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -128,7 +129,7 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
           }
 
           // If compaction happened at all, then prepare the summary
-          if (overallCompactInfo != null && !overallCompactInfo.isEmpty()) {
+          if (!overallCompactInfo.isEmpty()) {
             Set<Map.Entry<DistributedMember, PersistentID>> entries = overallCompactInfo.entrySet();
 
             for (Map.Entry<DistributedMember, PersistentID> entry : entries) {

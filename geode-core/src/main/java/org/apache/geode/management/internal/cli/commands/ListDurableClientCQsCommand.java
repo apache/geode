@@ -15,11 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -28,24 +25,23 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListDurableClientCQsCommand extends InternalGfshCommand {
-  DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
+public class ListDurableClientCQsCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)
   @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listDurableClientCQs(
+  public ResultModel listDurableClientCQs(
       @CliOption(key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, mandatory = true,
           help = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID__HELP) final String durableClientId,
 
@@ -56,66 +52,32 @@ public class ListDurableClientCQsCommand extends InternalGfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
-    Result result;
-    try {
 
-      boolean noResults = true;
-      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
-      final List<DurableCqNamesResult> results = (List<DurableCqNamesResult>) rc.getResult();
-      Map<String, List<String>> memberCqNamesMap = new TreeMap<>();
-      Map<String, List<String>> errorMessageNodes = new HashMap<>();
-      Map<String, List<String>> exceptionMessageNodes = new HashMap<>();
-
-      for (DurableCqNamesResult memberResult : results) {
-        if (memberResult != null) {
-          if (memberResult.isSuccessful()) {
-            memberCqNamesMap.put(memberResult.getMemberNameOrId(), memberResult.getCqNamesList());
-          } else {
-            if (memberResult.isOpPossible()) {
-              builder.groupByMessage(memberResult.getExceptionMessage(),
-                  memberResult.getMemberNameOrId(), exceptionMessageNodes);
-            } else {
-              builder.groupByMessage(memberResult.getErrorMessage(),
-                  memberResult.getMemberNameOrId(), errorMessageNodes);
-            }
-          }
-        }
-      }
-
-      if (!memberCqNamesMap.isEmpty()) {
-        TabularResultData table = ResultBuilder.createTabularResultData();
-        Set<String> members = memberCqNamesMap.keySet();
-
-        for (String member : members) {
-          boolean isFirst = true;
-          List<String> cqNames = memberCqNamesMap.get(member);
-          for (String cqName : cqNames) {
-            if (isFirst) {
-              isFirst = false;
-              table.accumulate(CliStrings.MEMBER, member);
-            } else {
-              table.accumulate(CliStrings.MEMBER, "");
-            }
-            table.accumulate(CliStrings.LIST_DURABLE_CQS__NAME, cqName);
-          }
-        }
-        result = ResultBuilder.buildResult(table);
-      } else {
-        String errorHeader =
-            CliStrings.format(CliStrings.LIST_DURABLE_CQS__FAILURE__HEADER, durableClientId);
-        result = ResultBuilder.buildResult(
-            builder.buildFailureData(null, exceptionMessageNodes, errorMessageNodes, errorHeader));
-      }
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+    if (targetMembers.isEmpty()) {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    final ResultCollector<?, ?> rc =
+        executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
+    final List<List<CliFunctionResult>> results = (List<List<CliFunctionResult>>) rc.getResult();
+
+    ResultModel result = new ResultModel();
+    TabularResultModel table = result.addTable("list-durable-client-cqs");
+
+    for (List<CliFunctionResult> perMemberList : results) {
+      for (CliFunctionResult oneResult : perMemberList) {
+        table.accumulate("Member", oneResult.getMemberIdOrName());
+        table.accumulate("Status", oneResult.getStatus());
+        table.accumulate("CQ Name", oneResult.getStatusMessage());
+
+        if (!oneResult.isSuccessful()) {
+          result.setStatus(Result.Status.ERROR);
+        }
+      }
+    }
+
     return result;
   }
 }

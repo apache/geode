@@ -315,13 +315,11 @@ public class TcpClient {
               "Unrecognisable response received: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
         }
         VersionResponse response = (VersionResponse) readObject;
-        if (response != null) {
-          serverVersion = Short.valueOf(response.getVersionOrdinal());
-          synchronized (serverVersions) {
-            serverVersions.put(ipAddr, serverVersion);
-          }
-          return serverVersion;
+        serverVersion = Short.valueOf(response.getVersionOrdinal());
+        synchronized (serverVersions) {
+          serverVersions.put(ipAddr, serverVersion);
         }
+        return serverVersion;
       } catch (EOFException ex) {
         // old locators will not recognize the version request and will close the connection
       }

@@ -465,7 +465,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     function.execute(mockFunctionContext);
-    String expected = String.format("A disk store with name (%1$s) was not found on member (%2$s).",
+    String expected = String.format("A disk store with name '%1$s' was not found on member '%2$s'.",
         diskStoreName, memberName);
     assertThatThrownBy(testResultSender::getResults).isInstanceOf(EntityNotFoundException.class)
         .hasMessage(expected);

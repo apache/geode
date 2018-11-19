@@ -1321,9 +1321,6 @@ public class ClusterDistributionManager implements DistributionManager {
       this.hostedLocatorsAll = tmp;
 
       if (isSharedConfigurationEnabled) {
-        if (locators == null || locators.isEmpty()) {
-          throw new IllegalArgumentException("Cannot use empty collection of locators");
-        }
         if (this.hostedLocatorsWithSharedConfiguration.isEmpty()) {
           this.hostedLocatorsWithSharedConfiguration = new HashMap<>();
         }

@@ -1596,6 +1596,7 @@ public class InitialImageOperation {
         }
         return true;
       }
+      // TODO GGG: verify GII after UpgradeDiskStore
       return false;
     }
 

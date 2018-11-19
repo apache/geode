@@ -40,6 +40,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.GatewayException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -72,6 +73,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -109,8 +111,13 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   private void checkForInternalRegion(Region<?, ?> r) {
+    if (r == null) {
+      return;
+    }
     InternalRegion ir = (InternalRegion) r;
-    if (ir.isInternalRegion()) {
+    if (ir.isInternalRegion()
+        && !r.getName().equals(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME)
+        && !r.getName().equals(ClientHealthMonitoringRegion.ADMIN_REGION_NAME)) {
       throw new NotAuthorizedException("The region " + r.getName()
           + " is an internal region that a client is never allowed to access");
     }
@@ -127,6 +134,17 @@ public class InternalCacheForClientAccess implements InternalCache {
   public <K, V> Region<K, V> getRegion(String path) {
     Region<K, V> result = delegate.getRegion(path);
     checkForInternalRegion(result);
+    return result;
+  }
+
+  /**
+   * Server-side code using an InternalCacheForClientAccess may need to
+   * get an Internal Region not normally accesible and may use this method to
+   * do so. The REST API, for instance, needs to get at a Query store
+   * region that is not otherwise accessible through the getRegion methods.
+   */
+  public <K, V> Region<K, V> getInternalRegion(String path) {
+    Region<K, V> result = delegate.getRegion(path);
     return result;
   }
 

@@ -26,6 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
@@ -36,7 +37,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeDiskStoreCommand extends InternalGfshCommand {
+public class DescribeDiskStoreCommand extends GfshCommand {
   public static final String DISK_STORE_SECTION = "disk-store";
   public static final String DISK_DIR_SECTION = "disk-dir";
   public static final String REGION_SECTION = "region";
@@ -75,20 +76,6 @@ public class DescribeDiskStoreCommand extends InternalGfshCommand {
       throw (EntityNotFoundException) result;
     } else { // unknown and unexpected return type...
       final Throwable cause = (result instanceof Throwable ? (Throwable) result : null);
-
-      if (isLogging()) {
-        if (cause != null) {
-          getGfsh().logSevere(String.format(
-              "Exception (%1$s) occurred while executing '%2$s' on member (%3$s) with disk store (%4$s).",
-              ClassUtils.getClassName(cause), CliStrings.DESCRIBE_DISK_STORE, memberName,
-              diskStoreName), cause);
-        } else {
-          getGfsh().logSevere(String.format(
-              "Received an unexpected result of type (%1$s) while executing '%2$s' on member (%3$s) with disk store (%4$s).",
-              ClassUtils.getClassName(result), CliStrings.DESCRIBE_DISK_STORE, memberName,
-              diskStoreName), null);
-        }
-      }
 
       throw new RuntimeException(
           CliStrings.format(CliStrings.UNEXPECTED_RETURN_TYPE_EXECUTING_COMMAND_ERROR_MESSAGE,

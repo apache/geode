@@ -23,14 +23,14 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.management.internal.cli.commands.CreateDataSourceCommand.PoolProperty;
+import org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceCommand;
 
 /***
  * Converter for CreateDataSourceCommand's --pool-properties option.
  *
  */
 public class PoolPropertyConverter
-    implements Converter<PoolProperty> {
+    implements Converter<CreateDataSourceCommand.PoolProperty> {
 
   private static ObjectMapper mapper = new ObjectMapper();
   static {
@@ -39,14 +39,14 @@ public class PoolPropertyConverter
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    return PoolProperty.class.isAssignableFrom(type);
+    return CreateDataSourceCommand.PoolProperty.class.isAssignableFrom(type);
   }
 
   @Override
-  public PoolProperty convertFromText(String value,
+  public CreateDataSourceCommand.PoolProperty convertFromText(String value,
       Class<?> targetType, String optionContext) {
     try {
-      return mapper.readValue(value, PoolProperty.class);
+      return mapper.readValue(value, CreateDataSourceCommand.PoolProperty.class);
     } catch (IOException e) {
       throw new IllegalArgumentException("invalid json: \"" + value + "\" details: " + e);
     }

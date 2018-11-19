@@ -43,6 +43,7 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
@@ -602,17 +603,39 @@ public class RegionVersionVectorTest {
   }
 
   @Test
-  public void testRecordVersionAfterRegionInitThrowsException() {
+  public void recordVersionIntoLocalMemberShouldFailIfRegionIsPersistent() {
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(true);
+    when(mockRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     final String local = getIPLiteral();
-    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
-    VMVersionTag tag = new VMVersionTag();
-    tag.setRegionVersion(1L);
+    DiskStoreID ownerId = new DiskStoreID();
 
-    RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+    DiskRegionVersionVector rvv = new DiskRegionVersionVector(ownerId, mockRegion);
+
+    DiskVersionTag tag = new DiskVersionTag();
+    tag.setRegionVersion(1L);
+    tag.setMemberID(ownerId);
+
     expectedException.expect(InternalGemFireError.class);
     rvv.recordVersion(ownerId, tag);
+  }
+
+  @Test
+  public void recordVersionIntoLocalMemberShouldPassfRegionIsNonPersistent() {
+    LocalRegion mockRegion = mock(LocalRegion.class);
+    when(mockRegion.isInitialized()).thenReturn(true);
+    when(mockRegion.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    final String local = getIPLiteral();
+    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
+    RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+
+    VMVersionTag tag = new VMVersionTag();
+    tag.setRegionVersion(1);
+    tag.setMemberID(ownerId);
+
+    rvv.recordVersion(ownerId, tag);
+    assertEquals(1, rvv.getLocalExceptions().version);
+    assertEquals(2, rvv.getNextVersion());
   }
 
   @Test
@@ -659,145 +682,6 @@ public class RegionVersionVectorTest {
 
     assertThatCode(() -> result.get(2, SECONDS)).doesNotThrowAnyException();
     assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(newVersion);
-  }
-
-  @Test
-  public void isRvvGcDominatedByRequesterRvvReturnsTrueIfRequesterRvvForLostMemberDominates()
-      throws Exception {
-    InternalDistributedMember lostMember = mock(InternalDistributedMember.class);
-    ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
-        new ConcurrentHashMap<>();
-    memberToGcVersion.put(lostMember, new Long(1) /* lostMemberGcVersion */);
-    RegionVersionVector providerRvv = new VMRegionVersionVector(lostMember, null,
-        0, memberToGcVersion, 0, true, null);
-
-    ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
-        new ConcurrentHashMap<>();
-    RegionVersionHolder regionVersionHolder = new RegionVersionHolder(lostMember);
-    regionVersionHolder.setVersion(2);
-    memberToRegionVersionHolder.put(lostMember, regionVersionHolder);
-    RegionVersionVector requesterRvv =
-        new VMRegionVersionVector(lostMember, memberToRegionVersionHolder,
-            0, null, 0, true, null);
-
-    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isTrue();
-  }
-
-  @Test
-  public void isRvvGcDominatedByRequesterRvvReturnsFalseIfRequesterRvvForLostMemberDominates()
-      throws Exception {
-    InternalDistributedMember lostMember = mock(InternalDistributedMember.class);
-    ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
-        new ConcurrentHashMap<>();
-    memberToGcVersion.put(lostMember, new Long(1) /* lostMemberGcVersion */);
-    RegionVersionVector providerRvv = new VMRegionVersionVector(lostMember, null,
-        0, memberToGcVersion, 0, true, null);
-
-    ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
-        new ConcurrentHashMap<>();
-    RegionVersionHolder regionVersionHolder = new RegionVersionHolder(lostMember);
-    regionVersionHolder.setVersion(0);
-    memberToRegionVersionHolder.put(lostMember, regionVersionHolder);
-    RegionVersionVector requesterRvv =
-        new VMRegionVersionVector(lostMember, memberToRegionVersionHolder,
-            0, null, 0, true, null);
-
-    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isFalse();
-  }
-
-  @Test
-  public void isRvvGcDominatedByRequesterRvvReturnsFalseIfRequesterRvvDominatesProvider()
-      throws Exception {
-    final String local = getIPLiteral();
-    InternalDistributedMember provider = new InternalDistributedMember(local, 101);
-    InternalDistributedMember requester = new InternalDistributedMember(local, 102);
-
-    RegionVersionVector providerRvv = new VMRegionVersionVector(provider, null,
-        1, null, 1, false, null);
-
-    ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
-        new ConcurrentHashMap<>();
-    RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(0);
-    memberToRegionVersionHolder.put(provider, regionVersionHolder);
-    RegionVersionVector requesterRvv =
-        new VMRegionVersionVector(requester, memberToRegionVersionHolder,
-            0, null, 0, false, null);
-
-    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isFalse();
-  }
-
-  @Test
-  public void isRvvGcDominatedByRequesterRvvReturnsTrueIfRequesterRvvDominatesWithNoGcVersion()
-      throws Exception {
-    final String local = getIPLiteral();
-    InternalDistributedMember provider = new InternalDistributedMember(local, 101);
-    InternalDistributedMember requester = new InternalDistributedMember(local, 102);
-
-    ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
-        new ConcurrentHashMap<>();
-    RegionVersionVector providerRvv = new VMRegionVersionVector(provider, null,
-        1, memberToGcVersion, 1, false, null);
-
-    ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
-        new ConcurrentHashMap<>();
-    RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(2);
-    memberToRegionVersionHolder.put(provider, regionVersionHolder);
-    RegionVersionVector requesterRvv =
-        new VMRegionVersionVector(requester, memberToRegionVersionHolder,
-            0, null, 0, false, null);
-
-    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isTrue();
-  }
-
-  @Test
-  public void isRvvGcDominatedByRequesterRvvReturnsTrueIfRequesterRvvDominates() throws Exception {
-    final String local = getIPLiteral();
-    InternalDistributedMember provider = new InternalDistributedMember(local, 101);
-    InternalDistributedMember requester = new InternalDistributedMember(local, 102);
-    ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
-        new ConcurrentHashMap<>();
-    memberToGcVersion.put(requester, new Long(1));
-    RegionVersionVector providerRvv = new VMRegionVersionVector(provider, null,
-        1, memberToGcVersion, 1, false, null);
-
-    ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
-        new ConcurrentHashMap<>();
-    RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(2);
-    memberToRegionVersionHolder.put(provider, regionVersionHolder);
-    RegionVersionVector requesterRvv =
-        new VMRegionVersionVector(requester, memberToRegionVersionHolder,
-            2, null, 0, false, regionVersionHolder);
-
-    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isTrue();
-  }
-
-  @Test
-  public void isRvvGcDominatedByRequesterRvvReturnsFalseIfRequesterRvvDominates() throws Exception {
-    final String local = getIPLiteral();
-    InternalDistributedMember provider = new InternalDistributedMember(local, 101);
-    InternalDistributedMember requester = new InternalDistributedMember(local, 102);
-    ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
-        new ConcurrentHashMap<>();
-    memberToGcVersion.put(requester, new Long(3));
-    RegionVersionHolder pRegionVersionHolder = new RegionVersionHolder(provider);
-    pRegionVersionHolder.setVersion(4);
-
-    RegionVersionVector providerRvv = new VMRegionVersionVector(provider, null,
-        1, memberToGcVersion, 1, false, pRegionVersionHolder);
-
-    ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
-        new ConcurrentHashMap<>();
-    RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(2);
-    memberToRegionVersionHolder.put(provider, regionVersionHolder);
-    RegionVersionVector requesterRvv =
-        new VMRegionVersionVector(requester, memberToRegionVersionHolder,
-            2, null, 0, false, regionVersionHolder);
-
-    assertThat(providerRvv.isRVVGCDominatedBy(requesterRvv)).isFalse();
   }
 
   private RegionVersionVector createRegionVersionVector(InternalDistributedMember ownerId,
