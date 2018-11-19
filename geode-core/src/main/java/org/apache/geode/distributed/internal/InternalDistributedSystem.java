@@ -2201,6 +2201,7 @@ public class InternalDistributedSystem extends DistributedSystem
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore
+        logger.info("Skipping notifyResourceEventListeners for {} due to cancellation", event);
       } catch (GemFireSecurityException | ManagementException ex) {
         if (event == ResourceEvent.CACHE_CREATE) {
           throw ex;
