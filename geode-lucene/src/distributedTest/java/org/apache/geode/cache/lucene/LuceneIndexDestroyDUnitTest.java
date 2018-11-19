@@ -181,6 +181,8 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
       throws Exception {
     // Add ignored exceptions to ignore RegionDestroyExceptions
     IgnoredException.addIgnoredException(RegionDestroyedException.class.getSimpleName());
+    // Add ignored exceptions to ignore IllegalArgumentException from MemoryUsage java obj
+    IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
 
     // Create index and region
     dataStore1.invoke(() -> initDataStore(createIndex(), regionType));
