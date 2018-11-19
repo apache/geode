@@ -249,7 +249,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public static final int DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS = 0;
 
   /**
-   * Set the value of check registered keys interval
+   * Set value of check registered keys interval
    */
   private final long checkRegisteredKeysInterval = Long
       .getLong(CHECK_REGISTERED_KEYS_INTERVAL_NAME, DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS)
