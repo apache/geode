@@ -133,7 +133,7 @@ public class DestroyJndiBindingCommandTest {
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
-    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
   }
 
   @Test
@@ -195,7 +195,7 @@ public class DestroyJndiBindingCommandTest {
         .tableHasColumnOnlyWithValues("Message", "Jndi binding \"name\" destroyed on \"server1\"");
 
     assertThat(cacheConfig.getJndiBindings().isEmpty()).isTrue();
-    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
 
     ArgumentCaptor<DestroyJndiBindingFunction> function =
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
