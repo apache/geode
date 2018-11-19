@@ -251,9 +251,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * Set value of check registered keys interval
    */
-  private final int checkRegisteredKeysInterval = Integer
-      .getInteger(CHECK_REGISTERED_KEYS_INTERVAL_NAME, DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS)
-      .intValue();
+  private final long checkRegisteredKeysInterval = Long
+      .getLong(CHECK_REGISTERED_KEYS_INTERVAL_NAME, DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS)
+      .longValue();
 
   /**
    * Current number of ServerConnection instances that are CLIENT_TO_SERVER cons.
