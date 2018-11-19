@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.remote;
 
 import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand.GROUP_STATUS_SECTION;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -142,25 +144,22 @@ public class CommandExecutor {
       return resultModel;
     }
 
-    String groupsToUpdate = "";
+    List<String> groupsToUpdate;
     String groupInput = parseResult.getParamValueAsString("group");
     TabularResultModel table = null;
-    if (StringUtils.isBlank(groupInput)
-        && gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
-      groupsToUpdate = ccService.getGroups().stream().collect(Collectors.joining(","));
+
+    if (!StringUtils.isBlank(groupInput)) {
+      groupsToUpdate = Arrays.asList(groupInput.split(","));
+    } else if (gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
+      groupsToUpdate = ccService.getGroups().stream().collect(Collectors.toList());
       table = resultModel.addTable(GROUP_STATUS_SECTION);
       table.setColumnHeader("Group", "Status");
     } else {
-      if (StringUtils.isBlank(groupInput)) {
-        groupsToUpdate = "cluster";
-      } else {
-        groupsToUpdate = groupInput;
-      }
+      groupsToUpdate = Arrays.asList("cluster");
     }
 
-    String[] groups = groupsToUpdate.split(",");
     final TabularResultModel finalTable = table;
-    for (String group : groups) {
+    for (String group : groupsToUpdate) {
       ccService.updateCacheConfig(group, cc -> {
         try {
           if (gfshCommand.updateConfigForGroup(group, cc, resultModel.getConfigObject())) {
