@@ -19,7 +19,6 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +46,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JMXTest;
@@ -67,9 +67,13 @@ public class JMXMBeanReconnectDUnitTest {
   private static final int SERVER_COUNT = 2;
   private static final int NUM_BEANS = 19;
   private static final int TIMEOUT = 300;
+
   private int locator1JmxPort, locator2JmxPort;
 
   private MemberVM locator1, locator2, server1;
+
+  private MBeanServerConnection locator1Connection;
+  private MBeanServerConnection locator2Connection;
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -96,11 +100,13 @@ public class JMXMBeanReconnectDUnitTest {
     lsRule.startServerVM(SERVER_2_VM_INDEX, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
-    gfsh.executeAndAssertThat(
-        "create region --type=REPLICATE --name=" + REGION_PATH + " --enable-statistics=true")
-        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + REGION_PATH
+        + " --enable-statistics=true").statusIsSuccess();
 
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
+
+    locator1Connection = connectToMBeanServerFor(locator1);
+    locator2Connection = connectToMBeanServerFor(locator2);
 
     waitForLocatorsToAgreeOnMembership();
   }
@@ -161,14 +167,11 @@ public class JMXMBeanReconnectDUnitTest {
    * All MBeans not related to the killed member should remain the same when a member is killed.
    */
   @Test
-  public void testRemoteBeanKnowledge_MaintainServerAndCrashLocator()
-      throws IOException, InterruptedException {
-    Stopwatch stopwatch = Stopwatch.createStarted();
-
+  public void testRemoteBeanKnowledge_MaintainServerAndCrashLocator() throws IOException {
     // check that the initial state is good
-    List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1);
-    List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2);
-    checkBeanListConsistency(initialL1Beans, initialL2Beans);
+    List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1Connection);
+    List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2Connection);
+    assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_BEANS);
 
     // calculate the expected list for use once the locator has crashed
     List<ObjectName> expectedIntermediateBeanList = initialL1Beans.stream()
@@ -178,72 +181,33 @@ public class JMXMBeanReconnectDUnitTest {
     locator1.forceDisconnect(TIMEOUT, RECONNECT_MAILBOX);
 
     // wait for the locator's crash to federate to the remaining locator
-    Boolean foundMember;
     List<ObjectName> intermediateL2Beans = new ArrayList<>();
-
-    stopwatch.reset().start();
-    do {
-      foundMember = false;
+    GeodeAwaitility.await().untilAsserted(() -> {
       intermediateL2Beans.clear();
+      intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
-      intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2));
-
-      // check that the timeout has not been reached or exceeded
-      if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        fail("Condition was not true within " + TIMEOUT + " seconds.\n"
-            + " Member's stop did not federate to other members.\n"
-            + "Locator2 had beans:\n" + intermediateL2Beans);
-      }
-
-      if (intermediateL2Beans.size() == NUM_BEANS) {
-        foundMember = true;
-        Thread.sleep(1000); // make the busy wait slightly less busy
-      } else {
-        if (checkForMemberBeans(LOCATOR_1_NAME, intermediateL2Beans)) {
-          foundMember = true;
-          Thread.sleep(1000); // make the busy wait slightly less busy
-        }
-      }
-    } while (foundMember);
+      assertThat(intermediateL2Beans)
+          .containsExactlyElementsOf(expectedIntermediateBeanList)
+          .hasSameSizeAs(expectedIntermediateBeanList);
+    });
 
     // allow locator 1 to start reconnecting
     locator1.invoke(() -> getBlackboard().setMailbox(RECONNECT_MAILBOX, true));
 
-    // check that we got the MBeans that we were expecting while the locator was crashed
-    checkCurrentAgainstExpectedBeanLists(expectedIntermediateBeanList.size(),
-        expectedIntermediateBeanList, intermediateL2Beans);
-
     // wait for the locator's restart to federate to the other locator
-    Boolean restartFederated;
-    List<ObjectName> finalL1Beans = new ArrayList<>();
     List<ObjectName> finalL2Beans = new ArrayList<>();
-
-    stopwatch.reset().start();
-    do {
-      restartFederated = true;
-      finalL1Beans.clear();
+    GeodeAwaitility.await().untilAsserted(() -> {
       finalL2Beans.clear();
+      finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
-      finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2));
+      assertThat(finalL2Beans).hasSize(NUM_BEANS);
+    });
 
-      // check that the timeout has not been reached or exceeded
-      if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        fail("Condition was not true within " + TIMEOUT + " seconds.\n"
-            + " Member's restart did not federate to members.\n"
-            + "Locator2 had beans:\n" + intermediateL2Beans);
-      }
-
-      if (finalL2Beans.size() != NUM_BEANS) {
-        restartFederated = false;
-        Thread.sleep(1000); // make the busy wait slightly less busy
-      } else {
-        // the locator's restart is complete, collect its MBeans to check
-        finalL1Beans.addAll(getFederatedGemfireBeansFrom(locator1));
-      }
-    } while (!restartFederated);
-
-    // check that our final state is correct
-    checkCurrentAgainstExpectedBeanLists(NUM_BEANS, initialL1Beans, finalL1Beans, finalL2Beans);
+    // check that the final state is the same as the initial state
+    assertThat(getFederatedGemfireBeansFrom(locator1Connection))
+        .containsExactlyElementsOf(finalL2Beans)
+        .containsExactlyElementsOf(initialL1Beans)
+        .hasSize(NUM_BEANS);
   }
 
   /**
@@ -253,14 +217,11 @@ public class JMXMBeanReconnectDUnitTest {
    * All MBeans not related to the killed member should remain the same when a member is killed.
    */
   @Test
-  public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer()
-      throws IOException, InterruptedException {
-    Stopwatch stopwatch = Stopwatch.createStarted();
-
+  public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer() throws IOException {
     // check that the initial state is correct
-    List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1);
-    List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2);
-    checkBeanListConsistency(initialL1Beans, initialL2Beans);
+    List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1Connection);
+    List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2Connection);
+    assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_BEANS);
 
     // calculate the expected list of MBeans when the server has crashed
     List<ObjectName> expectedIntermediateBeanList = initialL1Beans.stream()
@@ -270,130 +231,43 @@ public class JMXMBeanReconnectDUnitTest {
     server1.forceDisconnect(TIMEOUT, RECONNECT_MAILBOX);
 
     // wait for the server's crash to federate to the locators
-    Boolean foundMember;
-    String name = "server-" + SERVER_1_VM_INDEX;
     List<ObjectName> intermediateL1Beans = new ArrayList<>();
     List<ObjectName> intermediateL2Beans = new ArrayList<>();
 
-    stopwatch.reset().start();
-    do {
-      foundMember = false;
+    GeodeAwaitility.await().untilAsserted(() -> {
       intermediateL1Beans.clear();
       intermediateL2Beans.clear();
 
-      intermediateL1Beans.addAll(getFederatedGemfireBeansFrom(locator1));
-      intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2));
+      intermediateL1Beans.addAll(getFederatedGemfireBeansFrom(locator1Connection));
+      intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
-      // check if the timeout has been reached or exceeded
-      if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        fail("Condition was not true within " + TIMEOUT + " seconds.\n"
-            + " Member's stop did not federate to other members.\n"
-            + "Locator1 had beans:\n" + intermediateL1Beans + "\n"
-            + "Locator2 had beans:\n" + intermediateL2Beans);
-      }
+      assertThat(intermediateL1Beans)
+          .containsExactlyElementsOf(expectedIntermediateBeanList)
+          .hasSameSizeAs(expectedIntermediateBeanList);
 
-      if (intermediateL1Beans.size() != intermediateL2Beans.size()) {
-        foundMember = true;
-        Thread.sleep(1000); // make the busy wait slightly less busy
-      } else {
-        if (checkForMemberBeans(name, intermediateL1Beans)
-            || checkForMemberBeans(name, intermediateL2Beans)) {
-          foundMember = true;
-          Thread.sleep(1000); // make the busy wait slightly less busy
-        }
-      }
-    } while (foundMember);
+      assertThat(intermediateL2Beans)
+          .containsExactlyElementsOf(expectedIntermediateBeanList)
+          .hasSameSizeAs(expectedIntermediateBeanList);
+    });
 
     // allow the server to start reconnecting
     server1.invoke(() -> getBlackboard().setMailbox(RECONNECT_MAILBOX, true));
 
-    // check that the beans were correct when the server is crashed
-    checkCurrentAgainstExpectedBeanLists(expectedIntermediateBeanList.size(),
-        expectedIntermediateBeanList, intermediateL1Beans, intermediateL2Beans);
-
-    // wait for the server's restart to federate to the locators
-    Boolean restartFederated;
+    // wait for the server's restart to federate to the locators and check final state
     List<ObjectName> finalL1Beans = new ArrayList<>();
     List<ObjectName> finalL2Beans = new ArrayList<>();
-
-    stopwatch.reset().start();
-    do {
-      restartFederated = true;
+    GeodeAwaitility.await().untilAsserted(() -> {
       finalL1Beans.clear();
       finalL2Beans.clear();
 
-      finalL1Beans.addAll(getFederatedGemfireBeansFrom(locator1));
-      finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2));
+      finalL1Beans.addAll(getFederatedGemfireBeansFrom(locator1Connection));
+      finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
-      // check if the timeout has been reached or exceeded
-      if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        fail("Condition was not true within " + TIMEOUT + " seconds.\n"
-            + " Member's restart did not federate to members.\n"
-            + "Locator1 had beans:\n" + intermediateL1Beans + "\n"
-            + "Locator2 had beans:\n" + intermediateL2Beans);
-      }
-
-      if (finalL1Beans.size() != NUM_BEANS && finalL2Beans.size() != NUM_BEANS) {
-        restartFederated = false;
-        Thread.sleep(1000); // make the busy wait slightly less busy
-      }
-    } while (!restartFederated);
-
-    // check that our final state is good
-    checkCurrentAgainstExpectedBeanLists(NUM_BEANS, initialL1Beans, finalL1Beans, finalL2Beans);
-  }
-
-  private boolean checkForMemberBeans(String memberName, List<ObjectName> beans) {
-    for (ObjectName bean : beans) {
-      if (bean.getKeyProperty("member") != null
-          && bean.getKeyProperty("member").equals(memberName)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Compares two lists. Both lists must have the same elements and the same size
-   */
-  private void checkBeanListConsistency(List<ObjectName> list1, List<ObjectName> list2) {
-    assertSoftly(softly -> {
-      // check the beans (must be checked twice as assertion is not commutative)
-      softly.assertThat(list1).containsExactlyElementsOf(list2);
-      softly.assertThat(list2).containsExactlyElementsOf(list1);
-      softly.assertThat(list1).hasSameSizeAs(list2);
-    });
-  }
-
-  /**
-   * Checks three lists using soft assertions. All lists must have the same elements and have size
-   * equal to the number of expected MBeans.
-   */
-  private void checkCurrentAgainstExpectedBeanLists(int numBeans,
-      List<ObjectName> expectedBeans,
-      List<ObjectName> currentL1Beans,
-      List<ObjectName> currentL2Beans) {
-    assertSoftly(softly -> {
-      // check that the locators agree on the beans
-      // check must be done twice as assertion is not commutative
-      softly.assertThat(currentL1Beans).containsExactlyElementsOf(currentL2Beans);
-      softly.assertThat(currentL2Beans).containsExactlyElementsOf(currentL1Beans);
-      // check that there are no unexpected MBeans
-      softly.assertThat(currentL1Beans).containsExactlyElementsOf(expectedBeans);
-      softly.assertThat(currentL1Beans).hasSize(numBeans);
-    });
-  }
-
-  private void checkCurrentAgainstExpectedBeanLists(int numBeans,
-      List<ObjectName> expectedBeans,
-      List<ObjectName> currentBeans) {
-    assertSoftly(softly -> {
-      // check that the lists are the same
-      // check must be done twice as assertion is not commutative
-      softly.assertThat(currentBeans).containsExactlyElementsOf(expectedBeans);
-      softly.assertThat(currentBeans).containsExactlyElementsOf(expectedBeans);
-      softly.assertThat(currentBeans).hasSize(numBeans);
+      // check that the final state eventually matches the initial state
+      assertThat(finalL1Beans)
+          .containsExactlyElementsOf(finalL2Beans)
+          .containsExactlyElementsOf(initialL1Beans)
+          .hasSize(NUM_BEANS);
     });
   }
 
@@ -402,24 +276,11 @@ public class JMXMBeanReconnectDUnitTest {
    * member's local MBeans. The resulting list includes only MBeans that all locators in the system
    * should have.
    *
-   * @param member - the locator to get the MBeans from
+   * @param remoteMBS - the connection to the locator's MBean server, created using
+   *        connectToMBeanServerFor(MemberVM member).
    * @return List<ObjectName> - a filtered and sorted list of MBeans from the given member
    */
-  private static List<ObjectName> getFederatedGemfireBeansFrom(MemberVM member)
-      throws IOException {
-    String url = jmxBeanLocalhostUrlString(member.getJmxPort());
-    MBeanServerConnection remoteMBS = connectToMBeanServer(url);
-    return getFederatedGemfireBeanObjectNames(remoteMBS);
-  }
-
-  private static MBeanServerConnection connectToMBeanServer(String url) throws IOException {
-    final JMXServiceURL serviceURL = new JMXServiceURL(url);
-    JMXConnector conn = JMXConnectorFactory.connect(serviceURL);
-    return conn.getMBeanServerConnection();
-  }
-
-  private static List<ObjectName> getFederatedGemfireBeanObjectNames(
-      MBeanServerConnection remoteMBS)
+  private static List<ObjectName> getFederatedGemfireBeansFrom(MBeanServerConnection remoteMBS)
       throws IOException {
     Set<ObjectName> allBeans = remoteMBS.queryNames(null, null);
     // Each locator will have a "Manager" bean that is a part of the above query,
@@ -432,6 +293,13 @@ public class JMXMBeanReconnectDUnitTest {
         .filter(b -> !b.toString().contains("service=Manager,type=Member,member=locator"))
         .sorted()
         .collect(toList());
+  }
+
+  private static MBeanServerConnection connectToMBeanServerFor(MemberVM member) throws IOException {
+    String url = jmxBeanLocalhostUrlString(member.getJmxPort());
+    final JMXServiceURL serviceURL = new JMXServiceURL(url);
+    JMXConnector conn = JMXConnectorFactory.connect(serviceURL);
+    return conn.getMBeanServerConnection();
   }
 
   /**
@@ -456,10 +324,6 @@ public class JMXMBeanReconnectDUnitTest {
   /**
    * Waits until the two locators have the same MBeans, and have NUM_BEANS beans.
    *
-   * This can't be simply achieved with assertions and awaitilities. The simple implementation
-   * causes out of memory errors. This implementation slows down the checks so that GC has time to
-   * clean up, and uses only one thread for checking.
-   *
    * This method will return when the locators have the same beans and the expected number of beans.
    * If it does not complete within GeodeAwaitility.DEFAULT_TIMEOUT seconds, a TimeoutException will
    * be thrown.
@@ -478,8 +342,8 @@ public class JMXMBeanReconnectDUnitTest {
       l2Beans.clear();
 
       // get the MBeans and add them to lists to check them
-      l1Beans.addAll(getFederatedGemfireBeansFrom(locator1));
-      l2Beans.addAll(getFederatedGemfireBeansFrom(locator2));
+      l1Beans.addAll(getFederatedGemfireBeansFrom(locator1Connection));
+      l2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
       if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
         fail("Locators could not agree on the state of the system within " + TIMEOUT + " seconds.\n"
