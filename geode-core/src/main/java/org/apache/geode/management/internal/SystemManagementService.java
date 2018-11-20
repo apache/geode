@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.AsyncEventQueueMXBean;
@@ -94,7 +95,7 @@ public class SystemManagementService extends BaseManagementService {
    */
   private MBeanJMXAdapter jmxAdapter;
 
-  private InternalCache cache;
+  private InternalCacheForClientAccess cache;
 
   private FederatingManager federatingManager;
 
@@ -116,11 +117,12 @@ public class SystemManagementService extends BaseManagementService {
 
   private UniversalListenerContainer universalListenerContainer = new UniversalListenerContainer();
 
-  public static BaseManagementService newSystemManagementService(InternalCache cache) {
+  public static BaseManagementService newSystemManagementService(
+      InternalCacheForClientAccess cache) {
     return new SystemManagementService(cache).init();
   }
 
-  protected SystemManagementService(InternalCache cache) {
+  protected SystemManagementService(InternalCacheForClientAccess cache) {
     this.cache = cache;
     this.system = (InternalDistributedSystem) cache.getDistributedSystem();
     // This is a safe check to ensure Management service does not start for a

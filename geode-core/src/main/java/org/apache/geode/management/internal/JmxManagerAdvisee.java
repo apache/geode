@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -37,10 +37,10 @@ import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 public class JmxManagerAdvisee implements DistributionAdvisee {
 
   private final int serialNumber;
-  private final InternalCache cache;
+  private final InternalCacheForClientAccess cache;
   private JmxManagerProfile myMostRecentProfile;
 
-  public JmxManagerAdvisee(InternalCache cache) {
+  public JmxManagerAdvisee(InternalCacheForClientAccess cache) {
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.cache = cache;
   }
