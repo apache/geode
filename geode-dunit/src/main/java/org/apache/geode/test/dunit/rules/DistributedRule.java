@@ -118,6 +118,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public class DistributedRule extends AbstractDistributedRule {
 
   private final int vmCount;
+  private final CleanupDUnitVMsRule cleanup = new CleanupDUnitVMsRule();
 
   /**
    * Use {@code Builder} for more options in constructing {@code DistributedRule}.
@@ -149,6 +150,7 @@ public class DistributedRule extends AbstractDistributedRule {
 
   @Override
   protected void before() {
+    cleanup.before();
     DUnitLauncher.launchIfNeeded(vmCount);
     for (int i = 0; i < vmCount; i++) {
       assertThat(getVM(i)).isNotNull();
@@ -158,6 +160,7 @@ public class DistributedRule extends AbstractDistributedRule {
   @Override
   protected void after() {
     TearDown.doTearDown();
+    cleanup.after();
   }
 
   /**
