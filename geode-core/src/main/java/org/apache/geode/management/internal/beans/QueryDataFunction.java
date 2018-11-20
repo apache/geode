@@ -126,7 +126,8 @@ public class QueryDataFunction implements Function, InternalEntity {
   private QueryDataFunctionResult selectWithType(final FunctionContext context, String queryString,
       final boolean showMember, final String regionName, final int limit,
       final int queryResultSetLimit, final int queryCollectionsDepth) throws Exception {
-    InternalCache cache = ManagementAgent.getCache();
+    InternalCache cache =
+        ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     Function localQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName, showMember)
         .setOptimizeForWrite(true);
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
@@ -521,7 +522,8 @@ public class QueryDataFunction implements Function, InternalEntity {
 
     @Override
     public void execute(final FunctionContext context) {
-      InternalCache cache = ManagementAgent.getCache();
+      InternalCache cache =
+          ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       QueryService queryService = cache.getQueryService();
       String qstr = (String) context.getArguments();
       Region r = cache.getRegion(regionName);

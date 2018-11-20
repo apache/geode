@@ -202,7 +202,8 @@ public class JmxManagerLocator implements TcpHandler {
     @Override
     public void execute(FunctionContext context) {
       try {
-        InternalCache cache = ManagementAgent.getCache();
+        InternalCache cache =
+            ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
         if (cache != null) {
           ManagementService ms = ManagementService.getExistingManagementService(cache);
           if (ms != null) {

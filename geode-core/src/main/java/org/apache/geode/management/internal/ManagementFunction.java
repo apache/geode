@@ -24,7 +24,6 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
@@ -72,7 +71,7 @@ public class ManagementFunction implements InternalFunction {
 
     boolean executedSuccessfully = false;
 
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = ((InternalCache) fc.getCache()).getCacheForProcessingClientRequests();
 
     Object[] functionArguments = (Object[]) fc.getArguments();
 

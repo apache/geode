@@ -21,16 +21,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.ManagementAgent;
+import org.apache.geode.internal.logging.LogService;
 
 public class CommandModes {
+
+  private static final Logger logger = LogService.getLogger();
 
   public static final String DEFAULT_MODE = "default";
 
@@ -87,12 +87,7 @@ public class CommandModes {
   }
 
   private void logException(Exception e) {
-    Cache cache = ManagementAgent.getCache();
-    if (cache != null && cache instanceof InternalCache) {
-      cache = ((InternalCache) cache).getCacheForProcessingClientRequests();
-    }
-    LogWriter logger = cache.getLogger();
-    logger.warning("Error parsing command mode descriptor", e);
+    logger.warn("Error parsing command mode descriptor", e);
   }
 
   private void addCommandMode(String commandName) throws JSONException, IOException {

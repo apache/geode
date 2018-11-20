@@ -56,7 +56,6 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ClientQueueDetail;
 import org.apache.geode.management.ServerLoadData;
-import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
@@ -405,8 +404,6 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public Version getClientVersion(ClientConnInfo connInfo) {
-    InternalCache cache = ManagementAgent.getCache();
-
     if (cache.getCacheServers().size() == 0) {
       return null;
     }
