@@ -28,15 +28,19 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 function changes_for_path() {
-  cd geode
-  local path; path="$1" # only expand once in the line below
-  local merge_base; merge_base=$(git merge-base HEAD origin/develop) || exit $?
-  git diff --name-only HEAD $merge_base -- $path
-}
+  pushd geode >> /dev/null
+    local path="$1" # only expand once in the line below
+    # .git/resource/metadata.json is provided by the github-pr-resource used in Concourse
+    local mergeBase=$(cat .git/resource/metadata.json |
+                      jq -r -c '.[]| select(.name == "base_sha") | .value') || exit $?
 
-cd geode
-git fetch https://github.com/apache/geode.git develop:origin/develop
-cd ..
+    if [[ "${mergeBase}" == "" ]]; then
+      echo "Could not determine merge base. Exiting..."
+      exit 1
+    fi
+    git diff --name-only ${mergeBase} -- $path
+  popd >> /dev/null
+}
 
 UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java') || exit $?
 INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java') || exit $?
@@ -90,6 +94,7 @@ export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistribute
 export GRADLE_TASK_OPTIONS="--no-parallel -Prepeat=50 -PfailOnNoMatchingTests=false"
 
 echo "GRADLE_TASK_OPTIONS=${GRADLE_TASK_OPTIONS}"
+echo "GRADLE_TASK=${GRADLE_TASK}"
 
 ${SCRIPTDIR}/execute_tests.sh
 
