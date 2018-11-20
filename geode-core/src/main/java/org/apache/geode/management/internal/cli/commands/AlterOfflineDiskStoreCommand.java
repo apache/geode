@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
@@ -30,7 +29,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.ALTER_DISK_STORE, help = CliStrings.ALTER_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel alterOfflineDiskStore(
       @CliOption(key = CliStrings.ALTER_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.ALTER_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
@@ -59,6 +58,13 @@ public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.ALTER_DISK_STORE__REMOVE,
           help = CliStrings.ALTER_DISK_STORE__REMOVE__HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean remove) {
+
+    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
+    if (validatedDirectories != null) {
+      throw new IllegalArgumentException(
+          "Could not find " + CliStrings.ALTER_DISK_STORE__DISKDIRS + ": \""
+              + validatedDirectories + "\"");
+    }
 
     try {
       File[] dirs = null;
