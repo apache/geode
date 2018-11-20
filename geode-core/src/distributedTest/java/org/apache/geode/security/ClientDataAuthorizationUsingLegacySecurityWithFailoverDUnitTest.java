@@ -326,9 +326,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
 
-    ClientVM client1 = csRule.startClientVM(3, props, cf -> cf
+    ClientVM client1 = csRule.startClientVM(3, clientVersion, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2));
 
     // Initialize cache
     client1.invoke(() -> {
@@ -384,9 +384,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    ClientVM client = csRule.startClientVM(3, props, cf -> cf
+    ClientVM client = csRule.startClientVM(3, clientVersion, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2));
 
     // Initialize cache
     client.invoke(() -> {

@@ -52,6 +52,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.assertj.core.api.Assertions;
 import org.awaitility.core.ConditionTimeoutException;
 
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -339,6 +343,41 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   /**
    * Invoked in serverVM
    */
+
+  /**
+   * convenience method to create a region with customized regionFactory
+   *
+   * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
+   */
+  public Region createRegion(RegionShortcut type, String name,
+      Consumer<RegionFactory> regionFactoryConsumer) {
+    RegionFactory regionFactory = getCache().createRegionFactory(type);
+    regionFactoryConsumer.accept(regionFactory);
+    return regionFactory.create(name);
+  }
+
+  public Region createRegion(RegionShortcut type, String name) {
+    return getCache().createRegionFactory(type).create(name);
+  }
+
+  /**
+   * convenience method to create a partition region with customized regionFactory and a customized
+   * PartitionAttributeFactory
+   *
+   * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
+   * @param attributesFactoryConsumer a lamda that allows you to customize the
+   *        partitionAttributeFactory
+   */
+  public Region createPartitionRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
+      Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
+    return createRegion(RegionShortcut.PARTITION, name, rf -> {
+      regionFactoryConsumer.accept(rf);
+      PartitionAttributesFactory attributeFactory = new PartitionAttributesFactory();
+      attributesFactoryConsumer.accept(attributeFactory);
+      rf.setPartitionAttributes(attributeFactory.create());
+    });
+  }
+
   public void waitTillCacheClientProxyHasBeenPaused() {
     await().until(() -> {
       CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();

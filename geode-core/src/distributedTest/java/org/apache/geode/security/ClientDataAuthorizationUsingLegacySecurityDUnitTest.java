@@ -119,8 +119,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataWrite");
     int locatorPort = locator.getPort();
 
-    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     // Client adds data
     clientVM.invoke(() -> {
@@ -152,8 +152,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM client = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     // Client cannot get through any avenue
     client.invoke(() -> {
@@ -178,8 +178,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataRead");
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM client = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     // Add some values for the client to get
     server.invoke(() -> {
@@ -214,8 +214,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
 
     int locatorPort = locator.getPort();
 
-    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     clientVM.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
