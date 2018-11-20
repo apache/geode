@@ -100,7 +100,7 @@ public class AuthorizationIntegrationTest {
     @Override
     public boolean authorize(Object principal, ResourcePermission permission) {
       // Only allow data operations and only from the expected principal
-      if (principal != securityPrincipal
+      if (!principal.equals(securityPrincipal)
           || permission.getResource() != ResourcePermission.Resource.DATA) {
         return false;
       }

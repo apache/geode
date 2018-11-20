@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -38,7 +40,8 @@ public class ProtobufStreamProcessorTest {
     OutputStream outputStream = new ByteArrayOutputStream(2);
 
     ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
-    InternalCache mockInternalCache = mock(InternalCache.class);
+    InternalCache mockInternalCache = mock(InternalCacheForClientAccess.class);
+    when(mockInternalCache.getCacheForProcessingClientRequests()).thenReturn(mockInternalCache);
     protobufStreamProcessor.receiveMessage(inputStream, outputStream,
         TestExecutionContext.getNoAuthCacheExecutionContext(mockInternalCache));
   }

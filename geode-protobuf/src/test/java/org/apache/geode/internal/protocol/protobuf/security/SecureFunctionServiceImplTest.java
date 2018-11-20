@@ -36,6 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -52,7 +53,8 @@ public class SecureFunctionServiceImplTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    cache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
     security = mock(Security.class);

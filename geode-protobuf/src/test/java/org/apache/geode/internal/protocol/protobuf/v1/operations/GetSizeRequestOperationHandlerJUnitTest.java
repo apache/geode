@@ -34,6 +34,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -77,7 +78,8 @@ public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUn
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
-    InternalCache emptyCache = mock(InternalCache.class);
+    InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
+    when(emptyCache.getCacheForProcessingClientRequests()).thenReturn(emptyCache);
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";

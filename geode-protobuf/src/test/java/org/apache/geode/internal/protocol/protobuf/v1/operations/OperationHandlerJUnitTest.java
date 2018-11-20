@@ -15,11 +15,13 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -33,7 +35,8 @@ public class OperationHandlerJUnitTest {
   // if we name this setUp, then our children override, which is all kinds of annoying.
   @Before
   public void setUpForChildJUnitTests() throws Exception {
-    cacheStub = mock(InternalCache.class);
+    cacheStub = mock(InternalCacheForClientAccess.class);
+    when(cacheStub.getCacheForProcessingClientRequests()).thenReturn(cacheStub);
     serializationService = new ProtobufSerializationService();
   }
 }

@@ -52,7 +52,7 @@ public class SecureCacheImpl implements SecureCache {
   private final SecureFunctionService functionService;
 
   public SecureCacheImpl(InternalCache cache, Security security) {
-    this.cache = cache;
+    this.cache = cache.getCacheForProcessingClientRequests();
     this.security = security;
     this.functionService = new SecureFunctionServiceImpl(cache, security);
   }

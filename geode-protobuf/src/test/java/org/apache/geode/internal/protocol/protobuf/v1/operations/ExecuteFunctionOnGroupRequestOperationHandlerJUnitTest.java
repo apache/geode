@@ -40,6 +40,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -88,7 +89,8 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    cacheStub = mock(InternalCache.class);
+    cacheStub = mock(InternalCacheForClientAccess.class);
+    when(cacheStub.getCacheForProcessingClientRequests()).thenReturn(cacheStub);
     serializationService = new ProtobufSerializationService();
     when(cacheStub.getSecurityService()).thenReturn(mock(SecurityService.class));
 

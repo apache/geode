@@ -35,6 +35,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
@@ -87,7 +88,8 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
   @Before
   public void setUp() {
     regionStub = mock(LocalRegion.class);
-    cacheStub = mock(InternalCache.class);
+    cacheStub = mock(InternalCacheForClientAccess.class);
+    when(cacheStub.getCacheForProcessingClientRequests()).thenReturn(cacheStub);
     serializationService = new ProtobufSerializationService();
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);

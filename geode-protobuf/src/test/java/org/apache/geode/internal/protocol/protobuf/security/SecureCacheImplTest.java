@@ -53,6 +53,7 @@ import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -68,7 +69,8 @@ public class SecureCacheImplTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    cache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
     security = mock(Security.class);
