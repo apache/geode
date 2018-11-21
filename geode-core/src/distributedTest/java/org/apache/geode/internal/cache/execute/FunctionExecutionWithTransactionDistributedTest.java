@@ -58,7 +58,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -67,7 +66,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
 
   private String hostName;
   private String uniqueName;
-  private String regionName;
+  private String partitionedRegionName;
   private String replicateRegionName;
   private VM server1;
   private VM server2;
@@ -94,9 +93,6 @@ public class FunctionExecutionWithTransactionDistributedTest implements
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public DistributedDiskDirRule distributedDiskDir = new DistributedDiskDirRule();
-
-  @Rule
   public CacheRule cacheRule = new CacheRule();
 
   @Rule
@@ -114,7 +110,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
 
     hostName = getHostName();
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
-    regionName = uniqueName + "_region";
+    partitionedRegionName = uniqueName + "_partitionedRegion";
     replicateRegionName = uniqueName + "_replicateRegion";
   }
 
@@ -125,13 +121,13 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     port3 = server3.invoke(() -> createServerRegions(1, 3, false));
     createClientRegions(true, port1, port2, port3);
 
-    doMultipleFunctionsOnClient();
+    doMultipleFunctionsThenRollbackOnClient();
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
-  private void doMultipleFunctionsOnClient() {
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+  private void doMultipleFunctionsThenRollbackOnClient() {
+    Region region = clientCacheRule.getClientCache().getRegion(partitionedRegionName);
     Region replicateRegion = clientCacheRule.getClientCache().getRegion(replicateRegionName);
     doPuts(region);
     doPuts(replicateRegion);
@@ -158,10 +154,10 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     doFunction(replicateRegion, new MyReplicateRegionFunction(), Type.ON_REGION, false);
     txManager.rollback();
 
-    verifyReplicateRegionDataOnServers();
+    verifyReplicateRegionDataNotChangedOnServersAfterRollback();
   }
 
-  private void verifyReplicateRegionDataOnServers() {
+  private void verifyReplicateRegionDataNotChangedOnServersAfterRollback() {
     server1.invoke(() -> verifyData(cacheRule.getCache().getRegion(replicateRegionName)));
     server2.invoke(() -> verifyData(cacheRule.getCache().getRegion(replicateRegionName)));
     server3.invoke(() -> verifyData(cacheRule.getCache().getRegion(replicateRegionName)));
@@ -173,9 +169,9 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     setupServerRegions();
     createClientRegions(true, port1);
 
-    doMultipleFunctionsOnClient();
+    doMultipleFunctionsThenRollbackOnClient();
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -186,7 +182,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server3.invoke(() -> createServerRegions(1, 3, false));
     createClientRegions(true, port1);
 
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region region = clientCacheRule.getClientCache().getRegion(partitionedRegionName);
     doPuts(region);
     CacheTransactionManager txManager =
         clientCacheRule.getClientCache().getCacheTransactionManager();
@@ -198,13 +194,13 @@ public class FunctionExecutionWithTransactionDistributedTest implements
         .hasMessage("Function inside a transaction cannot execute on more than one node");
     txManager.rollback();
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
-  private void verifyPartitionedRegionOnServers() {
-    server1.invoke(() -> verifyData(cacheRule.getCache().getRegion(regionName)));
-    server2.invoke(() -> verifyData(cacheRule.getCache().getRegion(regionName)));
-    server3.invoke(() -> verifyData(cacheRule.getCache().getRegion(regionName)));
+  private void verifyPartitionedRegionNotChangedOnServersAfterRollback() {
+    server1.invoke(() -> verifyData(cacheRule.getCache().getRegion(partitionedRegionName)));
+    server2.invoke(() -> verifyData(cacheRule.getCache().getRegion(partitionedRegionName)));
+    server3.invoke(() -> verifyData(cacheRule.getCache().getRegion(partitionedRegionName)));
   }
 
   @Test
@@ -214,7 +210,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     port3 = server3.invoke(() -> createServerRegions(1, 3, false));
     createClientRegions(true, port1, port2, port3);
 
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region region = clientCacheRule.getClientCache().getRegion(partitionedRegionName);
     Region replicateRegion = clientCacheRule.getClientCache().getRegion(replicateRegionName);
     doPuts(region);
     doPuts(replicateRegion);
@@ -225,7 +221,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     doFunction(replicateRegion, new MyReplicateRegionFunction(), Type.ON_REGION, false);
     txManager.rollback();
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -234,7 +230,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     setupServerRegions();
     createClientRegions(true, port1);
 
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region region = clientCacheRule.getClientCache().getRegion(partitionedRegionName);
     doPuts(region);
     CacheTransactionManager txManager =
         clientCacheRule.getClientCache().getCacheTransactionManager();
@@ -247,7 +243,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
 
     txManager.rollback();
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -257,7 +253,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server3.invoke(() -> createServerRegions(1, 3, false));
     createClientRegions(true, port1);
 
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region region = clientCacheRule.getClientCache().getRegion(partitionedRegionName);
     Region replicateRegion = clientCacheRule.getClientCache().getRegion(replicateRegionName);
     doPuts(region);
     doPuts(replicateRegion);
@@ -275,7 +271,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
 
     txManager.rollback();
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -284,7 +280,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server2.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       Region replicateRegion = cacheRule.getCache().getRegion(replicateRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
@@ -294,10 +290,10 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
-  private void verifyDataOnServers() {
+  private void verifyDataNotChangedOnServersAfterRollback() {
     server1.invoke(() -> verifyData());
     server2.invoke(() -> verifyData());
     server3.invoke(() -> verifyData());
@@ -312,19 +308,19 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server1.invoke(() -> {
       createServerRegions(redundantCopies, 3, false);
       if (doPut) {
-        cacheRule.getCache().getRegion(regionName).put(KEY1, value + KEY1);
+        cacheRule.getCache().getRegion(partitionedRegionName).put(KEY1, value + KEY1);
       }
     });
     server2.invoke(() -> {
       createServerRegions(redundantCopies, 3, false);
       if (doPut) {
-        cacheRule.getCache().getRegion(regionName).put(KEY2, value + KEY2);
+        cacheRule.getCache().getRegion(partitionedRegionName).put(KEY2, value + KEY2);
       }
     });
     server3.invoke(() -> {
       createServerRegions(redundantCopies, 3, false);
       if (doPut) {
-        cacheRule.getCache().getRegion(regionName).put(KEY3, value + KEY3);
+        cacheRule.getCache().getRegion(partitionedRegionName).put(KEY3, value + KEY3);
       }
     });
   }
@@ -344,7 +340,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyReplicateRegionDataOnServers();
+    verifyReplicateRegionDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -354,7 +350,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     accessor.invoke(() -> doPuts());
 
     accessor.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       Region replicateRegion = cacheRule.getCache().getRegion(replicateRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
@@ -364,7 +360,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -373,7 +369,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server3.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       doPuts(region);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
@@ -385,7 +381,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -394,7 +390,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server2.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       Region replicateRegion = cacheRule.getCache().getRegion(replicateRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
@@ -404,7 +400,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -413,7 +409,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server1.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
       txManager.begin();
@@ -425,7 +421,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -434,7 +430,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server1.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       Region replicateRegion = cacheRule.getCache().getRegion(replicateRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
@@ -450,7 +446,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -459,7 +455,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server1.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
       txManager.begin();
@@ -471,7 +467,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -486,7 +482,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server1.invoke(() -> doPuts());
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
       txManager.begin();
@@ -498,7 +494,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -511,7 +507,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     server2.invoke(() -> doPuts());
 
     accessor.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = cacheRule.getCache().getRegion(partitionedRegionName);
       CacheTransactionManager txManager =
           cacheRule.getCache().getCacheTransactionManager();
       txManager.begin();
@@ -519,7 +515,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
       txManager.rollback();
     });
 
-    verifyPartitionedRegionOnServers();
+    verifyPartitionedRegionNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -530,9 +526,9 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     });
     server2.invoke(() -> doPuts());
 
-    server1.invoke(() -> doOnRegionAndOnMemberFunction());
+    server1.invoke(() -> doOnRegionAndOnMemberFunctionThenRollback());
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
   @Test
@@ -544,13 +540,13 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     });
     server2.invoke(() -> doPuts());
 
-    accessor.invoke(() -> doOnRegionAndOnMemberFunction());
+    accessor.invoke(() -> doOnRegionAndOnMemberFunctionThenRollback());
 
-    verifyDataOnServers();
+    verifyDataNotChangedOnServersAfterRollback();
   }
 
-  private void doOnRegionAndOnMemberFunction() {
-    Region region = cacheRule.getCache().getRegion(regionName);
+  private void doOnRegionAndOnMemberFunctionThenRollback() {
+    Region region = cacheRule.getCache().getRegion(partitionedRegionName);
     Region replicateRegion = null;
     replicateRegion = cacheRule.getCache().getRegion(replicateRegionName);
     CacheTransactionManager txManager =
@@ -571,7 +567,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     }
 
     cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(factory.create()).create(regionName);
+        .setPartitionAttributes(factory.create()).create(partitionedRegionName);
     cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE)
         .create(replicateRegionName);
     CacheServer server = cacheRule.getCache().addCacheServer();
@@ -593,7 +589,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     ClientRegionFactory crf =
         clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
     crf.setPoolName(pool.getName());
-    crf.create(regionName);
+    crf.create(partitionedRegionName);
     crf.create(replicateRegionName);
 
     if (ports.length > 1) {
@@ -611,7 +607,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
   }
 
   private void doPuts() {
-    doPuts(cacheRule.getCache().getRegion(regionName));
+    doPuts(cacheRule.getCache().getRegion(partitionedRegionName));
     doPuts(cacheRule.getCache().getRegion(replicateRegionName));
   }
 
@@ -623,7 +619,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
   }
 
   private void verifyData() {
-    verifyData(cacheRule.getCache().getRegion(regionName));
+    verifyData(cacheRule.getCache().getRegion(partitionedRegionName));
     verifyData(cacheRule.getCache().getRegion(replicateRegionName));
   }
 
@@ -664,7 +660,8 @@ public class FunctionExecutionWithTransactionDistributedTest implements
             membersSet.add(distributedMember2);
             execution = FunctionService.onMembers(membersSet);
           } else {
-            execution = FunctionService.onMember(distributedMember).setArguments(regionName);
+            execution = FunctionService.onMember(distributedMember).setArguments(
+                partitionedRegionName);
           }
         } else {
           execution = FunctionService.onMembers();
