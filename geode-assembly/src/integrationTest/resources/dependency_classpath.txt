@@ -35,7 +35,10 @@ log4j-jcl-2.11.1.jar
 jna-4.1.0.jar
 geode-rebalancer-1.9.0-SNAPSHOT.jar
 rmiio-2.1.2.jar
+grumpy-core-0.2.2.jar
 commons-codec-1.10.jar
+geo-0.7.1.jar
+commons-math3-3.2.jar
 log4j-api-2.11.1.jar
 jetty-server-9.4.12.v20180830.jar
 geode-connectors-1.9.0-SNAPSHOT.jar
