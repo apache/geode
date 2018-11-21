@@ -47,7 +47,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
     }
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
-    Double increment;
+    double increment;
 
     try {
       increment = Coder.bytesToDouble(incrArray);
