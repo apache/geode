@@ -19,11 +19,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -33,38 +35,23 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.distributed.DistributedMember;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({InternalDistributedSystem.class, LogService.class})
-@PowerMockIgnore({"javax.management.*", "javax.script.*"})
-@SuppressStaticInitializationFor({"org.apache.geode.internal.logging.LogService",
-    "org.apache.geode.distributed.internal.InternalDistributedSystem"})
 public class MBeanJMXAdapterTest {
   private ObjectName objectName;
   private MBeanServer mockMBeanServer;
   private Logger mockLogger;
+  private Map<ObjectName, Object> localGemFireMBean;
+  private DistributedMember distMember;
 
   @Before
   public void setUp() throws Exception {
-    mockStatic(InternalDistributedSystem.class);
-    when(InternalDistributedSystem.getConnectedInstance())
-        .thenReturn(mock(InternalDistributedSystem.class));
-
-    mockStatic(LogService.class);
-    mockLogger = mock(Logger.class);
-    when(mockLogger.isDebugEnabled()).thenReturn(true);
-    when(LogService.getLogger()).thenReturn(mockLogger);
-
     mockMBeanServer = mock(MBeanServer.class);
+    mockLogger = mock(Logger.class);
     objectName = new ObjectName("d:type=Foo,name=Bar");
+    localGemFireMBean = new HashMap<>();
+    distMember = mock(DistributedMember.class);
   }
 
   @Test
@@ -77,7 +64,8 @@ public class MBeanJMXAdapterTest {
     // has already been unregistered
     doThrow(new InstanceNotFoundException()).when(mockMBeanServer).unregisterMBean(objectName);
 
-    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter();
+    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter(localGemFireMBean,
+        distMember, mockLogger);
     MBeanJMXAdapter.mbeanServer = mockMBeanServer;
 
     mBeanJMXAdapter.unregisterMBean(objectName);
@@ -98,7 +86,8 @@ public class MBeanJMXAdapterTest {
     doThrow(new InstanceAlreadyExistsException()).when(mockMBeanServer)
         .registerMBean(any(Object.class), eq(objectName));
 
-    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter();
+    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter(localGemFireMBean,
+        distMember, mockLogger);
     MBeanJMXAdapter.mbeanServer = mockMBeanServer;
 
     mBeanJMXAdapter.registerMBeanProxy(mock(Object.class), objectName);

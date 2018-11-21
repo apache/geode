@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Set;
 
 import javax.management.DynamicMBean;
@@ -30,11 +31,13 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
@@ -106,7 +109,8 @@ public class MBeanSecurityJUnitTest {
         () -> server.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))
             .isInstanceOf(ReflectionException.class);
 
-    MBeanJMXAdapter adapter = new MBeanJMXAdapter();
+    MBeanJMXAdapter adapter = new MBeanJMXAdapter(new HashMap<>(), mock(DistributedMember.class),
+        mock(Logger.class));
     assertThatThrownBy(() -> adapter.registerMBean(mock(DynamicMBean.class),
         new ObjectName("MockDomain", "name", "mock"), false))
             .isInstanceOf(ManagementException.class);

@@ -19,7 +19,6 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceAlreadyExistsException;
@@ -41,7 +40,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskStoreMXBean;
@@ -71,14 +69,17 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   private DistributedMember distMember;
 
-  private Logger logger = LogService.getLogger();
+  private Logger logger;
 
   /**
    * public constructor
    */
-  public MBeanJMXAdapter() {
-    this.localGemFireMBean = new ConcurrentHashMap<>();
-    this.distMember = InternalDistributedSystem.getConnectedInstance().getDistributedMember();
+  public MBeanJMXAdapter(
+      Map<ObjectName, Object> localGemFireMBean,
+      DistributedMember distMember, Logger logger) {
+    this.localGemFireMBean = localGemFireMBean;
+    this.distMember = distMember;
+    this.logger = logger;
   }
 
   /**

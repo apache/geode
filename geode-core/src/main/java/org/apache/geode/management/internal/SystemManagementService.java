@@ -17,6 +17,7 @@ package org.apache.geode.management.internal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -133,7 +134,9 @@ public class SystemManagementService extends BaseManagementService {
       throw new DistributedSystemDisconnectedException(
           "This connection to a distributed system has been disconnected.");
     }
-    this.jmxAdapter = new MBeanJMXAdapter();
+
+    this.jmxAdapter = new MBeanJMXAdapter(new ConcurrentHashMap<>(),
+        InternalDistributedSystem.getConnectedInstance().getDistributedMember(), logger);
     this.repo = new ManagementResourceRepo();
 
 
