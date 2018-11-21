@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -36,7 +36,7 @@ public class OperationHandlerJUnitTest {
   @Before
   public void setUpForChildJUnitTests() throws Exception {
     cacheStub = mock(InternalCacheForClientAccess.class);
-    when(cacheStub.getCacheForProcessingClientRequests()).thenReturn(cacheStub);
+    doReturn(cacheStub).when(cacheStub).getCacheForProcessingClientRequests();
     serializationService = new ProtobufSerializationService();
   }
 }

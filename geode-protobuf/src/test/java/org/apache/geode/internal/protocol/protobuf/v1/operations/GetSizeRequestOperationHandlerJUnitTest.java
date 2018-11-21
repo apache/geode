@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.apache.geode.internal.protocol.TestExecutionContext.getNoAuthCacheExecutionContext;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +80,7 @@ public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUn
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
     InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
-    when(emptyCache.getCacheForProcessingClientRequests()).thenReturn(emptyCache);
+    doReturn(emptyCache).when(emptyCache).getCacheForProcessingClientRequests();
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";

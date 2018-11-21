@@ -39,7 +39,6 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
@@ -57,7 +56,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
   private static final String TEST_GROUP2 = "group2";
   private static final String TEST_FUNCTION_ID = "testFunction";
   public static final String NOT_A_GROUP = "notAGroup";
-  private InternalCache cacheStub;
+  private InternalCacheForClientAccess cacheStub;
   private DistributionManager distributionManager;
   private ExecuteFunctionOnGroupRequestOperationHandler operationHandler;
   private ProtobufSerializationService serializationService;

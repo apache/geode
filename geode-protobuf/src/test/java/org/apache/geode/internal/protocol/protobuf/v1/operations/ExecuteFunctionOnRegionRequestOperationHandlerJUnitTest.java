@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -89,7 +90,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
   public void setUp() {
     regionStub = mock(LocalRegion.class);
     cacheStub = mock(InternalCacheForClientAccess.class);
-    when(cacheStub.getCacheForProcessingClientRequests()).thenReturn(cacheStub);
+    doReturn(cacheStub).when(cacheStub).getCacheForProcessingClientRequests();
     serializationService = new ProtobufSerializationService();
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);

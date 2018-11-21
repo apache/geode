@@ -20,6 +20,7 @@ import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,7 +55,7 @@ public class SecureFunctionServiceImplTest {
   @Before
   public void setUp() {
     cache = mock(InternalCacheForClientAccess.class);
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    doReturn(cache).when(cache).getCacheForProcessingClientRequests();
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
     security = mock(Security.class);

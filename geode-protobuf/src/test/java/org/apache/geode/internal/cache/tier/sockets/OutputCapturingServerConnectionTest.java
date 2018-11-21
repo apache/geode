@@ -33,7 +33,6 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.IncompatibleVersionException;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -88,7 +87,7 @@ public class OutputCapturingServerConnectionTest {
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
 
-    InternalCache cache = mock(InternalCacheForClientAccess.class);
+    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
     when(cachedRegionHelper.getCache()).thenReturn(cache);
