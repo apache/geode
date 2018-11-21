@@ -23,9 +23,12 @@ import javax.sql.DataSource;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * Classes that implement this interface can be used as the class name
- * specified in the jndi-binding "conn-pooled-datasource-class" when the
- * jndi-binding type is "POOLED". For more information see "gfsh create jndi-binding".
+ * Classes that implement this interface can be used as the class name specified
+ * in the "gfsh create data-source --pooled-data-source-factory-class" parameter.
+ * <br>
+ * This parameter is only valid when the data-source type is "POOLED".
+ * <br>
+ * For more information see "gfsh create data-source".
  * <p>
  * Note: implementors of this interface must also implement a zero-arg constructor.
  */
@@ -38,12 +41,15 @@ public interface PooledDataSourceFactory {
    * or the jndi-binding is removed, then also implement {@link AutoCloseable}.
    *
    * @param poolProperties properties to use to initialize the pool part of the data source
-   *        The poolProperties names can be any of the following: connection-url, user-name,
-   *        password, jdbc-driver-class, max-pool-size, init-pool-size, idle-timeout-seconds,
+   *        The poolProperties names can be any of the following:
+   *        <br>
+   *        connection-url, user-name, password, jdbc-driver-class,
+   *        max-pool-size, init-pool-size, idle-timeout-seconds,
    *        login-timeout-seconds, or blocking-timeout-seconds.
-   *
+   *        <p>
    * @param dataSourceProperties properties to use to initialize the data source the pool will use
    *        to create connections
+   *        <p>
    * @return the created data source
    */
   public DataSource createDataSource(Properties poolProperties, Properties dataSourceProperties);
