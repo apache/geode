@@ -211,30 +211,6 @@ public class DUnitLauncher {
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       public void run() {
-        // System.out.println("shutting down DUnit JVMs");
-        // for (int i=0; i<NUM_VMS; i++) {
-        // try {
-        // processManager.getStub(i).shutDownVM();
-        // } catch (Exception e) {
-        // System.out.println("exception shutting down vm_"+i+": " + e);
-        // }
-        // }
-        // // TODO - hasLiveVMs always returns true
-        // System.out.print("waiting for JVMs to exit");
-        // long giveUp = System.currentTimeMillis() + 5000;
-        // while (giveUp > System.currentTimeMillis()) {
-        // if (!processManager.hasLiveVMs()) {
-        // return;
-        // }
-        // System.out.print(".");
-        // System.out.flush();
-        // try {
-        // Thread.sleep(1000);
-        // } catch (InterruptedException e) {
-        // break;
-        // }
-        // }
-        // System.out.println("\nkilling any remaining JVMs");
         processManager.killVMs();
       }
     });
@@ -367,6 +343,14 @@ public class DUnitLauncher {
       final LogConsumer logConsumer = new LogConsumer(skipLogMsgs, expectedStrings, "log4j", 5);
 
       final StringBuilder suspectStringBuilder = new StringBuilder();
+
+      try {
+        // Try to ensure everything has finished writing to the disk before scanning.
+        new FileOutputStream(DUNIT_SUSPECT_FILE, true).getFD().sync();
+      } catch (IOException e) {
+        System.err.println("Could not synchronize suspect string file: " + e);
+        // Continue with what we have, if we can.
+      }
 
       BufferedReader buffReader = null;
       FileChannel fileChannel = null;
