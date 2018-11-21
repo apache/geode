@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.ProxyQueryService;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -112,6 +113,11 @@ public class ProxyCache implements RegionService {
   }
 
   @Override
+  public JSONFormatter getJsonFormatter() {
+    return new JSONFormatter(this);
+  }
+
+  @Override
   public <K, V> Region<K, V> getRegion(String path) {
     preOp();
     if (this.cache.getRegion(path) == null) {
@@ -148,15 +154,6 @@ public class ProxyCache implements RegionService {
   public UserAttributes getUserAttributes() {
     preOp();
     return this.userAttributes;
-  }
-
-  public Object getUserId(Object key) {
-    preOp();
-    if (!(key instanceof ServerLocation)) {
-      throw new IllegalArgumentException(
-          "Key must be of type ServerLocation, but is " + key.getClass());
-    }
-    return this.userAttributes.getServerToId().get(key);
   }
 
   private void preOp() {

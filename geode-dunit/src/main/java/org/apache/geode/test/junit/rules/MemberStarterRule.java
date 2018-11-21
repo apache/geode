@@ -72,6 +72,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -185,6 +186,12 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public T withSecurityManager(Class<? extends SecurityManager> securityManager) {
     properties.setProperty(SECURITY_MANAGER, securityManager.getName());
+    return (T) this;
+  }
+
+  public T withCredential(String username, String password) {
+    properties.setProperty(UserPasswordAuthInit.USER_NAME, username);
+    properties.setProperty(UserPasswordAuthInit.PASSWORD, password);
     return (T) this;
   }
 

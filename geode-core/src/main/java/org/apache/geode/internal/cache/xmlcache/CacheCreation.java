@@ -152,6 +152,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -1057,6 +1058,11 @@ public class CacheCreation implements InternalCache {
   @Override
   public InternalQueryService getQueryService() {
     return this.queryService;
+  }
+
+  @Override
+  public JSONFormatter getJsonFormatter() {
+    return new JSONFormatter();
   }
 
   /**

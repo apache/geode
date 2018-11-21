@@ -25,6 +25,9 @@ import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
 
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.internal.ProxyCache;
+import org.apache.geode.cache.client.internal.UserAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.pdx.internal.json.JSONToPdxMapper;
 import org.apache.geode.pdx.internal.json.PdxInstanceHelper;
@@ -108,7 +111,17 @@ public class JSONFormatter {
     NONE, OBJECT_START, FIELD_NAME, SCALAR_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS
   }
 
-  private JSONFormatter() {}
+  private RegionService regionService;
+
+  public JSONFormatter() {}
+
+  public JSONFormatter(RegionService regionService) {
+    this.regionService = regionService;
+  }
+
+  public RegionService getRegionService() {
+    return regionService;
+  }
 
   /**
    * Converts a JSON document into a PdxInstance
@@ -117,7 +130,7 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to parse the JSON document
    */
   public static PdxInstance fromJSON(String jsonString) {
-    return getPdxInstanceFromJson(jsonString);
+    return new JSONFormatter().fromJson(jsonString);
   }
 
   /**
@@ -127,10 +140,14 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to parse the JSON document
    */
   public static PdxInstance fromJSON(byte[] jsonByteArray) {
-    return getPdxInstanceFromJson(jsonByteArray);
+    return new JSONFormatter().fromJson(jsonByteArray);
   }
 
-  private static PdxInstance getPdxInstanceFromJson(Object json) {
+  public PdxInstance fromJson(Object json) {
+    if (regionService != null && regionService instanceof ProxyCache) {
+      ProxyCache proxyCache = (ProxyCache) regionService;
+      UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
+    }
     JsonParser jp = null;
     try {
       if (json instanceof String) {
@@ -142,7 +159,7 @@ public class JSONFormatter {
         throw new JSONFormatterException("Could not parse the " + json.getClass() + " type");
       }
       enableJSONParserFeature(jp);
-      return new JSONFormatter().getPdxInstance(jp, states.NONE, null).getPdxInstance();
+      return getPdxInstance(jp, states.NONE, null).getPdxInstance();
     } catch (JsonParseException jpe) {
       throw new JSONFormatterException("Could not parse JSON document ", jpe);
     } catch (IOException e) {
@@ -151,10 +168,12 @@ public class JSONFormatter {
     } catch (Exception e) {
       throw new JSONFormatterException("Could not parse JSON document: " + jp.getCurrentLocation(),
           e);
+    } finally {
+      UserAttributes.userAttributes.set(null);
     }
   }
 
-  private static void enableJSONParserFeature(JsonParser jp) {
+  private void enableJSONParserFeature(JsonParser jp) {
     jp.enable(Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
     jp.enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES);
   }
@@ -166,6 +185,10 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to create the JSON document
    */
   public static String toJSON(PdxInstance pdxInstance) {
+    return new JSONFormatter().toJson(pdxInstance);
+  }
+
+  public String toJson(PdxInstance pdxInstance) {
     try {
       PdxToJSON pj = new PdxToJSON(pdxInstance);
       return pj.getJSON();
@@ -181,6 +204,10 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to create the JSON document
    */
   public static byte[] toJSONByteArray(PdxInstance pdxInstance) {
+    return new JSONFormatter().toJsonByteArray(pdxInstance);
+  }
+
+  public byte[] toJsonByteArray(PdxInstance pdxInstance) {
     try {
       PdxToJSON pj = new PdxToJSON(pdxInstance);
       return pj.getJSONByteArray();
@@ -189,7 +216,7 @@ public class JSONFormatter {
     }
   }
 
-  private static JSONToPdxMapper createJSONToPdxMapper(String className, JSONToPdxMapper parent) {
+  private JSONToPdxMapper createJSONToPdxMapper(String className, JSONToPdxMapper parent) {
     if (Boolean.getBoolean(SORT_JSON_FIELD_NAMES_PROPERTY)) {
       return new PdxInstanceSortedHelper(className, parent);
     } else {
@@ -198,7 +225,7 @@ public class JSONFormatter {
   }
 
   private JSONToPdxMapper getPdxInstance(JsonParser jp, states currentState,
-      JSONToPdxMapper currentPdxInstance) throws JsonParseException, IOException {
+      JSONToPdxMapper currentPdxInstance) throws IOException {
     String currentFieldName = null;
     if (currentState == states.OBJECT_START && currentPdxInstance == null) {
       currentPdxInstance = createJSONToPdxMapper(null, null);// from getlist

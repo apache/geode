@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
@@ -33,6 +34,8 @@ import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
@@ -41,26 +44,26 @@ public class MultiUserAPIDUnitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM server1, server2;
+  private static MemberVM server;
 
   @Rule
   public ClientCacheRule client = new ClientCacheRule();
 
   @BeforeClass
   public static void setUp() throws Exception {
-    server1 = cluster.startServerVM(0, s -> s.withSecurityManager(SimpleSecurityManager.class)
+    server = cluster.startServerVM(0, s -> s.withSecurityManager(SimpleSecurityManager.class)
+        .withCredential("cluster", "cluster")
         .withConnectionToLocator(ClusterStartupRule.getDUnitLocatorPort()));
-    server2 = cluster.startServerVM(0, s -> s.withSecurityManager(SimpleSecurityManager.class)
-        .withConnectionToLocator(ClusterStartupRule.getDUnitLocatorPort()));
-    server1.invoke(() -> {
-      ClusterStartupRule.memberStarter.createRegion(RegionShortcut.REPLICATE, "authRegion");
+
+    server.invoke(() -> {
+      ClusterStartupRule.memberStarter.createRegion(RegionShortcut.REPLICATE, "region");
     });
   }
 
   @Test
   public void testSingleUserUnsupportedAPIs() throws Exception {
     client.withCredential("stranger", "stranger").withMultiUser(false)
-        .withServerConnection(server1.getPort(), server2.getPort());
+        .withServerConnection(server.getPort());
     ClientCache clientCache = client.createCache();
 
     assertThatThrownBy(() -> clientCache.createAuthenticatedView(new Properties()))
@@ -73,55 +76,55 @@ public class MultiUserAPIDUnitTest {
     client.withCredential("stranger", "stranger")
         .withPoolSubscription(true)
         .withMultiUser(true)
-        .withServerConnection(server1.getPort(), server2.getPort());
+        .withServerConnection(server.getPort());
     client.createCache();
-    Region realRegion = client.createProxyRegion("authRegion");
+    Region region = client.createProxyRegion("region");
     Pool pool = client.getCache().getDefaultPool();
 
-    RegionService proxyCache = client.createAuthenticatedView("data", "data");
-    Region proxyRegion = proxyCache.getRegion("authRegion");
+    RegionService regionService = client.createAuthenticatedView("data", "data");
+    Region regionView = regionService.getRegion("region");
 
-    assertThatThrownBy(() -> realRegion.create("key", "value"))
+    assertThatThrownBy(() -> region.create("key", "value"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.put("key", "value"))
+    assertThatThrownBy(() -> region.put("key", "value"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.get("key"))
+    assertThatThrownBy(() -> region.get("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.containsKeyOnServer("key"))
+    assertThatThrownBy(() -> region.containsKeyOnServer("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.remove("key"))
+    assertThatThrownBy(() -> region.remove("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.destroy("key"))
+    assertThatThrownBy(() -> region.destroy("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.destroyRegion())
+    assertThatThrownBy(() -> region.destroyRegion())
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.registerInterest("key"))
+    assertThatThrownBy(() -> region.registerInterest("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> realRegion.clear()).isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> region.clear()).isInstanceOf(UnsupportedOperationException.class);
 
 
-    assertThatThrownBy(() -> proxyRegion.createSubregion("subRegion", null))
+    assertThatThrownBy(() -> regionView.createSubregion("subRegion", null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.forceRolling())
+    assertThatThrownBy(() -> regionView.forceRolling())
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.getAttributesMutator())
+    assertThatThrownBy(() -> regionView.getAttributesMutator())
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.loadSnapshot(null))
+    assertThatThrownBy(() -> regionView.loadSnapshot(null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.saveSnapshot(null))
+    assertThatThrownBy(() -> regionView.saveSnapshot(null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.registerInterest("key"))
+    assertThatThrownBy(() -> regionView.registerInterest("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.setUserAttribute(null))
+    assertThatThrownBy(() -> regionView.setUserAttribute(null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.unregisterInterestRegex("*"))
+    assertThatThrownBy(() -> regionView.unregisterInterestRegex("*"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.localDestroy("key"))
+    assertThatThrownBy(() -> regionView.localDestroy("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyRegion.localInvalidate("key"))
+    assertThatThrownBy(() -> regionView.localInvalidate("key"))
         .isInstanceOf(UnsupportedOperationException.class);
 
-    assertThatThrownBy(() -> FunctionService.onRegion(realRegion))
+    assertThatThrownBy(() -> FunctionService.onRegion(region))
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> FunctionService.onServer(pool))
         .isInstanceOf(UnsupportedOperationException.class);
@@ -130,26 +133,106 @@ public class MultiUserAPIDUnitTest {
 
 
     assertThatThrownBy(() -> {
-      Query query = pool.getQueryService().newQuery("SELECT * FROM /authRegion");
+      Query query = pool.getQueryService().newQuery("SELECT * FROM /region");
       query.execute();
     }).isInstanceOf(UnsupportedOperationException.class);
+
     CqQuery cqQuery =
-        pool.getQueryService().newCq("SELECT * FROM /authRegion",
+        pool.getQueryService().newCq("SELECT * FROM /region",
             new CqAttributesFactory().create());
     assertThatThrownBy(() -> cqQuery.execute())
         .hasCauseInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> cqQuery.executeWithInitialResults())
         .hasCauseInstanceOf(UnsupportedOperationException.class);
 
-    assertThatThrownBy(() -> proxyCache.getQueryService().getIndexes())
+    assertThatThrownBy(() -> regionService.getQueryService().getIndexes())
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyCache.getQueryService().getIndexes(null))
+    assertThatThrownBy(() -> regionService.getQueryService().getIndexes(null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyCache.getQueryService().createIndex(null, null, null))
+    assertThatThrownBy(() -> regionService.getQueryService().createIndex(null, null, null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> proxyCache.getQueryService().removeIndexes())
+    assertThatThrownBy(() -> regionService.getQueryService().removeIndexes())
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  public void singleUserSubscriptionEnabled() throws Exception {
+    ClientCache clientCache = client.withPoolSubscription(true)
+        .withServerConnection(server.getPort())
+        .createCache();
+    assertThat(clientCache).isNotNull();
+    assertThatThrownBy(() -> client.createProxyRegion("region"))
+        .isInstanceOf(AuthenticationRequiredException.class);
+  }
+
+  @Test
+  public void singleUserSubscriptionNotEnabled() throws Exception {
+    ClientCache clientCache = client.withPoolSubscription(false)
+        .withServerConnection(server.getPort())
+        .createCache();
+    assertThat(clientCache).isNotNull();
+    Region region = client.createProxyRegion("region");
+    assertThat(region).isNotNull();
+    assertThatThrownBy(() -> region.put("key", "value"))
+        .hasCauseInstanceOf(AuthenticationRequiredException.class);
+  }
+
+  @Test
+  public void noCredentialCanCreateCacheWithMultiUser() throws Exception {
+    ClientCache clientCache = client.withServerConnection(server.getPort()).withMultiUser(true)
+        .createCache();
+
+    // with multiuser, client cache can be created without credential and proxy region can be
+    // created. It's the same as single user with no pool subscription case
+    Region region = client.createProxyRegion("region");
+    assertThat(clientCache).isNotNull();
+    assertThat(region).isNotNull();
+    assertThatThrownBy(() -> region.put("key", "value"))
         .isInstanceOf(UnsupportedOperationException.class);
 
+    RegionService validView = client.createAuthenticatedView("data", "data");
+    Region<String, Object> validRegion = validView.getRegion("region");
+    validRegion.put("key", "value");
 
+    RegionService notAuthenticatedView = client.createAuthenticatedView("test", "invalid");
+    Region<String, Object> notAuthenticatedRegion = notAuthenticatedView.getRegion("region");
+    assertThatThrownBy(() -> notAuthenticatedRegion.put("key", "value"))
+        .hasCauseInstanceOf(AuthenticationFailedException.class);
+
+    RegionService notAuthorizedView = client.createAuthenticatedView("test", "test");
+    Region<String, Object> notAuthorizedRegion = notAuthorizedView.getRegion("region");
+    assertThatThrownBy(() -> notAuthorizedRegion.put("key", "value"))
+        .hasCauseInstanceOf(NotAuthorizedException.class);
+  }
+
+  @Test
+  public void jsonFormatterOnTheClientWithSingleUser() throws Exception {
+    client.withCredential("data", "data").withMultiUser(false)
+        .withServerConnection(server.getPort()).createCache();
+    Region region = client.createProxyRegion("region");
+
+    // with single user, the static method in JSONFormatter can be used
+    String json = "{\"key\" : \"value\"}";
+    PdxInstance value = JSONFormatter.fromJSON(json);
+    region.put("key", value);
+  }
+
+  @Test
+  public void jsonFormatterOnTheClientWithMultiUser() throws Exception {
+    client.withMultiUser(true).withServerConnection(server.getPort()).createCache();
+    client.createProxyRegion("region");
+
+    RegionService regionService = client.createAuthenticatedView("data", "data");
+    Region<String, Object> regionView = regionService.getRegion("region");
+
+    String json = "{\"key\" : \"value\"}";
+
+    // in multiUser view, can not use the static methods in JSONFormatter directly
+    assertThatThrownBy(() -> JSONFormatter.fromJSON(json))
+        .hasCauseInstanceOf(UnsupportedOperationException.class);
+
+    // need to get the jsonFormatter from the proxy cache
+    PdxInstance value = regionService.getJsonFormatter().fromJson(json);
+    regionView.put("key", value);
   }
 }
