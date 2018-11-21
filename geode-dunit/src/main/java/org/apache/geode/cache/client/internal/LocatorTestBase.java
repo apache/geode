@@ -53,7 +53,14 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
+
+/**
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
+ */
 public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected static final String CACHE_KEY = "CACHE";
   protected static final String LOCATOR_KEY = "LOCATOR";
