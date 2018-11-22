@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -146,6 +147,15 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
   public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
     config.getJndiBindings().add((JndiBindingsType.JndiBinding) element);
     return true;
+  }
+
+  @CliAvailabilityIndicator({CREATE_DATA_SOURCE})
+  public boolean commandAvailable() {
+    boolean isAvailable = true;
+    if (Boolean.getBoolean("gfsh")) {
+      isAvailable = isConnectedAndReady();
+    }
+    return isAvailable;
   }
 
   public static class PoolProperty {

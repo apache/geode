@@ -18,6 +18,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -132,5 +133,14 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
   private void addTableRow(TabularResultModel table, String property, String value) {
     table.accumulate("Property", property);
     table.accumulate("Value", value != null ? value : "");
+  }
+
+  @CliAvailabilityIndicator({DESCRIBE_DATA_SOURCE})
+  public boolean commandAvailable() {
+    boolean isAvailable = true;
+    if (Boolean.getBoolean("gfsh")) {
+      isAvailable = isConnectedAndReady();
+    }
+    return isAvailable;
   }
 }

@@ -18,6 +18,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.Collection;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Experimental;
@@ -86,5 +87,14 @@ public class ListMappingCommand extends GfshCommand {
       tableModel.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
     return !mappings.isEmpty();
+  }
+
+  @CliAvailabilityIndicator({LIST_MAPPING})
+  public boolean commandAvailable() {
+    boolean isAvailable = true;
+    if (Boolean.getBoolean("gfsh")) {
+      isAvailable = isConnectedAndReady();
+    }
+    return isAvailable;
   }
 }
