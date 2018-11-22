@@ -45,6 +45,7 @@ public class ExportDataFunction implements InternalFunction {
     final String regionName = args[0];
     final String fileName = args[1];
     final boolean parallel = Boolean.parseBoolean(args[2]);
+    CliFunctionResult result;
 
     try {
       Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
@@ -59,17 +60,22 @@ public class ExportDataFunction implements InternalFunction {
         } else {
           snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
         }
+
         String successMessage = CliStrings.format(CliStrings.EXPORT_DATA__SUCCESS__MESSAGE,
             regionName, exportFile.getCanonicalPath(), hostName);
-        context.getResultSender().lastResult(successMessage);
+        result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+            successMessage);
       } else {
-        throw new IllegalArgumentException(
+        result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
       }
-
     } catch (Exception e) {
       context.getResultSender().sendException(e);
+      result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          e.getMessage());
     }
+
+    context.getResultSender().lastResult(result);
   }
 
   public String getId() {

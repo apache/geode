@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -26,20 +27,20 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ImportDataFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class ImportDataCommand extends InternalGfshCommand {
+public class ImportDataCommand extends GfshCommand {
   private final ImportDataFunction importDataFunction = new ImportDataFunction();
 
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  public Result importData(
+  public ResultModel importData(
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE,
@@ -59,41 +60,41 @@ public class ImportDataCommand extends InternalGfshCommand {
 
     final DistributedMember targetMember = getMember(memberNameOrId);
 
-    Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);
+    Optional<ResultModel> validationResult = validatePath(filePath, dirPath, parallel);
     if (validationResult.isPresent()) {
       return validationResult.get();
     }
 
-    Result result;
+    ResultModel result;
     try {
       String path = dirPath != null ? dirPath : filePath;
       final Object args[] = {regionName, path, invokeCallbacks, parallel};
 
       ResultCollector<?, ?> rc = executeFunction(importDataFunction, args, targetMember);
-      result = CliUtil.getFunctionResult(rc, CliStrings.IMPORT_DATA);
+      result = ResultModel.createMemberStatusResult((List<CliFunctionResult>) rc.getResult());
     } catch (CacheClosedException e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+      result = ResultModel.createError(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
-      result = ResultBuilder.createGemFireErrorResult(
+      result = ResultModel.createError(
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
     }
     return result;
   }
 
-  private Optional<Result> validatePath(String filePath, String dirPath, boolean parallel) {
+  private Optional<ResultModel> validatePath(String filePath, String dirPath, boolean parallel) {
     if (filePath == null && dirPath == null) {
       return Optional
-          .of(ResultBuilder.createUserErrorResult("Must specify a location to load snapshot from"));
+          .of(ResultModel.createError("Must specify a location to load snapshot from"));
     } else if (filePath != null && dirPath != null) {
-      return Optional.of(ResultBuilder.createUserErrorResult(
+      return Optional.of(ResultModel.createError(
           "Options \"file\" and \"dir\" cannot be specified at the same time"));
     } else if (parallel && dirPath == null) {
-      return Optional.of(ResultBuilder
-          .createUserErrorResult("Must specify a directory to load snapshot files from"));
+      return Optional
+          .of(ResultModel.createError("Must specify a directory to load snapshot files from"));
     }
 
     if (dirPath == null && !filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
-      return Optional.of(ResultBuilder.createUserErrorResult(CliStrings
+      return Optional.of(ResultModel.createError(CliStrings
           .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION)));
     }
     return Optional.empty();
