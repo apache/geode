@@ -232,7 +232,7 @@ public class MultiUserAPIDUnitTest {
         .hasCauseInstanceOf(UnsupportedOperationException.class);
 
     // need to get the jsonFormatter from the proxy cache
-    PdxInstance value = regionService.getJsonFormatter().fromJson(json);
+    PdxInstance value = regionService.getJsonFormatter().toPdxInstance(json);
     regionView.put("key", value);
   }
 }

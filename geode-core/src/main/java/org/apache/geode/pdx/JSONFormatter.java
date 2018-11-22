@@ -130,7 +130,7 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to parse the JSON document
    */
   public static PdxInstance fromJSON(String jsonString) {
-    return new JSONFormatter().fromJson(jsonString);
+    return new JSONFormatter().toPdxInstance(jsonString);
   }
 
   /**
@@ -140,10 +140,17 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to parse the JSON document
    */
   public static PdxInstance fromJSON(byte[] jsonByteArray) {
-    return new JSONFormatter().fromJson(jsonByteArray);
+    return new JSONFormatter().toPdxInstance(jsonByteArray);
   }
 
-  public PdxInstance fromJson(Object json) {
+  /**
+   * Converts a JSON document into a PdxInstance
+   *
+   * @param json either a json string or a byte[]
+   * @return the PdxInstance.
+   * @throws JSONFormatterException if unable to parse the JSON document
+   */
+  public PdxInstance toPdxInstance(Object json) {
     if (regionService != null && regionService instanceof ProxyCache) {
       ProxyCache proxyCache = (ProxyCache) regionService;
       UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
@@ -185,10 +192,16 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to create the JSON document
    */
   public static String toJSON(PdxInstance pdxInstance) {
-    return new JSONFormatter().toJson(pdxInstance);
+    return new JSONFormatter().fromPdxInstance(pdxInstance);
   }
 
-  public String toJson(PdxInstance pdxInstance) {
+  /**
+   * Converts a PdxInstance into a JSON document
+   *
+   * @return the JSON string.
+   * @throws JSONFormatterException if unable to create the JSON document
+   */
+  public String fromPdxInstance(PdxInstance pdxInstance) {
     try {
       PdxToJSON pj = new PdxToJSON(pdxInstance);
       return pj.getJSON();
@@ -204,10 +217,16 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to create the JSON document
    */
   public static byte[] toJSONByteArray(PdxInstance pdxInstance) {
-    return new JSONFormatter().toJsonByteArray(pdxInstance);
+    return new JSONFormatter().toJsonByteArrayFromPdxInstance(pdxInstance);
   }
 
-  public byte[] toJsonByteArray(PdxInstance pdxInstance) {
+  /**
+   * Converts a PdxInstance into a JSON document in byte-array form
+   *
+   * @return the JSON byte array.
+   * @throws JSONFormatterException if unable to create the JSON document
+   */
+  public byte[] toJsonByteArrayFromPdxInstance(PdxInstance pdxInstance) {
     try {
       PdxToJSON pj = new PdxToJSON(pdxInstance);
       return pj.getJSONByteArray();

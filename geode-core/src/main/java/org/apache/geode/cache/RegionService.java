@@ -100,6 +100,11 @@ public interface RegionService extends AutoCloseable {
   QueryService getQueryService();
 
 
+  /**
+   * Returns the JSONFormatter. In the multi-user case, this will return a JSONFormatter
+   * that has the knowledge of the user associated with this region service.
+   *
+   */
   JSONFormatter getJsonFormatter();
 
   /**
