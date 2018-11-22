@@ -860,6 +860,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
     <xsd:attribute name="persist-backup" type="xsd:boolean" use="optional" />
     <xsd:attribute name="pool-name" type="xsd:string" use="optional" />
     <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+    <xsd:attribute default="CompositeDirector" name="composite-director-name" type="xsd:string" use="optional" />
     <xsd:attribute name="disk-synchronous" type="xsd:boolean" use="optional" />
     <xsd:attribute name="publisher" type="xsd:boolean" use="optional" />
     <xsd:attribute name="refid" type="xsd:string" use="optional" />

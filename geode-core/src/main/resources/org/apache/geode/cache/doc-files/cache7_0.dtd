@@ -972,6 +972,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
   persist-backup                  (false | true) #IMPLIED
   pool-name                       CDATA #IMPLIED
   disk-store-name                 CDATA #IMPLIED
+  composite-director-name         CDATA #IMPLIED
   disk-synchronous                (false | true) #IMPLIED
   publisher                       (false | true) #IMPLIED
   refid                           CDATA #IMPLIED

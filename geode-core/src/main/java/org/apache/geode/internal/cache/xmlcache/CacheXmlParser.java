@@ -1118,6 +1118,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     if (concurrencyChecksEnabled != null) {
       attrs.setConcurrencyChecksEnabled(Boolean.valueOf(concurrencyChecksEnabled).booleanValue());
     }
+    String compositeDirectorName = atts.getValue(COMPOSITE_DIRECTOR_NAME);
+    if (compositeDirectorName != null) {
+      attrs.setCompositeDirectorName(compositeDirectorName);
+    }
     String loadFactor = atts.getValue(LOAD_FACTOR);
     if (loadFactor != null) {
       attrs.setLoadFactor(parseFloat(loadFactor));

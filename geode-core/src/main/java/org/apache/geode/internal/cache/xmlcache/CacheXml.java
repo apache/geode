@@ -634,6 +634,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String SERVER_GROUP = "server-group";
   public static final String THREAD_LOCAL_CONNECTIONS = "thread-local-connections";
   public static final String DISK_STORE_NAME = "disk-store-name";
+  public static final String COMPOSITE_DIRECTOR_NAME = "composite-director-name";
   public static final String DISK_STORE = "disk-store";
   public static final String DISK_SYNCHRONOUS = "disk-synchronous";
   public static final String WRITE_BUFFER_SIZE = "write-buffer-size";

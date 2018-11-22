@@ -51,6 +51,7 @@ public class RegionAttributesInfo implements Serializable {
   private int concurrencyLevel = 16;
   private DataPolicy dataPolicy = DataPolicy.DEFAULT;
   private String diskStoreName = "";
+  private String compositeDirectorName = "";
   private boolean enableAsyncConflation = false;
   private boolean enableSubscriptionConflation = false;
   private boolean ignoreJTA = false;
@@ -99,6 +100,7 @@ public class RegionAttributesInfo implements Serializable {
     concurrencyLevel = ra.getConcurrencyLevel();
     dataPolicy = ra.getDataPolicy();
     diskStoreName = ra.getDiskStoreName();
+    compositeDirectorName = ra.getCompositeDirectorName();
     enableAsyncConflation = ra.getEnableAsyncConflation();
     enableSubscriptionConflation = ra.getEnableSubscriptionConflation();
     ignoreJTA = ra.getIgnoreJTA();
@@ -252,6 +254,10 @@ public class RegionAttributesInfo implements Serializable {
     return diskStoreName;
   }
 
+  public String getCompositeDirectorName() {
+    return compositeDirectorName;
+  }
+
   public boolean getEnableSyncConflation() {
     return enableAsyncConflation;
   }
@@ -384,6 +390,12 @@ public class RegionAttributesInfo implements Serializable {
 
     if (diskStoreName != null && !diskStoreName.equals(RegionAttributesDefault.DISK_STORE_NAME)) {
       nonDefaultAttributes.put(RegionAttributesNames.DISK_STORE_NAME, diskStoreName);
+    }
+
+    if (compositeDirectorName != null
+        && !compositeDirectorName.equals(RegionAttributesDefault.COMPOSITE_DIRECTOR_NAME)) {
+      nonDefaultAttributes.put(RegionAttributesNames.COMPOSITE_DIRECTOR_NAME,
+          compositeDirectorName);
     }
 
     if (enableAsyncConflation != RegionAttributesDefault.ENABLE_ASYNC_CONFLATION) {

@@ -37,6 +37,7 @@ public class RegionAttributesDefault {
   public static final boolean MULTICAST_ENABLED = false;
   public static final int CONCURRENCY_LEVEL = 16;
   public static final String DISK_STORE_NAME = "";
+  public static final String COMPOSITE_DIRECTOR_NAME = "CompositeDirector";
   public static final int INITIAL_CAPACITY = 16;
   public static final float LOAD_FACTOR = 0.75f;
   public static final String POOL_NAME = "";

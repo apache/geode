@@ -119,6 +119,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    * @since GemFire prPersistPrint2
    */
   private String diskStoreName;
+  private String compositeDirectorName;
   private boolean isDiskSynchronous = AttributesFactory.DEFAULT_DISK_SYNCHRONOUS;
 
   private boolean cloningEnabled = false;
@@ -254,6 +255,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       this.diskDirs = null;
       this.diskSizes = null;
     }
+    this.compositeDirectorName = attrs.getCompositeDirectorName();
     this.isDiskSynchronous = attrs.isDiskSynchronous();
     this.indexMaintenanceSynchronous = attrs.getIndexMaintenanceSynchronous();
     this.partitionAttributes = attrs.getPartitionAttributes();
@@ -963,9 +965,17 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     return this.diskStoreName;
   }
 
+  public String getCompositeDirectorName() {
+    return this.compositeDirectorName;
+  }
+
   public void setDiskStoreName(String diskStoreName) {
     this.diskStoreName = diskStoreName;
     setHasDiskStoreName(true);
+  }
+
+  public void setCompositeDirectorName(String compositeDirectorName) {
+    this.compositeDirectorName = compositeDirectorName;
   }
 
   public boolean isDiskSynchronous() {

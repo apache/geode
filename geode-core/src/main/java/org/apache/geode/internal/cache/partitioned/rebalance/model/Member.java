@@ -35,6 +35,7 @@ public class Member implements Comparable<Member> {
   private float totalPrimaryLoad;
   private long totalBytes;
   private long localMaxMemory;
+  private float totalBuckets;
   private final Set<Bucket> buckets = new TreeSet<>();
   private final Set<Bucket> primaryBuckets = new TreeSet<>();
   private final boolean isCritical;
@@ -114,6 +115,7 @@ public class Member implements Comparable<Member> {
       bucket.addMember(this);
       this.totalBytes += bucket.getBytes();
       this.totalLoad += bucket.getLoad();
+      this.totalBuckets += 1;
       return true;
     }
     return false;
@@ -124,6 +126,7 @@ public class Member implements Comparable<Member> {
       bucket.removeMember(this);
       this.totalBytes -= bucket.getBytes();
       this.totalLoad -= bucket.getLoad();
+      this.totalBuckets -= 1;
       return true;
     }
     return false;
@@ -169,6 +172,10 @@ public class Member implements Comparable<Member> {
 
   public long getSize() {
     return this.totalBytes;
+  }
+
+  public float getBucketsCount() {
+    return this.totalBuckets;
   }
 
   public float getTotalLoad() {

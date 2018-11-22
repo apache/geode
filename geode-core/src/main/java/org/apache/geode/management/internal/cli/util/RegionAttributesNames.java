@@ -35,6 +35,7 @@ public class RegionAttributesNames {
   public static final String CLONING_ENABLED = "cloning-enabled";
   public static final String CONCURRENCY_CHECK_ENABLED = "concurrency-checks-enabled";
   public static final String DISK_STORE_NAME = "disk-store-name";
+  public static final String COMPOSITE_DIRECTOR_NAME = "composite-director-name";
   public static final String CACHE_LISTENERS = "cache-listeners";
   public static final String CACHE_LOADER = "cache-loader";
   public static final String CACHE_WRITER = "cache-writer";

@@ -422,6 +422,13 @@ public interface RegionAttributes<K, V> {
   String getDiskStoreName();
 
   /**
+   * Returns Composite Directory name. Default is set to "CompositeDirector".
+   *
+   * @return Returns true if writes to disk are synchronous and false otherwise
+   */
+  String getCompositeDirectorName();
+
+  /**
    * Returns true if configured synchronous disk writes. Default is set to true.
    *
    * @return Returns true if writes to disk are synchronous and false otherwise

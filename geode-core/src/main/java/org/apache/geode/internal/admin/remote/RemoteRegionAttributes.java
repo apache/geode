@@ -96,6 +96,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   private boolean cloningEnable;
   private String poolName;
   private String diskStoreName;
+  private String compositeDirectorName;
   private boolean isDiskSynchronous;
   private String[] gatewaySendersDescs;
   private boolean isGatewaySenderEnabled = false;
@@ -143,6 +144,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       this.diskDirs = null;
       this.diskSizes = null;
     }
+    this.compositeDirectorName = attr.getCompositeDirectorName();
     this.partitionAttributes = attr.getPartitionAttributes();
     this.membershipAttributes = attr.getMembershipAttributes();
     this.subscriptionAttributes = attr.getSubscriptionAttributes();
@@ -606,6 +608,10 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   }
 
   public String getDiskStoreName() {
+    return this.diskStoreName;
+  }
+
+  public String getCompositeDirectorName() {
     return this.diskStoreName;
   }
 

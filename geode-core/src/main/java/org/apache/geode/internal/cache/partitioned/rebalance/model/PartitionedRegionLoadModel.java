@@ -126,6 +126,8 @@ public class PartitionedRegionLoadModel {
   private float primaryAverage = -1;
   /** The average bucket load on a member */
   private float averageLoad = -1;
+  /** The average bucket count on a member */
+  private float averageBuckets = -1;
   /**
    * The minimum improvement in variance that we'll consider worth moving a primary
    */
@@ -548,6 +550,59 @@ public class PartitionedRegionLoadModel {
     return bestMove;
   }
 
+  public Move findBestBucketCountMove(String parentRegion) {
+    Move bestMove = null;
+    for (Member source : this.members.values()) {
+      for (Bucket bucket : source.getBuckets()) {
+        for (Member target : this.members.values()) {
+          if (bucket.getMembersHosting().contains(target)) {
+            continue;
+          }
+          if (!target.willAcceptBucket(bucket, source, true).willAccept()) {
+            continue;
+          }
+
+          MemberRollup memberRollupSource = (MemberRollup) source;
+          MemberRollup memberRollupTarget = (MemberRollup) target;
+
+          Member memberColocatedSource = memberRollupSource.getColocatedMembers().get(parentRegion);
+          Member memberColocatedTarget = memberRollupTarget.getColocatedMembers().get(parentRegion);
+
+          if (memberColocatedSource == null || memberColocatedTarget == null) {
+            continue;
+          }
+          if (memberColocatedSource.getBucketsCount() > memberColocatedTarget
+              .getBucketsCount()
+              && ((memberColocatedSource.getBucketsCount() > Math
+                  .round(
+                      getAverageBuckets(parentRegion)))
+                  || ((Math
+                      .round(getAverageBuckets(parentRegion)) > getAverageBuckets(
+                          parentRegion)
+                      && memberColocatedSource.getBucketsCount() > memberColocatedTarget
+                          .getBucketsCount()
+                          + 1)))
+              && ((Math.round(getAverageBuckets(
+                  parentRegion)) > memberColocatedTarget.getBucketsCount())
+                  || (Math
+                      .round(getAverageBuckets(parentRegion)) < getAverageBuckets(
+                          parentRegion)
+                      && memberColocatedSource.getBucketsCount() > memberColocatedTarget
+                          .getBucketsCount()
+                          + 1))) {
+            Move move = new Move(source, target, bucket);
+            if (!this.attemptedBucketMoves.contains(move)) {
+              bestMove = move;
+              return bestMove;
+            }
+          }
+        }
+      }
+    }
+    return bestMove;
+
+  }
+
   /**
    * Calculate the target weighted number of primaries on each node.
    */
@@ -582,6 +637,22 @@ public class PartitionedRegionLoadModel {
     }
 
     return this.averageLoad;
+  }
+
+  private float getAverageBuckets(String parentRegion) {
+    if (this.averageBuckets == -1) {
+      float totalBucketsCount = 0;
+
+      for (Member member : this.members.values()) {
+        MemberRollup memberRollup = (MemberRollup) member;
+        Member memberColocated = memberRollup.getColocatedMembers().get(parentRegion);
+
+        totalBucketsCount += memberColocated.getBucketsCount();
+      }
+
+      this.averageBuckets = totalBucketsCount / members.size();
+    }
+    return this.averageBuckets;
   }
 
   /**
@@ -645,6 +716,7 @@ public class PartitionedRegionLoadModel {
     this.averageLoad = -1;
     this.minPrimaryImprovement = -1;
     this.minImprovement = -1;
+    this.averageBuckets = -1;
   }
 
   /**

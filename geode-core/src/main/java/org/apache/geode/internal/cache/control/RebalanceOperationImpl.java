@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
+import org.apache.geode.internal.cache.partitioned.rebalance.TransientCompositeDirector;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -84,21 +85,28 @@ public class RebalanceOperationImpl implements RebalanceOperation {
         try {
           // Colocated regions will be rebalanced as part of rebalancing their leader
           if (region.getColocatedWith() == null && filter.include(region)) {
+            PartitionedRegionRebalanceOp prOp;
 
             if (region.isFixedPartitionedRegion()) {
               if (Boolean.getBoolean(
                   DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
-                PartitionedRegionRebalanceOp prOp = new PartitionedRegionRebalanceOp(region,
-                    simulation, new CompositeDirector(false, false, false, true), true, true,
-                    cancelled, stats);
+                prOp = new PartitionedRegionRebalanceOp(region, simulation,
+                    new CompositeDirector(false, false, false, true), true, true, cancelled, stats);
                 this.futureList.add(submitRebalanceTask(prOp, start));
               } else {
                 continue;
               }
             } else {
-              PartitionedRegionRebalanceOp prOp =
-                  new PartitionedRegionRebalanceOp(region, simulation,
-                      new CompositeDirector(true, true, true, true), true, true, cancelled, stats);
+              if (region.getCompositeDirectorName() != null
+                  && region.getCompositeDirectorName().equals("TransientCompositeDirector")) {
+                logger.info("using TransientCompositeDirector");
+                prOp = new PartitionedRegionRebalanceOp(region, simulation,
+                    new TransientCompositeDirector(true, true, true, true), true, true, cancelled,
+                    stats);
+              } else {
+                prOp = new PartitionedRegionRebalanceOp(region, simulation,
+                    new CompositeDirector(true, true, true, true), true, true, cancelled, stats);
+              }
               this.futureList.add(submitRebalanceTask(prOp, start));
             }
           }

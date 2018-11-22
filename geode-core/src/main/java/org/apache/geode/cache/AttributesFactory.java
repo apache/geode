@@ -388,6 +388,7 @@ public class AttributesFactory<K, V> {
       this.regionAttributes.diskDirs = regionAttributes.getDiskDirs();
       this.regionAttributes.diskSizes = regionAttributes.getDiskDirSizes();
     }
+    this.regionAttributes.compositeDirectorName = regionAttributes.getCompositeDirectorName();
     this.regionAttributes.diskSynchronous = regionAttributes.isDiskSynchronous();
     this.regionAttributes.indexMaintenanceSynchronous =
         regionAttributes.getIndexMaintenanceSynchronous();
@@ -1536,6 +1537,7 @@ public class AttributesFactory<K, V> {
     EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
     String poolName = null;
     String diskStoreName = null;
+    String compositeDirectorName = null;
     boolean diskSynchronous = DEFAULT_DISK_SYNCHRONOUS;
     protected boolean isBucketRegion = false;
     private boolean isCloningEnabled = false;
@@ -1584,6 +1586,7 @@ public class AttributesFactory<K, V> {
       } else {
         buf.append("; diskStoreName=").append(diskStoreName);
       }
+      buf.append("; compositeDirectorName=").append(compositeDirectorName);
       buf.append("; GatewaySenderIds=").append(gatewaySenderIds);
       buf.append("; AsyncEventQueueIds=").append(asyncEventQueueIds);
       buf.append("; compressor=")
@@ -1910,6 +1913,10 @@ public class AttributesFactory<K, V> {
 
     public String getDiskStoreName() {
       return this.diskStoreName;
+    }
+
+    public String getCompositeDirectorName() {
+      return this.compositeDirectorName;
     }
 
     public boolean getMulticastEnabled() {

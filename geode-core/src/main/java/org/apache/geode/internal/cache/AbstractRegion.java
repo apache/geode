@@ -211,6 +211,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected File[] diskDirs;
   protected int[] diskSizes;
   protected String diskStoreName;
+  protected String compositeDirectorName;
   protected boolean isDiskSynchronous;
   private boolean indexMaintenanceSynchronous = false;
 
@@ -358,6 +359,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
 
     this.diskStoreName = attrs.getDiskStoreName();
+    this.compositeDirectorName = attrs.getCompositeDirectorName();
     this.isDiskSynchronous = attrs.isDiskSynchronous();
     if (this.diskStoreName == null) {
       this.diskWriteAttributes = attrs.getDiskWriteAttributes();
@@ -873,6 +875,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public String getDiskStoreName() {
     return this.diskStoreName;
+  }
+
+  @Override
+  public String getCompositeDirectorName() {
+    return this.compositeDirectorName;
   }
 
   @Override
