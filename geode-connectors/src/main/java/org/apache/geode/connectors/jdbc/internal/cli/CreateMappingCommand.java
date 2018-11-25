@@ -181,7 +181,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
+  public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object element) {
     Object[] arguments = (Object[]) element;
     RegionMapping regionMapping = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];
@@ -189,14 +189,17 @@ public class CreateMappingCommand extends SingleGfshCommand {
     String queueName = createAsyncEventQueueName(regionName);
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
-      return;
+      return false;
     }
+
     RegionAttributesType attributes = getRegionAttributes(regionConfig);
     addMappingToRegion(regionMapping, regionConfig);
     if (!synchronous) {
       createAsyncQueue(cacheConfig, attributes, queueName);
     }
     alterRegion(queueName, attributes, synchronous);
+
+    return true;
   }
 
   private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {
@@ -242,6 +245,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       asyncEventQueueList += queueName;
       attributes.setAsyncEventQueueIds(asyncEventQueueList);
     }
+
   }
 
   private void setCacheLoader(RegionAttributesType attributes) {

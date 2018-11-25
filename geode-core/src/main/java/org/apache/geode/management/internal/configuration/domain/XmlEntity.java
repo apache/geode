@@ -90,7 +90,8 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   private static CacheProvider createDefaultCacheProvider() {
-    return () -> (InternalCache) CacheFactory.getAnyInstance();
+    return () -> ((InternalCache) CacheFactory.getAnyInstance())
+        .getCacheForProcessingClientRequests();
   }
 
   /**

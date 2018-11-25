@@ -367,5 +367,5 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    * application visible regions. Any regions created internally
    * by Geode will not be accessible from the returned cache.
    */
-  InternalCache getCacheForProcessingClientRequests();
+  InternalCacheForClientAccess getCacheForProcessingClientRequests();
 }

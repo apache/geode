@@ -99,6 +99,11 @@ configurations {
   webServerTomcat8
   webServerTomcat9
   webServerJetty
+
+  javadocOnly {
+    description 'Projects that must be included in the JavaDocs.'
+    extendsFrom archives
+  }
 }
 
 def webServersDir = "$buildDir/generated-resources/webservers"
@@ -130,6 +135,13 @@ dependencies {
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
 
+  javadocOnly project(':extensions:geode-modules')
+  javadocOnly project(':extensions:geode-modules-session')
+  javadocOnly project(':extensions:geode-modules-session')
+  javadocOnly project(':extensions:geode-modules-tomcat7')
+  javadocOnly project(':extensions:geode-modules-tomcat9')
+  javadocOnly project(':extensions:geode-modules-tomcat8')
+  javadocOnly project(':geode-experimental-driver')
 
   testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
@@ -338,33 +350,34 @@ task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
 
 def docsDir = file("$buildDir/javadocs")
 task docs(type: Javadoc) {
-    options.addStringOption('Xdoclint:none', '-quiet')
-    options.links("https://lucene.apache.org/core/6_4_1/core/")
-    options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
-    options.encoding='UTF-8'
-    source parent.subprojects*.javadoc*.source
-    classpath = files(parent.subprojects*.javadoc*.classpath)
-    title = "${productName} ${project.version}"
-    include 'org/apache/geode/**/'
-    exclude 'org/apache/geode/internal/**/'
-    exclude 'org/apache/geode/**/internal/**/'
-    exclude 'org/apache/geode/**/xml/**/'
-    exclude 'org/apache/geode/distributed/**/util/**/'
-    exclude 'org/apache/geode/test/**/'
-    destinationDir = docsDir
+  options.addStringOption('Xdoclint:none', '-quiet')
+  options.links("https://lucene.apache.org/core/6_4_1/core/")
+  options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
+  options.links("https://docs.oracle.com/javase/8/docs/api/")
+  options.encoding = 'UTF-8'
+  title = "${productName} ${project.version}"
+  destinationDir = docsDir
 
-    parent.subprojects.each { project ->
-      dependsOn(project.tasks['javadoc'])
+  configurations.getByName("javadocOnly").allDependencies.each() { proj ->
+    proj.dependencyProject.tasks.withType(Javadoc).findAll { it.enabled }.each { javadocTask ->
+      source += javadocTask.source
+      classpath += javadocTask.classpath
+      excludes += javadocTask.excludes
+      includes += javadocTask.includes
     }
-    doLast {
-      parent.subprojects.each { project ->
-        copy {
-          from project.sourceSets.main.resources.srcDirs
-          into docsDir
-          include 'javadoc-images/*'
-        }
+  }
+
+  include 'org/apache/geode/**/'
+
+  doLast {
+    parent.subprojects.each { project ->
+      copy {
+        from project.sourceSets.main.resources.srcDirs
+        into docsDir
+        include 'javadoc-images/*'
       }
-   }
+    }
+  }
 }
 
 distributions {

@@ -103,7 +103,8 @@ public class DataCommandFunction implements InternalFunction {
   @Override
   public void execute(FunctionContext functionContext) {
     try {
-      InternalCache cache = (InternalCache) functionContext.getCache();
+      InternalCache cache =
+          ((InternalCache) functionContext.getCache()).getCacheForProcessingClientRequests();
       DataCommandRequest request = (DataCommandRequest) functionContext.getArguments();
       if (logger.isDebugEnabled()) {
         logger.debug("Executing function : \n{}\n on member {}", request,

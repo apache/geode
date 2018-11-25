@@ -16,10 +16,23 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -28,8 +41,35 @@ public class DescribeConfigCommandTest {
   @ClassRule
   public static GfshParserRule parser = new GfshParserRule();
 
+  private DescribeConfigCommand command;
+
+  @Before
+  public void setUp() throws Exception {
+    command = spy(DescribeConfigCommand.class);
+  }
+
   @Test
   public void describeConfigWithoutMemberName() throws Exception {
     assertThat(parser.parse("describe config")).isNull();
+  }
+
+  @Test
+  public void passwordShouldBeRedacted() {
+    MemberConfigurationInfo info = new MemberConfigurationInfo();
+    Map<String, String> properties = new HashMap<>();
+    properties.put(ConfigurationProperties.SSL_KEYSTORE, "somewhere/something");
+    properties.put(ConfigurationProperties.SSL_KEYSTORE_PASSWORD, "mySecretPassword");
+
+    info.setGfePropsSetFromFile(properties);
+    CliFunctionResult functionResult = mock(CliFunctionResult.class);
+    when(functionResult.getResultObject()).thenReturn(info);
+    doReturn(mock(DistributedMember.class)).when(command).getMember(any());
+    doReturn(functionResult).when(command).executeFunctionAndGetFunctionResult(any(), any(), any());
+
+    parser.executeAndAssertThat(command, "describe config --member=test").statusIsSuccess()
+        .hasDataSection("file-properties")
+        .hasContent()
+        .doesNotContainValue("mySecretPassword")
+        .containsValue("********");
   }
 }

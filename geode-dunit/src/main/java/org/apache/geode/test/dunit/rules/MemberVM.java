@@ -32,7 +32,7 @@ import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 public class MemberVM extends VMProvider implements Member {
-  private Logger logger = LogService.getLogger();
+  private static Logger logger = LogService.getLogger();
   protected Member member;
   protected VM vm;
 

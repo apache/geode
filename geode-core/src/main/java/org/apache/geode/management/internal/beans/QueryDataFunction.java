@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -57,6 +56,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -126,7 +126,8 @@ public class QueryDataFunction implements Function, InternalEntity {
   private QueryDataFunctionResult selectWithType(final FunctionContext context, String queryString,
       final boolean showMember, final String regionName, final int limit,
       final int queryResultSetLimit, final int queryCollectionsDepth) throws Exception {
-    InternalCache cache = getCache();
+    InternalCache cache =
+        ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     Function localQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName, showMember)
         .setOptimizeForWrite(true);
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
@@ -346,7 +347,7 @@ public class QueryDataFunction implements Function, InternalEntity {
       }
     }
 
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+    InternalCache cache = ManagementAgent.getCache();
     try {
 
       SystemManagementService service =
@@ -432,10 +433,6 @@ public class QueryDataFunction implements Function, InternalEntity {
           String.format("Query is invalid due to error : %s", qe.getMessage()))
               .toString();
     }
-  }
-
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   private static class JsonisedErrorMessage {
@@ -525,7 +522,8 @@ public class QueryDataFunction implements Function, InternalEntity {
 
     @Override
     public void execute(final FunctionContext context) {
-      InternalCache cache = getCache();
+      InternalCache cache =
+          ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       QueryService queryService = cache.getQueryService();
       String qstr = (String) context.getArguments();
       Region r = cache.getRegion(regionName);
@@ -543,10 +541,6 @@ public class QueryDataFunction implements Function, InternalEntity {
       } catch (Exception e) {
         throw new FunctionException(e);
       }
-    }
-
-    private InternalCache getCache() {
-      return (InternalCache) CacheFactory.getAnyInstance();
     }
 
     @Override

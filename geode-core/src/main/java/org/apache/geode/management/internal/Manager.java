@@ -16,6 +16,7 @@ package org.apache.geode.management.internal;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 
 /**
  * The Manager is a 7.0 JMX Agent which is hosted within a GemFire process. Only one instance is
@@ -26,7 +27,7 @@ import org.apache.geode.internal.cache.InternalCache;
  */
 public abstract class Manager {
 
-  protected InternalCache cache;
+  protected InternalCacheForClientAccess cache;
 
   /**
    * depicts whether this node is a Managing node or not
@@ -51,7 +52,7 @@ public abstract class Manager {
   public Manager(ManagementResourceRepo repo, InternalDistributedSystem system,
       InternalCache cache) {
     this.repo = repo;
-    this.cache = cache;
+    this.cache = cache.getCacheForProcessingClientRequests();
     this.system = system;
   }
 

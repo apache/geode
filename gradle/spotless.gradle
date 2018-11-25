@@ -18,7 +18,6 @@
 subprojects {
   apply plugin: "com.diffplug.gradle.spotless"
   spotless {
-    lineEndings = 'unix'
     java {
       target project.fileTree(project.projectDir) {
         include '**/*.java'

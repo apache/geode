@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +41,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
@@ -157,6 +159,8 @@ public class ExportLogsCommandTest {
   @Test
   public void testTotalEstimateSizeExceedsLocatorAvailableDisk() throws Exception {
     final InternalCache mockCache = mock(InternalCache.class);
+    final InternalCacheForClientAccess mockCacheFilter = mock(InternalCacheForClientAccess.class);
+    when(mockCache.getCacheForProcessingClientRequests()).thenReturn(mockCacheFilter);
     final ExportLogsCommand realCmd = new ExportLogsCommand();
     ExportLogsCommand spyCmd = spy(realCmd);
 
@@ -198,6 +202,8 @@ public class ExportLogsCommandTest {
   @Test
   public void testTotalEstimateSizeExceedsUserSpecifiedValue() throws Exception {
     final InternalCache mockCache = mock(InternalCache.class);
+    final InternalCacheForClientAccess mockCacheFilter = mock(InternalCacheForClientAccess.class);
+    when(mockCache.getCacheForProcessingClientRequests()).thenReturn(mockCacheFilter);
     final ExportLogsCommand realCmd = new ExportLogsCommand();
     ExportLogsCommand spyCmd = spy(realCmd);
 
@@ -239,6 +245,8 @@ public class ExportLogsCommandTest {
   @Test
   public void estimateLogSizeExceedsServerDisk() throws Exception {
     final InternalCache mockCache = mock(InternalCache.class);
+    final InternalCacheForClientAccess mockCacheFilter = mock(InternalCacheForClientAccess.class);
+    when(mockCache.getCacheForProcessingClientRequests()).thenReturn(mockCacheFilter);
     final ExportLogsCommand realCmd = new ExportLogsCommand();
     ExportLogsCommand spyCmd = spy(realCmd);
 

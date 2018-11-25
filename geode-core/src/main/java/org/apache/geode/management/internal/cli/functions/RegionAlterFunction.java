@@ -32,6 +32,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
@@ -62,7 +63,7 @@ public class RegionAlterFunction implements InternalFunction {
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = context.getCache();
+    Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 

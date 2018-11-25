@@ -128,8 +128,8 @@ public class RestAPIsWithSSLDUnitTest {
         .withProperties(sslProperties)
         .withConnectionToLocator(locatorPort)
         .withRegion(RegionShortcut.REPLICATE, PEOPLE_REGION_NAME));
-    client = cluster.startClientVM(1,
-        c -> c.addPoolLocator("localhost", locatorPort).setPdxReadSerialized(true));
+    client = cluster.startClientVM(1, c -> c.withLocatorConnection(locatorPort)
+        .withCacheSetup(cf -> cf.setPdxReadSerialized(true)));
 
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();

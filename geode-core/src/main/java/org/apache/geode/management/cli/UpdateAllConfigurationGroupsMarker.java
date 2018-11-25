@@ -12,22 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit;
-
-
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedRule;
+package org.apache.geode.management.cli;
 
 /**
- * This class is the superclass of all distributed unit tests.
- *
- * @deprecated this class used to be the base for distributed test cases, but due to its complexity
- *             and the complexity of inheritance in test classes, it should not be used.
- *             Please use {@link DistributedRule} and Geode User APIs or
- *             {@link ClusterStartupRule} instead.
+ * This interface is implemented by gfsh commands that can potentially update the configuration for
+ * all groups (including the cluster-wide group, "cluster").
+ * <p/>
+ * If the command implements UpdateAllConfigurationGroupsMarker, CommandExecutor builds the list of
+ * groups that will be updated to include all groups (including the "cluster" group). Otherwise,
+ * the list of groups are those specified with a command <code>--group</code> option, or "cluster"
+ * if there * is no <code>--group</code> option.
  */
-
-@SuppressWarnings("serial")
-public abstract class DistributedTestCase extends JUnit4DistributedTestCase {
+public interface UpdateAllConfigurationGroupsMarker {
 }

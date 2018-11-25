@@ -114,7 +114,7 @@ public class CreateDefinedIndexesCommandTest {
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
 
     assertThat(result.getStatus()).isEqualTo(OK);
-    verify(command, Mockito.times(0)).updateClusterConfig(any(), any(), any());
+    verify(command, Mockito.times(0)).updateConfigForGroup(any(), any(), any());
   }
 
   @Test
