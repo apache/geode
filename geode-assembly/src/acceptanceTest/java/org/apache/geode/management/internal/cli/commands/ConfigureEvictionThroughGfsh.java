@@ -38,7 +38,7 @@ public class ConfigureEvictionThroughGfsh {
   public void configureEvictionByEntryCount() throws Exception {
 
     GfshExecution execution = GfshScript
-        .of("start locator --name=locator", "start server --name=server",
+        .of("start locator --name=locator", "start server --name=server --server-port=0",
             "create region --name=region1 --eviction-action=local-destroy --eviction-entry-count=1000 --type=REPLICATE",
             "create region --name=region2 --eviction-action=overflow-to-disk --eviction-entry-count=1000 --type=REPLICATE",
             "create region --name=region3 --eviction-action=overflow-to-disk --eviction-entry-count=1000 --type=REPLICATE_PERSISTENT",
@@ -94,7 +94,7 @@ public class ConfigureEvictionThroughGfsh {
   @Test
   public void configureEvictionByMaxMemory() throws Exception {
     GfshExecution execution = GfshScript
-        .of("start locator --name=locator", "start server --name=server",
+        .of("start locator --name=locator", "start server --name=server --server-port=0",
             "create region --name=region1 --eviction-action=local-destroy --eviction-max-memory=1000 --type=REPLICATE",
             "create region --name=region2 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --type=REPLICATE",
             "create region --name=region3 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --type=REPLICATE_PERSISTENT",
@@ -160,7 +160,8 @@ public class ConfigureEvictionThroughGfsh {
   @Test
   public void configureEvictionByObjectSizer() throws Exception {
     GfshExecution execution = GfshScript
-        .of("start locator --name=locator", "start server --name=server", "sleep --time=1",
+        .of("start locator --name=locator", "start server --name=server --server-port=0",
+            "sleep --time=1",
             "deploy --jar=" + createJar().getAbsolutePath(),
             "create region --name=region1 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE",
             "create region --name=region2 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE",
