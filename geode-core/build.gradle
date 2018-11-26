@@ -104,6 +104,8 @@ task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
   }
 }
 
+ext.moduleName = group + '.core'
+
 jar {
 
   from sourceSets.main.output
@@ -112,6 +114,12 @@ jar {
   exclude 'org/apache/geode/management/internal/web/**'
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
+
+  inputs.property("moduleName", moduleName)
+  manifest {
+    attributes('Automatic-Module-Name': moduleName)
+  }
+
 }
 
 jar.dependsOn(createVersionPropertiesFile)
@@ -162,10 +170,12 @@ dependencies {
   compile('commons-io:commons-io:' + project.'commons-io.version')
   compile('commons-validator:commons-validator:' + project.'commons-validator.version')
   compile('commons-digester:commons-digester:' + project.'commons-digester.version')
-  compile('javax.activation:activation:' + project.'javax-activation.version')
+  compile('com.sun.activation:javax.activation:' + project.'javax-activation.version')
   compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
-  compile('com.sun.xml.bind:jaxb-core:' + project.'jaxb.version')
   compile('com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version')
+  runtimeOnly('com.sun.istack:istack-commons-runtime:2.2') {
+    exclude group: '*'
+  }
 
   compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
@@ -244,7 +254,7 @@ dependencies {
     ext.optional = true
   }
 
-  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
+  compileOnly('org.apache.shiro:shiro-core:' + project.'shiro.version')
 
   compile('io.github.classgraph:classgraph:' + project.'classgraph.version')
 

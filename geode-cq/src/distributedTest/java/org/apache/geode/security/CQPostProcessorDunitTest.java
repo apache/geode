@@ -46,7 +46,7 @@ import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
+import org.apache.geode.cq.internal.cache.query.CqListenerImpl;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;

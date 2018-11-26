@@ -65,6 +65,7 @@ dependencies {
     exclude module: 'spring-context-support'
     ext.optional = true
   }
+  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
 
   testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
