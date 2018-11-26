@@ -102,11 +102,12 @@ public class MemberVM extends VMProvider implements Member {
    *
    * Setting this mailbox from within the test JVM will not cause the member to begin reconnecting.
    *
-   * @param timeoutSeconds maximum time that the reconnect can take
+   * @param timeout maximum time that the reconnect can take
+   * @param timeUnit the units for the timeout
    * @param reconnectBBKey String key to the blackboard mailbox containing a boolean that shall
    *        be set to true when the member should start reconnecting.
    */
-  public void forceDisconnect(int timeoutSeconds, String reconnectBBKey) {
+  public void forceDisconnect(long timeout, TimeUnit timeUnit, String reconnectBBKey) {
     vm.invoke(() -> {
       DUnitBlackboard server1BB = getBlackboard();
       server1BB.initBlackboard();
@@ -116,7 +117,7 @@ public class MemberVM extends VMProvider implements Member {
           new InternalDistributedSystem.ReconnectListener() {
             @Override
             public void reconnecting(InternalDistributedSystem oldSystem) {
-              await().atMost(timeoutSeconds, TimeUnit.SECONDS)
+              await().atMost(timeout, timeUnit)
                   .until(() -> (boolean) server1BB.getMailbox(reconnectBBKey));
             }
 

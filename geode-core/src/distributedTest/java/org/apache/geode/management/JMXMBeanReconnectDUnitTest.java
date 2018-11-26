@@ -16,27 +16,24 @@
 package org.apache.geode.management;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.geode.internal.Assert.fail;
+import static org.apache.geode.management.ManagementService.getExistingManagementService;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +41,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -65,10 +61,10 @@ public class JMXMBeanReconnectDUnitTest {
   private static final int SERVER_1_VM_INDEX = 2;
   private static final int SERVER_2_VM_INDEX = 3;
   private static final int SERVER_COUNT = 2;
-  private static final int NUM_BEANS = 19;
-  private static final int TIMEOUT = 300;
-
-  private int locator1JmxPort, locator2JmxPort;
+  private static final int NUM_REMOTE_BEANS = 19;
+  private static final int NUM_LOCATOR_BEANS = 8;
+  private static final int NUM_SERVER_BEANS = 3;
+  private static final long TIMEOUT = GeodeAwaitility.getTimeout().getValueInMS();
 
   private MemberVM locator1, locator2, server1;
 
@@ -89,10 +85,7 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator1JmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
-
-    locator2JmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
 
     server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
@@ -105,10 +98,13 @@ public class JMXMBeanReconnectDUnitTest {
 
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
-    locator1Connection = connectToMBeanServerFor(locator1);
-    locator2Connection = connectToMBeanServerFor(locator2);
+    locator1Connection = connectToMBeanServerFor(locator1.getJmxPort());
+    locator2Connection = connectToMBeanServerFor(locator2.getJmxPort());
 
-    waitForLocatorsToAgreeOnMembership();
+    await("Locators must agree on the state of the system")
+        .untilAsserted(() -> assertThat(getFederatedGemfireBeansFrom(locator1Connection))
+            .containsExactlyElementsOf(getFederatedGemfireBeansFrom(locator2Connection))
+            .hasSize(NUM_REMOTE_BEANS));
   }
 
   /**
@@ -116,23 +112,22 @@ public class JMXMBeanReconnectDUnitTest {
    */
   @Test
   public void testLocalBeans_MaintainServerAndCrashLocator() {
-    List<String> initialServerBeans = canonicalBeanNamesFor(server1);
+    List<String> initialServerBeans = server1.invoke(() -> getLocalCanonicalBeanNames());
+    assertThat(initialServerBeans).hasSize(NUM_SERVER_BEANS);
 
     locator1.forceDisconnect();
 
-    List<String> intermediateServerBeans = canonicalBeanNamesFor(server1);
-
-    // check the beans (must be checked twice as assertion is not commutative)
-    assertThat(intermediateServerBeans).containsExactlyElementsOf(initialServerBeans);
-    assertThat(initialServerBeans).containsExactlyElementsOf(intermediateServerBeans);
+    List<String> intermediateServerBeans = server1.invoke(() -> getLocalCanonicalBeanNames());
+    assertThat(intermediateServerBeans)
+        .containsExactlyElementsOf(initialServerBeans)
+        .hasSize(NUM_SERVER_BEANS);
 
     locator1.waitTilLocatorFullyReconnected();
 
-    List<String> finalServerBeans = canonicalBeanNamesFor(server1);
-
-    // check the beans (must be checked twice as assertion is not commutative)
-    assertThat(finalServerBeans).containsExactlyElementsOf(initialServerBeans);
-    assertThat(initialServerBeans).containsExactlyElementsOf(finalServerBeans);
+    List<String> finalServerBeans = server1.invoke(() -> getLocalCanonicalBeanNames());
+    assertThat(finalServerBeans)
+        .containsExactlyElementsOf(initialServerBeans)
+        .hasSize(NUM_SERVER_BEANS);
   }
 
   /**
@@ -140,24 +135,23 @@ public class JMXMBeanReconnectDUnitTest {
    */
   @Test
   public void testLocalBeans_MaintainLocatorAndCrashServer() {
-    List<String> initialLocatorBeans = canonicalBeanNamesFor(locator1);
+    List<String> initialLocatorBeans = locator1.invoke(() -> getLocalCanonicalBeanNames());
+    assertThat(initialLocatorBeans).hasSize(NUM_LOCATOR_BEANS);
 
     server1.forceDisconnect();
 
-    List<String> intermediateLocatorBeans = canonicalBeanNamesFor(locator1);
-
-    // check the beans (must be checked twice as assertion is not commutative)
-    assertThat(intermediateLocatorBeans).containsExactlyElementsOf(initialLocatorBeans);
-    assertThat(initialLocatorBeans).containsExactlyElementsOf(intermediateLocatorBeans);
+    List<String> intermediateLocatorBeans = locator1.invoke(() -> getLocalCanonicalBeanNames());
+    assertThat(intermediateLocatorBeans)
+        .containsExactlyElementsOf(initialLocatorBeans)
+        .hasSize(NUM_LOCATOR_BEANS);
 
     server1.waitTilServerFullyReconnected();
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
-    List<String> finalLocatorBeans = canonicalBeanNamesFor(locator1);
-
-    // check the beans (must be checked twice as assertion is not commutative)
-    assertThat(finalLocatorBeans).containsExactlyElementsOf(initialLocatorBeans);
-    assertThat(initialLocatorBeans).containsExactlyElementsOf(finalLocatorBeans);
+    List<String> finalLocatorBeans = locator1.invoke(() -> getLocalCanonicalBeanNames());
+    assertThat(finalLocatorBeans)
+        .containsExactlyElementsOf(initialLocatorBeans)
+        .hasSize(NUM_LOCATOR_BEANS);
   }
 
   /**
@@ -171,18 +165,18 @@ public class JMXMBeanReconnectDUnitTest {
     // check that the initial state is good
     List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1Connection);
     List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2Connection);
-    assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_BEANS);
+    assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_REMOTE_BEANS);
 
     // calculate the expected list for use once the locator has crashed
     List<ObjectName> expectedIntermediateBeanList = initialL1Beans.stream()
         .filter(excludingBeansFor(LOCATOR_1_NAME)).collect(toList());
 
     // crash the locator
-    locator1.forceDisconnect(TIMEOUT, RECONNECT_MAILBOX);
+    locator1.forceDisconnect(TIMEOUT, TimeUnit.MILLISECONDS, RECONNECT_MAILBOX);
 
     // wait for the locator's crash to federate to the remaining locator
     List<ObjectName> intermediateL2Beans = new ArrayList<>();
-    GeodeAwaitility.await().untilAsserted(() -> {
+    await().untilAsserted(() -> {
       intermediateL2Beans.clear();
       intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
@@ -196,18 +190,18 @@ public class JMXMBeanReconnectDUnitTest {
 
     // wait for the locator's restart to federate to the other locator
     List<ObjectName> finalL2Beans = new ArrayList<>();
-    GeodeAwaitility.await().untilAsserted(() -> {
+    await().untilAsserted(() -> {
       finalL2Beans.clear();
       finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
 
-      assertThat(finalL2Beans).hasSize(NUM_BEANS);
+      assertThat(finalL2Beans).hasSize(NUM_REMOTE_BEANS);
     });
 
     // check that the final state is the same as the initial state
     assertThat(getFederatedGemfireBeansFrom(locator1Connection))
         .containsExactlyElementsOf(finalL2Beans)
         .containsExactlyElementsOf(initialL1Beans)
-        .hasSize(NUM_BEANS);
+        .hasSize(NUM_REMOTE_BEANS);
   }
 
   /**
@@ -221,20 +215,20 @@ public class JMXMBeanReconnectDUnitTest {
     // check that the initial state is correct
     List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1Connection);
     List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2Connection);
-    assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_BEANS);
+    assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_REMOTE_BEANS);
 
     // calculate the expected list of MBeans when the server has crashed
     List<ObjectName> expectedIntermediateBeanList = initialL1Beans.stream()
         .filter(excludingBeansFor("server-" + SERVER_1_VM_INDEX)).collect(toList());
 
     // crash the server
-    server1.forceDisconnect(TIMEOUT, RECONNECT_MAILBOX);
+    server1.forceDisconnect(TIMEOUT, TimeUnit.MILLISECONDS, RECONNECT_MAILBOX);
 
     // wait for the server's crash to federate to the locators
     List<ObjectName> intermediateL1Beans = new ArrayList<>();
     List<ObjectName> intermediateL2Beans = new ArrayList<>();
 
-    GeodeAwaitility.await().untilAsserted(() -> {
+    await().untilAsserted(() -> {
       intermediateL1Beans.clear();
       intermediateL2Beans.clear();
 
@@ -256,7 +250,7 @@ public class JMXMBeanReconnectDUnitTest {
     // wait for the server's restart to federate to the locators and check final state
     List<ObjectName> finalL1Beans = new ArrayList<>();
     List<ObjectName> finalL2Beans = new ArrayList<>();
-    GeodeAwaitility.await().untilAsserted(() -> {
+    await().untilAsserted(() -> {
       finalL1Beans.clear();
       finalL2Beans.clear();
 
@@ -267,7 +261,7 @@ public class JMXMBeanReconnectDUnitTest {
       assertThat(finalL1Beans)
           .containsExactlyElementsOf(finalL2Beans)
           .containsExactlyElementsOf(initialL1Beans)
-          .hasSize(NUM_BEANS);
+          .hasSize(NUM_REMOTE_BEANS);
     });
   }
 
@@ -295,98 +289,30 @@ public class JMXMBeanReconnectDUnitTest {
         .collect(toList());
   }
 
-  private static MBeanServerConnection connectToMBeanServerFor(MemberVM member) throws IOException {
-    String url = jmxBeanLocalhostUrlString(member.getJmxPort());
+  private static MBeanServerConnection connectToMBeanServerFor(int jmxPort) throws IOException {
+    String url = "service:jmx:rmi:///jndi/rmi://localhost" + ":" + jmxPort + "/jmxrmi";
     final JMXServiceURL serviceURL = new JMXServiceURL(url);
-    JMXConnector conn = JMXConnectorFactory.connect(serviceURL);
-    return conn.getMBeanServerConnection();
+    return JMXConnectorFactory.connect(serviceURL).getMBeanServerConnection();
   }
 
   /**
-   * Gets a list of local MBeans from the given member. This list of MBeans does not include beans
-   * for members other than the given member
+   * Gets a list of local MBeans from the JVM this is invoked from. This list of MBeans does not
+   * include beans for members other than the member this method is invoked on.
    */
-  private static List<String> canonicalBeanNamesFor(MemberVM member) {
-    return member.invoke(JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
-  }
-
   private static List<String> getLocalCanonicalBeanNames() {
     Cache cache = ClusterStartupRule.getCache();
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
-    Map<ObjectName, Object> gfBeanMap = service.getJMXAdapter().getLocalGemFireMBean();
-    return gfBeanMap.keySet().stream()
-        .map(ObjectName::getCanonicalName)
-        .sorted()
-        .collect(toList());
-  }
-
-  /**
-   * Waits until the two locators have the same MBeans, and have NUM_BEANS beans.
-   *
-   * This method will return when the locators have the same beans and the expected number of beans.
-   * If it does not complete within GeodeAwaitility.DEFAULT_TIMEOUT seconds, a TimeoutException will
-   * be thrown.
-   */
-  private void waitForLocatorsToAgreeOnMembership()
-      throws InterruptedException, IOException {
-    List<ObjectName> l1Beans = new ArrayList<>();
-    List<ObjectName> l2Beans = new ArrayList<>();
-    AtomicBoolean consistent = new AtomicBoolean();
-
-    Stopwatch stopwatch = Stopwatch.createStarted();
-    do {
-      // reset everything
-      consistent.set(true);
-      l1Beans.clear();
-      l2Beans.clear();
-
-      // get the MBeans and add them to lists to check them
-      l1Beans.addAll(getFederatedGemfireBeansFrom(locator1Connection));
-      l2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
-
-      if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        fail("Locators could not agree on the state of the system within " + TIMEOUT + " seconds.\n"
-            + "Locator1 had MBeans:\n" + l1Beans
-            + "Locator2 had MBeans:\n" + l2Beans);
-      }
-
-      // if there aren't enough beans, wait then loop again
-      if (l1Beans.size() != NUM_BEANS || l2Beans.size() != NUM_BEANS) {
-        consistent.set(false);
-        Thread.sleep(1000);
-        // if any beans aren't the same between the two lists, wait then loop again
-      } else {
-        for (int i = 0; i < NUM_BEANS; i++) {
-          if (!l1Beans.get(i).equals(l2Beans.get(i))) {
-            consistent.set(false);
-            Thread.sleep(1000);
-            break;
-          }
-        }
-      }
-
-      if (stopwatch.elapsed(TimeUnit.SECONDS) >= TIMEOUT) {
-        fail("Locators could not agree on the state of the system within " + TIMEOUT + " seconds.\n"
-            + "Locator1 had MBeans:\n" + l1Beans
-            + "Locator2 had MBeans:\n" + l2Beans);
-      }
-    } while (!consistent.get());
+    SystemManagementService service = (SystemManagementService) getExistingManagementService(cache);
+    Set<ObjectName> keySet = service.getJMXAdapter().getLocalGemFireMBean().keySet();
+    return keySet.stream().map(ObjectName::getCanonicalName).sorted().collect(toList());
   }
 
   private static Predicate<ObjectName> excludingBeansFor(String memberName) {
     return b -> !b.getCanonicalName().contains("member=" + memberName);
   }
 
-  private static String jmxBeanLocalhostUrlString(int port) {
-    return "service:jmx:rmi:///jndi/rmi://localhost"
-        + ":" + port + "/jmxrmi";
-  }
-
   private Properties locator1Properties() {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + locator1JmxPort);
     props.setProperty(ConfigurationProperties.NAME, LOCATOR_1_NAME);
     props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
     return props;
@@ -395,7 +321,6 @@ public class JMXMBeanReconnectDUnitTest {
   private Properties locator2Properties() {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + locator2JmxPort);
     props.setProperty(ConfigurationProperties.NAME, LOCATOR_2_NAME);
     props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locator1.getPort() + "]");
     return props;
