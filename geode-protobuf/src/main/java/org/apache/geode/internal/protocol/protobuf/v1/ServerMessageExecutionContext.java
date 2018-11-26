@@ -41,10 +41,10 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
       SecurityService securityService) {
     super(statistics, securityService);
-    this.cache = cache;
+    this.cache = cache.getCacheForProcessingClientRequests();
     Security security =
         securityService.isIntegratedSecurity() ? new NotLoggedInSecurity() : new NoSecurity();
-    this.secureCache = new SecureCacheImpl(cache, security);
+    this.secureCache = new SecureCacheImpl(this.cache, security);
   }
 
   @Override

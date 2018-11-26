@@ -14,38 +14,41 @@
  */
 package org.apache.geode.experimental.driver;
 
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class AuthenticationTest {
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
+public class AuthorizationTest {
   private static final String TEST_USERNAME = "";
   private static final String TEST_PASSWORD = TEST_USERNAME;
   private Locator locator;
   private Cache cache;
   private Driver driver;
   private int locatorPort;
+
 
   @Before
   public void createServer() throws Exception {
@@ -71,35 +74,40 @@ public class AuthenticationTest {
   }
 
   @Test
-  public void driverFailsToConnectWhenThereAreNoServers() throws Exception {
-    try {
-      driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    } catch (IOException e) {
-      // success
-      return;
-    }
-    throw new AssertionError("expected an IOException");
-  }
+  public void performOperationsOnInternalRegion() throws Exception {
+    // we need to use internal APIs to create an "internal" region
+    GemFireCacheImpl serverCache = (GemFireCacheImpl) cache;
+    InternalRegionArguments internalRegionArguments = new InternalRegionArguments();
+    internalRegionArguments.setIsUsedForPartitionedRegionAdmin(true);
+    RegionAttributes<String, String> attributes =
+        serverCache.getRegionAttributes(RegionShortcut.REPLICATE.toString());
+    LocalRegion serverRegion =
+        (LocalRegion) serverCache.createVMRegion("internalRegion", attributes,
+            internalRegionArguments);
+    assertThat(serverRegion.isInternalRegion()).isTrue();
 
-  @Test
-  public void driverCanConnectWhenThereAreServers() throws Exception {
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.start();
-    driver = new DriverFactory().addLocator("localhost", locatorPort).setUsername(TEST_USERNAME)
-        .setPassword(TEST_PASSWORD).create();
-    assertTrue(driver.isConnected());
-  }
-
-  @Test
-  public void driverWithBadPasswordIsRejected() throws Exception {
-    CacheServer server = cache.addCacheServer();
-    server.setPort(0);
-    server.start();
-    DriverFactory factory =
+    Driver driver =
         new DriverFactory().addLocator("localhost", locatorPort).setUsername(TEST_USERNAME)
-            .setPassword("my my my");
-    assertThatThrownBy(() -> factory.create()).isInstanceOf(IOException.class);
+            .setPassword(TEST_PASSWORD).create();
+    Region region = driver.getRegion("internalRegion");
+    assertThat(region).isNotNull();
+    assertFailure(() -> region.clear());
+    assertFailure(() -> region.get("some key"));
+    assertFailure(() -> region.getAll(Collections.singleton("some key")));
+    assertFailure(() -> region.keySet());
+    assertFailure(() -> region.put("some key", "some value"));
+    assertFailure(() -> region.putAll(Collections.singletonMap("some key", "some value")));
+    assertFailure(() -> region.putIfAbsent("some key", "some value"));
+    assertFailure(() -> region.remove("some key"));
+    assertFailure(() -> region.size());
   }
 
+  private void assertFailure(final ThrowableAssert.ThrowingCallable callable) {
+    assertThatExceptionOfType(IOException.class).isThrownBy(callable)
+        .withMessageContaining(
+            "Not authorized");
+  }
 }
