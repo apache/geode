@@ -218,6 +218,7 @@ jobs:
             {{ common_instance_params(build_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
+            UPSTREAM_FORK: {{repository.fork}}
             JAVA_BUILD_VERSION: {{ java_build_version.version }}
           run:
             path: geode-ci/ci/scripts/create_instance.sh
@@ -362,6 +363,7 @@ jobs:
             {{ common_instance_params(publish_artifacts) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
+            UPSTREAM_FORK: {{repository.fork}}
             JAVA_BUILD_VERSION: {{ java_build_version.version }}
           run:
             path: geode-ci/ci/scripts/create_instance.sh
@@ -431,6 +433,7 @@ jobs:
               {{ common_instance_params(parameters) | indent(14) }}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
+              UPSTREAM_FORK: {{repository.fork}}
               JAVA_BUILD_VERSION: {{ java_build_version.version }}
               JAVA_TEST_VERSION: {{ java_test_version.version }}
             run:
