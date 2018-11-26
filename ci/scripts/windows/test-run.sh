@@ -40,7 +40,7 @@ directories_file=${DEST_DIR}/artifact_directories
 echo "GRADLE_TASK = ${GRADLE_TASK}"
 echo "BASE_FILENAME = ${BASE_FILENAME}"
 
-DEFAULT_GRADLE_TASK_OPTIONS="--no-daemon -x javadoc"
+DEFAULT_GRADLE_TASK_OPTIONS="--no-daemon -x javadoc -x spotlessCheck"
 
 if [[ -n "${GRADLE_TEST_CATEGORY}" ]]; then
   GRADLE_TASK_OPTIONS="-PtestCategory=${GRADLE_TEST_CATEGORY}"
