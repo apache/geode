@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Set;
 
 import javax.management.DynamicMBean;
@@ -31,7 +30,6 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -109,8 +107,7 @@ public class MBeanSecurityJUnitTest {
         () -> server.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))
             .isInstanceOf(ReflectionException.class);
 
-    MBeanJMXAdapter adapter = new MBeanJMXAdapter(new HashMap<>(), mock(DistributedMember.class),
-        mock(Logger.class));
+    MBeanJMXAdapter adapter = new MBeanJMXAdapter(mock(DistributedMember.class));
     assertThatThrownBy(() -> adapter.registerMBean(mock(DynamicMBean.class),
         new ObjectName("MockDomain", "name", "mock"), false))
             .isInstanceOf(ManagementException.class);

@@ -16,23 +16,19 @@
 package org.apache.geode.management.internal;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,16 +37,12 @@ import org.apache.geode.distributed.DistributedMember;
 public class MBeanJMXAdapterTest {
   private ObjectName objectName;
   private MBeanServer mockMBeanServer;
-  private Logger mockLogger;
-  private Map<ObjectName, Object> localGemFireMBean;
   private DistributedMember distMember;
 
   @Before
   public void setUp() throws Exception {
     mockMBeanServer = mock(MBeanServer.class);
-    mockLogger = mock(Logger.class);
     objectName = new ObjectName("d:type=Foo,name=Bar");
-    localGemFireMBean = new HashMap<>();
     distMember = mock(DistributedMember.class);
   }
 
@@ -64,15 +56,14 @@ public class MBeanJMXAdapterTest {
     // has already been unregistered
     doThrow(new InstanceNotFoundException()).when(mockMBeanServer).unregisterMBean(objectName);
 
-    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter(localGemFireMBean,
-        distMember, mockLogger);
+    MBeanJMXAdapter mBeanJMXAdapter = spy(new MBeanJMXAdapter(distMember));
     MBeanJMXAdapter.mbeanServer = mockMBeanServer;
 
     mBeanJMXAdapter.unregisterMBean(objectName);
 
     // InstanceNotFoundException should just log a debug message as it is essentially a no-op
     // during unregistration
-    verify(mockLogger, times(1)).warn(anyString());
+    verify(mBeanJMXAdapter, times(1)).logRegistrationWarning(any(ObjectName.class), eq(false));
   }
 
   @Test
@@ -86,14 +77,13 @@ public class MBeanJMXAdapterTest {
     doThrow(new InstanceAlreadyExistsException()).when(mockMBeanServer)
         .registerMBean(any(Object.class), eq(objectName));
 
-    MBeanJMXAdapter mBeanJMXAdapter = new MBeanJMXAdapter(localGemFireMBean,
-        distMember, mockLogger);
+    MBeanJMXAdapter mBeanJMXAdapter = spy(new MBeanJMXAdapter(distMember));
     MBeanJMXAdapter.mbeanServer = mockMBeanServer;
 
-    mBeanJMXAdapter.registerMBeanProxy(mock(Object.class), objectName);
+    mBeanJMXAdapter.registerMBeanProxy(objectName, objectName);
 
     // InstanceNotFoundException should just log a debug message as it is essentially a no-op
     // during registration
-    verify(mockLogger, times(1)).warn(anyString());
+    verify(mBeanJMXAdapter, times(1)).logRegistrationWarning(any(ObjectName.class), eq(true));
   }
 }

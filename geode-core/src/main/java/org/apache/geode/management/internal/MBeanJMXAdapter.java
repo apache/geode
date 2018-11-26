@@ -19,6 +19,7 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceAlreadyExistsException;
@@ -40,6 +41,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskStoreMXBean;
@@ -61,25 +63,21 @@ import org.apache.geode.management.RegionMXBean;
  *
  */
 public class MBeanJMXAdapter implements ManagementConstants {
-
   /** The <code>MBeanServer</code> for this application */
   public static MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
-  private Map<ObjectName, Object> localGemFireMBean;
+  private final Map<ObjectName, Object> localGemFireMBean;
 
-  private DistributedMember distMember;
+  private final DistributedMember distMember;
 
-  private Logger logger;
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * public constructor
    */
-  public MBeanJMXAdapter(
-      Map<ObjectName, Object> localGemFireMBean,
-      DistributedMember distMember, Logger logger) {
-    this.localGemFireMBean = localGemFireMBean;
+  public MBeanJMXAdapter(DistributedMember distMember) {
+    this.localGemFireMBean = new ConcurrentHashMap<>();
     this.distMember = distMember;
-    this.logger = logger;
   }
 
   /**
@@ -166,7 +164,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
     } catch (InstanceAlreadyExistsException instanceAlreadyExistsException) {
       // An InstanceAlreadyExistsException in this context means that the MBean
       // has already been registered, so just log a warning message.
-      logger.warn("MBean with ObjectName " + objectName + " has already been registered.");
+      logRegistrationWarning(objectName, true);
     } catch (NullPointerException | NotCompliantMBeanException
         | MBeanRegistrationException e) {
       throw new ManagementException(e);
@@ -195,7 +193,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
       // has already been unregistered, so just log a debug message as it is
       // essentially a no-op.
       // has already been unregistered, so just log a warning message.
-      logger.warn("MBean with ObjectName " + objectName + " has already been unregistered.");
+      logRegistrationWarning(objectName, false);
     } catch (NullPointerException | MBeanRegistrationException e) {
       throw new ManagementException(e);
     }
@@ -561,5 +559,10 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
     return true;
 
+  }
+
+  void logRegistrationWarning(ObjectName objectName, boolean registering) {
+    logger.warn("MBean with ObjectName " + objectName + " has already been "
+        + (registering ? "registered." : "unregistered."));
   }
 }
