@@ -335,10 +335,10 @@ public class LinuxProcFsStatistics {
     }
   }
 
-/*
- * TcpExt:=0 SyncookiesSent=1
- * ListenOverflows=20 ListenDrops=21
- */
+  /*
+   * TcpExt:=0 SyncookiesSent=1
+   * ListenOverflows=20 ListenDrops=21
+   */
   private static void getNetStatStats(long[] longs, int[] ints) {
     InputStreamReader isr;
     BufferedReader br = null;
