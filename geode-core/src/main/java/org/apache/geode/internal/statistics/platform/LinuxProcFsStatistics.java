@@ -200,6 +200,7 @@ public class LinuxProcFsStatistics {
     getMemInfo(ints);
     getDiskStats(longs);
     getNetStats(longs);
+    getNetStatStats(longs, ints);
     if (hasProcVmStat) {
       getVmStats(longs);
     }
@@ -323,6 +324,56 @@ public class LinuxProcFsStatistics {
           // ignore and let that stat not to be updated this time
         }
       }
+    } catch (IOException ioe) {
+    } finally {
+      st.releaseResources();
+      if (br != null)
+        try {
+          br.close();
+        } catch (IOException ignore) {
+        }
+    }
+  }
+
+/*
+ * TcpExt:=0 SyncookiesSent=1
+ * ListenOverflows=20 ListenDrops=21
+ */
+  private static void getNetStatStats(long[] longs, int[] ints) {
+    InputStreamReader isr;
+    BufferedReader br = null;
+    try {
+      isr = new InputStreamReader(new FileInputStream("/proc/net/netstat"));
+      br = new BufferedReader(isr);
+      String line;
+      do {
+        br.readLine(); // header
+        line = br.readLine();
+      } while (line != null && !line.startsWith("TcpExt:"));
+
+      st.setString(line);
+      st.skipTokens(1);
+      long tcpSyncookiesSent = st.nextTokenAsLong();
+      long tcpSyncookiesRecv = st.nextTokenAsLong();
+      st.skipTokens(17);
+      long tcpListenOverflows = st.nextTokenAsLong();
+      long tcpListenDrops = st.nextTokenAsLong();
+
+      longs[LinuxSystemStats.tcpExtSynCookiesRecvLONG] = tcpSyncookiesRecv;
+      longs[LinuxSystemStats.tcpExtSynCookiesSentLONG] = tcpSyncookiesSent;
+      longs[LinuxSystemStats.tcpExtListenDropsLONG] = tcpListenDrops;
+      longs[LinuxSystemStats.tcpExtListenOverflowsLONG] = tcpListenOverflows;
+
+      br.close();
+      isr = new InputStreamReader(new FileInputStream("/proc/sys/net/core/somaxconn"));
+      br = new BufferedReader(isr);
+      line = br.readLine();
+      st.setString(line);
+      int soMaxConn = st.nextTokenAsInt();
+
+      ints[LinuxSystemStats.tcpSOMaxConnINT] = soMaxConn;
+
+    } catch (NoSuchElementException nsee) {
     } catch (IOException ioe) {
     } finally {
       st.releaseResources();
