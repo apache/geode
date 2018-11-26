@@ -20,7 +20,6 @@ shiro-crypto-core-1.4.0.jar
 shiro-lang-1.4.0.jar
 jetty-security-9.4.12.v20180830.jar
 lucene-queryparser-6.6.2.jar
-classgraph-4.4.12.jar
 slf4j-api-1.7.25.jar
 spring-core-4.3.20.RELEASE.jar
 jansi-1.17.1.jar
@@ -47,6 +46,7 @@ lucene-analyzers-phonetic-6.6.2.jar
 shiro-config-ogdl-1.4.0.jar
 jetty-http-9.4.12.v20180830.jar
 geode-protobuf-1.9.0-SNAPSHOT.jar
+classgraph-4.0.6.jar
 snappy-0.4.jar
 javax.resource-api-1.7.jar
 protobuf-java-3.6.1.jar
