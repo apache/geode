@@ -19,6 +19,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -200,6 +201,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
     alterRegion(queueName, attributes, synchronous);
 
     return true;
+  }
+
+  @CliAvailabilityIndicator({CREATE_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 
   private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {
