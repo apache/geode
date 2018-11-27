@@ -81,10 +81,6 @@ public class DestroyMappingCommand extends SingleGfshCommand {
 
   @CliAvailabilityIndicator({DESTROY_MAPPING})
   public boolean commandAvailable() {
-    boolean isAvailable = true;
-    if (Boolean.getBoolean("gfsh")) {
-      isAvailable = isConnectedAndReady();
-    }
-    return isAvailable;
+    return isOnlineCommandAvailable();
   }
 }

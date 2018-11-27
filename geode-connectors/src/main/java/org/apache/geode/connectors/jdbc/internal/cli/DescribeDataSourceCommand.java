@@ -137,10 +137,6 @@ public class DescribeDataSourceCommand extends InternalGfshCommand {
 
   @CliAvailabilityIndicator({DESCRIBE_DATA_SOURCE})
   public boolean commandAvailable() {
-    boolean isAvailable = true;
-    if (Boolean.getBoolean("gfsh")) {
-      isAvailable = isConnectedAndReady();
-    }
-    return isAvailable;
+    return isOnlineCommandAvailable();
   }
 }

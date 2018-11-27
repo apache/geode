@@ -205,11 +205,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
   @CliAvailabilityIndicator({CREATE_MAPPING})
   public boolean commandAvailable() {
-    boolean isAvailable = true;
-    if (Boolean.getBoolean("gfsh")) {
-      isAvailable = isConnectedAndReady();
-    }
-    return isAvailable;
+    return isOnlineCommandAvailable();
   }
 
   private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {

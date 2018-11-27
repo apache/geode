@@ -151,11 +151,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
 
   @CliAvailabilityIndicator({CREATE_DATA_SOURCE})
   public boolean commandAvailable() {
-    boolean isAvailable = true;
-    if (Boolean.getBoolean("gfsh")) {
-      isAvailable = isConnectedAndReady();
-    }
-    return isAvailable;
+    return isOnlineCommandAvailable();
   }
 
   public static class PoolProperty {
