@@ -24,6 +24,7 @@ import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingComman
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +32,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionAttributesType;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -67,7 +71,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     gfsh.connectAndVerify(locator);
 
-    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=PARTITION")
         .statusIsSuccess();
   }
 
@@ -99,9 +103,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
-          .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).doesNotContain("jdbc:mapping");
+      assertThat(getRegionMappingFromClusterConfig()).isNull();
+      validateAsyncEventQueueRemovedFromClusterConfig();
+      validateRegionAlteredInClusterConfig(false);
     });
 
     server.invoke(() -> {
@@ -121,9 +125,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
-          .getConfiguration("cluster").getCacheXmlContent();
-      assertThat(xml).doesNotContain("jdbc:mapping");
+      assertThat(getRegionMappingFromClusterConfig()).isNull();
+      validateAsyncEventQueueRemovedFromClusterConfig();
+      validateRegionAlteredInClusterConfig(true);
     });
 
     server.invoke(() -> {
@@ -132,6 +136,36 @@ public class DestroyMappingCommandDunitTest implements Serializable {
       verifyRegionAltered(cache);
       verifyQueueRemoved(cache);
     });
+  }
+
+  private static RegionMapping getRegionMappingFromClusterConfig() {
+    CacheConfig cacheConfig =
+        InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
+    RegionConfig regionConfig = cacheConfig.getRegions().stream()
+        .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
+    return (RegionMapping) regionConfig.getCustomRegionElements().stream()
+        .filter(element -> element instanceof RegionMapping).findFirst().orElse(null);
+  }
+
+  private static void validateAsyncEventQueueRemovedFromClusterConfig() {
+    CacheConfig cacheConfig =
+        InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
+    List<CacheConfig.AsyncEventQueue> queueList = cacheConfig.getAsyncEventQueues();
+    assertThat(queueList).isEmpty();
+  }
+
+  private static void validateRegionAlteredInClusterConfig(boolean synchronous) {
+    CacheConfig cacheConfig =
+        InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
+    RegionConfig regionConfig = cacheConfig.getRegions().stream()
+        .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
+    RegionAttributesType attributes = regionConfig.getRegionAttributes().get(0);
+    assertThat(attributes.getCacheLoader()).isNull();
+    if (synchronous) {
+      assertThat(attributes.getCacheWriter()).isNull();
+    } else {
+      assertThat(attributes.getAsyncEventQueueIds()).isEqualTo("");
+    }
   }
 
   private void verifyQueueRemoved(InternalCache cache) {
