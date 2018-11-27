@@ -18,7 +18,6 @@ package org.apache.geode.test.dunit.rules.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +76,7 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void clientVersioningTest() throws Exception {
-    ClientVM locator = csRule.startClientVM(0, version, new Properties(), (cf) -> {
+    ClientVM locator = csRule.startClientVM(0, version, c -> {
     });
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);

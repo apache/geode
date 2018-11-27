@@ -76,10 +76,9 @@ public class MultiUserAuthenticationDUnitTest {
   public void multiAuthenticatedView() throws Exception {
     int locatorPort = locator.getPort();
     for (int i = 0; i < SESSION_COUNT; i++) {
-      ClientCache cache = client.withCredential("stranger", "stranger")
-          .withCacheSetup(f -> f.setPoolSubscriptionEnabled(true)
-              .setPoolMultiuserAuthentication(true)
-              .addPoolLocator("localhost", locatorPort))
+      ClientCache cache = client.withCacheSetup(f -> f.setPoolSubscriptionEnabled(true)
+          .setPoolMultiuserAuthentication(true)
+          .addPoolLocator("localhost", locatorPort))
           .createCache();
 
       RegionService regionService1 = client.createAuthenticatedView("data", "data");

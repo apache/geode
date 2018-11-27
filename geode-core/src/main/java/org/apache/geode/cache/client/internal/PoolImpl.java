@@ -754,7 +754,7 @@ public class PoolImpl implements InternalPool {
     // Retries are ignored here. FIX IT - FIXED.
     // But this may lead to a user getting authenticated on all servers, even if
     // a single server could have serviced all its requests.
-    authenticateIfRequired(op);
+    authenticateIfRequired(null, op);
     return executor.execute(op);
   }
 
@@ -768,7 +768,7 @@ public class PoolImpl implements InternalPool {
    * @since GemFire 5.7
    */
   public Object execute(Op op, int retries) {
-    authenticateIfRequired(op);
+    authenticateIfRequired(null, op);
     return executor.execute(op, retries);
   }
 
@@ -1499,32 +1499,36 @@ public class PoolImpl implements InternalPool {
     return this.proxyCacheList;
   }
 
-  private void authenticateIfRequired(Op op) {
-    authenticateIfRequired(null, op);
-  }
-
   /**
-   * Assert thread-local var is not null, if it has multiuser-authentication set to true.
+   * This is only for multi-user case
+   *
+   * Assert thread-local var is not null.
    *
    * If serverLocation is non-null, check if the the user is authenticated on that server. If not,
    * authenticate it and return.
    *
    */
   private void authenticateIfRequired(ServerLocation serverLocation, Op op) {
-    if (this.multiuserSecureModeEnabled && op instanceof AbstractOp
-        && ((AbstractOp) op).needsUserId()) {
-      UserAttributes userAttributes = UserAttributes.userAttributes.get();
-      if (userAttributes == null) {
-        throw new UnsupportedOperationException(
-            "Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
-      }
-      if (serverLocation != null) {
-        if (!userAttributes.getServerToId().containsKey(serverLocation)) {
-          Long userId = (Long) AuthenticateUserOp.executeOn(serverLocation, this,
-              userAttributes.getCredentials());
-          if (userId != null) {
-            userAttributes.setServerToId(serverLocation, userId);
-          }
+    if (!multiuserSecureModeEnabled) {
+      return;
+    }
+
+    if (!(op instanceof AbstractOp) || !((AbstractOp) op).needsUserId()) {
+      return;
+    }
+
+    UserAttributes userAttributes = UserAttributes.userAttributes.get();
+    if (userAttributes == null) {
+      throw new UnsupportedOperationException(
+          "Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
+    }
+
+    if (serverLocation != null) {
+      if (!userAttributes.getServerToId().containsKey(serverLocation)) {
+        Long userId = (Long) AuthenticateUserOp.executeOn(serverLocation, this,
+            userAttributes.getCredentials());
+        if (userId != null) {
+          userAttributes.setServerToId(serverLocation, userId);
         }
       }
     }
