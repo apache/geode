@@ -20,6 +20,7 @@ import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -36,6 +37,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -52,7 +54,8 @@ public class SecureFunctionServiceImplTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    cache = mock(InternalCacheForClientAccess.class);
+    doReturn(cache).when(cache).getCacheForProcessingClientRequests();
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
     security = mock(Security.class);

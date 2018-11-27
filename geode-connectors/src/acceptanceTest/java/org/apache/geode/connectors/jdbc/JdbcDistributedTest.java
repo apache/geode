@@ -28,7 +28,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -605,7 +604,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       cf.setPdxSerializer(
           new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()));
     };
-    return startupRule.startClientVM(2, new Properties(), cacheSetup);
+    return startupRule.startClientVM(2, c -> c.withCacheSetup(cacheSetup));
   }
 
   private void createClientRegion(ClientVM client) {

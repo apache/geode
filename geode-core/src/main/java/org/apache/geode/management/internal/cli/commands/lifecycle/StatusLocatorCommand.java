@@ -28,18 +28,17 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 
 public class StatusLocatorCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result statusLocator(
+  public ResultModel statusLocator(
       @CliOption(key = CliStrings.STATUS_LOCATOR__MEMBER,
           optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
           help = CliStrings.STATUS_LOCATOR__MEMBER__HELP) final String member,
@@ -62,11 +61,11 @@ public class StatusLocatorCommand extends InternalGfshCommand {
               LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
           return createStatusLocatorResult(state);
         } else {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
         }
       } else {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
       }
     } else {
@@ -78,18 +77,19 @@ public class StatusLocatorCommand extends InternalGfshCommand {
       final LocatorLauncher.LocatorState status = locatorLauncher.status();
       if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
           || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
-        return ResultBuilder.createShellClientErrorResult(status.toString());
+        return ResultModel.createError(status.toString());
       }
       return createStatusLocatorResult(status);
     }
 
   }
 
-  protected Result createStatusLocatorResult(final LocatorLauncher.LocatorState state)
+  protected ResultModel createStatusLocatorResult(final LocatorLauncher.LocatorState state)
       throws NumberFormatException, IOException, ClassNotFoundException {
-    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-    infoResultData.addLine(state.toString());
-    infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(state));
-    return ResultBuilder.buildResult(infoResultData);
+    ResultModel result = new ResultModel();
+    InfoResultModel info = result.addInfo();
+    info.addLine(state.toString());
+    info.addLine(ClusterConfigurationStatusRetriever.fromLocator(state));
+    return result;
   }
 }

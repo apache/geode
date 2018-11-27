@@ -326,12 +326,12 @@ public class SystemAdmin {
                     Integer.valueOf(pid)));
           }
         }
-        if (sleepCount > maxSleepCount && !quiet) {
-          System.out.println(
-              "Locator process has terminated.");
-        } else if (OSProcess.exists(pid)) {
+        if (OSProcess.exists(pid)) {
           System.out
               .println("Locator process did not terminate within " + maxSleepCount + " seconds.");
+        } else if (!quiet) {
+          System.out.println(
+              "Locator process has terminated.");
         }
       }
     } catch (UnstartedSystemException ex) {

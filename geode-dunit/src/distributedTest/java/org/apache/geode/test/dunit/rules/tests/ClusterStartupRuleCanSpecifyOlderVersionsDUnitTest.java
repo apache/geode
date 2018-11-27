@@ -77,8 +77,8 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void clientVersioningTest() throws Exception {
-    ClientVM locator = csRule.startClientVM(0, new Properties(), (cf) -> {
-    }, version);
+    ClientVM locator = csRule.startClientVM(0, version, new Properties(), (cf) -> {
+    });
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);

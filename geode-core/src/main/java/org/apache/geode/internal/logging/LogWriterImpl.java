@@ -22,7 +22,6 @@ import java.text.BreakIterator;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
@@ -192,14 +191,13 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   public static String join(List<?> list, String joinString) {
     StringBuilder result = new StringBuilder(80);
     boolean firstTime = true;
-    Iterator it = list.iterator();
-    while (it.hasNext()) {
+    for (Object object : list) {
       if (firstTime) {
         firstTime = false;
       } else {
         result.append(joinString);
       }
-      result.append(it.next());
+      result.append(object);
     }
     return result.toString();
   }
@@ -319,7 +317,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void severe(Throwable throwable) {
-    this.severe("", throwable);
+    severe("", throwable);
   }
 
   /**
@@ -417,7 +415,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void error(Throwable throwable) {
-    this.error("", throwable);
+    error("", throwable);
   }
 
   /**
@@ -515,7 +513,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void warning(Throwable throwable) {
-    this.warning("", throwable);
+    warning("", throwable);
   }
 
   /**
@@ -613,7 +611,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void info(Throwable throwable) {
-    this.info("", throwable);
+    info("", throwable);
   }
 
   /**
@@ -711,7 +709,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    */
   @Override
   public void config(Throwable throwable) {
-    this.config("", throwable);
+    config("", throwable);
   }
 
   /**

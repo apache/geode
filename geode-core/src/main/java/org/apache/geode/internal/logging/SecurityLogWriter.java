@@ -36,7 +36,7 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
   private final int logLevel;
   private final InternalLogWriter realLogWriter;
 
-  public SecurityLogWriter(int level, InternalLogWriter logWriter) {
+  public SecurityLogWriter(final int level, final InternalLogWriter logWriter) {
     logLevel = level;
     realLogWriter = logWriter;
   }
@@ -44,11 +44,6 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
   @Override
   public int getLogWriterLevel() {
     return logLevel;
-  }
-
-  @Override
-  public void setLogWriterLevel(int logWriterLevel) {
-    throw new UnsupportedOperationException("Unable to change log level after creation");
   }
 
   @Override
@@ -62,7 +57,8 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
   }
 
   @Override
-  public void put(int messageLevel, StringId messageId, Object[] parameters, Throwable throwable) {
+  public void put(final int messageLevel, final StringId messageId, final Object[] parameters,
+      final Throwable throwable) {
     put(messageLevel, messageId.toLocalizedString(parameters), throwable);
   }
 
@@ -71,7 +67,7 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
    * security related log-lines.
    */
   @Override
-  public void put(int messageLevel, String message, Throwable throwable) {
+  public void put(final int messageLevel, final String message, final Throwable throwable) {
     realLogWriter.put(messageLevel, new StringBuilder(SECURITY_PREFIX)
         .append(levelToString(messageLevel)).append(" ").append(message).toString(), throwable);
   }

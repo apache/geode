@@ -328,7 +328,7 @@ public class CreateMappingCommandTest {
   public void updateClusterConfigWithNoRegionsDoesNotThrowException() {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
   }
 
   @Test
@@ -339,7 +339,7 @@ public class CreateMappingCommandTest {
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     assertThat(listCacheElements.size()).isEqualTo(1);
     assertThat(listCacheElements).contains(mapping);
@@ -355,7 +355,7 @@ public class CreateMappingCommandTest {
     list.add(nonMatchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     assertThat(listCacheElements).isEmpty();
   }
@@ -370,7 +370,7 @@ public class CreateMappingCommandTest {
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     assertThat(queueList.size()).isEqualTo(1);
     String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
@@ -393,7 +393,7 @@ public class CreateMappingCommandTest {
     when(matchingRegionAttributes.getDataPolicy())
         .thenReturn(RegionAttributesDataPolicy.PARTITION);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     assertThat(queueList.get(0).isParallel()).isTrue();
   }
@@ -408,7 +408,7 @@ public class CreateMappingCommandTest {
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes).setCacheLoader(any());
   }
@@ -424,7 +424,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(null);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
@@ -443,7 +443,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("");
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
@@ -462,7 +462,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("q1,q2");
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
@@ -483,7 +483,7 @@ public class CreateMappingCommandTest {
     String existingQueues = "q1," + queueName + ",q2";
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(existingQueues);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes, never()).setAsyncEventQueueIds(any());
   }
@@ -497,7 +497,7 @@ public class CreateMappingCommandTest {
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes).setCacheWriter(any());
   }
@@ -514,7 +514,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn("q1,q2");
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes, never()).setAsyncEventQueueIds(any());
   }
@@ -530,7 +530,7 @@ public class CreateMappingCommandTest {
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
 
-    createRegionMappingCommand.updateClusterConfig(null, cacheConfig, arguments);
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     assertThat(queueList).isEmpty();
   }

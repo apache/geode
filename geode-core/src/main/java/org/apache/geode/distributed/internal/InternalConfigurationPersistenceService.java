@@ -148,6 +148,14 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     jaxbService.validateWithLocalCacheXSD();
   }
 
+  @TestingOnly
+  InternalConfigurationPersistenceService() {
+    configDirPath = null;
+    configDiskDirPath = null;
+    cache = null;
+    jaxbService = new JAXBService(CacheConfig.class);
+  }
+
   public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
       throws IOException {
     this.cache = cache;
@@ -716,6 +724,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return getConfigurationRegion().getAll(keys);
   }
 
+  public Set<String> getGroups() {
+    return getConfigurationRegion().keySet();
+  }
+
   /**
    * Returns the path of Shared configuration directory
    *
@@ -987,5 +999,4 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       unlockSharedConfiguration();
     }
   }
-
 }

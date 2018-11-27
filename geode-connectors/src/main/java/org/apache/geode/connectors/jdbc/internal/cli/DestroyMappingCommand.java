@@ -69,73 +69,83 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object configObject) {
+  public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object configObject) {
     String regionName = (String) configObject;
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
-      return;
+      return false;
     }
-    removeJdbcMappingFromRegion(regionConfig);
-    removeJdbcQueueFromCache(cacheConfig, regionName);
+    boolean modified = false;
+    modified |= removeJdbcMappingFromRegion(regionConfig);
+    modified |= removeJdbcQueueFromCache(cacheConfig, regionName);
     RegionAttributesType attributes = getRegionAttributes(regionConfig);
-    removeJdbcLoader(attributes);
-    removeJdbcWriter(attributes);
-    removeJdbcAsyncEventQueueId(attributes, regionName);
+    modified |= removeJdbcLoader(attributes);
+    modified |= removeJdbcWriter(attributes);
+    modified |= removeJdbcAsyncEventQueueId(attributes, regionName);
+    return modified;
   }
 
-  private void removeJdbcLoader(RegionAttributesType attributes) {
+  private boolean removeJdbcLoader(RegionAttributesType attributes) {
     DeclarableType cacheLoader = attributes.getCacheLoader();
     if (cacheLoader != null) {
       if (JdbcLoader.class.getName().equals(cacheLoader.getClassName())) {
         attributes.setCacheLoader(null);
+        return true;
       }
     }
+    return false;
   }
 
-  private void removeJdbcWriter(RegionAttributesType attributes) {
+  private boolean removeJdbcWriter(RegionAttributesType attributes) {
     DeclarableType cacheWriter = attributes.getCacheWriter();
     if (cacheWriter != null) {
       if (JdbcWriter.class.getName().equals(cacheWriter.getClassName())) {
         attributes.setCacheWriter(null);
+        return true;
       }
     }
+    return false;
   }
 
-  private void removeJdbcAsyncEventQueueId(RegionAttributesType attributes, String regionName) {
+  private boolean removeJdbcAsyncEventQueueId(RegionAttributesType attributes, String regionName) {
     String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
     String queueIds = attributes.getAsyncEventQueueIds();
     if (queueIds == null) {
-      return;
+      return false;
     }
     List<String> queues = new ArrayList<>(Arrays.asList(queueIds.split(",")));
     if (queues.contains(queueName)) {
       queues.remove(queueName);
       String newQueueIds = String.join(",", queues);
       attributes.setAsyncEventQueueIds(newQueueIds);
+      return true;
     }
+    return false;
   }
 
-  private void removeJdbcQueueFromCache(CacheConfig cacheConfig, String regionName) {
+  private boolean removeJdbcQueueFromCache(CacheConfig cacheConfig, String regionName) {
     String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
     Iterator<AsyncEventQueue> iterator = cacheConfig.getAsyncEventQueues().iterator();
     while (iterator.hasNext()) {
       AsyncEventQueue queue = iterator.next();
       if (queueName.equals(queue.getId())) {
         iterator.remove();
-        break;
+        return true;
       }
     }
+    return false;
   }
 
-  private void removeJdbcMappingFromRegion(RegionConfig regionConfig) {
+  private boolean removeJdbcMappingFromRegion(RegionConfig regionConfig) {
     Iterator<CacheElement> iterator = regionConfig.getCustomRegionElements().iterator();
     while (iterator.hasNext()) {
       CacheElement element = iterator.next();
       if (element instanceof RegionMapping) {
         iterator.remove();
-        break;
+        return true;
       }
     }
+    return false;
   }
 
   private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {

@@ -119,6 +119,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -2407,7 +2408,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public InternalCache getCacheForProcessingClientRequests() {
+  public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 }

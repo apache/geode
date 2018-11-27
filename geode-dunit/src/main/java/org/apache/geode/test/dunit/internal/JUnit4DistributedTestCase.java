@@ -56,12 +56,14 @@ import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * This class is the base class for all distributed tests using JUnit 4.
+ * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
+ *             instead.
  */
 public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
   private static final Logger logger = LogService.getLogger();

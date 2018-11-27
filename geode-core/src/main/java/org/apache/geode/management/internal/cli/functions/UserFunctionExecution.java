@@ -57,7 +57,7 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
-    Cache cache = context.getCache();
+    Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
     String[] functionArgs = null;

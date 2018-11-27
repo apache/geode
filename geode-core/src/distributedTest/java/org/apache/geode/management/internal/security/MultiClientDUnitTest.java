@@ -77,12 +77,20 @@ public class MultiClientDUnitTest {
       cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
     }, server1, server2);
 
-    client3 = lsRule.startClientVM(3, "data", "data", false, server1.getPort(), server2.getPort());
-    client4 = lsRule.startClientVM(4, "stranger", "stranger", false, server1.getPort(),
-        server2.getPort());
-    client5 = lsRule.startClientVM(5, "data", "data", false, server1.getPort(), server2.getPort());
-    client6 = lsRule.startClientVM(6, "dataWithWrongPswd", "data", false, server1.getPort(),
-        server2.getPort());
+    int server1Port = server1.getPort();
+    int server2Port = server2.getPort();
+    client3 = lsRule.startClientVM(3, c -> c.withCredential("data", "data")
+        .withPoolSubscription(false)
+        .withServerConnection(server1Port, server2Port));
+    client4 = lsRule.startClientVM(4, c -> c.withCredential("stranger", "stranger")
+        .withPoolSubscription(false)
+        .withServerConnection(server1Port, server2Port));
+    client5 = lsRule.startClientVM(5, c -> c.withCredential("data", "data")
+        .withPoolSubscription(false)
+        .withServerConnection(server1Port, server2Port));
+    client6 = lsRule.startClientVM(6, c -> c.withCredential("dataWithWrongPswd", "data")
+        .withPoolSubscription(false)
+        .withServerConnection(server1Port, server2Port));
   }
 
   @Test

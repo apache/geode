@@ -16,7 +16,6 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
@@ -40,7 +39,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
@@ -72,7 +70,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   /**
    * This is only available in each Locator/Server VM, not in the controller (test) VM.
    */
-  public static MemberStarterRule memberStarter;
+  public static MemberStarterRule<?> memberStarter;
   public static ClientCacheRule clientCacheRule;
 
   public static InternalCache getCache() {
@@ -252,15 +250,14 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return memberVM;
   }
 
-  public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup, String clientVersion)
-      throws Exception {
+  public ClientVM startClientVM(int index, String clientVersion,
+      SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
     VM client = getVM(index, clientVersion);
     Exception error = client.invoke(() -> {
-      clientCacheRule =
-          new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
+      clientCacheRule = new ClientCacheRule();
       try {
-        clientCacheRule.before();
+        clientCacheRuleSetUp.accept(clientCacheRule);
+        clientCacheRule.createCache();
         return null;
       } catch (Exception e) {
         return e;
@@ -275,41 +272,22 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public ClientVM startClientVM(int index,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
-    return startClientVM(index, new Properties(), cacheFactorySetup,
-        VersionManager.CURRENT_VERSION);
+      SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
+    return startClientVM(index, VersionManager.CURRENT_VERSION, clientCacheRuleSetUp);
   }
+
+  public ClientVM startClientVM(int index, String clientVersion, Properties properties,
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup)
+      throws Exception {
+    return startClientVM(index, clientVersion,
+        c -> c.withProperties(properties).withCacheSetup(cacheFactorySetup));
+  }
+
 
   public ClientVM startClientVM(int index, Properties properties,
       SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
-    return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
-  }
-
-  // convenient startClientMethod
-  public ClientVM startClientVM(int index, String username, String password,
-      boolean subscriptionEnabled, int... serverPorts) throws Exception {
-    Properties props = new Properties();
-    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
-    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
-    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
-
-    return startClientVM(index, props, (ccf) -> {
-      ccf.setPoolSubscriptionEnabled(subscriptionEnabled);
-      for (int serverPort : serverPorts) {
-        ccf.addPoolServer("localhost", serverPort);
-      }
-    });
-  }
-
-  // convenient startClientMethod
-  public ClientVM startClientVM(int index, boolean subscriptionEnabled, int... serverPorts)
-      throws Exception {
-    return startClientVM(index, ccf -> {
-      ccf.setPoolSubscriptionEnabled(subscriptionEnabled);
-      for (int port : serverPorts) {
-        ccf.addPoolServer("localhost", port);
-      }
-    });
+    return startClientVM(index,
+        c -> c.withProperties(properties).withCacheSetup(cacheFactorySetup));
   }
 
   /**

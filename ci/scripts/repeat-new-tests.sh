@@ -28,16 +28,25 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 function changes_for_path() {
-  cd geode
-  local path="$1" # only expand once in the line below
-  git diff --name-only HEAD $(git merge-base HEAD origin/develop) -- $path
+  pushd geode >> /dev/null
+    local path="$1" # only expand once in the line below
+    # .git/resource/metadata.json is provided by the github-pr-resource used in Concourse
+    local mergeBase=$(cat .git/resource/metadata.json |
+                      jq -r -c '.[]| select(.name == "base_sha") | .value') || exit $?
+
+    if [[ "${mergeBase}" == "" ]]; then
+      echo "Could not determine merge base. Exiting..."
+      exit 1
+    fi
+    git diff --name-only ${mergeBase} -- $path
+  popd >> /dev/null
 }
 
-UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java')
-INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java')
-DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java')
-ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java')
-UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java')
+UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java') || exit $?
+INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java') || exit $?
+DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java') || exit $?
+ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
+UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java') || exit $?
 
 CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
@@ -85,6 +94,7 @@ export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistribute
 export GRADLE_TASK_OPTIONS="--no-parallel -Prepeat=50 -PfailOnNoMatchingTests=false"
 
 echo "GRADLE_TASK_OPTIONS=${GRADLE_TASK_OPTIONS}"
+echo "GRADLE_TASK=${GRADLE_TASK}"
 
 ${SCRIPTDIR}/execute_tests.sh
 

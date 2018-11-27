@@ -110,7 +110,10 @@ public class DestroyMappingCommandTest {
   public void updateClusterConfigWithNoRegionsDoesNotThrowException() {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
+
+    assertThat(modified).isFalse();
   }
 
   @Test
@@ -125,9 +128,11 @@ public class DestroyMappingCommandTest {
     list.add(nonMatchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
 
     assertThat(listCacheElements).isEqualTo(Arrays.asList(nonMatchingMapping));
+    assertThat(modified).isFalse();
   }
 
   @Test
@@ -140,9 +145,11 @@ public class DestroyMappingCommandTest {
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
 
     assertThat(listCacheElements).isEmpty();
+    assertThat(modified).isTrue();
   }
 
   @Test
@@ -161,9 +168,11 @@ public class DestroyMappingCommandTest {
     queueList.add(queue);
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
 
     assertThat(queueList).isEmpty();
+    assertThat(modified).isTrue();
   }
 
   @Test
@@ -179,9 +188,11 @@ public class DestroyMappingCommandTest {
     when(cacheWriter.getClassName()).thenReturn(JdbcWriter.class.getName());
     when(matchingRegionAttributes.getCacheWriter()).thenReturn(cacheWriter);
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
 
     verify(matchingRegionAttributes, times(1)).setCacheWriter(null);
+    assertThat(modified).isTrue();
   }
 
   @Test
@@ -196,9 +207,11 @@ public class DestroyMappingCommandTest {
     String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(queueName);
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
 
     verify(matchingRegionAttributes, times(1)).setAsyncEventQueueIds("");
+    assertThat(modified).isTrue();
   }
 
   @Test
@@ -214,9 +227,11 @@ public class DestroyMappingCommandTest {
     when(matchingRegionAttributes.getAsyncEventQueueIds())
         .thenReturn(queueName + "1," + queueName + "," + queueName + "2");
 
-    destroyRegionMappingCommand.updateClusterConfig(null, cacheConfig, regionName);
+    boolean modified =
+        destroyRegionMappingCommand.updateConfigForGroup(null, cacheConfig, regionName);
 
     verify(matchingRegionAttributes, times(1))
         .setAsyncEventQueueIds(queueName + "1," + queueName + "2");
+    assertThat(modified).isTrue();
   }
 }

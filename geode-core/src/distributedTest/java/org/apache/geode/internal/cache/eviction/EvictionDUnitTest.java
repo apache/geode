@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,6 +85,7 @@ public class EvictionDUnitTest {
     if (offHeap) {
       properties.setProperty(OFF_HEAP_MEMORY_SIZE, "200m");
     }
+
     server0 = cluster.startServerVM(0, s -> s.withNoCacheServer()
         .withProperties(properties).withConnectionToLocator(locatorPort));
     server1 = cluster.startServerVM(1, s -> s.withNoCacheServer()
@@ -100,6 +102,14 @@ public class EvictionDUnitTest {
         cache.getResourceManager().setEvictionHeapPercentage(85);
       }
     }, server0, server1);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // this test is asserting on the expected number of evictions depending on the current memory
+    // usage, so we need to make sure each test start with clean memory usage to reduce flakiness
+    server0.getVM().bounce();
+    server1.getVM().bounce();
   }
 
   @Test

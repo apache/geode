@@ -77,10 +77,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
     headers.setLocation(toUri());
     final Set<Region<?, ?>> regions = new HashSet<>();
     for (InternalRegion region : getCache().getApplicationRegions()) {
-      if (region instanceof Region) {
-        regions.add(region);
-      }
-    } ;
+      regions.add(region);
+    }
     String listRegionsAsJson = JSONUtils.formulateJsonForListRegions(regions, "regions");
     return new ResponseEntity<>(listRegionsAsJson, headers, HttpStatus.OK);
   }

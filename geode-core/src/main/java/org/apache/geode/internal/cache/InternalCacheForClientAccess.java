@@ -138,14 +138,12 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   /**
-   * Server-side code using an InternalCacheForClientAccess may need to
-   * get an Internal Region not normally accesible and may use this method to
-   * do so. The REST API, for instance, needs to get at a Query store
-   * region that is not otherwise accessible through the getRegion methods.
+   * This method can be used to locate an internal region.
+   * It should not be invoked with a region name obtained
+   * from a client.
    */
   public <K, V> Region<K, V> getInternalRegion(String path) {
-    Region<K, V> result = delegate.getRegion(path);
-    return result;
+    return delegate.getRegion(path);
   }
 
   @Override
@@ -225,6 +223,16 @@ public class InternalCacheForClientAccess implements InternalCache {
             + " is an internal region that a client is never allowed to create");
       }
     }
+    return delegate.createVMRegion(name, p_attrs, internalRegionArgs);
+  }
+
+  /**
+   * This method allows server-side code to create an internal region. It should
+   * not be invoked with a region name obtained from a client.
+   */
+  public <K, V> Region<K, V> createInternalRegion(String name, RegionAttributes<K, V> p_attrs,
+      InternalRegionArguments internalRegionArgs)
+      throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
     return delegate.createVMRegion(name, p_attrs, internalRegionArgs);
   }
 
@@ -1201,7 +1209,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalCache getCacheForProcessingClientRequests() {
+  public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return this;
   }
 }

@@ -16,8 +16,6 @@ package org.apache.geode.internal.logging;
 
 import java.io.PrintStream;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 /**
  * A log writer for security related logs. This will prefix all messages with "security-" in the
  * level part of log-line for easy recognition and filtering if required. Intended usage is in all
@@ -32,20 +30,19 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  */
 public class SecurityManagerLogWriter extends ManagerLogWriter {
 
-  public SecurityManagerLogWriter(final int level, final PrintStream printStream) {
-    this(level, printStream, null);
+  public SecurityManagerLogWriter(final int level, final PrintStream printStream,
+      final boolean loner) {
+    this(level, printStream, null, loner);
   }
 
   public SecurityManagerLogWriter(final int level, final PrintStream printStream,
-      final String connectionName) {
-    super(level, printStream, connectionName);
+      final String connectionName, final boolean loner) {
+    super(level, printStream, connectionName, loner);
   }
 
   @Override
   public void setConfig(LogConfig config) {
-    if (config instanceof DistributionConfig) {
-      config = new SecurityLogConfig((DistributionConfig) config);
-    }
+    config = new SecurityLogConfig(config);
     super.setConfig(config);
   }
 

@@ -37,7 +37,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
  * @since GemFire 5.7
  *
  */
-class PooledConnection implements Connection {
+public class PooledConnection implements Connection {
 
   /*
    * connection is volatile because we may asynchronously destroy the pooled connection while

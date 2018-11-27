@@ -22,6 +22,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -46,7 +47,7 @@ public class ExportDataFunction implements InternalFunction {
     final boolean parallel = Boolean.parseBoolean(args[2]);
 
     try {
-      Cache cache = context.getCache();
+      Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       Region<?, ?> region = cache.getRegion(regionName);
       String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
       if (region != null) {
