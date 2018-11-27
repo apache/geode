@@ -42,8 +42,6 @@ import java.rmi.registry.Registry;
 import java.util.List;
 import java.util.Properties;
 
-import batterytest.greplogs.ExpectedStrings;
-import batterytest.greplogs.LogConsumer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -62,6 +60,8 @@ import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.greplogs.ExpectedStrings;
+import org.apache.geode.test.greplogs.LogConsumer;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
