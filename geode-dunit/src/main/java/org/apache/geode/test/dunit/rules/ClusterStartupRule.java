@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -54,6 +53,7 @@ import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * A rule to help you start locators and servers or clients inside of a

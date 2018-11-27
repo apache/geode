@@ -23,6 +23,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.version.VersionManager;
 
 public class ChildVM {
 

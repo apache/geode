@@ -22,6 +22,7 @@ import java.rmi.registry.Registry;
 
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.version.VersionManager;
 
 class DUnitHost extends Host {
   private static final long serialVersionUID = -8034165624503666383L;

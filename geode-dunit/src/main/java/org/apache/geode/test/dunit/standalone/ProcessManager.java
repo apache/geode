@@ -42,6 +42,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.version.VersionManager;
 
 public class ProcessManager {
   private int namingPort;

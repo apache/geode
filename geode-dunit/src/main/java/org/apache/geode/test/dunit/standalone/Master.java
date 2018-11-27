@@ -20,6 +20,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.version.VersionManager;
 
 public class Master extends UnicastRemoteObject implements MasterRemote {
   private static final long serialVersionUID = 1178600200232603119L;

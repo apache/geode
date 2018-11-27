@@ -61,10 +61,10 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
 @SuppressWarnings("ConstantConditions")
 @Category(WanTest.class)

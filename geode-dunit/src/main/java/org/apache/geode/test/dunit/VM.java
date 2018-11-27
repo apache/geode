@@ -29,7 +29,7 @@ import org.apache.geode.test.dunit.standalone.BounceResult;
 import org.apache.geode.test.dunit.standalone.MethExecutorResult;
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
-import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * This class represents a Java Virtual Machine that runs in a DistributedTest.
