@@ -704,9 +704,6 @@ public abstract class AbstractBaseController implements InitializingBean {
                 "Server has encountered error (illegal or inappropriate arguments).", e);
           }
         } else {
-
-          Assert.state(typeValue != null,
-              "The class type of the object to persist in GemFire must be specified in JSON content using the '@type' property!");
           Assert.state(
               ClassUtils.isPresent(String.valueOf(typeValue),
                   Thread.currentThread().getContextClassLoader()),
