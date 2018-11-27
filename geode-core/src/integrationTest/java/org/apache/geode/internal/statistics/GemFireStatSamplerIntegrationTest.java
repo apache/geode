@@ -441,7 +441,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     boolean done = false;
     try {
       for (StopWatch time = new StopWatch(true); !done
-          && time.elapsedTimeMillis() < 10 * sampleRate;) {
+          && time.elapsedTimeMillis() < 300 * sampleRate;) {
         exists1 = exists1 || archiveFile1.exists();
         exists2 = exists2 || archiveFile2.exists();
         exists3 = exists3 || archiveFile3.exists();
@@ -449,7 +449,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
         exists = exists || archiveFile.exists();
         done = exists1 && exists2 && exists3 && exists4 && exists;
         if (!done) {
-          Thread.sleep(10);
+          Thread.sleep(100);
         }
       }
     } catch (InterruptedException e) {
