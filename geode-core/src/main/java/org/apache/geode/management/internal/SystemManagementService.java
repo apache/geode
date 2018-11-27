@@ -66,7 +66,7 @@ public class SystemManagementService extends BaseManagementService {
   /**
    * The concrete implementation of DistributedSystem that provides internal-only functionality.
    */
-  private InternalDistributedSystem system;
+  private final InternalDistributedSystem system;
 
   /**
    * core component for distribution
@@ -77,7 +77,7 @@ public class SystemManagementService extends BaseManagementService {
    * This is a notification hub to listen all the notifications emitted from all the MBeans in a
    * peer cache./cache server
    */
-  private NotificationHub notificationHub;
+  private final NotificationHub notificationHub;
 
   /**
    * whether the service is closed or not if cache is closed automatically this service will be
@@ -93,15 +93,15 @@ public class SystemManagementService extends BaseManagementService {
   /**
    * Adapter to interact with platform MBean server
    */
-  private MBeanJMXAdapter jmxAdapter;
+  private final MBeanJMXAdapter jmxAdapter;
 
-  private InternalCacheForClientAccess cache;
+  private final InternalCacheForClientAccess cache;
 
   private FederatingManager federatingManager;
 
   private final ManagementAgent agent;
 
-  private ManagementResourceRepo repo;
+  private final ManagementResourceRepo repo;
 
   /**
    * This membership listener will listen on membership events after the node has transformed into a
@@ -113,9 +113,10 @@ public class SystemManagementService extends BaseManagementService {
    * Proxy aggregator to create aggregate MBeans e.g. DistributedSystem and DistributedRegion
    * GemFire comes with a default aggregator.
    */
-  private List<ProxyListener> proxyListeners;
+  private final List<ProxyListener> proxyListeners;
 
-  private UniversalListenerContainer universalListenerContainer = new UniversalListenerContainer();
+  private final UniversalListenerContainer universalListenerContainer =
+      new UniversalListenerContainer();
 
   public static BaseManagementService newSystemManagementService(
       InternalCacheForClientAccess cache) {
@@ -133,9 +134,9 @@ public class SystemManagementService extends BaseManagementService {
       throw new DistributedSystemDisconnectedException(
           "This connection to a distributed system has been disconnected.");
     }
-    this.jmxAdapter = new MBeanJMXAdapter();
-    this.repo = new ManagementResourceRepo();
 
+    this.jmxAdapter = new MBeanJMXAdapter(this.system.getDistributedMember());
+    this.repo = new ManagementResourceRepo();
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
