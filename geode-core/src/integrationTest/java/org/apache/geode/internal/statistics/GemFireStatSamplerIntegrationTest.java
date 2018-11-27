@@ -431,8 +431,6 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     props.setProperty(STATISTIC_SAMPLE_RATE, String.valueOf(sampleRate));
     connect(props);
 
-    assertTrue(getGemFireStatSampler().waitForInitialization(5000));
-
     boolean exists1 = false;
     boolean exists2 = false;
     boolean exists3 = false;
@@ -441,7 +439,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     boolean done = false;
     try {
       for (StopWatch time = new StopWatch(true); !done
-          && time.elapsedTimeMillis() < 10 * sampleRate;) {
+          && time.elapsedTimeMillis() < 15 * sampleRate;) {
         exists1 = exists1 || archiveFile1.exists();
         exists2 = exists2 || archiveFile2.exists();
         exists3 = exists3 || archiveFile3.exists();
@@ -455,6 +453,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
+    assertTrue(getGemFireStatSampler().waitForInitialization(5000));
     assertTrue("Waiting for archive files to exist:" + " exists1=" + exists1 + " exists2=" + exists2
         + " exists3=" + exists3 + " exists4=" + exists4 + " exists=" + exists, done);
 
