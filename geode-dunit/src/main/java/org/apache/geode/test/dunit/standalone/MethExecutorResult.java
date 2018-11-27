@@ -13,7 +13,7 @@
  * the License.
  */
 
-package hydra;
+package org.apache.geode.test.dunit.standalone;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -24,10 +24,9 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import hydra.MethExecutorResult;
-
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.standalone.BounceResult;
+import org.apache.geode.test.dunit.standalone.MethExecutorResult;
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
 import org.apache.geode.test.dunit.standalone.VersionManager;

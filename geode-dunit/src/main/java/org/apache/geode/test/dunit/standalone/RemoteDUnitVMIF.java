@@ -17,8 +17,6 @@ package org.apache.geode.test.dunit.standalone;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import hydra.MethExecutorResult;
-
 public interface RemoteDUnitVMIF extends Remote {
 
   MethExecutorResult executeMethodOnObject(Object target, String methodName) throws RemoteException;
