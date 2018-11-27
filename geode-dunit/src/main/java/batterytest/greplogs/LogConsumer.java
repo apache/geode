@@ -258,7 +258,7 @@ public class LogConsumer {
   }
 
   private StringBuilder enforceErrorLimit(int hits, String line, int linenum, String filename) {
-    if (hits <= repeatLimit) {
+    if (hits < repeatLimit) {
       StringBuilder buffer = new StringBuilder();
       buffer.append("-----------------------------------------------------------------------\n")
           .append("Found suspect string in ").append(filename).append(" at line ").append(linenum)
