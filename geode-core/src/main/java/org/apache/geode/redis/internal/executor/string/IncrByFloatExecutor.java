@@ -68,7 +68,7 @@ public class IncrByFloatExecutor extends StringExecutor {
     }
 
 
-    Double increment;
+    double increment;
 
     try {
       increment = Coder.stringToDouble(doub);
@@ -94,7 +94,7 @@ public class IncrByFloatExecutor extends StringExecutor {
 
     String stringValue = Coder.bytesToString(valueWrapper.toBytes());
 
-    Double value;
+    double value;
     try {
       value = Coder.stringToDouble(stringValue);
     } catch (NumberFormatException e) {

@@ -86,7 +86,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
           Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
       return;
     }
-    Double value;
+    double value;
 
     try {
       value = Coder.stringToDouble(valueS);

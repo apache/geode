@@ -571,7 +571,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     if (shouldClose) {
       try {
         PoolImpl localpool = (PoolImpl) PoolManagerImpl.getPMI().find(poolName);
-        Boolean durable = false;
+        boolean durable = false;
         if (localpool != null) {
           durable = localpool.isDurableClient();
         }

@@ -762,7 +762,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
           // Iterate through the set of received versions for this exception
           for (RVVException.ReceivedVersionsReverseIterator it =
               exception.receivedVersionsReverseIterator(); it.hasNext();) {
-            Long received = it.next();
+            long received = it.next();
             // If we find a gap between the previous received version and the
             // next received version, add an exception.
             if (received != previous - 1) {

@@ -58,7 +58,7 @@ public class DoubleWrapper implements DataSerializable, Comparable<Object> {
       other = (Double) arg0;
     } else
       return 0;
-    Double diff = this.score - other;
+    double diff = this.score - other;
     if (diff > 0)
       return 1;
     else if (diff < 0)

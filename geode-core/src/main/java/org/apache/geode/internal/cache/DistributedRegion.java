@@ -2512,7 +2512,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   protected void waitForCurrentOperations() {
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
-    Boolean flushOnClose =
+    boolean flushOnClose =
         !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
     if (!this.cache.forcedDisconnect() && flushOnClose
         && this.getDistributionManager().getMembershipManager() != null
