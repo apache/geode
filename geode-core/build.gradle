@@ -260,6 +260,9 @@ dependencies {
   jcaCompile(sourceSets.main.output)
 
 
+  jmhCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
+
+
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

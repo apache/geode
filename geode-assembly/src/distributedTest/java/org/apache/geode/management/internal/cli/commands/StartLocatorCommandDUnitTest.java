@@ -14,15 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__DIR;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__FOREGROUND;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__LOCATORS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__MEMBER_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PORT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PROPERTIES;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__SECURITY_PROPERTIES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -31,6 +36,11 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -49,6 +59,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.ConcurrencyRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
@@ -70,6 +81,9 @@ public class StartLocatorCommandDUnitTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public ConcurrencyRule concurrencyRule = new ConcurrencyRule();
 
   @Rule
   public TestName testName = new TestName();
@@ -236,5 +250,36 @@ public class StartLocatorCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(result.getMessageFromContent()).doesNotContain(unexpectedMessage);
     assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
+  }
+
+  @Test
+  public void testWithLocatorInForeground()
+      throws Exception {
+    File workingDir = temporaryFolder.newFolder();
+
+    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
+        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
+        .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
+        .addOption(START_LOCATOR__PORT, "0")
+        .addOption(START_LOCATOR__FOREGROUND, "true");
+
+    Callable<CommandResult> startLocator = () -> gfsh.executeCommand(command.getCommandString());
+
+    ExecutorService threadPool = Executors.newFixedThreadPool(1);
+    Future<CommandResult> startLocatorThread = threadPool.submit(startLocator);
+
+    gfsh.connectAndVerify(locator);
+    String listMembersCommand = new CommandStringBuilder(LIST_MEMBER).getCommandString();
+
+    await().untilAsserted(() -> {
+      CommandResult listMemberResult = gfsh.executeCommand(listMembersCommand);
+
+      assertThat(listMemberResult.getStatus()).isEqualTo(Result.Status.OK);
+      assertThat(listMemberResult.getTableColumnValues("Name")).contains(memberName);
+    });
+
+    assertThatThrownBy(() -> startLocatorThread.get(1000, MILLISECONDS))
+        .withFailMessage("Locator exited early").isInstanceOf(TimeoutException.class);
   }
 }

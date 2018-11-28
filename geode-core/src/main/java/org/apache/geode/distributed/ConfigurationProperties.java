@@ -1418,6 +1418,16 @@ public interface ConfigurationProperties {
    */
   String REMOVE_UNRESPONSIVE_CLIENT = "remove-unresponsive-client";
   /**
+   * <p>
+   * The static String definition of the <i>"foreground"</i> property
+   * </p>
+   * <p>
+   * <U>Description:</U> If set to true, causes the process to start in the foreground. The GFSH
+   * command will not return as long as the process is running.
+   * </p>
+   */
+  String FOREGROUND = "foreground";
+  /**
    * The static String definition of the <i>"roles"</i> property <a name="roles"/a>
    * </p>
    * <U>Description</U>: Specifies the application roles that this member performs in the

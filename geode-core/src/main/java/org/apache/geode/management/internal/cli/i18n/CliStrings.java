@@ -2355,6 +2355,9 @@ public class CliStrings {
   public static final String START_LOCATOR__FORCE = "force";
   public static final String START_LOCATOR__FORCE__HELP =
       "Whether to allow the PID file from a previous Locator run to be overwritten.";
+  public static final String START_LOCATOR__FOREGROUND = "foreground";
+  public static final String START_LOCATOR__FOREGROUND_HELP =
+      "Starts the process in the foreground. GFSH will not return while the process is running.";
   public static final String START_LOCATOR__GROUP__HELP = "Group(s) the Locator will be a part of.";
   public static final String START_LOCATOR__HOSTNAME_FOR_CLIENTS = "hostname-for-clients";
 

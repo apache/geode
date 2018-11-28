@@ -70,6 +70,9 @@ public class StartLocatorCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.START_LOCATOR__FORCE, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_LOCATOR__FORCE__HELP) final Boolean force,
+      @CliOption(key = CliStrings.START_LOCATOR__FOREGROUND, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.START_LOCATOR__FOREGROUND_HELP) final Boolean foreground,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.START_LOCATOR__GROUP__HELP) final String group,
@@ -131,12 +134,12 @@ public class StartLocatorCommand extends InternalGfshCommand {
     workingDirectory = StartMemberUtils.resolveWorkingDir(
         workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
 
-    return doStartLocator(memberName, bindAddress, classpath, force, group, hostnameForClients,
-        jmxManagerHostnameForClients, includeSystemClasspath, locators, logLevel, mcastBindAddress,
-        mcastPort, port, workingDirectory, gemfirePropertiesFile, gemfireSecurityPropertiesFile,
-        initialHeap, maxHeap, jvmArgsOpts, connect, enableSharedConfiguration,
-        loadSharedConfigurationFromDirectory, clusterConfigDir, httpServicePort,
-        httpServiceBindAddress, redirectOutput);
+    return doStartLocator(memberName, bindAddress, classpath, force, foreground,
+        group, hostnameForClients, jmxManagerHostnameForClients, includeSystemClasspath, locators,
+        logLevel, mcastBindAddress, mcastPort, port, workingDirectory, gemfirePropertiesFile,
+        gemfireSecurityPropertiesFile, initialHeap, maxHeap, jvmArgsOpts, connect,
+        enableSharedConfiguration, loadSharedConfigurationFromDirectory, clusterConfigDir,
+        httpServicePort, httpServiceBindAddress, redirectOutput);
 
   }
 
@@ -145,6 +148,7 @@ public class StartLocatorCommand extends InternalGfshCommand {
       String bindAddress,
       String classpath,
       Boolean force,
+      Boolean foreground,
       String group,
       String hostnameForClients,
       String jmxManagerHostnameForClients,
@@ -211,8 +215,9 @@ public class StartLocatorCommand extends InternalGfshCommand {
         ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
 
     LocatorLauncher.Builder locatorLauncherBuilder =
-        new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
-            .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
+        new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force)
+            .setForeground(foreground).setPort(port).setRedirectOutput(redirectOutput)
+            .setWorkingDirectory(workingDirectory);
     if (hostnameForClients != null) {
       locatorLauncherBuilder.setHostnameForClients(hostnameForClients);
     }
@@ -348,6 +353,22 @@ public class StartLocatorCommand extends InternalGfshCommand {
         infoResult.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
             locatorPort, configProperties));
       }
+    }
+
+    if (foreground) {
+      Gfsh.println();
+      Gfsh.println("Locator has started as a foreground process.");
+
+      infoResult.getContent().stream().forEach((infoString) -> Gfsh.println(infoString));
+      Gfsh.println();
+
+      do {
+        locatorState = LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
+        Gfsh.print("\rUptime: " + locatorState.getUptime().toString());
+        synchronized (this) {
+          TimeUnit.MILLISECONDS.timedWait(this, 1000);
+        }
+      } while (locatorState.getStatus().equals(AbstractLauncher.Status.ONLINE));
     }
 
     return result;
@@ -494,6 +515,10 @@ public class StartLocatorCommand extends InternalGfshCommand {
 
     if (launcher.isForcing()) {
       commandLine.add("--force");
+    }
+
+    if (launcher.isForeground()) {
+      commandLine.add("--foreground");
     }
 
     if (StringUtils.isNotBlank(launcher.getHostnameForClients())) {

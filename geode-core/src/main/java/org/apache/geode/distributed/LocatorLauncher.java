@@ -23,6 +23,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__FOREGROUND;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__FOREGROUND_HELP;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -116,6 +118,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         "Specifies the working directory where the Locator is running.  Defaults to the current working directory.");
     helpMap.put("force",
         "Enables any existing Locator PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
+    helpMap.put(START_LOCATOR__FOREGROUND, START_LOCATOR__FOREGROUND_HELP);
     helpMap.put("help",
         "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
     helpMap.put("hostname-for-clients",
@@ -133,7 +136,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   static {
     usageMap.put(Command.START,
-        "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--debug] [--help]");
+        "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--foreground] [--debug] [--help]");
     usageMap.put(Command.STATUS,
         "status [--bind-address=<IP-address>] [--port=<port>] [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
     usageMap.put(Command.STOP,
@@ -155,6 +158,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private final boolean deletePidFileOnStop;
   private final boolean force;
+  private final boolean foreground;
   private final boolean help;
   private final boolean redirectOutput;
 
@@ -241,6 +245,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
     this.force = Boolean.TRUE.equals(builder.getForce());
+    this.foreground = Boolean.TRUE.equals(builder.getForeground());
     this.hostnameForClients = builder.getHostnameForClients();
     this.memberName = builder.getMemberName();
     this.pid = builder.getPid();
@@ -342,6 +347,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public boolean isForcing() {
     return this.force;
+  }
+
+  /**
+   * Determine whether the locator process will start in the foreground.
+   *
+   * @return a boolean. True if the locator will start in the foreground.
+   */
+  public boolean isForeground() {
+    return this.foreground;
   }
 
   /**
@@ -634,6 +648,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #getBindAddress()
    * @see #getDistributedSystemProperties()
    * @see #isForcing()
+   * @see #isForeground()
    * @see #getLogFile()
    * @see #getLocatorPidFile
    * @see #getPort()
@@ -1201,6 +1216,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Boolean debug;
     private Boolean deletePidFileOnStop;
     private Boolean force;
+    private Boolean foreground;
     private Boolean help;
     private Boolean redirectOutput;
     private Boolean loadSharedConfigFromDir;
@@ -1248,6 +1264,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       parser.accepts("delete-pid-file-on-stop");
       parser.accepts("dir").withRequiredArg().ofType(String.class);
       parser.accepts("force");
+      parser.accepts("foreground");
       parser.accepts("help");
       parser.accepts("hostname-for-clients").withRequiredArg().ofType(String.class);
       parser.accepts("pid").withRequiredArg().ofType(Integer.class);
@@ -1276,6 +1293,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         setDebug(options.has("debug"));
         setDeletePidFileOnStop(options.has("delete-pid-file-on-stop"));
         setForce(options.has("force"));
+        setForeground(options.has("foreground"));
         setHelp(options.has("help"));
         setRedirectOutput(options.has("redirect-output"));
 
@@ -1467,6 +1485,27 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    /**
+     * Gets the boolean value used by the Locator to determine if it should start in the foreground.
+     *
+     * @return the boolean value specifying whether or not to start in the foreground
+     * @see #setForeground(Boolean)
+     */
+    public Boolean getForeground() {
+      return this.foreground != null ? this.foreground : DEFAULT_FOREGROUND;
+    }
+
+    /**
+     * Sets the boolean value used by the Locator to determine if it should start in the foreground.
+     *
+     * @param foreground a boolean value indicating whether to start in the foreground or background
+     * @return this Builder instance
+     * @see #getForeground()
+     */
+    public Builder setForeground(final Boolean foreground) {
+      this.foreground = foreground;
+      return this;
+    }
 
     /**
      * Determines whether the new instance of LocatorLauncher will be used to output help
@@ -1857,7 +1896,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * An enumerated type representing valid commands to the Locator launcher.
    */
   public enum Command {
-    START("start", "bind-address", "hostname-for-clients", "port", "force", "debug", "help"),
+    START("start", "bind-address", "hostname-for-clients", "port", "force", "foreground", "debug",
+        "help"),
     STATUS("status", "bind-address", "port", "member", "pid", "dir", "debug", "help"),
     STOP("stop", "member", "pid", "dir", "debug", "help"),
     VERSION("version"),

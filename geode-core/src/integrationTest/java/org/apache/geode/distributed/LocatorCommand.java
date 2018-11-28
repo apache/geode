@@ -27,6 +27,7 @@ public class LocatorCommand {
   private Command command;
   private String name;
   private boolean force;
+  private boolean foreground;
   private int port;
 
   public LocatorCommand() {
@@ -80,6 +81,15 @@ public class LocatorCommand {
     return this;
   }
 
+  public LocatorCommand foreground() {
+    return foreground(true);
+  }
+
+  public LocatorCommand foreground(final boolean value) {
+    this.foreground = value;
+    return this;
+  }
+
   public LocatorCommand withPort(final int port) {
     this.port = port;
     return this;
@@ -96,6 +106,9 @@ public class LocatorCommand {
     cmd.add(name);
     if (force) {
       cmd.add("--force");
+    }
+    if (foreground) {
+      cmd.add("--foreground");
     }
     cmd.add("--redirect-output");
     if (port > 0) {

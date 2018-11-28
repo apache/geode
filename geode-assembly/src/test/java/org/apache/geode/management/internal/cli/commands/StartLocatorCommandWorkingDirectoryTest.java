@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -42,7 +43,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
     startLocatorCommand = spy(new StartLocatorCommand());
 
     doReturn(null).when(startLocatorCommand).doStartLocator(
-        anyString(), isNull(), isNull(), anyBoolean(),
+        anyString(), isNull(), isNull(), anyBoolean(), eq(false),
         isNull(), isNull(), isNull(), anyBoolean(),
         isNull(), isNull(), isNull(), anyInt(),
         anyInt(), anyString(), isNull(), isNull(),
@@ -57,7 +58,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
   public void startLocatorWithRelativeWorkingDirectory() throws Exception {
     workingDirectory = "locator1Directory";
 
-    startLocatorCommand.startLocator(memberName, null, null, false,
+    startLocatorCommand.startLocator(memberName, null, null, false, false,
         null, null, null, false,
         null, null, null, 0,
         0, workingDirectory, null, null,
@@ -75,7 +76,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
   public void startLocatorWithNullWorkingDirectory() throws Exception {
     workingDirectory = null;
 
-    startLocatorCommand.startLocator(memberName, null, null, false,
+    startLocatorCommand.startLocator(memberName, null, null, false, false,
         null, null, null, false,
         null, null, null, 0,
         0, workingDirectory, null, null,
@@ -92,7 +93,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
   public void startLocatorWithEmptyWorkingDirectory() throws Exception {
     workingDirectory = "";
 
-    startLocatorCommand.startLocator(memberName, null, null, false,
+    startLocatorCommand.startLocator(memberName, null, null, false, false,
         null, null, null, false,
         null, null, null, 0,
         0, workingDirectory, null, null,
@@ -109,7 +110,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
   public void startLocatorWithDotWorkingDirectory() throws Exception {
     workingDirectory = ".";
 
-    startLocatorCommand.startLocator(memberName, null, null, false,
+    startLocatorCommand.startLocator(memberName, null, null, false, false,
         null, null, null, false,
         null, null, null, 0,
         0, workingDirectory, null, null,
@@ -127,7 +128,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
   public void startLocatorWithAbsoluteWorkingDirectory() throws Exception {
     workingDirectory = new File(System.getProperty("user.dir")).getAbsolutePath();
 
-    startLocatorCommand.startLocator(memberName, null, null, false,
+    startLocatorCommand.startLocator(memberName, null, null, false, false,
         null, null, null, false,
         null, null, null, 0,
         0, workingDirectory, null, null,
@@ -143,7 +144,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
   private void verifyDoStartLocatorInvoked()
       throws Exception {
     verify(startLocatorCommand).doStartLocator(anyString(), isNull(), isNull(), anyBoolean(),
-        isNull(), isNull(), isNull(), anyBoolean(), isNull(),
+        eq(false), isNull(), isNull(), isNull(), anyBoolean(), isNull(),
         isNull(), isNull(), anyInt(), anyInt(), workingDirectoryCaptor.capture(),
         isNull(), isNull(), isNull(), isNull(), isNull(),
         anyBoolean(), anyBoolean(), anyBoolean(), isNull(), anyInt(), isNull(),

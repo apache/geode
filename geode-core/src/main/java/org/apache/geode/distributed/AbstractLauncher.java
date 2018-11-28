@@ -72,6 +72,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       "The working directory for the %s could not be found.";
 
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
+  protected static final Boolean DEFAULT_FOREGROUND = Boolean.FALSE;
 
   /**
    * @deprecated This timeout is no longer needed.

@@ -16,10 +16,9 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.LocatorLauncher.Command.START;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -36,7 +35,6 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class StartLocatorCommandTest {
 
@@ -60,13 +58,13 @@ public class StartLocatorCommandTest {
             .concat(File.pathSeparator).concat(System.getProperty("java.class.path"))
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     String actualClasspath = startLocatorCommand.getLocatorClasspath(true, userClasspath);
-    assertEquals(expectedClasspath, actualClasspath);
+    assertThat(expectedClasspath).isEqualTo(actualClasspath);
   }
 
   @Test
   public void testLocatorCommandLineWithRestAPI() throws Exception {
     LocatorLauncher locatorLauncher =
-        new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
+        new LocatorLauncher.Builder().setCommand(START)
             .setMemberName("testLocatorCommandLineWithRestAPI").setBindAddress("localhost")
             .setPort(11111).build();
 
@@ -78,35 +76,30 @@ public class StartLocatorCommandTest {
         startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
             null, null, gemfireProperties, null, false, new String[0], null, null);
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+    assertThat(commandLineElements).isNotNull();
 
-    Set<String> expectedCommandLineElements = new HashSet<>(6);
+    Set<String> expectedCLIElements = new HashSet<>(6);
 
-    expectedCommandLineElements.add(locatorLauncher.getCommand().getName());
-    expectedCommandLineElements.add(locatorLauncher.getMemberName().toLowerCase());
-    expectedCommandLineElements.add(String.format("--port=%1$d", locatorLauncher.getPort()));
-    expectedCommandLineElements
-        .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8089");
-    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + ""
-        + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
+    expectedCLIElements.add(locatorLauncher.getCommand().getName());
+    expectedCLIElements.add(locatorLauncher.getMemberName().toLowerCase());
+    expectedCLIElements.add(String.format("--port=%1$d", locatorLauncher.getPort()));
+    expectedCLIElements.add("-d" + GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8089");
+    expectedCLIElements.add("-d" + GEMFIRE_PREFIX + HTTP_SERVICE_BIND_ADDRESS + "=localhost");
 
     for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
+      expectedCLIElements.remove(commandLineElement.toLowerCase());
     }
 
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(expectedCLIElements).isEmpty();
   }
 
   @Test
   public void testCreateStartLocatorCommandLine() throws Exception {
     LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setMemberName("defaultLocator")
-        .setCommand(LocatorLauncher.Command.START).build();
+        .setCommand(START).setForeground(true).build();
 
-    String[] commandLineElements =
-        startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
-            null, null, new Properties(), null, false, null, null, null);
+    String[] commandLineElements = startLocatorCommand.createStartLocatorCommandLine(
+        locatorLauncher, null, null, new Properties(), null, false, null, null, null);
 
     Set<String> expectedCommandLineElements = new HashSet<>();
     expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
@@ -121,23 +114,21 @@ public class StartLocatorCommandTest {
     expectedCommandLineElements.add("start");
     expectedCommandLineElements.add("defaultLocator");
     expectedCommandLineElements.add("--port=10334");
+    expectedCommandLineElements.add("--foreground");
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
-    assertEquals(commandLineElements.length, expectedCommandLineElements.size());
+    assertThat(commandLineElements).isNotNull().hasSameSizeAs(expectedCommandLineElements);
 
     for (String commandLineElement : commandLineElements) {
       expectedCommandLineElements.remove(commandLineElement);
     }
 
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(expectedCommandLineElements).isEmpty();
   }
 
   @Test
   public void testCreateStartLocatorCommandLineWithAllOptions() throws Exception {
     LocatorLauncher locatorLauncher =
-        new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
+        new LocatorLauncher.Builder().setCommand(START)
             .setDebug(Boolean.TRUE).setDeletePidFileOnStop(Boolean.TRUE).setForce(Boolean.TRUE)
             .setHostnameForClients("localhost").setMemberName("customLocator").setPort(10101)
             .setRedirectOutput(Boolean.TRUE).build();
@@ -161,8 +152,7 @@ public class StartLocatorCommandTest {
     String[] commandLineElements =
         startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
             gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
-            customClasspath,
-            Boolean.FALSE, jvmArguments, heapSize, heapSize);
+            customClasspath, Boolean.FALSE, jvmArguments, heapSize, heapSize);
 
     Set<String> expectedCommandLineElements = new HashSet<>();
     expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
@@ -187,9 +177,7 @@ public class StartLocatorCommandTest {
     expectedCommandLineElements.add("--port=10101");
     expectedCommandLineElements.add("--redirect-output");
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
-
-    assertThat(commandLineElements).containsAll(expectedCommandLineElements);
+    // commandLineElements should have all of the expected elements, and then some
+    assertThat(commandLineElements).isNotNull().containsAll(expectedCommandLineElements);
   }
 }
