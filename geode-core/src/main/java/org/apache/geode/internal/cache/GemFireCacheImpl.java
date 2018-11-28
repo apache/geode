@@ -231,6 +231,7 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -4176,6 +4177,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           "Client cache does not have a default pool. Use getQueryService(String poolName) instead.");
     }
     return (InternalQueryService) defaultPool.getQueryService();
+  }
+
+  @Override
+  public JSONFormatter getJsonFormatter() {
+    // only ProxyCache implementation needs a JSONFormatter that has reference to userAttributes
+    return new JSONFormatter();
   }
 
   @Override

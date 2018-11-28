@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -163,5 +164,10 @@ public class DestroyMappingCommand extends SingleGfshCommand {
       attributes = attributesList.get(0);
     }
     return attributes;
+  }
+
+  @CliAvailabilityIndicator({DESTROY_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 }

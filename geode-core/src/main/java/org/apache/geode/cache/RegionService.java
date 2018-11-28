@@ -22,6 +22,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 
@@ -97,6 +98,14 @@ public interface RegionService extends AutoCloseable {
    * returned QueryService will execute queries on the local and peer regions.
    */
   QueryService getQueryService();
+
+
+  /**
+   * Returns the JSONFormatter. In the multi-user case, this will return a JSONFormatter
+   * that has the knowledge of the user associated with this region service.
+   *
+   */
+  JSONFormatter getJsonFormatter();
 
   /**
    * Terminates this region service and releases all its resources. Calls {@link Region#close} on

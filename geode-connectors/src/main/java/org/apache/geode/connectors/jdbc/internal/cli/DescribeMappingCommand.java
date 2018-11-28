@@ -21,6 +21,7 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -84,5 +85,10 @@ public class DescribeMappingCommand extends GfshCommand {
     sectionModel.addData(CREATE_MAPPING__DATA_SOURCE_NAME, mapping.getDataSourceName());
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
+  }
+
+  @CliAvailabilityIndicator({DESCRIBE_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 }
