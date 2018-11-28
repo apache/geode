@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -61,7 +62,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object configObject) {
+  public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object configObject) {
     String region = (String) configObject;
     RegionMapping existingCacheElement = cacheConfig.findCustomRegionElement("/" + region,
         RegionMapping.ELEMENT_ID, RegionMapping.class);
@@ -73,6 +74,13 @@ public class DestroyMappingCommand extends SingleGfshCommand {
           .filter(regionConfig -> regionConfig.getName().equals(region))
           .forEach(
               regionConfig -> regionConfig.getCustomRegionElements().remove(existingCacheElement));
+      return true;
     }
+    return false;
+  }
+
+  @CliAvailabilityIndicator({DESTROY_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 }

@@ -22,6 +22,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 
@@ -31,7 +32,7 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
  */
 public class ClientHealthMonitoringRegion {
 
-  static final String ADMIN_REGION_NAME = "__ADMIN_CLIENT_HEALTH_MONITORING__";
+  public static final String ADMIN_REGION_NAME = "__ADMIN_CLIENT_HEALTH_MONITORING__";
 
   static final int ADMIN_REGION_EXPIRY_INTERVAL = 20;
 
@@ -75,6 +76,7 @@ public class ClientHealthMonitoringRegion {
           new ExpirationAttributes(ADMIN_REGION_EXPIRY_INTERVAL, ExpirationAction.DESTROY));
       cache.getLogger().fine("ClientHealthMonitoringRegion, setting TTL for entry....");
       factory.addCacheListener(prepareCacheListener());
+      factory.setValueConstraint(ClientHealthStats.class);
       factory.setStatisticsEnabled(true);
       RegionAttributes regionAttrs = factory.create();
 

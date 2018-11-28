@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
@@ -326,12 +326,12 @@ public class SystemAdmin {
                     Integer.valueOf(pid)));
           }
         }
-        if (sleepCount > maxSleepCount && !quiet) {
-          System.out.println(
-              "Locator process has terminated.");
-        } else if (OSProcess.exists(pid)) {
+        if (OSProcess.exists(pid)) {
           System.out
               .println("Locator process did not terminate within " + maxSleepCount + " seconds.");
+        } else if (!quiet) {
+          System.out.println(
+              "Locator process has terminated.");
         }
       }
     } catch (UnstartedSystemException ex) {

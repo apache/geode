@@ -64,7 +64,7 @@ public class GatewayReceiverCommand extends BaseCommand {
   private GatewayReceiverCommand() {}
 
   private void handleRegionNull(ServerConnection servConn, String regionName, int batchId) {
-    InternalCache cache = servConn.getCachedRegionHelper().getCache();
+    InternalCache cache = servConn.getCachedRegionHelper().getCacheForGatewayCommand();
     if (cache != null && cache.isCacheAtShutdownAll()) {
       throw cache.getCacheClosedException("Shutdown occurred during message processing");
     } else {
@@ -315,7 +315,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                   logger.warn(s);
                   throw new Exception(s);
                 }
-                region = (LocalRegion) crHelper.getRegion(regionName);
+                region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
                 if (region == null) {
                   handleRegionNull(serverConnection, regionName, batchId);
                 } else {
@@ -441,7 +441,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                   logger.warn(s);
                   throw new Exception(s);
                 }
-                region = (LocalRegion) crHelper.getRegion(regionName);
+                region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
                 if (region == null) {
                   handleRegionNull(serverConnection, regionName, batchId);
                 } else {
@@ -545,7 +545,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                   logger.warn(s);
                   throw new Exception(s);
                 }
-                region = (LocalRegion) crHelper.getRegion(regionName);
+                region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
                 if (region == null) {
                   handleRegionNull(serverConnection, regionName, batchId);
                 } else {
@@ -632,7 +632,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                   throw new Exception(s);
 
                 } else {
-                  region = (LocalRegion) crHelper.getRegion(regionName);
+                  region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
 
                   if (region == null) {
                     handleRegionNull(serverConnection, regionName, batchId);
@@ -702,7 +702,7 @@ public class GatewayReceiverCommand extends BaseCommand {
 
         // Increment the batch id unless the received batch id is -1 (a
         // failover batch)
-        DistributedSystem ds = crHelper.getCache().getDistributedSystem();
+        DistributedSystem ds = crHelper.getCacheForGatewayCommand().getDistributedSystem();
         String exceptionMessage = String.format(
             "Exception occurred while processing a batch on the receiver running on DistributedSystem with Id: %s, DistributedMember on which the receiver is running: %s",
             new Object[] {
@@ -770,10 +770,12 @@ public class GatewayReceiverCommand extends BaseCommand {
     if (key instanceof EnumId) {
       EnumId enumId = (EnumId) key;
       value = BlobHelper.deserializeBlob((byte[]) value);
-      crHelper.getCache().getPdxRegistry().addRemoteEnum(enumId.intValue(), (EnumInfo) value);
+      crHelper.getCacheForGatewayCommand().getPdxRegistry().addRemoteEnum(enumId.intValue(),
+          (EnumInfo) value);
     } else {
       value = BlobHelper.deserializeBlob((byte[]) value);
-      crHelper.getCache().getPdxRegistry().addRemoteType((int) key, (PdxType) value);
+      crHelper.getCacheForGatewayCommand().getPdxRegistry().addRemoteType((int) key,
+          (PdxType) value);
     }
     return true;
   }

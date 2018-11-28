@@ -166,6 +166,10 @@ public class MemberFunctionExecutor extends AbstractExecution {
             "Function inside a transaction cannot execute on more than one node");
       } else {
         assert dest.size() == 1;
+        if (cache.isClient()) {
+          throw new UnsupportedOperationException(
+              "Client function execution on members is not supported with transaction");
+        }
         DistributedMember funcTarget = (DistributedMember) dest.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {

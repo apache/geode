@@ -26,6 +26,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
@@ -34,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class LocateEntryCommand extends InternalGfshCommand {
+public class LocateEntryCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.LOCATE_ENTRY}, help = CliStrings.LOCATE_ENTRY__HELP)
   public ResultModel locateEntry(

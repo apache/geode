@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;

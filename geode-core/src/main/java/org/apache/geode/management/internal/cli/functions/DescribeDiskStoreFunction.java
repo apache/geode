@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -120,7 +120,7 @@ public class DescribeDiskStoreFunction implements InternalFunction {
         } else {
           context.getResultSender()
               .sendException(new EntityNotFoundException(
-                  String.format("A disk store with name (%1$s) was not found on member (%2$s).",
+                  String.format("A disk store with name '%1$s' was not found on member '%2$s'.",
                       diskStoreName, memberName)));
         }
       }

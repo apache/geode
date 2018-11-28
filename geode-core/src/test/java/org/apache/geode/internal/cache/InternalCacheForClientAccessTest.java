@@ -47,8 +47,10 @@ public class InternalCacheForClientAccessTest {
     cache = new InternalCacheForClientAccess(delegate);
     secretRegion = mock(DistributedRegion.class);
     when(secretRegion.isInternalRegion()).thenReturn(true);
+    when(secretRegion.getName()).thenReturn("secretRegion");
     applicationRegion = mock(DistributedRegion.class);
     when(applicationRegion.isInternalRegion()).thenReturn(false);
+    when(applicationRegion.getName()).thenReturn("applicationRegion");
     applicationRegions = Collections.singleton(applicationRegion);
     secretRegions = Collections.singleton(secretRegion);
   }

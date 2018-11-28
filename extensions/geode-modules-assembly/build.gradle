@@ -210,7 +210,8 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
       filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
       filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
       filter(ReplaceTokens, tokens:['SHIRO_VERSION': project.'shiro.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang.version'])
+      filter(ReplaceTokens, tokens:['COMMONS_IO_VERSION': project.'commons-io.version'])
+      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang3.version'])
       filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': project.'commons-validator.version'])
     }
   }

@@ -60,7 +60,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     return singleton;
   }
 
-  private ExecuteRegionFunction66() {}
+  ExecuteRegionFunction66() {}
 
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
@@ -396,7 +396,6 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     if (function instanceof String) {
       switch (functionState) {
         case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-          execution.setWaitOnExceptionFlag(true);
           execution.execute((String) function).getResult();
           break;
         case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
@@ -406,14 +405,10 @@ public class ExecuteRegionFunction66 extends BaseCommand {
           execution.execute((String) function).getResult();
           break;
         case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
-          execution.setWaitOnExceptionFlag(true);
           execution.execute((String) function).getResult();
           break;
       }
     } else {
-      if (!functionObject.isHA()) {
-        execution.setWaitOnExceptionFlag(true);
-      }
       execution.execute(functionObject).getResult();
     }
   }

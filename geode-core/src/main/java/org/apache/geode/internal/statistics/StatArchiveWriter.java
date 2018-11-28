@@ -463,12 +463,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         if (this.trace && (traceResourceInstId == -1 || traceResourceInstId == instId)) {
           this.traceDataOut.println("writeResourceInst#writeByte INT_RESOURCE_INST_ID_TOKEN: "
               + INT_RESOURCE_INST_ID_TOKEN);
-          if (instId == ILLEGAL_RESOURCE_INST_ID) {
-            this.traceDataOut.println(
-                "writeResourceInst#writeInt ILLEGAL_RESOURCE_INST_ID: " + ILLEGAL_RESOURCE_INST_ID);
-          } else {
-            this.traceDataOut.println("writeResourceInst#writeInt instId: " + instId);
-          }
+          this.traceDataOut.println("writeResourceInst#writeInt instId: " + instId);
         }
       } else {
         this.dataOut.writeByte(SHORT_RESOURCE_INST_ID_TOKEN);
@@ -476,12 +471,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         if (this.trace && (traceResourceInstId == -1 || traceResourceInstId == instId)) {
           this.traceDataOut.println("writeResourceInst#writeByte SHORT_RESOURCE_INST_ID_TOKEN: "
               + SHORT_RESOURCE_INST_ID_TOKEN);
-          if (instId == ILLEGAL_RESOURCE_INST_ID) {
-            this.traceDataOut.println("writeResourceInst#writeShort ILLEGAL_RESOURCE_INST_ID: "
-                + ILLEGAL_RESOURCE_INST_ID);
-          } else {
-            this.traceDataOut.println("writeResourceInst#writeShort instId: " + instId);
-          }
+          this.traceDataOut.println("writeResourceInst#writeShort instId: " + instId);
         }
       }
     } else {

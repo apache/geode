@@ -32,13 +32,18 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 
+/**
+ * @deprecated use @org.apache.geode.test.junit.rules.ClientCacheRule instead
+ */
 public class SecurityTestUtil {
 
+  @Deprecated
   public static ClientCache createClientCache(String username, String password, int serverPort) {
     Properties props = new Properties();
     return createClientCache(username, password, serverPort, props);
   }
 
+  @Deprecated
   public static ClientCache createClientCache(String username, String password, int serverPort,
       Properties extraProperties) {
     Properties props = new Properties();
@@ -56,10 +61,12 @@ public class SecurityTestUtil {
     return cache;
   }
 
+  @Deprecated
   public static Region createProxyRegion(ClientCache cache, String regionName) {
     return cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regionName);
   }
 
+  @Deprecated
   public static void assertNotAuthorized(ThrowableAssert.ThrowingCallable shouldRaiseThrowable,
       String permString) {
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);

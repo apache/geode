@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-rebalancer</artifactId>
-  <version>1.8.0-SNAPSHOT</version>
+  <version>1.9.0-SNAPSHOT</version>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
   <url>http://geode.apache.org</url>
@@ -36,27 +36,27 @@
   </scm>
   <dependencies>
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <version>2.11.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
-      <version>1.8.0-SNAPSHOT</version>
+      <version>1.9.0-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-core</artifactId>
-      <version>1.8.0-SNAPSHOT</version>
+      <version>1.9.0-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.11.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>4.3.18.RELEASE</version>
+      <version>4.3.20.RELEASE</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>

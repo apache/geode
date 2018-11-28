@@ -56,7 +56,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -146,6 +146,14 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     cache = null;
     jaxbService = new JAXBService(xsdClasses);
     jaxbService.validateWithLocalCacheXSD();
+  }
+
+  @TestingOnly
+  InternalConfigurationPersistenceService() {
+    configDirPath = null;
+    configDiskDirPath = null;
+    cache = null;
+    jaxbService = new JAXBService(CacheConfig.class);
   }
 
   public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
@@ -716,6 +724,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return getConfigurationRegion().getAll(keys);
   }
 
+  public Set<String> getGroups() {
+    return getConfigurationRegion().keySet();
+  }
+
   /**
    * Returns the path of Shared configuration directory
    *
@@ -987,5 +999,4 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       unlockSharedConfiguration();
     }
   }
-
 }

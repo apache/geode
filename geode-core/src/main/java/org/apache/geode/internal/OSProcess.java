@@ -774,7 +774,6 @@ public class OSProcess {
         redirectCOutput(newOutput.getPath());
       }
     }
-    assert newPrintStream != null;
     return newPrintStream;
   }
 

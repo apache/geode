@@ -50,7 +50,7 @@ dependencies {
   }
 
   compile('com.zaxxer:HikariCP:3.2.0')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
   compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
   compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
@@ -75,6 +75,7 @@ dependencies {
   distributedTestCompile('junit:junit:' + project.'junit.version')
   distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
   distributedTestCompile('org.mockito:mockito-core:2.19.1')
+  distributedTestRuntime('org.apache.derby:derby:' + project.'derby.version')
 
   acceptanceTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'

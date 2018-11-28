@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.result;
 
-import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;

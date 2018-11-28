@@ -23,7 +23,7 @@ dependencies {
 
   compileOnly('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }

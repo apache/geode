@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.isTrue;
 
 import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
 import org.apache.geode.internal.shared.NativeCalls;

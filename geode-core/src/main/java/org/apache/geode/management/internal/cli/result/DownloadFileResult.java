@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.result;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import org.apache.geode.management.cli.Result;
 

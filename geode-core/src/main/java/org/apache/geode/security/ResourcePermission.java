@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.permission.WildcardPermission;
 
 import org.apache.geode.cache.Region;

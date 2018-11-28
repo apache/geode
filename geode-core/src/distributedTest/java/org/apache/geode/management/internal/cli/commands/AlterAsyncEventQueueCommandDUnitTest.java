@@ -49,8 +49,6 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
-
-
   @Test
   public void testAlterAsyncEventQueue() throws Exception {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="

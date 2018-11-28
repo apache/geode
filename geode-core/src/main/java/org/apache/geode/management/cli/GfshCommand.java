@@ -76,7 +76,10 @@ public abstract class GfshCommand implements CommandMarker {
   }
 
   public Cache getCache() {
-    return cache;
+    if (cache == null) {
+      return null;
+    }
+    return cache.getCacheForProcessingClientRequests();
   }
 
   public <T extends ManagementService> T getManagementService() {

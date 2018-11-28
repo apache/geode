@@ -33,8 +33,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -43,7 +43,7 @@ public class ConfigurePDXCommandTest {
 
   private InternalCache cache;
   private ConfigurePDXCommand command;
-  private ConfigurationPersistenceService clusterConfigurationService;
+  private InternalConfigurationPersistenceService clusterConfigurationService;
 
   @Rule
   public GfshParserRule gfshParserRule = new GfshParserRule();
@@ -52,7 +52,7 @@ public class ConfigurePDXCommandTest {
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
     command = spy(ConfigurePDXCommand.class);
-    clusterConfigurationService = mock(ConfigurationPersistenceService.class);
+    clusterConfigurationService = mock(InternalConfigurationPersistenceService.class);
 
     doReturn(cache).when(command).getCache();
     doReturn(Collections.emptySet()).when(command).getAllNormalMembers();
@@ -97,7 +97,7 @@ public class ConfigurePDXCommandTest {
         .statusIsError().containsOutput("Error while processing command")
         .containsOutput("Can't create ReflectionBasedAutoSerializer.");
 
-    verify(command, times(0)).updateClusterConfig(any(), any(), any());
+    verify(command, times(0)).updateConfigForGroup(any(), any(), any());
   }
 
   @Test
@@ -109,7 +109,7 @@ public class ConfigurePDXCommandTest {
         .statusIsError().containsOutput(
             "The autoserializer cannot support both portable and non-portable classes at the same time.");
 
-    verify(command, times(0)).updateClusterConfig(any(), any(), any());
+    verify(command, times(0)).updateConfigForGroup(any(), any(), any());
   }
 
   @Test

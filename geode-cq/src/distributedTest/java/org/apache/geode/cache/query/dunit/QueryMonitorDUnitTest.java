@@ -18,6 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -102,8 +103,12 @@ public class QueryMonitorDUnitTest {
   @Test
   public void testMultipleClientToOneServer() throws Exception {
     int server1Port = server1.getPort();
-    client3 = cluster.startClientVM(3, true, server1Port);
-    client4 = cluster.startClientVM(4, true, server1Port);
+    client3 =
+        cluster.startClientVM(3,
+            c1 -> c1.withPoolSubscription(true).withServerConnection(server1Port));
+    client4 =
+        cluster.startClientVM(4,
+            c -> c.withPoolSubscription(true).withServerConnection(server1Port));
 
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=REPLICATE")
         .statusIsSuccess();
@@ -119,7 +124,9 @@ public class QueryMonitorDUnitTest {
   public void testOneClientToMultipleServerOnReplicateRegion() throws Exception {
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, true, server1Port, server2Port);
+    client3 =
+        cluster.startClientVM(3, c -> c.withPoolSubscription(true)
+            .withServerConnection(new int[] {server1Port, server2Port}));
 
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=REPLICATE")
         .statusIsSuccess();
@@ -136,8 +143,12 @@ public class QueryMonitorDUnitTest {
     // client3 connects to server1, client4 connects to server2
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, true, server1Port);
-    client4 = cluster.startClientVM(4, true, server2Port);
+    client3 =
+        cluster.startClientVM(3,
+            c1 -> c1.withPoolSubscription(true).withServerConnection(server1Port));
+    client4 =
+        cluster.startClientVM(4,
+            c -> c.withPoolSubscription(true).withServerConnection(server2Port));
 
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=PARTITION")
         .statusIsSuccess();
@@ -199,11 +210,11 @@ public class QueryMonitorDUnitTest {
     // client3 connects to server1, client4 connects to server2
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, ccf -> {
+    client3 = cluster.startClientVM(3, new Properties(), ccf -> {
       configureClientCacheFactory(ccf, server1Port);
     });
 
-    client4 = cluster.startClientVM(4, ccf -> {
+    client4 = cluster.startClientVM(4, new Properties(), ccf -> {
       configureClientCacheFactory(ccf, server2Port);
     });
     client3.invoke(() -> executeQuery());
@@ -232,8 +243,12 @@ public class QueryMonitorDUnitTest {
     // client3 connects to server1, client4 connects to server2
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, true, server1Port);
-    client4 = cluster.startClientVM(4, true, server2Port);
+    client3 =
+        cluster.startClientVM(3,
+            c1 -> c1.withPoolSubscription(true).withServerConnection(server1Port));
+    client4 =
+        cluster.startClientVM(4,
+            c -> c.withPoolSubscription(true).withServerConnection(server2Port));
 
     client3.invoke(() -> executeQuery());
     client4.invoke(() -> executeQuery());
@@ -252,7 +267,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     int server1Port = server1.getPort();
-    client3 = cluster.startClientVM(3, ccf -> {
+    client3 = cluster.startClientVM(3, new Properties(), ccf -> {
       configureClientCacheFactory(ccf, server1Port);
     });
 

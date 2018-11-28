@@ -72,6 +72,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   public void postSetUp() throws Exception {
     super.postSetUp();
     accessor = Host.getHost(0).getVM(3);
+
+    // Add ignored exceptions to ignore IllegalArgumentException from MemoryUsage java obj
+    IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
   }
 
   private Object[] parametersForIndexDestroys() {

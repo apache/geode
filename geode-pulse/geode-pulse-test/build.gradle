@@ -21,7 +21,7 @@ dependencies {
   compile('junit:junit:' + project.'junit.version')
   compile('org.eclipse.jetty:jetty-server:' + project.'jetty.version')
   compile('commons-io:commons-io:' + project.'commons-io.version')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
+  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
   compile('mx4j:mx4j:' + project.'mx4j.version')
   compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
     ext.optional = true

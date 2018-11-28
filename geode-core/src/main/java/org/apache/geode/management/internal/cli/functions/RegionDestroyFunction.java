@@ -18,6 +18,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
@@ -55,7 +56,7 @@ public class RegionDestroyFunction implements InternalFunction {
       }
 
       regionPath = (String) arguments;
-      Cache cache = context.getCache();
+      Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       Region<?, ?> region = cache.getRegion(regionPath);
       // the region is already destroyed by another member
       if (region == null) {

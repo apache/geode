@@ -510,7 +510,7 @@ public abstract class DeltaSessionManager extends ManagerBase
         getSessionsToTouch().clear();
 
         // Touch the sessions we currently have
-        if (sessionIds != null && (!sessionIds.isEmpty())) {
+        if (!sessionIds.isEmpty()) {
           getSessionCache().touchSessions(sessionIds);
           if (getLogger().isDebugEnabled()) {
             getLogger().debug(DeltaSessionManager.this + ": Touched sessions: " + sessionIds);
@@ -860,19 +860,15 @@ public abstract class DeltaSessionManager extends ManagerBase
       return;
     } catch (IOException e) {
       getLogger().error("Exception loading sessions", e);
-      if (fis != null) {
-        try {
-          fis.close();
-        } catch (IOException f) {
-          // Ignore
-        }
+      try {
+        fis.close();
+      } catch (IOException f) {
+        // Ignore
       }
-      if (bis != null) {
-        try {
-          bis.close();
-        } catch (IOException f) {
-          // Ignore
-        }
+      try {
+        bis.close();
+      } catch (IOException f) {
+        // Ignore
       }
       throw e;
     }

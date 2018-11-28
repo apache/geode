@@ -450,7 +450,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
 
     // check if all the group by fields are present in projected columns
     if (this.groupBy != null) {
-      int numGroupCols = this.groupBy != null ? this.groupBy.size() : 0;
+      int numGroupCols = this.groupBy.size();
       int numColsInProj = this.projAttrs.size();
       numColsInProj -= this.aggregateFunctions.length;
       if (numGroupCols != numColsInProj) {

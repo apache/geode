@@ -162,7 +162,9 @@ public class Coder {
           response.writeBytes(tmp);
         }
       } finally {
-        tmp.release();
+        if (tmp != null) {
+          tmp.release();
+        }
       }
     }
 
@@ -480,7 +482,7 @@ public class Coder {
    * @return Parsed value
    * @throws NumberFormatException if bytes to string does not yield a convertible double
    */
-  public static Double bytesToDouble(byte[] bytes) {
+  public static double bytesToDouble(byte[] bytes) {
     return stringToDouble(bytesToString(bytes));
   }
 

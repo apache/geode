@@ -159,7 +159,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     if (functionObject == null) {
       throw new FunctionException(
           String.format("Function named %s is not registered to FunctionService",
-              functionObject));
+              functionName));
     }
     if (region.getAttributes().getDataPolicy().isNormal()) {
       throw new FunctionException(

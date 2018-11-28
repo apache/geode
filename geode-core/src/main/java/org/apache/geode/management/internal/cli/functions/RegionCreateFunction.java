@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -42,6 +42,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
@@ -75,7 +76,7 @@ public class RegionCreateFunction implements InternalFunction {
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = context.getCache();
+    Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     String memberNameOrId = context.getMemberName();
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();

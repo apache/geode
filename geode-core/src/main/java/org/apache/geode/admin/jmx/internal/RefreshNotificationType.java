@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Type-safe definition for refresh notifications.

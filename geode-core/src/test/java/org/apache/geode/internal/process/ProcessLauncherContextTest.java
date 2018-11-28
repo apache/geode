@@ -78,7 +78,7 @@ public class ProcessLauncherContextTest {
 
     // act/assert
     assertThatThrownBy(() -> set(redirectOutput, overriddenDefaults, startupListener))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(NullPointerException.class)
         .hasMessage("Invalid overriddenDefaults 'null' specified");
   }
 

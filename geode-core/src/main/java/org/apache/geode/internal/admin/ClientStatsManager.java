@@ -17,7 +17,7 @@ package org.apache.geode.internal.admin;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.Statistics;
@@ -86,7 +86,7 @@ public class ClientStatsManager {
       EntryEventImpl event = new EntryEventImpl((Object) null);
       try {
         event.setEventId(eventId);
-        regionProxy.putForMetaRegion(ds.getDistributedMember(), stats, null, event, null, true);
+        regionProxy.putForMetaRegion(ds.getDistributedMember(), stats, null, event, null);
       } finally {
         event.release();
       }

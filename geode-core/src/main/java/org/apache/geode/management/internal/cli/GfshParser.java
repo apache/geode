@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.converters.ArrayConverter;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;

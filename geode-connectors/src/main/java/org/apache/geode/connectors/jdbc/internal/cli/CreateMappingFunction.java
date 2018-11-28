@@ -16,30 +16,49 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
+import org.apache.geode.connectors.jdbc.JdbcLoader;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
+/**
+ * The Object[] must always be of size two.
+ * The first element must be a RegionMapping.
+ * The second element must be a Boolean that is true if synchronous.
+ */
 @Experimental
-public class CreateMappingFunction extends CliFunction<RegionMapping> {
+public class CreateMappingFunction extends CliFunction<Object[]> {
 
   CreateMappingFunction() {
     super();
   }
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<RegionMapping> context)
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context)
       throws Exception {
     JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     // input
-    RegionMapping regionMapping = context.getArguments();
+    Object[] arguments = context.getArguments();
+    RegionMapping regionMapping = (RegionMapping) arguments[0];
+    boolean synchronous = (boolean) arguments[1];
 
-    verifyRegionExists(context, regionMapping);
+    String regionName = regionMapping.getRegionName();
+    Region<?, ?> region = verifyRegionExists(context.getCache(), regionName);
 
     // action
+    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    if (!synchronous) {
+      createAsyncEventQueue(context.getCache(), queueName,
+          region.getAttributes().getDataPolicy().withPartitioning());
+    }
+    alterRegion(region, queueName, synchronous);
     createRegionMapping(service, regionMapping);
 
     // output
@@ -49,14 +68,38 @@ public class CreateMappingFunction extends CliFunction<RegionMapping> {
     return new CliFunctionResult(member, true, message);
   }
 
-  private void verifyRegionExists(FunctionContext<RegionMapping> context,
-      RegionMapping regionMapping) {
-    Cache cache = context.getCache();
-    String regionName = regionMapping.getRegionName();
-    if (cache.getRegion(regionName) == null) {
+  /**
+   * Change the existing region to have
+   * the JdbcLoader as its cache-loader
+   * and the given async-event-queue as one of its queues.
+   */
+  private void alterRegion(Region<?, ?> region, String queueName, boolean synchronous) {
+    region.getAttributesMutator().setCacheLoader(new JdbcLoader());
+    if (synchronous) {
+      region.getAttributesMutator().setCacheWriter(new JdbcWriter());
+    } else {
+      region.getAttributesMutator().addAsyncEventQueueId(queueName);
+    }
+  }
+
+  /**
+   * Create an async-event-queue with the given name.
+   * For a partitioned region a parallel queue is created.
+   * Otherwise a serial queue is created.
+   */
+  private void createAsyncEventQueue(Cache cache, String queueName, boolean isPartitioned) {
+    AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
+    asyncEventQueueFactory.setParallel(isPartitioned);
+    asyncEventQueueFactory.create(queueName, new JdbcAsyncWriter());
+  }
+
+  private Region<?, ?> verifyRegionExists(Cache cache, String regionName) {
+    Region<?, ?> result = cache.getRegion(regionName);
+    if (result == null) {
       throw new IllegalStateException(
           "create jdbc-mapping requires that the region \"" + regionName + "\" exists.");
     }
+    return result;
   }
 
   /**

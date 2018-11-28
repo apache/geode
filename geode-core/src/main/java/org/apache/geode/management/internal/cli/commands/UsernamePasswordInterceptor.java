@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -30,7 +30,7 @@ public class UsernamePasswordInterceptor extends AbstractCliAroundInterceptor {
   }
 
   // Constructor for unit test
-  UsernamePasswordInterceptor(Gfsh gfsh) {
+  public UsernamePasswordInterceptor(Gfsh gfsh) {
     this.gfsh = gfsh;
   }
 

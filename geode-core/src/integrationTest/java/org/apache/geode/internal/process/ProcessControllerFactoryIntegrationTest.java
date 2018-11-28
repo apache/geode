@@ -106,7 +106,7 @@ public class ProcessControllerFactoryIntegrationTest {
 
     // act/assert
     assertThatThrownBy(() -> factory.createProcessController(parameters, directory, pidFileName))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -116,7 +116,7 @@ public class ProcessControllerFactoryIntegrationTest {
 
     // act/assert
     assertThatThrownBy(() -> factory.createProcessController(parameters, directory, pidFileName))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -127,6 +127,6 @@ public class ProcessControllerFactoryIntegrationTest {
 
     // act/assert
     assertThatThrownBy(() -> factory.createProcessController(parameters, directory, pidFileName))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(NullPointerException.class);
   }
 }

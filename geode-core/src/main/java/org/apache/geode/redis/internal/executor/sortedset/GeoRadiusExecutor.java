@@ -85,7 +85,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
           String name = point.get("key").toString();
           String hash = point.get("value").toString();
 
-          Double dist = GeoCoder.geoDist(params.centerHashPrecise, hash) * params.distScale;
+          double dist = GeoCoder.geoDist(params.centerHashPrecise, hash) * params.distScale;
 
           // Post-filter for accuracy
           if (dist > (params.radius * params.distScale))

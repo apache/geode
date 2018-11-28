@@ -34,17 +34,17 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 
-public class GetMemberConfigInformationFunction implements InternalFunction {
+public class GetMemberConfigInformationFunction extends CliFunction {
   private static final long serialVersionUID = 1L;
 
 
   @Override
-  public void execute(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext context) throws Exception {
     Object argsObject = context.getArguments();
     boolean hideDefaults = ((Boolean) argsObject).booleanValue();
 
@@ -127,7 +127,7 @@ public class GetMemberConfigInformationFunction implements InternalFunction {
 
     memberConfigInfo.setCacheServerAttributes(cacheServerAttributesList);
 
-    context.getResultSender().lastResult(memberConfigInfo);
+    return new CliFunctionResult(context.getMemberName(), memberConfigInfo);
   }
 
   /****
@@ -197,19 +197,17 @@ public class GetMemberConfigInformationFunction implements InternalFunction {
     // Make a copy to avoid the CME's
     Set<String> attributesSet = new HashSet<String>(attributesMap.keySet());
 
-    if (attributesSet != null) {
-      for (String attribute : attributesSet) {
-        String attributeValue = attributesMap.get(attribute);
-        String defaultValue = defaultAttributesMap.get(attribute);
+    for (String attribute : attributesSet) {
+      String attributeValue = attributesMap.get(attribute);
+      String defaultValue = defaultAttributesMap.get(attribute);
 
-        if (attributeValue != null) {
-          if (attributeValue.equals(defaultValue)) {
-            attributesMap.remove(attribute);
-          }
-        } else {
-          if (defaultValue == null || defaultValue.equals("")) {
-            attributesMap.remove(attribute);
-          }
+      if (attributeValue != null) {
+        if (attributeValue.equals(defaultValue)) {
+          attributesMap.remove(attribute);
+        }
+      } else {
+        if (defaultValue == null || defaultValue.equals("")) {
+          attributesMap.remove(attribute);
         }
       }
     }

@@ -24,12 +24,15 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
+
+import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeJndiBindingCommand extends InternalGfshCommand {
+public class DescribeJndiBindingCommand extends GfshCommand {
   public static final String JNDI_PROPERTIES_SECTION = "jndi-properties";
   static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
   private static final String DESCRIBE_JNDIBINDING__HELP =

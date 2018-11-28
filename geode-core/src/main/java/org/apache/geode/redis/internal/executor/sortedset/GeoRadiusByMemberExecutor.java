@@ -87,11 +87,12 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
           String name = point.get("key").toString();
           String hash = point.get("value").toString();
 
-          Double dist = GeoCoder.geoDist(params.centerHashPrecise, hash) * params.distScale;
+          double dist = GeoCoder.geoDist(params.centerHashPrecise, hash) * params.distScale;
 
           // Post-filter for accuracy
-          if (dist > (params.radius * params.distScale))
+          if (dist > (params.radius * params.distScale)) {
             continue;
+          }
 
           Optional<LatLong> coord =
               params.withCoord ? Optional.of(GeoCoder.geoPos(hash)) : Optional.empty();
@@ -100,8 +101,9 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
 
           // Because of the way hashing works, sometimes you can get the same requested member back
           // in the results
-          if (!name.equals(params.member))
+          if (!name.equals(params.member)) {
             results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hashOpt));
+          }
         }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));

@@ -27,8 +27,27 @@ import org.apache.geode.datasource.PooledDataSourceFactory;
 
 /**
  * This class implements PooledDataSourceFactory for the JDBC Connector extension.
- * It will be used by default for a jndi-binding of type "POOLED".
- * For more information see "gfsh create jndi-binding".
+ * It will be used by default for a data-source with type "POOLED" specified when using
+ * the "gfsh create data-source" command.
+ * <p>
+ * The connection pooling is provided by Hikari, a high-performance JDBC connection pool.
+ * <br>
+ * The following data-source parameters will be will be passed to Hikari as the following:
+ * <br>
+ * connection-url --> jdbcUrl<br>
+ * jdbc-driver-class --> driverClassName<br>
+ * user-name --> username<br>
+ * password --> password<br>
+ * max-pool-size --> maximumPoolSize<br>
+ * idle-timeout-seconds --> idleTimeout<br>
+ * <p>
+ * Additional Hikari configuration parameters may be passed to configure the Hikari pool
+ * by specifying them using the --pool-properties of the "gfsh create data-source" command.
+ * <p>
+ * For more information see the "gfsh create data-source" command.
+ * <br>
+ * Additional Hikari options are described at
+ * https://github.com/brettwooldridge/HikariCP#configuration-knobs-baby
  */
 public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
 

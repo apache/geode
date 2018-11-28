@@ -351,10 +351,8 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     }
 
     public boolean equals(Object o) {
-      Object k, u;
-      Node<?> e;
-      return ((o instanceof Node) && ((k = (e = (Node<?>) o)) != null)
-          && (k == key || k.equals(key)));
+      return ((o instanceof Node)
+          && (o == key || o.equals(key)));
     }
 
     /**
@@ -1207,14 +1205,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
         break;
       else if (tab == table) {
         int rs = resizeStamp(n);
-        if (sc < 0) {
-          Node<V>[] nt;
-          if ((sc >>> RESIZE_STAMP_SHIFT) != rs || sc == rs + 1 || sc == rs + MAX_RESIZERS
-              || (nt = nextTable) == null || transferIndex <= 0)
-            break;
-          if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1))
-            transfer(tab, nt);
-        } else if (U.compareAndSwapInt(this, SIZECTL, sc, (rs << RESIZE_STAMP_SHIFT) + 2))
+        if (U.compareAndSwapInt(this, SIZECTL, sc, (rs << RESIZE_STAMP_SHIFT) + 2))
           transfer(tab, null);
       }
     }
@@ -1711,14 +1702,14 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
               else
                 sp.right = p;
             }
-            if ((s.right = pr) != null)
-              pr.parent = s;
+            s.right = pr;
+            pr.parent = s;
           }
           p.left = null;
           if ((p.right = sr) != null)
             sr.parent = p;
-          if ((s.left = pl) != null)
-            pl.parent = s;
+          s.left = pl;
+          pl.parent = s;
           if ((s.parent = pp) == null)
             r = s;
           else if (p == pp.left)

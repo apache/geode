@@ -14,246 +14,154 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.Role;
-import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.alerting.AlertLevel;
+import org.apache.geode.internal.alerting.AlertingProvider;
+import org.apache.geode.test.junit.categories.AlertingTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Unit tests for {@link AlertAppender}.
  */
-@Category(LoggingTest.class)
+@Category({AlertingTest.class, LoggingTest.class})
 public class AlertAppenderTest {
 
-  private List<DistributedMember> members;
-  private Level previousLogLevel;
+  private DistributedMember member;
+
+  private AlertAppender alertAppender;
+  private AlertingProvider asAlertingProvider;
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
   public void setUp() {
-    members = new ArrayList<>();
-    previousLogLevel = LogService.getBaseLogLevel();
+    member = mock(DistributedMember.class);
+
+    alertAppender = new AlertAppender(testName.getMethodName(), null, null);
+    asAlertingProvider = alertAppender;
   }
 
-  @After
-  public void tearDown() {
-    LogService.setBaseLogLevel(previousLogLevel);
-    if (!members.isEmpty()) {
-      for (DistributedMember member : members) {
-        AlertAppender.getInstance().removeAlertListener(member);
-      }
-      members.clear();
-    }
-  }
-
-  /**
-   * Verify that adding/removing/replacing listeners works correctly.
-   */
   @Test
-  public void testListenerHandling() throws Exception {
-    DistributedMember member1 = createNamedDistributedMember("Member1");
-    DistributedMember member2 = createNamedDistributedMember("Member2");
-    DistributedMember member3 = createNamedDistributedMember("Member3");
-    DistributedMember member4 = createNamedDistributedMember("Member4");
-    DistributedMember member5 = createNamedDistributedMember("Member5");
-    DistributedMember member6 = createNamedDistributedMember("Member6");
-
-    LogService.setBaseLogLevel(Level.WARN);
-
-    AlertAppender.getInstance().addAlertListener(member1, Alert.SEVERE);
-    AlertAppender.getInstance().addAlertListener(member2, Alert.WARNING);
-    AlertAppender.getInstance().addAlertListener(member3, Alert.ERROR);
-    AlertAppender.getInstance().addAlertListener(member4, Alert.ERROR);
-    AlertAppender.getInstance().addAlertListener(member5, Alert.WARNING);
-    AlertAppender.getInstance().addAlertListener(member6, Alert.SEVERE);
-
-    Field listenersField = AlertAppender.getInstance().getClass().getDeclaredField("listeners");
-    listenersField.setAccessible(true);
-
-    CopyOnWriteArrayList<AlertAppender.Listener> listeners =
-        (CopyOnWriteArrayList<AlertAppender.Listener>) listenersField
-            .get(AlertAppender.getInstance());
-
-    // Verify add
-    assertSame(member5, listeners.get(0).getMember());
-    assertSame(member2, listeners.get(1).getMember());
-    assertSame(member4, listeners.get(2).getMember());
-    assertSame(member3, listeners.get(3).getMember());
-    assertSame(member6, listeners.get(4).getMember());
-    assertSame(member1, listeners.get(5).getMember());
-    assertSame(6, listeners.size());
-
-    // Verify replace with same level
-    AlertAppender.getInstance().addAlertListener(member5, Alert.WARNING);
-    assertSame(member5, listeners.get(0).getMember());
-    assertSame(member2, listeners.get(1).getMember());
-    assertSame(member4, listeners.get(2).getMember());
-    assertSame(member3, listeners.get(3).getMember());
-    assertSame(member6, listeners.get(4).getMember());
-    assertSame(member1, listeners.get(5).getMember());
-    assertSame(6, listeners.size());
-
-    // Verify replace with difference level
-    AlertAppender.getInstance().addAlertListener(member5, Alert.SEVERE);
-    assertSame(member2, listeners.get(0).getMember());
-    assertSame(member4, listeners.get(1).getMember());
-    assertSame(member3, listeners.get(2).getMember());
-    assertSame(member5, listeners.get(3).getMember());
-    assertSame(member6, listeners.get(4).getMember());
-    assertSame(member1, listeners.get(5).getMember());
-    assertSame(6, listeners.size());
-
-    // Verify remove
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member3));
-    assertSame(member2, listeners.get(0).getMember());
-    assertSame(member4, listeners.get(1).getMember());
-    assertSame(member5, listeners.get(2).getMember());
-    assertSame(member6, listeners.get(3).getMember());
-    assertSame(member1, listeners.get(4).getMember());
-    assertSame(5, listeners.size());
-
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member1));
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member2));
-    assertFalse(AlertAppender.getInstance().removeAlertListener(member3));
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member4));
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member5));
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member6));
+  public void alertListenersIsEmptyByDefault() {
+    assertThat(alertAppender.getAlertListeners()).isEmpty();
   }
 
-  /**
-   * Verifies that the appender is correctly added and removed from the Log4j configuration and that
-   * when the configuration is changed the appender is still there.
-   */
   @Test
-  public void testAppenderToConfigHandling() {
-    LogService.setBaseLogLevel(Level.WARN);
-
-    String appenderName = AlertAppender.getInstance().getName();
-    AppenderContext appenderContext = LogService.getAppenderContext();
-
-    LoggerConfig loggerConfig = appenderContext.getLoggerConfig();
-
-    // Find out home many appenders exist before we get started
-    int startingSize = loggerConfig.getAppenders().size();
-
-    // Add a listener and verify that the appender was added to log4j
-    DistributedMember member1 = createNamedDistributedMember("Member1");
-    AlertAppender.getInstance().addAlertListener(member1, Alert.SEVERE);
-    assertEquals(loggerConfig.getAppenders().values().toString(), startingSize + 1,
-        loggerConfig.getAppenders().size());
-    assertTrue(loggerConfig.getAppenders().containsKey(appenderName));
-
-    // Add another listener and verify that there's still only 1 alert appender
-    DistributedMember member2 = createNamedDistributedMember("Member1");
-    AlertAppender.getInstance().addAlertListener(member2, Alert.SEVERE);
-    assertEquals(startingSize + 1, loggerConfig.getAppenders().size());
-
-    // Modify the config and verify that the appender still exists
-    assertEquals(Level.WARN, LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel());
-
-    LogService.setBaseLogLevel(Level.INFO);
-
-    assertEquals(Level.INFO, LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel());
-    loggerConfig = appenderContext.getLoggerConfig();
-    assertEquals(startingSize + 1, loggerConfig.getAppenders().size());
-    assertTrue(loggerConfig.getAppenders().containsKey(appenderName));
-
-    // Remove the listeners and verify that the appender was removed from log4j
-    assertTrue(AlertAppender.getInstance().removeAlertListener(member2));
-    assertFalse(AlertAppender.getInstance().removeAlertListener(member1));
-    assertEquals(startingSize, loggerConfig.getAppenders().size());
-    assertFalse(loggerConfig.getAppenders().containsKey(appenderName));
+  public void hasAlertListenerReturnsFalseByDefault() {
+    asAlertingProvider.hasAlertListener(member, AlertLevel.WARNING);
   }
 
-  private DistributedMember createNamedDistributedMember(final String name) {
-    return new NamedDistributedMember(name);
+  @Test
+  public void addAlertListenerAddsListener() {
+    asAlertingProvider.addAlertListener(member, AlertLevel.WARNING);
+    assertThat(alertAppender.getAlertListeners())
+        .contains(new AlertListener(Level.WARN, member));
   }
 
-  private static class NamedDistributedMember implements DistributedMember {
+  @Test
+  public void hasAlertListenerReturnsTrueIfListenerExists() {
+    asAlertingProvider.addAlertListener(member, AlertLevel.WARNING);
+    assertThat(asAlertingProvider.hasAlertListener(member, AlertLevel.WARNING)).isTrue();
+  }
 
-    private final String name;
+  @Test
+  public void removeAlertListenerDoesNothingByDefault() {
+    asAlertingProvider.removeAlertListener(member);
+    assertThat(alertAppender.getAlertListeners()).isEmpty();
+  }
 
-    NamedDistributedMember(final String name) {
-      this.name = name;
-    }
+  @Test
+  public void removeAlertListenerDoesNothingIfMemberDoesNotMatch() {
+    asAlertingProvider.addAlertListener(member, AlertLevel.WARNING);
 
-    @Override
-    public String getName() {
-      return name;
-    }
+    asAlertingProvider.removeAlertListener(mock(DistributedMember.class));
 
-    @Override
-    public String getHost() {
-      return "";
-    }
+    assertThat(asAlertingProvider.hasAlertListener(member, AlertLevel.WARNING)).isTrue();
+  }
 
-    @Override
-    public Set<Role> getRoles() {
-      return null;
-    }
+  @Test
+  public void removeAlertListenerRemovesListener() {
+    asAlertingProvider.addAlertListener(member, AlertLevel.WARNING);
 
-    @Override
-    public int getProcessId() {
-      return 0;
-    }
+    asAlertingProvider.removeAlertListener(member);
 
-    @Override
-    public String getId() {
-      return name;
-    }
+    assertThat(asAlertingProvider.hasAlertListener(member, AlertLevel.WARNING)).isFalse();
+  }
 
-    @Override
-    public int compareTo(final DistributedMember o) {
-      return getName().compareTo(o.getName());
-    }
+  @Test
+  public void addAlertListenerWithAlertLevelNoneDoesNothing() {
+    asAlertingProvider.addAlertListener(member, AlertLevel.NONE);
+    assertThat(alertAppender.getAlertListeners()).isEmpty();
+  }
 
-    @Override
-    public DurableClientAttributes getDurableClientAttributes() {
-      return null;
-    }
+  @Test
+  public void hasAlertListenerReturnsFalseIfAlertLevelIsNone() {
+    asAlertingProvider.addAlertListener(member, AlertLevel.WARNING);
+    assertThat(asAlertingProvider.hasAlertListener(member, AlertLevel.NONE)).isFalse();
+  }
 
-    @Override
-    public List<String> getGroups() {
-      return Collections.emptyList();
-    }
+  @Test
+  public void addAlertListenerOrdersByAscendingAlertLevel() {
+    DistributedMember member1 = mock(DistributedMember.class);
+    DistributedMember member2 = mock(DistributedMember.class);
+    DistributedMember member3 = mock(DistributedMember.class);
 
-    @Override
-    public boolean equals(final Object obj) {
-      if (!(obj instanceof NamedDistributedMember)) {
-        return false;
-      }
-      NamedDistributedMember other = (NamedDistributedMember) obj;
-      return getName().equals(other.getName());
-    }
+    asAlertingProvider.addAlertListener(member3, AlertLevel.WARNING);
+    asAlertingProvider.addAlertListener(member1, AlertLevel.SEVERE);
+    asAlertingProvider.addAlertListener(member2, AlertLevel.ERROR);
 
-    @Override
-    public int hashCode() {
-      return getHost().hashCode();
-    }
+    AlertListener listener1 = new AlertListener(Level.WARN, member3);
+    AlertListener listener2 = new AlertListener(Level.ERROR, member2);
+    AlertListener listener3 = new AlertListener(Level.FATAL, member1);
 
-    @Override
-    public String toString() {
-      return getClass().getSimpleName() + " [name=" + name + "]";
-    }
+    assertThat(alertAppender.getAlertListeners()).containsExactly(listener1, listener2,
+        listener3);
+  }
+
+  @Test
+  public void removeAlertListenerMaintainsExistingOrder() {
+    DistributedMember member1 = mock(DistributedMember.class);
+    DistributedMember member2 = mock(DistributedMember.class);
+    DistributedMember member3 = mock(DistributedMember.class);
+
+    asAlertingProvider.addAlertListener(member3, AlertLevel.WARNING);
+    asAlertingProvider.addAlertListener(member1, AlertLevel.SEVERE);
+    asAlertingProvider.addAlertListener(member2, AlertLevel.ERROR);
+
+    AlertListener listener1 = new AlertListener(Level.WARN, member3);
+    AlertListener listener3 = new AlertListener(Level.FATAL, member1);
+
+    assertThat(alertAppender.removeAlertListener(member2)).isTrue();
+
+    assertThat(alertAppender.getAlertListeners()).containsExactly(listener1, listener3);
+  }
+
+  @Test
+  public void addAlertListenerOrdersByDescendingAddIfAlertLevelMatches() {
+    DistributedMember member1 = mock(DistributedMember.class);
+    DistributedMember member2 = mock(DistributedMember.class);
+    DistributedMember member3 = mock(DistributedMember.class);
+
+    asAlertingProvider.addAlertListener(member3, AlertLevel.WARNING);
+    asAlertingProvider.addAlertListener(member1, AlertLevel.WARNING);
+    asAlertingProvider.addAlertListener(member2, AlertLevel.WARNING);
+
+    AlertListener listener1 = new AlertListener(Level.WARN, member2);
+    AlertListener listener2 = new AlertListener(Level.WARN, member1);
+    AlertListener listener3 = new AlertListener(Level.WARN, member3);
+
+    assertThat(alertAppender.getAlertListeners()).containsExactly(listener1, listener2,
+        listener3);
   }
 }

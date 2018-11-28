@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.management.internal.cli.result.ResultData.TYPE_TABULAR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
