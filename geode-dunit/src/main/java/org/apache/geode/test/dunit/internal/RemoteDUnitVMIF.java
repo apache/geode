@@ -19,12 +19,13 @@ import java.rmi.RemoteException;
 
 public interface RemoteDUnitVMIF extends Remote {
 
-  MethExecutorResult executeMethodOnObject(Object target, String methodName) throws RemoteException;
-
-  MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args)
+  MethodInvokerResult executeMethodOnObject(Object target, String methodName)
       throws RemoteException;
 
-  MethExecutorResult executeMethodOnClass(String className, String methodName, Object[] args)
+  MethodInvokerResult executeMethodOnObject(Object target, String methodName, Object[] args)
+      throws RemoteException;
+
+  MethodInvokerResult executeMethodOnClass(String className, String methodName, Object[] args)
       throws RemoteException;
 
   void shutDownVM() throws RemoteException;

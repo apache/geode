@@ -298,7 +298,7 @@ public class DUnitLauncher {
     RemoteDUnitVMIF remote = (RemoteDUnitVMIF) registry.lookup("vm" + LOCATOR_VM_NUM);
     final File locatorLogFile =
         LOCATOR_LOG_TO_DISK ? new File("locator-" + locatorPort + ".log") : new File("");
-    MethExecutorResult result = remote.executeMethodOnObject(new SerializableCallable() {
+    MethodInvokerResult result = remote.executeMethodOnObject(new SerializableCallable() {
       public Object call() throws IOException {
         Properties p = getDistributedSystemProperties();
         // I never want this locator to end up starting a jmx manager
