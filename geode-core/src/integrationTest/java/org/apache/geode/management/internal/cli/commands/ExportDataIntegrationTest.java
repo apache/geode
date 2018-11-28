@@ -100,8 +100,9 @@ public class ExportDataIntegrationTest {
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__REGION, "/nonExistentRegion")
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(nonExistentRegionCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Could not process command due to error. Region");
+    gfsh.executeAndAssertThat(nonExistentRegionCommand).statusIsError()
+        .hasTableSection().hasColumn("Message")
+        .containsExactlyInAnyOrder("Region : /nonExistentRegion not found");
   }
 
   @Test
