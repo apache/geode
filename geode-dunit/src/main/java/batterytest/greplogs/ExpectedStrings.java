@@ -31,8 +31,8 @@ public class ExpectedStrings {
     }
   }
 
-  public static List create(String type) {
-    List expected = new ArrayList();
+  public static List<Pattern> create(String type) {
+    List<Pattern> expected = new ArrayList<>();
 
     expected.add(Pattern.compile("@todo"));
     expected.add(Pattern.compile("Random seed"));
@@ -65,7 +65,7 @@ public class ExpectedStrings {
     expected.add(Pattern.compile("Invoked MembershipNotifierHook"));
     expected.add(Pattern.compile("java.io.IOException: Connection reset by peer"));
     expected.add(Pattern.compile("client connections exceeds the licensed limit"));
-    // Exclude this since the only tests with securty enabled, expect to see
+    // Exclude this since the only tests with security enabled, expect to see
     // these and if they don't then the test fails
     expected.add(Pattern.compile("NotAuthorizedException"));
     expected.add(Pattern.compile("above critical heap threshold"));

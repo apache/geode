@@ -45,6 +45,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import batterytest.greplogs.ExpectedStrings;
 import batterytest.greplogs.LogConsumer;
@@ -363,7 +364,7 @@ public class DUnitLauncher {
   public static void closeAndCheckForSuspects() {
     if (isLaunched()) {
       final boolean skipLogMsgs = ExpectedStrings.skipLogMsgs("dunit");
-      final List<?> expectedStrings = ExpectedStrings.create("dunit");
+      final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
       final LogConsumer logConsumer = new LogConsumer(skipLogMsgs, expectedStrings, "log4j", 5);
 
       final StringBuilder suspectStringBuilder = new StringBuilder();
