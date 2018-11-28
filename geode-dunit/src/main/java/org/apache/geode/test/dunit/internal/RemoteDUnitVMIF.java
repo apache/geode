@@ -12,20 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface MasterRemote extends Remote {
+public interface RemoteDUnitVMIF extends Remote {
 
-  int getLocatorPort() throws RemoteException;
+  MethExecutorResult executeMethodOnObject(Object target, String methodName) throws RemoteException;
 
-  void signalVMReady() throws RemoteException;
+  MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args)
+      throws RemoteException;
 
-  void ping() throws RemoteException;
+  MethExecutorResult executeMethodOnClass(String className, String methodName, Object[] args)
+      throws RemoteException;
 
-  BounceResult bounce(int pid) throws RemoteException;
+  void shutDownVM() throws RemoteException;
 
-  BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
 }

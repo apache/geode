@@ -32,7 +32,7 @@ import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistribute
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.spy;

@@ -18,7 +18,7 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.Serializable;
@@ -44,7 +44,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;

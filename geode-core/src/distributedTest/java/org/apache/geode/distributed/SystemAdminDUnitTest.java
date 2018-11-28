@@ -17,7 +17,7 @@ package org.apache.geode.distributed;
 import static java.util.Arrays.asList;
 import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

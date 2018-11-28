@@ -43,7 +43,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**

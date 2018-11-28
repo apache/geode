@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.dunit.standalone.BounceResult;
-import org.apache.geode.test.dunit.standalone.MethExecutorResult;
-import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
-import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
+import org.apache.geode.test.dunit.internal.BounceResult;
+import org.apache.geode.test.dunit.internal.MethExecutorResult;
+import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
 import org.apache.geode.test.version.VersionManager;
 
 /**

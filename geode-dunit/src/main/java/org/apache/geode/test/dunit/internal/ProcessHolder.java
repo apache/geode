@@ -12,23 +12,45 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
-public class BounceResult {
-  private final int newId;
-  private final RemoteDUnitVMIF newClient;
+import java.io.InputStream;
 
-  public BounceResult(int newId, RemoteDUnitVMIF newClient) {
-    this.newId = newId;
-    this.newClient = newClient;
+public class ProcessHolder {
+  private final Process process;
+  private volatile boolean killed = false;
+
+  public ProcessHolder(Process process) {
+    this.process = process;
   }
 
-  public int getNewId() {
-    return newId;
+  public void kill() {
+    this.killed = true;
+    process.destroy();
   }
 
-  public RemoteDUnitVMIF getNewClient() {
-    return newClient;
+  public void killForcibly() {
+    this.killed = true;
+    process.destroyForcibly();
   }
 
+  public void waitFor() throws InterruptedException {
+    process.waitFor();
+  }
+
+  public InputStream getErrorStream() {
+    return process.getErrorStream();
+  }
+
+  public InputStream getInputStream() {
+    return process.getInputStream();
+  }
+
+  public boolean isKilled() {
+    return killed;
+  }
+
+  public boolean isAlive() {
+    return !killed && process.isAlive();
+  }
 }

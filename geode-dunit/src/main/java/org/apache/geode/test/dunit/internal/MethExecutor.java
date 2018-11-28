@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

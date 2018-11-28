@@ -12,45 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
-import java.io.InputStream;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-public class ProcessHolder {
-  private final Process process;
-  private volatile boolean killed = false;
+public interface MasterRemote extends Remote {
 
-  public ProcessHolder(Process process) {
-    this.process = process;
-  }
+  int getLocatorPort() throws RemoteException;
 
-  public void kill() {
-    this.killed = true;
-    process.destroy();
-  }
+  void signalVMReady() throws RemoteException;
 
-  public void killForcibly() {
-    this.killed = true;
-    process.destroyForcibly();
-  }
+  void ping() throws RemoteException;
 
-  public void waitFor() throws InterruptedException {
-    process.waitFor();
-  }
+  BounceResult bounce(int pid) throws RemoteException;
 
-  public InputStream getErrorStream() {
-    return process.getErrorStream();
-  }
-
-  public InputStream getInputStream() {
-    return process.getInputStream();
-  }
-
-  public boolean isKilled() {
-    return killed;
-  }
-
-  public boolean isAlive() {
-    return !killed && process.isAlive();
-  }
+  BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
 }

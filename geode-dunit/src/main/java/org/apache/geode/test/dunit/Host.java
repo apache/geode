@@ -18,7 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
 import org.apache.geode.test.version.VersionManager;
 
 /**

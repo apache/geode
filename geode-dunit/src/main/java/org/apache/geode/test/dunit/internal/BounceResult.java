@@ -12,21 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+public class BounceResult {
+  private final int newId;
+  private final RemoteDUnitVMIF newClient;
 
-public interface RemoteDUnitVMIF extends Remote {
+  public BounceResult(int newId, RemoteDUnitVMIF newClient) {
+    this.newId = newId;
+    this.newClient = newClient;
+  }
 
-  MethExecutorResult executeMethodOnObject(Object target, String methodName) throws RemoteException;
+  public int getNewId() {
+    return newId;
+  }
 
-  MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args)
-      throws RemoteException;
-
-  MethExecutorResult executeMethodOnClass(String className, String methodName, Object[] args)
-      throws RemoteException;
-
-  void shutDownVM() throws RemoteException;
+  public RemoteDUnitVMIF getNewClient() {
+    return newClient;
+  }
 
 }
