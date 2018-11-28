@@ -31,6 +31,7 @@ log4j-core-2.11.1.jar
 log4j-jcl-2.11.1.jar
 log4j-jul-2.11.1.jar
 log4j-api-2.11.1.jar
+geo-0.7.1.jar
 jetty-webapp-9.4.12.v20180830.jar
 spring-core-4.3.20.RELEASE.jar
 snappy-0.4.jar
@@ -52,9 +53,11 @@ commons-beanutils-1.9.3.jar
 commons-logging-1.2.jar
 commons-collections-3.2.2.jar
 javax.transaction-api-1.2.jar
+grumpy-core-0.2.2.jar
 jetty-xml-9.4.12.v20180830.jar
 jetty-servlet-9.4.12.v20180830.jar
 jline-2.12.jar
+commons-math3-3.2.jar
 jetty-security-9.4.12.v20180830.jar
 jetty-server-9.4.12.v20180830.jar
 jetty-http-9.4.12.v20180830.jar
