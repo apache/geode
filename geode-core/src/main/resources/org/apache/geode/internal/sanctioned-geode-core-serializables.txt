@@ -489,7 +489,6 @@ org/apache/geode/management/internal/NotificationKey,false,currentTime:long,obje
 org/apache/geode/management/internal/beans/FileUploader$RemoteFile,false,filename:java/lang/String,outputStream:com/healthmarketscience/rmiio/RemoteOutputStream
 org/apache/geode/management/internal/beans/QueryDataFunction,true,1
 org/apache/geode/management/internal/beans/QueryDataFunction$LocalQueryFunction,true,1,id:java/lang/String,optimizeForWrite:boolean,regionName:java/lang/String,showMembers:boolean,this$0:org/apache/geode/management/internal/beans/QueryDataFunction
-org/apache/geode/management/internal/beans/QueryDataFunction$QueryDataFunctionResult,true,1,compressedBytes:byte[],message:java/lang/String
 org/apache/geode/management/internal/beans/stats/StatType,false
 org/apache/geode/management/internal/cli/AbstractCliAroundInterceptor$Response,false,text:java/lang/String
 org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
