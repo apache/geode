@@ -84,12 +84,20 @@ public class CreateDataSourceCommandTest {
 
   @Test
   public void nonPooledWorks() {
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
+
     gfsh.executeAndAssertThat(command, COMMAND + " --pooled=false --url=url --name=name")
         .statusIsSuccess();
   }
 
   @Test
   public void pooledWorks() {
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
+
     gfsh.executeAndAssertThat(command, COMMAND + " --pooled=true --url=url --name=name")
         .statusIsSuccess();
   }
@@ -204,8 +212,7 @@ public class CreateDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --name=name  --url=url")
-        .statusIsSuccess().containsOutput("No members found").containsOutput(
-            "Cluster configuration service is not running. Configuration change is not persisted.");
+        .statusIsError().containsOutput("No members found");
   }
 
   @Test
