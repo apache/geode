@@ -22,11 +22,9 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -48,7 +46,7 @@ public class DescribeJndiBindingCommand extends GfshCommand {
     ResultModel crm = new ResultModel();
     TabularResultModel tabularData = crm.addTable(JNDI_PROPERTIES_SECTION);
 
-    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       if (cacheConfig == null) {
