@@ -32,10 +32,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -140,7 +138,7 @@ public class DUnitLauncher {
       // TODO - this is hacky way to test for a hydra environment - see
       // if there is registered test configuration object.
       Class<?> clazz = Class.forName("hydra.TestConfig");
-      Method getInstance = clazz.getMethod("getInstance", new Class[0]);
+      Method getInstance = clazz.getMethod("getInstance");
       getInstance.invoke(null);
       return true;
     } catch (Exception e) {
@@ -187,7 +185,7 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch() throws URISyntaxException, AlreadyBoundException, IOException,
+  private static void launch() throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
@@ -210,35 +208,7 @@ public class DUnitLauncher {
     // restrict membership ports to be outside of AvailablePort's range
     System.setProperty(DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE, "true");
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      public void run() {
-        // System.out.println("shutting down DUnit JVMs");
-        // for (int i=0; i<NUM_VMS; i++) {
-        // try {
-        // processManager.getStub(i).shutDownVM();
-        // } catch (Exception e) {
-        // System.out.println("exception shutting down vm_"+i+": " + e);
-        // }
-        // }
-        // // TODO - hasLiveVMs always returns true
-        // System.out.print("waiting for JVMs to exit");
-        // long giveUp = System.currentTimeMillis() + 5000;
-        // while (giveUp > System.currentTimeMillis()) {
-        // if (!processManager.hasLiveVMs()) {
-        // return;
-        // }
-        // System.out.print(".");
-        // System.out.flush();
-        // try {
-        // Thread.sleep(1000);
-        // } catch (InterruptedException e) {
-        // break;
-        // }
-        // }
-        // System.out.println("\nkilling any remaining JVMs");
-        processManager.killVMs();
-      }
-    });
+    Runtime.getRuntime().addShutdownHook(new Thread(processManager::killVMs));
 
     // Create a VM for the locator
     processManager.launchVM(LOCATOR_VM_NUM);
@@ -363,9 +333,8 @@ public class DUnitLauncher {
 
   public static void closeAndCheckForSuspects() {
     if (isLaunched()) {
-      final boolean skipLogMsgs = ExpectedStrings.skipLogMsgs("dunit");
       final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
-      final LogConsumer logConsumer = new LogConsumer(skipLogMsgs, expectedStrings, "log4j", 5);
+      final LogConsumer logConsumer = new LogConsumer(true, expectedStrings, "log4j", 5);
 
       final StringBuilder suspectStringBuilder = new StringBuilder();
 
@@ -420,15 +389,15 @@ public class DUnitLauncher {
 
 
   public interface MasterRemote extends Remote {
-    public int getLocatorPort() throws RemoteException;
+    int getLocatorPort() throws RemoteException;
 
-    public void signalVMReady() throws RemoteException;
+    void signalVMReady() throws RemoteException;
 
-    public void ping() throws RemoteException;
+    void ping() throws RemoteException;
 
-    public BounceResult bounce(int pid) throws RemoteException;
+    BounceResult bounce(int pid) throws RemoteException;
 
-    public BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
+    BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
   }
 
   public static class Master extends UnicastRemoteObject implements MasterRemote {
@@ -443,7 +412,7 @@ public class DUnitLauncher {
       this.registry = registry;
     }
 
-    public int getLocatorPort() throws RemoteException {
+    public int getLocatorPort() {
       return locatorPort;
     }
 
@@ -493,7 +462,7 @@ public class DUnitLauncher {
     }
 
     public void init(Registry registry, int numVMs)
-        throws AccessException, RemoteException, NotBoundException, InterruptedException {
+        throws RemoteException, NotBoundException, InterruptedException {
       for (int i = 0; i < numVMs; i++) {
         RemoteDUnitVMIF remote = processManager.getStub(i);
         addVM(i, remote);

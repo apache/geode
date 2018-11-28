@@ -244,15 +244,17 @@ public class LogConsumer {
   }
 
   private boolean checkExpectedStrs(CharSequence line, List expectedExceptions) {
-    for (int i = 0; i < expectedExceptions.size(); i++) {
-      Pattern p = (Pattern) expectedExceptions.get(i);
-      if (p.matcher(line).find())
+    for (Object expectedException : expectedExceptions) {
+      Pattern p = (Pattern) expectedException;
+      if (p.matcher(line).find()) {
         return true;
+      }
     }
-    for (int i = 0; i < testExpectStrs.size(); i++) {
-      Pattern p = (Pattern) testExpectStrs.get(i);
-      if (p.matcher(line).find())
+    for (Object testExpectStr : testExpectStrs) {
+      Pattern p = (Pattern) testExpectStr;
+      if (p.matcher(line).find()) {
         return true;
+      }
     }
     return false;
   }
