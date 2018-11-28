@@ -374,7 +374,7 @@ See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite
 
 ``` pre
 create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*] 
-  [--manual-start=value] [--start-port=value] [--end-port=value] [--bind-address=value] 
+  [--manual-start=(value)?] [--start-port=value] [--end-port=value] [--bind-address=value] 
   [--maximum-time-between-pings=value] [--socket-buffer-size=value]
   [--gateway-transport-filter=value(,value)*] [--hostname-for-senders=value]
   [--if-not-exists=(value)?]
@@ -411,7 +411,7 @@ if this option is specified and cluster configuration is enabled.
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-manual-start</span></td>
-<td>Boolean value that specifies whether you need to manually start the gateway receiver. If you supply a null value, the default is &quot;false&quot; the gateway receiver starts automatically.</td>
+<td>Boolean value that specifies whether you need to manually start the gateway receiver. If you specify this option without a value, the default is &quot;true&quot; the gateway receiver must be started manually.</td>
 <td>true</td>
 </tr>
 <tr class="even">
