@@ -229,7 +229,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * The default value of the {@link ServerSocket} {@link #BACKLOG_PROPERTY_NAME}system property
    */
-  private static final int DEFAULT_BACKLOG = 1000;
+  private static final int DEFAULT_BACKLOG = 1280;
 
   /**
    * The system property name for setting the {@link ServerSocket}backlog

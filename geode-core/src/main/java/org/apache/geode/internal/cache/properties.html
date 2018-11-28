@@ -262,12 +262,12 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Integer</em> (default is 1000)
+<em>Integer</em> (default is 1280)
 <p>
 See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl</code>
 constructor.
 <p>
-This is the TCP accept backlog for the acceptor thread's listening socket.
+This is the TCP/IP "accept" backlog for client/server communications.
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2357,6 +2357,20 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
+    <dt><strong>gemfire.TcpServer.BACKLOG</strong></dt>
+    <dd>
+        <em>Public:</em> false
+        <p>
+            <em>Integer</em> default is 1280 but is limited by the OS somaxconn setting
+        <p>
+        <pre>
+   This property establishes a Locator's TCP/IP "accept" backlog
+   for locator communications.
+</pre>
+        <p>
+            TBA
+    </dd>
+<!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.validateMessageSize</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -2616,13 +2630,13 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Integer</em> (default is 50)
+<em>Integer</em> (default is 1280 but limited by OS somaxconn setting)
 <p>
 See <code>org.apache.geode.internal.tcp.TCPConduit#BACKLOG</code>.
 <p>
 <pre>
-  backlog is the "accept" backlog configuration parameter all
-  conduits server socket */
+  backlog is the TCP/IP "accept" backlog configuration parameter for cluster
+  communications
 </pre>
 <p>
 TBA
