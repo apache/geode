@@ -50,6 +50,9 @@ dependencies {
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }
+
+
+  distributedTestRuntime(project(':geode-old-versions'))
 }
 
 distributedTest {
