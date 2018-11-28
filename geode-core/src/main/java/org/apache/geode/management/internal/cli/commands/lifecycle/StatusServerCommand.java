@@ -27,11 +27,11 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class StatusServerCommand extends InternalGfshCommand {
+public class StatusServerCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
   @CliMetaData(shellOnly = true,
@@ -62,7 +62,7 @@ public class StatusServerCommand extends InternalGfshCommand {
       }
     } else {
       final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
+          .setCommand(ServerLauncher.Command.STATUS)
           // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
           // server when it was started,
           // set the disableDefaultServer property in the ServerLauncher.Builder to default status
