@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,16 +34,16 @@ import java.util.function.Consumer;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.MultipleFailureException;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-
 @RunWith(JUnitParamsRunner.class)
 public class ConcurrencyRuleTest {
   private final AtomicBoolean invoked = new AtomicBoolean();
+  private final AtomicBoolean retVal = new AtomicBoolean();
   private final AtomicInteger iterations = new AtomicInteger(0);
 
   private final int stopIteration = 2;
@@ -54,6 +55,11 @@ public class ConcurrencyRuleTest {
   {
     expectedExceptionWithCause.initCause(new NullPointerException());
   }
+
+  private final Callable<Boolean> callWithEventuallyCorrectRetVal = () -> {
+    invoked.set(true);
+    return retVal.get();
+  };
 
   private final Callable<Integer> callWithRetVal = () -> {
     invoked.set(Boolean.TRUE);
@@ -388,12 +394,47 @@ public class ConcurrencyRuleTest {
     this.iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCount).repeatForDuration(duration);
-    GeodeAwaitility.await("Execution did not respect given duration")
+    await("Execution respects given duration").atMost(2000, TimeUnit.MILLISECONDS)
         .until(() -> {
           execution.execute(concurrencyRule);
           return true;
         });
     assertThat(iterations.get()).isGreaterThan(1);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_PARALLEL"})
+  public void repeatUntilValue(Execution execution) {
+    boolean expectedVal = true;
+
+    retVal.set(false); // reset in case it has already been used
+
+    concurrencyRule.setTimeout(Duration.ofSeconds(3));
+    concurrencyRule.add(callWithEventuallyCorrectRetVal).repeatUntilValue(expectedVal);
+    concurrencyRule.add(() -> {
+      Thread.sleep(500);
+      retVal.set(true);
+      return null;
+    });
+    execution.execute(concurrencyRule);
+
+    assertThat(invoked.get()).isTrue();
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void repeatUntilValue_throwsIfValueIsNeverTrue(Execution execution) {
+    boolean expectedVal = true;
+
+    retVal.set(false);
+
+    concurrencyRule.add(callWithEventuallyCorrectRetVal)
+        .repeatUntilValue(expectedVal)
+        .repeatForDuration(Duration.ofSeconds(2));
+
+    assertThatThrownBy(() -> execution.execute(concurrencyRule))
+        .isInstanceOf(ComparisonFailure.class);
+    assertThat(invoked.get()).isTrue();
   }
 
   @Test
