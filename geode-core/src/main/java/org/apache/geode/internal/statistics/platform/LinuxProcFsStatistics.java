@@ -377,11 +377,12 @@ public class LinuxProcFsStatistics {
     } catch (IOException ioe) {
     } finally {
       st.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 

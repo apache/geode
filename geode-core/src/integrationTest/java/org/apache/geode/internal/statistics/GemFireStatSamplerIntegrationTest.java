@@ -426,8 +426,8 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
     props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
-    props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "1");
-    props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "12");
+    props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "2");
+    props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "14");
     props.setProperty(STATISTIC_SAMPLE_RATE, String.valueOf(sampleRate));
     connect(props);
 
