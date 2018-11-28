@@ -55,6 +55,7 @@ include 'geode-experimental-driver'
 include 'geode-protobuf-messages'
 include 'extensions:session-testing-war'
 include 'geode-concurrency-test'
+include 'geode-module'
 
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
