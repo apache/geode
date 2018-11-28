@@ -364,11 +364,11 @@ public class StartLocatorCommand extends InternalGfshCommand {
 
       do {
         locatorState = LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
-        Gfsh.print("\rUptime: " + locatorState.getUptime().toString());
+        Gfsh.print("\rUptime: " + locatorState.getUpTimeAsFormattedString());
         synchronized (this) {
           TimeUnit.MILLISECONDS.timedWait(this, 1000);
         }
-      } while (locatorState.getStatus().equals(AbstractLauncher.Status.ONLINE));
+      } while (locatorState.isOnline());
     }
 
     return result;

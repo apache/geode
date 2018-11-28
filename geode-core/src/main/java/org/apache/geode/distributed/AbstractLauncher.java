@@ -599,6 +599,14 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       return Status.NOT_RESPONDING == getStatus() || Status.STARTING == getStatus();
     }
 
+    public String getUpTimeAsFormattedString() {
+      return toDaysHoursMinutesSeconds(getUptime());
+    }
+
+    public boolean isOnline() {
+      return (isVmWithProcessIdRunning() && (getStatus() == Status.ONLINE));
+    }
+
     public boolean isVmWithProcessIdRunning() {
       // note: this will use JNA if available or return false
       return ProcessUtils.isProcessAlive(this.getPid());
