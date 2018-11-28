@@ -79,6 +79,7 @@ public class DescribeJndiBindingCommandTest {
 
   @Test
   public void bindingNotFound() {
+    bindings.add(binding);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=bad-name").statusIsError()
         .containsOutput("bad-name not found");
   }
