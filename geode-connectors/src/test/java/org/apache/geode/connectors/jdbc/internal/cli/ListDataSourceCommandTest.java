@@ -33,23 +33,22 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
-import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-public class DescribeDataSourceCommandTest {
+public class ListDataSourceCommandTest {
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
-  private DescribeDataSourceCommand command;
+  private ListDataSourceCommand command;
 
   private JndiBindingsType.JndiBinding binding;
   private List<JndiBindingsType.JndiBinding> bindings;
@@ -57,16 +56,17 @@ public class DescribeDataSourceCommandTest {
   private CacheConfig cacheConfig;
   private List<RegionConfig> regionConfigs;
 
-  private static String COMMAND = "describe data-source";
+  private static String COMMAND = "list data-source";
   private static String DATA_SOURCE_NAME = "myDataSource";
 
   @Before
   public void setUp() {
-    command = spy(DescribeDataSourceCommand.class);
+    command = spy(ListDataSourceCommand.class);
 
     binding = new JndiBindingsType.JndiBinding();
     binding.setJndiName(DATA_SOURCE_NAME);
     binding.setType(DATASOURCE_TYPE.POOLED.getType());
+    binding.setConnectionUrl("myURL");
     bindings = new ArrayList<>();
     clusterConfigService = mock(InternalConfigurationPersistenceService.class);
     cacheConfig = mock(CacheConfig.class);
@@ -80,203 +80,138 @@ public class DescribeDataSourceCommandTest {
   }
 
   @Test
-  public void missingMandatory() {
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-        .containsOutput("Invalid command: describe data-source");
+  public void noArgsReturnsSuccess() {
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess();
   }
 
   @Test
-  public void nameWorks() {
-    gfsh.executeAndAssertThat(command, COMMAND + " --name=" + DATA_SOURCE_NAME).statusIsSuccess();
-  }
-
-  @Test
-  public void describeDataSourceWithNoClusterConfigurationServerFails() {
+  public void listDataSourceWithNoClusterConfigurationServerFails() {
     doReturn(null).when(command).getConfigurationPersistenceService();
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
     assertThat(result.getStatus()).isEqualTo(Status.ERROR);
     assertThat(result.toString()).contains("Cluster configuration service must be enabled.");
   }
 
   @Test
-  public void describeDataSourceWithNoClusterConfigFails() {
+  public void listDataSourceWithNoClusterConfigIsOkWithNoDataSources() {
     doReturn(null).when(clusterConfigService).getCacheConfig(any());
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
-    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
-    assertThat(result.toString()).contains("Data source: " + DATA_SOURCE_NAME + " not found");
+    assertThat(result.getStatus()).isEqualTo(Status.OK);
+    assertThat(result.toString()).contains("No data sources found");
   }
 
   @Test
-  public void describeDataSourceWithWrongNameFails() {
-    ResultModel result = command.describeDataSource("bogusName");
-
-    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
-    assertThat(result.toString()).contains("Data source: bogusName not found");
-  }
-
-  @Test
-  public void describeDataSourceWithUnsupportedTypeFails() {
+  public void listDataSourceWithUnsupportedTypeIgnoresIt() {
     binding.setType(DATASOURCE_TYPE.MANAGED.getType());
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
-    assertThat(result.getStatus()).isEqualTo(Status.ERROR);
-    assertThat(result.toString()).contains("Unknown data source type: ManagedDataSource");
+    assertThat(result.getStatus()).isEqualTo(Status.OK);
+    assertThat(result.toString()).doesNotContain(DATA_SOURCE_NAME);
   }
 
   @Test
-  public void describeDataSourceWithSimpleTypeReturnsPooledFalse() {
+  public void listDataSourceWithSimpleTypeReturnsPooledFalse() {
     binding.setType(DATASOURCE_TYPE.SIMPLE.getType());
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
     TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(3)).isEqualTo(Arrays.asList("pooled", "false"));
+        result.getTableSection(ListDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0))
+        .isEqualTo(Arrays.asList(DATA_SOURCE_NAME, "false", "false", "myURL"));
   }
 
   @Test
-  public void describeDataSourceWithPooledTypeReturnsPooledTrue() {
+  public void listDataSourceWithPooledTypeReturnsPooledTrue() {
     binding.setType(DATASOURCE_TYPE.POOLED.getType());
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
     TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(3)).isEqualTo(Arrays.asList("pooled", "true"));
+        result.getTableSection(ListDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0))
+        .isEqualTo(Arrays.asList(DATA_SOURCE_NAME, "true", "false", "myURL"));
   }
 
   @Test
-  public void describeDataSourceTypeReturnsName() {
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+  public void listDataSourcesReturnsInfoOnSingleDataSource() {
+    ResultModel result = command.listDataSources();
 
     TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(0)).isEqualTo(Arrays.asList("name", DATA_SOURCE_NAME));
+        result.getTableSection(ListDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0))
+        .isEqualTo(Arrays.asList(DATA_SOURCE_NAME, "true", "false", "myURL"));
   }
 
   @Test
-  public void describeDataSourceWithUrlReturnsUrl() {
-    binding.setConnectionUrl("myUrl");
+  public void listDataSourcesReturnsInfoOnMultipleDataSources() {
+    JndiBinding binding2 = new JndiBindingsType.JndiBinding();
+    binding2.setJndiName("myDataSource2");
+    binding2.setType(DATASOURCE_TYPE.SIMPLE.getType());
+    binding2.setConnectionUrl("myURL2");
+    bindings.add(binding2);
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
     TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(1)).isEqualTo(Arrays.asList("url", "myUrl"));
+        result.getTableSection(ListDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0))
+        .isEqualTo(Arrays.asList(DATA_SOURCE_NAME, "true", "false", "myURL"));
+    assertThat(section.getValuesInRow(1))
+        .isEqualTo(Arrays.asList("myDataSource2", "false", "false", "myURL2"));
   }
 
   @Test
-  public void describeDataSourceWithUsernameReturnsUsername() {
-    binding.setUserName("myUserName");
-
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
-
-    TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(2)).isEqualTo(Arrays.asList("username", "myUserName"));
-  }
-
-  @Test
-  public void describeDataSourceWithPooledDataSourceFactoryClassShowsItInTheResult() {
-    binding.setType(DATASOURCE_TYPE.POOLED.getType());
-    binding.setConnPooledDatasourceClass("myPooledDataSourceFactoryClass");
-
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
-
-    TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(4)).isEqualTo(
-        Arrays.asList("pooled-data-source-factory-class", "myPooledDataSourceFactoryClass"));
-  }
-
-  @Test
-  public void describeDataSourceWithPasswordDoesNotShowPasswordInResult() {
-    binding.setType(DATASOURCE_TYPE.POOLED.getType());
-    binding.setPassword("myPassword");
-
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
-
-    assertThat(result.toString()).doesNotContain("myPassword");
-  }
-
-  @Test
-  public void describeDataSourceWithPoolPropertiesDoesNotShowsItInTheResult() {
-    binding.setType(DATASOURCE_TYPE.SIMPLE.getType());
-    List<ConfigProperty> configProperties = binding.getConfigProperties();
-    configProperties.add(new ConfigProperty("name1", "value1"));
-
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
-
-    assertThat(result.toString()).doesNotContain("name1");
-    assertThat(result.toString()).doesNotContain("value1");
-  }
-
-  @Test
-  public void describeDataSourceWithPoolPropertiesShowsItInTheResult() {
-    binding.setType(DATASOURCE_TYPE.POOLED.getType());
-    List<ConfigProperty> configProperties = binding.getConfigProperties();
-    configProperties.add(new ConfigProperty("name1", "value1"));
-    configProperties.add(new ConfigProperty("name2", "value2"));
-
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
-
-    TabularResultModel section =
-        result.getTableSection(DescribeDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
-    assertThat(section.getValuesInRow(5)).isEqualTo(Arrays.asList("name1", "value1"));
-    assertThat(section.getValuesInRow(6)).isEqualTo(Arrays.asList("name2", "value2"));
-  }
-
-  @Test
-  public void getRegionsThatUseDataSourceGivenNoRegionsReturnsEmptyList() {
+  public void isDataSourceUsedByRegionGivenNoRegionsReturnsFalse() {
     regionConfigs.clear();
 
-    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "");
+    boolean result = command.isDataSourceUsedByRegion(cacheConfig, "");
 
-    assertThat(result).isEmpty();
+    assertThat(result).isFalse();
   }
 
   @Test
-  public void getRegionsThatUseDataSourceGivenRegionConfigWithNoCustomRegionElementsReturnsEmptyList() {
+  public void isDataSourceUsedByRegionGivenRegionConfigWithNoCustomRegionElementsReturnsFalse() {
     RegionConfig regionConfig = mock(RegionConfig.class);
     when(regionConfig.getCustomRegionElements()).thenReturn(Collections.emptyList());
     regionConfigs.add(regionConfig);
 
-    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "");
+    boolean result = command.isDataSourceUsedByRegion(cacheConfig, "");
 
-    assertThat(result).isEmpty();
+    assertThat(result).isFalse();
   }
 
   @Test
-  public void getRegionsThatUseDataSourceGivenRegionConfigWithNonRegionMappingElementReturnsEmptyList() {
+  public void isDataSourceUsedByRegionGivenRegionConfigWithNonRegionMappingElementReturnsFalse() {
     RegionConfig regionConfig = mock(RegionConfig.class);
     when(regionConfig.getCustomRegionElements())
         .thenReturn(Collections.singletonList(mock(CacheElement.class)));
     regionConfigs.add(regionConfig);
 
-    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "");
+    boolean result = command.isDataSourceUsedByRegion(cacheConfig, "");
 
-    assertThat(result).isEmpty();
+    assertThat(result).isFalse();
   }
 
   @Test
-  public void getRegionsThatUseDataSourceGivenRegionConfigWithRegionMappingForOtherDataSourceReturnsEmptyList() {
+  public void isDataSourceUsedByRegionGivenRegionConfigWithRegionMappingForOtherDataSourceReturnsFalse() {
     RegionConfig regionConfig = mock(RegionConfig.class);
     when(regionConfig.getCustomRegionElements())
         .thenReturn(Collections.singletonList(mock(RegionMapping.class)));
     regionConfigs.add(regionConfig);
 
-    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "bogusDataSource");
+    boolean result = command.isDataSourceUsedByRegion(cacheConfig, "bogusDataSource");
 
-    assertThat(result).isEmpty();
+    assertThat(result).isFalse();
   }
 
   @Test
-  public void getRegionsThatUseDataSourceGivenRegionConfigWithRegionMappingForDataSourceReturnsRegionName() {
+  public void isDataSourceUsedByRegionGivenRegionConfigWithRegionMappingForDataSourceReturnsTrue() {
     RegionConfig regionConfig = mock(RegionConfig.class);
     when(regionConfig.getName()).thenReturn("regionName");
     RegionMapping regionMapping = mock(RegionMapping.class);
@@ -285,13 +220,13 @@ public class DescribeDataSourceCommandTest {
         .thenReturn(Collections.singletonList(regionMapping));
     regionConfigs.add(regionConfig);
 
-    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "dataSourceName");
+    boolean result = command.isDataSourceUsedByRegion(cacheConfig, "dataSourceName");
 
-    assertThat(result).isEqualTo(Collections.singletonList("regionName"));
+    assertThat(result).isTrue();
   }
 
   @Test
-  public void getRegionsThatUseDataSourceGivenMultipleRegionConfigsReturnsAllRegionNames() {
+  public void isDataSourceUsedByRegionGivenMultipleRegionConfigsReturnsTrue() {
     RegionMapping regionMapping;
     {
       RegionConfig regionConfig1 = mock(RegionConfig.class, "regionConfig1");
@@ -321,28 +256,28 @@ public class DescribeDataSourceCommandTest {
       regionConfigs.add(regionConfig3);
     }
 
-    List<String> result = command.getRegionsThatUseDataSource(cacheConfig, "dataSourceName");
+    boolean result = command.isDataSourceUsedByRegion(cacheConfig, "dataSourceName");
 
-    assertThat(result).isEqualTo(Arrays.asList("regionName1", "regionName3"));
+    assertThat(result).isTrue();
   }
 
   @Test
-  public void describeDataSourceWithNoRegionsUsingItReturnsResultWithNoRegionsUsingIt() {
+  public void listDataSourcesWithNoRegionsUsingItReturnsResultWithInUseFalse() {
     RegionConfig regionConfig = mock(RegionConfig.class);
     when(regionConfig.getCustomRegionElements())
         .thenReturn(Collections.singletonList(mock(RegionMapping.class)));
     regionConfigs.add(regionConfig);
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
-    InfoResultModel regionsUsingSection = (InfoResultModel) result
-        .getSection(DescribeDataSourceCommand.REGIONS_USING_DATA_SOURCE_SECTION);
-    assertThat(regionsUsingSection.getContent())
-        .isEqualTo(Arrays.asList("no regions are using " + DATA_SOURCE_NAME));
+    TabularResultModel section =
+        result.getTableSection(ListDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0))
+        .isEqualTo(Arrays.asList(DATA_SOURCE_NAME, "true", "false", "myURL"));
   }
 
   @Test
-  public void describeDataSourceWithRegionsUsingItReturnsResultWithRegionNames() {
+  public void listDataSourcesWithRegionsUsingItReturnsResultWithInUseTrue() {
     RegionMapping regionMapping;
     {
       RegionConfig regionConfig1 = mock(RegionConfig.class, "regionConfig1");
@@ -372,11 +307,11 @@ public class DescribeDataSourceCommandTest {
       regionConfigs.add(regionConfig3);
     }
 
-    ResultModel result = command.describeDataSource(DATA_SOURCE_NAME);
+    ResultModel result = command.listDataSources();
 
-    InfoResultModel regionsUsingSection = (InfoResultModel) result
-        .getSection(DescribeDataSourceCommand.REGIONS_USING_DATA_SOURCE_SECTION);
-    assertThat(regionsUsingSection.getContent())
-        .isEqualTo(Arrays.asList("regionName1", "regionName3"));
+    TabularResultModel section =
+        result.getTableSection(ListDataSourceCommand.DATA_SOURCE_PROPERTIES_SECTION);
+    assertThat(section.getValuesInRow(0))
+        .isEqualTo(Arrays.asList(DATA_SOURCE_NAME, "true", "true", "myURL"));
   }
 }
