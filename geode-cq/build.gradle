@@ -57,4 +57,6 @@ dependencies {
   upgradeTestCompile('junit:junit:' + project.'junit.version')
   upgradeTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
   upgradeTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+
+  upgradeTestRuntime(project(':geode-old-versions'))
 }

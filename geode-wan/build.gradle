@@ -30,5 +30,6 @@ dependencies {
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  upgradeTestRuntime(project(':geode-old-versions'))
   distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 }
