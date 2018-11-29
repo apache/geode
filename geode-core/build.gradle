@@ -173,7 +173,7 @@ dependencies {
   compile('com.sun.activation:javax.activation:' + project.'javax-activation.version')
   compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
   compile('com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version')
-  runtimeOnly('com.sun.istack:istack-commons-runtime:2.2') {
+  runtimeOnly('com.sun.istack:istack-commons-runtime:' + project.'istacks.version') {
     exclude group: '*'
   }
 

@@ -1,4 +1,4 @@
-org/apache/geode/cache/query/internal/cq/ServerCQImpl,2
+org/apache/geode/cq/internal/cache/query/ServerCQImpl,2
 fromData,64
 toData,47
 

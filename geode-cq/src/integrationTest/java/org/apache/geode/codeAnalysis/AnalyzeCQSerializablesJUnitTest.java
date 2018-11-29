@@ -14,6 +14,7 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import org.apache.geode.cq.internal.CQDistributedSystemService;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -24,5 +25,10 @@ public class AnalyzeCQSerializablesJUnitTest extends AnalyzeSerializablesJUnitTe
   @Override
   protected String getModuleName() {
     return "geode-cq";
+  }
+
+  @Override
+  protected Class getModuleClass() {
+    return CQDistributedSystemService.class;
   }
 }
