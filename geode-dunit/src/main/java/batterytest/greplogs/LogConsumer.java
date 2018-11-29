@@ -33,7 +33,7 @@ public class LogConsumer {
   StringBuilder all = null;
   private int lineNumber;
   private String fileName;
-  HashMap individalErrorCount = new HashMap();
+  private HashMap<String, Integer> individualErrorCount = new HashMap<>();
   private final int repeatLimit;
 
   private static final Pattern ExpectedExceptionPattern =
@@ -132,12 +132,10 @@ public class LogConsumer {
           Matcher m = shortErrPattern.matcher(all.toString());
           if (m.matches()) {
             String shortName = m.group(1);
-            Integer i = (Integer) individalErrorCount.get(shortName);
-            Integer occurances = new Integer((i == null) ? 1 : i.intValue() + 1);
-            individalErrorCount.put(shortName, occurances);
-            return enforceErrorLimit(occurances.intValue(), all.toString(),
-                // reader.getLineNumber(),
-                savelinenum, fileName);
+            Integer i = individualErrorCount.get(shortName);
+            int occurrences = (i == null) ? 1 : i + 1;
+            individualErrorCount.put(shortName, occurrences);
+            return enforceErrorLimit(occurrences, all.toString(), savelinenum, fileName);
 
           } else {
             // error in determining shortName, wing it
@@ -187,10 +185,10 @@ public class LogConsumer {
         // we can suppress further printing if we hit the limit
         String shortName = getShortName(line);
         if (shortName != null) {
-          Integer i = (Integer) individalErrorCount.get(shortName);
-          Integer occurrences = (i == null) ? 1 : i + 1;
-          individalErrorCount.put(shortName, occurrences);
-          return enforceErrorLimit(occurrences.intValue(), line + "\n", lineNumber, fileName);
+          Integer i = individualErrorCount.get(shortName);
+          int occurrences = (i == null) ? 1 : i + 1;
+          individualErrorCount.put(shortName, occurrences);
+          return enforceErrorLimit(occurrences, line + "\n", lineNumber, fileName);
         } else {
           return enforceErrorLimit(1, line + "\n", lineNumber, fileName);
         }
