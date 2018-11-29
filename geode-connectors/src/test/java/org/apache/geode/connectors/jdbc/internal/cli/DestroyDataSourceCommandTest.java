@@ -100,9 +100,8 @@ public class DestroyDataSourceCommandTest {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(null).when(command).getConfigurationPersistenceService();
 
-    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found").containsOutput(
-            "Cluster configuration service is not running. Configuration change is not persisted.");
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
+        .containsOutput("No members found and cluster configuration disabled.");
   }
 
   @Test
@@ -119,6 +118,69 @@ public class DestroyDataSourceCommandTest {
 
     verify(ccService).updateCacheConfig(any(), any());
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
+  }
+
+  @Test
+  public void whenMembersFoundAllReturnErrorAndIfExistsFalseThenError() {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result =
+        new CliFunctionResult("server1", true, "Data source \"name\" not found on \"server1\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(null).when(command).getConfigurationPersistenceService();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
+        .containsOutput("Data source named \\\"name\\\" does not exist.");
+  }
+
+  @Test
+  public void whenMembersFoundAllReturnErrorAndIfExistsTrueThenSuccess() {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result =
+        new CliFunctionResult("server1", true, "Data source \"name\" not found on \"server1\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(null).when(command).getConfigurationPersistenceService();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=true").statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server1")
+        .tableHasColumnOnlyWithValues("Status", "OK")
+        .tableHasColumnOnlyWithValues("Message", "Data source \"name\" not found on \"server1\"");
+  }
+
+  @Test
+  public void whenMembersFoundPartialReturnErrorAndIfExistsFalseThenSuccess() {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result =
+        new CliFunctionResult("server1", true, "Data source \"name\" not found on \"server1\"");
+    CliFunctionResult result2 =
+        new CliFunctionResult("server2", true, "Data source \"name\" destroyed on \"server2\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+    results.add(result2);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(null).when(command).getConfigurationPersistenceService();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server1", "server2")
+        .tableHasColumnOnlyWithValues("Status", "OK", "OK")
+        .tableHasColumnOnlyWithValues("Message", "Data source \"name\" not found on \"server1\"",
+            "Data source \"name\" destroyed on \"server2\"");
   }
 
   @Test

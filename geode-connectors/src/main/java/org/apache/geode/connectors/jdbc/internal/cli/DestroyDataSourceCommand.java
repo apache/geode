@@ -59,14 +59,34 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
-      List<CliFunctionResult> jndiCreationResult =
+      List<CliFunctionResult> dataSourceDestroyResult =
           executeAndGetFunctionResult(new DestroyJndiBindingFunction(),
               new Object[] {dataSourceName, true}, targetMembers);
-      ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
+
+      if (!ifExists) {
+        int resultsNotFound = 0;
+        for (CliFunctionResult result : dataSourceDestroyResult) {
+          if (result.getStatusMessage().contains("not found")) {
+            resultsNotFound++;
+          }
+        }
+        if (resultsNotFound == dataSourceDestroyResult.size()) {
+          throw new EntityNotFoundException(
+              CliStrings.format("Data source named \"{0}\" does not exist.", dataSourceName),
+              ifExists);
+        }
+      }
+
+      ResultModel result = ResultModel.createMemberStatusResult(dataSourceDestroyResult);
       result.setConfigObject(dataSourceName);
+
       return result;
     } else {
-      return ResultModel.createInfo("No members found.");
+      if (service != null) {
+        return ResultModel.createInfo("No members found.");
+      } else {
+        return ResultModel.createError("No members found and cluster configuration disabled.");
+      }
     }
   }
 
