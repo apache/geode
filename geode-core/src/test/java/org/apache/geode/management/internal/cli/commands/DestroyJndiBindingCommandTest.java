@@ -159,14 +159,18 @@ public class DestroyJndiBindingCommandTest {
 
     ArgumentCaptor<DestroyJndiBindingFunction> function =
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
-    ArgumentCaptor<String> jndiName = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Object[]> arguments = ArgumentCaptor.forClass(Object[].class);
+
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
-    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), jndiName.capture(),
+    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
 
+    String jndiName = (String) arguments.getValue()[0];
+    boolean destroyingDataSource = (boolean) arguments.getValue()[1];
+
     assertThat(function.getValue()).isInstanceOf(DestroyJndiBindingFunction.class);
-    assertThat(jndiName.getValue()).isNotNull();
-    assertThat(jndiName.getValue()).isEqualTo("name");
+    assertThat(jndiName).isEqualTo("name");
+    assertThat(destroyingDataSource).isEqualTo(false);
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
@@ -199,14 +203,18 @@ public class DestroyJndiBindingCommandTest {
 
     ArgumentCaptor<DestroyJndiBindingFunction> function =
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
-    ArgumentCaptor<String> jndiName = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Object[]> arguments = ArgumentCaptor.forClass(Object[].class);
+
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
-    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), jndiName.capture(),
+    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
 
+    String jndiName = (String) arguments.getValue()[0];
+    boolean destroyingDataSource = (boolean) arguments.getValue()[1];
+
     assertThat(function.getValue()).isInstanceOf(DestroyJndiBindingFunction.class);
-    assertThat(jndiName.getValue()).isNotNull();
-    assertThat(jndiName.getValue()).isEqualTo("name");
+    assertThat(jndiName).isEqualTo("name");
+    assertThat(destroyingDataSource).isEqualTo(false);
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 }
