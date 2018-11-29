@@ -287,6 +287,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (name.startsWith(oldPackage)) {
       return newPackage + name.substring(oldPackage.length());
     }
+    if (name.equals("org.apache.geode.cache.query.internal.cq.ServerCQImpl")) {
+      return "org.apache.geode.cq.internal.cache.query.ServerCQImpl";
+    }
     OldClientSupportService svc = getOldClientSupportService();
     if (svc != null) {
       return svc.processIncomingClassName(name);
@@ -309,6 +312,17 @@ public abstract class InternalDataSerializer extends DataSerializer {
     String newPackage = "org.apache.geode.distributed.internal.tcpserver";
     if (name.startsWith(newPackage)) {
       return oldPackage + name.substring(newPackage.length());
+    }
+    if (out instanceof VersionedDataOutputStream) {
+      VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
+      Version version = vout.getVersion();
+      if (null != version) {
+        if (version.compareTo(Version.GEODE_190) < 0) {
+          if (name.equals("org.apache.geode.cq.internal.cache.query.ServerCQImpl")) {
+            return "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
+          }
+        }
+      }
     }
     OldClientSupportService svc = getOldClientSupportService();
     if (svc != null) {
