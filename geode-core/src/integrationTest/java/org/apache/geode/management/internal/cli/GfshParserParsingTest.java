@@ -76,7 +76,7 @@ public class GfshParserParsingTest {
     GfshParseResult result = parser.parse(buffer);
     assertThat(result).isNotNull();
     Object[] arguments = result.getArguments();
-    int indexOfJvmArgumentsParameterInStartLocator = 18;
+    int indexOfJvmArgumentsParameterInStartLocator = 19;
 
     String[] jvmArgs = (String[]) arguments[indexOfJvmArgumentsParameterInStartLocator];
     assertThat(jvmArgs).hasSize(2);

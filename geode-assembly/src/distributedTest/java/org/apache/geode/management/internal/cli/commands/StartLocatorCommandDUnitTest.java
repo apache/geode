@@ -59,7 +59,6 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.ConcurrencyRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
@@ -83,9 +82,6 @@ public class StartLocatorCommandDUnitTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public ConcurrencyRule concurrencyRule = new ConcurrencyRule();
-
-  @Rule
   public TestName testName = new TestName();
 
   @BeforeClass
@@ -103,7 +99,9 @@ public class StartLocatorCommandDUnitTest {
 
   @AfterClass
   public static void after() throws Exception {
-    gfsh.connectAndVerify(locator);
+    if (!gfsh.isConnected()) {
+      gfsh.connectAndVerify(locator);
+    }
     gfsh.execute("shutdown --include-locators");
   }
 
