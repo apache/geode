@@ -58,8 +58,6 @@ public class GfshSignalHandler extends AbstractSignalNotificationHandler impleme
   protected void handleDefault(final sun.misc.Signal sig) {
     final Signal signal = Signal.valueOfName(sig.getName());
     switch (signal) {
-      case SIGINT:
-        break; // ignore the interrupt signal
       default:
         final SignalHandler handler = getOriginalSignalHandler(signal);
         if (handler != null) {
