@@ -404,7 +404,7 @@ public abstract class AbstractBaseController implements InitializingBean {
 
   Region<String, String> getQueryStore(final String namePath) {
     return ValidationUtils.returnValueThrowOnNull(getCache().getInternalRegion(namePath),
-        new GemfireRestException(String.format("Query store does not exist!", namePath)));
+        new GemfireRestException(String.format("Query store (%1$s) does not exist!", namePath)));
   }
 
   protected String getQueryIdValue(final String regionNamePath, final String key) {
