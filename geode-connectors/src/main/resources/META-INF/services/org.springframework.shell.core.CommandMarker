@@ -21,3 +21,4 @@ org.apache.geode.connectors.jdbc.internal.cli.DescribeDataSourceCommand
 org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.DestroyDataSourceCommand
