@@ -61,7 +61,7 @@ public class IncrementCommand extends AbstractCommand {
     assert "incr".equals(firstLineElements[0]);
     String key = firstLineElements[1];
     String incrByStr = stripNewline(firstLineElements[2]);
-    Long incrBy = Long.parseLong(incrByStr);
+    long incrBy = Long.parseLong(incrByStr);
     boolean noReply = firstLineElements.length > 3;
 
     Region<Object, ValueWrapper> r = getMemcachedRegion(cache);

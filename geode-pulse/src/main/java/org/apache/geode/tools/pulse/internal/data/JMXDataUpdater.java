@@ -1749,7 +1749,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     if (PulseConstants.NOTIFICATION_TYPE_SYSTEM_ALERT.equals(type)) {
       Cluster.Alert alert = new Cluster.Alert();
-      Long timeStamp = notification.getTimeStamp();
+      long timeStamp = notification.getTimeStamp();
       Date date = new Date(timeStamp);
       alert.setTimestamp(date);
       String notificationSource = (String) notification.getUserData();
@@ -1770,7 +1770,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       cluster.addAlert(alert);
     } else {
       Cluster.Alert alert = new Cluster.Alert();
-      Long timeStamp = notification.getTimeStamp();
+      long timeStamp = notification.getTimeStamp();
       Date date = new Date(timeStamp);
       alert.setTimestamp(date);
       String notificationSource = (String) notification.getSource();

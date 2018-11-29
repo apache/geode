@@ -64,7 +64,7 @@ public class IncrExecutor extends StringExecutor {
 
     String stringValue = valueWrapper.toString();
 
-    Long value;
+    long value;
     try {
       value = Long.parseLong(stringValue);
     } catch (NumberFormatException e) {
