@@ -100,22 +100,9 @@ public class LogConsumer {
 
     if (saveFlag || fatalOrErrorPattern.matcher(line).find()) {
       if (!saveFlag) {
-        saveFlag = true;
-        tmpErrFlag = true;
-        if (checkExpectedStrs(line, expectedExceptions)) {
-          saveFlag = false;
-          tmpErrFlag = false;
-          tmpErrLines = 0;
-        }
-        if (tmpErrFlag) {
-          tmpErrLines = 1;
-          all = new StringBuilder(line);
-          all.append("\n");
-          savelinenum = lineNumber;
-        }
+        setInstanceVariablesForSomeReason(line);
       } else {
-        if (!causedByPattern.matcher(line).find()
-            && checkExpectedStrs(line, expectedExceptions)) {
+        if (!causedByPattern.matcher(line).find() && checkExpectedStrs(line, expectedExceptions)) {
           // reset the counters and throw it all away if it matches
           // one of the registered expected strings
           tmpErrFlag = false;
@@ -126,76 +113,117 @@ public class LogConsumer {
         // We save all the lines up to the next blank line so we're
         // looking for a blank line here
         if (blankPattern.matcher(line).matches()) {
-          // we found a blank line so print the suspect string
-          // and reset the savetag flag
-          saveFlag = false;
-          Matcher m = shortErrPattern.matcher(all.toString());
-          if (m.matches()) {
-            String shortName = m.group(1);
-            Integer i = individualErrorCount.get(shortName);
-            int occurrences = (i == null) ? 1 : i + 1;
-            individualErrorCount.put(shortName, occurrences);
-            return enforceErrorLimit(occurrences, all.toString(), savelinenum, fileName);
-
-          } else {
-            // error in determining shortName, wing it
-            return enforceErrorLimit(1, all.toString(), lineNumber, fileName);
-          }
+          return enforceErrorLimitsAtShortErrMatcher();
         }
 
         // we're still saving lines to append them on to all which contains
         // all the lines we're trying to save
         if (tmpErrFlag) {
-          if (tmpErrLines < ERROR_BUFFER_LIMIT) {
-            tmpErrLines++;
-            all.append(line).append("\n");
-          }
-          if (tmpErrLines == ERROR_BUFFER_LIMIT) {
-            tmpErrLines++; // increment to prevent this line from repeating
-            all.append("GrepLogs: ERROR_BUFFER_LIMIT limit reached,")
-                .append(" the error was too long to display completely.\n");
-          }
-
+          addErrLinesToAll(line);
         }
       }
-      // unique condition for when cache server see log exception and
-      // logging level is set to fine. Message looks like this:
-      // [fine 2005/10/25 17:53:13.586 PDT gemfire2 Server connection from
-      // hobbes.gemstone.com:34466-0xf4 nid=0x23e40f1] Server connection from
-      // hobbes.gemstone.com:34466: Wrote exception:
-      // org.apache.geode.cache.EntryNotFoundException: remote-destroy-key
-      // also now handles a JMX WARNING
-    } else if (wroteExceptionPattern.matcher(line).find()
-        || rmiWarnPattern.matcher(line).find()) {
-      // Eat only the single EntryNotFound Exception
-      eatLines = 1;
-      // if we are here then the line didn't have severe or error in it and
-      // didn't meet any special cases that require eating lines
-      // Check for other kinds of exceptions. This is by no means inclusive
-      // of all types of exceptions that could occur and some ARE missed.
-    } else if (exceptionPattern.matcher(line).find() || javaLangErrorPattern.matcher(line).find()
-        || (misformatedI18nMessagePattern.matcher(line).find()
-            && !(skipLevelPattern.matcher(line).find()
-                && rvvBitSetMessagePattern.matcher(line).find()))) {
+    } else if (isWroteOrRMIWarn(line)) {
+      handleWroteOrRMIWarn();
+      return null;
+    } else if (isExceptionErrorOrSomeSpecialCase(line)) {
       if (!checkExpectedStrs(line, expectedExceptions)) {
-        // it's the Exception colon that we want to find
-        // along with the next six words and define to shortline
-        // shortline is only used for the unique sting to count the
-        // number of times an exception match occurs. This is so
-        // we can suppress further printing if we hit the limit
-        String shortName = getShortName(line);
-        if (shortName != null) {
-          Integer i = individualErrorCount.get(shortName);
-          int occurrences = (i == null) ? 1 : i + 1;
-          individualErrorCount.put(shortName, occurrences);
-          return enforceErrorLimit(occurrences, line + "\n", lineNumber, fileName);
-        } else {
-          return enforceErrorLimit(1, line + "\n", lineNumber, fileName);
-        }
+        return enforceErrorLimitOnShortName(line);
       }
     }
 
     return null;
+  }
+
+  private void handleWroteOrRMIWarn() {
+    // unique condition for when cache server see log exception and
+    // logging level is set to fine. Message looks like this:
+    // [fine 2005/10/25 17:53:13.586 PDT gemfire2 Server connection from
+    // hobbes.gemstone.com:34466-0xf4 nid=0x23e40f1] Server connection from
+    // hobbes.gemstone.com:34466: Wrote exception:
+    // org.apache.geode.cache.EntryNotFoundException: remote-destroy-key
+    // also now handles a JMX WARNING
+
+    // if we are here then the line didn't have severe or error in it and
+    // didn't meet any special cases that require eating lines
+    // Check for other kinds of exceptions. This is by no means inclusive
+    // of all types of exceptions that could occur and some ARE missed.
+
+    // Eat only the single EntryNotFound Exception
+    eatLines = 1;
+  }
+
+  private boolean isWroteOrRMIWarn(CharSequence line) {
+    return wroteExceptionPattern.matcher(line).find() || rmiWarnPattern.matcher(line).find();
+  }
+
+  private StringBuilder enforceErrorLimitOnShortName(CharSequence line) {
+    // it's the Exception colon that we want to find
+    // along with the next six words and define to shortline
+    // shortline is only used for the unique sting to count the
+    // number of times an exception match occurs. This is so
+    // we can suppress further printing if we hit the limit
+    String shortName = getShortName(line);
+    if (shortName != null) {
+      Integer i = individualErrorCount.get(shortName);
+      int occurrences = (i == null) ? 1 : i + 1;
+      individualErrorCount.put(shortName, occurrences);
+      return enforceErrorLimit(occurrences, line + "\n", lineNumber, fileName);
+    } else {
+      return enforceErrorLimit(1, line + "\n", lineNumber, fileName);
+    }
+  }
+
+  private boolean isExceptionErrorOrSomeSpecialCase(CharSequence line) {
+    return exceptionPattern.matcher(line).find()
+        || javaLangErrorPattern.matcher(line).find()
+        || (misformatedI18nMessagePattern.matcher(line).find()
+            && !(skipLevelPattern.matcher(line).find()
+            && rvvBitSetMessagePattern.matcher(line).find()));
+  }
+
+  private void addErrLinesToAll(CharSequence line) {
+    if (tmpErrLines < ERROR_BUFFER_LIMIT) {
+      tmpErrLines++;
+      all.append(line).append("\n");
+    }
+    if (tmpErrLines == ERROR_BUFFER_LIMIT) {
+      tmpErrLines++; // increment to prevent this line from repeating
+      all.append("GrepLogs: ERROR_BUFFER_LIMIT limit reached,")
+          .append(" the error was too long to display completely.\n");
+    }
+  }
+
+  private StringBuilder enforceErrorLimitsAtShortErrMatcher() {
+    // we found a blank line so print the suspect string and reset the savetag flag
+    saveFlag = false;
+    Matcher shortErrMatcher = shortErrPattern.matcher(all.toString());
+    if (shortErrMatcher.matches()) {
+      String shortName = shortErrMatcher.group(1);
+      Integer i = individualErrorCount.get(shortName);
+      int occurrences = (i == null) ? 1 : i + 1;
+      individualErrorCount.put(shortName, occurrences);
+      return enforceErrorLimit(occurrences, all.toString(), savelinenum, fileName);
+
+    } else {
+      // error in determining shortName, wing it
+      return enforceErrorLimit(1, all.toString(), lineNumber, fileName);
+    }
+  }
+
+  private void setInstanceVariablesForSomeReason(CharSequence line) {
+    saveFlag = true;
+    tmpErrFlag = true;
+    if (checkExpectedStrs(line, expectedExceptions)) {
+      saveFlag = false;
+      tmpErrFlag = false;
+      tmpErrLines = 0;
+    }
+    if (tmpErrFlag) {
+      tmpErrLines = 1;
+      all = new StringBuilder(line);
+      all.append("\n");
+      savelinenum = lineNumber;
+    }
   }
 
   private String getShortName(CharSequence line) {
