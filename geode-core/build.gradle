@@ -238,6 +238,7 @@ dependencies {
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
   compile('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
