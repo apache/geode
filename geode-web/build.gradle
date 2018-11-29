@@ -65,7 +65,7 @@ dependencies {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
   }
-  runtimeOnly('com.sun.istack:istack-commons-runtime:' + project.'istacks.version')
+  integrationTestRuntime('com.sun.istack:istack-commons-runtime:' + project.'istacks.version')
 
 
   distributedTestCompile(project(':geode-dunit')){
@@ -78,6 +78,7 @@ dependencies {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
   }
+  distributedTestRuntime('com.sun.istack:istack-commons-runtime:' + project.'istacks.version')
 
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
