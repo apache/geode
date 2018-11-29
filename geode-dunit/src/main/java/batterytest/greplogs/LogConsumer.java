@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogConsumer {
-  private final List expectedExceptions = new ArrayList();
+  private final List<Pattern> expectedExceptions = new ArrayList<>();
   private boolean skipLogMsgs = false;
   private boolean infoMsgFlag = false;
   private int eatLines = 0;
@@ -29,7 +29,7 @@ public class LogConsumer {
   private int tmpErrLines = 0;
   private boolean saveFlag = false;
   private int savelinenum = 0;
-  private final List testExpectStrs;
+  private final List<Pattern> testExpectStrs;
   StringBuilder all = null;
   private int lineNumber;
   private String fileName;
@@ -68,7 +68,7 @@ public class LogConsumer {
 
 
 
-  public LogConsumer(boolean skipLogMsgs, List testExpectStrs, String fileName, int repeatLimit) {
+  public LogConsumer(boolean skipLogMsgs, List<Pattern> testExpectStrs, String fileName, int repeatLimit) {
     super();
     this.skipLogMsgs = skipLogMsgs;
     this.testExpectStrs = testExpectStrs;
@@ -243,16 +243,14 @@ public class LogConsumer {
     return null;
   }
 
-  private boolean checkExpectedStrs(CharSequence line, List expectedExceptions) {
-    for (Object expectedException : expectedExceptions) {
-      Pattern p = (Pattern) expectedException;
-      if (p.matcher(line).find()) {
+  private boolean checkExpectedStrs(CharSequence line, List<Pattern> expectedExceptions) {
+    for (Pattern expectedException : expectedExceptions) {
+      if (expectedException.matcher(line).find()) {
         return true;
       }
     }
-    for (Object testExpectStr : testExpectStrs) {
-      Pattern p = (Pattern) testExpectStr;
-      if (p.matcher(line).find()) {
+    for (Pattern testExpectStr : testExpectStrs) {
+      if (testExpectStr.matcher(line).find()) {
         return true;
       }
     }
