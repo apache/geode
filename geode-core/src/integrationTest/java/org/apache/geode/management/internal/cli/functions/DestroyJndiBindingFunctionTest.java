@@ -70,7 +70,7 @@ public class DestroyJndiBindingFunctionTest {
 
   @Test
   public void destroyJndiBindingIsSuccessfulWhenBindingFound() throws Exception {
-    when(context.getArguments()).thenReturn("jndi1");
+    when(context.getArguments()).thenReturn(new Object[] {"jndi1", false});
     when(context.getMemberName()).thenReturn("server-1");
     when(context.getResultSender()).thenReturn(resultSender);
 
@@ -85,7 +85,7 @@ public class DestroyJndiBindingFunctionTest {
 
   @Test
   public void destroyJndiBindingIsSuccessfulWhenNoBindingFound() throws Exception {
-    when(context.getArguments()).thenReturn("somectx/unknownjndi");
+    when(context.getArguments()).thenReturn(new Object[] {"\"somectx/unknownjndi\"", false});
     when(context.getResultSender()).thenReturn(resultSender);
 
     destroyJndiBindingFunction.execute(context);
@@ -94,6 +94,35 @@ public class DestroyJndiBindingFunctionTest {
     CliFunctionResult result = resultCaptor.getValue();
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMessage()).contains("not found");
+    assertThat(result.getMessage()).contains("not found").contains("Jndi binding");
+  }
+
+  @Test
+  public void destroyDataSourceIsSuccessfulWhenBindingFound() throws Exception {
+    when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
+    when(context.getMemberName()).thenReturn("server-1");
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    destroyJndiBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getMessage()).contains("Data source \"jndi1\" destroyed on \"server-1\"");
+  }
+
+  @Test
+  public void destroyDataSourceIsSuccessfulWhenNoBindingFound() throws Exception {
+    when(context.getArguments()).thenReturn(new Object[] {"\"somectx/unknownjndi\"", true});
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    destroyJndiBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getMessage()).contains("not found").contains("Data source");
   }
 }

@@ -21,22 +21,29 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
-public class DestroyJndiBindingFunction extends CliFunction<String> {
-
-  static final String RESULT_MESSAGE = "Jndi binding \"{0}\" destroyed on \"{1}\"";
-  static final String EXCEPTION_RESULT_MESSAGE = "Jndi binding \"{0}\" not found on \"{1}\"";
+public class DestroyJndiBindingFunction extends CliFunction<Object[]> {
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext context) {
-    String jndiName = (String) context.getArguments();
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
+    String jndiName = (String) context.getArguments()[0];
+    boolean destroyingDataSource = (boolean) context.getArguments()[1];
+
+    String typeName = "Jndi binding";
+
+    if (destroyingDataSource) {
+      typeName = "Data source";
+    }
+
+    final String RESULT_MESSAGE = "{0} \"{1}\" destroyed on \"{2}\"";
+    final String EXCEPTION_RESULT_MESSAGE = "{0} \"{1}\" not found on \"{2}\"";
 
     try {
       JNDIInvoker.unMapDatasource(jndiName);
-      return new CliFunctionResult(context.getMemberName(), true,
-          CliStrings.format(RESULT_MESSAGE, jndiName, context.getMemberName()));
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          CliStrings.format(RESULT_MESSAGE, typeName, jndiName, context.getMemberName()));
     } catch (NamingException e) {
-      return new CliFunctionResult(context.getMemberName(), true,
-          CliStrings.format(EXCEPTION_RESULT_MESSAGE, jndiName, context.getMemberName()));
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          CliStrings.format(EXCEPTION_RESULT_MESSAGE, typeName, jndiName, context.getMemberName()));
     }
   }
 }
