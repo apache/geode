@@ -79,29 +79,20 @@ public class LogConsumer {
   public StringBuilder consume(CharSequence line) {
     lineNumber++;
 
+    // IgnoredException injects lines into the log to start or end ignore periods.
+    // Process those lines, then exit.
     Matcher expectedExceptionMatcher = ExpectedExceptionPattern.matcher(line);
     if (expectedExceptionMatcher.find()) {
       expectedExceptionMatcherHandler(expectedExceptionMatcher);
       return null;
     }
 
-    if (skipLogMsgs) {
-      if (infoMsgFlag) {
-        if (logPattern.matcher(line).find()) {
-          infoMsgFlag = false;
-        } else if (blankPattern.matcher(line).matches()) {
-          infoMsgFlag = false;
-          return null;
-        } else {
-          return null;
-        }
-      }
-      if (skipLevelPattern.matcher(line).find()) {
-        infoMsgFlag = true;
-        return null;
-      }
+    // We may optionally skip info-level logs
+    if (skipLogMsgs && skipThisLogMsg(line)) {
+      return null;
     }
 
+    // In some case, we want to skip an extra line.
     if (eatLines != 0) {
       eatLines--;
       return null;
@@ -123,13 +114,8 @@ public class LogConsumer {
           savelinenum = lineNumber;
         }
       } else {
-        if (causedByPattern.matcher(line).find()) {
-          // This code used to stop appending if a causedBy was seen.
-          // But we want the causedBy stack trace to also be included
-          // in the suspect StringBuilder.
-          // The main thing is we do not want to call checkExpectedStrs
-          // with this "caused by" line.
-        } else if (checkExpectedStrs(line, expectedExceptions)) {
+        if (!causedByPattern.matcher(line).find()
+            && checkExpectedStrs(line, expectedExceptions)) {
           // reset the counters and throw it all away if it matches
           // one of the registered expected strings
           tmpErrFlag = false;
@@ -199,23 +185,12 @@ public class LogConsumer {
         // shortline is only used for the unique sting to count the
         // number of times an exception match occurs. This is so
         // we can suppress further printing if we hit the limit
-        Matcher m2 = exceptionPattern2.matcher(line);
-        Matcher m3 = exceptionPattern3.matcher(line);
-        Matcher m4 = exceptionPattern4.matcher(line);
-        String shortName = null;
-
-        if (m2.find()) {
-          shortName = m2.group(1);
-        } else if (m3.find()) {
-          shortName = m3.group(1);
-        } else if (m4.find()) {
-          shortName = m4.group(1);
-        }
+        String shortName = getShortName(line);
         if (shortName != null) {
           Integer i = (Integer) individalErrorCount.get(shortName);
-          Integer occurances = new Integer((i == null) ? 1 : i.intValue() + 1);
-          individalErrorCount.put(shortName, occurances);
-          return enforceErrorLimit(occurances.intValue(), line + "\n", lineNumber, fileName);
+          Integer occurrences = (i == null) ? 1 : i + 1;
+          individalErrorCount.put(shortName, occurrences);
+          return enforceErrorLimit(occurrences.intValue(), line + "\n", lineNumber, fileName);
         } else {
           return enforceErrorLimit(1, line + "\n", lineNumber, fileName);
         }
@@ -223,6 +198,46 @@ public class LogConsumer {
     }
 
     return null;
+  }
+
+  private String getShortName(CharSequence line) {
+    Matcher m2 = exceptionPattern2.matcher(line);
+    if (m2.find()) {
+      return m2.group(1);
+    }
+
+    Matcher m3 = exceptionPattern3.matcher(line);
+    if (m3.find()) {
+      return m3.group(1);
+    }
+
+    Matcher m4 = exceptionPattern4.matcher(line);
+    if (m4.find()) {
+      return m4.group(1);
+    }
+
+    return null;
+  }
+
+  /** This method returns true if this line should be skipped. */
+  private boolean skipThisLogMsg(CharSequence line) {
+    if (infoMsgFlag) {
+      if (logPattern.matcher(line).find()) {
+        infoMsgFlag = false;
+      } else if (blankPattern.matcher(line).matches()) {
+        infoMsgFlag = false;
+        return true;
+      } else {
+        return true;
+      }
+    }
+
+    if (skipLevelPattern.matcher(line).find()) {
+      infoMsgFlag = true;
+      return true;
+    }
+
+    return false;
   }
 
   private void expectedExceptionMatcherHandler(Matcher expectedExceptionMatcher) {
@@ -248,17 +263,8 @@ public class LogConsumer {
   }
 
   private boolean checkExpectedStrs(CharSequence line, List<Pattern> expectedExceptions) {
-    for (Pattern expectedException : expectedExceptions) {
-      if (expectedException.matcher(line).find()) {
-        return true;
-      }
-    }
-    for (Pattern testExpectStr : testExpectStrs) {
-      if (testExpectStr.matcher(line).find()) {
-        return true;
-      }
-    }
-    return false;
+    return expectedExceptions.stream().anyMatch(expected -> expected.matcher(line).find())
+        || testExpectStrs.stream().anyMatch(testExpected -> testExpected.matcher(line).find());
   }
 
   private StringBuilder enforceErrorLimit(int hits, String line, int linenum, String filename) {
