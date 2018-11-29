@@ -30,7 +30,7 @@ public class LogConsumer {
   private boolean saveFlag = false;
   private int savelinenum = 0;
   private final List<Pattern> testExpectStrs;
-  StringBuilder all = null;
+  private StringBuilder all = null;
   private int lineNumber;
   private String fileName;
   private HashMap<String, Integer> individualErrorCount = new HashMap<>();
