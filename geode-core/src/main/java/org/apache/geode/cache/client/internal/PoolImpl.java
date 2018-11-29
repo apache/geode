@@ -1459,13 +1459,6 @@ public class PoolImpl implements InternalPool {
         }
         return null;
       } else {
-        if (cache == null && dsys != null) {
-          cache = dsys.getCache();
-          if (cache == null) {
-            throw new IllegalStateException(
-                "Cache must be created before creating pool");
-          }
-        }
         if (cacheCriterion == null) {
           cacheCriterion = cache.getCancelCriterion();
         } else if (cacheCriterion != cache.getCancelCriterion()) {
