@@ -40,8 +40,6 @@ dependencies {
 
   compile('org.bouncycastle:bcpkix-jdk15on:' + project.'bouncycastle.version')
 
-  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
-  
   testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
   runtimeOnly(project(':geode-old-versions'))

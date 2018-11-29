@@ -254,7 +254,7 @@ dependencies {
     ext.optional = true
   }
 
-  compileOnly('org.apache.shiro:shiro-core:' + project.'shiro.version')
+  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
 
   compile('io.github.classgraph:classgraph:' + project.'classgraph.version')
 
