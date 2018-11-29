@@ -24,17 +24,17 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class ListDataSourceCommand extends InternalGfshCommand {
+public class ListDataSourceCommand extends GfshCommand {
   static final String LIST_DATA_SOURCE = "list data-source";
   private static final String LIST_DATA_SOURCE__HELP = EXPERIMENTAL +
       "List each existing data source.";
@@ -52,7 +52,7 @@ public class ListDataSourceCommand extends InternalGfshCommand {
     TabularResultModel tabularData = resultModel.addTable(DATA_SOURCE_PROPERTIES_SECTION);
     tabularData.setColumnHeader("name", "pooled", "in use", "url");
 
-    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService == null) {
       return ResultModel.createError("Cluster configuration service must be enabled.");
     }

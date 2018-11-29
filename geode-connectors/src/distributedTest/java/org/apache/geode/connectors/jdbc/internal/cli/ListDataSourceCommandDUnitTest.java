@@ -65,9 +65,11 @@ public class ListDataSourceCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region2 --type=PARTITION").statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx");
+        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx")
+        .statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx");
+        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx")
+        .statusIsSuccess();
 
     CommandResultAssert result = gfsh.executeAndAssertThat("list data-source");
 
@@ -79,11 +81,12 @@ public class ListDataSourceCommandDUnitTest {
   @Test
   public void listDataSourceForPooledDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooled --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
-        .tableHasRowWithValues("name", "pooled", "in use", "url", "pooled", "true", "false",
+        .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
+            "false",
             "jdbc:derby:newDB;create=true");
   }
 
@@ -93,11 +96,12 @@ public class ListDataSourceCommandDUnitTest {
         "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooled --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
-        .tableHasRowWithValues("name", "pooled", "in use", "url", "pooled", "true", "false",
+        .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
+            "false",
             "jdbc:derby:newDB;create=true")
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "false",
             "jdbc:derby:newDB;create=true");
