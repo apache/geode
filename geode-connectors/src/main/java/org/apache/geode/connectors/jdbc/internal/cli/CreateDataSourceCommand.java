@@ -139,9 +139,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       return result;
     } else {
       if (service != null) {
-        return ResultModel.createInfo("No members found.");
+        return ResultModel.createInfo("No members found, data source saved to cluster config.");
       } else {
-        return ResultModel.createError("No members found.");
+        return ResultModel.createError("No members found and cluster configuration unavailable.");
       }
     }
   }
