@@ -18,7 +18,7 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
-import org.apache.geode.test.dunit.standalone.BounceResult;
+import org.apache.geode.test.dunit.internal.BounceResult;
 
 /**
  * This class provides an abstraction over the environment that is used to run dunit. This will

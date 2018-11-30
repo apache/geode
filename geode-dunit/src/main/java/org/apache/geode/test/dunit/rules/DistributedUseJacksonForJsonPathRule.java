@@ -17,7 +17,7 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.UseJacksonForJsonPathRule;
 
 public class DistributedUseJacksonForJsonPathRule extends UseJacksonForJsonPathRule {

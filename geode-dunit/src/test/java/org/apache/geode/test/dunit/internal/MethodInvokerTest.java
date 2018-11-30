@@ -12,26 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.examples;
+package org.apache.geode.test.dunit.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.internal.DUnitLauncher;
+/**
+ * Unit tests for {@link MethodInvoker}. Extracted from {@link MethodInvoker}.
+ */
+@SuppressWarnings("unused")
+public class MethodInvokerTest {
 
-
-public class BeforeClassExampleTest {
-
-  @BeforeClass
-  public static void initializeDUnit() throws Exception {
-    DUnitLauncher.launchIfNeeded();
+  @Test
+  public void invokesMethodWithReturn() {
+    MethodInvokerResult result = MethodInvoker.execute(getClass().getName(), "methodWithReturn");
+    assertThat(result.getResult()).isInstanceOf(String.class);
   }
 
   @Test
-  public void shouldHaveFourOrMoreDUnitVMsByDefault() throws Exception {
-    assertThat(Host.getHost(0).getVMCount()).isGreaterThanOrEqualTo(4);
+  public void invokesMethodThatThrows() {
+    MethodInvokerResult result = MethodInvoker.execute(getClass().getName(), "methodThatThrows");
+    assertThat(result.getException()).isInstanceOf(ArrayIndexOutOfBoundsException.class);
+  }
+
+  public static String methodWithReturn() {
+    return "The result is: " + System.currentTimeMillis();
+  }
+
+  public static String methodThatThrows() {
+    throw new ArrayIndexOutOfBoundsException("frip");
   }
 }

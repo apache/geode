@@ -12,26 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.examples;
+package org.apache.geode.test.dunit.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+public interface MasterRemote extends Remote {
 
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.internal.DUnitLauncher;
+  int getLocatorPort() throws RemoteException;
 
+  void signalVMReady() throws RemoteException;
 
-public class BeforeClassExampleTest {
+  void ping() throws RemoteException;
 
-  @BeforeClass
-  public static void initializeDUnit() throws Exception {
-    DUnitLauncher.launchIfNeeded();
-  }
+  BounceResult bounce(int pid) throws RemoteException;
 
-  @Test
-  public void shouldHaveFourOrMoreDUnitVMsByDefault() throws Exception {
-    assertThat(Host.getHost(0).getVMCount()).isGreaterThanOrEqualTo(4);
-  }
+  BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
 }
