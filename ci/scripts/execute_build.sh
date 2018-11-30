@@ -36,8 +36,6 @@ fi
 
 ROOT_DIR=$(pwd)
 BUILD_DATE=$(date +%s)
-EMAIL_SUBJECT="results/subject"
-EMAIL_BODY="results/body"
 
 GEODE_BUILD_VERSION_FILE=${ROOT_DIR}/geode-build-version/number
 GEODE_RESULTS_VERSION_FILE=${ROOT_DIR}/results/number
