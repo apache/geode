@@ -97,7 +97,7 @@ GRADLE_ARGS="\
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS} \
-    build install javadoc spotlessCheck rat -x test"
+    build install javadoc spotlessCheck rat checkPom -x test"
 
 EXEC_COMMAND="mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ./gradlew ${GRADLE_ARGS}"
 echo "${EXEC_COMMAND}"
