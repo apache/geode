@@ -89,6 +89,10 @@
           <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>spring-core</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>asm</artifactId>
           <groupId>*</groupId>
         </exclusion>
