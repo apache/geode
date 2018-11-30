@@ -56,6 +56,10 @@ public class DestroyMappingCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyMapping(@CliOption(key = DESTROY_MAPPING__REGION_NAME, mandatory = true,
       help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName) {
+    if (regionName.startsWith("/")) {
+      regionName = regionName.substring(1);
+    }
+
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
 

@@ -65,6 +65,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
 
   public static String createAsyncEventQueueName(String regionPath) {
+    if (regionPath.startsWith("/")) {
+      regionPath = regionPath.substring(1);
+    }
     return "JDBC#" + regionPath.replace('/', '_');
   }
 
@@ -84,6 +87,10 @@ public class CreateMappingCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
           help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous) {
+    if (regionName.startsWith("/")) {
+      regionName = regionName.substring(1);
+    }
+
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName);

@@ -139,6 +139,21 @@ public class CreateMappingCommandTest {
   }
 
   @Test
+  public void createsMappingWithRegionPathCreatesMappingWithSlashRemoved() {
+    setupRequiredPreconditions();
+    results.add(successFunctionResult);
+
+    ResultModel result = createRegionMappingCommand.createMapping("/" + regionName, dataSourceName,
+        tableName, pdxClass, false);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    assertThat(regionMapping).isNotNull();
+    assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
+  }
+
+  @Test
   public void createsMappingReturnsStatusERRORWhenFunctionResultIsEmpty() {
     setupRequiredPreconditions();
     results.clear();
@@ -534,4 +549,24 @@ public class CreateMappingCommandTest {
 
     assertThat(queueList).isEmpty();
   }
+
+  @Test
+  public void createAsyncEventQueueNameWithRegionPathReturnsQueueNameThatIsTheSameAsRegionWithNoSlash() {
+    String queueName1 = CreateMappingCommand.createAsyncEventQueueName("regionName");
+    String queueName2 = CreateMappingCommand.createAsyncEventQueueName("/regionName");
+    assertThat(queueName1).isEqualTo(queueName2);
+  }
+
+  @Test
+  public void createAsyncEventQueueNameWithEmptyStringReturnsQueueName() {
+    String queueName = CreateMappingCommand.createAsyncEventQueueName("");
+    assertThat(queueName).isEqualTo("JDBC#");
+  }
+
+  @Test
+  public void createAsyncEventQueueNameWithSubregionNameReturnsQueueNameWithNoSlashes() {
+    String queueName = CreateMappingCommand.createAsyncEventQueueName("/parent/child/grandchild");
+    assertThat(queueName).isEqualTo("JDBC#parent_child_grandchild");
+  }
+
 }

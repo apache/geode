@@ -54,6 +54,10 @@ public class DescribeMappingCommand extends GfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
       mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
+    if (regionName.startsWith("/")) {
+      regionName = regionName.substring(1);
+    }
+
     RegionMapping mapping = null;
 
     Set<DistributedMember> members = findMembers(null, null);
