@@ -113,7 +113,7 @@ public class ShowMetricsInterceptor extends AbstractCliAroundInterceptor {
       Path tempFile) {
     try {
       for (Map.Entry<String, FileResultModel> entry : resultModel.getFiles().entrySet()) {
-        entry.getValue().saveFile(null);
+        entry.getValue().saveFile();
         resultModel.addInfo().addLine("Metrics saved to: " + entry.getKey());
       }
     } catch (IOException e) {

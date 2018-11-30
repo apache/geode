@@ -43,8 +43,6 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -195,9 +193,6 @@ public class ShowMetricsCommand extends GfshCommand {
       csMxBean = managementService.getMBeanInstance(csMxBeanName, CacheServerMXBean.class);
 
       if (csMxBean == null) {
-        ErrorResultData erd = ResultBuilder.createErrorResultData();
-        erd.addLine(CliStrings.format(CliStrings.SHOW_METRICS__CACHE__SERVER__NOT__FOUND,
-            cacheServerPort, MBeanJMXAdapter.getMemberNameOrId(distributedMember)));
         return ResultModel.createError(
             CliStrings.format(CliStrings.SHOW_METRICS__CACHE__SERVER__NOT__FOUND,
                 cacheServerPort, MBeanJMXAdapter.getMemberNameOrId(distributedMember)));
