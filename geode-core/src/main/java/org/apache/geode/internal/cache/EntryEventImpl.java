@@ -181,6 +181,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   private transient boolean isPendingSecondaryExpireDestroy = false;
 
+  private transient boolean hasRetried = false;
+
   public static final Object SUSPECT_TOKEN = new Object();
 
   public EntryEventImpl() {
@@ -608,6 +610,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   public boolean isEvicted() {
     return this.isEvicted;
+  }
+
+  public boolean hasRetried() {
+    return hasRetried;
+  }
+
+  public void setRetried(boolean retried) {
+    hasRetried = retried;
   }
 
   public boolean isPendingSecondaryExpireDestroy() {
