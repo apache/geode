@@ -27,17 +27,16 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class StatusServerCommand extends InternalGfshCommand {
+public class StatusServerCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result statusServer(
+  public ResultModel statusServer(
       @CliOption(key = CliStrings.STATUS_SERVER__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_SERVER__MEMBER__HELP) final String member,
       @CliOption(key = CliStrings.STATUS_SERVER__PID,
@@ -51,19 +50,19 @@ public class StatusServerCommand extends InternalGfshCommand {
         final MemberMXBean serverProxy = getMemberMXBean(member);
 
         if (serverProxy != null) {
-          return ResultBuilder.createInfoResult(
+          return ResultModel.createInfo(
               ServerLauncher.ServerState.fromJson(serverProxy.status()).toString());
         } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
+          return ResultModel.createError((CliStrings
+              .format(CliStrings.STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member)));
         }
       } else {
-        return ResultBuilder.createUserErrorResult(CliStrings
+        return ResultModel.createError(CliStrings
             .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
       }
     } else {
       final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
+          .setCommand(ServerLauncher.Command.STATUS)
           // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
           // server when it was started,
           // set the disableDefaultServer property in the ServerLauncher.Builder to default status
@@ -75,9 +74,9 @@ public class StatusServerCommand extends InternalGfshCommand {
 
       if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
           || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
-        return ResultBuilder.createGemFireErrorResult(status.toString());
+        return ResultModel.createError(status.toString());
       }
-      return ResultBuilder.createInfoResult(status.toString());
+      return ResultModel.createInfo(status.toString());
     }
   }
 }

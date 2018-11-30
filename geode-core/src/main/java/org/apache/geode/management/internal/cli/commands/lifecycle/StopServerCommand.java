@@ -28,10 +28,9 @@ import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class StopServerCommand extends InternalGfshCommand {
@@ -40,7 +39,7 @@ public class StopServerCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.STOP_SERVER, help = CliStrings.STOP_SERVER__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result stopServer(
+  public ResultModel stopServer(
       @CliOption(key = CliStrings.STOP_SERVER__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_SERVER__MEMBER__HELP) final String member,
       @CliOption(key = CliStrings.STOP_SERVER__PID,
@@ -52,7 +51,7 @@ public class StopServerCommand extends InternalGfshCommand {
 
     if (StringUtils.isNotBlank(member)) {
       if (!isConnectedAndReady()) {
-        return ResultBuilder.createUserErrorResult(CliStrings
+        return ResultModel.createError(CliStrings
             .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
       }
 
@@ -67,14 +66,14 @@ public class StopServerCommand extends InternalGfshCommand {
         serverState = ServerLauncher.ServerState.fromJson(serverProxy.status());
         serverProxy.shutDownMember();
       } else {
-        return ResultBuilder.createUserErrorResult(CliStrings
+        return ResultModel.createError(CliStrings
             .format(CliStrings.STOP_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
       }
 
     } else {
       final ServerLauncher serverLauncher =
           new ServerLauncher.Builder().setCommand(ServerLauncher.Command.STOP)
-              .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
+              .setPid(pid).setWorkingDirectory(workingDirectory).build();
 
       serverState = serverLauncher.status();
       serverLauncher.stop();
@@ -98,13 +97,10 @@ public class StopServerCommand extends InternalGfshCommand {
         }
       }
 
-      return ResultBuilder.createInfoResult(StringUtils.EMPTY);
+      return ResultModel.createInfo(StringUtils.EMPTY);
     } else {
-      return ResultBuilder.createUserErrorResult(serverState.toString());
+      return ResultModel.createError(serverState.toString());
     }
   }
 
-  private void stop(String member) {}
-
-  private void stop(String pid, String workingDir) {}
 }
