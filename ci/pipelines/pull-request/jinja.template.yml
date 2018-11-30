@@ -88,72 +88,74 @@ jobs:
       - do:
         - put: concourse-metadata-resource
         - task: create_instance
-          {{- alpine_tools_config()|indent(8) }}
+          {{- alpine_tools_config()|indent(10) }}
             params:
-            CPUS: {{build_test.CPUS}}
-            RAM: {{build_test.RAM}}
-            GCP_PROJECT: ((gcp-project))
-            GEODE_BRANCH: {{repository.branch}}
-            GEODE_FORK: {{repository.fork}}
-            JAVA_BUILD_VERSION: 8
-            JAVA_TEST_VERSION: 8
-          run:
-            path: geode-ci/ci/scripts/create_instance.sh
-          inputs:
-          - name: concourse-metadata-resource
-          - name: geode
-          - name: geode-ci
-          outputs:
-          - name: instance-data
-        timeout: 15m
-        attempts: 100
-  - task: rsync_code_up
-    {{- alpine_tools_config()|indent(4) }}
-      run:
-        path: geode-ci/ci/scripts/rsync_code_up.sh
-      inputs:
-      - name: geode-ci
-      - name: geode
-      - name: instance-data
-    timeout: 5m
-  - task: build
-    {{- alpine_tools_config()|indent(4) }}
-      params:
-        JAVA_BUILD_VERSION: 8
-        GRADLE_TASK: {{ build_test.GRADLE_TASK }}
-        ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
-        JAVA_TEST_VERSION: 8
-        CALL_STACK_TIMEOUT: {{build_test.CALL_STACK_TIMEOUT}}
-        DUNIT_PARALLEL_FORKS: {{build_test.DUNIT_PARALLEL_FORKS}}
-        GRADLE_TASK_OPTIONS: ""
-        MAINTENANCE_VERSION: {{repository.branch}}
-        PARALLEL_DUNIT: {{build_test.PARALLEL_DUNIT}}
-        PARALLEL_GRADLE: {{build_test.PARALLEL_GRADLE}}
-        ARTIFACT_BUCKET: ((artifact-bucket))
-        SERVICE_ACCOUNT: ((concourse-gcp-account))
-        GRADLE_GLOBAL_ARGS: ((gradle-global-args))
-      run:
-        path: geode-ci/ci/scripts/execute_build.sh
-      inputs:
-      - name: geode-ci
-      - name: geode
-      - name: instance-data
-    do:
-    - put: pull-request-job-failure
-      resource: geode
-      params:
-        context: {{ build_test.name }}
-        path: geode
-        status: failure
-      get_params: {skip_download: true}
+              CPUS: {{build_test.CPUS}}
+              RAM: {{build_test.RAM}}
+              GCP_PROJECT: ((gcp-project))
+              GEODE_BRANCH: {{repository.branch}}
+              GEODE_FORK: {{repository.fork}}
+              JAVA_BUILD_VERSION: 8
+              JAVA_TEST_VERSION: 8
+            run:
+              path: geode-ci/ci/scripts/create_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+          timeout: 15m
+          attempts: 100
+    - task: rsync_code_up
+      {{- alpine_tools_config()|indent(6) }}
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+    - task: build
+      {{- alpine_tools_config()|indent(6) }}
+        params:
+          JAVA_BUILD_VERSION: 8
+          GRADLE_TASK: {{ build_test.GRADLE_TASK }}
+          ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
+          JAVA_TEST_VERSION: 8
+          CALL_STACK_TIMEOUT: {{build_test.CALL_STACK_TIMEOUT}}
+          DUNIT_PARALLEL_FORKS: {{build_test.DUNIT_PARALLEL_FORKS}}
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: {{repository.branch}}
+          PARALLEL_DUNIT: {{build_test.PARALLEL_DUNIT}}
+          PARALLEL_GRADLE: {{build_test.PARALLEL_GRADLE}}
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          SERVICE_ACCOUNT: ((concourse-gcp-account))
+          GRADLE_GLOBAL_ARGS: ((gradle-global-args))
+        run:
+          path: geode-ci/ci/scripts/execute_build.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: {{build_test.execute_test_timeout}}
+    on_failure:
+      do:
+      - put: pull-request-job-failure
+        resource: geode
+        params:
+          context: {{ build_test.name }}
+          path: geode
+          status: failure
+        get_params: {skip_download: true}
     ensure:
       do:
       - task: rsync_code_down
         {{- alpine_tools_config()|indent(8) }}
           params:
-            JAVA_BUILD_VERSION: {{ java_build_version.version }}
+            JAVA_BUILD_VERSION: 8
             ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
-        run:
+          run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
           - name: geode
@@ -165,7 +167,7 @@ jobs:
       ensure:
         aggregate:
         - task: archive_results
-          {{- alpine_tools_config()|indent(12) }}
+          {{- alpine_tools_config()|indent(10) }}
             params:
               ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{build_test.GRADLE_TASK}}
@@ -180,7 +182,7 @@ jobs:
             - name: geode-ci
             - name: geode-results
         - task: delete_instance
-          {{- alpine_tools_config()|indent(12) }}
+          {{- alpine_tools_config()|indent(10) }}
             run:
               path: geode-ci/ci/scripts/delete_instance.sh
             inputs:
