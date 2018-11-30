@@ -151,7 +151,10 @@ public class ClusterDistributionManager implements DistributionManager {
   public static final int MAX_THREADS =
       Integer.getInteger("DistributionManager.MAX_THREADS", 100).intValue();
 
-  private static final int MAX_PR_THREADS = Integer.getInteger("DistributionManager.MAX_PR_THREADS",
+  public static final int MAX_PR_THREADS_SET =
+      Integer.getInteger("DistributionManager.MAX_PR_THREADS", -1);
+
+  public static final int MAX_PR_THREADS = Integer.getInteger("DistributionManager.MAX_PR_THREADS",
       Math.max(Runtime.getRuntime().availableProcessors() * 4, 16)).intValue();
 
   public static final int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",

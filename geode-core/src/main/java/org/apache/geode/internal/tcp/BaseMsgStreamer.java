@@ -53,4 +53,10 @@ public interface BaseMsgStreamer {
    * @throws IOException on exception
    */
   void close() throws IOException;
+
+
+  /**
+   * Called to free up resources used by this streamer after the streamer has produced its message.
+   */
+  void release();
 }

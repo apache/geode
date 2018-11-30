@@ -15,7 +15,6 @@
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -117,6 +116,11 @@ public class TCPConduit implements Runnable {
   private static boolean USE_NIO;
 
   /**
+   * Use the new streaming using NIO disabling chunking.
+   */
+  private static boolean USE_NIO_STREAM;
+
+  /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
   static boolean useDirectBuffers;
@@ -150,6 +154,7 @@ public class TCPConduit implements Runnable {
     useSSL = Boolean.getBoolean("p2p.useSSL");
     // only use nio if not SSL
     USE_NIO = !useSSL && !Boolean.getBoolean("p2p.oldIO");
+    USE_NIO_STREAM = USE_NIO && !Boolean.getBoolean("p2p.disableNIOStream");
     // only use direct buffers if we are using nio
     useDirectBuffers = USE_NIO && !Boolean.getBoolean("p2p.nodirectBuffers");
     LISTENER_CLOSE_TIMEOUT = Integer.getInteger("p2p.listenerCloseTimeout", 60000).intValue();
@@ -279,26 +284,6 @@ public class TCPConduit implements Runnable {
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
 
     this.useNIO = USE_NIO;
-    if (this.useNIO) {
-      InetAddress addr = address;
-      if (addr == null) {
-        try {
-          addr = SocketCreator.getLocalHost();
-        } catch (java.net.UnknownHostException e) {
-          throw new ConnectionException("Unable to resolve localHost address", e);
-        }
-      }
-      // JDK bug 6230761 - NIO can't be used with IPv6 on Windows
-      if (addr instanceof Inet6Address) {
-        String os = System.getProperty("os.name");
-        if (os != null) {
-          if (os.indexOf("Windows") != -1) {
-            this.useNIO = false;
-          }
-        }
-      }
-    }
-
     startAcceptor();
   }
 
@@ -841,6 +826,16 @@ public class TCPConduit implements Runnable {
   }
 
   /**
+   * Return true if NIO classes with buffered streaming is being used
+   * for the server socket. This is different from "useNIO" in that it
+   * streams messages directly to sockets as well as reads in streaming
+   * manner using buffered DataOutput/Input streams rather than chunking.
+   */
+  public boolean useNIOStream() {
+    return USE_NIO_STREAM;
+  }
+
+  /**
    * gets the address of this conduit's ServerSocket endpoint
    */
   public InetSocketAddress getSocketId() {
@@ -894,6 +889,7 @@ public class TCPConduit implements Runnable {
     for (;;) {
       stopper.checkCancelInProgress(null);
       boolean interrupted = Thread.interrupted();
+      boolean returningCon = false;
       try {
         // If this is the second time through this loop, we had
         // problems. Tear down the connection so that it gets
@@ -944,7 +940,10 @@ public class TCPConduit implements Runnable {
               conn.closeForReconnect("closing before retrying");
             } catch (CancelException ex) {
               throw ex;
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
+            } finally {
+              releasePooledConnection(conn);
+              conn = null;
             }
           }
         } // not first time in loop
@@ -970,10 +969,14 @@ public class TCPConduit implements Runnable {
                 logger.debug("Got an old connection for {}: {}@{}", memberAddress, conn,
                     conn.hashCode());
               }
-              conn.closeOldConnection("closing old connection");
-              conn = null;
-              retryForOldConnection = true;
-              debugRetry = true;
+              try {
+                conn.closeOldConnection("closing old connection");
+              } finally {
+                releasePooledConnection(conn);
+                conn = null;
+                retryForOldConnection = true;
+                debugRetry = true;
+              }
             }
           } while (retryForOldConnection);
           if (debugRetry && logger.isDebugEnabled()) {
@@ -1064,13 +1067,25 @@ public class TCPConduit implements Runnable {
             logger.trace("new connection is {} memberAddress={}", conn, memberAddress);
           }
         }
+        returningCon = true;
         return conn;
       } finally {
+        // need to return unused connections to pool
+        if (!returningCon && conn != null) {
+          releasePooledConnection(conn);
+        }
         if (interrupted) {
           Thread.currentThread().interrupt();
         }
       }
     } // for(;;)
+  }
+
+  public final void releasePooledConnection(Connection conn) {
+    final ConnectionTable conTable = this.conTable;
+    if (conTable != null) {
+      conTable.releasePooledConnection(conn);
+    }
   }
 
   @Override

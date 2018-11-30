@@ -34,11 +34,11 @@ public class MsgStreamerList implements BaseMsgStreamer {
   private static final Logger logger = LogService.getLogger();
 
   /**
-   * List of {@link MsgStreamer}s encapsulated by this MsgStreamerList.
+   * List of {@link BaseMsgStreamer}s encapsulated by this MsgStreamerList.
    */
-  private final List<MsgStreamer> streamers;
+  private final List<BaseMsgStreamer> streamers;
 
-  MsgStreamerList(List<MsgStreamer> streamers) {
+  MsgStreamerList(List<BaseMsgStreamer> streamers) {
     this.streamers = streamers;
   }
 
@@ -47,7 +47,7 @@ public class MsgStreamerList implements BaseMsgStreamer {
    */
   @Override
   public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
-    for (MsgStreamer streamer : this.streamers) {
+    for (BaseMsgStreamer streamer : this.streamers) {
       streamer.reserveConnections(startTime, ackTimeout, ackSDTimeout);
     }
   }
@@ -60,7 +60,7 @@ public class MsgStreamerList implements BaseMsgStreamer {
     int result = 0;
     RuntimeException ex = null;
     IOException ioex = null;
-    for (MsgStreamer streamer : this.streamers) {
+    for (BaseMsgStreamer streamer : this.streamers) {
       if (ex != null) {
         streamer.release();
         // TODO: shouldn't we call continue here?
@@ -100,7 +100,7 @@ public class MsgStreamerList implements BaseMsgStreamer {
   @Override
   public List<?> getSentConnections() {
     List<Object> sentCons = Collections.emptyList();
-    for (MsgStreamer streamer : this.streamers) {
+    for (BaseMsgStreamer streamer : this.streamers) {
       if (sentCons.size() == 0) {
         sentCons = (List<Object>) streamer.getSentConnections();
       } else {
@@ -116,7 +116,7 @@ public class MsgStreamerList implements BaseMsgStreamer {
   @Override
   public ConnectExceptions getConnectExceptions() {
     ConnectExceptions ce = null;
-    for (MsgStreamer streamer : this.streamers) {
+    for (BaseMsgStreamer streamer : this.streamers) {
       if (ce == null) {
         ce = streamer.getConnectExceptions();
       } else {
@@ -141,7 +141,7 @@ public class MsgStreamerList implements BaseMsgStreamer {
   public void close() throws IOException {
     // only throw the first exception and try to close all
     IOException ex = null;
-    for (MsgStreamer m : this.streamers) {
+    for (BaseMsgStreamer m : this.streamers) {
       try {
         m.close();
       } catch (IOException e) {
@@ -155,6 +155,13 @@ public class MsgStreamerList implements BaseMsgStreamer {
     }
     if (ex != null) {
       throw ex;
+    }
+  }
+
+  @Override
+  public void release() {
+    for (BaseMsgStreamer m : this.streamers) {
+      m.release();
     }
   }
 }

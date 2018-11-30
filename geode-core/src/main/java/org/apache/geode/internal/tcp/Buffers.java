@@ -27,7 +27,8 @@ public class Buffers {
   /**
    * A list of soft references to byte buffers.
    */
-  private static final ConcurrentLinkedQueue bufferQueue = new ConcurrentLinkedQueue();
+  private static final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
+      new ConcurrentLinkedQueue<>();
 
   /**
    * Should only be called by threads that have currently acquired send permission.
@@ -47,14 +48,14 @@ public class Buffers {
     if (TCPConduit.useDirectBuffers) {
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
                                                                             // set
-      BBSoftReference ref = (BBSoftReference) bufferQueue.poll();
+      BBSoftReference ref = bufferQueue.poll();
       while (ref != null) {
         ByteBuffer bb = ref.getBB();
         if (bb == null) {
           // it was garbage collected
           int refSize = ref.consumeSize();
           if (refSize > 0) {
-            if (ref.getSend()) { // fix bug 46773
+            if (ref.getSend()) {
               stats.incSenderBufferSize(-refSize, true);
             } else {
               stats.incReceiverBufferSize(-refSize, true);
@@ -68,7 +69,7 @@ public class Buffers {
           // wasn't big enough so put it back in the queue
           Assert.assertTrue(bufferQueue.offer(ref));
           if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<BBSoftReference, BBSoftReference>();
+            alreadySeen = new IdentityHashMap<>();
           }
           if (alreadySeen.put(ref, ref) != null) {
             // if it returns non-null then we have already seen this item
@@ -77,7 +78,7 @@ public class Buffers {
             break;
           }
         }
-        ref = (BBSoftReference) bufferQueue.poll();
+        ref = bufferQueue.poll();
       }
       result = ByteBuffer.allocateDirect(size);
     } else {
@@ -116,14 +117,14 @@ public class Buffers {
     }
   }
 
-  public static void initBufferStats(DMStats stats) { // fixes 46773
+  public static void initBufferStats(DMStats stats) {
     if (TCPConduit.useDirectBuffers) {
       @SuppressWarnings("unchecked")
-      Iterator<BBSoftReference> it = (Iterator<BBSoftReference>) bufferQueue.iterator();
+      Iterator<BBSoftReference> it = bufferQueue.iterator();
       while (it.hasNext()) {
         BBSoftReference ref = it.next();
         if (ref.getBB() != null) {
-          if (ref.getSend()) { // fix bug 46773
+          if (ref.getSend()) {
             stats.incSenderBufferSize(ref.getSize(), true);
           } else {
             stats.incReceiverBufferSize(ref.getSize(), true);
@@ -163,7 +164,7 @@ public class Buffers {
     }
 
     public ByteBuffer getBB() {
-      return (ByteBuffer) super.get();
+      return super.get();
     }
   }
 

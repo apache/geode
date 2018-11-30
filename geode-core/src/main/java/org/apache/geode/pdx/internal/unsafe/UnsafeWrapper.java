@@ -195,4 +195,9 @@ public class UnsafeWrapper {
   public void setMemory(long addr, long size, byte v) {
     this.unsafe.setMemory(addr, size, v);
   }
+
+  public void setMemory(Object obj, long offset, long size, byte value) {
+    this.unsafe.setMemory(obj, offset, size, value);
+  }
+
 }

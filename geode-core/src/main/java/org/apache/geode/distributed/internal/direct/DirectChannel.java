@@ -54,6 +54,7 @@ import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MemberShunnedException;
+import org.apache.geode.internal.tcp.MsgChannelStreamer;
 import org.apache.geode.internal.tcp.MsgStreamer;
 import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -315,8 +316,10 @@ public class DirectChannel {
           msg, p_destinations.length, Arrays.toString(p_destinations));
     }
 
-    try {
-      do {
+    final boolean useNIOStream = getConduit().useNIOStream();
+    final List<Connection> allCons = new ArrayList<>(destinations.length);
+    do {
+      try {
         interrupted = Thread.interrupted() || interrupted;
         /**
          * Exceptions that happened during one attempt to send
@@ -331,9 +334,14 @@ public class DirectChannel {
           retryInfo = null;
           retry = true;
         }
-        final List cons = new ArrayList(destinations.length);
-        ConnectExceptions ce = getConnections(mgr, msg, destinations, orderedMsg, retry, ackTimeout,
-            ackSDTimeout, cons);
+        final List<Connection> cons = new ArrayList<>(destinations.length);
+        ConnectExceptions ce;
+        try {
+          ce = getConnections(mgr, msg, destinations, orderedMsg,
+              retry, ackTimeout, ackSDTimeout, cons);
+        } finally {
+          allCons.addAll(cons);
+        }
         if (directReply && msg.getProcessorId() > 0) { // no longer a direct-reply message?
           directReply = false;
         }
@@ -382,8 +390,13 @@ public class DirectChannel {
           DMStats stats = getDMStats();
           List<?> sentCons; // used for cons we sent to this time
 
-          final BaseMsgStreamer ms = MsgStreamer.create(cons, msg, directReply, stats);
+          BaseMsgStreamer ms = null;
           try {
+            if (useNIOStream) {
+              ms = MsgChannelStreamer.create(cons, msg, directReply, stats);
+            } else {
+              ms = MsgStreamer.create(cons, msg, directReply, stats);
+            }
             startTime = 0;
             if (ackTimeout > 0) {
               startTime = System.currentTimeMillis();
@@ -409,7 +422,9 @@ public class DirectChannel {
                 ex);
           } finally {
             try {
-              ms.close();
+              if (ms != null) {
+                ms.close();
+              }
             } catch (IOException e) {
               throw new InternalGemFireException("Unknown error serializing message", e);
             }
@@ -453,16 +468,21 @@ public class DirectChannel {
         if (retryInfo != null) {
           this.conduit.getCancelCriterion().checkCancelInProgress(null);
         }
-      } while (retryInfo != null);
-    } finally {
-      if (interrupted) {
-        Thread.currentThread().interrupt();
+      } finally {
+        if (interrupted) {
+          Thread.currentThread().interrupt();
+        }
+        for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
+          Connection con = (Connection) it.next();
+          con.setInUse(false, 0, 0, 0, null);
+          this.conduit.releasePooledConnection(con);
+        }
+        allCons.clear();
+        if (interrupted) {
+          Thread.currentThread().interrupt();
+        }
       }
-      for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
-        Connection con = (Connection) it.next();
-        con.setInUse(false, 0, 0, 0, null);
-      }
-    }
+    } while (retryInfo != null);
     if (failedCe != null) {
       throw failedCe;
     }

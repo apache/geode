@@ -159,6 +159,7 @@ dependencies {
   compile('antlr:antlr:' + project.'antlr.version')
   compile('com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version')
   compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
+  compile('org.apache.commons:commons-pool2:' + project.'commons-pool2.version')
   compile('commons-io:commons-io:' + project.'commons-io.version')
   compile('commons-validator:commons-validator:' + project.'commons-validator.version')
   compile('commons-digester:commons-digester:' + project.'commons-digester.version')

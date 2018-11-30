@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -60,10 +61,15 @@ class DirectReplySender implements ReplySender {
       logger.trace(LogMarker.DM_VERBOSE, "Sending a direct reply {} to {}", msg,
           conn.getRemoteAddress());
     }
-    ArrayList<Connection> conns = new ArrayList<Connection>(1);
+    List<Connection> conns = new ArrayList<>(1);
     conns.add(conn);
-    MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS);
+    BaseMsgStreamer ms = null;
     try {
+      if (conn.useNIOStream()) {
+        ms = MsgChannelStreamer.create(conns, msg, false, DUMMY_STATS);
+      } else {
+        ms = MsgStreamer.create(conns, msg, false, DUMMY_STATS);
+      }
       ms.writeMessage();
       ConnectExceptions ce = ms.getConnectExceptions();
       if (ce != null && !ce.getMembers().isEmpty()) {
@@ -81,7 +87,9 @@ class DirectReplySender implements ReplySender {
           "Unknown error serializing message", ex);
     } finally {
       try {
-        ms.close();
+        if (ms != null) {
+          ms.close();
+        }
       } catch (IOException e) {
         throw new InternalGemFireException("Unknown error serializing message", e);
       }

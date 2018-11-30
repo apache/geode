@@ -1831,7 +1831,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
    */
-  boolean DEFAULT_CONSERVE_SOCKETS = true;
+  boolean DEFAULT_CONSERVE_SOCKETS = false;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#ROLES} property

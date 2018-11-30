@@ -31,7 +31,7 @@ import org.apache.geode.internal.ObjToByteArraySerializer;
  *
  */
 public class MsgOutputStream extends OutputStream implements ObjToByteArraySerializer {
-  private final ByteBuffer buffer;
+  final ByteBuffer buffer;
 
   /**
    * The caller of this constructor is responsible for managing the allocated instance.

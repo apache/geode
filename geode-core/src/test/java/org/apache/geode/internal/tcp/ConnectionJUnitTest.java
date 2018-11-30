@@ -52,6 +52,7 @@ public class ConnectionJUnitTest {
     DistributionManager distMgr = mock(DistributionManager.class);
     MembershipManager membership = mock(MembershipManager.class);
     TCPConduit conduit = mock(TCPConduit.class);
+    when(conduit.useNIOStream()).thenReturn(false);
 
     // mock the connection table and conduit
 

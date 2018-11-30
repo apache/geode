@@ -90,10 +90,7 @@ public class MsgStreamer extends OutputStream
   private long serStartTime;
   private final boolean directReply;
 
-  /**
-   * Called to free up resources used by this streamer after the streamer has produced its message.
-   */
-  protected void release() {
+  public void release() {
     MsgIdGenerator.release(this.msgId);
     this.buffer.clear();
     this.overflowBuf = null;
@@ -171,8 +168,8 @@ public class MsgStreamer extends OutputStream
       } else {
         // if there is a versioned stream created, then split remaining
         // connections to unversioned stream
-        final ArrayList<MsgStreamer> streamers =
-            new ArrayList<MsgStreamer>(versionToConnMap.size() + 1);
+        final List<BaseMsgStreamer> streamers =
+            new ArrayList<>(versionToConnMap.size() + 1);
         final int sendBufferSize = firstCon.getSendBufferSize();
         if (numCons > numVersioned) {
           // allocating list of numCons size so that as the result of
