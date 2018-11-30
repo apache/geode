@@ -3041,10 +3041,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             event.setConcurrentMapOldValue(result);
           }
           if (op == Operation.PUT_IF_ABSENT) {
-            if (result != null) {
-              // customers don't see this exception
-              throw new EntryNotFoundException("entry existed for putIfAbsent");
-            }
+            checkPutIfAbsentResult(event, value, result);
           } else if (op == Operation.REPLACE) {
             if (requireOldValue && result == null) {
               throw new EntryNotFoundException("entry not found for replace");
@@ -3058,6 +3055,28 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
     }
+  }
+
+  void checkPutIfAbsentResult(EntryEventImpl event, Object value, Object result) {
+    if (result != null) {
+      // we may see a non null result possibly due to retry
+      if (event.hasRetried() && putIfAbsentResultHasSameValue(value, result)) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("retried putIfAbsent and result is the value to be put,"
+              + " treat as a successful putIfAbsent");
+        }
+      } else {
+        // customers don't see this exception
+        throw new EntryNotFoundException("entry existed for putIfAbsent");
+      }
+    }
+  }
+
+  boolean putIfAbsentResultHasSameValue(Object value, Object result) {
+    if (Token.isInvalid(result)) {
+      return value == null;
+    }
+    return result.equals(value);
   }
 
   /**
