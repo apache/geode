@@ -42,7 +42,7 @@ dependencies {
 
   testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
 
-  runtimeOnly(project(':geode-old-versions'))
+  testRuntime(project(':geode-old-versions'))
 }
 
 test {

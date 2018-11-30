@@ -147,6 +147,10 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testRuntime(project(':geode-old-versions'))
+  
+
+  acceptanceTestRuntime(project(':geode-old-versions'))
 
 
   integrationTestCompile(project(':geode-core'))
@@ -203,9 +207,10 @@ dependencies {
   }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 
+  upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
   upgradeTestRuntime('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
-  upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing

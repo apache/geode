@@ -55,7 +55,7 @@ public class DecrByExecutor extends StringExecutor {
 
     byte[] decrArray = commandElems.get(DECREMENT_INDEX);
     String decrString = Coder.bytesToString(decrArray);
-    Long decrement;
+    long decrement;
 
     try {
       decrement = Long.parseLong(decrString);
@@ -83,7 +83,7 @@ public class DecrByExecutor extends StringExecutor {
 
     String stringValue = Coder.bytesToString(valueWrapper.toBytes());
 
-    Long value;
+    long value;
     try {
       value = Long.parseLong(stringValue);
     } catch (NumberFormatException e) {

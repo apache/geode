@@ -36,6 +36,7 @@ dependencies {
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
   compile('com.google.guava:guava:' + project.'guava.version')
@@ -50,6 +51,9 @@ dependencies {
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }
+
+
+  distributedTestRuntime(project(':geode-old-versions'))
 }
 
 distributedTest {

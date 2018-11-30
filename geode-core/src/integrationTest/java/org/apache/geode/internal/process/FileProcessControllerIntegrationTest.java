@@ -112,6 +112,9 @@ public class FileProcessControllerIntegrationTest {
     FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
     FileProcessController controller = new FileProcessController(params, pid, 2, MINUTES);
 
+    // create an empty dummy stale status file that needs to be deleted before we write our own
+    // "real" status file
+    statusFile.createNewFile();
     // when: status is called in one thread
     executorServiceRule.execute(() -> {
       try {
@@ -120,6 +123,7 @@ public class FileProcessControllerIntegrationTest {
         errorCollector.addError(e);
       }
     });
+    await().untilAsserted(() -> assertThat(statusFile.exists()).isEqualTo(false));
 
     // and: json is written to the status file
     FileUtils.writeStringToFile(statusFile, STATUS_JSON, Charset.defaultCharset());

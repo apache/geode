@@ -231,7 +231,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
     Object oldKey = mapKeyToIndexKey.get(mapKey);
     if (oldKey == null) {
       rg.addMapping(indexKey, value, entry);
-    } else if ((oldKey != null && !oldKey.equals(indexKey))) {
+    } else if (!oldKey.equals(indexKey)) {
       rg.addMapping(indexKey, value, entry);
       rg.removeMapping(oldKey, entry);
     }

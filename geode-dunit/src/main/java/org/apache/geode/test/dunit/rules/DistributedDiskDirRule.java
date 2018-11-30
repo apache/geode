@@ -31,7 +31,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.DiskDirRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
 import java.rmi.Naming;
 
@@ -22,8 +22,7 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
+import org.apache.geode.test.version.VersionManager;
 
 public class ChildVM {
 

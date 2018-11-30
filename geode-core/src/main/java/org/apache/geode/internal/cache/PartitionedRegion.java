@@ -1624,7 +1624,7 @@ public class PartitionedRegion extends LocalRegion
       logger.trace("getEntryInBucket: " + "Key key={} ({}) from: {} bucketId={}", key,
           key.hashCode(), targetNode, bucketStringForLogs(bucketId));
     }
-    Integer bucketIdInt = bucketId;
+    int bucketIdInt = bucketId;
     EntrySnapshot ret = null;
     int count = 0;
     RetryTimeKeeper retryTime = null;
@@ -4269,7 +4269,7 @@ public class PartitionedRegion extends LocalRegion
    * @return A set of keys from bucketNum or {@link Collections#EMPTY_SET}if no keys can be found.
    */
   public Set getBucketKeys(int bucketNum, boolean allowTombstones) {
-    Integer buck = bucketNum;
+    int buck = bucketNum;
     final int retryAttempts = calcRetry();
     Set ret = null;
     int count = 0;
@@ -5631,7 +5631,7 @@ public class PartitionedRegion extends LocalRegion
   void invalidateInBucket(final EntryEventImpl event) throws EntryNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    final Integer bucketId = event.getKeyInfo().getBucketId();
+    final int bucketId = event.getKeyInfo().getBucketId();
     assert bucketId != KeyInfo.UNKNOWN_BUCKET;
     final InternalDistributedMember targetNode = getOrCreateNodeForBucketWrite(bucketId, null);
 
@@ -8052,7 +8052,7 @@ public class PartitionedRegion extends LocalRegion
     int retryAttempts = calcRetry();
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       Set bucketSet = null;
-      Integer lbucket = bucket;
+      int lbucket = bucket;
       final RetryTimeKeeper retryTime = new RetryTimeKeeper(Integer.MAX_VALUE);
       InternalDistributedMember bucketNode = getOrCreateNodeForBucketRead(lbucket);
       for (int count = 0; count <= retryAttempts; count++) {
@@ -9761,7 +9761,7 @@ public class PartitionedRegion extends LocalRegion
   public void updateEntryVersionInBucket(EntryEventImpl event) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    final Integer bucketId = event.getKeyInfo().getBucketId();
+    final int bucketId = event.getKeyInfo().getBucketId();
     assert bucketId != KeyInfo.UNKNOWN_BUCKET;
     final InternalDistributedMember targetNode = getOrCreateNodeForBucketWrite(bucketId, null);
 

@@ -28,7 +28,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNull;

@@ -404,7 +404,7 @@ public abstract class AbstractBaseController implements InitializingBean {
 
   Region<String, String> getQueryStore(final String namePath) {
     return ValidationUtils.returnValueThrowOnNull(getCache().getInternalRegion(namePath),
-        new GemfireRestException(String.format("Query store does not exist!", namePath)));
+        new GemfireRestException(String.format("Query store (%1$s) does not exist!", namePath)));
   }
 
   protected String getQueryIdValue(final String regionNamePath, final String key) {
@@ -704,9 +704,6 @@ public abstract class AbstractBaseController implements InitializingBean {
                 "Server has encountered error (illegal or inappropriate arguments).", e);
           }
         } else {
-
-          Assert.state(typeValue != null,
-              "The class type of the object to persist in GemFire must be specified in JSON content using the '@type' property!");
           Assert.state(
               ClassUtils.isPresent(String.valueOf(typeValue),
                   Thread.currentThread().getContextClassLoader()),

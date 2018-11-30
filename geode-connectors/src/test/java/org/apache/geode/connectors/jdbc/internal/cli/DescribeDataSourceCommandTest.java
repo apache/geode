@@ -327,7 +327,7 @@ public class DescribeDataSourceCommandTest {
   }
 
   @Test
-  public void describeDataSourceWithRegionsUsingItReturnsResultWithNoRegionsUsingIt() {
+  public void describeDataSourceWithNoRegionsUsingItReturnsResultWithNoRegionsUsingIt() {
     RegionConfig regionConfig = mock(RegionConfig.class);
     when(regionConfig.getCustomRegionElements())
         .thenReturn(Collections.singletonList(mock(RegionMapping.class)));
