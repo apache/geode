@@ -13,6 +13,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
@@ -48,12 +49,16 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
       List<JndiBindingsType.JndiBinding> bindings =
           service.getCacheConfig("cluster").getJndiBindings();
       JndiBindingsType.JndiBinding binding = CacheElement.findElement(bindings, dataSourceName);
-      // fail fast when CC is running and if required binding not found assuming that
-      // when CC is running then every configuration goes through CC
       if (binding == null) {
         throw new EntityNotFoundException(
             CliStrings.format("Data source named \"{0}\" does not exist.", dataSourceName),
             ifExists);
+      }
+
+      if (!isDataSource(binding)) {
+        return ResultModel.createError(CliStrings.format(
+            "Data source named \"{0}\" does not exist. A jndi-binding was found with that name.",
+            dataSourceName));
       }
     }
 
@@ -88,6 +93,11 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
         return ResultModel.createError("No members found and cluster configuration disabled.");
       }
     }
+  }
+
+  private boolean isDataSource(JndiBindingsType.JndiBinding binding) {
+    return CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType().equals(binding.getType())
+        || CreateJndiBindingCommand.DATASOURCE_TYPE.POOLED.getType().equals(binding.getType());
   }
 
   @Override

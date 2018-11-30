@@ -29,6 +29,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -105,10 +106,42 @@ public class DestroyDataSourceCommandTest {
   }
 
   @Test
+  public void whenClusterConfigRunningAndJndiBindingFoundThenError() {
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.MANAGED.getType());
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
+        .containsOutput(
+            "Data source named \\\"name\\\" does not exist. A jndi-binding was found with that name.");
+  }
+
+  @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
     List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
     JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
     jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
+        .containsOutput("No members found.")
+        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+
+    verify(ccService).updateCacheConfig(any(), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
+  }
+
+  @Test
+  public void whenNoMembersFoundAndClusterConfigRunningWithPooledTypeThenUpdateClusterConfig() {
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.POOLED.getType());
     bindings.add(jndiBinding);
     doReturn(bindings).when(cacheConfig).getJndiBindings();
 
@@ -226,6 +259,7 @@ public class DestroyDataSourceCommandTest {
     List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
     JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
     jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     bindings.add(jndiBinding);
     doReturn(bindings).when(cacheConfig).getJndiBindings();
 
