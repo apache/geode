@@ -39,20 +39,19 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowMetricsCommand extends InternalGfshCommand {
+public class ShowMetricsCommand extends GfshCommand {
   enum Category {
     cache,
     cacheserver,
@@ -100,7 +99,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.ShowMetricsInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result showMetrics(
+  public ResultModel showMetrics(
       @CliOption(key = {CliStrings.MEMBER}, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.SHOW_METRICS__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = {CliStrings.SHOW_METRICS__REGION}, optionContext = ConverterHint.REGION_PATH,
@@ -116,22 +115,22 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     StringBuilder csvBuilder =
         StringUtils.isEmpty(export_to_report_to) ? null : prepareCsvBuilder();
 
-    ResultData resultData;
+    ResultModel result;
     if (regionName != null && memberNameOrId != null) {
-      resultData = getRegionMetricsFromMember(regionName, member, export_to_report_to, categories,
+      result = getRegionMetricsFromMember(regionName, member, export_to_report_to, categories,
           csvBuilder);
     } else if (regionName != null) {
-      resultData =
+      result =
           getDistributedRegionMetrics(regionName, export_to_report_to, categories, csvBuilder);
     } else if (memberNameOrId != null) {
       int cacheServerPort = rawCacheServerPort == null ? -1 : rawCacheServerPort;
-      resultData =
+      result =
           getMemberMetrics(member, export_to_report_to, categories, cacheServerPort, csvBuilder);
     } else {
-      resultData = getSystemWideMetrics(export_to_report_to, categories, csvBuilder);
+      result = getSystemWideMetrics(export_to_report_to, categories, csvBuilder);
     }
 
-    return ResultBuilder.buildResult(resultData);
+    return result;
   }
 
   /**
@@ -140,19 +139,18 @@ public class ShowMetricsCommand extends InternalGfshCommand {
    * @return ResultData with required System wide statistics or ErrorResultData if DS MBean is not
    *         found to gather metrics
    */
-  private ResultData getSystemWideMetrics(String export_to_report_to, String[] categoriesArr,
+  private ResultModel getSystemWideMetrics(String export_to_report_to, String[] categoriesArr,
       StringBuilder csvBuilder) {
     final ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMxBean = managementService.getDistributedSystemMXBean();
     if (dsMxBean == null) {
       String errorMessage =
           CliStrings.format(CliStrings.SHOW_METRICS__ERROR, "Distributed System MBean not found");
-      return ResultBuilder.createErrorResultData().addLine(errorMessage);
+      return ResultModel.createError(errorMessage);
     }
 
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData section = crd.addSection();
-    TabularResultData metricsTable = section.addTable();
+    ResultModel result = new ResultModel();
+    TabularResultModel metricsTable = result.addTable("cluster-metrics");
 
     Set<Category> categoriesToDisplay = ArrayUtils.isNotEmpty(categoriesArr)
         ? getCategorySet(categoriesArr) : new HashSet<>(SYSTEM_METRIC_CATEGORIES);
@@ -161,11 +159,10 @@ public class ShowMetricsCommand extends InternalGfshCommand {
 
     writeSystemWideMetricValues(dsMxBean, csvBuilder, metricsTable, categoriesToDisplay);
     if (StringUtils.isNotEmpty(export_to_report_to)) {
-      crd.addAsFile(export_to_report_to, csvBuilder.toString(),
-          "Cluster wide metrics exported to {0}.", false);
+      result.addFile(export_to_report_to, csvBuilder.toString());
     }
 
-    return crd;
+    return result;
   }
 
   /**
@@ -175,7 +172,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
    *         found to gather metrics
    * @throws ResultDataException if building result fails
    */
-  private ResultData getMemberMetrics(DistributedMember distributedMember,
+  private ResultModel getMemberMetrics(DistributedMember distributedMember,
       String export_to_report_to, String[] categoriesArr, int cacheServerPort,
       StringBuilder csvBuilder) throws ResultDataException {
     final SystemManagementService managementService =
@@ -190,7 +187,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     if (memberMxBean == null) {
       String errorMessage = CliStrings.format(CliStrings.SHOW_METRICS__ERROR, "Member MBean for "
           + MBeanJMXAdapter.getMemberNameOrId(distributedMember) + " not found");
-      return ResultBuilder.createErrorResultData().addLine(errorMessage);
+      return ResultModel.createError(errorMessage);
     }
 
     if (cacheServerPort != -1) {
@@ -201,15 +198,16 @@ public class ShowMetricsCommand extends InternalGfshCommand {
         ErrorResultData erd = ResultBuilder.createErrorResultData();
         erd.addLine(CliStrings.format(CliStrings.SHOW_METRICS__CACHE__SERVER__NOT__FOUND,
             cacheServerPort, MBeanJMXAdapter.getMemberNameOrId(distributedMember)));
-        return erd;
+        return ResultModel.createError(
+            CliStrings.format(CliStrings.SHOW_METRICS__CACHE__SERVER__NOT__FOUND,
+                cacheServerPort, MBeanJMXAdapter.getMemberNameOrId(distributedMember)));
       }
     }
 
     JVMMetrics jvmMetrics = memberMxBean.showJVMMetrics();
 
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData section = crd.addSection();
-    TabularResultData metricsTable = section.addTable();
+    ResultModel result = new ResultModel();
+    TabularResultModel metricsTable = result.addTable("member-metrics");
     metricsTable.setHeader("Member Metrics");
 
     List<Category> fullCategories =
@@ -224,11 +222,10 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     }
 
     if (StringUtils.isNotEmpty(export_to_report_to)) {
-      crd.addAsFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null,
-          "Member metrics exported to {0}.", false);
+      result.addFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null);
     }
-    return crd;
 
+    return result;
   }
 
   /**
@@ -237,7 +234,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
    * @return ResultData containing the table
    * @throws ResultDataException if building result fails
    */
-  private ResultData getDistributedRegionMetrics(String regionName, String export_to_report_to,
+  private ResultModel getDistributedRegionMetrics(String regionName, String export_to_report_to,
       String[] categoriesArr, StringBuilder csvBuilder) throws ResultDataException {
 
     final ManagementService managementService = getManagementService();
@@ -245,16 +242,13 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     DistributedRegionMXBean regionMxBean = managementService.getDistributedRegionMXBean(regionName);
 
     if (regionMxBean == null) {
-      ErrorResultData erd = ResultBuilder.createErrorResultData();
       String errorMessage = CliStrings.format(CliStrings.SHOW_METRICS__ERROR,
           "Distributed Region MBean for " + regionName + " not found");
-      erd.addLine(errorMessage);
-      return erd;
+      return ResultModel.createError(errorMessage);
     }
 
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData section = crd.addSection();
-    TabularResultData metricsTable = section.addTable();
+    ResultModel result = new ResultModel();
+    TabularResultModel metricsTable = result.addTable("metrics");
     metricsTable.setHeader("Cluster-wide Region Metrics");
 
     Set<Category> categoriesToDisplay = ArrayUtils.isNotEmpty(categoriesArr)
@@ -263,11 +257,10 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     writeSystemRegionMetricValues(regionMxBean, metricsTable, csvBuilder, categoriesToDisplay);
 
     if (StringUtils.isNotEmpty(export_to_report_to)) {
-      crd.addAsFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null,
-          "Aggregate Region Metrics exported to {0}.", false);
+      result.addFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null);
     }
 
-    return crd;
+    return result;
   }
 
   /**
@@ -277,12 +270,11 @@ public class ShowMetricsCommand extends InternalGfshCommand {
    *         found to gather metrics
    * @throws ResultDataException if building result fails
    */
-  private ResultData getRegionMetricsFromMember(String regionName,
+  private ResultModel getRegionMetricsFromMember(String regionName,
       DistributedMember distributedMember, String export_to_report_to, String[] categoriesArr,
       StringBuilder csvBuilder) throws ResultDataException {
 
-    final SystemManagementService managementService =
-        (SystemManagementService) getManagementService();
+    final SystemManagementService managementService = getManagementService();
 
     ObjectName regionMBeanName =
         managementService.getRegionMBeanName(distributedMember, regionName);
@@ -290,17 +282,14 @@ public class ShowMetricsCommand extends InternalGfshCommand {
         managementService.getMBeanInstance(regionMBeanName, RegionMXBean.class);
 
     if (regionMxBean == null) {
-      ErrorResultData erd = ResultBuilder.createErrorResultData();
       String errorMessage = CliStrings.format(CliStrings.SHOW_METRICS__ERROR,
           "Region MBean for " + regionName + " on member "
               + MBeanJMXAdapter.getMemberNameOrId(distributedMember) + " not found");
-      erd.addLine(errorMessage);
-      return erd;
+      return ResultModel.createError(errorMessage);
     }
 
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData section = crd.addSection();
-    TabularResultData metricsTable = section.addTable();
+    ResultModel result = new ResultModel();
+    TabularResultModel metricsTable = result.addTable("metrics");
     metricsTable.setHeader("Metrics for region:" + regionName + " On Member "
         + MBeanJMXAdapter.getMemberNameOrId(distributedMember));
 
@@ -309,15 +298,15 @@ public class ShowMetricsCommand extends InternalGfshCommand {
 
     writeRegionMetricValues(regionMxBean, metricsTable, csvBuilder, categoriesToDisplay);
     if (StringUtils.isNotEmpty(export_to_report_to)) {
-      crd.addAsFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null,
-          "Region Metrics exported to {0}.", false);
+      result.addFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null);
     }
 
-    return crd;
+    return result;
   }
 
   private void writeSystemWideMetricValues(DistributedSystemMXBean dsMxBean,
-      StringBuilder csvBuilder, TabularResultData metricsTable, Set<Category> categoriesToDisplay) {
+      StringBuilder csvBuilder, TabularResultModel metricsTable,
+      Set<Category> categoriesToDisplay) {
     if (categoriesToDisplay.contains(Category.cluster)) {
       writeToTableAndCsv(metricsTable, "cluster", "totalHeapSize", dsMxBean.getTotalHeapSize(),
           csvBuilder);
@@ -353,7 +342,8 @@ public class ShowMetricsCommand extends InternalGfshCommand {
   }
 
   private void writeMemberMetricValues(MemberMXBean memberMxBean, JVMMetrics jvmMetrics,
-      TabularResultData metricsTable, StringBuilder csvBuilder, Set<Category> categoriesToDisplay) {
+      TabularResultModel metricsTable, StringBuilder csvBuilder,
+      Set<Category> categoriesToDisplay) {
     if (categoriesToDisplay.contains(Category.member)) {
       writeToTableAndCsv(metricsTable, "member", "upTime", memberMxBean.getMemberUpTime(),
           csvBuilder);
@@ -512,7 +502,8 @@ public class ShowMetricsCommand extends InternalGfshCommand {
   }
 
   private void writeCacheServerMetricValues(CacheServerMXBean csMxBean,
-      TabularResultData metricsTable, StringBuilder csvBuilder, Set<Category> categoriesToDisplay) {
+      TabularResultModel metricsTable, StringBuilder csvBuilder,
+      Set<Category> categoriesToDisplay) {
     if (categoriesToDisplay.contains(Category.cacheserver)) {
 
       writeToTableAndCsv(metricsTable, "cacheserver", "clientConnectionCount",
@@ -563,7 +554,8 @@ public class ShowMetricsCommand extends InternalGfshCommand {
   }
 
   private void writeSystemRegionMetricValues(DistributedRegionMXBean regionMxBean,
-      TabularResultData metricsTable, StringBuilder csvBuilder, Set<Category> categoriesToDisplay) {
+      TabularResultModel metricsTable, StringBuilder csvBuilder,
+      Set<Category> categoriesToDisplay) {
     if (categoriesToDisplay.contains(Category.cluster)) {
       writeToTableAndCsv(metricsTable, "cluster", "member count", regionMxBean.getMemberCount(),
           csvBuilder);
@@ -634,7 +626,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     }
   }
 
-  private void writeRegionMetricValues(RegionMXBean regionMxBean, TabularResultData metricsTable,
+  private void writeRegionMetricValues(RegionMXBean regionMxBean, TabularResultModel metricsTable,
       StringBuilder csvBuilder, Set<Category> categoriesToDisplay) {
     if (categoriesToDisplay.contains(Category.region)) {
       writeToTableAndCsv(metricsTable, "region", "lastModifiedTime",
@@ -701,7 +693,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     }
   }
 
-  private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
+  private void writeToTableAndCsv(TabularResultModel metricsTable, String type, String metricName,
       String metricValue, StringBuilder csvBuilder) {
     metricsTable.accumulate(CliStrings.SHOW_METRICS__TYPE__HEADER, type);
     metricsTable.accumulate(CliStrings.SHOW_METRICS__METRIC__HEADER, metricName);
@@ -710,7 +702,7 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     writeToCsvIfNecessary(type, metricName, String.valueOf(metricValue), csvBuilder);
   }
 
-  private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
+  private void writeToTableAndCsv(TabularResultModel metricsTable, String type, String metricName,
       String[] metricValue, StringBuilder csvBuilder) {
     if (ArrayUtils.isEmpty(metricValue)) {
       return;
@@ -725,12 +717,12 @@ public class ShowMetricsCommand extends InternalGfshCommand {
     }
   }
 
-  private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
+  private void writeToTableAndCsv(TabularResultModel metricsTable, String type, String metricName,
       long metricValue, StringBuilder csvBuilder) {
     writeToTableAndCsv(metricsTable, type, metricName, String.valueOf(metricValue), csvBuilder);
   }
 
-  private void writeToTableAndCsv(TabularResultData metricsTable, String type, String metricName,
+  private void writeToTableAndCsv(TabularResultModel metricsTable, String type, String metricName,
       double metricValue, StringBuilder csvBuilder) {
     writeToTableAndCsv(metricsTable, type, metricName, String.valueOf(metricValue), csvBuilder);
   }
