@@ -60,10 +60,17 @@ fi
 
 echo -n "${FULL_PRODUCT_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
 
-DEFAULT_GRADLE_TASK_OPTIONS="--parallel --console=plain --no-daemon"
+
+if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
+  PARALLEL_GRADLE="--parallel"
+else
+  PARALLEL_GRADLE=""
+fi
+DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon"
+GRADLE_SKIP_TASK_OPTIONS=""
 
 SSHKEY_FILE="instance-data/sshkey"
-SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60"
 
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
 
@@ -86,10 +93,12 @@ if [ -v CALL_STACK_TIMEOUT ]; then
   ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
 fi
 
-GRADLE_COMMAND="./gradlew \
+GRADLE_ARGS="\
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
+    ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS} \
-    build install -x test"
+    build install javadoc spotlessCheck rat -x test"
 
-echo "${GRADLE_COMMAND}"
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ${GRADLE_COMMAND}"
+EXEC_COMMAND="mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ./gradlew ${GRADLE_ARGS}"
+echo "${EXEC_COMMAND}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
