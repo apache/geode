@@ -12,19 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetectorDUnitTest;
 import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-/**
- * Distributed tests for show deadlock command in {@link ShowDeadlockCommand}.
- *
- * @see GemFireDeadlockDetectorDUnitTest
- */
+@Category({GfshTest.class, LoggingTest.class})
+public class ShowDeadlockOverHttpDUnitTest extends ShowDeadlockDistributedTestBase {
 
-@Category({GfshTest.class})
-public class ShowDeadlockDUnitTest extends ShowDeadlockDistributedTestBase {
+  @Override
+  public void connect() throws Exception {
+    if (!gfsh.isConnected()) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    }
+  }
+
 }

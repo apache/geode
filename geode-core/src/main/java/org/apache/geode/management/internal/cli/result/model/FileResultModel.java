@@ -113,8 +113,7 @@ public class FileResultModel {
 
     Gfsh gfsh = Gfsh.getCurrentInstance();
     if (file.exists()) {
-      String fileExistsMessage = String.format("File with name \"%s\" already exists in \"%s\".",
-          filename, directory.getAbsolutePath());
+      String fileExistsMessage = String.format("File \"%s\" already exists", filename);
       if (gfsh != null && !gfsh.isQuietMode()) {
         fileExistsMessage += " Overwrite? " + options + " : ";
         String interaction = gfsh.interact(fileExistsMessage);
