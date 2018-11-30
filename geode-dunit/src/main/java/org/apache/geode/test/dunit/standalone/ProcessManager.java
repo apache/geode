@@ -182,8 +182,45 @@ public class ProcessManager {
     ioTransport.start();
   }
 
+  private String removeModulesFromPath(String classpath, String... modules) {
+    for (String module : modules) {
+      classpath = removeModuleFromGradlePath(classpath, module);
+      classpath = removeModuleFromEclipsePath(classpath, module);
+    }
+    return classpath;
+  }
+
+  private String removeModuleFromEclipsePath(String classpath, String module) {
+    String buildDir = File.separator + module + File.separator + "out" + File.separator;
+
+    String mainClasses = buildDir + "production";
+
+    classpath = removeFromPath(classpath, mainClasses);
+    return classpath;
+  }
+
+  private String removeModuleFromGradlePath(String classpath, String module) {
+    // geode-cq/build/classes/java/main
+    String buildDir = File.separator + module + File.separator + "build" + File.separator;
+
+    String mainClasses = buildDir + "classes" + File.separator + "java" + File.separator + "main";
+    classpath = removeFromPath(classpath, mainClasses);
+
+    String libDir = buildDir + "libs";
+    classpath = removeFromPath(classpath, libDir);
+
+    String mainResources = buildDir + "resources" + File.separator + "main";
+    classpath = removeFromPath(classpath, mainResources);
+
+    String generatedResources = buildDir + "generated-resources" + File.separator + "main";
+    classpath = removeFromPath(classpath, generatedResources);
+
+    return classpath;
+  }
+
   private String[] buildJavaCommand(int vmNum, int namingPort, String version) {
-    String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+    String cmd = System.getProperty("java.home") + File.separator
+        + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
     String separator = File.separator;
     String classPath;
@@ -191,27 +228,10 @@ public class ProcessManager {
       classPath = dunitClasspath;
     } else {
       // remove current-version product classes and resources from the classpath
-      String buildDir = separator + "geode-core" + separator + "build" + separator;
-
-      String mainClasses = buildDir + "classes" + separator + "main";
-      dunitClasspath = removeFromPath(dunitClasspath, mainClasses);
-
-      dunitClasspath = removeFromPath(dunitClasspath, "geode-core/out/production");
-
-      String mainResources = buildDir + "resources" + separator + "main";
-      dunitClasspath = removeFromPath(dunitClasspath, mainResources);
-
-      String generatedResources = buildDir + "generated-resources" + separator + "main";
-      dunitClasspath = removeFromPath(dunitClasspath, generatedResources);
-
-      buildDir = separator + "geode-common" + separator + "build" + separator + "classes"
-          + separator + "main";
-      dunitClasspath = removeFromPath(dunitClasspath, buildDir);
-
-      buildDir = separator + "geode-json" + separator + "build" + separator + "classes" + separator
-          + "main";
-      dunitClasspath = removeFromPath(dunitClasspath, buildDir);
-
+      dunitClasspath =
+          removeModulesFromPath(dunitClasspath, "geode-core", "geode-cq", "geode-common",
+              "geode-json",
+              "geode-wan");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
 

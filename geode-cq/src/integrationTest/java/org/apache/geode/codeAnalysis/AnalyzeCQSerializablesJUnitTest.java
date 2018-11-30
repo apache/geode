@@ -14,9 +14,9 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import org.apache.geode.cq.internal.CQDistributedSystemService;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cq.internal.CQDistributedSystemService;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
