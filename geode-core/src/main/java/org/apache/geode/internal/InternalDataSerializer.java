@@ -313,8 +313,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (name.startsWith(newPackage)) {
       return oldPackage + name.substring(newPackage.length());
     }
-    if (out instanceof VersionedDataOutputStream) {
-      VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
+    if (out instanceof VersionedDataStream) {
+      VersionedDataStream vout = (VersionedDataStream) out;
       Version version = vout.getVersion();
       if (null != version) {
         if (version.compareTo(Version.GEODE_190) < 0) {
