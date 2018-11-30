@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.ByteArrayOutputStream;
@@ -33,7 +32,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 public class DescribeOfflineDiskStoreCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE,
       help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel describeOfflineDiskStore(
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
@@ -43,6 +42,13 @@ public class DescribeOfflineDiskStoreCommand extends SingleGfshCommand {
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP) Boolean listPdxTypes,
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME__HELP) String regionName) {
+
+    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
+    if (validatedDirectories != null) {
+      throw new IllegalArgumentException(
+          "Could not find " + CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS + ": \""
+              + validatedDirectories + "\"");
+    }
 
     try {
       final File[] dirs = new File[diskDirs.length];

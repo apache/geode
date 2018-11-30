@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.BufferedReader;
@@ -38,7 +37,7 @@ import org.apache.geode.management.internal.cli.util.DiskStoreValidater;
 
 public class ValidateDiskStoreCommand extends GfshCommand {
   @CliCommand(value = CliStrings.VALIDATE_DISK_STORE, help = CliStrings.VALIDATE_DISK_STORE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel validateDiskStore(
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.VALIDATE_DISK_STORE__NAME__HELP) String diskStoreName,
@@ -46,6 +45,13 @@ public class ValidateDiskStoreCommand extends GfshCommand {
           help = CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__J,
           help = CliStrings.VALIDATE_DISK_STORE__J__HELP) String[] jvmProps) {
+
+    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
+    if (validatedDirectories != null) {
+      throw new IllegalArgumentException(
+          "Could not find " + CliStrings.VALIDATE_DISK_STORE__DISKDIRS + ": \""
+              + validatedDirectories + "\"");
+    }
 
     ResultModel result = new ResultModel();
     InfoResultModel infoResult = result.addInfo();
