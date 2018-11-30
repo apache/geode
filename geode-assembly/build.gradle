@@ -81,7 +81,7 @@ gradle.taskGraph.whenReady( { graph ->
 repositories {
   ivy {
     url 'https://archive.apache.org/'
-    layout 'pattern', {
+    patternLayout {
       artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
     }
   }
