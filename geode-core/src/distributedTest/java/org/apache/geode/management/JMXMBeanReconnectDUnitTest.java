@@ -87,9 +87,7 @@ public class JMXMBeanReconnectDUnitTest {
   public void before() throws Exception {
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
 
-    System.out.println("GEODE-6107: waiting for locator to start");
     locator1.waitTilLocatorFullyStarted();
-    System.out.println("GEODE-6107: done waiting for locator to start");
 
     locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
 
