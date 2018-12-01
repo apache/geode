@@ -15,9 +15,12 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -76,6 +79,21 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
         .containsOutput("data-source", "name1").containsOutput("table", "table1")
         .containsOutput("pdx-name", "class1");
+  }
+
+  @Test
+  public void whenMemberExistsWithRegionPathFunctionIsCalledWithNoSlashRegionName() {
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
+    when(rc.getResult()).thenReturn(
+        Collections.singletonList(
+            new CliFunctionResult("server-1", mock(RegionMapping.class), "success")));
+
+    command.describeMapping("/regionName");
+
+    verify(command, times(1)).executeFunctionAndGetFunctionResult(any(), eq("regionName"), any());
   }
 
   @Test

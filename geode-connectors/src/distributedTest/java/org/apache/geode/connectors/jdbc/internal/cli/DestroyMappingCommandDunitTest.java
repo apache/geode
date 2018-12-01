@@ -95,10 +95,32 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   }
 
   @Test
-  public void destroysAsyncMapping() throws Exception {
+  public void destroysAsyncMapping() {
     setupAsyncMapping();
     CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
     csb.addOption(DESTROY_MAPPING__REGION_NAME, REGION_NAME);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    locator.invoke(() -> {
+      assertThat(getRegionMappingFromClusterConfig()).isNull();
+      validateAsyncEventQueueRemovedFromClusterConfig();
+      validateRegionAlteredInClusterConfig(false);
+    });
+
+    server.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache);
+      verifyRegionAltered(cache);
+      verifyQueueRemoved(cache);
+    });
+  }
+
+  @Test
+  public void destroysAsyncMappingWithRegionPath() {
+    setupAsyncMapping();
+    CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
+    csb.addOption(DESTROY_MAPPING__REGION_NAME, "/" + REGION_NAME);
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -121,6 +143,28 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     setupSynchronousMapping();
     CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
     csb.addOption(DESTROY_MAPPING__REGION_NAME, REGION_NAME);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    locator.invoke(() -> {
+      assertThat(getRegionMappingFromClusterConfig()).isNull();
+      validateAsyncEventQueueRemovedFromClusterConfig();
+      validateRegionAlteredInClusterConfig(true);
+    });
+
+    server.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache);
+      verifyRegionAltered(cache);
+      verifyQueueRemoved(cache);
+    });
+  }
+
+  @Test
+  public void destroysSynchronousMappingWithRegionPath() throws Exception {
+    setupSynchronousMapping();
+    CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
+    csb.addOption(DESTROY_MAPPING__REGION_NAME, "/" + REGION_NAME);
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
