@@ -15,14 +15,30 @@
  * limitations under the License.
  */
 
-// TODO make pom only deployment
-// TODO exclude other modules not required for client
+plugins {
+  id "io.spring.dependency-management" version "1.0.0.RC2"
+}
 
-dependencies {
-  compile(project(':geode-core')) {
-    exclude group: 'org.apache.shiro'
-  }
-  compile(project(':geode-cq')) {
-    exclude group: 'org.apache.geode', module: 'geode-core'
+jar.enabled = false
+
+dependencyManagement {
+  dependencies {
+    dependencySet(group: project.group, version: project.version) {
+      entry('geode-core') {
+        exclude 'org.apache.shiro:shiro-core'
+        exclude 'com.github.stephenc.findbugs:findbugs-annotations'
+      }
+      entry('geode-cq')
+    }
   }
 }
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      pom.packaging 'pom'
+      artifacts = []
+    }
+  }
+}
+
