@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs.ALWAYS;
-import static org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope.ALL_LOGGERS;
-import static org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope.GEODE_AND_APPLICATION_LOGGERS;
-import static org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope.GEODE_AND_SECURITY_LOGGERS;
-import static org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope.GEODE_LOGGERS;
 import static org.apache.geode.internal.logging.Configuration.MAIN_LOGGER_NAME;
 import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
+import static org.apache.geode.internal.logging.LogLevelUpdateOccurs.ALWAYS;
+import static org.apache.geode.internal.logging.LogLevelUpdateScope.ALL_LOGGERS;
+import static org.apache.geode.internal.logging.LogLevelUpdateScope.GEODE_AND_APPLICATION_LOGGERS;
+import static org.apache.geode.internal.logging.LogLevelUpdateScope.GEODE_AND_SECURITY_LOGGERS;
+import static org.apache.geode.internal.logging.LogLevelUpdateScope.GEODE_LOGGERS;
 import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
 import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
 import static org.apache.geode.internal.logging.log4j.Log4jAgent.getLoggerConfig;

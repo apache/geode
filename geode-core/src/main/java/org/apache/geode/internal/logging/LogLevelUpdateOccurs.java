@@ -14,22 +14,24 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.ConfigurationInfo.getConfigurationInfo;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.LoggingTest;
-
 /**
- * Integration tests for {@link ConfigurationInfo}.
+ * Controls whether or not log level updates should be triggered. Default is
+ * {@link #ONLY_WHEN_USING_DEFAULT_CONFIG}.
  */
-@Category(LoggingTest.class)
-public class ConfigurationInfoIntegrationTest {
+public enum LogLevelUpdateOccurs {
+  NEVER,
+  ONLY_WHEN_USING_DEFAULT_CONFIG,
+  ALWAYS;
 
-  @Test
-  public void getConfigurationInfoContainsLog4j2Xml() {
-    assertThat(getConfigurationInfo()).contains("log4j2.xml");
+  public boolean never() {
+    return this == NEVER;
+  }
+
+  public boolean always() {
+    return this == ALWAYS;
+  }
+
+  public boolean onlyWhenUsingDefaultConfig() {
+    return this == ONLY_WHEN_USING_DEFAULT_CONFIG;
   }
 }

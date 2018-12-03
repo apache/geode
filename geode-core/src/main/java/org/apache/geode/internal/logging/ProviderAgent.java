@@ -14,26 +14,56 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
+import org.apache.geode.distributed.ConfigurationProperties;
 
 /**
- * Provides custom configuration of the logging backend for Geode logging.
+ * Provides custom configuration of the logging backend for Geode Logging.
  */
 public interface ProviderAgent {
 
   /**
-   * Updates the logging backend with custom configuration.
+   * Updates the logging backend with any custom configuration. Invoked by Geode during
+   * {@code Cache} creation and anytime Geode configuration of logging changes, such as when
+   * {@link ConfigurationProperties#LOG_LEVEL} is adjusted.
    */
   void configure(final LogConfig logConfig, final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope);
 
   /**
-   * Removes any custom configuration from the logging backend.
+   * Removes any custom configuration from the logging backend. Invoked by Geode after closing
+   * the {@code Cache}.
    */
   void cleanup();
 
-  void enableLoggingToStandardOutput();
+  /**
+   * Returns configuration info to be logged as part of the Geode Logging {@link Banner}. Default
+   * implementation returns the class name. Geode out-of-box returns the path to the log4j2.xml
+   * configuration file.
+   */
+  default String getConfigurationInfo() {
+    return getClass().getName();
+  }
 
-  void disableLoggingToStandardOutput();
+  /**
+   * Optional: Invoked by Geode during {@code Cache} creation if
+   * {@link ConfigurationProperties#LOG_FILE} is specified.
+   *
+   * <p>
+   * Geode out-of-box disables logging to stdout when {@code Cache} creation starts logging to a
+   * file.
+   */
+  default void disableLoggingToStandardOutput() {
+    // override to disable logging to stdout
+  }
+
+  /**
+   * Optional: Invoked by Geode when closing a {@code Cache} that was logging to a file.
+   *
+   * <p>
+   * Geode out-of-box re-enables logging to stdout after closing a {@code Cache} that was logging
+   * to a file.
+   */
+  default void enableLoggingToStandardOutput() {
+    // override to enable logging to stdout
+  }
 }

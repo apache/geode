@@ -24,7 +24,6 @@ import java.util.Optional;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.TestingOnly;
-import org.apache.geode.internal.Banner;
 
 /**
  * Configures the logging {@code Configuration} and provides lifecycle to Geode logging.
@@ -80,7 +79,7 @@ public class LoggingSession implements SessionContext {
     configuration.disableLoggingToStandardOutputIfLoggingToFile();
 
     if (logBanner) {
-      logger.info(Banner.getString(null));
+      logger.info(new Banner(configuration.getConfigurationInfo()).getString());
     }
     if (logConfiguration) {
       String configInfo = configuration.getLogConfigSupplier().getLogConfig().toLoggerString();
