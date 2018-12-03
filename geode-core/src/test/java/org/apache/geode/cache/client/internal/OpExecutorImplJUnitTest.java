@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -76,7 +77,7 @@ public class OpExecutorImplJUnitTest {
 
   @Before
   public void setUp() {
-    this.logger = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
+    this.logger = new LocalLogWriter(FINE.intLevel(), System.out);
     this.endpointManager = new DummyEndpointManager();
     this.queueManager = new DummyQueueManager();
     this.manager = new DummyManager();

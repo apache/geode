@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
@@ -38,6 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -84,7 +84,6 @@ import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -700,7 +699,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       if (locator != null) {
         locator.stop();
       }
-      LogWriter bLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+      LogWriter bLogger = new LocalLogWriter(ALL.intLevel(), System.out);
       bLogger.info("<ExpectedException action=remove>service failure</ExpectedException>");
       bLogger
           .info("<ExpectedException action=remove>java.net.ConnectException</ExpectedException>");
@@ -1098,7 +1097,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     final String removeExpected =
         "<ExpectedException action=remove>" + expected + "</ExpectedException>";
 
-    LogWriter bgexecLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+    LogWriter bgexecLogger = new LocalLogWriter(ALL.intLevel(), System.out);
     bgexecLogger.info(addExpected);
 
     boolean exceptionOccurred = true;
@@ -1262,7 +1261,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           .until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       system.disconnect();
-      LogWriter bgexecLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+      LogWriter bgexecLogger = new LocalLogWriter(ALL.intLevel(), System.out);
       bgexecLogger.info(removeExpected);
 
       checkConnectionAndPrintInfo(vm1);
@@ -1873,7 +1872,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       }
       // connectExceptions occur during disconnect, so we need the
       // ExpectedException hint to be in effect until this point
-      LogWriter bLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+      LogWriter bLogger = new LocalLogWriter(ALL.intLevel(), System.out);
       bLogger
           .info("<ExpectedException action=remove>java.net.ConnectException</ExpectedException>");
     });

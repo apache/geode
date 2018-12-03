@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.InternalLogWriter.CONFIG_LEVEL;
+import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.PrintStream;
@@ -33,9 +33,9 @@ public class ManagerLogWriterTest {
 
   @Test
   public void logWriterLevelIsPassedIntoConstructor() {
-    ManagerLogWriter logWriter =
-        new ManagerLogWriter(CONFIG_LEVEL, new PrintStream(NullOutputStream.getInstance()), true);
+    ManagerLogWriter logWriter = new ManagerLogWriter(CONFIG.intLevel(),
+        new PrintStream(NullOutputStream.getInstance()), true);
 
-    assertThat(logWriter.getLogWriterLevel()).isEqualTo(CONFIG_LEVEL);
+    assertThat(logWriter.getLogWriterLevel()).isEqualTo(CONFIG.intLevel());
   }
 }

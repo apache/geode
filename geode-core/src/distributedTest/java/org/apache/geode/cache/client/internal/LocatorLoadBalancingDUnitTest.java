@@ -48,8 +48,6 @@ import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -426,7 +424,6 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     Assert.assertEquals(1, locators.size());
     InternalLocator locator = (InternalLocator) locators.get(0);
     final ServerLocator sl = locator.getServerLocatorAdvisee();
-    InternalLogWriter log = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
     sl.getDistributionAdvisor().dumpProfiles("PROFILES= ");
     await().timeout(300, TimeUnit.SECONDS)
         .until(() -> expected.equals(sl.getLoadMap()));
