@@ -56,6 +56,13 @@ For Tomcat 8.0 and 8.5:
                          Tomcat8DeltaSessionManager"/> 
 ```
 
+For Tomcat 9.0:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat9DeltaSessionManager"/> 
+```
+
 ## <a id="tomcat_setting_up_the_module__section_B0CEBE93564540DBA165E0F7A10FDC0B" class="no-quick-link"></a>Client/Server Setup
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="tomcat_setting_up_the_module__image_aqn_jjf_sv" class="image" />
@@ -88,6 +95,13 @@ For Tomcat 8.0 and 8.5:
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat8DeltaSessionManager"/> 
+```
+
+For Tomcat 9.0:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat9DeltaSessionManager"/> 
 ```
 
 The application server operates as a <%=vars.product_name%> client in this configuration. With a similar environment to this example that is for a client/server set up,
