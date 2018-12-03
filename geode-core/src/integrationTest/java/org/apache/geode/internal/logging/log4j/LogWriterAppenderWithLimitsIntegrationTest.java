@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.Configuration.DEFAULT_LOGWRITER_LEVEL;
+import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,7 +88,7 @@ public class LogWriterAppenderWithLimitsIntegrationTest {
     config = mock(LogConfig.class);
     when(config.getName()).thenReturn(name);
     when(config.getLogFile()).thenReturn(logFile);
-    when(config.getLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
+    when(config.getLogLevel()).thenReturn(CONFIG.intLevel());
     when(config.getLogDiskSpaceLimit()).thenReturn(MAX_LOG_DISK_SPACE_LIMIT);
     when(config.getLogFileSizeLimit()).thenReturn(MAX_LOG_FILE_SIZE_LIMIT);
 

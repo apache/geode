@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal.pooling;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINEST;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -83,7 +84,7 @@ public class ConnectionManagerJUnitTest {
 
   @Before
   public void setUp() {
-    this.logger = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
+    this.logger = new LocalLogWriter(FINEST.intLevel(), System.out);
     factory = new DummyFactory();
 
     Properties properties = new Properties();

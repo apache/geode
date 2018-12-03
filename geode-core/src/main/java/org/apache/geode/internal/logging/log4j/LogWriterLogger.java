@@ -14,6 +14,15 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.internal.logging.LogWriterLevel.ERROR;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINER;
+import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
+import static org.apache.geode.internal.logging.LogWriterLevel.NONE;
+import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
+import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
+
 import java.util.logging.Handler;
 
 import org.apache.logging.log4j.Level;
@@ -1689,21 +1698,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
     final Level log4jLevel = logWrapper.getLevel();
 
     if (log4jLevel == Level.OFF) {
-      return InternalLogWriter.NONE_LEVEL;
+      return NONE.intLevel();
     } else if (log4jLevel == Level.FATAL) {
-      return InternalLogWriter.SEVERE_LEVEL;
+      return SEVERE.intLevel();
     } else if (log4jLevel == Level.ERROR) {
-      return InternalLogWriter.ERROR_LEVEL;
+      return ERROR.intLevel();
     } else if (log4jLevel == Level.WARN) {
-      return InternalLogWriter.WARNING_LEVEL;
+      return WARNING.intLevel();
     } else if (log4jLevel == Level.INFO) {
-      return InternalLogWriter.INFO_LEVEL;
+      return INFO.intLevel();
     } else if (log4jLevel == Level.DEBUG) {
-      return InternalLogWriter.FINE_LEVEL;
+      return FINE.intLevel();
     } else if (log4jLevel == Level.TRACE) {
-      return InternalLogWriter.FINER_LEVEL;
+      return FINER.intLevel();
     } else if (log4jLevel == Level.ALL) {
-      return InternalLogWriter.ALL_LEVEL;
+      return ALL.intLevel();
     }
 
     throw new IllegalStateException(
