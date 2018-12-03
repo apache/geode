@@ -18,6 +18,24 @@
 apply plugin: 'war'
 
 dependencies {
+    testCompile('org.assertj:assertj-core:3.11.1')
+    testCompile('junit:junit:4.12')
+    integrationTestCompile(project(':geode-junit'))
+    integrationTestCompile('junit:junit:4.12')
+    integrationTestCompile('mx4j:mx4j:3.0.2')
+    integrationTestCompile('org.assertj:assertj-core:3.11.1')
+    testCompile('org.mockito:mockito-core:2.23.0')
+    distributedTestCompile('org.apache.commons:commons-lang3:3.8.1')
+    distributedTestCompile(project(':geode-junit'))
+    distributedTestCompile('org.awaitility:awaitility:3.1.2')
+    distributedTestCompile('commons-io:commons-io:2.6')
+    distributedTestCompile('junit:junit:4.12')
+    distributedTestCompile('org.assertj:assertj-core:3.11.1')
+    integrationTestCompile('org.mockito:mockito-core:2.23.0')
+    testCompile('javax.servlet:javax.servlet-api:3.1.0')
+    testCompile('mx4j:mx4j:3.0.2')
+    testCompile('org.apache.shiro:shiro-core:1.4.0')
+    testCompile('org.springframework:spring-web:4.3.20.RELEASE')
   compileOnly('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
   compileOnly(project(path: ':geode-core', configuration: 'classesOutput'))
 

@@ -18,6 +18,12 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
+    compile('javax.servlet:servlet-api:2.4')
+  gradleLint.ignore {
+    // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
+    compile('xml-apis:xml-apis:1.4.01')
+  }
+
   compile(project(':extensions:geode-modules-session-internal')) {
     exclude module: 'geode-modules'
   }

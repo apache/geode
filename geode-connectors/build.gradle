@@ -25,6 +25,15 @@ repositories {
 }
 
 dependencies {
+  gradleLint.ignore {
+    // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
+    compile('xml-apis:xml-apis:1.4.01')
+  }
+  compile('com.fasterxml.jackson.core:jackson-core:2.9.7')
+    compile('com.fasterxml.jackson.core:jackson-databind:2.9.7')
+    testCompile('org.mockito:mockito-core:2.23.0')
+    testCompile('org.assertj:assertj-core:3.11.1')
+    testCompile('junit:junit:4.12')
   compile(project(':geode-common'))
   compile(project(':geode-core'))
   testCompile(project(':geode-junit')) {

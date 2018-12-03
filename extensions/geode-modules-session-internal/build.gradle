@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    compile('javax.servlet:servlet-api:2.4')
   compile(project(':extensions:geode-modules'))
   compile(project(':geode-core'))
 

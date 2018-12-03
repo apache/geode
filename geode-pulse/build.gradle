@@ -17,6 +17,11 @@
 apply plugin: 'war'
 
 dependencies {
+    testCompile('org.mockito:mockito-core:2.23.0')
+    integrationTestCompile('org.mockito:mockito-core:2.23.0')
+    testCompile('junit:junit:4.12')
+    testCompile('com.github.stefanbirkner:system-rules:1.19.0')
+    testCompile('org.assertj:assertj-core:3.11.1')
   compile('org.springframework.security:spring-security-core:' + project.'spring-security.version')
   compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
   compile('mx4j:mx4j:' + project.'mx4j.version') {

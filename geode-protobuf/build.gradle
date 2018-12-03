@@ -16,6 +16,11 @@
  */
 
 dependencies {
+    testCompile('org.mockito:mockito-core:2.23.0')
+    integrationTestCompile('org.mockito:mockito-core:2.23.0')
+    testCompile('junit:junit:4.12')
+    testCompile('com.github.stefanbirkner:system-rules:1.19.0')
+    testCompile('org.assertj:assertj-core:3.11.1')
   compile(project(':geode-common'))
   compile(project(':geode-core'))
   compile(project(':geode-protobuf-messages'))

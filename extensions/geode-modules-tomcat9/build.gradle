@@ -18,6 +18,11 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
+    compile('javax.servlet:servlet-api:2.4')
+    compile('mx4j:mx4j:3.0.2')
+    compile(project(':geode-core'))
+
+
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }

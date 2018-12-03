@@ -18,6 +18,8 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
+    compile('javax.servlet:servlet-api:2.4')
+
   compile(project(':geode-core'))
   integrationTestCompile(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
