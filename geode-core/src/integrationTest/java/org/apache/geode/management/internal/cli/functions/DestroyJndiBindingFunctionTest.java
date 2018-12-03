@@ -65,8 +65,16 @@ public class DestroyJndiBindingFunctionTest {
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
-        CreateJndiBindingFunction.convert(config.getConfigProperties()));
-  }
+          CreateJndiBindingFunction.convert(config.getConfigProperties()));
+
+    config = new JndiBindingsType.JndiBinding();
+    config.setJndiName("jndi2");
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.MANAGED.getType());
+    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setConnectionUrl("jdbc:derby:newDB;create=true");
+    JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
+            CreateJndiBindingFunction.convert(config.getConfigProperties()));
+}
 
   @Test
   public void destroyJndiBindingIsSuccessfulWhenBindingFound() throws Exception {
@@ -124,5 +132,19 @@ public class DestroyJndiBindingFunctionTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMessage()).contains("not found").contains("Data source");
+  }
+
+  @Test
+  public void destroyDataSourceFailsWhenBindingHasInvalidType() throws Exception {
+    when(context.getResultSender()).thenReturn(resultSender);
+    spy(destroyJndiBindingFunction);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    destroyJndiBindingFunction.execute(context);
+
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isEqualTo(false);
+    assertThat(result.getMessage()).contains("Data Source jndi2 has invalid type for 'destroy data-source'. 'destroy jndi-binding' command should be used.");
   }
 }
