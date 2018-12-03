@@ -704,8 +704,8 @@ JDBC connection.
 **Syntax:**
 
 ``` pre
-create jndi-binding --name=value --type=value --jdbc-driver-class=value
- --connection-url=value [--blocking-timeout-seconds=value]
+create jndi-binding --name=value --url=value
+ [--jdbc-driver-class=value] [--type=value] [--blocking-timeout-seconds=value]
  [--conn-pooled-datasource-class=value] [--idle-timeout-seconds=value]
  [--init-pool-size=value] [--login-timeout-seconds=value]
  [--managed-conn-factory-class=value] [--max-pool-size=value] [--password=value]
@@ -718,9 +718,9 @@ create jndi-binding --name=value --type=value --jdbc-driver-class=value
 | Name                                               | Description                                                                            | Default |
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the binding to create.                                               |         |
-| <span class="keyword parmname">\\-\\-type</span>       | *Required.* Type of the XA datasource. One of: `MANAGED`, `SIMPLE`, `POOLED`, or `XAPOOLED`.     |         |
-| <span class="keyword parmname">\\-\\-jdbc-driver-class</span>       | *Required.* The fully qualified name of the JDBC driver class.              |         |
-| <span class="keyword parmname">\\-\\-connection-url</span>       | *Required.* the JDBC driver connection URL string. For example, `jdbc:hsqldb:hsql://localhost:1701`.              |         |
+| <span class="keyword parmname">&#8209;&#8209;url or &#8209;&#8209;connection-url</span>       | *Required.* the JDBC driver connection URL string. For example, `jdbc:hsqldb:hsql://localhost:1701`.              |         |
+| <span class="keyword parmname">\\-\\-jdbc-driver-class</span>       | The fully qualified name of the JDBC driver class.              |         |
+| <span class="keyword parmname">\\-\\-type</span>       | Type of the XA datasource. One of: `MANAGED`, `SIMPLE`, `POOLED`, or `XAPOOLED`.     | `SIMPLE` |
 | <span class="keyword parmname">\\-\\-blocking-timeout-seconds</span>       | Specifies the maximum time, in seconds, to block while waiting for a connection before throwing an exception.                                        |         |
 | <span class="keyword parmname">\\-\\-conn-pooled-datasource-class</span>   | The fully qualified name of the connection pool implementation that holds XA datasource connections.                                                 |         |
 | <span class="keyword parmname">\\-\\-idle-timeout-seconds</span>   | Specifies the time, in seconds, that a connection may be idle before being closed. |         |
@@ -740,7 +740,7 @@ create jndi-binding --name=value --type=value --jdbc-driver-class=value
 ``` pre
 gfsh>create jndi-binding --name=jndi1 --type=SIMPLE \
   --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver \
-  --connection-url="jdbc:derby:newDB;create=true"
+  --url="jdbc:derby:newDB;create=true"
 ```
 
 ## <a id="create_lucene_index" class="no-quick-link"></a>create lucene index
