@@ -214,7 +214,6 @@ dependencies {
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  //Web servers used for session module testing
   webServerTomcat6('apache:tomcat:' + project.'tomcat6.version' + '@zip')
   webServerTomcat7('org.apache.tomcat:tomcat:' + project.'tomcat7.version' + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + project.'tomcat8.version' + '@zip')
