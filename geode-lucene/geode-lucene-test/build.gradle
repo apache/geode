@@ -17,7 +17,7 @@
 
 
 dependencies {
-  compile('org.apache.lucene:lucene-core:6.6.2')
+  compile('org.apache.lucene:lucene-core:' + project.'lucene.version')
   compile(project(':geode-core'))
   compileOnly(project(':geode-lucene'))
 
