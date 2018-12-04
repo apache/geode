@@ -16,12 +16,21 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -65,16 +74,8 @@ public class DestroyJndiBindingFunctionTest {
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
-          CreateJndiBindingFunction.convert(config.getConfigProperties()));
-
-    config = new JndiBindingsType.JndiBinding();
-    config.setJndiName("jndi2");
-    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.MANAGED.getType());
-    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
-    config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
-            CreateJndiBindingFunction.convert(config.getConfigProperties()));
-}
+        CreateJndiBindingFunction.convert(config.getConfigProperties()));
+  }
 
   @Test
   public void destroyJndiBindingIsSuccessfulWhenBindingFound() throws Exception {
@@ -136,15 +137,69 @@ public class DestroyJndiBindingFunctionTest {
 
   @Test
   public void destroyDataSourceFailsWhenBindingHasInvalidType() throws Exception {
-    when(context.getResultSender()).thenReturn(resultSender);
-    spy(destroyJndiBindingFunction);
 
+    when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
+    when(context.getResultSender()).thenReturn(resultSender);
+    DestroyJndiBindingFunction destroyFunctionSpy = spy(destroyJndiBindingFunction);
+    DataSource jndiBinding = new InvalidDataSourceClass();
+    doReturn(jndiBinding).when(destroyFunctionSpy).lookUpDataSource(any());
+
+    destroyFunctionSpy.execute(context);
     verify(resultSender).lastResult(resultCaptor.capture());
-    destroyJndiBindingFunction.execute(context);
+
 
     CliFunctionResult result = resultCaptor.getValue();
 
     assertThat(result.isSuccessful()).isEqualTo(false);
-    assertThat(result.getMessage()).contains("Data Source jndi2 has invalid type for 'destroy data-source'. 'destroy jndi-binding' command should be used.");
+    assertThat(result.getMessage()).contains(
+        "Data Source jndi1 has invalid type for destroy data-source, destroy jndi-binding command should be used.");
+  }
+
+  class InvalidDataSourceClass implements DataSource {
+
+    @Override
+    public PrintWriter getLogWriter() throws SQLException {
+      return null;
+    }
+
+    @Override
+    public void setLogWriter(PrintWriter out) throws SQLException {
+
+    }
+
+    @Override
+    public void setLoginTimeout(int seconds) throws SQLException {
+
+    }
+
+    @Override
+    public int getLoginTimeout() throws SQLException {
+      return 0;
+    }
+
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+      return null;
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+      return null;
+    }
+
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+      return null;
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+      return null;
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+      return false;
+    }
   }
 }
