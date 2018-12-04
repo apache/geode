@@ -37,7 +37,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.util.ObjectSizer;
@@ -45,14 +44,12 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  *
@@ -141,19 +138,8 @@ public class RegionCreateFunction implements InternalFunction {
     return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR);
   }
 
-  private XmlEntity getXmlEntityForRegion(Region<?, ?> region) {
-    Region<?, ?> curRegion = region;
-    while (curRegion != null && curRegion.getParentRegion() != null) {
-      curRegion = curRegion.getParentRegion();
-    }
-
-    return new XmlEntity(CacheXml.REGION, "name", curRegion.getName());
-  }
-
   private <K, V> Region<?, ?> createRegion(Cache cache, RegionFunctionArgs regionCreateArgs) {
     Region<K, V> createdRegion = null;
-
-    final RegionShortcut regionShortcut = regionCreateArgs.getRegionShortcut();
 
     // create the region factory using the arguments
     RegionAttributes<K, V> regionAttributes = regionCreateArgs.getRegionAttributes();

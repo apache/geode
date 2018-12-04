@@ -28,8 +28,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.w3c.dom.Element;
-
 import org.apache.geode.annotations.Experimental;
 
 
@@ -151,9 +149,8 @@ import org.apache.geode.annotations.Experimental;
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
 public class RegionConfig implements CacheElement {
-
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionAttributesType> regionAttributes;
+  protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig.Index> indexes;
   @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
@@ -174,34 +171,12 @@ public class RegionConfig implements CacheElement {
     this.refid = refid;
   }
 
-  /**
-   * Gets the value of the regionAttributes property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the regionAttributes property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getRegionAttributes().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link RegionAttributesType }
-   *
-   *
-   */
-  public List<RegionAttributesType> getRegionAttributes() {
-    if (regionAttributes == null) {
-      regionAttributes = new ArrayList<RegionAttributesType>();
-    }
-    return this.regionAttributes;
+  public RegionAttributesType getRegionAttributes() {
+    return regionAttributes;
+  }
+
+  public void setRegionAttributes(RegionAttributesType regionAttributes) {
+    this.regionAttributes = regionAttributes;
   }
 
   /**
@@ -229,7 +204,7 @@ public class RegionConfig implements CacheElement {
    */
   public List<RegionConfig.Index> getIndexes() {
     if (indexes == null) {
-      indexes = new ArrayList<RegionConfig.Index>();
+      indexes = new ArrayList<>();
     }
     return this.indexes;
   }
@@ -283,10 +258,6 @@ public class RegionConfig implements CacheElement {
    *
    * <p>
    * Objects of the following type(s) are allowed in the list
-   * {@link Element }
-   * {@link CacheElement }
-   *
-   *
    */
   public List<CacheElement> getCustomRegionElements() {
     if (regionElements == null) {

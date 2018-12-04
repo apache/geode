@@ -14,14 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ExpirationAttributesType;
+import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
@@ -62,7 +64,7 @@ public class RegionConfigFactory {
     }
 
     if (args.getEntryIdleTimeCustomExpiry() != null) {
-      Object maybeEntryIdleAttr = getRegionAttributeValue(regionConfig, a -> a.getEntryIdleTime());
+      Object maybeEntryIdleAttr = getAttribute(regionConfig, a -> a.getEntryIdleTime());
       RegionAttributesType.EntryIdleTime entryIdleTime =
           maybeEntryIdleAttr != null ? (RegionAttributesType.EntryIdleTime) maybeEntryIdleAttr
               : new RegionAttributesType.EntryIdleTime();
@@ -134,7 +136,7 @@ public class RegionConfigFactory {
     }
 
     if (args.getEntryTTLCustomExpiry() != null) {
-      Object maybeEntryTTLAttr = getRegionAttributeValue(regionConfig, a -> a.getEntryTimeToLive());
+      Object maybeEntryTTLAttr = getAttribute(regionConfig, a -> a.getEntryTimeToLive());
       RegionAttributesType.EntryTimeToLive entryTimeToLive =
           maybeEntryTTLAttr != null ? (RegionAttributesType.EntryTimeToLive) maybeEntryTTLAttr
               : new RegionAttributesType.EntryTimeToLive();
@@ -295,6 +297,13 @@ public class RegionConfigFactory {
           a -> a.setDataPolicy(regionAttributes.getDataPolicy().toConfigType()));
     }
 
+    if (regionAttributes != null && regionAttributes.getScope() != null
+        && !regionAttributes.getDataPolicy().withPartitioning()) {
+      addAttribute(regionConfig,
+          a -> a.setScope(
+              RegionAttributesScope.fromValue(regionAttributes.getScope().toConfigTypeString())));
+    }
+
     return regionConfig;
   }
 
@@ -313,19 +322,20 @@ public class RegionConfigFactory {
     return regions[regions.length - 1];
   }
 
-  private void addAttribute(RegionConfig config, RegionAttributeSetFunction func) {
-    final List<RegionAttributesType> regionAttributes = config.getRegionAttributes();
-    if (regionAttributes.isEmpty()) {
-      regionAttributes.add(new RegionAttributesType());
+  private void addAttribute(RegionConfig config, Consumer<RegionAttributesType> consumer) {
+    if (config.getRegionAttributes() == null) {
+      config.setRegionAttributes(new RegionAttributesType());
     }
 
-    func.setAttributeValue(regionAttributes.get(0));
+    consumer.accept(config.getRegionAttributes());
   }
 
-  private Object getRegionAttributeValue(RegionConfig config, RegionAttributeGetFunction function) {
-    return config.getRegionAttributes().stream()
-        .findFirst()
-        .map(a -> function.getValue(a))
-        .orElse(null);
+  private Object getAttribute(RegionConfig config,
+      Function<RegionAttributesType, Object> function) {
+    if (config.getRegionAttributes() == null) {
+      return null;
+    }
+
+    return function.apply(config.getRegionAttributes());
   }
 }

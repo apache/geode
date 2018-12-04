@@ -83,11 +83,19 @@ public class DestroyMappingCommand extends SingleGfshCommand {
     boolean modified = false;
     modified |= removeJdbcMappingFromRegion(regionConfig);
     modified |= removeJdbcQueueFromCache(cacheConfig, regionName);
-    RegionAttributesType attributes = getRegionAttributes(regionConfig);
+    RegionAttributesType attributes = getRegionAttribute(regionConfig);
     modified |= removeJdbcLoader(attributes);
     modified |= removeJdbcWriter(attributes);
     modified |= removeJdbcAsyncEventQueueId(attributes, regionName);
     return modified;
+  }
+
+  private RegionAttributesType getRegionAttribute(RegionConfig config) {
+    if (config.getRegionAttributes() == null) {
+      config.setRegionAttributes(new RegionAttributesType());
+    }
+
+    return config.getRegionAttributes();
   }
 
   private boolean removeJdbcLoader(RegionAttributesType attributes) {
@@ -156,18 +164,6 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {
     return cacheConfig.getRegions().stream()
         .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
-  }
-
-  private RegionAttributesType getRegionAttributes(RegionConfig regionConfig) {
-    RegionAttributesType attributes;
-    List<RegionAttributesType> attributesList = regionConfig.getRegionAttributes();
-    if (attributesList.isEmpty()) {
-      attributes = new RegionAttributesType();
-      attributesList.add(attributes);
-    } else {
-      attributes = attributesList.get(0);
-    }
-    return attributes;
   }
 
   @CliAvailabilityIndicator({DESTROY_MAPPING})

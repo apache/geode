@@ -157,6 +157,10 @@ public class Scope implements Serializable {
     return this.name;
   }
 
+  public String toConfigTypeString() {
+    return this.name.toLowerCase().replace("_", "-");
+  }
+
   /**
    * Parse the given string into a Scope
    *

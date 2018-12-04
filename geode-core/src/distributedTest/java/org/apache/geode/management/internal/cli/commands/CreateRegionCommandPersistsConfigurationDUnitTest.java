@@ -38,6 +38,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.ExpirationAttributesType;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
@@ -168,9 +169,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       RegionConfig regionConfig = regions.get(0);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
-      assertThat(regionConfig.getRegionAttributes()).hasSize(1);
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-      RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+      RegionAttributesType attr = regionConfig.getRegionAttributes();
       assertThat(attr.isStatisticsEnabled()).isTrue();
       assertThat(attr.isEnableAsyncConflation()).isTrue();
 
@@ -218,9 +219,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
-      assertThat(regionConfig.getRegionAttributes()).hasSize(1);
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-      RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+      RegionAttributesType attr = regionConfig.getRegionAttributes();
       assertThat(attr.isStatisticsEnabled()).isTrue();
       assertThat(attr.isEnableAsyncConflation()).isTrue();
 
@@ -277,11 +278,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
-        assertThat(regionConfig.getRegionAttributes())
-            .describedAs("Expecting region attributes to exist")
-            .hasSize(1);
+        assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-        RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+        RegionAttributesType attr = regionConfig.getRegionAttributes();
         assertThat(attr.getCacheListeners().get(0).toString())
             .describedAs("Expecting one cache listener for region " + name)
             .isEqualTo(DummyCacheListener.class.getName());
@@ -389,11 +388,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
-        assertThat(regionConfig.getRegionAttributes())
-            .describedAs("Expecting region attributes to exist")
-            .hasSize(1);
+        assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-        RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+        RegionAttributesType attr = regionConfig.getRegionAttributes();
         assertThat(attr.getEvictionAttributes())
             .describedAs("Eviction attributes should be null for " + name)
             .isNull();
@@ -425,7 +422,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(1);
       RegionConfig regionConfig = CacheElement.findElement(regions, regionName);
-      assertThat(regionConfig.getRegionAttributes().get(0).getAsyncEventQueueIds())
+      assertThat(regionConfig.getRegionAttributes().getAsyncEventQueueIds())
           .contains(queueId);
     });
   }
@@ -459,13 +456,13 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       RegionConfig colocatedConfig = CacheElement.findElement(regions, colocatedRegionName);
       assertThat(
-          colocatedConfig.getRegionAttributes().get(0).getPartitionAttributes().getColocatedWith())
+          colocatedConfig.getRegionAttributes().getPartitionAttributes().getColocatedWith())
               .isEqualTo("/" + regionName);
 
       RegionConfig colocatedConfigFromTemplate = CacheElement.findElement(regions,
           colocatedRegionFromTemplateName);
       assertThat(
-          colocatedConfigFromTemplate.getRegionAttributes().get(0).getPartitionAttributes()
+          colocatedConfigFromTemplate.getRegionAttributes().getPartitionAttributes()
               .getColocatedWith())
                   .isEqualTo("/" + regionName);
     });
@@ -508,7 +505,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
 
-        RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().get(0);
+        RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
         assertThat(regionAttributes.getDiskStoreName())
             .isEqualTo(store);
         assertThat(regionAttributes.isDiskSynchronous())
@@ -550,7 +547,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
 
-        RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().get(0);
+        RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
         RegionAttributesType.PartitionAttributes partitionAttributes =
             regionAttributes.getPartitionAttributes();
 
@@ -598,7 +595,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
 
-      RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().get(0);
+      RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
       RegionAttributesType.PartitionAttributes partitionAttributes =
           regionAttributes.getPartitionAttributes();
 
@@ -633,11 +630,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
           CacheElement.findElement(config.getRegions(), regionFromTemplateName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionFromTemplateName);
-      assertThat(regionConfig.getRegionAttributes())
-          .describedAs("Expecting region attributes to exist")
-          .hasSize(1);
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-      RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+      RegionAttributesType attr = regionConfig.getRegionAttributes();
       assertThat(attr.getPartitionAttributes())
           .describedAs("Partition attributes should be null for " + regionFromTemplateName)
           .isNull();
@@ -664,11 +659,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
           CacheElement.findElement(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
-      assertThat(regionConfig.getRegionAttributes())
-          .describedAs("Expecting region attributes to exist")
-          .hasSize(1);
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-      RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+      RegionAttributesType attr = regionConfig.getRegionAttributes();
       assertThat(attr.getRegionTimeToLive())
           .describedAs("Expiration attributes should be null for " + regionName)
           .isNull();
@@ -712,11 +705,9 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
-        assertThat(regionConfig.getRegionAttributes())
-            .describedAs("Expecting region attributes to exist for " + name)
-            .hasSize(1);
+        assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-        RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+        RegionAttributesType attr = regionConfig.getRegionAttributes();
         assertThat(attr.isCloningEnabled())
             .describedAs("Cloning should be disabled for " + name)
             .isFalse();
@@ -746,10 +737,8 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
-      assertThat(regionConfig.getRegionAttributes())
-          .describedAs("Expecting region attributes to exist for " + regionName)
-          .hasSize(1);
-      RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
+      RegionAttributesType attr = regionConfig.getRegionAttributes();
       assertThat(attr.getEntryIdleTime().getExpirationAttributes().getCustomExpiry().toString())
           .describedAs("Entry expiration custom expiration should be DummyCustomExpiry")
           .isEqualTo(DummyCustomExpiry.class.getName());
@@ -757,7 +746,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
   }
 
   @Test
-  public void createRegionPersistsImplicitTemplateAttributes() {
+  public void createRegionPersistsDataPolicy() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName
@@ -776,14 +765,57 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
-      assertThat(regionConfig.getRegionAttributes())
-          .describedAs("Expecting region attributes to exist for " + regionName)
-          .hasSize(1);
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
-      RegionAttributesType attr = regionConfig.getRegionAttributes().get(0);
+      RegionAttributesType attr = regionConfig.getRegionAttributes();
       assertThat(attr.getDataPolicy())
           .describedAs("Data policy for partitioned region should be persisted correctly")
           .isEqualTo(RegionAttributesDataPolicy.PARTITION);
+    });
+  }
+
+  @Test
+  public void createRegionPersistsScope() {
+    String regionName = testName.getMethodName();
+    String regionName2 = regionName + "2";
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionName
+        + " --type=PARTITION")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionName2
+        + " --type=REPLICATE")
+        .statusIsSuccess();
+
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService cc =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig config = cc.getCacheConfig("cluster");
+
+      List<RegionConfig> regions = config.getRegions();
+      assertThat(regions).isNotEmpty();
+      assertThat(regions).hasSize(2);
+
+      RegionConfig regionConfig1 = CacheElement.findElement(config.getRegions(), regionName);
+      assertThat(regionConfig1).isNotNull();
+      assertThat(regionConfig1.getName()).isEqualTo(regionName);
+      assertThat(regionConfig1.getRegionAttributes()).isNotNull();
+
+      RegionAttributesType attr1 = regionConfig1.getRegionAttributes();
+      assertThat(attr1.getScope())
+          .describedAs("Scope for partitioned region should be null")
+          .isNull();
+
+      RegionConfig regionConfig2 = CacheElement.findElement(config.getRegions(), regionName2);
+      assertThat(regionConfig2).isNotNull();
+      assertThat(regionConfig2.getName()).isEqualTo(regionName2);
+      assertThat(regionConfig2.getRegionAttributes()).isNotNull();
+
+      RegionAttributesType attr2 = regionConfig2.getRegionAttributes();
+      assertThat(attr2.getScope())
+          .describedAs(
+              "Scope for replicated region should be persisted as distributed-ack by default")
+          .isEqualTo(RegionAttributesScope.DISTRIBUTED_ACK);
     });
   }
 }

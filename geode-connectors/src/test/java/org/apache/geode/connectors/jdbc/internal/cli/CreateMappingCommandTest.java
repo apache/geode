@@ -97,11 +97,9 @@ public class CreateMappingCommandTest {
 
     matchingRegion = mock(RegionConfig.class);
     when(matchingRegion.getName()).thenReturn(regionName);
-    List<RegionAttributesType> attributesList = new ArrayList<>();
     matchingRegionAttributes = mock(RegionAttributesType.class);
     when(matchingRegionAttributes.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
-    attributesList.add(matchingRegionAttributes);
-    when(matchingRegion.getRegionAttributes()).thenReturn(attributesList);
+    when(matchingRegion.getRegionAttributes()).thenReturn(matchingRegionAttributes);
 
     arguments[0] = mapping;
     arguments[1] = false;
@@ -205,13 +203,11 @@ public class CreateMappingCommandTest {
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
-    List<RegionAttributesType> attributes = new ArrayList<>();
     RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
     DeclarableType loaderDeclarable = mock(DeclarableType.class);
     when(loaderDeclarable.getClassName()).thenReturn(null);
     when(loaderAttribute.getCacheLoader()).thenReturn(loaderDeclarable);
-    attributes.add(loaderAttribute);
-    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
     List<CacheElement> customList = new ArrayList<>();
     RegionMapping existingMapping = mock(RegionMapping.class);
     customList.add(existingMapping);
@@ -235,13 +231,11 @@ public class CreateMappingCommandTest {
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
-    List<RegionAttributesType> attributes = new ArrayList<>();
     RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
     DeclarableType loaderDeclarable = mock(DeclarableType.class);
     when(loaderDeclarable.getClassName()).thenReturn("MyCacheLoaderClass");
     when(loaderAttribute.getCacheLoader()).thenReturn(loaderDeclarable);
-    attributes.add(loaderAttribute);
-    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass, false);
@@ -262,13 +256,11 @@ public class CreateMappingCommandTest {
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
-    List<RegionAttributesType> attributes = new ArrayList<>();
     RegionAttributesType writerAttribute = mock(RegionAttributesType.class);
     DeclarableType writerDeclarable = mock(DeclarableType.class);
     when(writerDeclarable.getClassName()).thenReturn("MyCacheWriterClass");
     when(writerAttribute.getCacheWriter()).thenReturn(writerDeclarable);
-    attributes.add(writerAttribute);
-    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    when(matchingRegion.getRegionAttributes()).thenReturn(writerAttribute);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass, true);
@@ -289,11 +281,9 @@ public class CreateMappingCommandTest {
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
-    List<RegionAttributesType> attributes = new ArrayList<>();
     RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
     when(loaderAttribute.getCacheLoader()).thenReturn(null);
-    attributes.add(loaderAttribute);
-    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
     List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
     AsyncEventQueue matchingQueue = mock(AsyncEventQueue.class);
     String queueName = createRegionMappingCommand.createAsyncEventQueueName(regionName);
@@ -319,11 +309,9 @@ public class CreateMappingCommandTest {
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
-    List<RegionAttributesType> attributes = new ArrayList<>();
     RegionAttributesType loaderAttribute = mock(RegionAttributesType.class);
     when(loaderAttribute.getCacheLoader()).thenReturn(null);
-    attributes.add(loaderAttribute);
-    when(matchingRegion.getRegionAttributes()).thenReturn(attributes);
+    when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
     List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
     AsyncEventQueue matchingQueue = mock(AsyncEventQueue.class);
     String queueName = createRegionMappingCommand.createAsyncEventQueueName(regionName);
