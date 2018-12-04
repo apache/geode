@@ -86,7 +86,8 @@ public class BannerLoggingIntegrationTest {
 
   @Test
   public void bannerIsLoggedToFileOnlyOnce() {
-    await().untilAsserted(() ->LogFileAssert.assertThat(mainLogFile).containsOnlyOnce(displayValues()));
+    await().untilAsserted(
+        () -> LogFileAssert.assertThat(mainLogFile).containsOnlyOnce(displayValues()));
   }
 
   /**
