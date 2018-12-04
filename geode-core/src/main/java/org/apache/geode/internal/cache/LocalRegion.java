@@ -2273,9 +2273,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throw new Error(
           "TimeoutException should not be thrown in localDestroyRegion",
           e);
-    } finally {
-      // close this region's tombstone sweeper
-      this.getCache().getTombstoneService().closeSweeperByRegion(this);
     }
   }
 
@@ -6393,9 +6390,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public void postCreateRegion() {
-    // add region level tombstone sweeper
-    this.cache.getTombstoneService().addRegionTombstoneSweeper(this);
-
     if (getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       final LogWriter logWriter = this.cache.getLogger();
       float evictionPercentage = DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE;

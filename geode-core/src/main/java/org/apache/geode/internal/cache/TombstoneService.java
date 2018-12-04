@@ -118,12 +118,15 @@ public class TombstoneService {
   private final ReplicateTombstoneSweeper replicatedTombstoneSweeper;
   private final NonReplicateTombstoneSweeper nonReplicatedTombstoneSweeper;
 
-  // TODO: since we will have region level tombstone sweeper, we might not need
-  // NonReplicateTombstoneSweeper any more
+  /**
+   * Region level sweepers. It's mainly for server side, but it can also be configured for
+   * client side regions.
+   *
+   * Keep the cache level replicatedTombstoneSweeper (for server) and nonReplicatedTombstoneSweeper
+   * for user's region without specifying region level sweeper.
+   */
   private Map<Region, ReplicateTombstoneSweeper> regionTombstoneSweepers =
       Collections.synchronizedMap(new HashMap<Region, ReplicateTombstoneSweeper>());
-  // private Map<Region, NonReplicateTombstoneSweeper> clientRegionSweepers =
-  // Collections.synchronizedMap(new HashMap<Region, NonReplicateTombstoneSweeper>());
 
   public static TombstoneService initialize(InternalCache cache) {
     return new TombstoneService(cache);
@@ -142,16 +145,19 @@ public class TombstoneService {
     this.nonReplicatedTombstoneSweeper.start();
   }
 
-  public void addRegionTombstoneSweeper(Region region) {
+  public ReplicateTombstoneSweeper addRegionTombstoneSweeper(Region region) {
     synchronized (regionTombstoneSweepers) {
-      if (regionTombstoneSweepers.get(region) == null) {
+      ReplicateTombstoneSweeper sweeper = regionTombstoneSweepers.get(region);
+      if (sweeper == null) {
         ReplicateTombstoneSweeper regionTombstoneSweeper =
             new ReplicateTombstoneSweeper((InternalCache) region.getRegionService(),
                 ((LocalRegion) region).getCachePerfStats(),
                 region.getRegionService().getCancelCriterion(),
                 ((LocalRegion) region).getDistributionManager().getWaitingThreadPool());
-        regionTombstoneSweepers.put(region, regionTombstoneSweeper);
+        sweeper = regionTombstoneSweepers.put(region, regionTombstoneSweeper);
       }
+
+      return sweeper;
     }
   }
 
@@ -165,13 +171,16 @@ public class TombstoneService {
     }
   }
 
-  public void setReplicateTombstoneTimeout(Region region, long timeout) {
+  public long setReplicateTombstoneTimeout(Region region, long timeout) {
     synchronized (regionTombstoneSweepers) {
       ReplicateTombstoneSweeper regionTombstoneSweeper = regionTombstoneSweepers.get(region);
       if (regionTombstoneSweeper != null) {
-        regionTombstoneSweeper.setTOmbstoneTimeout(timeout);
+        long previousExpiryTime = regionTombstoneSweeper.EXPIRY_TIME;
+        regionTombstoneSweeper.setTombstoneTimeout(timeout);
+        return previousExpiryTime;
       }
     }
+    return 0;
   }
 
   /**
@@ -209,9 +218,13 @@ public class TombstoneService {
   }
 
 
-  private TombstoneSweeper getSweeper(LocalRegion r) {
+  public TombstoneSweeper getSweeper(LocalRegion r) {
+    if (r.isUsedForPartitionedRegionBucket()) {
+      r = ((BucketRegion) r).getPartitionedRegion();
+    }
     TombstoneSweeper sweeper = this.regionTombstoneSweepers.get(r);
     if (sweeper != null) {
+      // System.out.println("HHH:"+r.getFullPath()+":"+sweeper.EXPIRY_TIME);
       return sweeper;
     }
     if (r.getScope().isDistributed() && r.getServerProxy() == null
@@ -851,7 +864,7 @@ public class TombstoneService {
       });
     }
 
-    public void setTOmbstoneTimeout(long expiryTime) {
+    public void setTombstoneTimeout(long expiryTime) {
       this.EXPIRY_TIME = expiryTime;
       this.PURGE_INTERVAL = Math.min(DEFUNCT_TOMBSTONE_SCAN_INTERVAL, expiryTime);
     }

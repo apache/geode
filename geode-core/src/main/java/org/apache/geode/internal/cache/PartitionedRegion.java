@@ -1087,6 +1087,10 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public void postCreateRegion() {
     super.postCreateRegion();
+
+    // add region level tombstone sweeper
+    this.cache.getTombstoneService().addRegionTombstoneSweeper(this);
+
     CacheListener[] listeners = fetchCacheListenersField();
     if (listeners != null && listeners.length > 0) {
       Set others = getRegionAdvisor().adviseGeneric();
@@ -7000,6 +7004,9 @@ public class PartitionedRegion extends LocalRegion
         this.dataStore.cleanUp(true, !isClose);
       }
     } finally {
+      // close this region's tombstone sweeper
+      this.getCache().getTombstoneService().closeSweeperByRegion(this);
+
       // Make extra sure that the static is cleared in the event
       // a new cache is created
       synchronized (prIdToPR) {
