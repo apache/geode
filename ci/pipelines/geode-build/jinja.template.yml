@@ -137,6 +137,7 @@ groups:
   {%- endfor -%}
 {%- endfor %}
 
+resources:
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
