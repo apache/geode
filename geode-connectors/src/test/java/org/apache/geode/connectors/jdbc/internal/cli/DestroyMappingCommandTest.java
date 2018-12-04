@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -59,7 +60,6 @@ public class DestroyMappingCommandTest {
   private Set<InternalDistributedMember> members;
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
-  private RegionMapping mapping;
   private CacheConfig cacheConfig;
   RegionConfig matchingRegion;
   RegionAttributesType matchingRegionAttributes;
@@ -82,9 +82,6 @@ public class DestroyMappingCommandTest {
     doReturn(results).when(destroyRegionMappingCommand).executeAndGetFunctionResult(any(), any(),
         any());
 
-    mapping = mock(RegionMapping.class);
-    when(mapping.getRegionName()).thenReturn(regionName);
-
     cacheConfig = mock(CacheConfig.class);
 
     matchingRegion = mock(RegionConfig.class);
@@ -102,6 +99,18 @@ public class DestroyMappingCommandTest {
 
     ResultModel result = destroyRegionMappingCommand.destroyMapping(regionName);
 
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    assertThat(result.getConfigObject()).isEqualTo(regionName);
+  }
+
+  @Test
+  public void destroyMappingGivenARegionPathReturnsTheNoSlashRegionNameAsTheConfigObject() {
+    results.add(successFunctionResult);
+
+    ResultModel result = destroyRegionMappingCommand.destroyMapping("/" + regionName);
+
+    verify(destroyRegionMappingCommand, times(1)).executeAndGetFunctionResult(any(), eq(regionName),
+        any());
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     assertThat(result.getConfigObject()).isEqualTo(regionName);
   }

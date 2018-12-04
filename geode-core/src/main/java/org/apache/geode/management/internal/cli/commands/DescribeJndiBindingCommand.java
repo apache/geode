@@ -17,18 +17,14 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -36,11 +32,9 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DescribeJndiBindingCommand extends GfshCommand {
   public static final String JNDI_PROPERTIES_SECTION = "jndi-properties";
-  private static final Logger logger = LogService.getLogger();
   static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
   private static final String DESCRIBE_JNDIBINDING__HELP =
       "Describe the configuration of the given jndi binding.";
-  private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
 
   @CliCommand(value = DESCRIBE_JNDI_BINDING, help = DESCRIBE_JNDIBINDING__HELP)
   @CliMetaData
@@ -52,8 +46,7 @@ public class DescribeJndiBindingCommand extends GfshCommand {
     ResultModel crm = new ResultModel();
     TabularResultModel tabularData = crm.addTable(JNDI_PROPERTIES_SECTION);
 
-    InternalConfigurationPersistenceService ccService =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       if (cacheConfig == null) {
