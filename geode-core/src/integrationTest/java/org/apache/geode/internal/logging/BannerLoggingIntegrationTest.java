@@ -19,7 +19,6 @@ import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.internal.logging.Banner.BannerHeader.displayValues;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -81,13 +80,12 @@ public class BannerLoggingIntegrationTest {
 
   @Test
   public void bannerIsLoggedToFile() {
-    await().untilAsserted(() -> LogFileAssert.assertThat(mainLogFile).contains(displayValues()));
+    LogFileAssert.assertThat(mainLogFile).contains(displayValues());
   }
 
   @Test
   public void bannerIsLoggedToFileOnlyOnce() {
-    await().untilAsserted(
-        () -> LogFileAssert.assertThat(mainLogFile).containsOnlyOnce(displayValues()));
+    LogFileAssert.assertThat(mainLogFile).containsOnlyOnce(displayValues());
   }
 
   /**
