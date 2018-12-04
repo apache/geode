@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -57,9 +56,9 @@ public class RegionConfigFactoryTest {
   }
 
   @Test
-  public void generatesWithNoAttributes() {
+  public void generatesNullWithNoAttributes() {
     RegionConfig config = subject.generate(args);
-    assertThat(config.getRegionAttributes()).isEmpty();
+    assertThat(config.getRegionAttributes()).isNull();
   }
 
   @Test
@@ -68,8 +67,8 @@ public class RegionConfigFactoryTest {
     args.setValueConstraint("value-const");
 
     RegionConfig config = subject.generate(args);
-    assertThat(getRegionAttributeValue(config, t -> t.getKeyConstraint())).isEqualTo("key-const");
-    assertThat(getRegionAttributeValue(config, t -> t.getValueConstraint()))
+    assertThat(config.getRegionAttributes().getKeyConstraint()).isEqualTo("key-const");
+    assertThat(config.getRegionAttributes().getValueConstraint())
         .isEqualTo("value-const");
   }
 
@@ -83,19 +82,16 @@ public class RegionConfigFactoryTest {
 
     RegionConfig config = subject.generate(args);
     RegionAttributesType.RegionTimeToLive regionTimeToLive =
-        (RegionAttributesType.RegionTimeToLive) getRegionAttributeValue(config,
-            t -> t.getRegionTimeToLive());
+        config.getRegionAttributes().getRegionTimeToLive();
     assertThat(regionTimeToLive.getExpirationAttributes().getTimeout()).isEqualTo("10");
 
     RegionAttributesType.EntryTimeToLive entryTimeToLive =
-        (RegionAttributesType.EntryTimeToLive) getRegionAttributeValue(config,
-            t -> t.getEntryTimeToLive());
+        config.getRegionAttributes().getEntryTimeToLive();
     assertThat(entryTimeToLive.getExpirationAttributes().getAction())
         .isEqualTo(ExpirationAction.LOCAL_DESTROY.toXmlString());
 
     RegionAttributesType.EntryIdleTime entryIdleTime =
-        (RegionAttributesType.EntryIdleTime) getRegionAttributeValue(config,
-            t -> t.getEntryIdleTime());
+        config.getRegionAttributes().getEntryIdleTime();
     DeclarableType customExpiry = entryIdleTime.getExpirationAttributes().getCustomExpiry();
     assertThat(customExpiry.getClassName()).isEqualTo("java.lang.String");
     assertThat(entryIdleTime.getExpirationAttributes().getAction())
@@ -110,8 +106,8 @@ public class RegionConfigFactoryTest {
     args.setDiskSynchronous(false);
 
     RegionConfig config = subject.generate(args);
-    assertThat(getRegionAttributeValue(config, t -> t.getDiskStoreName())).isEqualTo("disk-store");
-    assertThat(getRegionAttributeValue(config, t -> t.isDiskSynchronous())).isEqualTo(false);
+    assertThat(config.getRegionAttributes().getDiskStoreName()).isEqualTo("disk-store");
+    assertThat(config.getRegionAttributes().isDiskSynchronous()).isEqualTo(false);
   }
 
   @Test
@@ -122,8 +118,7 @@ public class RegionConfigFactoryTest {
 
     RegionConfig config = subject.generate(args);
     RegionAttributesType.PartitionAttributes partitionAttributes =
-        (RegionAttributesType.PartitionAttributes) getRegionAttributeValue(config,
-            t -> t.getPartitionAttributes());
+        config.getRegionAttributes().getPartitionAttributes();
     assertThat(partitionAttributes).isNotNull();
     assertThat(partitionAttributes.getColocatedWith()).isEqualTo("colo-with");
     assertThat(partitionAttributes.getLocalMaxMemory()).isEqualTo("100");
@@ -148,17 +143,17 @@ public class RegionConfigFactoryTest {
     args.setOffHeap(true);
     RegionConfig config = subject.generate(args);
 
-    assertThat(getRegionAttributeValue(config, t -> t.isStatisticsEnabled())).isEqualTo(false);
-    assertThat(getRegionAttributeValue(config, t -> t.isEnableSubscriptionConflation()))
+    assertThat(config.getRegionAttributes().isStatisticsEnabled()).isEqualTo(false);
+    assertThat(config.getRegionAttributes().isEnableSubscriptionConflation())
         .isEqualTo(true);
-    assertThat(getRegionAttributeValue(config, t -> t.isConcurrencyChecksEnabled()))
+    assertThat(config.getRegionAttributes().isConcurrencyChecksEnabled())
         .isEqualTo(true);
-    assertThat(getRegionAttributeValue(config, t -> t.isEnableSubscriptionConflation()))
+    assertThat(config.getRegionAttributes().isEnableSubscriptionConflation())
         .isEqualTo(true);
-    assertThat(getRegionAttributeValue(config, t -> t.isMulticastEnabled()))
+    assertThat(config.getRegionAttributes().isMulticastEnabled())
         .isEqualTo(false);
-    assertThat(getRegionAttributeValue(config, t -> t.isCloningEnabled())).isEqualTo(false);
-    assertThat(getRegionAttributeValue(config, t -> t.isOffHeap())).isEqualTo(true);
+    assertThat(config.getRegionAttributes().isCloningEnabled()).isEqualTo(false);
+    assertThat(config.getRegionAttributes().isOffHeap()).isEqualTo(true);
   }
 
   @Test
@@ -166,9 +161,9 @@ public class RegionConfigFactoryTest {
     args.setGatewaySenderIds(new String[] {"some-id", "some-other-id"});
     RegionConfig config = subject.generate(args);
 
-    assertThat((String) getRegionAttributeValue(config, t -> t.getGatewaySenderIds()))
+    assertThat(config.getRegionAttributes().getGatewaySenderIds())
         .contains("some-id");
-    assertThat((String) getRegionAttributeValue(config, t -> t.getGatewaySenderIds()))
+    assertThat(config.getRegionAttributes().getGatewaySenderIds())
         .contains("some-other-id");
   }
 
@@ -179,8 +174,7 @@ public class RegionConfigFactoryTest {
     RegionConfig config = subject.generate(args);
 
     RegionAttributesType.EvictionAttributes evictionAttributes =
-        (RegionAttributesType.EvictionAttributes) getRegionAttributeValue(config,
-            t -> t.getEvictionAttributes());
+        config.getRegionAttributes().getEvictionAttributes();
     assertThat(evictionAttributes).isNotNull();
     assertThat(evictionAttributes.getLruHeapPercentage().getAction())
         .isSameAs(EnumActionDestroyOverflow.LOCAL_DESTROY);
@@ -195,8 +189,7 @@ public class RegionConfigFactoryTest {
     RegionConfig config = subject.generate(args);
 
     RegionAttributesType.EvictionAttributes evictionAttributes =
-        (RegionAttributesType.EvictionAttributes) getRegionAttributeValue(config,
-            t -> t.getEvictionAttributes());
+        config.getRegionAttributes().getEvictionAttributes();
     assertThat(evictionAttributes).isNotNull();
     assertThat(evictionAttributes.getLruMemorySize().getAction())
         .isSameAs(EnumActionDestroyOverflow.LOCAL_DESTROY);
@@ -209,8 +202,7 @@ public class RegionConfigFactoryTest {
         null);
     RegionConfig config = subject.generate(args);
     RegionAttributesType.EvictionAttributes evictionAttributes =
-        (RegionAttributesType.EvictionAttributes) getRegionAttributeValue(config,
-            t -> t.getEvictionAttributes());
+        config.getRegionAttributes().getEvictionAttributes();
     assertThat(evictionAttributes).isNotNull();
     assertThat(evictionAttributes.getLruEntryCount().getAction())
         .isSameAs(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
@@ -222,9 +214,9 @@ public class RegionConfigFactoryTest {
     args.setAsyncEventQueueIds(new String[] {"id-1", "id-2"});
     RegionConfig config = subject.generate(args);
 
-    assertThat((String) getRegionAttributeValue(config, t -> t.getAsyncEventQueueIds()))
+    assertThat(config.getRegionAttributes().getAsyncEventQueueIds())
         .contains("id-1");
-    assertThat((String) getRegionAttributeValue(config, t -> t.getAsyncEventQueueIds()))
+    assertThat(config.getRegionAttributes().getAsyncEventQueueIds())
         .contains("id-2");
   }
 
@@ -235,19 +227,15 @@ public class RegionConfigFactoryTest {
     args.setCacheWriter(new ClassName("java.lang.String"));
     RegionConfig config = subject.generate(args);
 
-    List<DeclarableType> cacheListeners = config.getRegionAttributes().stream()
-        .filter(a -> !a.getCacheListeners().isEmpty())
-        .findFirst()
-        .map(a -> a.getCacheListeners())
-        .orElse(null);
+    List<DeclarableType> cacheListeners = config.getRegionAttributes().getCacheListeners();
 
     assertThat(cacheListeners).isNotNull();
     assertThat(cacheListeners.get(0).getClassName()).isEqualTo("java.lang.String");
     assertThat(
-        ((DeclarableType) getRegionAttributeValue(config, t -> t.getCacheLoader())).getClassName())
+        config.getRegionAttributes().getCacheLoader().getClassName())
             .isEqualTo("java.lang.String");
     assertThat(
-        ((DeclarableType) getRegionAttributeValue(config, t -> t.getCacheWriter())).getClassName())
+        config.getRegionAttributes().getCacheWriter().getClassName())
             .isEqualTo("java.lang.String");
   }
 
@@ -259,15 +247,9 @@ public class RegionConfigFactoryTest {
     RegionConfig config = subject.generate(args);
 
     assertThat(
-        ((ClassNameType) getRegionAttributeValue(config, t -> t.getCompressor())).getClassName())
+        config.getRegionAttributes().getCompressor().getClassName())
             .isEqualTo("java.lang.String");
-    assertThat(getRegionAttributeValue(config, t -> t.getConcurrencyLevel())).isEqualTo("1");
+    assertThat(config.getRegionAttributes().getConcurrencyLevel()).isEqualTo("1");
   }
 
-  private Object getRegionAttributeValue(RegionConfig config, RegionAttributeGetFunction function) {
-    return config.getRegionAttributes().stream()
-        .findFirst()
-        .map(a -> function.getValue(a))
-        .orElse(null);
-  }
 }
