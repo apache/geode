@@ -139,7 +139,7 @@ public class ShowMetricsDUnitTest {
     gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --port="
         + server.getPort() + " --file=" + output.getAbsolutePath()).statusIsSuccess()
         .containsOutput("Member Metrics").containsOutput("cacheserver")
-        .containsOutput("Member metrics exported to " + output.getAbsolutePath());
+        .containsOutput("Metrics saved to: " + output.getAbsolutePath());
 
     assertThat(output).exists();
   }
