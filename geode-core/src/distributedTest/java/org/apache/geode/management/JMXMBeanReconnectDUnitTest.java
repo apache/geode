@@ -86,10 +86,10 @@ public class JMXMBeanReconnectDUnitTest {
   @Before
   public void before() throws Exception {
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
-
     locator1.waitTilLocatorFullyStarted();
 
     locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
+    locator2.waitTilLocatorFullyStarted();
 
     server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
     // start an extra server to have more MBeans, but we don't need to use it in these tests
