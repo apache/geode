@@ -95,6 +95,26 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   }
 
   @Test
+  public void destroyRegionThatHasSynchronousMappingFails() {
+    setupSynchronousMapping();
+
+    gfsh.executeAndAssertThat("destroy region --name=" + REGION_NAME).statusIsError()
+        .containsOutput("Cannot destroy region \"" + REGION_NAME
+            + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+  }
+
+  @Test
+  public void destroyRegionThatHadSynchronousMappingSucceeds() {
+    setupSynchronousMapping();
+    CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
+    csb.addOption(DESTROY_MAPPING__REGION_NAME, REGION_NAME);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    gfsh.executeAndAssertThat("destroy region --name=" + REGION_NAME).statusIsSuccess();
+  }
+
+
+  @Test
   public void destroysAsyncMapping() {
     setupAsyncMapping();
     CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);

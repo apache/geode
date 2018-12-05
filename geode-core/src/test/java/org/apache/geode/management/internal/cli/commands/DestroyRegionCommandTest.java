@@ -33,12 +33,14 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -48,10 +50,14 @@ public class DestroyRegionCommandTest {
   public static GfshParserRule parser = new GfshParserRule();
 
   private DestroyRegionCommand command;
-  private CommandResult result;
   private CliFunctionResult result1, result2;
   private InternalConfigurationPersistenceService ccService;
   XmlEntity xmlEntity;
+  private CacheConfig cacheConfig = mock(CacheConfig.class);
+  private RegionConfig regionConfig = mock(RegionConfig.class);
+  private CacheElement cacheElement = mock(CacheElement.class);
+  private List<RegionConfig> regionConfigList = Collections.singletonList(regionConfig);
+  private List<CacheElement> cacheElementList = Collections.singletonList(cacheElement);
 
   @Before
   public void before() throws Exception {
@@ -73,7 +79,7 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
-  public void invalidRegion() throws Exception {
+  public void invalidRegion() {
     parser.executeAndAssertThat(command, "destroy region").statusIsError()
         .containsOutput("Invalid command");
 
@@ -91,7 +97,7 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
-  public void whenNoRegionIsFoundOnAnyMembers() throws Exception {
+  public void whenNoRegionIsFoundOnAnyMembers() {
     doReturn(Collections.emptySet()).when(command).findMembersForRegion(any());
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
         .containsOutput("Could not find a Region with Region path");
@@ -101,7 +107,7 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
-  public void multipleResultReturned_oneSucess_oneFailed() throws Exception {
+  public void multipleResultReturned_oneSucess_oneFailed() {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any());
@@ -120,7 +126,7 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
-  public void multipleResultReturned_oneSuccess_oneException() throws Exception {
+  public void multipleResultReturned_oneSuccess_oneException() {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any());
@@ -140,7 +146,7 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
-  public void multipleResultReturned_all_failed() throws Exception {
+  public void multipleResultReturned_all_failed() {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any());
@@ -154,7 +160,61 @@ public class DestroyRegionCommandTest {
         .containsOutput("result1 message").containsOutput("something happened");
 
 
-    // verify that xmlEntiry returned by the result1 is saved to Cluster config
+    // verify that xmlEntry returned by the result1 is saved to Cluster config
     verify(command, never()).persistClusterConfiguration(any(), any());
+  }
+
+  private void setupJDBCMappingOnRegion(String regionName) {
+    doReturn(cacheConfig).when(ccService).getCacheConfig(null);
+    doReturn(regionConfigList).when(cacheConfig).getRegions();
+    doReturn(regionName).when(regionConfig).getName();
+    doReturn(cacheElementList).when(regionConfig).getCustomRegionElements();
+    doReturn("jdbc-mapping").when(cacheElement).getId();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void checkForJDBCMappingWithRegionPathThrowsIllegalStateException() {
+    setupJDBCMappingOnRegion("regionName");
+
+    command.checkForJDBCMapping("/regionName");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void checkForJDBCMappingWithRegionNameThrowsIllegalStateException() {
+    setupJDBCMappingOnRegion("regionName");
+
+    command.checkForJDBCMapping("regionName");
+  }
+
+  @Test
+  public void checkForJDBCMappingWithNoClusterConfigDoesNotThrowException() {
+    setupJDBCMappingOnRegion("regionName");
+    doReturn(null).when(command).getConfigurationPersistenceService();
+
+    command.checkForJDBCMapping("regionName");
+  }
+
+  @Test
+  public void checkForJDBCMappingWithNoCacheConfigDoesNotThrowException() {
+    setupJDBCMappingOnRegion("regionName");
+    doReturn(null).when(ccService).getCacheConfig(null);
+
+    command.checkForJDBCMapping("regionName");
+  }
+
+  @Test
+  public void checkForJDBCMappingWithNoRegionConfigDoesNotThrowException() {
+    setupJDBCMappingOnRegion("regionName");
+    doReturn(Collections.emptyList()).when(cacheConfig).getRegions();
+
+    command.checkForJDBCMapping("regionName");
+  }
+
+  @Test
+  public void checkForJDBCMappingWithNoJDBCMappingDoesNotThrowException() {
+    setupJDBCMappingOnRegion("regionName");
+    doReturn("something").when(cacheElement).getId();
+
+    command.checkForJDBCMapping("regionName");
   }
 }
