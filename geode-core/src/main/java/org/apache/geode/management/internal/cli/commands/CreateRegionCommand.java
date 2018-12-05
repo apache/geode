@@ -40,9 +40,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -442,9 +444,30 @@ public class CreateRegionCommand extends SingleGfshCommand {
         RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
 
     ResultModel resultModel = ResultModel.createMemberStatusResult(regionCreateResults);
+    InternalConfigurationPersistenceService service =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+
+    if (service == null) {
+      return resultModel;
+    }
+
+    // otherwise, prepare the regionConfig for persistence
     if (resultModel.isSuccessful()) {
       verifyDistributedRegionMbean(cache, regionPath);
       RegionConfig config = (new RegionConfigFactory()).generate(functionArgs);
+      // the following is a temporary solution before lucene make the change to create region first
+      // before creating the lucene index.
+      // GEODE-3924
+      // we will need to get the xml returned from the server to find out any custom xml nested
+      // inside the region
+      String regionXml = (String) regionCreateResults.stream()
+          .filter(CliFunctionResult::isSuccessful)
+          .findFirst().get().getResultObject();
+      RegionConfig regionConfigFromServer =
+          service.getJaxbService().unMarshall(regionXml, RegionConfig.class);
+      List<CacheElement> extensions = regionConfigFromServer.getCustomRegionElements();
+      config.getCustomRegionElements().addAll(extensions);
+
       resultModel.setConfigObject(new CreateRegionResultConfig(config,
           functionArgs.getRegionPath()));
     }

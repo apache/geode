@@ -388,6 +388,11 @@ javadoc/org/apache/geode/cache/lucene/LuceneServiceProvider.html
 javadoc/org/apache/geode/cache/lucene/PageableLuceneQueryResults.html
 javadoc/org/apache/geode/cache/lucene/management/LuceneIndexMetrics.html
 javadoc/org/apache/geode/cache/lucene/management/LuceneServiceMXBean.html
+javadoc/org/apache/geode/cache/lucene/management/configuration/Index.Field.html
+javadoc/org/apache/geode/cache/lucene/management/configuration/Index.html
+javadoc/org/apache/geode/cache/lucene/management/configuration/package-frame.html
+javadoc/org/apache/geode/cache/lucene/management/configuration/package-summary.html
+javadoc/org/apache/geode/cache/lucene/management/configuration/package-tree.html
 javadoc/org/apache/geode/cache/lucene/management/package-frame.html
 javadoc/org/apache/geode/cache/lucene/management/package-summary.html
 javadoc/org/apache/geode/cache/lucene/management/package-tree.html

@@ -103,7 +103,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       if (LuceneServiceImpl.LUCENE_REINDEX) {
         indexFactory.create(indexName, regionPath, true);
         if (cache.getRegion(regionPath) != null) {
-          xmlEntity = getXmlEntity(indexName, regionPath);
+          xmlEntity = getXmlEntity(regionPath);
         }
       } else {
         indexFactory.create(indexName, regionPath, false);
@@ -117,7 +117,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
   }
 
-  protected XmlEntity getXmlEntity(String indexName, String regionPath) {
+  protected XmlEntity getXmlEntity(String regionPath) {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return new XmlEntity(CacheXml.REGION, "name", regionName);
   }
