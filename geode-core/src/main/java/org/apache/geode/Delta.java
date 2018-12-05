@@ -32,7 +32,9 @@ import java.io.IOException;
 public interface Delta {
 
   /**
-   * Returns true if this object has pending changes it can write out.
+   * Returns true if this object has delta to be applied.
+   * If true, delta is applied and delta data is sent between client/server, otherwise entire
+   * data is sent between client/server.
    */
   boolean hasDelta();
 
