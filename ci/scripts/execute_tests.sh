@@ -41,8 +41,8 @@ if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
 else
   PARALLEL_GRADLE=""
 fi
-DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
-
+DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon"
+GRADLE_SKIP_TASK_OPTIONS="-x javadoc -x spotlessCheck -x rat"
 
 SSHKEY_FILE="instance-data/sshkey"
 SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60"
@@ -90,6 +90,7 @@ GRADLE_ARGS=" \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
+    ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS}"

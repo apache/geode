@@ -24,4 +24,8 @@ public interface InternalAsyncEventQueue extends AsyncEventQueue {
   InternalGatewaySender getSender();
 
   AsyncEventQueueStats getStatistics();
+
+  void stop();
+
+  void destroy();
 }

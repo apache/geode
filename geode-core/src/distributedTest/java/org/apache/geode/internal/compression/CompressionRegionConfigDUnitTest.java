@@ -40,7 +40,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 /**
  * Sanity checks on a number of basic cluster configurations with compression turned on.

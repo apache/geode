@@ -819,7 +819,7 @@ public class PartitionedRegionLoadModel {
     }
 
     result.append(String.format("\n%" + longestMemberId + "s                            ",
-        "#offline", 0, 0, 0));
+        "#offline"));
     for (Bucket bucket : allBucketIds) {
       result.append(String.format("%4s", bucket.getOfflineMembers().size()));
     }

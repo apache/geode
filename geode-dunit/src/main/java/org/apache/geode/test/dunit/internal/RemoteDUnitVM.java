@@ -12,14 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.standalone;
+package org.apache.geode.test.dunit.internal;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.TimeUnit;
 
-import hydra.MethExecutor;
-import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -41,10 +39,10 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    * @return the result of method execution
    */
   @Override
-  public MethExecutorResult executeMethodOnObject(Object target, String methodName) {
+  public MethodInvokerResult executeMethodOnObject(Object target, String methodName) {
     String name = target.getClass().getName() + '.' + methodName + " on object: " + target;
     long start = start(name);
-    MethExecutorResult result = MethExecutor.executeObject(target, methodName);
+    MethodInvokerResult result = MethodInvoker.executeObject(target, methodName);
     logDelta(name, start, result);
     return result;
   }
@@ -54,7 +52,7 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
     return System.nanoTime();
   }
 
-  private void logDelta(String name, long start, MethExecutorResult result) {
+  private void logDelta(String name, long start, MethodInvokerResult result) {
     long delta = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
     logger.info("Got result: {} from {} (took {} ms)", result, name, delta);
   }
@@ -63,11 +61,12 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    * Executes a given instance method on a given object with the given arguments.
    */
   @Override
-  public MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args) {
+  public MethodInvokerResult executeMethodOnObject(Object target, String methodName,
+      Object[] args) {
     String name = target.getClass().getName() + '.' + methodName
         + (args != null ? " with " + args.length + " args" : "") + " on object: " + target;
     long start = start(name);
-    MethExecutorResult result = MethExecutor.executeObject(target, methodName, args);
+    MethodInvokerResult result = MethodInvoker.executeObject(target, methodName, args);
     logDelta(name, start, result);
     return result;
   }
@@ -81,10 +80,10 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    * @param methodName the name of the method to execute
    * @return the result of method execution
    */
-  public MethExecutorResult executeMethodOnClass(String className, String methodName) {
+  public MethodInvokerResult executeMethodOnClass(String className, String methodName) {
     String name = className + '.' + methodName;
     long start = start(name);
-    MethExecutorResult result = MethExecutor.execute(className, methodName);
+    MethodInvokerResult result = MethodInvoker.execute(className, methodName);
     logDelta(name, start, result);
 
     return result;
@@ -94,12 +93,12 @@ public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMI
    * Executes a given static method in a given class with the given arguments.
    */
   @Override
-  public MethExecutorResult executeMethodOnClass(String className, String methodName,
+  public MethodInvokerResult executeMethodOnClass(String className, String methodName,
       Object[] args) {
     String name =
         className + '.' + methodName + (args != null ? " with " + args.length + " args" : "");
     long start = start(name);
-    MethExecutorResult result = MethExecutor.execute(className, methodName, args);
+    MethodInvokerResult result = MethodInvoker.execute(className, methodName, args);
     logDelta(name, start, result);
     return result;
   }

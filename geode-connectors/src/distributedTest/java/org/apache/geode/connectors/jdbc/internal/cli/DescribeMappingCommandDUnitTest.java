@@ -26,9 +26,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.util.Properties;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
@@ -44,6 +47,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({JDBCConnectorTest.class})
+@RunWith(JUnitParamsRunner.class)
 public class DescribeMappingCommandDUnitTest implements Serializable {
 
   private static final String REGION_NAME = "testRegion";
@@ -59,17 +63,25 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
   private MemberVM locator, server;
 
+  private static String convertRegionPathToName(String regionPath) {
+    if (regionPath.startsWith("/")) {
+      return regionPath.substring(1);
+    }
+    return regionPath;
+  }
+
   @Test
-  public void describesExistingMapping() throws Exception {
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void describesExistingMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "testTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
@@ -77,12 +89,13 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(DESCRIBE_MAPPING__REGION_NAME,
-        REGION_NAME);
+        regionName);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME,
+        convertRegionPathToName(regionName));
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_NAME, "myPdxClass");

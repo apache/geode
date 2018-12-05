@@ -148,7 +148,7 @@ public class DistributedMemberLock implements Lock {
           return true;
         }
         boolean locked = dls.lock(key, -1, leaseTimeout);
-        Assert.assertTrue(locked, "Failed to lock " + toString());
+        Assert.assertTrue(locked, "Failed to lock " + this);
         return locked;
       }
     });

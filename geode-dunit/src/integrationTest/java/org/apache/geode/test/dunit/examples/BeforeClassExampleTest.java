@@ -20,7 +20,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 
 public class BeforeClassExampleTest {

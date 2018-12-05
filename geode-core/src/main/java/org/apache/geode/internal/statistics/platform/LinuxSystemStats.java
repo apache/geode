@@ -49,6 +49,7 @@ public class LinuxSystemStats {
   static final int dirtyMemoryINT = 17;
   static final int cpuNonUserINT = 18;
   static final int cpuStealINT = 19;
+  static final int tcpSOMaxConnINT = 20;
 
   static final int loopbackPacketsLONG = 0;
   static final int loopbackBytesLONG = 1;
@@ -78,6 +79,11 @@ public class LinuxSystemStats {
   static final int iosInProgressLONG = 25;
   static final int timeIosInProgressLONG = 26;
   static final int ioTimeLONG = 27;
+  static final int tcpExtSynCookiesRecvLONG = 28;
+  static final int tcpExtSynCookiesSentLONG = 29;
+  static final int tcpExtListenDropsLONG = 30;
+  static final int tcpExtListenOverflowsLONG = 31;
+
 
   static final int loadAverage1DOUBLE = 0;
   static final int loadAverage15DOUBLE = 1;
@@ -149,6 +155,9 @@ public class LinuxSystemStats {
             f.createIntGauge("cpuSteal",
                 "Steal time is the amount of time the operating system wanted to execute, but was not allowed to by the hypervisor.",
                 "%"),
+            f.createIntGauge("soMaxConn",
+                "Maximum TCP/IP server socket connection request backlog",
+                "connection requests"),
 
             f.createLongCounter("loopbackPackets",
                 "The number of network packets sent (or received) on the loopback interface",
@@ -219,6 +228,23 @@ public class LinuxSystemStats {
             f.createLongCounter("diskTime",
                 "The total number of milliseconds that measures both completed disk operations and any accumulating backlog of in progress ops.",
                 "milliseconds"),
+            f.createLongCounter("tcpExtSynCookiesRecv",
+                "The number of TCP/IP SYN cookies received due to a full server socket backlog.  "
+                    + "If this is non-zero consider disabling SYN cookies because they form sub-optimal connections.",
+                "cookies received"),
+            f.createLongCounter("tcpExtSynCookiesSent",
+                "The number of TCP/IP SYN cookies sent due to a full server socket backlog.  "
+                    + "If this is non-zero consider disabling SYN cookies because they form sub-optimal connections.",
+                "cookies sent"),
+            f.createLongCounter("tcpExtListenDrops",
+                "The number of TCP/IP connection requests that have been dropped due to a full backlog.  "
+                    + "If this is large increase the OS SOMAXCONN setting and increase socket backlog settings",
+                "requests"),
+            f.createLongCounter("tcpExtListenOverflows",
+                "The number of TCP/IP connection requests that could not be queued due to a small backlog.  "
+                    + "These are either dropped (tcpExtListenDrops) or handled via cookies (tcpSynCookiesSent).  "
+                    + "In either case you should consider increasing SOMAXCONN and increasing backlog settings.",
+                "requests"),
 
 
             f.createDoubleGauge("loadAverage1",
@@ -251,6 +277,7 @@ public class LinuxSystemStats {
     checkOffset("dirtyMemory", dirtyMemoryINT);
     checkOffset("cpuNonUser", cpuNonUserINT);
     checkOffset("cpuSteal", cpuStealINT);
+    checkOffset("soMaxConn", tcpSOMaxConnINT);
 
     checkOffset("loopbackPackets", loopbackPacketsLONG);
     checkOffset("loopbackBytes", loopbackBytesLONG);
@@ -280,6 +307,10 @@ public class LinuxSystemStats {
     checkOffset("diskOpsInProgress", iosInProgressLONG);
     checkOffset("diskTimeInProgress", timeIosInProgressLONG);
     checkOffset("diskTime", ioTimeLONG);
+    checkOffset("tcpExtSynCookiesRecv", tcpExtSynCookiesRecvLONG);
+    checkOffset("tcpExtSynCookiesSent", tcpExtSynCookiesSentLONG);
+    checkOffset("tcpExtListenDrops", tcpExtListenDropsLONG);
+    checkOffset("tcpExtListenOverflows", tcpExtListenOverflowsLONG);
 
     checkOffset("loadAverage1", loadAverage1DOUBLE);
     checkOffset("loadAverage15", loadAverage15DOUBLE);

@@ -238,6 +238,7 @@ dependencies {
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
   compile('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
@@ -259,6 +260,7 @@ dependencies {
 
   jcaCompile(sourceSets.main.output)
 
+  jmhCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -314,12 +316,16 @@ dependencies {
   distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
   distributedTestCompile('com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version')
 
+  distributedTestRuntime(project(':geode-old-versions'))
   distributedTestRuntime('org.apache.derby:derby:' + project.'derby.version')
 
 
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
+  upgradeTestRuntime(project(':geode-old-versions'))
+
 
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'

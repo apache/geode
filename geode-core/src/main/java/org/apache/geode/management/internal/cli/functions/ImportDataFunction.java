@@ -46,6 +46,7 @@ public class ImportDataFunction implements InternalFunction {
     final boolean invokeCallbacks = (boolean) args[2];
     final boolean parallel = (boolean) args[3];
 
+    CliFunctionResult result;
     try {
       final Cache cache =
           ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
@@ -60,15 +61,19 @@ public class ImportDataFunction implements InternalFunction {
         snapshotService.load(new File(importFileName), SnapshotFormat.GEMFIRE, options);
         String successMessage = CliStrings.format(CliStrings.IMPORT_DATA__SUCCESS__MESSAGE,
             importFile.getCanonicalPath(), hostName, regionName);
-        context.getResultSender().lastResult(successMessage);
+        result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+            successMessage);
       } else {
-        throw new IllegalArgumentException(
+        result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
       }
 
     } catch (Exception e) {
-      context.getResultSender().sendException(e);
+      result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          e.getMessage());
     }
+
+    context.getResultSender().lastResult(result);
   }
 
   public String getId() {

@@ -90,7 +90,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * Base class for tests for authorization from client to server. It contains utility functions for

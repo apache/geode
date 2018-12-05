@@ -150,11 +150,11 @@ public class ClusterMembersRGraphService implements PulseService {
 
         memberData.put("gemfireVersion", member.getGemfireVersion());
 
-        Long currentHeap = member.getCurrentHeapSize();
-        Long usedHeapSize = cluster.getUsedHeapSize();
+        long currentHeap = member.getCurrentHeapSize();
+        long usedHeapSize = cluster.getUsedHeapSize();
 
         if (usedHeapSize > 0) {
-          double heapUsage = (currentHeap.doubleValue() / usedHeapSize.doubleValue()) * 100;
+          double heapUsage = ((currentHeap * 1D) / usedHeapSize) * 100;
 
           memberData.put(this.MEMORY_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(heapUsage));
         } else

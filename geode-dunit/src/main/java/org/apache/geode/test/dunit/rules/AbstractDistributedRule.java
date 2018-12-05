@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 

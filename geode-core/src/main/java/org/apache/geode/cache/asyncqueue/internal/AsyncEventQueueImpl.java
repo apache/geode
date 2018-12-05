@@ -169,12 +169,14 @@ public class AsyncEventQueueImpl implements InternalAsyncEventQueue {
     return sender.getIsMetaQueue();
   }
 
+  @Override
   public void stop() {
     if (sender.isRunning()) {
       sender.stop();
     }
   }
 
+  @Override
   public void destroy() {
     destroy(true);
   }

@@ -20,13 +20,18 @@ import static org.mockito.Mockito.spy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-public class AlterDiskStoreJUnitTest {
+public class AlterDiskStoreCommandIntegrationTest {
+
+  @Rule
+  public TemporaryFolder tempDir = new TemporaryFolder();
+
   @Rule
   public GfshParserRule gfsh = new GfshParserRule();
 
@@ -38,11 +43,11 @@ public class AlterDiskStoreJUnitTest {
   }
 
   @Test
-  public void removeOptionMustBeUsedAlone() throws Exception {
+  public void removeOptionMustBeUsedAlone() {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
     csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
     csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
-    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, "./someDirectory");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, tempDir.getRoot().toString());
     csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
     csb.addOption(CliStrings.ALTER_DISK_STORE__REMOVE, "true");
     String commandString = csb.toString();

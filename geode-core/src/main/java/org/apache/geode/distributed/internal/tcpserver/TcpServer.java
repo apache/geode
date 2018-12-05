@@ -119,8 +119,6 @@ public class TcpServer {
   // no longer static so that tests can test this system property
   private final int READ_TIMEOUT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000);
-  // This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure
-  // the locator backlog.
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000);
   private static final int BACKLOG =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
