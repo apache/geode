@@ -153,6 +153,37 @@ public class JAXBServiceTest {
     assertThat(elements.get(0)).isInstanceOf(ElementOne.class);
   }
 
+  @Test
+  public void marshalOlderNameSpace() {
+    String xml =
+        "<cache xsi:schemaLocation=\"http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd\"\n"
+            +
+            "       version=\"8.1\"\n" +
+            "       xmlns=\"http://schema.pivotal.io/gemfire/cache\"\n" +
+            "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+            "    <region name=\"one\">\n" +
+            "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n" +
+            "    </region>\n" +
+            "</cache>";
+
+    CacheConfig cacheConfig = service2.unMarshall(xml);
+    assertThat(cacheConfig.getRegions()).hasSize(1);
+    assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("one");
+  }
+
+  @Test
+  public void marshallNoNameSpace() {
+    String xml = "<cache version=\"1.0\">\n" +
+        "    <region name=\"one\">\n" +
+        "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n" +
+        "    </region>\n" +
+        "</cache>";
+
+    CacheConfig cacheConfig = service2.unMarshall(xml);
+    assertThat(cacheConfig.getRegions()).hasSize(1);
+    assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("one");
+  }
+
   public static void setBasicValues(CacheConfig cache) {
     cache.setCopyOnRead(true);
     CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
