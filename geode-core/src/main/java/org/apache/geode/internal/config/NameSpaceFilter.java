@@ -19,6 +19,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+
 public class NameSpaceFilter extends XMLFilterImpl {
 
   @Override
@@ -32,8 +34,8 @@ public class NameSpaceFilter extends XMLFilterImpl {
   @Override
   public void startElement(String uri, String localName, String qName,
       Attributes atts) throws SAXException {
-    if ("".equals(uri) || "http://schema.pivotal.io/gemfire/cache".equals(uri)) {
-      uri = "http://geode.apache.org/schema/cache";
+    if ("".equals(uri) || CacheXml.GEMFIRE_NAMESPACE.equals(uri)) {
+      uri = CacheXml.GEODE_NAMESPACE;
     }
     super.startElement(uri, localName, qName, atts);
   }
