@@ -77,7 +77,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public ResultModel createJDNIBinding(
+  public ResultModel createDataSource(
       @CliOption(key = POOLED_DATA_SOURCE_FACTORY_CLASS,
           help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String pooledDataSourceFactoryClass,
       @CliOption(key = URL, mandatory = true,
@@ -139,7 +139,10 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       return result;
     } else {
       if (service != null) {
-        return ResultModel.createInfo("No members found, data source saved to cluster config.");
+        ResultModel result =
+            ResultModel.createInfo("No members found, data source saved to cluster configuration.");
+        result.setConfigObject(configuration);
+        return result;
       } else {
         return ResultModel.createError("No members found and cluster configuration unavailable.");
       }
