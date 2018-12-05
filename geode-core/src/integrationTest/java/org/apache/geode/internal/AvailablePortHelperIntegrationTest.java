@@ -19,6 +19,7 @@ import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUN
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -222,6 +223,13 @@ public class AvailablePortHelperIntegrationTest {
       }
       previousPort = port;
     }
+  }
+
+  @Test
+  public void getRandomAvailableUDPPort_succeeds() throws IOException {
+    int udpPort = getRandomAvailableUDPPort();
+    assertThat(udpPort).isNotZero();
+    assertPortIsUsable(udpPort);
   }
 
   private void assertPortsAreUsable(int[] ports) throws IOException {
