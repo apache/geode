@@ -156,6 +156,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     jaxbService = new JAXBService(CacheConfig.class);
   }
 
+  public JAXBService getJaxbService() {
+    return jaxbService;
+  }
+
   public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
       throws IOException {
     this.cache = cache;

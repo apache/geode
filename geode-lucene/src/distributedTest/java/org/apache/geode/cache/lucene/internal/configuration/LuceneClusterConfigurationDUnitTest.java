@@ -267,10 +267,10 @@ public class LuceneClusterConfigurationDUnitTest {
       Configuration config = sc.getConfiguration(ConfigurationPersistenceService.CLUSTER_CONFIG);
       String xmlContent = config.getCacheXmlContent();
       String luceneIndex0Config = "<" + LuceneXmlConstants.PREFIX + ":" + LuceneXmlConstants.INDEX
-          + " xmlns:lucene=\"" + LuceneXmlConstants.NAMESPACE + "\" " + LuceneXmlConstants.NAME
+          + " " + LuceneXmlConstants.NAME
           + "=\"" + INDEX_NAME + "0" + "\">";
       String luceneIndex1Config = "<" + LuceneXmlConstants.PREFIX + ":" + LuceneXmlConstants.INDEX
-          + " xmlns:lucene=\"" + LuceneXmlConstants.NAMESPACE + "\" " + LuceneXmlConstants.NAME
+          + " " + LuceneXmlConstants.NAME
           + "=\"" + INDEX_NAME + "1" + "\">";
       if (verifyIndexesExist) {
         assertThat(xmlContent).contains(luceneIndex0Config);

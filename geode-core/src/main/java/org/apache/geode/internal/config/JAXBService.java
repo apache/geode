@@ -44,6 +44,7 @@ import org.apache.geode.internal.ClassPathLoader;
 public class JAXBService {
   Marshaller marshaller;
   Unmarshaller unmarshaller;
+  NameSpaceFilter nameSpaceFilter;
 
   public JAXBService(Class<?>... xsdRootClasses) {
     try {
@@ -63,6 +64,10 @@ public class JAXBService {
       }).filter(Objects::nonNull).collect(Collectors.joining(" "));
 
       marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemas);
+      // use a custom Filter so that we can unmarshall older namespace or no namespace xml
+      XMLReader reader = XMLReaderFactory.createXMLReader();
+      nameSpaceFilter = new NameSpaceFilter();
+      nameSpaceFilter.setParent(reader);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -99,19 +104,20 @@ public class JAXBService {
 
   public <T> T unMarshall(String xml) {
     try {
-      InputSource is = new InputSource(new StringReader(xml));
-      XMLReader reader = XMLReaderFactory.createXMLReader();
-
-      // use a custom Filter so that we can unmarshall older namespace or no namespace xml
-      NameSpaceFilter filter = new NameSpaceFilter();
-      filter.setParent(reader);
-      SAXSource source = new SAXSource(filter, is);
-
+      SAXSource source = new SAXSource(nameSpaceFilter, new InputSource(new StringReader(xml)));
       return (T) unmarshaller.unmarshal(source);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
 
+  public <T> T unMarshall(String xml, Class<T> klass) {
+    try {
+      SAXSource source = new SAXSource(nameSpaceFilter, new InputSource(new StringReader(xml)));
+      return unmarshaller.unmarshal(source, klass).getValue();
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
 
 }

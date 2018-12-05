@@ -44,12 +44,14 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  *
@@ -93,9 +95,9 @@ public class RegionCreateFunction implements InternalFunction {
 
     try {
       Region<?, ?> createdRegion = createRegion(cache, regionCreateArgs);
-
+      XmlEntity xmlEntity = getXmlEntityForRegion(createdRegion);
       resultSender
-          .lastResult(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+          .lastResult(new CliFunctionResult(memberNameOrId, xmlEntity.getXmlDefinition(),
               CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
                   createdRegion.getFullPath(), memberNameOrId)));
     } catch (IllegalStateException e) {
@@ -122,6 +124,15 @@ public class RegionCreateFunction implements InternalFunction {
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
     }
+  }
+
+  private XmlEntity getXmlEntityForRegion(Region<?, ?> region) {
+    Region<?, ?> curRegion = region;
+    while (curRegion != null && curRegion.getParentRegion() != null) {
+      curRegion = curRegion.getParentRegion();
+    }
+
+    return new XmlEntity(CacheXml.REGION, "name", curRegion.getName());
   }
 
   private CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,

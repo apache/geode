@@ -28,7 +28,6 @@ out/
 *.orig
 geode-pulse/screenshots/
 /jpf.properties
-geode-assembly/assembly_content.txt
 
 .git-together
 bin/
