@@ -20,9 +20,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.nio.channels.SocketChannel;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -66,7 +65,7 @@ public class ConnectionJUnitTest {
 
     // NIO can't be mocked because SocketChannel has a final method that
     // is used by Connection - configureBlocking
-    when(conduit.useNIO()).thenReturn(false);
+    // when(conduit.useNIO()).thenReturn(false);
 
     // mock the distribution manager and membership manager
     when(distMgr.getMembershipManager()).thenReturn(membership);
@@ -75,12 +74,9 @@ public class ConnectionJUnitTest {
     SocketCloser closer = mock(SocketCloser.class);
     when(table.getSocketCloser()).thenReturn(closer);
 
-    InputStream instream = mock(InputStream.class);
-    when(instream.read()).thenReturn(-1);
-    Socket socket = mock(Socket.class);
-    when(socket.getInputStream()).thenReturn(instream);
+    SocketChannel channel = SocketChannel.open();
 
-    Connection conn = new Connection(table, socket);
+    Connection conn = new Connection(table, channel.socket(), null);
     conn.setSharedUnorderedForTest();
     conn.run();
     verify(membership).suspectMember(isNull(InternalDistributedMember.class), any(String.class));

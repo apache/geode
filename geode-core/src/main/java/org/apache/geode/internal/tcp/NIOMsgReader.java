@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.net.Buffers;
 
 /**
  * A message reader which reads from the socket using (blocking) nio.

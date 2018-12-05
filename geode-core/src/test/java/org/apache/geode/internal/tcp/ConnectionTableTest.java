@@ -65,7 +65,7 @@ public class ConnectionTableTest {
     connectionTable = ConnectionTable.create(tcpConduit);
 
     factory = mock(PeerConnectionFactory.class);
-    when(factory.createReceiver(connectionTable, socket)).thenReturn(connection);
+    when(factory.createReceiver(connectionTable, socket, null)).thenReturn(connection);
   }
 
   @Test
@@ -74,7 +74,7 @@ public class ConnectionTableTest {
     when(connection.isSocketClosed()).thenReturn(true); // Pretend this closed as soon at it was
                                                         // created
 
-    connectionTable.acceptConnection(socket, factory);
+    connectionTable.acceptConnection(socket, factory, null);
     assertEquals(0, connectionTable.getNumberOfReceivers());
   }
 
@@ -84,7 +84,7 @@ public class ConnectionTableTest {
 
     when(connection.isReceiverStopped()).thenReturn(true);// but receiver is stopped
 
-    connectionTable.acceptConnection(socket, factory);
+    connectionTable.acceptConnection(socket, factory, null);
     assertEquals(0, connectionTable.getNumberOfReceivers());
   }
 
@@ -92,7 +92,7 @@ public class ConnectionTableTest {
   public void testSocketNotClosedAddedAsReceivers() throws Exception {
     when(connection.isSocketClosed()).thenReturn(false);// connection is not closed
 
-    connectionTable.acceptConnection(socket, factory);
+    connectionTable.acceptConnection(socket, factory, null);
     assertEquals(1, connectionTable.getNumberOfReceivers());
   }
 

@@ -12,28 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.net;
 
-package org.apache.geode.internal.tcp;
+import java.nio.ByteBuffer;
 
-import java.io.IOException;
-import java.net.Socket;
-
-import org.apache.geode.internal.net.NioEngine;
-import org.apache.geode.internal.net.NioFilter;
-
-public class PeerConnectionFactory {
-  /**
-   * creates a connection that we accepted (it was initiated by an explicit connect being done on
-   * the other side). We will only receive data on this socket; never send.
-   */
-  public Connection createReceiver(ConnectionTable table, Socket socket,
-      NioFilter nioFilter)
-      throws IOException, ConnectionException {
-    if (nioFilter == null) {
-      nioFilter = new NioEngine();
-    }
-    Connection connection = new Connection(table, socket, nioFilter);
-    connection.initReceiver();
-    return connection;
+/**
+ * A pass-through implementation of NioFilter. Use this if you don't need
+ * secure communications.
+ */
+public class NioEngine implements NioFilter {
+  @Override
+  public ByteBuffer wrap(ByteBuffer buffer) {
+    return buffer;
   }
+
+  @Override
+  public ByteBuffer unwrap(ByteBuffer wrappedBuffer) {
+    return wrappedBuffer;
+  }
+
+  @Override
+  public void close() {}
+
 }

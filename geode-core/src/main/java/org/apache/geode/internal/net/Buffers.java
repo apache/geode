@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.tcp;
+package org.apache.geode.internal.net;
 
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.geode.distributed.internal.DMStats;
@@ -27,27 +26,33 @@ public class Buffers {
   /**
    * A list of soft references to byte buffers.
    */
-  private static final ConcurrentLinkedQueue bufferQueue = new ConcurrentLinkedQueue();
+  private static final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
+      new ConcurrentLinkedQueue<>();
+
+  /**
+   * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
+   */
+  public static boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
 
   /**
    * Should only be called by threads that have currently acquired send permission.
    *
    * @return a byte buffer to be used for sending on this connection.
    */
-  static ByteBuffer acquireSenderBuffer(int size, DMStats stats) {
+  public static ByteBuffer acquireSenderBuffer(int size, DMStats stats) {
     return acquireBuffer(size, stats, true);
   }
 
-  static ByteBuffer acquireReceiveBuffer(int size, DMStats stats) {
+  public static ByteBuffer acquireReceiveBuffer(int size, DMStats stats) {
     return acquireBuffer(size, stats, false);
   }
 
-  static ByteBuffer acquireBuffer(int size, DMStats stats, boolean send) {
+  private static ByteBuffer acquireBuffer(int size, DMStats stats, boolean send) {
     ByteBuffer result;
-    if (TCPConduit.useDirectBuffers) {
+    if (useDirectBuffers) {
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
                                                                             // set
-      BBSoftReference ref = (BBSoftReference) bufferQueue.poll();
+      BBSoftReference ref = bufferQueue.poll();
       while (ref != null) {
         ByteBuffer bb = ref.getBB();
         if (bb == null) {
@@ -68,7 +73,7 @@ public class Buffers {
           // wasn't big enough so put it back in the queue
           Assert.assertTrue(bufferQueue.offer(ref));
           if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<BBSoftReference, BBSoftReference>();
+            alreadySeen = new IdentityHashMap<>();
           }
           if (alreadySeen.put(ref, ref) != null) {
             // if it returns non-null then we have already seen this item
@@ -77,7 +82,7 @@ public class Buffers {
             break;
           }
         }
-        ref = (BBSoftReference) bufferQueue.poll();
+        ref = bufferQueue.poll();
       }
       result = ByteBuffer.allocateDirect(size);
     } else {
@@ -85,26 +90,26 @@ public class Buffers {
       result = ByteBuffer.allocate(size);
     }
     if (send) {
-      stats.incSenderBufferSize(size, TCPConduit.useDirectBuffers);
+      stats.incSenderBufferSize(size, useDirectBuffers);
     } else {
-      stats.incReceiverBufferSize(size, TCPConduit.useDirectBuffers);
+      stats.incReceiverBufferSize(size, useDirectBuffers);
     }
     return result;
   }
 
-  static void releaseSenderBuffer(ByteBuffer bb, DMStats stats) {
+  public static void releaseSenderBuffer(ByteBuffer bb, DMStats stats) {
     releaseBuffer(bb, stats, true);
   }
 
-  static void releaseReceiveBuffer(ByteBuffer bb, DMStats stats) {
+  public static void releaseReceiveBuffer(ByteBuffer bb, DMStats stats) {
     releaseBuffer(bb, stats, false);
   }
 
   /**
    * Releases a previously acquired buffer.
    */
-  static void releaseBuffer(ByteBuffer bb, DMStats stats, boolean send) {
-    if (TCPConduit.useDirectBuffers) {
+  private static void releaseBuffer(ByteBuffer bb, DMStats stats, boolean send) {
+    if (useDirectBuffers) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
       bufferQueue.offer(bbRef);
     } else {
@@ -117,11 +122,8 @@ public class Buffers {
   }
 
   public static void initBufferStats(DMStats stats) { // fixes 46773
-    if (TCPConduit.useDirectBuffers) {
-      @SuppressWarnings("unchecked")
-      Iterator<BBSoftReference> it = (Iterator<BBSoftReference>) bufferQueue.iterator();
-      while (it.hasNext()) {
-        BBSoftReference ref = it.next();
+    if (useDirectBuffers) {
+      for (BBSoftReference ref : bufferQueue) {
         if (ref.getBB() != null) {
           if (ref.getSend()) { // fix bug 46773
             stats.incSenderBufferSize(ref.getSize(), true);
@@ -142,7 +144,7 @@ public class Buffers {
     private int size;
     private final boolean send;
 
-    public BBSoftReference(ByteBuffer bb, boolean send) {
+    BBSoftReference(ByteBuffer bb, boolean send) {
       super(bb);
       this.size = bb.capacity();
       this.send = send;
@@ -152,7 +154,7 @@ public class Buffers {
       return this.size;
     }
 
-    public synchronized int consumeSize() {
+    synchronized int consumeSize() {
       int result = this.size;
       this.size = 0;
       return result;
@@ -163,7 +165,7 @@ public class Buffers {
     }
 
     public ByteBuffer getBB() {
-      return (ByteBuffer) super.get();
+      return super.get();
     }
   }
 

@@ -47,6 +47,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.SocketCloser;
 
 /**
@@ -207,14 +208,15 @@ public class ConnectionTable {
   }
 
   /** conduit calls acceptConnection after an accept */
-  protected void acceptConnection(Socket sock, PeerConnectionFactory peerConnectionFactory)
+  protected void acceptConnection(Socket sock, PeerConnectionFactory peerConnectionFactory,
+      NioFilter nioFilter)
       throws IOException, ConnectionException, InterruptedException {
     InetAddress connAddress = sock.getInetAddress(); // for bug 44736
     boolean finishedConnecting = false;
     Connection connection = null;
     // boolean exceptionLogged = false;
     try {
-      connection = peerConnectionFactory.createReceiver(this, sock);
+      connection = peerConnectionFactory.createReceiver(this, sock, nioFilter);
 
       // check for shutdown (so it doesn't get missed in the finally block)
       this.owner.getCancelCriterion().checkCancelInProgress(null);

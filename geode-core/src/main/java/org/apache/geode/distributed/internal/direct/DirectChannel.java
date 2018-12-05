@@ -493,7 +493,7 @@ public class DirectChannel {
       }
       try {
         try {
-          con.readAck(msToWait, msInterval, processor);
+          con.readAck(processor);
         } catch (SocketTimeoutException ex) {
           handleAckTimeout(ackTimeout, ackSDTimeout, con, processor);
         }
@@ -688,7 +688,7 @@ public class DirectChannel {
       // wait for ack-severe-alert-threshold period first, then wait forever
       if (ackSATimeout > 0) {
         try {
-          c.readAck((int) ackSATimeout, ackSATimeout, processor);
+          c.readAck(processor);
           return;
         } catch (SocketTimeoutException e) {
           Object[] args = new Object[] {Long.valueOf((ackSATimeout + ackTimeout) / 1000),
@@ -699,7 +699,7 @@ public class DirectChannel {
         }
       }
       try {
-        c.readAck(0, 0, processor);
+        c.readAck(processor);
       } catch (SocketTimeoutException ex) {
         // this can never happen when called with timeout of 0
         logger.error(String.format("Unexpected timeout while waiting for ack from %s",
