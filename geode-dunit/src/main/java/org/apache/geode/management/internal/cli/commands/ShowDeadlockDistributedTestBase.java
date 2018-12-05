@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.After;
@@ -46,8 +45,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
  */
 
 public class ShowDeadlockDistributedTestBase {
-  private static Thread stuckThread = null;
-  private static final Lock LOCK = new ReentrantLock();
+  private static Thread stuckThread;
+  private static ReentrantLock LOCK = new ReentrantLock();
 
   protected MemberVM locator;
   private MemberVM server1;
@@ -84,10 +83,25 @@ public class ShowDeadlockDistributedTestBase {
 
   @After
   public final void interruptStuckThreads() throws Exception {
-    if (stuckThread != null) {
-      server1.invoke(() -> stuckThread.interrupt());
-      server2.invoke(() -> stuckThread.interrupt());
-    }
+    server1.invoke(() -> {
+      System.out.println("DEBUG-after");
+      if (stuckThread != null) {
+        stuckThread.interrupt();
+        System.out.println("DEBUG-after: stuckThread<" + stuckThread + ">.isInterrupted = "
+            + stuckThread.isInterrupted());
+      }
+      stuckThread = null;
+    });
+    server2.invoke(() -> {
+      System.out.println("DEBUG-after");
+      if (stuckThread != null) {
+        stuckThread.interrupt();
+        System.out.println("DEBUG-after: stuckThread<" + stuckThread + ">.isInterrupted = "
+            + stuckThread.isInterrupted());
+      }
+      stuckThread = null;
+    });
+
   }
 
   public void connect() throws Exception {
@@ -124,12 +138,36 @@ public class ShowDeadlockDistributedTestBase {
   private void lockTheLocks(MemberVM thisVM, final MemberVM thatVM,
       FileBasedCountDownLatch countDownLatch) {
     thisVM.invokeAsync(() -> {
+      System.out.println(
+          "DEBUG-1: countDownLatch <" + countDownLatch + "> = " + countDownLatch.currentValue());
+      System.out.println("DEBUG-2.1: LOCK<" + LOCK.toString() + ">");
+      if (LOCK.isLocked()) {
+        System.out
+            .println("DEBUG-2.2: LOCK.isHeldByCurrentThread = " + LOCK.isHeldByCurrentThread());
+      }
+
       LOCK.lock();
+
+      System.out.println("DEBUG-2.3: LOCK<" + LOCK.toString() + ">");
+      System.out.println("DEBUG-2.4: LOCK.getHoldCount = " + LOCK.getHoldCount());
+
       countDownLatch.countDown();
+
+      System.out.println(
+          "DEBUG-3: countDownLatch <" + countDownLatch + "> = " + countDownLatch.currentValue());
+
       countDownLatch.await();
+
+      System.out.println(
+          "DEBUG-4: countDownLatch <" + countDownLatch + "> = " + countDownLatch.currentValue());
+
       // At this point each VM will hold its own lock.
       lockRemoteVM(thatVM);
+      System.out.println("DEBUG-4.6: unlocking LOCK");
       LOCK.unlock();
+      System.out.println("DEBUG-4.6: unlocked LOCK");
+
+      System.out.println("DEBUG-5: LOCK<" + LOCK.toString() + ">");
     });
   }
 
@@ -153,7 +191,10 @@ public class ShowDeadlockDistributedTestBase {
       try {
         LOCK.tryLock(5, TimeUnit.MINUTES);
       } catch (InterruptedException e) {
+        System.out.println("DEBUG-4.5: LockFunction thread interrupted!");
         context.getResultSender().lastResult(null);
+      } finally {
+        LOCK.unlock();
       }
     }
   }
