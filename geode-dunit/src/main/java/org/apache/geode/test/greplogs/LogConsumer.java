@@ -68,7 +68,8 @@ public class LogConsumer {
 
 
 
-  public LogConsumer(boolean skipLogMsgs, List<Pattern> testExpectStrs, String fileName, int repeatLimit) {
+  public LogConsumer(boolean skipLogMsgs, List<Pattern> testExpectStrs, String fileName,
+      int repeatLimit) {
     super();
     this.skipLogMsgs = skipLogMsgs;
     this.testExpectStrs = testExpectStrs;
@@ -178,7 +179,7 @@ public class LogConsumer {
         || javaLangErrorPattern.matcher(line).find()
         || (misformatedI18nMessagePattern.matcher(line).find()
             && !(skipLevelPattern.matcher(line).find()
-            && rvvBitSetMessagePattern.matcher(line).find()));
+                && rvvBitSetMessagePattern.matcher(line).find()));
   }
 
   private void addErrLinesToAll(CharSequence line) {
