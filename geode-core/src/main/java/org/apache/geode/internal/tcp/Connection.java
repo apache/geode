@@ -3310,7 +3310,6 @@ public class Connection implements Runnable {
 
   private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck) {
     try {
-      logger.info("BRUCE: dispatchMessage invoked for " + msg);
       msg.setDoDecMessagesBeingReceived(true);
       if (directAck) {
         Assert.assertTrue(!isSharedResource(),
