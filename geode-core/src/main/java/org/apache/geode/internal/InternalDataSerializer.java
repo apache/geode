@@ -252,6 +252,16 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final CopyOnWriteHashMap<String, WeakReference<Class<?>>> classCache =
       LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<>();
   private static final Object cacheAccessLock = new Object();
+
+  private static final String PRE_GEODE_100_TCPSERVER_PACKAGE =
+      "com.gemstone.org.jgroups.stack.tcpserver";
+  private static final String POST_GEODE_100_TCPSERVER_PACKAGE =
+      "org.apache.geode.distributed.internal.tcpserver";
+  private static final String POST_GEODE_190_SERVER_CQIMPL =
+      "org.apache.geode.cq.internal.cache.query.ServerCQImpl";
+  private static final String PRE_GEODE_190_SERVER_CQIMPL =
+      "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
+
   private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
   /**
    * A deserialization filter for ObjectInputStreams
@@ -282,13 +292,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static String processIncomingClassName(String name) {
     // TCPServer classes are used before a cache exists and support for old clients has been
     // initialized
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
-    if (name.startsWith(oldPackage)) {
-      return newPackage + name.substring(oldPackage.length());
+    if (name.startsWith(PRE_GEODE_100_TCPSERVER_PACKAGE)) {
+      return POST_GEODE_100_TCPSERVER_PACKAGE
+          + name.substring(PRE_GEODE_100_TCPSERVER_PACKAGE.length());
     }
-    if (name.equals("org.apache.geode.cache.query.internal.cq.ServerCQImpl")) {
-      return "org.apache.geode.cq.internal.cache.query.ServerCQImpl";
+    if (name.equals(PRE_GEODE_190_SERVER_CQIMPL)) {
+      return POST_GEODE_190_SERVER_CQIMPL;
     }
     OldClientSupportService svc = getOldClientSupportService();
     if (svc != null) {
@@ -308,18 +317,17 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static String processOutgoingClassName(String name, DataOutput out) {
     // TCPServer classes are used before a cache exists and support for old clients has been
     // initialized
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
-    if (name.startsWith(newPackage)) {
-      return oldPackage + name.substring(newPackage.length());
+    if (name.startsWith(POST_GEODE_100_TCPSERVER_PACKAGE)) {
+      return PRE_GEODE_100_TCPSERVER_PACKAGE
+          + name.substring(POST_GEODE_100_TCPSERVER_PACKAGE.length());
     }
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
       Version version = vout.getVersion();
       if (null != version) {
         if (version.compareTo(Version.GEODE_190) < 0) {
-          if (name.equals("org.apache.geode.cq.internal.cache.query.ServerCQImpl")) {
-            return "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
+          if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
+            return PRE_GEODE_190_SERVER_CQIMPL;
           }
         }
       }

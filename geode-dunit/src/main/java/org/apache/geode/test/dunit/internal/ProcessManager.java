@@ -201,7 +201,6 @@ public class ProcessManager {
   }
 
   private String removeModuleFromGradlePath(String classpath, String module) {
-    // geode-cq/build/classes/java/main
     String buildDir = File.separator + module + File.separator + "build" + File.separator;
 
     String mainClasses = buildDir + "classes" + File.separator + "java" + File.separator + "main";
