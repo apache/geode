@@ -28,11 +28,15 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.internal.ClassPathLoader;
@@ -93,9 +97,19 @@ public class JAXBService {
 
   public <T> T unMarshall(String xml) {
     try {
-      return (T) unmarshaller.unmarshal(new StringReader(xml));
+      InputSource is = new InputSource(new StringReader(xml));
+      XMLReader reader = XMLReaderFactory.createXMLReader();
+
+      // use a custom Filter so that we can unmarshall older namespace or no namespace xml
+      NameSpaceFilter filter = new NameSpaceFilter();
+      filter.setParent(reader);
+      SAXSource source = new SAXSource(filter, is);
+
+      return (T) unmarshaller.unmarshal(source);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
+
+
 }
