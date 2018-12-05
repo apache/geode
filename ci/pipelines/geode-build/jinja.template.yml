@@ -138,19 +138,6 @@ groups:
 {%- endfor %}
 
 resources:
-{% if repository.sanitized_fork == repository.upstream_fork %}
-- name: send-notification-email
-  type: email
-  source:
-    from: ((!source-email-address))
-    smtp:
-      host: ((!source-email-server))
-      password: ((!source-email-password))
-      port: "587"
-      username: ((!source-email-username))
-    to:
-    - ((!notification-email-address))
-{% endif %}
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
@@ -192,12 +179,6 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
-{% if repository.sanitized_fork == repository.upstream_fork %}
-- name: email
-  type: docker-image
-  source:
-    repository: pcfseceng/email-resource
-{% endif %}
 jobs:
 - name: {{build_test.name}}
   public: true
@@ -263,14 +244,6 @@ jobs:
       outputs:
       - name: built-geode
       - name: results
-{% if repository.sanitized_fork == repository.upstream_fork %}
-    on_failure:
-      aggregate:
-      - put: send-notification-email
-        params:
-          body: results/body
-          subject: results/subject
-{% endif %}
     ensure:
       do:
       - task: rsync_code_down
