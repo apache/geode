@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+
 public class StatusClusterConfigServiceCommandDUnitTest {
-  private static MemberVM locator1;
+  private static MemberVM locator1, locator2;
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
@@ -33,7 +34,7 @@ public class StatusClusterConfigServiceCommandDUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     locator1 = cluster.startLocatorVM(0, 0);
-    cluster.startLocatorVM(1, locator1.getPort());
+    locator2 = cluster.startLocatorVM(1, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
   }
@@ -42,7 +43,15 @@ public class StatusClusterConfigServiceCommandDUnitTest {
   public void testStatusClusterConfigService() {
     gfsh.executeAndAssertThat("status cluster-config-service")
         .statusIsSuccess()
+        .tableHasRowCount("Name", 2)
         .tableHasRowWithValues("Name", "Status", "locator-0", "RUNNING")
         .tableHasRowWithValues("Name", "Status", "locator-1", "RUNNING");
+
+    locator2.stop();
+
+    gfsh.executeAndAssertThat("status cluster-config-service")
+        .statusIsSuccess()
+        .tableHasRowCount("Name", 1)
+        .tableHasRowWithValues("Name", "Status", "locator-0", "RUNNING");
   }
 }
