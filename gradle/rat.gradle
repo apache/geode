@@ -17,6 +17,7 @@
 apply plugin: "org.nosphere.apache.rat"
 
 rat {
+  inputDir = rootDir
   xmlOutput = false
   htmlOutput = false
   plainOutput = true

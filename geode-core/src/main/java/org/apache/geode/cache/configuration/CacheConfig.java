@@ -31,13 +31,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.w3c.dom.Element;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.config.VersionAdapter;
 
 
 /**
@@ -328,12 +328,13 @@ public class CacheConfig {
   @XmlAttribute(name = "search-timeout")
   protected String searchTimeout;
   @XmlAttribute(name = "version", required = true)
-  @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+  @XmlJavaTypeAdapter(VersionAdapter.class)
   protected String version;
 
   public CacheConfig() {}
 
   public CacheConfig(String version) {
+
     this.version = version;
   }
 
