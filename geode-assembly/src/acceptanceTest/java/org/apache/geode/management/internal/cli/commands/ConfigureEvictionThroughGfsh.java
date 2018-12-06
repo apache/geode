@@ -57,7 +57,7 @@ public class ConfigureEvictionThroughGfsh {
             "create region --name=region6 --eviction-action=local-destroy --eviction-entry-count=1000 --type=REPLICATE_PERSISTENT")
         .expectFailure().execute(gfsh);
     assertThat(execution.getOutputText()).contains(
-        "ERROR: An Eviction Controller with local destroy eviction action is incompatible with");
+        "An Eviction Controller with local destroy eviction action is incompatible with");
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]", "describe region --name=region1").execute(gfsh);
@@ -112,7 +112,7 @@ public class ConfigureEvictionThroughGfsh {
             "create region --name=region6 --eviction-action=local-destroy --eviction-max-memory=1000 --type=REPLICATE_PERSISTENT")
         .expectFailure().execute(gfsh);
     assertThat(execution.getOutputText()).contains(
-        "ERROR: An Eviction Controller with local destroy eviction action is incompatible with");
+        "An Eviction Controller with local destroy eviction action is incompatible with");
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]", "describe region --name=region1").execute(gfsh);
@@ -181,7 +181,7 @@ public class ConfigureEvictionThroughGfsh {
             "create region --name=region6 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE_PERSISTENT")
         .expectFailure().execute(gfsh);
     assertThat(execution.getOutputText()).contains(
-        "ERROR: An Eviction Controller with local destroy eviction action is incompatible with");
+        "An Eviction Controller with local destroy eviction action is incompatible with");
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]", "describe region --name=region1").execute(gfsh);

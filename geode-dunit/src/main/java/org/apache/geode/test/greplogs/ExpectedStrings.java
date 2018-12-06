@@ -23,16 +23,12 @@ public class ExpectedStrings {
   private ExpectedStrings() {}
 
   public static boolean skipLogMsgs(String type) {
-    if (type.equals("junit") || type.equals("java") || type.equals("query")
-        || type.equals("dunit")) {
-      return true;
-    } else {
-      return false;
-    }
+    return type.equals("junit") || type.equals("java") || type.equals("query")
+        || type.equals("dunit");
   }
 
-  public static List create(String type) {
-    List expected = new ArrayList();
+  public static List<Pattern> create(String type) {
+    List<Pattern> expected = new ArrayList<>();
 
     expected.add(Pattern.compile("@todo"));
     expected.add(Pattern.compile("Random seed"));
@@ -65,7 +61,7 @@ public class ExpectedStrings {
     expected.add(Pattern.compile("Invoked MembershipNotifierHook"));
     expected.add(Pattern.compile("java.io.IOException: Connection reset by peer"));
     expected.add(Pattern.compile("client connections exceeds the licensed limit"));
-    // Exclude this since the only tests with securty enabled, expect to see
+    // Exclude this since the only tests with security enabled, expect to see
     // these and if they don't then the test fails
     expected.add(Pattern.compile("NotAuthorizedException"));
     expected.add(Pattern.compile("above critical heap threshold"));
@@ -88,99 +84,110 @@ public class ExpectedStrings {
     // expected.add(Pattern.compile("Minimum system requirements not met. Unexpected behavior may
     // result in additional errors."));
 
-    if (type.equals("junit") || type.equals("java") || type.equals("query")) {
-      expected.add(Pattern.compile("TEST EXCEPTION"));
-      expected.add(Pattern.compile("testLogLevels"));
-      expected.add(Pattern.compile("On iteration"));
-      expected.add(Pattern.compile("signal count"));
-      // Remove when davidw fixes
-      expected.add(Pattern.compile("Expected"));
-      // below here for gfx unit tests
-      expected.add(Pattern.compile("Valid documents must have a"));
-      expected.add(Pattern.compile("Loaded java.lang.ClassCastException"));
-      expected.add(Pattern.compile("Loaded java.io.InvalidClassException"));
-      expected.add(Pattern.compile("Loaded java.lang.NullPointerException"));
-      expected.add(Pattern.compile("Loaded java.lang.ArrayIndexOutOfBoundsException"));
-      expected.add(Pattern.compile("Loaded java.lang.IndexOutOfBoundsException"));
-      expected.add(Pattern.compile("SucessfulTest:"));
-      expected.add(Pattern.compile("SQLException: Database 'newDB' not found"));
-      expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));
-      expected.add(Pattern.compile("IGNORE_EXCEPTION_test"));
-      expected.add(Pattern.compile("Unsupported at this time"));
-      expected.add(Pattern.compile("DiskAccessException occurred as expected"));
-      expected.add(Pattern.compile("Oplog::createOplog:Exception in preblowing the file"));
-    } else if (type.equals("dunit")) {
-      expected.add(Pattern.compile("INCOMPATIBLE_ROOT"));
-      expected.add(Pattern.compile("connecting to locator"));
-      expected.add(Pattern.compile("ItsOkayForMyClassNotToBeFound"));
-      expected.add(Pattern.compile("Test Exception"));
-      expected.add(Pattern.compile("make sure exceptions from close callbacks"));
-      expected.add(Pattern.compile("Please ignore"));
-      expected.add(Pattern.compile("I have been thrown from TestFunction"));
-      expected.add(Pattern.compile("No admin on"));
-      expected.add(Pattern.compile("nonExistentMethod"));
-      expected.add(Pattern.compile("Expected exception"));
-      expected.add(Pattern.compile("ConnectionPoolTestNonSerializable"));
-      expected.add(Pattern.compile("One or more DUnit tests failed"));
-      expected.add(Pattern.compile("ReplyException"));
-      expected.add(Pattern.compile("fine 2"));
-      expected.add(Pattern.compile("TESTING A VERY UNIQUE"));
-      expected.add(Pattern.compile("-01-01"));
-      expected.add(Pattern.compile("testNBRegionDestructionDuringGetInitialImage"));
-      expected.add(Pattern.compile("SQLException: Database 'newDB' not found"));
-      expected.add(Pattern.compile("SQLException: Failed to start database 'newDB'"));
-      expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));
-      expected.add(Pattern.compile("INCORRECT_localhost"));
-      expected.add(Pattern.compile(
-          "WARNING: Failed to check connection: java.net.ConnectException: Connection refused"));
-      expected.add(
-          Pattern.compile("WARNING: Failed to call the method close..:java.rmi.ConnectException:"));
-      expected.add(Pattern.compile(
-          "WARNING: Failed to restart: java.rmi.NoSuchObjectException: no such object in table"));
-      expected.add(Pattern.compile(
-          "WARNING: Failed to restart: java.rmi.ConnectException: Connection refused to host: .* nested exception is:"));
-      expected.add(Pattern
-          .compile("UnitTests terminating abnormally after a client had a fatal task error"));
-      expected.add(Pattern.compile("Doing stack dump on all"));
-      expected.add(Pattern.compile("Unit test result: FAILED ==> Unsuccessfully ran JUnit tests"));
-      expected.add(Pattern.compile("IGNORE_EXCEPTION_test"));
-      expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
-      expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
-      expected.add(Pattern.compile("Redundancy has dropped below"));
-      expected.add(Pattern.compile("Could not find any server to host redundant client"));
-      expected.add(Pattern.compile("Could not find any server to host primary client"));
-      expected.add(Pattern.compile("Could not find any server to create redundant client"));
-      expected.add(Pattern.compile("Could not find any server to create primary client"));
-      expected.add(Pattern.compile("Pool unexpected closed socket on server"));
-      expected.add(Pattern.compile("SocketTimeoutException"));
-      expected.add(Pattern.compile("Could not initialize a primary queue on startup"));
-      expected.add(Pattern.compile(
-          "java.lang.IllegalArgumentException: Sample timestamp must be greater than previous timestamp"));
-      // The following 2 strings are ignored due to bug 52042
-      expected.add(Pattern.compile("failed accepting client connection"));
-      expected.add(Pattern.compile("Acceptor received unknown communication"));
-    } else if (type.equals("smoke")) {
-      expected.add(Pattern.compile("Doing stack dump on all"));
-      expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
-      expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
-      expected.add(Pattern.compile("Could not find Spring Shell library"));
-    } else if (type.equals("perf")) {
-      expected.add(Pattern.compile("Doing stack dump on all"));
-      expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
-      expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
-    } else if (type.equals("moresmoke")) {
-      expected.add(Pattern.compile(" expected error"));
-      expected.add(Pattern.compile("Doing stack dump on all"));
-      expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
-      expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
-    } else {
-      expected.add(Pattern.compile("runbattery\\(\\) returned false"));
-      expected.add(Pattern.compile(" expected error"));
-      expected.add(Pattern.compile("Doing stack dump on all"));
-      expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
-      expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
-      expected.add(Pattern.compile("HydraTask_initializeExpectException"));
-      expected.add(Pattern.compile("java.net.ConnectException: Connection refused"));
+    switch (type) {
+      case "junit":
+      case "java":
+      case "query":
+        expected.add(Pattern.compile("TEST EXCEPTION"));
+        expected.add(Pattern.compile("testLogLevels"));
+        expected.add(Pattern.compile("On iteration"));
+        expected.add(Pattern.compile("signal count"));
+        // Remove when davidw fixes
+        expected.add(Pattern.compile("Expected"));
+        // below here for gfx unit tests
+        expected.add(Pattern.compile("Valid documents must have a"));
+        expected.add(Pattern.compile("Loaded java.lang.ClassCastException"));
+        expected.add(Pattern.compile("Loaded java.io.InvalidClassException"));
+        expected.add(Pattern.compile("Loaded java.lang.NullPointerException"));
+        expected.add(Pattern.compile("Loaded java.lang.ArrayIndexOutOfBoundsException"));
+        expected.add(Pattern.compile("Loaded java.lang.IndexOutOfBoundsException"));
+        expected.add(Pattern.compile("SucessfulTest:"));
+        expected.add(Pattern.compile("SQLException: Database 'newDB' not found"));
+        expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));
+        expected.add(Pattern.compile("IGNORE_EXCEPTION_test"));
+        expected.add(Pattern.compile("Unsupported at this time"));
+        expected.add(Pattern.compile("DiskAccessException occurred as expected"));
+        expected.add(Pattern.compile("Oplog::createOplog:Exception in preblowing the file"));
+        break;
+      case "dunit":
+        expected.add(Pattern.compile("INCOMPATIBLE_ROOT"));
+        expected.add(Pattern.compile("connecting to locator"));
+        expected.add(Pattern.compile("ItsOkayForMyClassNotToBeFound"));
+        expected.add(Pattern.compile("Test Exception"));
+        expected.add(Pattern.compile("make sure exceptions from close callbacks"));
+        expected.add(Pattern.compile("Please ignore"));
+        expected.add(Pattern.compile("I have been thrown from TestFunction"));
+        expected.add(Pattern.compile("No admin on"));
+        expected.add(Pattern.compile("nonExistentMethod"));
+        expected.add(Pattern.compile("Expected exception"));
+        expected.add(Pattern.compile("ConnectionPoolTestNonSerializable"));
+        expected.add(Pattern.compile("One or more DUnit tests failed"));
+        expected.add(Pattern.compile("ReplyException"));
+        expected.add(Pattern.compile("fine 2"));
+        expected.add(Pattern.compile("TESTING A VERY UNIQUE"));
+        expected.add(Pattern.compile("-01-01"));
+        expected.add(Pattern.compile("testNBRegionDestructionDuringGetInitialImage"));
+        expected.add(Pattern.compile("SQLException: Database 'newDB' not found"));
+        expected.add(Pattern.compile("SQLException: Failed to start database 'newDB'"));
+        expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));
+        expected.add(Pattern.compile("INCORRECT_localhost"));
+        expected.add(Pattern.compile(
+            "WARNING: Failed to check connection: java.net.ConnectException: Connection refused"));
+        expected.add(
+            Pattern
+                .compile("WARNING: Failed to call the method close..:java.rmi.ConnectException:"));
+        expected.add(Pattern.compile(
+            "WARNING: Failed to restart: java.rmi.NoSuchObjectException: no such object in table"));
+        expected.add(Pattern.compile(
+            "WARNING: Failed to restart: java.rmi.ConnectException: Connection refused to host: .* nested exception is:"));
+        expected.add(Pattern
+            .compile("UnitTests terminating abnormally after a client had a fatal task error"));
+        expected.add(Pattern.compile("Doing stack dump on all"));
+        expected
+            .add(Pattern.compile("Unit test result: FAILED ==> Unsuccessfully ran JUnit tests"));
+        expected.add(Pattern.compile("IGNORE_EXCEPTION_test"));
+        expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
+        expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
+        expected.add(Pattern.compile("Redundancy has dropped below"));
+        expected.add(Pattern.compile("Could not find any server to host redundant client"));
+        expected.add(Pattern.compile("Could not find any server to host primary client"));
+        expected.add(Pattern.compile("Could not find any server to create redundant client"));
+        expected.add(Pattern.compile("Could not find any server to create primary client"));
+        expected.add(Pattern.compile("Pool unexpected closed socket on server"));
+        expected.add(Pattern.compile("SocketTimeoutException"));
+        expected.add(Pattern.compile("Could not initialize a primary queue on startup"));
+        expected.add(Pattern.compile(
+            "java.lang.IllegalArgumentException: Sample timestamp must be greater than previous timestamp"));
+        // The following 2 strings are ignored due to bug 52042
+        expected.add(Pattern.compile("failed accepting client connection"));
+        expected.add(Pattern.compile("Acceptor received unknown communication"));
+        break;
+      case "smoke":
+        expected.add(Pattern.compile("Doing stack dump on all"));
+        expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
+        expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
+        expected.add(Pattern.compile("Could not find Spring Shell library"));
+        break;
+      case "perf":
+        expected.add(Pattern.compile("Doing stack dump on all"));
+        expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
+        expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
+        break;
+      case "moresmoke":
+        expected.add(Pattern.compile(" expected error"));
+        expected.add(Pattern.compile("Doing stack dump on all"));
+        expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
+        expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
+        break;
+      default:
+        expected.add(Pattern.compile("runbattery\\(\\) returned false"));
+        expected.add(Pattern.compile(" expected error"));
+        expected.add(Pattern.compile("Doing stack dump on all"));
+        expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
+        expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
+        expected.add(Pattern.compile("HydraTask_initializeExpectException"));
+        expected.add(Pattern.compile("java.net.ConnectException: Connection refused"));
+        break;
     }
     return expected;
   }

@@ -120,6 +120,21 @@ public class ExpirationAction implements Serializable {
     return this.name;
   }
 
+  public String toXmlString() {
+    switch (this.name) {
+      case "INVALIDATE":
+        return "invalidate";
+      case "DESTROY":
+        return "destroy";
+      case "LOCAL_DESTROY":
+        return "local-destroy";
+      case "LOCAL_INVALIDATE":
+        return "local-invalidate";
+      default:
+        return null;
+    }
+  }
+
   // The 4 declarations below are necessary for serialization
   private static int nextOrdinal = 0;
   public final int ordinal = nextOrdinal++;

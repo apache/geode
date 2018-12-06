@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.Configuration.DEFAULT_LOGWRITER_LEVEL;
 import static org.apache.geode.internal.logging.Configuration.MAIN_LOGGER_NAME;
 import static org.apache.geode.internal.logging.Configuration.create;
+import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,10 +41,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.logging.Configuration;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -98,8 +98,8 @@ public class FastLoggerIntegrationTest {
     assertThat(logger.getLevel()).isEqualTo(Level.WARN);
 
     LogConfig logConfig = mock(LogConfig.class);
-    when(logConfig.getLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
-    when(logConfig.getSecurityLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
+    when(logConfig.getLogLevel()).thenReturn(CONFIG.intLevel());
+    when(logConfig.getSecurityLogLevel()).thenReturn(CONFIG.intLevel());
 
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
     when(logConfigSupplier.getLogConfig()).thenReturn(logConfig);

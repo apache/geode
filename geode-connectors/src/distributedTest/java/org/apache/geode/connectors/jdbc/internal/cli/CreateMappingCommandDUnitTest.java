@@ -142,7 +142,7 @@ public class CreateMappingCommandDUnitTest {
     RegionConfig regionConfig = cacheConfig.getRegions().stream()
         .filter(region -> region.getName().equals(convertRegionPathToName(regionName))).findFirst()
         .orElse(null);
-    RegionAttributesType attributes = regionConfig.getRegionAttributes().get(0);
+    RegionAttributesType attributes = regionConfig.getRegionAttributes();
     assertThat(attributes.getCacheLoader().getClassName()).isEqualTo(JdbcLoader.class.getName());
     if (synchronous) {
       assertThat(attributes.getCacheWriter().getClassName()).isEqualTo(JdbcWriter.class.getName());
@@ -314,7 +314,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogusTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "A jdbc-mapping for " + convertRegionPathToName(regionName) + " already exists");
+            "A JDBC mapping for " + convertRegionPathToName(regionName) + " already exists");
 
     server.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);

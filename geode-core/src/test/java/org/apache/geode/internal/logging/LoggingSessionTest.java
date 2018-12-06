@@ -180,7 +180,7 @@ public class LoggingSessionTest {
   @Test
   public void stopSessionThrowsIfSessionNotCreated() {
     assertThatThrownBy(() -> loggingSession.stopSession())
-        .isInstanceOf(IllegalStateException.class);
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

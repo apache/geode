@@ -26,7 +26,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.util.LogFileUtils;
@@ -100,7 +99,7 @@ public class TestLogWriterFactory extends Assert {
     if (mlw.infoEnabled()) {
       if (!isLoner || /* do this on a loner to fix bug 35602 */
           !Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
-        mlw.info(Banner.getString(null));
+        mlw.info(new Banner().getString(null));
       }
     }
     logger = mlw;

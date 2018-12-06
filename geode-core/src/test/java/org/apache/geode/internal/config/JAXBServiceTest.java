@@ -137,6 +137,28 @@ public class JAXBServiceTest {
   }
 
   @Test
+  public void unmarshallPartialElement() {
+    String xml = "<region name=\"one\">\n"
+        + "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+        + "    </region>";
+
+    RegionConfig config = service2.unMarshall(xml, RegionConfig.class);
+    assertThat(config.getName()).isEqualTo("one");
+  }
+
+  @Test
+  public void unmarshallAnyElement() {
+    String xml = "<region name=\"one\">\n"
+        + "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+        + "        <custom:any xmlns:custom=\"http://geode.apache.org/schema/custom\" id=\"any\"/>"
+        + "    </region>";
+
+    RegionConfig config = service2.unMarshall(xml, RegionConfig.class);
+    assertThat(config.getName()).isEqualTo("one");
+    assertThat(config.getCustomRegionElements()).hasSize(1);
+  }
+
+  @Test
   public void unmarshallIgnoresUnknownProperties() {
     // say xml has a type attribute that is removed in the new version
     String existingXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"

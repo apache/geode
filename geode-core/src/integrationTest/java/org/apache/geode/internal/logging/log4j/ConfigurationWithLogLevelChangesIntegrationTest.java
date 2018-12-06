@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.Configuration.DEFAULT_LOGWRITER_LEVEL;
 import static org.apache.geode.internal.logging.Configuration.create;
-import static org.apache.geode.internal.logging.InternalLogWriter.FINE_LEVEL;
-import static org.apache.geode.internal.logging.InternalLogWriter.WARNING_LEVEL;
+import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
+import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,10 +41,10 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.internal.logging.Configuration;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -88,8 +88,8 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   @Before
   public void setUp() throws Exception {
     config = mock(LogConfig.class);
-    when(config.getLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
-    when(config.getSecurityLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
+    when(config.getLogLevel()).thenReturn(CONFIG.intLevel());
+    when(config.getSecurityLogLevel()).thenReturn(CONFIG.intLevel());
 
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
     when(logConfigSupplier.getLogConfig()).thenReturn(config);
@@ -124,7 +124,7 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   @Test
   public void geodeLoggerDebugLoggedAfterLoweringLogLevelToFine() {
     // arrange
-    when(config.getLogLevel()).thenReturn(FINE_LEVEL);
+    when(config.getLogLevel()).thenReturn(FINE.intLevel());
     configuration.configChanged();
 
     // act
@@ -141,12 +141,12 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   @Test
   public void geodeLoggerDebugNotLoggedAfterRestoringLogLevelToDefault() {
     // arrange
-    when(config.getLogLevel()).thenReturn(FINE_LEVEL);
+    when(config.getLogLevel()).thenReturn(FINE.intLevel());
     configuration.configChanged();
 
     // re-arrange
     geodeConsoleAppender.clearLogEvents();
-    when(config.getLogLevel()).thenReturn(DEFAULT_LOGWRITER_LEVEL);
+    when(config.getLogLevel()).thenReturn(CONFIG.intLevel());
     configuration.configChanged();
 
     // act
@@ -159,7 +159,7 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   @Test
   public void applicationLoggerBelowLevelUnaffectedByLoweringLogLevelChanges() {
     // arrange
-    when(config.getLogLevel()).thenReturn(FINE_LEVEL);
+    when(config.getLogLevel()).thenReturn(FINE.intLevel());
     configuration.configChanged();
 
     // act
@@ -186,7 +186,7 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   public void applicationLoggerAboveLevelUnaffectedByLoweringLogLevelChanges() {
     // arrange
     geodeConsoleAppender.clearLogEvents();
-    when(config.getLogLevel()).thenReturn(FINE_LEVEL);
+    when(config.getLogLevel()).thenReturn(FINE.intLevel());
     configuration.configChanged();
 
     // act
@@ -200,7 +200,7 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   public void applicationLoggerAboveLevelUnaffectedByRaisingLogLevelChanges() {
     // arrange
     geodeConsoleAppender.clearLogEvents();
-    when(config.getLogLevel()).thenReturn(WARNING_LEVEL);
+    when(config.getLogLevel()).thenReturn(WARNING.intLevel());
     configuration.configChanged();
 
     // act
@@ -214,7 +214,7 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
   public void infoStatementNotLoggedAfterRaisingLogLevelToWarning() {
     // arrange
     geodeConsoleAppender.clearLogEvents();
-    when(config.getLogLevel()).thenReturn(WARNING_LEVEL);
+    when(config.getLogLevel()).thenReturn(WARNING.intLevel());
     configuration.configChanged();
 
     // act

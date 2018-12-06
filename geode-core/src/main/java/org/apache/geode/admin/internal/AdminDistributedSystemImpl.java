@@ -73,7 +73,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.admin.ApplicationVM;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.GfManagerAgent;
@@ -90,6 +89,7 @@ import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
@@ -231,7 +231,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       this.logWriter = LogWriterFactory.createLogWriterLogger(this.config.createLogConfig(), false);
       if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
         // LOG: changed statement from config to info
-        this.logWriter.info(Banner.getString(null));
+        this.logWriter.info(new Banner().getString());
       } else {
         logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
       }

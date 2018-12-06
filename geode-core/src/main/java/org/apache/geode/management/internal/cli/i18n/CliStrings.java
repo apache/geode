@@ -946,6 +946,8 @@ public class CliStrings {
   public static final String CREATE_REGION__TOTALNUMBUCKETS__HELP =
       "Sets the total number of hash buckets to be used by the region in all processes. (Default: "
           + PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT + ").";
+  public static final String CREATE_REGION__MSG__CANNOT_DISABLE_CLONING_WITH_COMPRESSOR =
+      "Cannot set enable-cloning to false when compressor is provided";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH =
       "Specify a valid " + CliStrings.CREATE_REGION__REGION;
   public static final String CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST =

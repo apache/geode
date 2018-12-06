@@ -116,7 +116,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     commandResultAssert.statusIsError();
     commandResultAssert.containsOutput(
-        String.format("(Experimental) \n" + "mapping for region 'nonExisting' not found"));
+        String.format("(Experimental) \n" + "JDBC mapping for region 'nonExisting' not found"));
   }
 
   @Test

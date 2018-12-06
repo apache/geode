@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -32,7 +33,7 @@ public class BannerTest {
 
   @Before
   public void setUp() {
-    banner = Banner.getString(null);
+    banner = new Banner().getString();
   }
 
   @Test

@@ -18,7 +18,7 @@ import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.Banner.BannerHeader.displayValues;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.displayValues;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,7 +36,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.Banner;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 

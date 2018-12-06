@@ -82,7 +82,7 @@ class BackupFileCopier {
     }
 
     try {
-      Path source = Paths.get(fileUrl.toURI());
+      Path source = getSource(fileUrl);
       if (Files.notExists(source)) {
         return;
       }
@@ -167,7 +167,7 @@ class BackupFileCopier {
 
     Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
     try {
-      Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+      createLink(tempDiskDir.resolve(file.getName()), file.toPath());
     } catch (IOException e) {
       logger.warn("Unable to create hard link for {}. Reverting to file copy",
           tempDiskDir.toString());
@@ -178,5 +178,13 @@ class BackupFileCopier {
 
   JarDeployer getJarDeployer() {
     return ClassPathLoader.getLatest().getJarDeployer();
+  }
+
+  void createLink(Path link, Path existing) throws IOException {
+    Files.createLink(link, existing);
+  }
+
+  Path getSource(URL fileUrl) throws URISyntaxException {
+    return Paths.get(fileUrl.toURI());
   }
 }

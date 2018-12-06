@@ -44,6 +44,7 @@ import org.apache.geode.internal.ClassPathLoader;
 public class JAXBService {
   Marshaller marshaller;
   Unmarshaller unmarshaller;
+  NameSpaceFilter nameSpaceFilter;
 
   public JAXBService(Class<?>... xsdRootClasses) {
     try {
@@ -51,6 +52,7 @@ public class JAXBService {
       marshaller = jaxbContext.createMarshaller();
       unmarshaller = jaxbContext.createUnmarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+      marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
       String schemas = Arrays.stream(xsdRootClasses).map(c -> {
         XSDRootElement element = c.getAnnotation(XSDRootElement.class);
@@ -62,6 +64,10 @@ public class JAXBService {
       }).filter(Objects::nonNull).collect(Collectors.joining(" "));
 
       marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemas);
+      // use a custom Filter so that we can unmarshall older namespace or no namespace xml
+      XMLReader reader = XMLReaderFactory.createXMLReader();
+      nameSpaceFilter = new NameSpaceFilter();
+      nameSpaceFilter.setParent(reader);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -69,7 +75,7 @@ public class JAXBService {
 
   public void validateWith(URL url) {
     SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-    Schema schema = null;
+    Schema schema;
     try {
       schema = factory.newSchema(url);
     } catch (SAXException e) {
@@ -88,6 +94,7 @@ public class JAXBService {
   public String marshall(Object object) {
     StringWriter sw = new StringWriter();
     try {
+      sw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
       marshaller.marshal(object, sw);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -97,19 +104,20 @@ public class JAXBService {
 
   public <T> T unMarshall(String xml) {
     try {
-      InputSource is = new InputSource(new StringReader(xml));
-      XMLReader reader = XMLReaderFactory.createXMLReader();
-
-      // use a custom Filter so that we can unmarshall older namespace or no namespace xml
-      NameSpaceFilter filter = new NameSpaceFilter();
-      filter.setParent(reader);
-      SAXSource source = new SAXSource(filter, is);
-
+      SAXSource source = new SAXSource(nameSpaceFilter, new InputSource(new StringReader(xml)));
       return (T) unmarshaller.unmarshal(source);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
 
+  public <T> T unMarshall(String xml, Class<T> klass) {
+    try {
+      SAXSource source = new SAXSource(nameSpaceFilter, new InputSource(new StringReader(xml)));
+      return unmarshaller.unmarshal(source, klass).getValue();
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
 
 }

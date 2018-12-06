@@ -166,4 +166,22 @@ public class CacheConfigTest {
     assertThat(regionAttributes.getRegionTimeToLive().getExpirationAttributes().getCustomExpiry())
         .isEqualTo(declarableWithString);
   }
+
+  @Test
+  public void regionConfig() {
+    cacheConfig = new CacheConfig("1.0");
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("test");
+    regionConfig.setRefid("REPLICATE");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setCacheLoader(new DeclarableType("abc.Foo"));
+    regionConfig.setRegionAttributes(attributes);
+    cacheConfig.getRegions().add(regionConfig);
+
+    // make sure the xml marshed by this config can be validated with xsd
+    String xml = service.marshall(cacheConfig);
+
+    CacheConfig newCache = service.unMarshall(xml);
+    assertThat(cacheConfig).isEqualToComparingFieldByFieldRecursively(newCache);
+  }
 }

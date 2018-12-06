@@ -203,7 +203,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
     RegionConfig regionConfig = cacheConfig.getRegions().stream()
         .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
-    RegionAttributesType attributes = regionConfig.getRegionAttributes().get(0);
+    RegionAttributesType attributes = regionConfig.getRegionAttributes();
     assertThat(attributes.getCacheLoader()).isNull();
     if (synchronous) {
       assertThat(attributes.getCacheWriter()).isNull();

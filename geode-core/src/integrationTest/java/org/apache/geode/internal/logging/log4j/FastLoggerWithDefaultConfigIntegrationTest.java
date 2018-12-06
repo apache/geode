@@ -25,10 +25,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.Configuration;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 

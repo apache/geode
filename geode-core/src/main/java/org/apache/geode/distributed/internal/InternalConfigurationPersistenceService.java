@@ -156,6 +156,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     jaxbService = new JAXBService(CacheConfig.class);
   }
 
+  public JAXBService getJaxbService() {
+    return jaxbService;
+  }
+
   public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
       throws IOException {
     this.cache = cache;
@@ -223,29 +227,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     }
     return sharedConfigDls;
-  }
-
-  /**
-   * Finds xml element in a group's xml, with the tagName that has given attribute and value
-   */
-  public Element getXmlElement(String group, String tagName, String attribute, String value)
-      throws IOException, SAXException, ParserConfigurationException {
-    if (group == null) {
-      group = "cluster";
-    }
-    Configuration config = getConfiguration(group);
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    NodeList elements = document.getElementsByTagName(tagName);
-    if (elements == null || elements.getLength() == 0) {
-      return null;
-    } else {
-      for (int i = 0; i < elements.getLength(); i++) {
-        Element eachElement = (Element) elements.item(i);
-        if (eachElement.getAttribute(attribute).equals(value))
-          return eachElement;
-      }
-    }
-    return null;
   }
 
   /**

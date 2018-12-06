@@ -14,43 +14,13 @@
  */
 package org.apache.geode.internal.logging;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.status.StatusLogger;
-
-import org.apache.geode.internal.ClassPathLoader;
-
 /**
- * Fetches the configuration info from {@code Log4jAgent} without direct class dependency.
- *
- * <p>
- * This could potentially be modified to support any logging backend but currently the only caller
- * is the log Banner which is static.
+ * Fetches the configuration info from {@link ProviderAgent} for invocation from static context.
+ * Note: this may instantiate a new instance of {@link ProviderAgent}.
  */
 public class ConfigurationInfo {
 
-  private static final Logger LOGGER = StatusLogger.getLogger();
-
-  /**
-   * Fetches the configuration info from Log4jAgent without direct class dependency.
-   *
-   * <p>
-   * If the Log4J2 Core classes are not in the classpath, the return value is simply
-   * "No configuration info found."
-   */
   public static String getConfigurationInfo() {
-    try {
-      Class<? extends ProviderAgent> agentClass =
-          ClassPathLoader.getLatest().forName(Configuration.DEFAULT_PROVIDER_AGENT_NAME)
-              .asSubclass(ProviderAgent.class);
-      Method method = agentClass.getMethod("getConfigurationInfo", null);
-      return (String) method.invoke(null, null);
-    } catch (ClassNotFoundException | ClassCastException | NoSuchMethodException
-        | IllegalAccessException | InvocationTargetException e) {
-      LOGGER.debug("Unable to invoke Log4jAgent.getConfigurationInfo()", e);
-      return "No configuration info found";
-    }
+    return new ProviderAgentLoader().findProviderAgent().getConfigurationInfo();
   }
 }
