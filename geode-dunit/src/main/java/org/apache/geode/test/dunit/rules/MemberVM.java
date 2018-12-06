@@ -130,6 +130,34 @@ public class MemberVM extends VMProvider implements Member {
     });
   }
 
+  public void waitTilLocatorFullyStarted() {
+    vm.invoke(() -> {
+      try {
+        await().until(() -> {
+          InternalLocator intLocator = ClusterStartupRule.getLocator();
+          InternalCache cache = ClusterStartupRule.getCache();
+          return intLocator != null && cache != null && intLocator.getDistributedSystem()
+              .isConnected();
+        });
+      } catch (Exception e) {
+        // provide more information when condition is not satisfied after awaitility timeout
+        InternalLocator intLocator = ClusterStartupRule.getLocator();
+        InternalCache cache = ClusterStartupRule.getCache();
+        DistributedSystem ds = intLocator.getDistributedSystem();
+        logger.info("locator is: " + (intLocator != null ? "not null" : "null"));
+        logger.info("cache is: " + (cache != null ? "not null" : "null"));
+        if (ds != null) {
+          logger
+              .info("distributed system is: " + (ds.isConnected() ? "connected" : "not connected"));
+        } else {
+          logger.info("distributed system is: null");
+        }
+        throw e;
+      }
+
+    });
+  }
+
   public void waitTilLocatorFullyReconnected() {
     vm.invoke(() -> {
       try {

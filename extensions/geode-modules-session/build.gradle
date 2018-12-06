@@ -37,9 +37,9 @@ dependencies {
   }
   integrationTestCompile('commons-io:commons-io:' + project.'commons-io.version')
   integrationTestCompile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
-  integrationTestCompile('junit:junit:4.12')
+  integrationTestCompile('junit:junit:' + project.'junit.version')
   integrationTestCompile('org.apache.tomcat:jasper:' + project.'tomcat6.version')
-  integrationTestCompile('org.assertj:assertj-core:3.10.0')
+  integrationTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
   integrationTestCompile('org.eclipse.jetty:jetty-http:' + project.'jetty.version' + ':tests')
   integrationTestCompile('org.eclipse.jetty:jetty-server:' + project.'jetty.version')
   integrationTestCompile('org.eclipse.jetty:jetty-servlet:' + project.'jetty.version' + ':tests')
