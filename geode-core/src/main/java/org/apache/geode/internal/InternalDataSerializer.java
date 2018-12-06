@@ -2181,6 +2181,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (o == null) {
       out.writeByte(DSCODE.NULL.toByte());
 
+      // } else if (o instanceof Operation) {
+      // writeSerializableObject(o, out);
     } else if (o instanceof DataSerializableFixedID) {
       checkPdxCompatible(o, ensurePdxCompatibility);
       DataSerializableFixedID dsfid = (DataSerializableFixedID) o;
@@ -3008,6 +3010,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   public static boolean writePdx(DataOutput out, InternalCache internalCache, Object pdx,
       PdxSerializer pdxSerializer) throws IOException {
+
+    // Hack to make sure we don't pass internal objects to the user's serializer
+    if (pdxSerializer != null &&
+        isGemfireObject(pdx)) {
+      return false;
+    }
+
     TypeRegistry tr = null;
     if (internalCache != null) {
       tr = internalCache.getPdxRegistry();
@@ -3023,11 +3032,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     try {
       if (pdxSerializer != null) {
-        // Hack to make sure we don't pass internal objects to the user's
-        // serializer
-        if (isGemfireObject(pdx)) {
-          return false;
-        }
         if (is662SerializationEnabled()) {
           boolean alreadyInProgress = isPdxSerializationInProgress();
           if (!alreadyInProgress) {

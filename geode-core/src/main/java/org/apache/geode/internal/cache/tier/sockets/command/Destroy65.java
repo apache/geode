@@ -124,7 +124,8 @@ public class Destroy65 extends BaseCommand {
 
       operation = clientMessage.getPart(3).getObject();
 
-      if (((operation instanceof Operation) && ((Operation) operation == Operation.REMOVE))
+      if (((operation instanceof Operation)
+          && (Operation.fromOrdinal(((Operation) operation).ordinal) == Operation.REMOVE))
           || ((operation instanceof Byte) && (Byte) operation == OpType.DESTROY))
 
       {

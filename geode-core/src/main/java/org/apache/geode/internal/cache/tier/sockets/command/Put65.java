@@ -92,6 +92,8 @@ public class Put65 extends BaseCommand {
       operation = (Operation) clientMessage.getPart(idx++).getObject();
       if (operation == null) { // native clients send a null since the op is java-serialized
         operation = Operation.UPDATE;
+      } else {
+        operation = Operation.fromOrdinal(operation.ordinal);
       }
     } catch (ClassNotFoundException e) {
       writeException(clientMessage, e, false, serverConnection);

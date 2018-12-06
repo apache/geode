@@ -16,9 +16,14 @@
 
 package org.apache.geode.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.ObjectStreamException;
 
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.OpType;
 
 /**
@@ -31,7 +36,7 @@ import org.apache.geode.internal.cache.OpType;
  *
  * @since GemFire 5.0
  */
-public class Operation implements java.io.Serializable {
+public class Operation implements DataSerializableFixedID {
   private static final long serialVersionUID = -7521751729852504238L;
 
   private static byte nextOrdinal = 0;
@@ -545,7 +550,7 @@ public class Operation implements java.io.Serializable {
   private final transient String name;
 
   /** byte used as ordinal to represent this Operation */
-  public final byte ordinal;
+  public byte ordinal;
 
   /** True if a local op; false if distributed op. */
   private final transient boolean isLocal;
@@ -571,6 +576,14 @@ public class Operation implements java.io.Serializable {
     return VALUES[ordinal]; // Canonicalize
   }
 
+  public Operation() {
+    this.name = null;
+    this.isLocal = false;
+    this.isRegion = false;
+    this.opType = 0;
+    this.opDetails = 0;
+    this.ordinal = 0;
+  }
 
   /** Creates a new instance of Operation. */
   private Operation(String name, boolean isLocal, boolean isRegion, byte opType, int opDetails) {
@@ -880,5 +893,25 @@ public class Operation implements java.io.Serializable {
   @Override
   public String toString() {
     return this.name;
+  }
+
+  @Override
+  public int getDSFID() {
+    return OPERATION;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    out.writeByte(ordinal);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    ordinal = in.readByte();
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
   }
 }
