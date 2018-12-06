@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -100,22 +99,15 @@ public class DestroyRegionCommand extends InternalGfshCommand {
     if (cacheConfig == null) {
       return;
     }
-    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
+    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
     if (regionConfig == null) {
       return;
     }
-    Iterator<CacheElement> iterator = regionConfig.getCustomRegionElements().iterator();
-    while (iterator.hasNext()) {
-      CacheElement element = iterator.next();
-      if (element != null && "jdbc-mapping".equals(element.getId())) {
-        throw new IllegalStateException("Cannot destroy region \"" + regionName
-            + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
-      }
+    CacheElement element =
+        CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
+    if (element != null) {
+      throw new IllegalStateException("Cannot destroy region \"" + regionName
+          + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
     }
-  }
-
-  private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {
-    return cacheConfig.getRegions().stream()
-        .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
   }
 }

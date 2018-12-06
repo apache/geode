@@ -168,6 +168,7 @@ public class DestroyRegionCommandTest {
     doReturn(cacheConfig).when(ccService).getCacheConfig(null);
     doReturn(regionConfigList).when(cacheConfig).getRegions();
     doReturn(regionName).when(regionConfig).getName();
+    doReturn(regionName).when(regionConfig).getId();
     doReturn(cacheElementList).when(regionConfig).getCustomRegionElements();
     doReturn("jdbc-mapping").when(cacheElement).getId();
   }
