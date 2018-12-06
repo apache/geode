@@ -37,9 +37,6 @@ dependencies {
 
   compile("com.google.protobuf:protobuf-java:${project.'protobuf-java.version'}")
 
-  testCompile("com.github.stefanbirkner:system-rules:${project.'system-rules.version'}") {
-    exclude module: 'junit-dep'
-  }
 
   integrationTestCompile("com.github.stefanbirkner:system-rules:${project.'system-rules.version'}") {
     exclude module: 'junit-dep'

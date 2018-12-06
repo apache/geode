@@ -31,9 +31,6 @@ dependencies {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile("org.apache.tomcat:tomcat-coyote:${project.'tomcat9.version'}") {
-    exclude module: 'tomcat-servlet-api'
-  }
   compile("org.apache.tomcat:tomcat-juli:${project.'tomcat9.version'}")
   compile('javax.servlet:javax.servlet-api:' + '3.1.0')
 

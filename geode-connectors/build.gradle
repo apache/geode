@@ -62,9 +62,7 @@ dependencies {
   compile("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
   compile("javax.xml.bind:jaxb-api:${project.'jaxb.version'}")
   compile("org.apache.logging.log4j:log4j-api:${project.'log4j.version'}")
-  compile("org.apache.logging.log4j:log4j-jcl:${project.'log4j.version'}") {
-    ext.optional = true
-  }
+  runtime "org.apache.logging.log4j:log4j-jcl:${project.'log4j.version'}"
   compile("org.springframework.shell:spring-shell:${project.'spring-shell.version'}") {
     exclude module: 'aopalliance'
     exclude module: 'asm'
@@ -79,12 +77,9 @@ dependencies {
   testCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
 
   integrationTestCompile("junit:junit:${project.'junit.version'}")
-  integrationTestCompile("org.assertj:assertj-core:${project.'assertj-core.version'}")
-  integrationTestCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
 
   distributedTestCompile("junit:junit:${project.'junit.version'}")
   distributedTestCompile("org.assertj:assertj-core:${project.'assertj-core.version'}")
-  distributedTestCompile("org.mockito:mockito-core:${project.'mockito-core.version'}")
   distributedTestCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
   distributedTestRuntime("org.apache.derby:derby:${project.'derby.version'}")
 
@@ -96,7 +91,6 @@ dependencies {
   acceptanceTestCompile("org.awaitility:awaitility:${project.'awaitility.version'}")
   acceptanceTestCompile("org.mockito:mockito-core:${project.'mockito-core.version'}")
   acceptanceTestCompile("com.palantir.docker.compose:docker-compose-rule-core:${project.'docker-compose-rule.version'}")
-  acceptanceTestCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
   acceptanceTestCompile("com.palantir.docker.compose:docker-compose-rule-junit4:${project.'docker-compose-rule.version'}")
 
   acceptanceTestRuntime("mysql:mysql-connector-java:${project.'mysql-connector.version'}")

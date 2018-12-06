@@ -55,7 +55,6 @@ dependencies {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }
-  integrationTestCompile("org.slf4j:slf4j-api:${project.'slf4j-api.version'}")
 
   integrationTestRuntime("xerces:xercesImpl:${project.'xercesImpl.version'}")
 }

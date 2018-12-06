@@ -35,7 +35,6 @@ dependencies {
   }
   compile(project(':geode-json'))
 
-  compile("com.jayway.jsonpath:json-path:${project.'json-path.version'}")
   compile("org.apache.logging.log4j:log4j-api:${project.'log4j.version'}")
   compile("org.apache.logging.log4j:log4j-core:${project.'log4j.version'}")
   compile("commons-io:commons-io:${project.'commons-io.version'}")
@@ -51,12 +50,9 @@ dependencies {
     ext.optional = true
   }
   compile("com.google.guava:guava:${project.'guava.version'}")
-  compile("com.github.stefanbirkner:system-rules:${project.'system-rules.version'}") {
-    exclude module: 'junit-dep'
-  }
 
   compile("org.assertj:assertj-core:${project.'assertj-core.version'}")
-  compile("org.mockito:mockito-core:${project.'mockito-core.version'}")
+  distributedTestCompile "org.mockito:mockito-core:${project.'mockito-core.version'}"
   compile("org.awaitility:awaitility:${project.'awaitility.version'}")
 
   compile("junit:junit:${project.'junit.version'}") {

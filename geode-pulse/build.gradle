@@ -43,26 +43,13 @@ dependencies {
   compile("org.springframework:spring-beans:${project.'springframework.version'}")
 
   // Needed to fully use log4j instead of commons-logging.
-  compile("org.apache.logging.log4j:log4j-jcl:${project.'log4j.version'}")
+  runtime "org.apache.logging.log4j:log4j-jcl:${project.'log4j.version'}"
   compile("org.apache.logging.log4j:log4j-api:${project.'log4j.version'}")
-  compile("org.apache.logging.log4j:log4j-core:${project.'log4j.version'}")
+  runtime "org.apache.logging.log4j:log4j-core:${project.'log4j.version'}"
 
-  compile("commons-beanutils:commons-beanutils:${project.'commons-beanutils.version'}")
   compile("commons-collections:commons-collections:${project.'commons-collections.version'}")
-  compile("commons-digester:commons-digester:${project.'commons-digester.version'}")
   compile("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
-  compile("org.springframework.ldap:spring-ldap-core:${project.'spring-ldap-core.version'}")
   
-  compile("org.springframework.security:spring-security-config:${project.'spring-security.version'}") {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-expression'
-  }
-  compile("org.springframework.security:spring-security-ldap:${project.'spring-security.version'}") {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
-  }
   compile("org.springframework.security:spring-security-web:${project.'spring-security.version'}") {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
@@ -75,9 +62,7 @@ dependencies {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile("org.springframework:spring-tx:${project.'spring-tx.version'}")
-  compile("com.fasterxml.jackson.core:jackson-annotations:${project.'jackson.version'}")
-  compile("com.fasterxml.jackson.core:jackson-core:${project.'jackson.version'}")
+  runtime "com.fasterxml.jackson.core:jackson-core:${project.'jackson.version'}"
   compile("com.fasterxml.jackson.core:jackson-databind:${project.'jackson.version'}")
 
   compileOnly("org.mortbay.jetty:servlet-api:${project.'mortbay-jetty-servlet-api.version'}")

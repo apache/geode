@@ -22,7 +22,7 @@ dependencies {
   compileOnly(project(':geode-lucene'))
 
   compile("junit:junit:${project.'junit.version'}")
-  compile("org.apache.lucene:lucene-test-framework:${project.'lucene.version'}")
+  runtime "org.apache.lucene:lucene-test-framework:${project.'lucene.version'}"
   compile("org.mockito:mockito-core:${project.'mockito-core.version'}")
 }
 

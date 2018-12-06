@@ -222,11 +222,8 @@ dependencies {
   compile("com.fasterxml.jackson.core:jackson-databind:${project.'jackson.version'}")
   compile("commons-io:commons-io:${project.'commons-io.version'}")
   compile("commons-validator:commons-validator:${project.'commons-validator.version'}")
-  compile("commons-digester:commons-digester:${project.'commons-digester.version'}")
-  compile("javax.activation:activation:${project.'javax-activation.version'}")
   compile("javax.xml.bind:jaxb-api:${project.'jaxb.version'}")
-  compile("com.sun.xml.bind:jaxb-core:${project.'jaxb.version'}")
-  compile("com.sun.xml.bind:jaxb-impl:${project.'jaxb.version'}")
+  runtime "com.sun.xml.bind:jaxb-impl:${project.'jaxb.version'}"
 
   compile("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
   compile("commons-modeler:commons-modeler:${project.'commons-modeler.version'}") {
@@ -280,11 +277,6 @@ dependencies {
     ext.optional = true
   }
   compileOnly("org.springframework:spring-webmvc:${project.'springframework.version'}") {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-    ext.optional = true
-  }
-  testCompile("org.springframework:spring-webmvc:${project.'springframework.version'}") {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true

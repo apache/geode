@@ -33,9 +33,6 @@ dependencies {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile("org.apache.tomcat:tomcat-coyote:${project.'tomcat7.version'}") {
-    exclude module: 'tomcat-servlet-api'
-  }
   compile("org.apache.tomcat:tomcat-juli:${project.'tomcat7.version'}")
 
   integrationTestCompile(project(':geode-dunit')) {

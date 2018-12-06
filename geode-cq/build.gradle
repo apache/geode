@@ -45,7 +45,6 @@ dependencies {
   compile("org.apache.logging.log4j:log4j-api:${project.'log4j.version'}")
 
   integrationTestCompile("junit:junit:${project.'junit.version'}")
-  integrationTestCompile("org.awaitility:awaitility:${project.'awaitility.version'}")
 
   distributedTestCompile("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
   distributedTestCompile("junit:junit:${project.'junit.version'}")
