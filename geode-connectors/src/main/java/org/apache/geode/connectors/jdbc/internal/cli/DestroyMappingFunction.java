@@ -45,10 +45,10 @@ public class DestroyMappingFunction extends CliFunction<String> {
     if (mapping != null) {
       cleanupRegionAndQueue(cache, regionName);
       service.destroyRegionMapping(regionName);
-      String message = "Destroyed region mapping for region " + regionName + " on " + member;
+      String message = "Destroyed JDBC mapping for region " + regionName + " on " + member;
       return new CliFunctionResult(member, StatusState.OK, message);
     } else {
-      String message = "Region mapping for region \"" + regionName + "\" not found";
+      String message = "JDBC mapping for region \"" + regionName + "\" not found";
       return new CliFunctionResult(member, StatusState.ERROR, message);
     }
   }

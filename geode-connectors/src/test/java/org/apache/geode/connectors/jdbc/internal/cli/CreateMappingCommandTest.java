@@ -221,7 +221,7 @@ public class CreateMappingCommandTest {
         tableName, pdxClass, false);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
-    assertThat(result.toString()).contains("A jdbc-mapping for " + regionName + " already exists.");
+    assertThat(result.toString()).contains("A JDBC mapping for " + regionName + " already exists.");
   }
 
   @Test

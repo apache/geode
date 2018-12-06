@@ -48,10 +48,10 @@ import org.apache.geode.security.ResourcePermission;
 public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
-      EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";
+      EXPERIMENTAL + "Create a JDBC mapping for a region for use with a JDBC database.";
   static final String CREATE_MAPPING__REGION_NAME = "region";
   static final String CREATE_MAPPING__REGION_NAME__HELP =
-      "Name of the region the mapping is being created for.";
+      "Name of the region the JDBC mapping is being created for.";
   static final String CREATE_MAPPING__PDX_NAME = "pdx-name";
   static final String CREATE_MAPPING__PDX_NAME__HELP =
       "Name of pdx class for which values will be written to the database.";
@@ -141,7 +141,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       throws PreconditionException {
     if (regionConfig.getCustomRegionElements().stream()
         .anyMatch(element -> element instanceof RegionMapping)) {
-      throw new PreconditionException("A jdbc-mapping for " + regionName + " already exists.");
+      throw new PreconditionException("A JDBC mapping for " + regionName + " already exists.");
     }
   }
 

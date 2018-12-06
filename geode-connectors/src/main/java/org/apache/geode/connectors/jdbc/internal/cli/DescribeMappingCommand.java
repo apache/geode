@@ -41,10 +41,10 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class DescribeMappingCommand extends GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP = EXPERIMENTAL + "Describe the specified jdbc mapping";
+  static final String DESCRIBE_MAPPING__HELP = EXPERIMENTAL + "Describe the specified JDBC mapping";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
-      "Region name of the jdbc mapping to be described.";
+      "Region name of the JDBC mapping to be described.";
 
   static final String RESULT_SECTION_NAME = "MappingDescription";
 
@@ -74,7 +74,7 @@ public class DescribeMappingCommand extends GfshCommand {
 
     if (mapping == null) {
       throw new EntityNotFoundException(
-          EXPERIMENTAL + "\n" + "mapping for region '" + regionName + "' not found");
+          EXPERIMENTAL + "\n" + "JDBC mapping for region '" + regionName + "' not found");
     }
 
     ResultModel resultModel = new ResultModel();

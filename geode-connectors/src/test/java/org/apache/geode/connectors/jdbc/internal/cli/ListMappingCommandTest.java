@@ -86,6 +86,6 @@ public class ListMappingCommandTest {
     when(rc.getResult()).thenReturn(Collections.emptyList());
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+        .containsOutput("No JDBC mappings found");
   }
 }

@@ -45,7 +45,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
         mappingsByRegion.putIfAbsent(mapping.getRegionName(), mapping);
     if (existing != null) {
       throw new RegionMappingExistsException(
-          "RegionMapping for region " + mapping.getRegionName() + " exists");
+          "JDBC mapping for region " + mapping.getRegionName() + " exists");
     }
   }
 
@@ -56,7 +56,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
         mappingsByRegion.get(alteredMapping.getRegionName());
     if (existingMapping == null) {
       throw new RegionMappingNotFoundException(
-          "RegionMapping for the region " + alteredMapping.getRegionName() + " was not found");
+          "JDBC mapping for the region " + alteredMapping.getRegionName() + " was not found");
     }
 
     mappingsByRegion.put(existingMapping.getRegionName(), alteredMapping);
