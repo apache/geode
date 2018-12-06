@@ -19,7 +19,9 @@ import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUN
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
+import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -230,6 +232,61 @@ public class AvailablePortHelperIntegrationTest {
     int udpPort = getRandomAvailableUDPPort();
     assertThat(udpPort).isNotZero();
     assertPortIsUsable(udpPort);
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void getRandomAvailableTCPPortRange_returnsUniqueRanges(
+      final boolean useMembershipPortRange) {
+    Set<Integer> ports = new HashSet<>();
+
+    for (int i = 0; i < 1000; ++i) {
+      int[] testPorts = getRandomAvailableTCPPortRange(5, useMembershipPortRange);
+      for (int testPort : testPorts) {
+        assertThat(ports).doesNotContain(testPort);
+        ports.add(testPort);
+      }
+    }
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void getRandomAvailableTCPPort_returnsUniqueValues(final boolean useMembershipPortRange) {
+    Set<Integer> ports = new HashSet<>();
+
+    for (int i = 0; i < 1000; ++i) {
+      int testPort = getRandomAvailableTCPPorts(1, useMembershipPortRange)[0];
+      assertThat(ports).doesNotContain(testPort);
+      ports.add(testPort);
+    }
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void initializeUniquePortRange_willReturnSamePortsForSameRange(
+      final boolean useMembershipPortRange) {
+    for (int i = 0; i < 1000; ++i) {
+      initializeUniquePortRange(i);
+      int[] testPorts = getRandomAvailableTCPPorts(3, useMembershipPortRange);
+      initializeUniquePortRange(i);
+      assertThat(getRandomAvailableTCPPorts(3, useMembershipPortRange)).isEqualTo(testPorts);
+    }
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void initializeUniquePortRange_willReturnUniquePortsForUniqueRanges(
+      final boolean useMembershipPortRange) {
+    Set<Integer> ports = new HashSet<>();
+
+    for (int i = 0; i < 1000; ++i) {
+      initializeUniquePortRange(i);
+      int[] testPorts = getRandomAvailableTCPPorts(5, useMembershipPortRange);
+      for (int testPort : testPorts) {
+        assertThat(ports).doesNotContain(testPort);
+        ports.add(testPort);
+      }
+    }
   }
 
   private void assertPortsAreUsable(int[] ports) throws IOException {

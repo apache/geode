@@ -34,10 +34,13 @@ import org.apache.geode.internal.AvailablePort.Keeper;
  * further calls to getRandomAvailablePort.
  */
 public class AvailablePortHelper {
-  static AtomicInteger currentMembershipPort;
-  static AtomicInteger currentAvailablePort;
+  private final AtomicInteger currentMembershipPort;
+  private final AtomicInteger currentAvailablePort;
 
-  static {
+  // Singleton object is only used to track the current ports
+  private static AvailablePortHelper singleton = new AvailablePortHelper();
+
+  AvailablePortHelper() {
     Random rand;
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
     if (fast)
@@ -189,8 +192,8 @@ public class AvailablePortHelper {
     if (rangeNumber < 0) {
       throw new RuntimeException("Range number cannot be negative.");
     }
-    currentMembershipPort.set(DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
-    currentAvailablePort.set(AVAILABLE_PORTS_LOWER_BOUND);
+    singleton.currentMembershipPort.set(DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+    singleton.currentAvailablePort.set(AVAILABLE_PORTS_LOWER_BOUND);
     if (rangeNumber != 0) {
       // This code will generate starting points such that range 0 starts at the lowest possible
       // value, range 1 starts halfway through the total available ports, 2 starts 1/4 of the way
@@ -204,15 +207,13 @@ public class AvailablePortHelper {
       int numChunks = Integer.highestOneBit(rangeNumber) << 1;
       int chunkNumber = 2 * (rangeNumber - Integer.highestOneBit(rangeNumber)) + 1;
 
-      currentMembershipPort.addAndGet(chunkNumber * membershipRange / numChunks);
-      currentAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
+      singleton.currentMembershipPort.addAndGet(chunkNumber * membershipRange / numChunks);
+      singleton.currentAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
     }
   }
 
   /**
-   * Get keeper objects for the next unused, consecutive 'rangeSize' ports on this machine. This
-   * method should be the ultimate source of ports handed out by this class to ensure that we're not
-   * reusing port numbers within a test.
+   * Get keeper objects for the next unused, consecutive 'rangeSize' ports on this machine.
    *
    * @param useMembershipPortRange - if true, select ports from the
    *        DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE
@@ -223,7 +224,7 @@ public class AvailablePortHelper {
   private static List<Keeper> getUniquePortRangeKeepers(boolean useMembershipPortRange,
       int protocol, int rangeSize) {
     AtomicInteger targetRange =
-        useMembershipPortRange ? currentMembershipPort : currentAvailablePort;
+        useMembershipPortRange ? singleton.currentMembershipPort : singleton.currentAvailablePort;
     int targetBound =
         useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
 
@@ -236,7 +237,6 @@ public class AvailablePortHelper {
       }
       List<Keeper> keepers = new ArrayList<>();
       int validPortsFound = 0;
-
 
       while (validPortsFound < rangeSize) {
         Keeper testKeeper =
@@ -262,10 +262,26 @@ public class AvailablePortHelper {
     return getUniquePortRangeKeepers(useMembershipPortRange, protocol, 1).get(0);
   }
 
+  /**
+   * Get the next available port on this machine.
+   */
   private static int getUniquePort(boolean useMembershipPortRange, int protocol) {
-    Keeper keeper = getUniquePortKeeper(useMembershipPortRange, protocol);
-    int port = keeper.getPort();
-    keeper.release();
-    return port;
+    AtomicInteger targetRange =
+        useMembershipPortRange ? singleton.currentMembershipPort : singleton.currentAvailablePort;
+    int targetBound =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+
+    while (true) {
+      int uniquePort = targetRange.getAndIncrement();
+      if (uniquePort > targetBound) {
+        targetRange.set(useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0]
+            : AVAILABLE_PORTS_LOWER_BOUND);
+        continue;
+      }
+
+      if (AvailablePort.isPortAvailable(uniquePort++, protocol, getAddress(protocol))) {
+        return uniquePort;
+      }
+    }
   }
 }
