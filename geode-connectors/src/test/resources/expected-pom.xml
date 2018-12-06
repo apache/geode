@@ -36,6 +36,24 @@
   </scm>
   <dependencies>
     <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>1.4.01</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.9.7</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.9.7</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
       <version>1.9.0-SNAPSHOT</version>
@@ -67,16 +85,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
+      <artifactId>log4j-jcl</artifactId>
       <version>2.11.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-jcl</artifactId>
+      <artifactId>log4j-api</artifactId>
       <version>2.11.1</version>
       <scope>compile</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework.shell</groupId>
