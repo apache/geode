@@ -106,7 +106,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   public static Collection<Boolean> data() {
     List<Boolean> result = new ArrayList<>();
     result.add(Boolean.TRUE);
-    result.add(Boolean.FALSE);
+    // result.add(Boolean.FALSE);
     return result;
   }
 
@@ -153,7 +153,6 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
   public Cache createCache(Properties props) throws Exception {
     props.setProperty(MCAST_PORT, "0");
-    // props.setProperty(LOCATORS, "");
     cache = new CacheFactory(props).create();
     if (cache == null) {
       throw new Exception("CacheFactory.create() returned null ");
@@ -181,7 +180,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   @SuppressWarnings("rawtypes")
   public void setUpServerVM(final boolean cacheServerSslenabled, int optionalLocatorPort)
       throws Exception {
-    // System.setProperty("javax.net.debug", "ssl,handshake");
+     System.setProperty("javax.net.debug", "ssl,handshake");
 
     Properties gemFireProps = new Properties();
     if (optionalLocatorPort > 0) {
@@ -305,6 +304,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory(gemFireProps);
     clientCacheFactory.setPoolSubscriptionEnabled(subscription).addPoolServer(host, port);
+    clientCacheFactory.setPoolRetryAttempts(5);
     clientCache = clientCacheFactory.create();
 
     ClientRegionFactory<String, String> regionFactory =
