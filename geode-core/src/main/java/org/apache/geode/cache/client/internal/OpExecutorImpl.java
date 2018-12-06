@@ -142,8 +142,6 @@ public class OpExecutorImpl implements ExecutablePool {
     }
     boolean success = false;
 
-    Set attemptedServers = new HashSet();
-
     Connection conn = (Connection) (threadLocalConnections ? localConnection.get() : null);
     if (conn == null || conn.isDestroyed()) {
       conn = connectionManager.borrowConnection(serverTimeout);
@@ -159,6 +157,8 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     try {
+      Set attemptedServers = null;
+
       for (int attempt = 0; true; attempt++) {
         // when an op is retried we may need to try to recover the previous
         // attempt's version stamp
@@ -178,6 +178,10 @@ public class OpExecutorImpl implements ExecutablePool {
           // It also unsets the threadlocal connection and notifies
           // the connection manager if there are failures.
           handleException(e, conn, attempt, attempt >= retries && retries != -1);
+          if (null == attemptedServers) {
+            // don't allocate this until we need it
+            attemptedServers = new HashSet();
+          }
           attemptedServers.add(conn.getServer());
           try {
             conn = connectionManager.exchangeConnection(conn, attemptedServers, serverTimeout);
