@@ -24,58 +24,60 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchSharedConfigurationStatusFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class StatusClusterConfigServiceCommand extends InternalGfshCommand {
-  private static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction =
-      new FetchSharedConfigurationStatusFunction();
-
+public class StatusClusterConfigServiceCommand extends GfshCommand {
   @SuppressWarnings("unchecked")
   @CliCommand(value = CliStrings.STATUS_SHARED_CONFIG, help = CliStrings.STATUS_SHARED_CONFIG_HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_LOCATOR)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result statusSharedConfiguration() {
+  public ResultModel statusSharedConfiguration() {
     final InternalCache cache = (InternalCache) getCache();
     final Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
+
     if (locators.isEmpty()) {
-      return ResultBuilder.createInfoResult(CliStrings.NO_LOCATORS_WITH_SHARED_CONFIG);
-    } else {
-      return ResultBuilder.buildResult(getSharedConfigurationStatus(locators));
+      return ResultModel.createInfo(CliStrings.NO_LOCATORS_WITH_SHARED_CONFIG);
     }
+
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel tabularResultModel =
+        resultModel.addTable("Status of shared configuration on locators");
+    if (!populateSharedConfigurationStatus(locators, tabularResultModel)) {
+      resultModel.setStatus(Status.ERROR);
+    }
+
+    return resultModel;
   }
 
-  private TabularResultData getSharedConfigurationStatus(Set<DistributedMember> locators) {
+  private boolean populateSharedConfigurationStatus(Set<DistributedMember> locators,
+      TabularResultModel tabularResultModel) {
     boolean isSharedConfigRunning = false;
     ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(fetchSharedConfigStatusFunction, null, locators);
+        CliUtil.executeFunction(new FetchSharedConfigurationStatusFunction(), null, locators);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
-    TabularResultData table = ResultBuilder.createTabularResultData();
-    table.setHeader("Status of shared configuration on locators");
 
     for (CliFunctionResult result : results) {
-      table.accumulate(CliStrings.STATUS_SHARED_CONFIG_NAME_HEADER, result.getMemberIdOrName());
-      String status = (String) result.getSerializables()[0];
-      table.accumulate(CliStrings.STATUS_SHARED_CONFIG_STATUS, status);
+      tabularResultModel.accumulate(CliStrings.STATUS_SHARED_CONFIG_NAME_HEADER,
+          result.getMemberIdOrName());
+      String status = (String) result.getResultObject();
+      tabularResultModel.accumulate(CliStrings.STATUS_SHARED_CONFIG_STATUS, status);
       if (SharedConfigurationStatus.RUNNING.name().equals(status)) {
         isSharedConfigRunning = true;
       }
     }
 
-    if (!isSharedConfigRunning) {
-      table.setStatus(Status.ERROR);
-    }
-    return table;
+    return isSharedConfigRunning;
   }
 }
