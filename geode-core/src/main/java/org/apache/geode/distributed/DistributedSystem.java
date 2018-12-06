@@ -206,7 +206,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
             // This should not happen: existingSystem.isConnected()==false &&
             // existingSystem.isDisconnecting()==false
             throw new AssertionError(
-                "system should not be disconnecting==false and isConnected==false");
+                "system should not have both disconnecting==false and isConnected==false");
           }
         }
       }
