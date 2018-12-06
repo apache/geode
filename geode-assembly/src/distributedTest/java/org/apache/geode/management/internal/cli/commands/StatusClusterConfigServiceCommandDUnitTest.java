@@ -14,14 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 public class StatusClusterConfigServiceCommandDUnitTest {
   private static MemberVM locator1;
@@ -38,12 +36,6 @@ public class StatusClusterConfigServiceCommandDUnitTest {
     cluster.startLocatorVM(1, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
-  }
-
-  @AfterClass
-  public static void afterClass() throws Exception {
-    gfsh.connectAndVerify(locator1);
-    gfsh.execute("shutdown --include-locators");
   }
 
   @Test
