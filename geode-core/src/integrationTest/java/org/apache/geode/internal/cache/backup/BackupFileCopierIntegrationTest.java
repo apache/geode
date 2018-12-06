@@ -19,12 +19,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -38,11 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.DistributedSystem;
@@ -54,9 +51,6 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 
-@PowerMockIgnore("*.IntegrationTest")
-@PrepareForTest({BackupFileCopier.class, URL.class})
-@RunWith(PowerMockRunner.class)
 public class BackupFileCopierIntegrationTest {
   private static final String CONFIG_DIRECTORY = "config";
   private static final String USER_FILES = "user";
@@ -80,7 +74,7 @@ public class BackupFileCopierIntegrationTest {
     tempFiles = mock(TemporaryBackupFiles.class);
     tempFilesLocation = tempFolder.newFolder("temporaryBackupFiles").toPath();
     when(tempFiles.getDirectory()).thenReturn(tempFilesLocation);
-    fileCopier = new BackupFileCopier(cache, tempFiles);
+    fileCopier = spy(new BackupFileCopier(cache, tempFiles));
   }
 
   @Test
@@ -97,11 +91,10 @@ public class BackupFileCopierIntegrationTest {
   }
 
   @Test
-  public void throwsIOExceptionIfConfigFileLocationInvalid() throws URISyntaxException {
-    URL badUrl = PowerMockito.mock(URL.class);
-    PowerMockito.doThrow(new URISyntaxException("", "")).when(badUrl).toURI();
-    when(cache.getCacheXmlURL()).thenReturn(badUrl);
-
+  public void throwsIOExceptionIfConfigFileLocationInvalid()
+      throws URISyntaxException, MalformedURLException {
+    doReturn(new URL("http://www.test.com")).when(cache).getCacheXmlURL();
+    doThrow(new URISyntaxException("test", "test")).when(fileCopier).getSource(any());
     assertThatThrownBy(() -> fileCopier.copyConfigFiles()).isInstanceOf(IOException.class);
   }
 
@@ -257,9 +250,7 @@ public class BackupFileCopierIntegrationTest {
     Path diskStoreDir = tempFolder.newFolder("diskstores").toPath();
     when(tempFiles.getDiskStoreDirectory(any(), any())).thenReturn(diskStoreDir);
 
-    PowerMockito.mockStatic(Files.class);
-    PowerMockito.doThrow(new IOException()).when(Files.class);
-    Files.createLink(any(), any());
+    doThrow(new IOException()).when(fileCopier).createLink(any(), any());
 
     fileCopier.copyOplog(diskStore, oplog);
 
