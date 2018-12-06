@@ -45,10 +45,6 @@ public abstract class GfshCommand implements CommandMarker {
   public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
 
-  public boolean isConnectedAndReady() {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    return gfsh != null && gfsh.isConnectedAndReady();
-  }
 
   public boolean isOnlineCommandAvailable() {
     Gfsh gfsh = Gfsh.getCurrentInstance();
@@ -86,9 +82,9 @@ public abstract class GfshCommand implements CommandMarker {
     return (T) ManagementService.getExistingManagementService(cache);
   }
 
-  public ConfigurationPersistenceService getConfigurationPersistenceService() {
+  public <T extends ConfigurationPersistenceService> T getConfigurationPersistenceService() {
     InternalLocator locator = InternalLocator.getLocator();
-    return locator == null ? null : locator.getConfigurationPersistenceService();
+    return locator == null ? null : (T) locator.getConfigurationPersistenceService();
   }
 
 

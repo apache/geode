@@ -12,29 +12,40 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import javax.management.remote.JMXServiceURL;
+
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
-public class ExitCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.EXIT, "quit"}, help = CliStrings.EXIT__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public ExitShellRequest exit() {
-    Gfsh gfshInstance = getGfsh();
+public abstract class OfflineGfshCommand {
 
-    gfshInstance.stop();
+  public boolean isDebugging() {
+    return getGfsh() != null && getGfsh().getDebug();
+  }
 
-    ExitShellRequest exitShellRequest = gfshInstance.getExitShellRequest();
-    if (exitShellRequest == null) {
-      // shouldn't really happen, but we'll fallback to this anyway
-      exitShellRequest = ExitShellRequest.NORMAL_EXIT;
+  public boolean isLogging() {
+    return getGfsh() != null;
+  }
+
+  public Gfsh getGfsh() {
+    return Gfsh.getCurrentInstance();
+  }
+
+  public JMXServiceURL getJmxServiceUrl() {
+    OperationInvoker operationInvoker = getGfsh().getOperationInvoker();
+    if (operationInvoker instanceof JmxOperationInvoker) {
+      return ((JmxOperationInvoker) operationInvoker).getJmxServiceUrl();
     }
-    return exitShellRequest;
+
+    return null;
+  }
+
+  public boolean isConnectedAndReady() {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    return gfsh != null && gfsh.isConnectedAndReady();
   }
 }
