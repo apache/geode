@@ -228,7 +228,8 @@ public class CreateDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --name=name  --url=url")
-        .statusIsSuccess().containsOutput("No members found, data source saved to cluster config.")
+        .statusIsSuccess()
+        .containsOutput("No members found, data source saved to cluster configuration.")
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
