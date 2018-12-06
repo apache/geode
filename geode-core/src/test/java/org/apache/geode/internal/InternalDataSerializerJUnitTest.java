@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,6 +40,8 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.examples.security.ExampleSecurityManager;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
@@ -58,6 +62,17 @@ public class InternalDataSerializerJUnitTest {
         InternalDataSerializer.isGemfireObject(new InternalGemFireException()));
     assertTrue("Instances of anything under org.apache.geode. are GemFire objects",
         InternalDataSerializer.isGemfireObject(new ExampleSecurityManager()));
+  }
+
+  @Test
+  public void whenGeodeObjectIsPassedToWritePdxThenItIsReturnedImmediately() throws IOException {
+    DataOutput dataOutput = mock(DataOutput.class);
+    InternalCache internalCache = mock(InternalCache.class);
+    Object geodeObject = new TestFunction();
+    PdxSerializer pdxSerializer = mock(PdxSerializer.class);
+    assertFalse(
+        InternalDataSerializer.writePdx(dataOutput, internalCache, geodeObject, pdxSerializer));
+    verify(internalCache, times(0)).getPdxRegistry();
   }
 
   @Test
