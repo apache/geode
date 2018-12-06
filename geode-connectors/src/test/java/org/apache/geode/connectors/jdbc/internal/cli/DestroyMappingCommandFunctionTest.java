@@ -118,7 +118,7 @@ public class DestroyMappingCommandFunctionTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.toString())
-        .contains("Destroyed region mapping for region " + regionName + " on myMemberName");
+        .contains("Destroyed JDBC mapping for region " + regionName + " on myMemberName");
   }
 
   @Test
@@ -127,7 +127,7 @@ public class DestroyMappingCommandFunctionTest {
 
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.toString())
-        .contains("Region mapping for region \"" + regionName + "\" not found");
+        .contains("JDBC mapping for region \"" + regionName + "\" not found");
   }
 
   @Test
@@ -222,6 +222,6 @@ public class DestroyMappingCommandFunctionTest {
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
     assertThat(argument.getValue().getStatusMessage())
-        .contains("Region mapping for region \"" + regionName + "\" not found");
+        .contains("JDBC mapping for region \"" + regionName + "\" not found");
   }
 }

@@ -37,12 +37,9 @@ import org.apache.geode.security.ResourcePermission;
 public class ListMappingCommand extends GfshCommand {
   public static final String JDBC_MAPPINGS_SECTION = "jdbc-mappings";
   static final String LIST_MAPPING = "list jdbc-mappings";
-  static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
-
-  static final String LIST_OF_MAPPINGS = "List of mappings";
-  static final String NO_MAPPINGS_FOUND = "No mappings found";
-  static final String LIST_MAPPINGS_MEMBER__HELP =
-      "Member from which the jdbc mappings are retrieved.";
+  static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display JDBC mappings for all members.";
+  static final String LIST_OF_MAPPINGS = "List of JDBC mappings";
+  static final String NO_MAPPINGS_FOUND = "No JDBC mappings found";
 
   @CliCommand(value = LIST_MAPPING, help = LIST_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)

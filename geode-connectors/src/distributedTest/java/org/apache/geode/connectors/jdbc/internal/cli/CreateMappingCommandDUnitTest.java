@@ -314,7 +314,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogusTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "A jdbc-mapping for " + convertRegionPathToName(regionName) + " already exists");
+            "A JDBC mapping for " + convertRegionPathToName(regionName) + " already exists");
 
     server.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
