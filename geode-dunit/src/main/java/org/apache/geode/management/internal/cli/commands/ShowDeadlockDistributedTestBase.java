@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class ShowDeadlockDistributedTestBase {
   private static Thread stuckThread;
-  private static ReentrantLock LOCK = new ReentrantLock();
+  private static final ReentrantLock LOCK = new ReentrantLock();
 
   protected MemberVM locator;
   private MemberVM server1;
@@ -96,8 +96,13 @@ public class ShowDeadlockDistributedTestBase {
       stuckThread = null;
     });
 
-    // Add a wait to allow the lock to be released -- this will allow the test to run in repeats
-    Thread.sleep(30000);
+    // Wait to allow the locks to be released to avoid environment pollution for tests that follow
+    server1.invoke(() -> {
+      await().until(() -> !LOCK.isLocked());
+    });
+    server2.invoke(() -> {
+      await().until(() -> !LOCK.isLocked());
+    });
   }
 
   public void connect() throws Exception {
