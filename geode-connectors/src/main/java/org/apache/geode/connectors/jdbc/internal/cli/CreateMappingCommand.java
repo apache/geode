@@ -93,7 +93,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
-    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName);
+    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName, null);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =

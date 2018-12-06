@@ -145,7 +145,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     InternalCache cache = ClusterStartupRule.getCache();
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     service.createRegionMapping(new RegionMapping(REGION_NAME, "myPdxClass",
-        "testTable", "connection"));
+        "testTable", "connection", null));
     assertThat(service.getMappingForRegion(REGION_NAME)).isNotNull();
   }
 }

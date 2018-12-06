@@ -69,7 +69,7 @@ public class DescribeMappingCommandTest {
         null);
 
     RegionMapping mapping =
-        new RegionMapping("region", "class1", "table1", "name1");
+        new RegionMapping("region", "class1", "table1", "name1", null);
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
