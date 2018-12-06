@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -103,7 +102,6 @@ public class Destroy65 extends BaseCommand {
     Part eventPart;
     Part expectedOldValuePart;
 
-    Object operation = null;
     Object expectedOldValue = null;
 
     String regionName = null;
@@ -120,21 +118,20 @@ public class Destroy65 extends BaseCommand {
     regionNamePart = clientMessage.getPart(0);
     keyPart = clientMessage.getPart(1);
     expectedOldValuePart = clientMessage.getPart(2);
-    try {
 
-      operation = clientMessage.getPart(3).getObject();
-
-      if (((operation instanceof Operation)
-          && (Operation.fromOrdinal(((Operation) operation).ordinal) == Operation.REMOVE))
-          || ((operation instanceof Byte) && (Byte) operation == OpType.DESTROY))
-
-      {
-        expectedOldValue = expectedOldValuePart.getObject();
-      }
-    } catch (Exception e) {
-      writeException(clientMessage, e, false, serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
+    final Operation operation = getOperation(clientMessage, 3, serverConnection);
+    if (null == operation) {
       return;
+    }
+
+    if (operation == Operation.REMOVE) {
+      try {
+        expectedOldValue = expectedOldValuePart.getObject();
+      } catch (Exception e) {
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        return;
+      }
     }
 
     eventPart = clientMessage.getPart(4);

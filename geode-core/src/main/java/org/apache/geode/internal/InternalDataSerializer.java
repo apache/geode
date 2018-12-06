@@ -2180,9 +2180,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     // Handle special objects first
     if (o == null) {
       out.writeByte(DSCODE.NULL.toByte());
-
-      // } else if (o instanceof Operation) {
-      // writeSerializableObject(o, out);
     } else if (o instanceof DataSerializableFixedID) {
       checkPdxCompatible(o, ensurePdxCompatibility);
       DataSerializableFixedID dsfid = (DataSerializableFixedID) o;

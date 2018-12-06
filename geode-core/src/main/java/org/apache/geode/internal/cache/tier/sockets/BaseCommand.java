@@ -1443,4 +1443,25 @@ public abstract class BaseCommand implements Command {
       appendInterestResponseKey(region, riKey, entryKey, collector, servConn);
     }
   }
+
+  protected static Operation getOperation(final Message clientMessage, final int partIndex,
+      final ServerConnection serverConnection) throws IOException {
+    final Part operationPart = clientMessage.getPart(partIndex);
+    if (operationPart.isObject()) {
+      try {
+        Operation operation = (Operation) operationPart.getObject();
+        if (operation == null) { // old native clients send a null since the op is java-serialized
+          operation = Operation.UPDATE;
+        }
+        return operation;
+      } catch (ClassNotFoundException e) {
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        return null;
+      }
+    }
+
+    return Operation.fromOrdinal((byte) operationPart.getInt());
+  }
+
 }

@@ -68,7 +68,7 @@ public class Put65 extends BaseCommand {
       final SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
-    Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
+    Part keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
     Part eventPart = null;
@@ -86,21 +86,15 @@ public class Put65 extends BaseCommand {
     }
     // Retrieve the data from the message parts
     int idx = 0;
-    regionNamePart = clientMessage.getPart(idx++);
-    Operation operation;
-    try {
-      operation = (Operation) clientMessage.getPart(idx++).getObject();
-      if (operation == null) { // native clients send a null since the op is java-serialized
-        operation = Operation.UPDATE;
-      } else {
-        operation = Operation.fromOrdinal(operation.ordinal);
-      }
-    } catch (ClassNotFoundException e) {
-      writeException(clientMessage, e, false, serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
+
+    final Part regionNamePart = clientMessage.getPart(idx++);
+
+    final Operation operation = getOperation(clientMessage, idx++, serverConnection);
+    if (null == operation) {
       return;
     }
-    int flags = clientMessage.getPart(idx++).getInt();
+
+    final int flags = clientMessage.getPart(idx++).getInt();
     boolean requireOldValue = ((flags & 0x01) == 0x01);
     boolean haveExpectedOldValue = ((flags & 0x02) == 0x02);
     Object expectedOldValue = null;
@@ -136,6 +130,7 @@ public class Put65 extends BaseCommand {
       }
     }
     regionName = regionNamePart.getString();
+
 
     try {
       key = keyPart.getStringOrObject();

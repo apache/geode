@@ -139,9 +139,7 @@ public class DestroyOp {
       getMessage().addStringPart(region.getFullPath());
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
-      getMessage().addObjPart(operation == Operation.DESTROY ? null : operation); // server
-                                                                                  // interprets null
-                                                                                  // as DESTROY
+      getMessage().addIntPart(operation.ordinal);
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
@@ -158,9 +156,7 @@ public class DestroyOp {
       getMessage().addStringPart(region);
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
-      getMessage().addObjPart(operation == Operation.DESTROY ? null : operation); // server
-                                                                                  // interprets null
-                                                                                  // as DESTROY
+      getMessage().addObjPart(operation.ordinal);
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
