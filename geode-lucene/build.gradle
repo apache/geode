@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    compile('javax.xml.bind:jaxb-api:2.2.11')
     upgradeTestCompile('junit:junit:4.12')
     testCompile('junit:junit:4.12')
     upgradeTestCompile('org.awaitility:awaitility:3.1.2')
@@ -41,7 +42,7 @@ dependencies {
     integrationTestCompile(project(':geode-junit'))
     integrationTestCompile('org.hamcrest:hamcrest-core:1.3')
     integrationTestCompile('org.hamcrest:hamcrest-library:1.3')
-  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version')
+  compile("org.springframework.shell:spring-shell:${project.'spring-shell.version'}")
   {
     exclude module: 'aopalliance'
     exclude module: 'asm'
@@ -52,54 +53,54 @@ dependencies {
     ext.optional = true
   }
 
-  compile('org.apache.lucene:lucene-core:' + project.'lucene.version')
-  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
-  compile('mx4j:mx4j:' + project.'mx4j.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  testCompile('com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version')
+  compile("org.apache.lucene:lucene-core:${project.'lucene.version'}")
+  compile("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
+  compile("mx4j:mx4j:${project.'mx4j.version'}")
+  compile("org.apache.logging.log4j:log4j-api:${project.'log4j.version'}")
+  testCompile("com.pholser:junit-quickcheck-core:${project.'junit-quickcheck.version'}")
 
-  distributedTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
-  distributedTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
+  distributedTestCompile("org.hamcrest:hamcrest-core:${project.'hamcrest-all.version'}")
+  distributedTestCompile("org.hamcrest:hamcrest-library:${project.'hamcrest-all.version'}")
 
-  testCompile('com.carrotsearch.randomizedtesting:randomizedtesting-runner:' + project.'carrotsearch.version')
-  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
-  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
-  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+  testCompile("com.carrotsearch.randomizedtesting:randomizedtesting-runner:${project.'carrotsearch.version'}")
+  testCompile("org.powermock:powermock-core:${project.'powermock.version'}")
+  testCompile("org.powermock:powermock-module-junit4:${project.'powermock.version'}")
+  testCompile("org.powermock:powermock-api-mockito2:${project.'powermock.version'}")
 
-  upgradeTestCompile('commons-io:commons-io:' + project.'commons-io.version')
+  upgradeTestCompile("commons-io:commons-io:${project.'commons-io.version'}")
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   compile(project(':geode-core'))
   compile(project(':geode-common'))
-  compile('org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version')
-  compile('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
+  compile("org.apache.lucene:lucene-analyzers-common:${project.'lucene.version'}")
+  compile("org.apache.lucene:lucene-queryparser:${project.'lucene.version'}") {
     exclude module: 'lucene-sandbox'
   }
 
   distributedTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
+  runtimeOnly("org.apache.lucene:lucene-analyzers-phonetic:${project.'lucene.version'}")
 
   testCompile(project(':geode-lucene:geode-lucene-test'))
-  testCompile('org.apache.lucene:lucene-test-framework:' + project.'lucene.version')
-  testCompile('com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version')
+  testCompile("org.apache.lucene:lucene-test-framework:${project.'lucene.version'}")
+  testCompile("com.pholser:junit-quickcheck-generators:${project.'junit-quickcheck.version'}")
 
-  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  testCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
 
 
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-lucene:geode-lucene-test'))
-  integrationTestCompile('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
-  integrationTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  integrationTestCompile("org.apache.lucene:lucene-analyzers-phonetic:${project.'lucene.version'}")
+  integrationTestCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
 
 
   distributedTestCompile(project(':geode-lucene:geode-lucene-test'))
-  distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  distributedTestCompile("pl.pragmatists:JUnitParams:${project.'JUnitParams.version'}")
   distributedTestCompile(project(':geode-dunit')){
     exclude module: 'geode-core'
   }

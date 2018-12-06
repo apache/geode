@@ -23,18 +23,18 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:' + project.'protobuf-gradle-plugin.version'
+        classpath "com.google.protobuf:protobuf-gradle-plugin:${project.'protobuf-gradle-plugin.version'}"
     }
 }
 
 dependencies {
-  compile('com.google.protobuf:protobuf-java:' + project.'protobuf-java.version')
+  compile("com.google.protobuf:protobuf-java:${project.'protobuf-java.version'}")
 }
 
 protobuf {
     protoc {
         // The artifact spec for the Protobuf Compiler
-        artifact = 'com.google.protobuf:protoc:' + project.'protoc.version'
+        artifact = "com.google.protobuf:protoc:${project.'protoc.version'}"
     }
     generatedFilesBaseDir = "$buildDir/generated-src/proto"
 }

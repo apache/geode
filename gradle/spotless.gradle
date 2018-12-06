@@ -117,9 +117,9 @@ subprojects {
       // Spotless will not run on unchanged files unless this number changes.
       bumpThisNumberIfACustomStepChanges(0)
 
-      custom 'Use single-quote in project directives.', {
-        it.replaceAll(/project\(":([^"]*)"\)/, 'project(\':$1\')')
-      }
+//      custom 'Use single-quote in project directives.', {
+//        it.replaceAll(/project\(":([^"]*)"\)/, 'project(\':$1\')')
+//      }
 
       custom 'Use parenthesis in single-line gradle dependency declarations.', {
         it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) (?!\()([^{\n]*)\n/, { original, declaration, dep ->

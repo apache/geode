@@ -20,8 +20,26 @@ allprojects {
   gradleLint.rules = []
   gradleLint.rules += 'overridden-dependency-version'
   gradleLint.rules += 'unused-dependency'
-  gradleLint.rules += 'unused-exclude-by-dep'
-  gradleLint.rules += 'unused-exclude-by-conf'
+  //  gradleLint.rules += 'unused-exclude-by-dep'  // this doesn't play well when versions aren't hard-coded
+  //  gradleLint.rules += 'unused-exclude-by-conf' // probably this also
+  //  gradleLint.rules += 'dependency-tuple'
+
+  //  gradleLint.rules += 'duplicate-dependency-class'
+  //  gradleLint.rules += 'transitive-duplicate-dependency-class'
+
+  //  gradleLint.rules += 'undeclared-dependency' // this is redundant with unused-dependency ?
+
+
+  //  'recommended-versions'
+  //  'multiproject-circular-dependency'
+
+  //  gradleLint.rules += 'overridden-dependency-version'
+  //  gradleLint.rules += 'duplicate-dependency-class'
+  //  gradleLint.rules += 'unused-dependency' // remove unused dependencies, and transitive dependencies that are used directly must be declared
+  //  gradleLint.rules += 'unused-dependency-exclude' // exclude that have no effect should be removed
+  //  gradleLint.rules += 'unused-exclude-by-dep'
+  //  gradleLint.rules += 'unused-exclude-by-conf'
+
 
   gradleLint.alwaysRun = false
   fixGradleLint.mustRunAfter(':combineReports')

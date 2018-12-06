@@ -26,15 +26,15 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('commons-io:commons-io:' + project.'commons-io.version')
-  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
-  compile('junit:junit:' + project.'junit.version')
-  compile('org.httpunit:httpunit:' + project.'httpunit.version') {
+  compile("commons-io:commons-io:${project.'commons-io.version'}")
+  compile("javax.servlet:javax.servlet-api:${project.'javax.servlet-api.version'}")
+  compile("junit:junit:${project.'junit.version'}")
+  compile("org.httpunit:httpunit:${project.'httpunit.version'}") {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }
 
-  compileOnly('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
+  compileOnly("org.apache.tomcat:catalina-ha:${project.'tomcat6.version'}") {
     exclude module: 'annotations-api'
     exclude module: 'coyote'
     exclude module: 'tribes'

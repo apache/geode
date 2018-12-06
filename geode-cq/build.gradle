@@ -42,23 +42,23 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile("org.apache.logging.log4j:log4j-api:${project.'log4j.version'}")
 
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+  integrationTestCompile("junit:junit:${project.'junit.version'}")
+  integrationTestCompile("org.awaitility:awaitility:${project.'awaitility.version'}")
 
-  distributedTestCompile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
-  distributedTestCompile('junit:junit:' + project.'junit.version')
-  distributedTestCompile('mx4j:mx4j:' + project.'mx4j.version')
-  distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
-  distributedTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
-  distributedTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
-  distributedTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
-  distributedTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
+  distributedTestCompile("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
+  distributedTestCompile("junit:junit:${project.'junit.version'}")
+  distributedTestCompile("mx4j:mx4j:${project.'mx4j.version'}")
+  distributedTestCompile("org.assertj:assertj-core:${project.'assertj-core.version'}")
+  distributedTestCompile("org.awaitility:awaitility:${project.'awaitility.version'}")
+  distributedTestCompile("org.hamcrest:hamcrest-all:${project.'hamcrest-all.version'}")
+  distributedTestCompile("org.hamcrest:hamcrest-core:${project.'hamcrest-all.version'}")
+  distributedTestCompile("org.hamcrest:hamcrest-library:${project.'hamcrest-all.version'}")
 
-  upgradeTestCompile('junit:junit:' + project.'junit.version')
-  upgradeTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
-  upgradeTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  upgradeTestCompile("junit:junit:${project.'junit.version'}")
+  upgradeTestCompile("org.awaitility:awaitility:${project.'awaitility.version'}")
+  upgradeTestCompile("org.mockito:mockito-core:${project.'mockito-core.version'}")
 
   upgradeTestRuntime(project(':geode-old-versions'))
 }

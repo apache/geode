@@ -108,7 +108,7 @@ subprojects {
     
     // This 'apt' configuration to be removed by GEODE-5606.
     apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
-    apt('junit:junit:' + project.'junit.version') {
+    apt("junit:junit:${project.'junit.version'}") {
       transitive = false
     }
     // Because EnsureCorrectRunsWithProcessor needs access to
@@ -118,7 +118,7 @@ subprojects {
       transitive = false
     }
 
-    testRuntime('cglib:cglib:' + project.'cglib.version') {
+    testRuntime("cglib:cglib:${project.'cglib.version'}") {
       exclude module: 'org.apache.ant'
     }
   }

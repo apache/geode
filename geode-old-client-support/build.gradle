@@ -22,5 +22,5 @@ dependencies {
   }
 
 
-  distributedTestCompile('junit:junit:' + project.'junit.version')
+  distributedTestCompile("junit:junit:${project.'junit.version'}")
 }
