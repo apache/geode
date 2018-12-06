@@ -34,9 +34,9 @@ import org.apache.logging.log4j.core.filter.AbstractFilterable;
 import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.logging.ProviderAgent;
 
@@ -70,7 +70,10 @@ public class Log4jAgent implements ProviderAgent {
     return ((Logger) logger).get();
   }
 
-  public static String getConfigurationInfo() {
+  /**
+   * TODO:KIRK: delete getConfigurationInfoString
+   */
+  public static String getConfigurationInfoString() {
     return getConfiguration().getConfigurationSource().toString();
   }
 
@@ -142,6 +145,11 @@ public class Log4jAgent implements ProviderAgent {
   }
 
   @Override
+  public String getConfigurationInfo() {
+    return getConfiguration().getConfigurationSource().toString();
+  }
+
+  @Override
   public void enableLoggingToStandardOutput() {
     Configuration log4jConfiguration = getRootLoggerContext().getConfiguration();
     Appender appender = log4jConfiguration.getAppender(GEODE_CONSOLE_APPENDER_NAME);
@@ -159,6 +167,12 @@ public class Log4jAgent implements ProviderAgent {
       GeodeConsoleAppender geodeConsoleAppender = (GeodeConsoleAppender) appender;
       geodeConsoleAppender.pause();
     }
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder().append(super.toString()).append(": {configuredSecurityAppenders=")
+        .append(configuredSecurityAppenders).append("}").toString();
   }
 
   private void updateLogLevel(final LogConfig logConfig,

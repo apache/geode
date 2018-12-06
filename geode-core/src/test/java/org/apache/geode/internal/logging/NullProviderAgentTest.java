@@ -14,22 +14,27 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.ConfigurationInfo.getConfigurationInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Integration tests for {@link ConfigurationInfo}.
+ * Unit tests for {@link NullProviderAgent}.
  */
-@Category(LoggingTest.class)
-public class ConfigurationInfoIntegrationTest {
+public class NullProviderAgentTest {
+
+  private NullProviderAgent nullProviderAgent;
+
+  @Before
+  public void setUp() {
+    nullProviderAgent = new NullProviderAgent();
+  }
 
   @Test
-  public void getConfigurationInfoContainsLog4j2Xml() {
-    assertThat(getConfigurationInfo()).contains("log4j2.xml");
+  public void getConfigurationInfoReturnsClassName() {
+    String configurationInfo = nullProviderAgent.getConfigurationInfo();
+
+    assertThat(configurationInfo).isEqualTo(NullProviderAgent.class.getName());
   }
 }

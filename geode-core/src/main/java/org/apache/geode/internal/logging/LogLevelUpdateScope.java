@@ -14,22 +14,13 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.ConfigurationInfo.getConfigurationInfo;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.LoggingTest;
-
 /**
- * Integration tests for {@link ConfigurationInfo}.
+ * Controls the scope of which packages of loggers are updated when the log level changes. Default
+ * is {@link #GEODE_LOGGERS}
  */
-@Category(LoggingTest.class)
-public class ConfigurationInfoIntegrationTest {
-
-  @Test
-  public void getConfigurationInfoContainsLog4j2Xml() {
-    assertThat(getConfigurationInfo()).contains("log4j2.xml");
-  }
+public enum LogLevelUpdateScope {
+  GEODE_LOGGERS,
+  GEODE_AND_SECURITY_LOGGERS,
+  GEODE_AND_APPLICATION_LOGGERS,
+  ALL_LOGGERS
 }

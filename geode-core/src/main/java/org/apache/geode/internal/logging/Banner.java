@@ -12,19 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.Banner.BannerHeader.CLASS_PATH;
-import static org.apache.geode.internal.Banner.BannerHeader.COMMAND_LINE_PARAMETERS;
-import static org.apache.geode.internal.Banner.BannerHeader.COMMUNICATIONS_VERSION;
-import static org.apache.geode.internal.Banner.BannerHeader.CURRENT_DIR;
-import static org.apache.geode.internal.Banner.BannerHeader.HOME_DIR;
-import static org.apache.geode.internal.Banner.BannerHeader.LIBRARY_PATH;
-import static org.apache.geode.internal.Banner.BannerHeader.LICENSE_START;
-import static org.apache.geode.internal.Banner.BannerHeader.LOG4J2_CONFIGURATION;
-import static org.apache.geode.internal.Banner.BannerHeader.PROCESS_ID;
-import static org.apache.geode.internal.Banner.BannerHeader.SYSTEM_PROPERTIES;
-import static org.apache.geode.internal.Banner.BannerHeader.USER;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.CLASS_PATH;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.COMMAND_LINE_PARAMETERS;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.COMMUNICATIONS_VERSION;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.CURRENT_DIR;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.HOME_DIR;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.LIBRARY_PATH;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.LICENSE_START;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.LOG4J2_CONFIGURATION;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.PROCESS_ID;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.SYSTEM_PROPERTIES;
+import static org.apache.geode.internal.logging.Banner.BannerHeader.USER;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -41,22 +41,56 @@ import java.util.TreeMap;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.ConfigurationInfo;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionDescription;
 import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * Utility class to print banner information at manager startup.
+ *
+ * <p>
+ * Banner should only be accessed from the Logging package or from Logging tests.
  */
 public class Banner {
 
   public static final String SEPARATOR =
       "---------------------------------------------------------------------------";
 
-  private Banner() {
-    // everything is static so don't allow instance creation
+  private final String configurationInfo;
+
+  /**
+   * @deprecated Please use {@link Banner(String)} instead. Banner should only be accessed from the
+   *             Logging package or from Logging tests.
+   */
+  @Deprecated
+  public Banner() {
+    this(ConfigurationInfo.getConfigurationInfo());
   }
 
-  private static void prettyPrintPath(String path, PrintWriter out) {
+  public Banner(final String configurationInfo) {
+    this.configurationInfo = configurationInfo;
+  }
+
+  public String getString() {
+    return getString(null);
+  }
+
+  /**
+   * Return a string containing the banner information.
+   *
+   * @param args possibly null list of command line arguments
+   */
+  public String getString(String[] args) {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    print(pw, args);
+    pw.close();
+    return sw.toString();
+  }
+
+  private void prettyPrintPath(String path, PrintWriter out) {
     if (path != null) {
       StringTokenizer st = new StringTokenizer(path, System.getProperty("path.separator"));
       while (st.hasMoreTokens()) {
@@ -70,7 +104,7 @@ public class Banner {
    *
    * @param args possibly null list of command line arguments
    */
-  static void print(PrintWriter out, String args[]) {
+  private void print(PrintWriter out, String args[]) {
     // Copy the system properties for printing. Some are given explicit lines, and
     // others are suppressed. Remove these keys, keeping those we want.
     Map sp = new TreeMap((Properties) System.getProperties().clone()); // fix for 46822
@@ -137,7 +171,7 @@ public class Banner {
         out.println("    " + key + " = " + value);
       }
       out.println(LOG4J2_CONFIGURATION.displayValue() + ":");
-      out.println("    " + ConfigurationInfo.getConfigurationInfo());
+      out.println("    " + configurationInfo);
     }
     out.println(SEPARATOR);
   }
@@ -145,7 +179,7 @@ public class Banner {
   /**
    * @return The PID of the current process, or -1 if the PID cannot be determined.
    */
-  private static int attemptToReadProcessId() {
+  private int attemptToReadProcessId() {
     int processId = -1;
     try {
       processId = OSProcess.getId();
@@ -165,7 +199,7 @@ public class Banner {
     return processId;
   }
 
-  private static void printASFLicense(PrintWriter out) {
+  private void printASFLicense(PrintWriter out) {
     out.println("  ");
     out.println("  " + LICENSE_START.displayValue());
     out.println("  contributor license agreements.  See the NOTICE file distributed with this");
@@ -183,19 +217,6 @@ public class Banner {
     out.println("  License for the specific language governing permissions and limitations");
     out.println("  under the License.");
     out.println("  ");
-  }
-
-  /**
-   * Return a string containing the banner information.
-   *
-   * @param args possibly null list of command line arguments
-   */
-  public static String getString(String[] args) {
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    print(pw, args);
-    pw.close();
-    return sw.toString();
   }
 
   /**
