@@ -1444,21 +1444,20 @@ public abstract class BaseCommand implements Command {
     }
   }
 
-  protected static Operation getOperation(final Message clientMessage, final int partIndex,
-      final ServerConnection serverConnection) throws IOException {
-    final Part operationPart = clientMessage.getPart(partIndex);
+  protected static Operation getOperation(final Part operationPart,
+       Operation defaultOperation) throws Exception {
     if (operationPart.isObject()) {
-      try {
-        Operation operation = (Operation) operationPart.getObject();
-        if (operation == null) { // old native clients send a null since the op is java-serialized
-          operation = Operation.UPDATE;
-        }
-        return operation;
-      } catch (ClassNotFoundException e) {
-        writeException(clientMessage, e, false, serverConnection);
-        serverConnection.setAsTrue(RESPONDED);
-        return null;
+      Operation operation = (Operation) operationPart.getObject();
+      if (operation == null) {
+        // native clients may send a null since the op is java-serialized
+        return defaultOperation;
       }
+      return operation;
+    }
+
+    if (operationPart.isNull()) {
+      // older clients may send null for default operation
+      return defaultOperation;
     }
 
     return Operation.fromOrdinal(operationPart.getByte());

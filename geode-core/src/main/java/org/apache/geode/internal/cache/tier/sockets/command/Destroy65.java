@@ -119,8 +119,12 @@ public class Destroy65 extends BaseCommand {
     keyPart = clientMessage.getPart(1);
     expectedOldValuePart = clientMessage.getPart(2);
 
-    final Operation operation = getOperation(clientMessage, 3, serverConnection);
-    if (null == operation) {
+    final Operation operation;
+    try {
+      operation = getOperation(clientMessage.getPart(3), Operation.DESTROY);
+    } catch (Exception e) {
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 

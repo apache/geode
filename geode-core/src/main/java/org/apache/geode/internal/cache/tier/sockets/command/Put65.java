@@ -89,8 +89,12 @@ public class Put65 extends BaseCommand {
 
     final Part regionNamePart = clientMessage.getPart(idx++);
 
-    final Operation operation = getOperation(clientMessage, idx++, serverConnection);
-    if (null == operation) {
+    final Operation operation;
+    try {
+      operation = getOperation(clientMessage.getPart(idx++), Operation.UPDATE);
+    } catch (Exception e) {
+      writeException(clientMessage, e, false, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
