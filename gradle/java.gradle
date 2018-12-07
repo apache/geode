@@ -29,7 +29,7 @@ subprojects {
   dependencies {
     // log4j-core has an annotation processor that is passed on the compile-classpath via geode-core and others.
     // Fix Gradle warning here until we clean up our own classpath
-    annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core'
   }
 
   String javaVersion = System.properties['java.version']

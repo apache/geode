@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-plugins {
-  id "io.spring.dependency-management" version "1.0.0.RC2"
-}
-
 jar.enabled = false
 
 dependencyManagement {
