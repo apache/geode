@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal.pooling;
 
 import java.net.SocketException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,8 +74,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private final String poolName;
   private final PoolStats poolStats;
   protected final long prefillRetry; // ms
-  private final LinkedList/* <PooledConnection> */ availableConnections =
-      new LinkedList/* <PooledConnection> */();
+  private final ArrayDeque<PooledConnection> availableConnections = new ArrayDeque<>();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
   private final int maxConnections;
@@ -213,7 +213,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
 
       while (!availableConnections.isEmpty()) {
-        PooledConnection connection = (PooledConnection) availableConnections.removeFirst();
+        PooledConnection connection = availableConnections.removeFirst();
         try {
           connection.activate();
           return connection;
@@ -280,8 +280,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (shuttingDown) {
         throw new PoolCancelledException();
       }
-      for (Iterator itr = availableConnections.iterator(); itr.hasNext();) {
-        PooledConnection nextConnection = (PooledConnection) itr.next();
+      for (Iterator<PooledConnection> itr = availableConnections.iterator(); itr.hasNext();) {
+        PooledConnection nextConnection = itr.next();
         try {
           nextConnection.activate();
           if (nextConnection.getServer().equals(server)) {
@@ -354,8 +354,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (shuttingDown) {
         throw new PoolCancelledException();
       }
-      for (Iterator itr = availableConnections.iterator(); itr.hasNext();) {
-        PooledConnection nextConnection = (PooledConnection) itr.next();
+      for (Iterator<PooledConnection> itr = availableConnections.iterator(); itr.hasNext();) {
+        PooledConnection nextConnection = itr.next();
         if (!excludedServers.contains(nextConnection.getServer())) {
           itr.remove();
           try {
@@ -492,12 +492,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         }
       }
 
-      for (Iterator itr = availableConnections.iterator(); itr.hasNext();) {
-        PooledConnection conn = (PooledConnection) itr.next();
-        if (badConnections.contains(conn)) {
-          itr.remove();
-        }
-      }
+      availableConnections.removeIf(badConnections::contains);
 
       connectionCount -= badConnections.size();
 
