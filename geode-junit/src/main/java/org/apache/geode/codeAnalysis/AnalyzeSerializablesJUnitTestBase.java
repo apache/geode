@@ -112,7 +112,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
   public void loadExpectedSerializables() throws Exception {
     this.expectedSerializablesFile =
-        getResourceAsFile(InternalDataSerializer.class, expectedSerializablesFileName);
+        getResourceAsFile(getModuleClass(), expectedSerializablesFileName);
     assertThat(this.expectedSerializablesFile).exists().canRead();
 
     this.expectedSerializables =
@@ -150,6 +150,10 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
    * Override only this one method in sub-classes
    */
   protected abstract String getModuleName();
+
+  protected Class getModuleClass() {
+    return InternalDataSerializer.class;
+  }
 
   @Test
   public void testDataSerializables() throws Exception {

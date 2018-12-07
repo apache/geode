@@ -46,7 +46,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
-import org.apache.geode.cache.query.internal.cq.ClientCQImpl;
+import org.apache.geode.cache.query.cq.internal.ClientCQImpl;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
