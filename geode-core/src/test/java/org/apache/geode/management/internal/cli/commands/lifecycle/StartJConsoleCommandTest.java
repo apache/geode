@@ -23,6 +23,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import javax.management.remote.JMXServiceURL;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,6 +47,7 @@ public class StartJConsoleCommandTest {
     command = spy(StartJConsoleCommand.class);
     gfsh = mock(Gfsh.class);
     doReturn(gfsh).when(command).getGfsh();
+    doReturn(null).when(command).getJmxServiceUrl();
 
     Process process = mock(Process.class);
     doReturn(process).when(command).getProcess(any(String[].class));
@@ -86,7 +89,8 @@ public class StartJConsoleCommandTest {
 
   @Test
   public void successWithServiceUrl() throws Exception {
-    doReturn("someUrl.com").when(command).getJmxServiceUrlAsString();
+    doReturn(new JMXServiceURL("service:jmx:rmi://localhost")).when(command).getJmxServiceUrl();
+    doReturn(true).when(command).isConnectedAndReady();
     gfshParser.executeAndAssertThat(command, "start jconsole")
         .containsOutput("some output");
 
@@ -95,6 +99,6 @@ public class StartJConsoleCommandTest {
     assertThat(commandString).hasSize(3);
     assertThat(commandString[0]).contains("jconsole");
     assertThat(commandString[1]).isEqualTo("-interval=4");
-    assertThat(commandString[2]).isEqualTo("someUrl.com");
+    assertThat(commandString[2]).isEqualTo("service:jmx:rmi://localhost");
   }
 }

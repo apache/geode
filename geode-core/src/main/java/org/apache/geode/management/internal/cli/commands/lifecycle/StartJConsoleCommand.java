@@ -23,22 +23,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.management.remote.JMXServiceURL;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.util.JdkTool;
 
-public class StartJConsoleCommand extends InternalGfshCommand {
+public class StartJConsoleCommand extends OfflineGfshCommand {
 
   @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
@@ -63,7 +63,7 @@ public class StartJConsoleCommand extends InternalGfshCommand {
     ResultModel resultModel = new ResultModel();
     InfoResultModel infoResult = resultModel.addInfo();
     if (isDebugging()) {
-      infoResult.addLine(
+      getGfsh().printAsInfo(
           String.format("JConsole command-line ($1%s)", Arrays.toString(jconsoleCommandLine)));
     }
 
@@ -76,7 +76,7 @@ public class StartJConsoleCommand extends InternalGfshCommand {
       message = getErrorStringBuilder(jconsoleProcess);
     } else {
       message = new StringBuilder();
-      message.append(CliStrings.START_JCONSOLE__RUN);
+      getGfsh().printAsInfo(CliStrings.START_JCONSOLE__RUN);
 
       String jconsoleProcessOutput = getProcessOutput(jconsoleProcess);
 
@@ -141,24 +141,12 @@ public class StartJConsoleCommand extends InternalGfshCommand {
         }
       }
 
-      String jmxServiceUrl = getJmxServiceUrlAsString();
-
-      if (StringUtils.isNotBlank(jmxServiceUrl)) {
-        commandLine.add(jmxServiceUrl);
+      JMXServiceURL jmxServiceUrl = getJmxServiceUrl();
+      if (isConnectedAndReady() && jmxServiceUrl != null) {
+        commandLine.add(jmxServiceUrl.toString());
       }
     }
 
     return commandLine.toArray(new String[commandLine.size()]);
-  }
-
-  String getJmxServiceUrlAsString() {
-    if (isConnectedAndReady()
-        && (getGfsh().getOperationInvoker() instanceof JmxOperationInvoker)) {
-      JmxOperationInvoker jmxOperationInvoker =
-          (JmxOperationInvoker) getGfsh().getOperationInvoker();
-
-      return ObjectUtils.toString(jmxOperationInvoker.getJmxServiceUrl());
-    }
-    return null;
   }
 }
