@@ -91,7 +91,7 @@ public class SqlHandlerTest {
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getTableName()).thenReturn(TABLE_NAME);
     when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
-    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
+    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
         .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
     dataSourceFactory = mock(DataSourceFactory.class);

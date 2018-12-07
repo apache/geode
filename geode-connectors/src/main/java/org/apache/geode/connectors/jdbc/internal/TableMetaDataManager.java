@@ -34,18 +34,20 @@ public class TableMetaDataManager {
   private final ConcurrentMap<String, TableMetaDataView> tableToMetaDataMap =
       new ConcurrentHashMap<>();
 
-  public TableMetaDataView getTableMetaDataView(Connection connection, String tableName) {
+  public TableMetaDataView getTableMetaDataView(Connection connection, String tableName,
+      String ids) {
     return tableToMetaDataMap.computeIfAbsent(tableName,
-        k -> computeTableMetaDataView(connection, k));
+        k -> computeTableMetaDataView(connection, k, ids));
   }
 
-  private TableMetaDataView computeTableMetaDataView(Connection connection, String tableName) {
+  private TableMetaDataView computeTableMetaDataView(Connection connection, String tableName,
+      String ids) {
     TableMetaData result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
-        String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
+        String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData, ids);
         String quoteString = metaData.getIdentifierQuoteString();
         if (quoteString == null) {
           quoteString = "";
@@ -83,8 +85,16 @@ public class TableMetaDataManager {
     return result;
   }
 
-  private String getPrimaryKeyColumnNameFromMetaData(String tableName, DatabaseMetaData metaData)
+  private String getPrimaryKeyColumnNameFromMetaData(String tableName, DatabaseMetaData metaData,
+      String ids)
       throws SQLException {
+    if (ids != null && !ids.isEmpty()) {
+      if (!doesColumnExistInTable(tableName, metaData, ids)) {
+        throw new JdbcConnectorException(
+            "The table " + tableName + " does not have a column named " + ids);
+      }
+      return ids;
+    }
     try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
       if (!primaryKeys.next()) {
         throw new JdbcConnectorException(
@@ -108,5 +118,25 @@ public class TableMetaDataManager {
         result.addDataType(columnName, dataType);
       }
     }
+  }
+
+  private boolean doesColumnExistInTable(String tableName, DatabaseMetaData metaData,
+      String columnName) throws SQLException {
+    int caseInsensitiveMatches = 0;
+    try (ResultSet columnData = metaData.getColumns(null, null, tableName, "%")) {
+      while (columnData.next()) {
+        String realColumnName = columnData.getString("COLUMN_NAME");
+        if (columnName.equals(realColumnName)) {
+          return true;
+        } else if (columnName.equalsIgnoreCase(realColumnName)) {
+          caseInsensitiveMatches++;
+        }
+      }
+    }
+    if (caseInsensitiveMatches > 1) {
+      throw new JdbcConnectorException(
+          "The table " + tableName + " has more than one column that matches " + columnName);
+    }
+    return caseInsensitiveMatches != 0;
   }
 }
