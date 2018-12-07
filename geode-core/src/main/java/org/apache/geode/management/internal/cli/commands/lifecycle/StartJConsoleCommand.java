@@ -63,7 +63,7 @@ public class StartJConsoleCommand extends OfflineGfshCommand {
     ResultModel resultModel = new ResultModel();
     InfoResultModel infoResult = resultModel.addInfo();
     if (isDebugging()) {
-      infoResult.addLine(
+      getGfsh().printAsInfo(
           String.format("JConsole command-line ($1%s)", Arrays.toString(jconsoleCommandLine)));
     }
 
@@ -76,7 +76,7 @@ public class StartJConsoleCommand extends OfflineGfshCommand {
       message = getErrorStringBuilder(jconsoleProcess);
     } else {
       message = new StringBuilder();
-      message.append(CliStrings.START_JCONSOLE__RUN);
+      getGfsh().printAsInfo(CliStrings.START_JCONSOLE__RUN);
 
       String jconsoleProcessOutput = getProcessOutput(jconsoleProcess);
 

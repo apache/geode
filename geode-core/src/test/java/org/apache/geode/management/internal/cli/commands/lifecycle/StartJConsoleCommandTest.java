@@ -45,6 +45,8 @@ public class StartJConsoleCommandTest {
   @Before
   public void setUp() throws Exception {
     command = spy(StartJConsoleCommand.class);
+    gfsh = mock(Gfsh.class);
+    doReturn(gfsh).when(command).getGfsh();
     doReturn(null).when(command).getJmxServiceUrl();
 
     Process process = mock(Process.class);

@@ -17,11 +17,13 @@ package org.apache.geode.management.internal.cli.commands;
 
 import javax.management.remote.JMXServiceURL;
 
+import org.springframework.shell.core.CommandMarker;
+
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
-public abstract class OfflineGfshCommand {
+public abstract class OfflineGfshCommand implements CommandMarker {
 
   public boolean isDebugging() {
     return getGfsh() != null && getGfsh().getDebug();

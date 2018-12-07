@@ -56,6 +56,7 @@ import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -292,7 +293,7 @@ public class ConnectCommand extends OfflineGfshCommand {
 
       gfsh.setOperationInvoker(operationInvoker);
 
-      gfsh.printAsInfo(
+      LogWrapper.getInstance().info(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
@@ -368,7 +369,7 @@ public class ConnectCommand extends OfflineGfshCommand {
       gfsh.setOperationInvoker(operationInvoker);
       infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
-      gfsh.printAsInfo(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
+      LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
     } catch (SecurityException | AuthenticationFailedException e) {
@@ -507,7 +508,7 @@ public class ConnectCommand extends OfflineGfshCommand {
   }
 
   private Result handleException(Exception e, String errorMessage) {
-    getGfsh().logSevere(errorMessage, e);
+    LogWrapper.getInstance().severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
 
