@@ -1461,7 +1461,7 @@ public abstract class BaseCommand implements Command {
       }
     }
 
-    return Operation.fromOrdinal((byte) operationPart.getInt());
+    return Operation.fromOrdinal(operationPart.getByte());
   }
 
 }
