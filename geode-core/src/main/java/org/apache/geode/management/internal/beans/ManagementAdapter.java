@@ -153,7 +153,11 @@ public class ManagementAdapter {
 
       // Type casting to MemberMXBean to expose only those methods described in
       // the interface;
+      logger.info("MBean ObjectName " + memberBean + " is being registered. Member MBean name: "
+          + memberMBeanName);
       ObjectName changedMBeanName = service.registerInternalMBean(memberBean, memberMBeanName);
+      logger.info(
+          "MBean ObjectName " + changedMBeanName + ".  Member MBean name: " + memberMBeanName);
       service.federate(changedMBeanName, MemberMXBean.class, true);
 
       this.serviceInitialised = true;
