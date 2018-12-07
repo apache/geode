@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cq.internal.cache.tier.sockets.command.ExecuteCQ61;
+import org.apache.geode.cache.query.cq.internal.command.ExecuteCQ61;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.dunit.rules.CQUnitTestRule;

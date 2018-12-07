@@ -258,7 +258,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final String POST_GEODE_100_TCPSERVER_PACKAGE =
       "org.apache.geode.distributed.internal.tcpserver";
   private static final String POST_GEODE_190_SERVER_CQIMPL =
-      "org.apache.geode.cq.internal.cache.query.ServerCQImpl";
+      "org.apache.geode.cache.query.cq.internal.ServerCQImpl";
   private static final String PRE_GEODE_190_SERVER_CQIMPL =
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 

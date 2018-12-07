@@ -22,10 +22,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.cq.internal.CqServiceImpl;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cq.internal.cache.query.CqServiceImpl;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
