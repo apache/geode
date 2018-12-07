@@ -255,16 +255,16 @@ public class SystemManagementService extends BaseManagementService {
     verifyManagementService();
     if (!objectName.getDomain().equalsIgnoreCase(ManagementConstants.OBJECTNAME__DEFAULTDOMAIN)) {
       throw new ManagementException(
-          "Not A GemFire Domain MBean, can not Federate");
+          "MBean ObjectName " + objectName + " not a Geode domain MBean and cannot be federated");
     }
 
     if (!jmxAdapter.isRegistered(objectName)) {
       throw new ManagementException(
-          "MBean Not Registered In GemFire Domain");
+          "MBean ObjectName " + objectName + " not registered in Geode domain");
     }
     if (notificationEmitter && !jmxAdapter.hasNotificationSupport(objectName)) {
       throw new ManagementException(
-          "MBean Does Not Have Notification Support");
+          "MBean ObjectName " + objectName + " does not have notification support");
     }
 
     // All validation Passed. Now create the federation Component
