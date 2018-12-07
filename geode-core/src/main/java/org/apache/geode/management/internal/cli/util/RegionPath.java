@@ -69,6 +69,10 @@ public class RegionPath {
     return regionParentPath;
   }
 
+  public boolean isRoot() {
+    return regionParentPath == Region.SEPARATOR || regionParentPath == null;
+  }
+
   public String[] getRegionsOnParentPath() {
     String[] regionsOnPath = getParent().split(Region.SEPARATOR);
 

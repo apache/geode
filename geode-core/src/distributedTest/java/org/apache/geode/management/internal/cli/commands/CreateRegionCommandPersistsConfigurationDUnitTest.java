@@ -434,15 +434,15 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName
-        + " --type=PARTITION");
+        + " --type=PARTITION").statusIsSuccess();
     gfsh.executeAndAssertThat("create region"
         + " --name=" + colocatedRegionName
         + " --colocated-with=" + regionName
-        + " --type=PARTITION");
+        + " --type=PARTITION").statusIsSuccess();
 
     gfsh.executeAndAssertThat("create region"
         + " --name=" + colocatedRegionFromTemplateName
-        + " --template-region=" + colocatedRegionName);
+        + " --template-region=" + colocatedRegionName).statusIsSuccess();
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService cc =
@@ -529,7 +529,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         + " --total-num-buckets=1").statusIsSuccess();
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionFromTemplateName
-        + " --template-region=" + regionName);
+        + " --template-region=" + regionName).statusIsSuccess();
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService cc =

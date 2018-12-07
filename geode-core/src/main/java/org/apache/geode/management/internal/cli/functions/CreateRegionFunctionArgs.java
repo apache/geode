@@ -12,24 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.internal.cli.functions;
 
-package org.apache.geode.management.internal.cli.exceptions;
+import java.io.Serializable;
 
-import org.apache.geode.GemFireException;
+import org.apache.geode.cache.configuration.RegionConfig;
 
-public class EntityExistsException extends GemFireException {
+public class CreateRegionFunctionArgs implements Serializable {
+  private final String regionPath;
+  private final RegionConfig config;
+  private final boolean ifNotExists;
 
-  public EntityExistsException() {}
-
-  public EntityExistsException(String message) {
-    super(message);
+  public CreateRegionFunctionArgs(String path, RegionConfig config, boolean ifNotExists) {
+    this.regionPath = path;
+    this.config = config;
+    this.ifNotExists = ifNotExists;
   }
 
-  public EntityExistsException(Throwable cause) {
-    super(cause);
+  public boolean isIfNotExists() {
+    return ifNotExists;
   }
 
-  public EntityExistsException(String message, Throwable cause) {
-    super(message, cause);
+  public String getRegionPath() {
+    return regionPath;
+  }
+
+  public RegionConfig getConfig() {
+    return config;
   }
 }

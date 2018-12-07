@@ -112,7 +112,7 @@ public class RegionFactory<K, V> {
       throw new IllegalStateException(String.format("No attributes associated with %s",
           regionAttributesId));
     }
-    this.attrsFactory = new AttributesFactory<K, V>(ra);
+    this.attrsFactory = new AttributesFactory<>(ra);
   }
 
   /**

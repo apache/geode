@@ -18,6 +18,8 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
@@ -51,7 +53,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "region-attributesData-policy", namespace = "http://geode.apache.org/schema/cache")
 @XmlEnum
 @Experimental
-public enum RegionAttributesDataPolicy {
+public enum RegionAttributesDataPolicy implements Serializable {
 
   @XmlEnumValue("empty")
   EMPTY("empty"), @XmlEnumValue("normal")

@@ -238,7 +238,50 @@ public class CreateRegionCommandDUnitTest {
   @Test
   public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
-        + " --type=PARTITION --partition-resolver=InvalidPartitionResolver").statusIsError();
+        + " --type=PARTITION --partition-resolver=InvalidPartitionResolver")
+        .statusIsError()
+        .containsOutput("Could not find class");
+  }
+
+  @Test
+  public void testCreateRegionWithInvalidCustomExpiry() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=REPLICATE --entry-time-to-live-custom-expiry=InvalidCustomExpiry" +
+        " --enable-statistics=true")
+        .statusIsError()
+        .containsOutput("Could not find class");
+
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=REPLICATE --entry-idle-time-custom-expiry=InvalidCustomExpiry" +
+        " --enable-statistics=true")
+        .statusIsError()
+        .containsOutput("Could not find class");
+  }
+
+  @Test
+  public void testCreateRegionWithInvalidCacheLoader() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=REPLICATE --cache-loader=InvalidCacheLoader")
+        .statusIsError()
+        .containsOutput("Could not find class");
+  }
+
+  @Test
+  public void testCreateRegionWithInvalidCacheWriter() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=REPLICATE --cache-writer=InvalidCacheWriter")
+        .statusIsError()
+        .containsOutput("Could not find class");
+  }
+
+  @Test
+  public void testCreateRegionWithInvalidCacheListeners() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=REPLICATE --cache-listener=" + TestCacheListener.class.getName()
+        + ",InvalidCacheListener")
+        .statusIsError()
+        .containsOutput("Could not find class")
+        .doesNotContainOutput("TestCacheListener");
   }
 
   @Test
@@ -247,6 +290,15 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + regionName
         + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver")
         .containsOutput("\"/" + regionName + "\" is not a Partitioned Region").statusIsError();
+  }
+
+  @Test
+  public void testCreateRegionFromTemplateFailsIfTemplateDoesNotExist() {
+    gfsh.executeAndAssertThat("create region --template-region=/TEMPLATE --name=/TEST"
+        + TestCacheListener.class.getName())
+        .statusIsError()
+        .containsOutput("Specify a valid region path for template-region")
+        .containsOutput("TEMPLATE not found");
   }
 
   @Test
@@ -297,7 +349,6 @@ public class CreateRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
   }
-
 
   @Test
   public void ensureOverridingCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
@@ -611,10 +662,49 @@ public class CreateRegionCommandDUnitTest {
         + " --enable-cloning=false").statusIsError();
   }
 
+  @Test
+  public void cannotColocateWithNonexistentRegion() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionName
+        + " --type=PARTITION"
+        + " --colocated-with=/nonexistent").statusIsError()
+        .containsOutput("Specify a valid region path for colocated-with")
+        .containsOutput("nonexistent not found");
+  }
+
+  @Test
+  public void cannotColocateWithNonPartitionedRegion() {
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=/nonpartitioned")
+        .statusIsSuccess();
+
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region"
+        + " --name=" + regionName
+        + " --type=PARTITION"
+        + " --colocated-with=/nonpartitioned").statusIsError()
+        .containsOutput("\"/nonpartitioned\" is not a Partitioned Region");
+  }
+
+  @Test
+  public void cannotCreateSubregionOnNonExistentParentRegion() {
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=/nonexistentparent/child")
+        .statusIsError()
+        .containsOutput("Parent region for \"/nonexistentparent/child\" does not exist");
+  }
+
+  @Test
+  public void cannotCreateWithNonexistentGatewaySenders() {
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE --name=/invalid --gateway-sender-id=nonexistent")
+        .statusIsError()
+        .containsOutput("There are no GatewaySenders");
+  }
+
   /**
    * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
    * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
-   * GEODE-6103
+   * GEODE-6104
    */
   @Ignore
   @Test
@@ -649,7 +739,7 @@ public class CreateRegionCommandDUnitTest {
   /**
    * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
    * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
-   * GEODE-6103
+   * GEODE-6104
    */
   @Ignore
   @Test

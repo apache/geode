@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
-import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -155,14 +154,11 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
 
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");
-      if (cacheConfig != null) {
-        JndiBindingsType.JndiBinding existing =
-            CacheElement.findElement(cacheConfig.getJndiBindings(), jndiName);
-        if (existing != null) {
-          throw new EntityExistsException(
-              CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName),
-              ifNotExists);
-        }
+      if (cacheConfig != null && CacheElement.exists(cacheConfig.getJndiBindings(), jndiName)) {
+        String message =
+            CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName);
+        return ifNotExists ? ResultModel.createInfo("Skipping: " + message)
+            : ResultModel.createError(message);
       }
     }
 
