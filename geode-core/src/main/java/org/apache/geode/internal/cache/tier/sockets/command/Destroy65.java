@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -96,18 +95,7 @@ public class Destroy65 extends BaseCommand {
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException, InterruptedException {
-    Part regionNamePart;
-    Part keyPart;
-    Part callbackArgPart;
-    Part eventPart;
-    Part expectedOldValuePart;
-
-    Object expectedOldValue = null;
-
-    String regionName = null;
-    Object callbackArg = null, key = null;
     StringBuilder errMessage = new StringBuilder();
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
@@ -115,9 +103,9 @@ public class Destroy65 extends BaseCommand {
     stats.incReadDestroyRequestTime(now - start);
 
     // Retrieve the data from the message parts
-    regionNamePart = clientMessage.getPart(0);
-    keyPart = clientMessage.getPart(1);
-    expectedOldValuePart = clientMessage.getPart(2);
+    final Part regionNamePart = clientMessage.getPart(0);
+    final Part keyPart = clientMessage.getPart(1);
+    final Part expectedOldValuePart = clientMessage.getPart(2);
 
     final Operation operation;
     try {
@@ -128,6 +116,7 @@ public class Destroy65 extends BaseCommand {
       return;
     }
 
+    Object expectedOldValue = null;
     if (operation == Operation.REMOVE) {
       try {
         expectedOldValue = expectedOldValuePart.getObject();
@@ -138,10 +127,11 @@ public class Destroy65 extends BaseCommand {
       }
     }
 
-    eventPart = clientMessage.getPart(4);
+    final Part eventPart = clientMessage.getPart(4);
 
+    Object callbackArg = null;
     if (clientMessage.getNumberOfParts() > 5) {
-      callbackArgPart = clientMessage.getPart(5);
+      final Part callbackArgPart = clientMessage.getPart(5);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (Exception e) {
@@ -150,7 +140,8 @@ public class Destroy65 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+
+    final Object key;
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -158,6 +149,9 @@ public class Destroy65 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
+
+    final String regionName = regionNamePart.getString();
+
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Received destroy65 request ({} bytes; op={}) from {} for region {} key {}{} txId {}",
@@ -187,7 +181,7 @@ public class Destroy65 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
+    final LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = String.format("%s was not found during destroy request",
           regionName);
@@ -197,12 +191,12 @@ public class Destroy65 extends BaseCommand {
     }
 
     // Destroy the entry
-    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    EventID eventId =
+    final ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    final long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final EventID eventId =
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
-    EventIDHolder clientEvent = new EventIDHolder(eventId);
+    final EventIDHolder clientEvent = new EventIDHolder(eventId);
 
     Breadcrumbs.setEventId(eventId);
 
