@@ -66,7 +66,7 @@ public class QueryOp {
   /**
    * Note: this class is extended by CreateCQWithIROpImpl.
    */
-  protected static class QueryOpImpl extends AbstractOp {
+  public static class QueryOpImpl extends AbstractOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */

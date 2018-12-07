@@ -2,6 +2,7 @@ org/apache/geode/cache/lucene/LuceneIndexDestroyedException,false,indexName:java
 org/apache/geode/cache/lucene/LuceneIndexExistsException,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/LuceneIndexNotFoundException,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/LuceneQueryException,false
+org/apache/geode/cache/lucene/management/configuration/Index,false,field:java/util/List,name:java/lang/String,serializer:org/apache/geode/cache/configuration/DeclarableType
 org/apache/geode/cache/lucene/internal/LuceneIndexCreationInProgressException,false
 org/apache/geode/cache/lucene/internal/cli/LuceneDestroyIndexInfo,false,definedDestroyOnly:boolean
 org/apache/geode/cache/lucene/internal/cli/LuceneFunctionSerializable,false,indexName:java/lang/String,regionPath:java/lang/String

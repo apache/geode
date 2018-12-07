@@ -152,8 +152,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
   private void checkForCacheLoader(String regionName, RegionConfig regionConfig)
       throws PreconditionException {
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
-        .filter(attributes -> attributes.getCacheLoader() != null).findFirst().orElse(null);
+    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     if (regionAttributes != null) {
       DeclarableType loaderDeclarable = regionAttributes.getCacheLoader();
       if (loaderDeclarable != null) {
@@ -167,8 +166,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private void checkForCacheWriter(String regionName, boolean synchronous,
       RegionConfig regionConfig) throws PreconditionException {
     if (synchronous) {
-      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes().stream()
-          .filter(attributes -> attributes.getCacheWriter() != null).findFirst().orElse(null);
+      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes();
       if (writerAttributes != null) {
         DeclarableType writerDeclarable = writerAttributes.getCacheWriter();
         if (writerDeclarable != null) {
@@ -205,7 +203,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       return false;
     }
 
-    RegionAttributesType attributes = getRegionAttributes(regionConfig);
+    RegionAttributesType attributes = getRegionAttribute(regionConfig);
     addMappingToRegion(regionMapping, regionConfig);
     if (!synchronous) {
       createAsyncQueue(cacheConfig, attributes, queueName);
@@ -213,6 +211,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
     alterRegion(queueName, attributes, synchronous);
 
     return true;
+  }
+
+  private RegionAttributesType getRegionAttribute(RegionConfig config) {
+    if (config.getRegionAttributes() == null) {
+      config.setRegionAttributes(new RegionAttributesType());
+    }
+
+    return config.getRegionAttributes();
   }
 
   @CliAvailabilityIndicator({CREATE_MAPPING})
@@ -276,17 +282,5 @@ public class CreateMappingCommand extends SingleGfshCommand {
     DeclarableType writer = new DeclarableType();
     writer.setClassName(JdbcWriter.class.getName());
     attributes.setCacheWriter(writer);
-  }
-
-  private RegionAttributesType getRegionAttributes(RegionConfig regionConfig) {
-    RegionAttributesType attributes;
-    List<RegionAttributesType> attributesList = regionConfig.getRegionAttributes();
-    if (attributesList.isEmpty()) {
-      attributes = new RegionAttributesType();
-      attributesList.add(attributes);
-    } else {
-      attributes = attributesList.get(0);
-    }
-    return attributes;
   }
 }

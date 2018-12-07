@@ -17,10 +17,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,16 +43,9 @@ import java.util.concurrent.Future;
 import org.apache.shiro.subject.Subject;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.AttributesMutator;
@@ -62,7 +57,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -75,19 +69,13 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category({ClientSubscriptionTest.class})
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({CacheClientProxy.class, DataSerializer.class})
 public class CacheClientNotifierIntegrationTest {
   @Test
   public void testCacheClientNotifier_NotifyClients_QRMCausesPrematureRemovalFromHAContainer()
       throws Exception {
     final CountDownLatch messageDispatcherInitLatch = new CountDownLatch(1);
     final CountDownLatch notifyClientLatch = new CountDownLatch(1);
-
-    setupMockMessageDispatcher(messageDispatcherInitLatch, notifyClientLatch);
 
     InternalCache mockInternalCache = createMockInternalCache();
 
@@ -100,22 +88,29 @@ public class CacheClientNotifierIntegrationTest {
 
     CacheClientProxy cacheClientProxyOne =
         createMockCacheClientProxy(cacheClientNotifier, mockRegionNameProxyOne);
+
     CacheClientProxy cacheClientProxyTwo =
         createMockCacheClientProxy(cacheClientNotifier, mockRegionNameProxyTwo);
+
+    doAnswer(invocation -> {
+      messageDispatcherInitLatch.countDown();
+      notifyClientLatch.await();
+      return invocation.callRealMethod();
+    }).when(cacheClientProxyTwo).createMessageDispatcher(anyString());
 
     createMockHARegion(mockInternalCache, cacheClientProxyOne, mockRegionNameProxyOne, true);
     createMockHARegion(mockInternalCache, cacheClientProxyTwo, mockRegionNameProxyTwo, false);
 
     ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    Collection<Callable<Void>> initAndNotifyTasks = new ArrayList<>();
+    ArrayList<Callable<Void>> initAndNotifyTasks = new ArrayList<>();
 
     // On one thread, we are initializing the message dispatchers for the two CacheClientProxy
     // objects. For the second client's initialization,
     // we block until we can simulate a QRM message while the event sits in the CacheClientProxy's
     // queuedEvents collection.
     // This blocking logic can be found in setupMockMessageDispatcher().
-    ((ArrayList<Callable<Void>>) initAndNotifyTasks).add((Callable<Void>) () -> {
+    initAndNotifyTasks.add(() -> {
       cacheClientProxyOne.initializeMessageDispatcher();
       cacheClientProxyTwo.initializeMessageDispatcher();
       return null;
@@ -136,7 +131,7 @@ public class CacheClientNotifierIntegrationTest {
     // CacheClientProxy, we mocked a QRM in the HARegion
     // put to simulate a QRM message being received at that time. The simulated QRM logic can be
     // found in the createMockHARegion() method.
-    ((ArrayList<Callable<Void>>) initAndNotifyTasks).add((Callable<Void>) () -> {
+    initAndNotifyTasks.add(() -> {
       messageDispatcherInitLatch.await();
       CacheClientNotifier.notifyClients(mockEntryEventImpl);
       notifyClientLatch.countDown();
@@ -185,35 +180,28 @@ public class CacheClientNotifierIntegrationTest {
 
     Map<Object, Object> events = new HashMap<Object, Object>();
 
-    doAnswer(new Answer<Void>() {
-      @Override
-      public Void answer(InvocationOnMock invocation) throws Throwable {
-        long position = invocation.getArgument(0);
-        HAEventWrapper haEventWrapper = invocation.getArgument(1);
+    doAnswer(invocation -> {
+      long position = invocation.getArgument(0);
+      HAEventWrapper haEventWrapper = invocation.getArgument(1);
 
-        if (simulateQrm) {
-          // This call is ultimately what a QRM message will do when it is processed, so we simulate
-          // that here.
-          cacheClientProxy.getHARegionQueue().destroyFromAvailableIDs(position);
-          events.remove(position);
-          cacheClientProxy.getHARegionQueue()
-              .decAndRemoveFromHAContainer((HAEventWrapper) haEventWrapper);
-        } else {
-          events.put(position, haEventWrapper);
-        }
-
-        return null;
+      if (simulateQrm) {
+        // This call is ultimately what a QRM message will do when it is processed, so we simulate
+        // that here.
+        cacheClientProxy.getHARegionQueue().destroyFromAvailableIDs(position);
+        events.remove(position);
+        cacheClientProxy.getHARegionQueue()
+            .decAndRemoveFromHAContainer((HAEventWrapper) haEventWrapper);
+      } else {
+        events.put(position, haEventWrapper);
       }
+
+      return null;
     }).when(mockHARegion).put(any(long.class), any(HAEventWrapper.class));
 
     // This is so that when peek() is called, the object is returned. Later we want to verify that
     // it was successfully "delivered" to the client and subsequently removed from the HARegion.
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        return events.get(invocation.getArgument(0));
-      }
-    }).when(mockHARegion).get(any(long.class));
+    doAnswer((Answer<Object>) invocation -> events.get(invocation.getArgument(0)))
+        .when(mockHARegion).get(any(long.class));
 
     return mockHARegion;
   }
@@ -228,36 +216,6 @@ public class CacheClientNotifierIntegrationTest {
     doReturn(mockInteralDistributedSystem).when(mockInternalCache).getDistributedSystem();
 
     return mockInternalCache;
-  }
-
-  private void setupMockMessageDispatcher(CountDownLatch messageDispatcherInitLatch,
-      CountDownLatch notifyClientLatch) throws Exception {
-    PowerMockito.whenNew(CacheClientProxy.MessageDispatcher.class).withAnyArguments()
-        .thenAnswer(new Answer<CacheClientProxy.MessageDispatcher>() {
-          private boolean secondClient = false;
-
-          @Override
-          public CacheClientProxy.MessageDispatcher answer(
-              org.mockito.invocation.InvocationOnMock invocation) throws Throwable {
-            if (secondClient) {
-              messageDispatcherInitLatch.countDown();
-              notifyClientLatch.await();
-            }
-
-            secondClient = true;
-
-            CacheClientProxy cacheClientProxy = invocation.getArgument(0);
-            String name = invocation.getArgument(1);
-
-            CacheClientProxy.MessageDispatcher messageDispatcher =
-                new CacheClientProxy.MessageDispatcher(cacheClientProxy,
-                    name);
-
-            return messageDispatcher;
-          }
-        });
-
-    PowerMockito.mockStatic(InternalDataSerializer.class);
   }
 
   private InternalDistributedSystem createMockInternalDistributedSystem() {
@@ -287,8 +245,8 @@ public class CacheClientNotifierIntegrationTest {
     doReturn(haRegionName).when(mockClientProxyMembershipID).getHARegionName();
 
     CacheClientProxy cacheClientProxy =
-        new CacheClientProxy(cacheClientNotifier, mockSocket, mockClientProxyMembershipID, true,
-            (byte) 0, Version.GFE_58, 0, true, mock(SecurityService.class), mock(Subject.class));
+        spy(new CacheClientProxy(cacheClientNotifier, mockSocket, mockClientProxyMembershipID, true,
+            (byte) 0, Version.GFE_58, 0, true, mock(SecurityService.class), mock(Subject.class)));
 
     cacheClientNotifier.addClientInitProxy(cacheClientProxy);
 

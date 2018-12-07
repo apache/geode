@@ -117,13 +117,14 @@ public class DestroyRegionCommandDUnitTest {
       Configuration group1Config = service.getConfiguration("group1");
       assertThat(group1Config.getCacheXmlContent())
           .containsOnlyOnce("<region name=\"region1\">")
-          .containsOnlyOnce("<region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
+          .containsOnlyOnce("data-policy=\"empty\"")
+          .containsOnlyOnce("scope=\"distributed-ack\"");
 
       Configuration clusterConfig = service.getConfiguration("group2");
       assertThat(clusterConfig.getCacheXmlContent())
           .containsOnlyOnce("<region name=\"region1\">")
-          .containsOnlyOnce(
-              "<region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>");
+          .containsOnlyOnce("data-policy=\"replicate\"")
+          .containsOnlyOnce("scope=\"distributed-ack\"");
     });
 
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()

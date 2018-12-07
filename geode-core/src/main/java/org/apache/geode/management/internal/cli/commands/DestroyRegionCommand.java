@@ -20,6 +20,9 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -58,6 +61,12 @@ public class DestroyRegionCommand extends InternalGfshCommand {
       throw new EntityNotFoundException(message, ifExists);
     }
 
+    try {
+      checkForJDBCMapping(regionPath);
+    } catch (IllegalStateException e) {
+      return ResultBuilder.createGemFireErrorResult(e.getMessage());
+    }
+
     // destroy is called on each member. If the region destroy is successful on one member, we
     // deem the destroy action successful, since if one member destroy successfully, the subsequent
     // destroy on a another member would probably throw RegionDestroyedException
@@ -77,4 +86,28 @@ public class DestroyRegionCommand extends InternalGfshCommand {
     return result;
   }
 
+  void checkForJDBCMapping(String regionPath) {
+    String regionName = regionPath;
+    if (regionPath.startsWith("/")) {
+      regionName = regionPath.substring(1);
+    }
+    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    if (ccService == null) {
+      return;
+    }
+    CacheConfig cacheConfig = ccService.getCacheConfig(null);
+    if (cacheConfig == null) {
+      return;
+    }
+    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    if (regionConfig == null) {
+      return;
+    }
+    CacheElement element =
+        CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
+    if (element != null) {
+      throw new IllegalStateException("Cannot destroy region \"" + regionName
+          + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+    }
+  }
 }

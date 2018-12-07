@@ -105,7 +105,9 @@ public class GetClientPRMetaDataOp {
                     "GetClientPRMetaDataOpImpl#processResponse: for bucketId : {} locations are {}",
                     bucketId, locations);
               }
-              advisor.updateBucketServerLocations(bucketId, locations, cms);
+              if (advisor != null) {
+                advisor.updateBucketServerLocations(bucketId, locations, cms);
+              }
 
               Set<ClientPartitionAdvisor> cpas =
                   cms.getColocatedClientPartitionAdvisor(regionFullPath);

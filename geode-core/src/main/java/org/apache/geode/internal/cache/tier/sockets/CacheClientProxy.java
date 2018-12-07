@@ -1706,7 +1706,7 @@ public class CacheClientProxy implements ClientSession {
       }
       String name = "Client Message Dispatcher for " + getProxyID().getDistributedMember()
           + (isDurable() ? " (" + getDurableId() + ")" : "");
-      this._messageDispatcher = new MessageDispatcher(this, name);
+      this._messageDispatcher = createMessageDispatcher(name);
 
       // Fix for 41375 - drain as many of the queued events
       // as we can without synchronization.
@@ -1729,6 +1729,10 @@ public class CacheClientProxy implements ClientSession {
         this._statistics.close();
       }
     }
+  }
+
+  MessageDispatcher createMessageDispatcher(String name) {
+    return new MessageDispatcher(this, name);
   }
 
   private void drainQueuedEvents(boolean withSynchronization) {

@@ -48,7 +48,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
-public class StartServerCommand extends InternalGfshCommand {
+public class StartServerCommand extends OfflineGfshCommand {
   private static final String SERVER_TERM_NAME = "Server";
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)

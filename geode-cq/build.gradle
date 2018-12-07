@@ -60,3 +60,12 @@ dependencies {
 
   upgradeTestRuntime(project(':geode-old-versions'))
 }
+
+ext.moduleName = group + '.cq'
+
+jar {
+  inputs.property("moduleName", moduleName)
+  manifest {
+    attributes('Automatic-Module-Name': moduleName)
+  }
+}

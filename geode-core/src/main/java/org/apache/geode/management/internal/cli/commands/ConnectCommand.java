@@ -70,7 +70,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class ConnectCommand extends InternalGfshCommand {
+public class ConnectCommand extends OfflineGfshCommand {
   // millis that connect --locator will wait for a response from the locator.
   static final int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
 
@@ -293,8 +293,8 @@ public class ConnectCommand extends InternalGfshCommand {
 
       gfsh.setOperationInvoker(operationInvoker);
 
-      LogWrapper.getInstance(getCache())
-          .info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
+      LogWrapper.getInstance().info(
+          CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
 
@@ -369,7 +369,7 @@ public class ConnectCommand extends InternalGfshCommand {
       gfsh.setOperationInvoker(operationInvoker);
       infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
-      LogWrapper.getInstance(getCache()).info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
+      LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
     } catch (SecurityException | AuthenticationFailedException e) {
@@ -508,7 +508,7 @@ public class ConnectCommand extends InternalGfshCommand {
   }
 
   private Result handleException(Exception e, String errorMessage) {
-    LogWrapper.getInstance(getCache()).severe(errorMessage, e);
+    LogWrapper.getInstance().severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
 

@@ -16,7 +16,7 @@ package org.apache.geode.cache.query.cq.dunit;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
+import org.apache.geode.cache.query.cq.internal.CqServiceImpl;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
