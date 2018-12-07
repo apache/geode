@@ -102,7 +102,11 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
       return result;
     } else {
       if (service != null) {
-        return ResultModel.createInfo("No members found.");
+        ResultModel result =
+            ResultModel
+                .createInfo("No members found, data source removed from cluster configuration.");
+        result.setConfigObject(dataSourceName);
+        return result;
       } else {
         return ResultModel.createError("No members found and cluster configuration disabled.");
       }

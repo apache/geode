@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -61,7 +62,7 @@ public class DestroyDataSourceCommandTest {
   private static String COMMAND = "destroy data-source ";
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = mock(InternalCache.class);
     command = spy(DestroyDataSourceCommand.class);
     doReturn(cache).when(command).getCache();
@@ -145,11 +146,11 @@ public class DestroyDataSourceCommandTest {
     doReturn(bindings).when(cacheConfig).getJndiBindings();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found.")
+        .containsOutput("No members found, data source removed from cluster configuration.")
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
-    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
   }
 
   @Test
@@ -162,11 +163,11 @@ public class DestroyDataSourceCommandTest {
     doReturn(bindings).when(cacheConfig).getJndiBindings();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found.")
+        .containsOutput("No members found, data source removed from cluster configuration.")
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
-    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
   }
 
   @Test

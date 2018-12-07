@@ -15,11 +15,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.datasource.GemFireBasicDataSource;
-import org.apache.geode.internal.datasource.GemFireConnPooledDataSource;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -35,9 +32,7 @@ public class DestroyJndiBindingFunction extends CliFunction<Object[]> {
 
     if (destroyingDataSource) {
       typeName = "Data source";
-      DataSource dataSource = lookUpDataSource(jndiName);
-      if (dataSource != null && !(dataSource.getClass() == GemFireBasicDataSource.class)
-          && !(dataSource.getClass() == GemFireConnPooledDataSource.class)) {
+      if (checkForInvalidDataSource(jndiName)) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             CliStrings.format(
                 "Data Source {0} has invalid type for destroy data-source, destroy jndi-binding command should be used.",
@@ -58,7 +53,7 @@ public class DestroyJndiBindingFunction extends CliFunction<Object[]> {
     }
   }
 
-  DataSource lookUpDataSource(String jndiName) {
-    return JNDIInvoker.getDataSource(jndiName);
+  boolean checkForInvalidDataSource(String jndiName) {
+    return JNDIInvoker.checkForInvalidDataSource(jndiName);
   }
 }

@@ -23,14 +23,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -141,8 +134,7 @@ public class DestroyJndiBindingFunctionTest {
     when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
     when(context.getResultSender()).thenReturn(resultSender);
     DestroyJndiBindingFunction destroyFunctionSpy = spy(destroyJndiBindingFunction);
-    DataSource jndiBinding = new InvalidDataSourceClass();
-    doReturn(jndiBinding).when(destroyFunctionSpy).lookUpDataSource(any());
+    doReturn(true).when(destroyFunctionSpy).checkForInvalidDataSource(any());
 
     destroyFunctionSpy.execute(context);
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -153,53 +145,5 @@ public class DestroyJndiBindingFunctionTest {
     assertThat(result.isSuccessful()).isEqualTo(false);
     assertThat(result.getMessage()).contains(
         "Data Source jndi1 has invalid type for destroy data-source, destroy jndi-binding command should be used.");
-  }
-
-  class InvalidDataSourceClass implements DataSource {
-
-    @Override
-    public PrintWriter getLogWriter() throws SQLException {
-      return null;
-    }
-
-    @Override
-    public void setLogWriter(PrintWriter out) throws SQLException {
-
-    }
-
-    @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-
-    }
-
-    @Override
-    public int getLoginTimeout() throws SQLException {
-      return 0;
-    }
-
-    @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-      return null;
-    }
-
-    @Override
-    public Connection getConnection() throws SQLException {
-      return null;
-    }
-
-    @Override
-    public Connection getConnection(String username, String password) throws SQLException {
-      return null;
-    }
-
-    @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-      return null;
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-      return false;
-    }
   }
 }
