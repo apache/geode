@@ -166,8 +166,7 @@ public class MBeanProxyFactory {
         removeProxy(member, mbeanName, val);
       } catch (EntryNotFoundException entryNotFoundException) {
         // Entry has already been removed by another thread, so no need to remove it
-        logger.warn("Proxy for entry {} and member {} has already been removed", entry,
-            member.getId());
+        logProxyAlreadyRemoved(member, entry);
       } catch (Exception e) {
         if (!(e.getCause() instanceof InstanceNotFoundException)) {
           logger.warn("Remove Proxy failed for {} due to {}", key, e.getMessage(), e);
@@ -267,6 +266,11 @@ public class MBeanProxyFactory {
 
     return proxyObj.getLastRefreshedTime();
 
+  }
+
+  void logProxyAlreadyRemoved(DistributedMember member, Entry<String, Object> entry) {
+    logger.warn("Proxy for entry {} and member {} has already been removed", entry,
+        member.getId());
   }
 
 }
