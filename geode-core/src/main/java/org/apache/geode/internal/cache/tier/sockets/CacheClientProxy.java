@@ -945,17 +945,23 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  private void closeSocket() {
-    if (this._socketClosed.compareAndSet(false, true)) {
-      // Close the socket
-      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, this._remoteHostAddress,
-          null);
+  private boolean closeSocket() {
+    String remoteHostAddress = this._remoteHostAddress;
+    if (this._socketClosed.compareAndSet(false, true) && remoteHostAddress != null) {
+      // Only one thread is expected to close the socket
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, remoteHostAddress, null);
       getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
+      return true;
     }
+    return false;
   }
 
   private void closeTransientFields() {
-    closeSocket();
+    if (!closeSocket()) {
+      // The thread who closed the socket will be responsible to
+      // releaseResourcesForAddress and clearClientInterestList
+      return;
+    }
 
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
