@@ -1449,7 +1449,7 @@ public abstract class BaseCommand implements Command {
 
     if (operationPart.isBytes()) {
       final byte[] bytes = operationPart.getSerializedForm();
-      if (0 == bytes.length) {
+      if (null == bytes || 0 == bytes.length) {
         // older clients can send empty bytes for default operation.
         return defaultOperation;
       } else {
