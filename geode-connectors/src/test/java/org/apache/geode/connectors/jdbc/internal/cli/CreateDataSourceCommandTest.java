@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,14 +32,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -66,7 +63,7 @@ public class CreateDataSourceCommandTest {
   private static String COMMAND = "create data-source ";
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = mock(InternalCache.class);
     when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
     command = Mockito.spy(CreateDataSourceCommand.class);
@@ -136,8 +133,7 @@ public class CreateDataSourceCommandTest {
   }
 
   @Test
-  public void returnsErrorIfDataSourceAlreadyExistsAndIfUnspecified()
-      throws ParserConfigurationException, SAXException, IOException {
+  public void returnsErrorIfDataSourceAlreadyExistsAndIfUnspecified() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -153,8 +149,7 @@ public class CreateDataSourceCommandTest {
   }
 
   @Test
-  public void skipsIfDataSourceAlreadyExistsAndIfSpecified()
-      throws ParserConfigurationException, SAXException, IOException {
+  public void skipsIfDataSourceAlreadyExistsAndIfSpecified() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -233,11 +228,12 @@ public class CreateDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --name=name  --url=url")
-        .statusIsSuccess().containsOutput("No members found, data source saved to cluster config.")
+        .statusIsSuccess()
+        .containsOutput("No members found, data source saved to cluster configuration.")
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
-    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
   }
 
   @Test
