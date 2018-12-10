@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -83,7 +83,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @SuppressWarnings("deprecation")
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class AutoConnectionSourceImplJUnitTest {
 
   private Cache cache;
@@ -96,7 +96,7 @@ public class AutoConnectionSourceImplJUnitTest {
   private PoolStats poolStats;
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {

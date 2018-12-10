@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doThrow;
 
 import java.time.Duration;
 import java.util.HashSet;
@@ -55,6 +54,7 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 public class PersistenceInitialImageAdvisorTest {
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
