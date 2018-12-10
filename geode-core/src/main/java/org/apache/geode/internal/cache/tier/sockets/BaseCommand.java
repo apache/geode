@@ -37,6 +37,7 @@ import org.apache.geode.CopyException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -134,6 +135,11 @@ public abstract class BaseCommand implements Command {
 
   protected static byte[] okBytes() {
     return OK_BYTES;
+  }
+
+  @TestingOnly
+  public BaseCommand() {
+
   }
 
   protected boolean setLastResultReceived(

@@ -64,6 +64,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @PowerMockIgnore("*.UnitTest")
 @PrepareForTest({FunctionService.class})
 public class ExecuteFunctionTest {
+
   private static final String FUNCTION = "function";
   private static final String FUNCTION_ID = "function_id";
   private static final boolean OPTIMIZE_FOR_WRITE = false;

@@ -24,11 +24,11 @@ import java.util.Set;
 import org.apache.geode.cache.client.internal.ExecuteFunctionOp;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.execute.InternalFunctionExecutionServiceImpl;
 import org.apache.geode.internal.cache.execute.MemberFunctionExecutor;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.Command;
@@ -106,7 +106,7 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
         ArrayList<DistributedMember> memberList =
             new ArrayList<DistributedMember>(ds.getGroupMembers(group));
         if (!memberList.isEmpty()) {
-          if (!FunctionServiceManager.RANDOM_onMember
+          if (!InternalFunctionExecutionServiceImpl.RANDOM_onMember
               && memberList.contains(ds.getDistributedMember())) {
             members.add(ds.getDistributedMember());
           } else {

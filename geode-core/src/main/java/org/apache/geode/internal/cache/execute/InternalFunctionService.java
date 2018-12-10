@@ -1,16 +1,18 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.geode.internal.cache.execute;
 
@@ -22,18 +24,28 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.internal.FunctionServiceManager;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.cache.execute.FunctionService;
 
 /**
- *
  * Provides internal methods for tests
  *
- *
  * @since GemFire 6.1
- *
  */
-public class InternalFunctionService {
+public class InternalFunctionService extends FunctionService {
+
+  private static final InternalFunctionService INSTANCE = create();
+
+  private static InternalFunctionService create() {
+    return new InternalFunctionService(new InternalFunctionExecutionServiceImpl());
+  }
+
+  private final InternalFunctionExecutionService internalFunctionExecutionService;
+
+  private InternalFunctionService(
+      InternalFunctionExecutionService internalFunctionExecutionService) {
+    super(internalFunctionExecutionService);
+    this.internalFunctionExecutionService = internalFunctionExecutionService;
+  }
 
   /**
    * Returns an {@link Execution} object that can be used to execute a function on the set of
@@ -55,42 +67,10 @@ public class InternalFunctionService {
    * {@link UnsupportedOperationException}
    *
    * @see MultiRegionFunctionContext
-   *
-   *
    */
   public static Execution onRegions(Set<Region> regions) {
-    if (regions == null) {
-      throw new IllegalArgumentException(
-          String.format("The input %s for the execute function request is null",
-              "regions set"));
-    }
-    if (regions.contains(null)) {
-      throw new IllegalArgumentException(
-          "One or more region references added to the regions set is(are) null");
-    }
-    if (regions.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Regions set is empty for onRegions function execution");
-    }
-    for (Region region : regions) {
-      if (isClientRegion(region)) {
-        throw new UnsupportedOperationException(
-            "FunctionService#onRegions() is not supported for cache clients in client server mode");
-      }
-    }
-    return new MultiRegionFunctionExecutor(regions);
+    return getInternalFunctionExecutionService().onRegions(regions);
   }
-
-  /**
-   * @return true if the method is called on a region has a {@link Pool}.
-   * @since GemFire 6.0
-   */
-  private static boolean isClientRegion(Region region) {
-    LocalRegion localRegion = (LocalRegion) region;
-    return localRegion.hasServerProxy();
-  }
-
-  private static final FunctionServiceManager funcServiceManager = new FunctionServiceManager();
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -108,7 +88,7 @@ public class InternalFunctionService {
    * @since GemFire 7.0
    */
   public static Execution onServers(RegionService regionService, String... groups) {
-    return funcServiceManager.onServers(regionService, groups);
+    return getInternalFunctionExecutionService().onServers(regionService, groups);
   }
 
   /**
@@ -127,7 +107,7 @@ public class InternalFunctionService {
    * @since GemFire 7.0
    */
   public static Execution onServer(RegionService regionService, String... groups) {
-    return funcServiceManager.onServer(regionService, groups);
+    return getInternalFunctionExecutionService().onServer(regionService, groups);
   }
 
   /**
@@ -145,7 +125,7 @@ public class InternalFunctionService {
    * @since GemFire 7.0
    */
   public static Execution onServers(Pool pool, String... groups) {
-    return funcServiceManager.onServers(pool, groups);
+    return getInternalFunctionExecutionService().onServers(pool, groups);
   }
 
   /**
@@ -163,6 +143,17 @@ public class InternalFunctionService {
    * @since GemFire 7.0
    */
   public static Execution onServer(Pool pool, String... groups) {
-    return funcServiceManager.onServer(pool, groups);
+    return getInternalFunctionExecutionService().onServer(pool, groups);
+  }
+
+  /**
+   * Unregisters all functions.
+   */
+  public static void unregisterAllFunctions() {
+    getInternalFunctionExecutionService().unregisterAllFunctions();
+  }
+
+  public static InternalFunctionExecutionService getInternalFunctionExecutionService() {
+    return INSTANCE.internalFunctionExecutionService;
   }
 }
