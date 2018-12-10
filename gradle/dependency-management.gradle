@@ -176,7 +176,10 @@ allprojects {
         entry 'selenium-support'
       }
       dependency('org.skyscreamer:jsonassert:1.5.0')
-      dependency('org.slf4j:slf4j-api:1.7.25')
+      dependencySet(group: 'org.slf4j', version: '1.7.25') {
+        entry 'slf4j-api'
+        entry 'slf4j-jdk14'
+      }
       dependency('org.springframework.hateoas:spring-hateoas:0.25.0.RELEASE')
       dependency('org.springframework.ldap:spring-ldap-core:2.3.2.RELEASE')
       dependencySet(group: 'org.springframework.security', version: '4.2.8.RELEASE') {
