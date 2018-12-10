@@ -64,7 +64,7 @@ import org.gradle.process.internal.ExecHandleShutdownHookAction;
 import org.gradle.process.internal.ExecHandleState;
 import org.gradle.process.internal.ProcessSettings;
 import org.gradle.process.internal.StreamsHandler;
-import org.gradle.process.internal.shutdown.ShutdownHookActionRegister;
+import org.gradle.process.internal.shutdown.ShutdownHooks;
 
 /**
  * Default implementation for the ExecHandle interface.
@@ -225,7 +225,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   }
 
   private void setEndStateInfo(ExecHandleState newState, int exitValue, Throwable failureCause) {
-    ShutdownHookActionRegister.removeAction(shutdownHookAction);
+    ShutdownHooks.removeShutdownHook(shutdownHookAction);
     buildCancellationToken.removeCallback(shutdownHookAction);
     ExecHandleState currentState;
     lock.lock();
@@ -367,7 +367,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   }
 
   void started() {
-    ShutdownHookActionRegister.addAction(shutdownHookAction);
+    ShutdownHooks.addShutdownHook(shutdownHookAction);
     buildCancellationToken.addCallback(shutdownHookAction);
     setState(ExecHandleState.STARTED);
     broadcast.getSource().executionStarted(this);
@@ -544,6 +544,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     public void stop() {
       inputHandler.stop();
       outputHandler.stop();
+    }
+
+    @Override
+    public void disconnect() {
+      inputHandler.disconnect();
+      outputHandler.disconnect();
     }
   }
 
