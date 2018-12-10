@@ -143,8 +143,8 @@ allprojects {
       dependency('org.awaitility:awaitility:3.1.2')
       dependency('org.bouncycastle:bcpkix-jdk15on:1.60')
       dependency('org.codehaus.cargo:cargo-core-uberjar:1.6.3')
+      dependency('org.eclipse.jetty:jetty-distribution:9.4.12.v20180830@zip') // required as @zip
       dependencySet(group: 'org.eclipse.jetty', version: '9.4.12.v20180830') {
-        entry 'jetty-distribution'
         entry 'jetty-http'
         entry 'jetty-server'
         entry 'jetty-servlet'
