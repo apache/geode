@@ -130,7 +130,7 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
-  public void givenColumnAndNonNullIdsThatDoesInExactlyMatchThenKeyColumnNameIsReturned()
+  public void givenColumnAndNonNullIdsThatDoesInexactlyMatchThenKeyColumnNameIsReturned()
       throws Exception {
     when(tablesResultSet.next()).thenReturn(true).thenReturn(false);
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
