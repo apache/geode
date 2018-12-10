@@ -383,7 +383,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
     super.logIfEnabled(fqcn, level, marker, msgSupplier, t);
   }
 
-  boolean isDelegating() {
+  public boolean isDelegating() {
     return delegating;
   }
 

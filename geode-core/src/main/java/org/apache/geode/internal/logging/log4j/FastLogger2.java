@@ -40,7 +40,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
   }
 
   public FastLogger2(final ExtendedLogger logger, final String name,
-                    final MessageFactory messageFactory) {
+      final MessageFactory messageFactory) {
     super(logger, name, messageFactory);
   }
 
@@ -135,7 +135,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2) {
+      Object p2) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -144,7 +144,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3) {
+      Object p2, Object p3) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -153,8 +153,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3,
-                           Object p4) {
+      Object p2, Object p3,
+      Object p4) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -163,8 +163,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3,
-                           Object p4, Object p5) {
+      Object p2, Object p3,
+      Object p4, Object p5) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -173,8 +173,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3,
-                           Object p4, Object p5, Object p6) {
+      Object p2, Object p3,
+      Object p4, Object p5, Object p6) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -183,8 +183,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3,
-                           Object p4, Object p5, Object p6, Object p7) {
+      Object p2, Object p3,
+      Object p4, Object p5, Object p6, Object p7) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -193,8 +193,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3,
-                           Object p4, Object p5, Object p6, Object p7, Object p8) {
+      Object p2, Object p3,
+      Object p4, Object p5, Object p6, Object p7, Object p8) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -203,8 +203,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public boolean isEnabled(Level level, Marker marker, String message, Object p0, Object p1,
-                           Object p2, Object p3,
-                           Object p4, Object p5, Object p6, Object p7, Object p8, Object p9) {
+      Object p2, Object p3,
+      Object p4, Object p5, Object p6, Object p7, Object p8, Object p9) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return false;
     }
@@ -221,7 +221,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, CharSequence message,
-                           Throwable t) {
+      Throwable t) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -254,7 +254,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message,
-                           Object... params) {
+      Object... params) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -271,7 +271,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1) {
+      Object p1) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -280,7 +280,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2) {
+      Object p1, Object p2) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -289,8 +289,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3) {
+      Object p1, Object p2,
+      Object p3) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -299,8 +299,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3, Object p4) {
+      Object p1, Object p2,
+      Object p3, Object p4) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -309,8 +309,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3, Object p4, Object p5) {
+      Object p1, Object p2,
+      Object p3, Object p4, Object p5) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -319,8 +319,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3, Object p4, Object p5, Object p6) {
+      Object p1, Object p2,
+      Object p3, Object p4, Object p5, Object p6) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -329,8 +329,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3, Object p4, Object p5, Object p6, Object p7) {
+      Object p1, Object p2,
+      Object p3, Object p4, Object p5, Object p6, Object p7) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -339,8 +339,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3, Object p4, Object p5, Object p6, Object p7, Object p8) {
+      Object p1, Object p2,
+      Object p3, Object p4, Object p5, Object p6, Object p7, Object p8) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -349,8 +349,8 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message, Object p0,
-                           Object p1, Object p2,
-                           Object p3, Object p4, Object p5, Object p6, Object p7, Object p8, Object p9) {
+      Object p1, Object p2,
+      Object p3, Object p4, Object p5, Object p6, Object p7, Object p8, Object p9) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -359,7 +359,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, MessageSupplier msgSupplier,
-                           Throwable t) {
+      Throwable t) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -368,7 +368,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, String message,
-                           Supplier<?>... paramSuppliers) {
+      Supplier<?>... paramSuppliers) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
@@ -377,7 +377,7 @@ public class FastLogger2 extends ExtendedLoggerWrapper {
 
   @Override
   public void logIfEnabled(String fqcn, Level level, Marker marker, Supplier<?> msgSupplier,
-                           Throwable t) {
+      Throwable t) {
     if (isLevelDisabledAndNotDelegating(level)) {
       return;
     }
