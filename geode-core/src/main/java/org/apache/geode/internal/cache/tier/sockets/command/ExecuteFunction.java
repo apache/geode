@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
@@ -53,6 +54,11 @@ public class ExecuteFunction extends BaseCommand {
 
   public static Command getCommand() {
     return singleton;
+  }
+
+  @TestingOnly
+  ExecuteFunction() {
+
   }
 
   @Override

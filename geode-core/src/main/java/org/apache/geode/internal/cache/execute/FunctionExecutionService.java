@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-package org.apache.geode.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
 import java.util.Map;
 import java.util.Properties;
@@ -23,33 +25,13 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.execute.FunctionExecutionService;
-import org.apache.geode.internal.cache.execute.FunctionExecutionServiceImpl;
 
-/**
- * Provides the entry point into execution of user defined {@linkplain Function}s.
- * <p>
- * Function execution provides a means to route application behaviour to {@linkplain Region data} or
- * more generically to peers in a {@link DistributedSystem} or servers in a {@link Pool}.
- * </p>
- *
- * @since GemFire 6.0
- */
-public class FunctionService {
-
-  private static final FunctionService INSTANCE = create();
-
-  private static FunctionService create() {
-    return new FunctionService(new FunctionExecutionServiceImpl());
-  }
-
-  private final FunctionExecutionService functionExecutionService;
-
-  protected FunctionService(FunctionExecutionService functionExecutionService) {
-    this.functionExecutionService = functionExecutionService;
-  }
+public interface FunctionExecutionService {
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data dependent function on
@@ -70,9 +52,7 @@ public class FunctionService {
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
-  public static Execution onRegion(Region region) {
-    return getFunctionExecutionService().onRegion(region);
-  }
+  Execution onRegion(Region region);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -85,9 +65,7 @@ public class FunctionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  public static Execution onServer(Pool pool) {
-    return getFunctionExecutionService().onServer(pool);
-  }
+  Execution onServer(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -98,9 +76,7 @@ public class FunctionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  public static Execution onServers(Pool pool) {
-    return getFunctionExecutionService().onServers(pool);
-  }
+  Execution onServers(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -115,9 +91,7 @@ public class FunctionService {
    *         pool
    * @since GemFire 6.5
    */
-  public static Execution onServer(RegionService regionService) {
-    return getFunctionExecutionService().onServer(regionService);
-  }
+  Execution onServer(RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -130,9 +104,7 @@ public class FunctionService {
    *         pool
    * @since GemFire 6.5
    */
-  public static Execution onServers(RegionService regionService) {
-    return getFunctionExecutionService().onServers(regionService);
-  }
+  Execution onServers(RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -144,9 +116,7 @@ public class FunctionService {
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    */
-  public static Execution onMember(DistributedMember distributedMember) {
-    return getFunctionExecutionService().onMember(distributedMember);
-  }
+  Execution onMember(DistributedMember distributedMember);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -163,9 +133,7 @@ public class FunctionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  public static Execution onMembers(String... groups) {
-    return getFunctionExecutionService().onMembers(groups);
-  }
+  Execution onMembers(String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -176,9 +144,7 @@ public class FunctionService {
    * @throws FunctionException if distributedMembers is null
    * @since GemFire 7.0
    */
-  public static Execution onMembers(Set<DistributedMember> distributedMembers) {
-    return getFunctionExecutionService().onMembers(distributedMembers);
-  }
+  Execution onMembers(Set<DistributedMember> distributedMembers);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -191,9 +157,7 @@ public class FunctionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  public static Execution onMember(String... groups) {
-    return getFunctionExecutionService().onMembers(groups);
-  }
+  Execution onMember(String... groups);
 
   /**
    * Returns the {@link Function} defined by the functionId, returns null if no function is found
@@ -202,9 +166,7 @@ public class FunctionService {
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.0
    */
-  public static Function getFunction(String functionId) {
-    return getFunctionExecutionService().getFunction(functionId);
-  }
+  Function getFunction(String functionId);
 
   /**
    * Registers the given {@link Function} with the {@link FunctionService} using
@@ -218,9 +180,7 @@ public class FunctionService {
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
-  public static void registerFunction(Function function) {
-    getFunctionExecutionService().registerFunction(function);
-  }
+  void registerFunction(Function function);
 
   /**
    * Unregisters the given {@link Function} with the {@link FunctionService} using
@@ -230,9 +190,7 @@ public class FunctionService {
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
-  public static void unregisterFunction(String functionId) {
-    getFunctionExecutionService().unregisterFunction(functionId);
-  }
+  void unregisterFunction(String functionId);
 
   /**
    * Returns true if the function is registered to FunctionService
@@ -240,9 +198,7 @@ public class FunctionService {
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
-  public static boolean isRegistered(String functionId) {
-    return getFunctionExecutionService().isRegistered(functionId);
-  }
+  boolean isRegistered(String functionId);
 
   /**
    * Returns all locally registered functions
@@ -250,11 +206,5 @@ public class FunctionService {
    * @return A view of registered functions as a Map of {@link Function#getId()} to {@link Function}
    * @since GemFire 6.0
    */
-  public static Map<String, Function> getRegisteredFunctions() {
-    return getFunctionExecutionService().getRegisteredFunctions();
-  }
-
-  private static FunctionExecutionService getFunctionExecutionService() {
-    return INSTANCE.functionExecutionService;
-  }
+  Map<String, Function> getRegisteredFunctions();
 }
