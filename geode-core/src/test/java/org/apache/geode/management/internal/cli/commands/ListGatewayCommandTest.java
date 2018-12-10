@@ -1,4 +1,5 @@
 package org.apache.geode.management.internal.cli.commands;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -13,7 +14,6 @@ package org.apache.geode.management.internal.cli.commands;
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,7 +32,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -45,20 +44,17 @@ public class ListGatewayCommandTest {
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
+  private final Map<String, GatewayReceiverMXBean> receiverBeans = new HashMap<>();;
   private ListGatewayCommand command;
-  private static String COMMAND = "list gateways";
   private DistributedMember member;
   private SystemManagementService service;
-  private DistributedSystemMXBean mxBean;
   private GatewayReceiverMXBean receiverMXBean;
-  private Map<String, GatewayReceiverMXBean> receiverBeans = new HashMap<>();;
 
   @Before
   public void setup() {
     command = spy(ListGatewayCommand.class);
     member = mock(DistributedMember.class);
     service = mock(SystemManagementService.class);
-    mxBean = mock(DistributedSystemMXBean.class);
 
     doReturn(Stream.of(member).collect(toSet())).when(command).findMembers(any(), any());
     doReturn(service).when(command).getManagementService();
