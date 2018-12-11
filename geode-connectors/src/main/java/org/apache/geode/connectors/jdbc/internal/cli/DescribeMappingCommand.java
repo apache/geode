@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
@@ -89,6 +90,7 @@ public class DescribeMappingCommand extends GfshCommand {
     sectionModel.addData(CREATE_MAPPING__DATA_SOURCE_NAME, mapping.getDataSourceName());
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
+    sectionModel.addData(CREATE_MAPPING__ID_NAME, mapping.getIds());
   }
 
   @CliAvailabilityIndicator({DESCRIBE_MAPPING})

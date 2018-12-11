@@ -69,16 +69,19 @@ public class DescribeMappingCommandTest {
         null);
 
     RegionMapping mapping =
-        new RegionMapping("region", "class1", "table1", "name1", null);
+        new RegionMapping("region", "class1", "table1", "name1", "myId");
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(
         Collections.singletonList(new CliFunctionResult("server-1", mapping, "success")));
 
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
-        .containsOutput("data-source", "name1").containsOutput("table", "table1")
-        .containsOutput("pdx-name", "class1");
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput("region", "region")
+        .containsOutput("data-source", "name1")
+        .containsOutput("table", "table1")
+        .containsOutput("pdx-name", "class1")
+        .containsOutput("id", "myId");
   }
 
   @Test
