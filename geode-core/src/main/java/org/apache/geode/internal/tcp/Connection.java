@@ -1654,8 +1654,7 @@ public class Connection implements Runnable {
     if (!stopped) {
       // Assert.assertTrue(owner != null, "How did owner become null");
       if (logger.isDebugEnabled()) {
-        logger.debug("Starting {} on {} with buffer {}", p2pReaderName(), socket,
-            Integer.toHexString(System.identityHashCode(getInputBuffer())));
+        logger.debug("Starting {} on {}", p2pReaderName(), socket);
       }
     }
     // we should not change the state of the connection if we are a handshake reader thread

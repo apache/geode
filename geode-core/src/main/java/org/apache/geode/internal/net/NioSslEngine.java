@@ -80,10 +80,6 @@ public class NioSslEngine implements NioFilter {
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
     int packetBufferSize = engine.getSession().getPacketBufferSize();
-    // if (peerNetBuffer.isDirect()) {
-    // this.myNetData = ByteBuffer.allocateDirect(packetBufferSize);
-    // this.useDirectBuffers = true;
-    // } else {
     this.myNetData = ByteBuffer.allocate(packetBufferSize);
     // }
     this.peerAppData = ByteBuffer.allocate(appBufferSize);
