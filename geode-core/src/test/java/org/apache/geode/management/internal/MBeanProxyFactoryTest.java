@@ -16,45 +16,29 @@
 package org.apache.geode.management.internal;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LogService;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(LogService.class)
-@PowerMockIgnore("javax.script.*")
 public class MBeanProxyFactoryTest {
   @Test
   public void removeAllProxiesEntryNotFoundLogged() {
-    mockStatic(LogService.class);
-    Logger mockLogger = PowerMockito.mock(Logger.class);
-    when(mockLogger.isDebugEnabled()).thenReturn(true);
-    when(LogService.getLogger()).thenReturn(mockLogger);
-
     MBeanProxyFactory mBeanProxyFactory =
-        new MBeanProxyFactory(mock(MBeanJMXAdapter.class), mock(SystemManagementService.class));
+        spy(new MBeanProxyFactory(mock(MBeanJMXAdapter.class),
+            mock(SystemManagementService.class)));
     Region mockRegion = mock(Region.class);
     Set entrySet = new HashSet<Map.Entry<String, Object>>();
 
@@ -68,6 +52,6 @@ public class MBeanProxyFactoryTest {
 
     // EntryNotFoundException should just result in a warning as it implies
     // the proxy has already been removed and the entry has already been destroyed
-    verify(mockLogger, times(1)).warn(anyString(), any(), any());
+    verify(mBeanProxyFactory, times(1)).logProxyAlreadyRemoved(any(), any());
   }
 }
