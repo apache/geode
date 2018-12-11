@@ -148,7 +148,10 @@ public class InternalFunctionService extends FunctionService {
     getInternalFunctionExecutionService().unregisterAllFunctions();
   }
 
-  private static InternalFunctionExecutionService getInternalFunctionExecutionService() {
+  /**
+   * Returns non-static reference to {@code InternalFunctionExecutionService} singleton instance.
+   */
+  public static InternalFunctionExecutionService getInternalFunctionExecutionService() {
     return INSTANCE.internalFunctionExecutionService;
   }
 }
