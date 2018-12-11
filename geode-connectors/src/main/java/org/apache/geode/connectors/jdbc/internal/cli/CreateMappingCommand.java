@@ -63,6 +63,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__SYNCHRONOUS_NAME = "synchronous";
   static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
+  static final String CREATE_MAPPING__ID_NAME = "id";
+  static final String CREATE_MAPPING__ID_NAME__HELP =
+      "The table column name to use as the region key for this JDBC mapping.";
 
   public static String createAsyncEventQueueName(String regionPath) {
     if (regionPath.startsWith("/")) {
@@ -86,14 +89,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
       @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
           help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous) {
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous,
+      @CliOption(key = CREATE_MAPPING__ID_NAME,
+          help = CREATE_MAPPING__ID_NAME__HELP) String id) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
-    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName);
+    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName, id);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =

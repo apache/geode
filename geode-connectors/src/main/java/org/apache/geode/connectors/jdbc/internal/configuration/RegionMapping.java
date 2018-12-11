@@ -48,6 +48,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *       &lt;attribute name="data-source" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="ids" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -69,6 +70,8 @@ public class RegionMapping implements CacheElement {
   protected String tableName;
   @XmlAttribute(name = "pdx-name")
   protected String pdxName;
+  @XmlAttribute(name = "ids")
+  protected String ids;
 
   @XmlTransient
   protected String regionName;
@@ -78,11 +81,12 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxName, String tableName,
-      String dataSourceName) {
+      String dataSourceName, String ids) {
     this.regionName = regionName;
     this.pdxName = pdxName;
     this.tableName = tableName;
     this.dataSourceName = dataSourceName;
+    this.ids = ids;
   }
 
   public void setDataSourceName(String dataSourceName) {
@@ -101,6 +105,10 @@ public class RegionMapping implements CacheElement {
     this.pdxName = pdxName;
   }
 
+  public void setIds(String ids) {
+    this.ids = ids;
+  }
+
   public String getDataSourceName() {
     return dataSourceName;
   }
@@ -111,6 +119,10 @@ public class RegionMapping implements CacheElement {
 
   public String getPdxName() {
     return pdxName;
+  }
+
+  public String getIds() {
+    return ids;
   }
 
   public String getTableName() {
@@ -230,6 +242,9 @@ public class RegionMapping implements CacheElement {
         : that.dataSourceName != null) {
       return false;
     }
+    if (ids != null ? !ids.equals(that.ids) : that.ids != null) {
+      return false;
+    }
     return true;
   }
 
@@ -239,14 +254,19 @@ public class RegionMapping implements CacheElement {
     result = 31 * result + pdxName.hashCode();
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
+    result = 31 * result + (ids != null ? ids.hashCode() : 0);
     return result;
   }
 
   @Override
   public String toString() {
-    return "RegionMapping{" + "regionName='" + regionName + '\'' + ", pdxName='"
-        + pdxName + '\'' + ", tableName='" + tableName + '\'' + ", dataSourceName='"
-        + dataSourceName + '\'' + '}';
+    return "RegionMapping{"
+        + "regionName='" + regionName + '\''
+        + ", pdxName='" + pdxName + '\''
+        + ", tableName='" + tableName + '\''
+        + ", dataSourceName='" + dataSourceName + '\''
+        + ", ids='" + ids + '\''
+        + '}';
   }
 
   @Override

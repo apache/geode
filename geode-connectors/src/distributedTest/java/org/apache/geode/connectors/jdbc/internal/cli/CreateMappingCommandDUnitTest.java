@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SYNCHRONOUS_NAME;
@@ -183,6 +184,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__ID_NAME, "myId");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -191,6 +193,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getIds()).isEqualTo("myId");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
@@ -200,6 +203,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
       validateRegionAlteredInClusterConfig(regionName, false);
       validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
     });
@@ -342,7 +346,7 @@ public class CreateMappingCommandDUnitTest {
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "You should specify option (--table, --pdx-name, --synchronous) for this command");
+            "You should specify option (--table, --pdx-name, --synchronous, --id) for this command");
   }
 
   @Test

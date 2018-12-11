@@ -91,7 +91,8 @@ public class SqlHandlerTest {
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getTableName()).thenReturn(TABLE_NAME);
     when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
-    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
+    final String IDS = "ids";
+    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, IDS))
         .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
     dataSourceFactory = mock(DataSourceFactory.class);
@@ -105,6 +106,7 @@ public class SqlHandlerTest {
     when(regionMapping.getDataSourceName()).thenReturn(DATA_SOURCE_NAME);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
+    when(regionMapping.getIds()).thenReturn(IDS);
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
 
