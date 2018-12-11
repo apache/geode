@@ -26,15 +26,9 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
@@ -55,9 +49,6 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"*.UnitTest"})
-@PrepareForTest({CacheClientNotifier.class})
 @Category({ClientServerTest.class})
 public class UnregisterInterestTest {
 
@@ -145,8 +136,6 @@ public class UnregisterInterestTest {
     when(this.unregisterInterestOperationContext.getKey()).thenReturn(KEY);
 
     CacheClientNotifier ccn = mock(CacheClientNotifier.class);
-    PowerMockito.mockStatic(CacheClientNotifier.class, Mockito.CALLS_REAL_METHODS);
-    PowerMockito.when(CacheClientNotifier.getInstance()).thenReturn(ccn);
 
     when(this.acceptor.getCacheClientNotifier()).thenReturn(ccn);
   }
