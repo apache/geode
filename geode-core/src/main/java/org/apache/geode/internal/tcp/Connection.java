@@ -667,7 +667,7 @@ public class Connection implements Runnable {
   }
 
   private static final int HANDSHAKE_TIMEOUT_MS =
-      Integer.getInteger("p2p.handshakeTimeoutMs", 29000);
+      Integer.getInteger("p2p.handshakeTimeoutMs", 59000);
   // private static final byte HANDSHAKE_VERSION = 1; // 501
   // public static final byte HANDSHAKE_VERSION = 2; // cbb5x_PerfScale
   // public static final byte HANDSHAKE_VERSION = 3; // durable_client
