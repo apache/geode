@@ -65,6 +65,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    */
   private int failedConnectCount = 0;
 
+  private static final int RETRY_WAIT_TIME = 100;
+
   void setAckReaderThread(AckReaderThread ackReaderThread) {
     this.ackReaderThread = ackReaderThread;
   }
@@ -122,24 +124,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
       if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
-      } else if (ex instanceof IOException
-          || (ex instanceof ServerConnectivityException
-              && !(ex.getCause() instanceof PdxRegistryMismatchException))
-          || ex instanceof ConnectionDestroyedException) {
-        // If the cause is an IOException or a ServerException, sleep and retry.
-        // Sleep for a bit and recheck.
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-        }
+      } else if (RecoverableExceptionPredicates.isRecoverableWhenReadingAck(ex)) {
+        sleepBeforeRetry();
       } else {
-        if (!(ex instanceof CancelException)) {
-          logger.fatal(
-              "Stopping the processor because the following exception occurred while processing a batch:",
-              ex);
-        }
-        this.processor.setIsStopped(true);
+        logAndStopProcessor(ex);
       }
     }
     return ack;
@@ -156,43 +144,25 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         statistics.endBatch(start, events.size());
       }
     } catch (GatewaySenderException ge) {
-
       Throwable t = ge.getCause();
       if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
-      } else if (t instanceof IOException || t instanceof ServerConnectivityException
-          || t instanceof ConnectionDestroyedException || t instanceof IllegalStateException
-          || t instanceof GemFireSecurityException) {
+      } else if (RecoverableExceptionPredicates.isRecoverableWhenDispatchingBatch(t)) {
         this.processor.handleException();
-        // If the cause is an IOException or a ServerException, sleep and retry.
-        // Sleep for a bit and recheck.
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-        }
+        sleepBeforeRetry();
         if (logger.isDebugEnabled()) {
-          logger.debug("Because of IOException, failed to dispatch a batch with id : {}",
-              this.processor.getBatchId());
+          logger.debug(
+              "Failed to dispatch a batch with id {} due to non-fatal exception {}.  Retrying in {} ms",
+              this.processor.getBatchId(), t, RETRY_WAIT_TIME);
         }
       } else {
-        logger.fatal(
-            "Stopping the processor because the following exception occurred while processing a batch:",
-            ge);
-        this.processor.setIsStopped(true);
+        logAndStopProcessor(ge);
       }
     } catch (CancelException e) {
-      if (logger.isDebugEnabled()) {
-        logger
-            .debug("Stopping the processor because cancellation occurred while processing a batch");
-      }
-      this.processor.setIsStopped(true);
+      logAndStopProcessor(e);
       throw e;
     } catch (Exception e) {
-      this.processor.setIsStopped(true);
-      logger.fatal(
-          "Stopping the processor because the following exception occurred while processing a batch:",
-          e);
+      logAndStopProcessor(e);
     }
     return success;
   }
@@ -824,6 +794,86 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     stopAckReaderThread();
     if (this.processor.isStopped()) {
       destroyConnection();
+    }
+  }
+
+  private void sleepBeforeRetry() {
+    try {
+      Thread.sleep(RETRY_WAIT_TIME);
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  private void logAndStopProcessor(final Exception ex) {
+    if (ex instanceof CancelException) {
+      if (logger.isDebugEnabled()) {
+        logger
+            .debug("Stopping the processor because cancellation occurred while processing a batch");
+      }
+    } else {
+      logger.fatal(
+          "Stopping the processor because the following exception occurred while processing a batch:",
+          ex);
+    }
+    this.processor.setIsStopped(true);
+  }
+
+  private static class RecoverableExceptionPredicates {
+
+    /**
+     * Certain exception types are considered recoverable when reading an acknowledgement.
+     */
+    static boolean isRecoverableWhenReadingAck(final Exception ex) {
+      /**
+       * It is considered non-recoverable if the PDX registry files are deleted from the sending
+       * side of a WAN Gateway. This is determined by checking if the cause of the
+       * {@link ServerConnectivityException} is caused by a {@link PdxRegistryMismatchException}
+       */
+      return isRecoverableInAllCases(ex)
+          || (ex instanceof ServerConnectivityException
+              && !(ex.getCause() instanceof PdxRegistryMismatchException));
+    }
+
+    /**
+     * Certain exception types are considered recoverable when dispatching a batch.
+     */
+    static boolean isRecoverableWhenDispatchingBatch(final Throwable t) {
+      /**
+       * We consider {@link ServerConnectivityException} to be a temporary connectivity issue and
+       * is therefore recoverable. The {@link IllegalStateException} can occur if off-heap is used,
+       * and a GatewaySenderEventImpl is serialized after being freed. This can happen if the
+       * region is destroyed concurrently while the gateway sender event is being processed.
+       */
+      return isRecoverableInAllCases(t)
+          || t instanceof ServerConnectivityException
+          || t instanceof IllegalStateException;
+    }
+
+    /**
+     * Certain exception types are considered recoverable when either dispatching a batch or
+     * reading an acknowledgement.
+     */
+    private static boolean isRecoverableInAllCases(final Throwable t) {
+      /**
+       * {@link IOException} and {@link ConnectionDestroyedException} can occur
+       * due to temporary network issues and therefore are recoverable.
+       * {@link GemFireSecurityException} represents an inability to authenticate with the
+       * gateway receiver.
+       *
+       * By treating {@link GemFireSecurityException} as recoverable we are continuing to retry
+       * in a couple situations:
+       *
+       * <ul>
+       * <li>The implementation of the {@link SecurityManager} loses connectivity to the actual
+       * authentication authority e.g. Active Directory</li> (expecting that connectivity will
+       * later be restored)
+       * <li>Credentials are invalid (expecting that they will later become valid)</li>
+       * </ul>
+       */
+      return t instanceof IOException
+          || t instanceof ConnectionDestroyedException
+          || t instanceof GemFireSecurityException;
     }
   }
 }
