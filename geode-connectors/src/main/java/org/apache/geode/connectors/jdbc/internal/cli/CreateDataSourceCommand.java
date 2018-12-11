@@ -42,7 +42,8 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class CreateDataSourceCommand extends SingleGfshCommand {
   static final String CREATE_DATA_SOURCE = "create data-source";
-  static final String CREATE_DATA_SOURCE__HELP = EXPERIMENTAL + "Create a JDBC data source.";
+  static final String CREATE_DATA_SOURCE__HELP = EXPERIMENTAL
+      + "Creates a JDBC data source and verifies connectivity to an external JDBC database.";
   static final String POOLED_DATA_SOURCE_FACTORY_CLASS = "pooled-data-source-factory-class";
   private static final String DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS =
       "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
@@ -57,10 +58,10 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
   static final String NAME__HELP = "Name of the data source to be created.";
   static final String PASSWORD = "password";
   static final String PASSWORD__HELP =
-      "This element specifies the default password used when creating a new connection.";
+      "The password that may be required by the external JDBC database when creating a new connection.";
   static final String USERNAME = "username";
   static final String USERNAME__HELP =
-      "This element specifies the default username used when creating a new connection.";
+      "The username that may be required by the external JDBC database when creating a new connection.";
   static final String POOLED = "pooled";
   static final String POOLED__HELP =
       "By default a pooled data source is created. If this option is false then a non-pooled data source is created.";
@@ -68,9 +69,12 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       "Skip the create operation when a data source with the same name already exists.  Without specifying this option, this command execution results into an error.";
   static final String POOL_PROPERTIES = "pool-properties";
   static final String POOL_PROPERTIES_HELP =
-      "Used to configure pool properties of a pooled data source . Only valid if --pooled is specified."
+      "Used to configure pool properties of a pooled data source. Only valid if --pooled is specified."
           + "The value is a comma separated list of json strings. Each json string contains a name and value. "
-          + "For example: --pool-properties={'name':'name1','value':'value1'},{'name':'name2','value':'value2'}";
+          + "If the name starts with \"pool.\", then it will be used to configure the pool data source. "
+          + "Otherwise the name value pair will be used to configure the database data source. "
+          + "For example 'pool.name1' configures the pool and 'name2' configures the database in the following: "
+          + "--pool-properties={'name':'pool.name1','value':'value1'},{'name':'name2','value':'value2'}";
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
