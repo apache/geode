@@ -43,6 +43,7 @@ import java.util.concurrent.Future;
 import org.apache.shiro.subject.Subject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
@@ -69,7 +70,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
+@Category({ClientSubscriptionTest.class})
 public class CacheClientNotifierIntegrationTest {
   @Test
   public void testCacheClientNotifier_NotifyClients_QRMCausesPrematureRemovalFromHAContainer()
