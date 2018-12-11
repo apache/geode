@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -34,8 +34,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-public class DestroyJndiBindingCommandDUnitTest {
-
+public class DestroyDataSourceCommandDUnitTest {
   private static MemberVM locator, server1, server2;
 
   @ClassRule
@@ -52,50 +51,54 @@ public class DestroyJndiBindingCommandDUnitTest {
 
     gfsh.connectAndVerify(locator);
 
-    // create the binding
     gfsh.execute(
-        "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"");
+        "create data-source --name=datasource1 --url=\"jdbc:derby:newDB;create=true\"");
   }
 
   @Test
-  public void testDestroyJndiBinding() {
+  public void testDestroyDataSource() {
     // assert that there is a datasource
     VMProvider
         .invokeInEveryMember(
             () -> assertThat(JNDIInvoker.getBindingNamesRecursively(JNDIInvoker.getJNDIContext()))
-                .containsKey("java:jndi1").containsValue(
+                .containsKey("java:datasource1").containsValue(
                     "org.apache.geode.internal.datasource.GemFireBasicDataSource"),
             server1, server2);
 
-    gfsh.executeAndAssertThat("destroy jndi-binding --name=jndi1").statusIsSuccess()
-        .tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
+    gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server-1", "server-2")
+        .tableHasColumnOnlyWithValues("Message",
+            "Data source \"datasource1\" destroyed on \"server-1\"",
+            "Data source \"datasource1\" destroyed on \"server-2\"");
 
     // verify cluster config is updated
     locator.invoke(() -> {
       InternalLocator internalLocator = ClusterStartupRule.getLocator();
-      assertThat(internalLocator).isNotNull();
+      AssertionsForClassTypes.assertThat(internalLocator).isNotNull();
       InternalConfigurationPersistenceService ccService =
           internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
       Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
-      assertThat(jndiBindings.getLength()).isEqualTo(0);
+      AssertionsForClassTypes.assertThat(jndiBindings.getLength()).isEqualTo(0);
 
       boolean found = false;
       for (int i = 0; i < jndiBindings.getLength(); i++) {
         Element eachBinding = (Element) jndiBindings.item(i);
-        if (eachBinding.getAttribute("jndi-name").equals("jndi1")) {
+        if (eachBinding.getAttribute("jndi-name").equals("datasource1")) {
           found = true;
           break;
         }
       }
-      assertThat(found).isFalse();
+      AssertionsForClassTypes.assertThat(found).isFalse();
     });
 
     // verify datasource does not exists
     VMProvider.invokeInEveryMember(
-        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
+        () -> AssertionsForClassTypes.assertThat(JNDIInvoker.getNoOfAvailableDataSources())
+            .isEqualTo(0),
+        server1, server2);
 
     // bounce server1 and assert that there is still no datasource received from cluster config
     server1.stop(false);
@@ -103,7 +106,7 @@ public class DestroyJndiBindingCommandDUnitTest {
 
     // verify no datasource from cluster config
     server1.invoke(() -> {
-      assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0);
+      AssertionsForClassTypes.assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0);
     });
   }
 }

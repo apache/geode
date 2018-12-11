@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -43,27 +44,27 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-public class DestroyJndiBindingCommandTest {
-
+public class DestroyDataSourceCommandTest {
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
-  private DestroyJndiBindingCommand command;
+  private DestroyDataSourceCommand command;
   private InternalCache cache;
   private CacheConfig cacheConfig;
   private InternalConfigurationPersistenceService ccService;
 
-  private static String COMMAND = "destroy jndi-binding ";
+  private static String COMMAND = "destroy data-source ";
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = mock(InternalCache.class);
-    command = spy(DestroyJndiBindingCommand.class);
+    command = spy(DestroyDataSourceCommand.class);
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
     ccService = mock(InternalConfigurationPersistenceService.class);
@@ -115,25 +116,121 @@ public class DestroyJndiBindingCommandTest {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(null).when(command).getConfigurationPersistenceService();
 
-    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found").containsOutput(
-            "Cluster configuration service is not running. Configuration change is not persisted.");
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
+        .containsOutput("No members found and cluster configuration disabled.");
   }
+
+  @Test
+  public void whenClusterConfigRunningAndJndiBindingFoundThenError() {
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.MANAGED.getType());
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
+        .containsOutput(
+            "Data source named \\\"name\\\" does not exist. A jndi-binding was found with that name.");
+  }
+
+
 
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
     List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
     JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
     jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     bindings.add(jndiBinding);
     doReturn(bindings).when(cacheConfig).getJndiBindings();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found.")
+        .containsOutput("No members found, data source removed from cluster configuration.")
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
-    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
+  }
+
+  @Test
+  public void whenNoMembersFoundAndClusterConfigRunningWithPooledTypeThenUpdateClusterConfig() {
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.POOLED.getType());
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
+        .containsOutput("No members found, data source removed from cluster configuration.")
+        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+
+    verify(ccService).updateCacheConfig(any(), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
+  }
+
+  @Test
+  public void whenMembersFoundAllReturnErrorAndIfExistsFalseThenError() {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result =
+        new CliFunctionResult("server1", true, "Data source \"name\" not found on \"server1\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(null).when(command).getConfigurationPersistenceService();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
+        .containsOutput("Data source named \\\"name\\\" does not exist.");
+  }
+
+  @Test
+  public void whenMembersFoundAllReturnErrorAndIfExistsTrueThenSuccess() {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result =
+        new CliFunctionResult("server1", true, "Data source \"name\" not found on \"server1\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(null).when(command).getConfigurationPersistenceService();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=true").statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server1")
+        .tableHasColumnOnlyWithValues("Status", "OK")
+        .tableHasColumnOnlyWithValues("Message", "Data source \"name\" not found on \"server1\"");
+  }
+
+  @Test
+  public void whenMembersFoundPartialReturnErrorAndIfExistsFalseThenSuccess() {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result =
+        new CliFunctionResult("server1", true, "Data source \"name\" not found on \"server1\"");
+    CliFunctionResult result2 =
+        new CliFunctionResult("server2", true, "Data source \"name\" destroyed on \"server2\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+    results.add(result2);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(null).when(command).getConfigurationPersistenceService();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server1", "server2")
+        .tableHasColumnOnlyWithValues("Status", "OK", "OK")
+        .tableHasColumnOnlyWithValues("Message", "Data source \"name\" not found on \"server1\"",
+            "Data source \"name\" destroyed on \"server2\"");
   }
 
   @Test
@@ -142,7 +239,7 @@ public class DestroyJndiBindingCommandTest {
     members.add(mock(DistributedMember.class));
 
     CliFunctionResult result =
-        new CliFunctionResult("server1", true, "Jndi binding \"name\" destroyed on \"server1\"");
+        new CliFunctionResult("server1", true, "Data source \"name\" destroyed on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
 
@@ -153,7 +250,7 @@ public class DestroyJndiBindingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status", "OK")
-        .tableHasColumnOnlyWithValues("Message", "Jndi binding \"name\" destroyed on \"server1\"");
+        .tableHasColumnOnlyWithValues("Message", "Data source \"name\" destroyed on \"server1\"");
 
     verify(ccService, times(0)).updateCacheConfig(any(), any());
 
@@ -170,7 +267,7 @@ public class DestroyJndiBindingCommandTest {
 
     assertThat(function.getValue()).isInstanceOf(DestroyJndiBindingFunction.class);
     assertThat(jndiName).isEqualTo("name");
-    assertThat(destroyingDataSource).isEqualTo(false);
+    assertThat(destroyingDataSource).isEqualTo(true);
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
@@ -179,6 +276,7 @@ public class DestroyJndiBindingCommandTest {
     List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
     JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
     jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     bindings.add(jndiBinding);
     doReturn(bindings).when(cacheConfig).getJndiBindings();
 
@@ -186,7 +284,7 @@ public class DestroyJndiBindingCommandTest {
     members.add(mock(DistributedMember.class));
 
     CliFunctionResult result =
-        new CliFunctionResult("server1", true, "Jndi binding \"name\" destroyed on \"server1\"");
+        new CliFunctionResult("server1", true, "Data source \"name\" destroyed on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
 
@@ -196,7 +294,7 @@ public class DestroyJndiBindingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status", "OK")
-        .tableHasColumnOnlyWithValues("Message", "Jndi binding \"name\" destroyed on \"server1\"");
+        .tableHasColumnOnlyWithValues("Message", "Data source \"name\" destroyed on \"server1\"");
 
     assertThat(cacheConfig.getJndiBindings().isEmpty()).isTrue();
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
@@ -214,7 +312,7 @@ public class DestroyJndiBindingCommandTest {
 
     assertThat(function.getValue()).isInstanceOf(DestroyJndiBindingFunction.class);
     assertThat(jndiName).isEqualTo("name");
-    assertThat(destroyingDataSource).isEqualTo(false);
+    assertThat(destroyingDataSource).isEqualTo(true);
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 }

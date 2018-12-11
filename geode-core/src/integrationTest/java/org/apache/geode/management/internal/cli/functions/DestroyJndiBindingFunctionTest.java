@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -70,7 +72,7 @@ public class DestroyJndiBindingFunctionTest {
 
   @Test
   public void destroyJndiBindingIsSuccessfulWhenBindingFound() throws Exception {
-    when(context.getArguments()).thenReturn("jndi1");
+    when(context.getArguments()).thenReturn(new Object[] {"jndi1", false});
     when(context.getMemberName()).thenReturn("server-1");
     when(context.getResultSender()).thenReturn(resultSender);
 
@@ -85,7 +87,7 @@ public class DestroyJndiBindingFunctionTest {
 
   @Test
   public void destroyJndiBindingIsSuccessfulWhenNoBindingFound() throws Exception {
-    when(context.getArguments()).thenReturn("somectx/unknownjndi");
+    when(context.getArguments()).thenReturn(new Object[] {"\"somectx/unknownjndi\"", false});
     when(context.getResultSender()).thenReturn(resultSender);
 
     destroyJndiBindingFunction.execute(context);
@@ -94,6 +96,54 @@ public class DestroyJndiBindingFunctionTest {
     CliFunctionResult result = resultCaptor.getValue();
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMessage()).contains("not found");
+    assertThat(result.getMessage()).contains("not found").contains("Jndi binding");
+  }
+
+  @Test
+  public void destroyDataSourceIsSuccessfulWhenBindingFound() throws Exception {
+    when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
+    when(context.getMemberName()).thenReturn("server-1");
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    destroyJndiBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getMessage()).contains("Data source \"jndi1\" destroyed on \"server-1\"");
+  }
+
+  @Test
+  public void destroyDataSourceIsSuccessfulWhenNoBindingFound() throws Exception {
+    when(context.getArguments()).thenReturn(new Object[] {"\"somectx/unknownjndi\"", true});
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    destroyJndiBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getMessage()).contains("not found").contains("Data source");
+  }
+
+  @Test
+  public void destroyDataSourceFailsWhenBindingHasInvalidType() throws Exception {
+
+    when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
+    when(context.getResultSender()).thenReturn(resultSender);
+    DestroyJndiBindingFunction destroyFunctionSpy = spy(destroyJndiBindingFunction);
+    doReturn(true).when(destroyFunctionSpy).checkForInvalidDataSource(any());
+
+    destroyFunctionSpy.execute(context);
+    verify(resultSender).lastResult(resultCaptor.capture());
+
+
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isEqualTo(false);
+    assertThat(result.getMessage()).contains(
+        "Data Source jndi1 has invalid type for destroy data-source, destroy jndi-binding command should be used.");
   }
 }
