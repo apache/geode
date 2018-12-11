@@ -17,17 +17,19 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 
 import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.cache.execute.FunctionStats;
+import org.apache.geode.internal.cache.execute.InternalFunctionExecutionService;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
+import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.Command;
@@ -56,9 +58,23 @@ public class ExecuteFunction extends BaseCommand {
     return singleton;
   }
 
-  @TestingOnly
-  ExecuteFunction() {
+  private final InternalFunctionExecutionService internalFunctionExecutionService;
+  private final ServerToClientFunctionResultSenderFactory serverToClientFunctionResultSenderFactory;
+  private final FunctionContextImplFactory functionContextImplFactory;
 
+  private ExecuteFunction() {
+    this(InternalFunctionService.getInternalFunctionExecutionService(),
+        new DefaultServerToClientFunctionResultSenderFactory(),
+        new DefaultFunctionContextImplFactory());
+  }
+
+  @TestingOnly
+  ExecuteFunction(InternalFunctionExecutionService internalFunctionExecutionService,
+      ServerToClientFunctionResultSenderFactory serverToClientFunctionResultSenderFactory,
+      FunctionContextImplFactory functionContextImplFactory) {
+    this.internalFunctionExecutionService = internalFunctionExecutionService;
+    this.serverToClientFunctionResultSenderFactory = serverToClientFunctionResultSenderFactory;
+    this.functionContextImplFactory = functionContextImplFactory;
   }
 
   @Override
@@ -103,7 +119,7 @@ public class ExecuteFunction extends BaseCommand {
     try {
       Function<?> functionObject = null;
       if (function instanceof String) {
-        functionObject = FunctionService.getFunction((String) function);
+        functionObject = internalFunctionExecutionService.getFunction((String) function);
         if (functionObject == null) {
           final String message =
               String.format("Function named %s is not registered to FunctionService",
@@ -130,7 +146,7 @@ public class ExecuteFunction extends BaseCommand {
 
       ChunkedMessage m = serverConnection.getFunctionResponseMessage();
       m.setTransactionId(clientMessage.getTransactionId());
-      ResultSender resultSender = new ServerToClientFunctionResultSender(m,
+      ResultSender resultSender = serverToClientFunctionResultSenderFactory.create(m,
           MessageType.EXECUTE_FUNCTION_RESULT, serverConnection, functionObject, executeContext);
 
       FunctionContext context = null;
@@ -139,10 +155,11 @@ public class ExecuteFunction extends BaseCommand {
           (InternalDistributedMember) cache.getDistributedSystem().getDistributedMember();
 
       if (memberMappedArg != null) {
-        context = new FunctionContextImpl(cache, functionObject.getId(),
+        context = functionContextImplFactory.create(cache, functionObject.getId(),
             memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender);
       } else {
-        context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender);
+        context =
+            functionContextImplFactory.create(cache, functionObject.getId(), args, resultSender);
       }
 
       ServerSideHandshake handshake = serverConnection.getHandshake();
@@ -183,21 +200,18 @@ public class ExecuteFunction extends BaseCommand {
       // information to user to take any corrective action hence logging
       // this at fine level logging
       // 1> When bucket is moved
-      // 2> Incase of HA FucntionInvocationTargetException thrown. Since
-      // it is HA, fucntion will be reexecuted on right node
+      // 2> In case of HA FunctionInvocationTargetException thrown. Since
+      // it is HA, function will be re-executed on right node
       // 3> Multiple target nodes found for single hop operation
       // 4> in case of HA member departed
       if (logger.isDebugEnabled()) {
-        logger.debug(String.format("Exception on server while executing function: %s",
-            new Object[] {function}),
+        logger.debug(String.format("Exception on server while executing function: %s", function),
             internalfunctionException);
       }
       final String message = internalfunctionException.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, internalfunctionException);
     } catch (Exception e) {
-      logger.warn(String.format("Exception on server while executing function: %s",
-          function),
-          e);
+      logger.warn(String.format("Exception on server while executing function: %s", function), e);
       final String message = e.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, e);
     }
@@ -220,4 +234,30 @@ public class ExecuteFunction extends BaseCommand {
     }
   }
 
+  interface ServerToClientFunctionResultSenderFactory {
+    ServerToClientFunctionResultSender create(ChunkedMessage msg, int messageType,
+        ServerConnection sc, Function function, ExecuteFunctionOperationContext authzContext);
+  }
+
+  interface FunctionContextImplFactory {
+    FunctionContextImpl create(Cache cache, String functionId, Object args,
+        ResultSender resultSender);
+  }
+
+  private static class DefaultServerToClientFunctionResultSenderFactory
+      implements ServerToClientFunctionResultSenderFactory {
+    @Override
+    public ServerToClientFunctionResultSender create(ChunkedMessage msg, int messageType,
+        ServerConnection sc, Function function, ExecuteFunctionOperationContext authzContext) {
+      return new ServerToClientFunctionResultSender(msg, messageType, sc, function, authzContext);
+    }
+  }
+
+  private static class DefaultFunctionContextImplFactory implements FunctionContextImplFactory {
+    @Override
+    public FunctionContextImpl create(Cache cache, String functionId, Object args,
+        ResultSender resultSender) {
+      return new FunctionContextImpl(cache, functionId, args, resultSender);
+    }
+  }
 }

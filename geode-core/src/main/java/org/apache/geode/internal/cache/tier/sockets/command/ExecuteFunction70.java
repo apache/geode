@@ -29,6 +29,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionExecutionServiceImpl;
+import org.apache.geode.internal.cache.execute.InternalFunctionExecutionService;
 import org.apache.geode.internal.cache.execute.MemberFunctionExecutor;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.Command;
@@ -45,7 +46,16 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
     return singleton;
   }
 
-  private ExecuteFunction70() {}
+  private ExecuteFunction70() {
+    // nothing
+  }
+
+  ExecuteFunction70(InternalFunctionExecutionService internalFunctionExecutionService,
+      ServerToClientFunctionResultSender65Factory serverToClientFunctionResultSender65Factory,
+      FunctionContextImplFactory functionContextImplFactory) {
+    super(internalFunctionExecutionService, serverToClientFunctionResultSender65Factory,
+        functionContextImplFactory);
+  }
 
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
@@ -75,7 +85,7 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
 
   private boolean isFlagSet(Message msg, int index) {
     boolean isSet = false;
-    byte[] flags = null;
+    byte[] flags;
     Part p = msg.getPart(5);
     if (p != null) {
       flags = p.getSerializedForm();
@@ -98,13 +108,12 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
       throw new IllegalStateException(
           "DistributedSystem is either not created or not ready");
     }
-    Set<DistributedMember> members = new HashSet<DistributedMember>();
+    Set<DistributedMember> members = new HashSet<>();
     for (String group : groups) {
       if (allMembers) {
         members.addAll(ds.getGroupMembers(group));
       } else {
-        ArrayList<DistributedMember> memberList =
-            new ArrayList<DistributedMember>(ds.getGroupMembers(group));
+        ArrayList<DistributedMember> memberList = new ArrayList<>(ds.getGroupMembers(group));
         if (!memberList.isEmpty()) {
           if (!FunctionExecutionServiceImpl.RANDOM_onMember
               && memberList.contains(ds.getDistributedMember())) {
