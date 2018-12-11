@@ -59,7 +59,10 @@ if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
   WINDOWS_PREFIX="windows-"
 fi
 
-ZONE=us-central1-f
+PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
+ZONE=${PERMITTED_ZONES[$((${RANDOM} % 4))]}
+echo "Deploying to zone ${ZONE}"
+
 INSTANCE_NAME_STRING="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-build${JAVA_BUILD_VERSION}-test${JAVA_TEST_VERSION}-job#${BUILD_NAME}"
 
 INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING}")"
