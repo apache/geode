@@ -32,7 +32,8 @@ import java.io.IOException;
 public interface Delta {
 
   /**
-   * Returns true if this object has pending changes it can write out.
+   * Returns true if this object has pending changes it can write out as a delta.
+   * Returns false if this object must be transmitted in its entirety.
    */
   boolean hasDelta();
 
