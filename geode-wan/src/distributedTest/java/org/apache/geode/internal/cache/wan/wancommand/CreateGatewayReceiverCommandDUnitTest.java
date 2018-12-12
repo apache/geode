@@ -357,14 +357,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithDefaultsAndMultipleBindAddressProperties()
       throws Exception {
-    String extraBindAddress = "localhost";
     String receiverGroup = "receiverGroup";
     Integer locator1Port = locatorSite1.getPort();
     String expectedBindAddress = getBindAddress();
 
     Properties props = new Properties();
     props.setProperty(GROUPS, receiverGroup);
-    props.setProperty(BIND_ADDRESS, extraBindAddress);
+    props.setProperty(BIND_ADDRESS, expectedBindAddress);
     props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
     server1 = clusterStartupRule.startServerVM(1, props, locator1Port);

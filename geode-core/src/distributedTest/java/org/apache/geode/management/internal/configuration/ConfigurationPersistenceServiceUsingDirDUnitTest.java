@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.configuration;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.stream.Collectors.joining;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
@@ -24,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -37,8 +37,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -324,9 +322,5 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
   private String getLocatorStr(final int[] locatorPorts) {
     return Arrays.stream(locatorPorts).mapToObj(p -> "localhost[" + p + "]").collect(joining(","));
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 }

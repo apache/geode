@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extension;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public abstract class LuceneIndexImpl implements InternalLuceneIndex {
@@ -269,7 +268,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       return this.cache.createVMRegion(regionName, attributes, ira);
     } catch (Exception e) {
       InternalGemFireError ige = new InternalGemFireError(
-          LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+          "unexpected exception");
       ige.initCause(e);
       throw ige;
     }

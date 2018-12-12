@@ -21,9 +21,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -67,7 +67,7 @@ public class ServerLocatorJUnitTest {
     }
 
     @Override
-    LogWriterI18n getLogWriterI18n() {
+    LogWriter getLogWriter() {
       return new LocalLogWriter(InternalLogWriter.NONE_LEVEL);
     }
   }

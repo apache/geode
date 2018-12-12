@@ -30,7 +30,6 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Heterogeneou
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LuceneIndexCreationProfile implements CacheServiceProfile, VersionedDataSerializable {
 
@@ -111,9 +110,10 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     // Verify fields are the same
     if ((getFieldNames().length != remoteProfile.getFieldNames().length) || (!Arrays
         .asList(getFieldNames()).containsAll(Arrays.asList(remoteProfile.getFieldNames())))) {
-      return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3
-          .toString(getIndexName(), regionPath, Arrays.toString(getFieldNames()),
-              Arrays.toString(remoteProfile.getFieldNames()));
+      return String.format(
+          "Cannot create Lucene index %s on region %s with fields %s because another member defines the same index with fields %s.",
+          getIndexName(), regionPath, Arrays.toString(getFieldNames()),
+          Arrays.toString(remoteProfile.getFieldNames()));
     }
 
     // Verify the analyzer class is the same
@@ -125,7 +125,9 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     /*
      * if (!remoteLuceneIndexProfile.getAnalyzerClass().isInstance(getAnalyzer())) { result =
      * LocalizedStrings.
-     * LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3
+     * String.
+     * format("Cannot create Lucene index %s on region %s with analyzer %s because another member defines the same index with analyzer %s."
+     * ,
      * .toString(indexName, regionPath, remoteLuceneIndexProfile.getAnalyzerClass().getName(),
      * analyzer.getClass().getName()); }
      */
@@ -135,25 +137,28 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     // since its a transient object.
     if (!getFieldAnalyzers().equals(remoteProfile.getFieldAnalyzers())) {
       if (getFieldAnalyzers().size() != remoteProfile.getFieldAnalyzers().size()) {
-        return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELD_ANALYZERS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELD_ANALYZERS_3
-            .toString(getIndexName(), regionPath,
-                Arrays.toString(getFieldAnalyzers().values().toArray()),
-                Arrays.toString(remoteProfile.getFieldAnalyzers().values().toArray()));
+        return String.format(
+            "Cannot create Lucene index %s on region %s with field analyzers %s because another member defines the same index with field analyzers %s.",
+            getIndexName(), regionPath,
+            Arrays.toString(getFieldAnalyzers().values().toArray()),
+            Arrays.toString(remoteProfile.getFieldAnalyzers().values().toArray()));
       }
       // now the 2 maps should have the same size
       for (String field : getFieldAnalyzers().keySet()) {
         if (!remoteProfile.getFieldAnalyzers().get(field).equals(getFieldAnalyzers().get(field))) {
-          return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD
-              .toString(getIndexName(), regionPath, getFieldAnalyzers().get(field), field,
-                  remoteProfile.getFieldAnalyzers().get(field));
+          return String.format(
+              "Cannot create Lucene index %s on region %s with analyzer %s on field %s because another member defines the same index with analyzer %s on that field.",
+              getIndexName(), regionPath, getFieldAnalyzers().get(field), field,
+              remoteProfile.getFieldAnalyzers().get(field));
         }
       }
     }
 
     if (!getSerializerClass().equals(remoteProfile.getSerializerClass())) {
-      return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_SERIALIZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_DIFFERENT_SERIALIZER_3
-          .toString(getIndexName(), regionPath, getSerializerClass(),
-              remoteProfile.getSerializerClass());
+      return String.format(
+          "Cannot create Lucene index %s on region %s with serializer %s because another member defines the same index with different serializer %s.",
+          getIndexName(), regionPath, getSerializerClass(),
+          remoteProfile.getSerializerClass());
     }
 
     return result;
@@ -162,10 +167,12 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   @Override
   public String getMissingProfileMessage(boolean existsInThisMember) {
     return existsInThisMember
-        ? LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_NOT_DEFINED_IN_ANOTHER_MEMBER
-            .toString(getIndexName(), regionPath)
-        : LocalizedStrings.LuceneService_MUST_DEFINE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_DEFINED_IN_ANOTHER_MEMBER
-            .toString(getIndexName(), regionPath);
+        ? String.format(
+            "Cannot create Lucene index %s on region %s because it is not defined in another member.",
+            getIndexName(), regionPath)
+        : String.format(
+            "Must create Lucene index %s on region %s because it is defined in another member.",
+            getIndexName(), regionPath);
   }
 
   @Override

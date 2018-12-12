@@ -359,7 +359,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // currently for pings we prefer to queue clientToServer cnx so that we will
       // not create a pooled cnx when all we have is queue cnxs.
       if (this.queueManager != null) {
-        // see if our QueueManager has a connection to this guy that we can send
+        // see if our QueueManager has a connection to this server that we can send
         // the ping on.
         Endpoint ep = (Endpoint) this.endpointManager.getEndpointMap().get(server);
         if (ep != null) {
@@ -655,9 +655,7 @@ public class OpExecutorImpl implements ExecutablePool {
     cancelCriterion.checkCancelInProgress(e);
 
     if (logger.isDebugEnabled() && !(e instanceof java.io.EOFException)) {
-      if (e instanceof java.io.EOFException) {
-        logger.debug("OpExecutor.handleException on Connection to {} found EOF", conn.getServer());
-      } else if (e instanceof java.net.SocketTimeoutException) {
+      if (e instanceof java.net.SocketTimeoutException) {
         logger.debug("OpExecutor.handleException on Connection to {} read timed out",
             conn.getServer());
       } else {

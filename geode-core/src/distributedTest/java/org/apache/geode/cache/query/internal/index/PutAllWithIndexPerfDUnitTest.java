@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 @Category({OQLIndexTest.class})
 public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
   static long timeWithoutStructTypeIndex = 0;
   static long timeWithStructTypeIndex = 0;
@@ -75,7 +75,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 10000;
 
     // Start server
-    vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
+    vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
@@ -194,7 +194,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription) throws IOException {

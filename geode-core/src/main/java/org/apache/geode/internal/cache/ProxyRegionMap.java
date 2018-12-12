@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 
@@ -389,29 +388,29 @@ class ProxyRegionMap implements RegionMap {
     @Override
     public long getLastModified() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public long getLastAccessed() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public long getHitCount() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public long getMissCount() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -457,87 +456,87 @@ class ProxyRegionMap implements RegionMap {
     @Override
     public void txDidDestroy(long currentTime) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void resetCounts() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void removePhase1(InternalRegion region, boolean clear) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void removePhase2() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isRemoved() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isRemovedPhase2() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
         DistributionManager distributionManager, final Version version) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isOverflowedToDisk(InternalRegion region,
         DistributedRegion.DiskPosition diskPosition) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getKey() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getValue(RegionEntryContext context) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getValueRetain(RegionEntryContext context) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void setValue(RegionEntryContext context, Object value) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -549,29 +548,29 @@ class ProxyRegionMap implements RegionMap {
     @Override
     public Object getValue() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Token getValueAsToken() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getValueRetain(RegionEntryContext context, boolean decompress) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getTransformedValue() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -582,38 +581,38 @@ class ProxyRegionMap implements RegionMap {
     @Override
     public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getSerializedValueOnDisk(InternalRegion region) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean initialImagePut(InternalRegion region, long lastModified, Object newValue,
         boolean wasRecovered, boolean acceptedVersionTag) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean initialImageInit(InternalRegion region, long lastModified, Object newValue,
         boolean create, boolean wasRecovered, boolean acceptedVersionTag) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -622,22 +621,22 @@ class ProxyRegionMap implements RegionMap {
         boolean removeRecoveredEntry)
         throws CacheWriterException, EntryNotFoundException, TimeoutException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean getValueWasResultOfSearch() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void setValueResultOfSearch(boolean value) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -655,78 +654,78 @@ class ProxyRegionMap implements RegionMap {
     @Override
     public Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isUpdateInProgress() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void setUpdateInProgress(boolean underUpdate) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isValueNull() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isInvalid() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isDestroyed() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public void setValueToNull() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isInvalidOrRemoved() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isDestroyedOrRemoved() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
     public boolean isDestroyedOrRemovedButNotTombstone() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -738,8 +737,8 @@ class ProxyRegionMap implements RegionMap {
     public void setValueWithTombstoneCheck(Object value, EntryEvent event)
         throws RegionClearedException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override
@@ -756,8 +755,8 @@ class ProxyRegionMap implements RegionMap {
     public void setValue(RegionEntryContext context, Object value, EntryEventImpl event)
         throws RegionClearedException {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
+          String.format("No entry support on regions with DataPolicy %s",
+              DataPolicy.EMPTY));
     }
 
     @Override

@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -241,7 +240,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   }
 
   private void awaitServerMetaDataToContainClient() {
-    await().atMost(30, SECONDS)
+    await()
         .untilAsserted(() -> assertThat(
             getCacheServer().getAcceptor().getCacheClientNotifier().getClientProxies().size())
                 .isEqualTo(1));
@@ -249,7 +248,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     CacheClientProxy proxy = getClientProxy();
     assertThat(proxy).isNotNull();
 
-    await().atMost(30, SECONDS).until(() -> getClientProxy().isAlive() && getClientProxy()
+    await().until(() -> getClientProxy().isAlive() && getClientProxy()
         .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + PROXY_REGION_NAME));
   }
 

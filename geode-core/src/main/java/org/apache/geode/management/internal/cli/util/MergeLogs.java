@@ -27,7 +27,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -101,12 +103,11 @@ public class MergeLogs {
   static File mergeLogFile(String dirName) throws Exception {
     Path dir = Paths.get(dirName);
     List<File> logsToMerge = findLogFilesToMerge(dir.toFile());
-    InputStream[] logFiles = new FileInputStream[logsToMerge.size()];
-    String[] logFileNames = new String[logFiles.length];
+    Map<String, InputStream> logFiles = new HashMap<>();
     for (int i = 0; i < logsToMerge.size(); i++) {
       try {
-        logFiles[i] = new FileInputStream(logsToMerge.get(i));
-        logFileNames[i] = dir.relativize(logsToMerge.get(i).toPath()).toString();
+        logFiles.put(dir.relativize(logsToMerge.get(i).toPath()).toString(),
+            new FileInputStream(logsToMerge.get(i)));
       } catch (FileNotFoundException e) {
         throw new Exception(
             logsToMerge.get(i) + " " + CliStrings.EXPORT_LOGS__MSG__FILE_DOES_NOT_EXIST);
@@ -120,7 +121,7 @@ public class MergeLogs {
           + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new java.util.Date()) + ".log";
       mergedLogFile = new File(mergeLog);
       mergedLog = new PrintWriter(mergedLogFile);
-      MergeLogFiles.mergeLogFiles(logFiles, logFileNames, mergedLog);
+      MergeLogFiles.mergeLogFiles(logFiles, mergedLog);
     } catch (FileNotFoundException e) {
       throw new Exception(
           "FileNotFoundException in creating PrintWriter in MergeLogFiles" + e.getMessage());

@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <p>
@@ -170,15 +169,6 @@ public class PartitionAttributesFactory<K, V> {
   }
 
   /**
-   * Sets the cache writer for the next <code>PartitionAttributes</code> created. <i>Currently
-   * unsupported for the early access release.</i>
-   *
-   * @param cacheWriter the cache writer or null if no cache writer
-   * @return this public PartitionAttributesFactory<K,V> setCacheWriter(CacheWriter cacheWriter) {
-   *         this.partitionAttributes.setCacheWriter(cacheWriter); return this; }
-   */
-
-  /**
    * Sets the maximum amount of memory, in megabytes, to be used by the region in this process. If
    * not set, a default of 90% of available heap is used.
    */
@@ -273,8 +263,7 @@ public class PartitionAttributesFactory<K, V> {
   public PartitionAttributesFactory<K, V> addPartitionListener(PartitionListener listener) {
     if (listener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionAttributesFactory_PARTITION_LISTENER_PARAMETER_WAS_NULL
-              .toLocalizedString());
+          "PartitionListner parameter was null");
     }
     synchronized (this.partitionAttributes) {
       this.partitionAttributes.addPartitionListener(listener);

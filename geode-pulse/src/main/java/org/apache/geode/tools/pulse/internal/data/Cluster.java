@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.remote.JMXConnector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
@@ -138,17 +137,7 @@ public class Cluster extends Thread {
   // used for updating member's client data
   public static long LAST_UPDATE_TIME = 0;
 
-  public int getStaleStatus() {
-    return this.stale;
-  }
-
   private boolean stopUpdates = false;
-
-  private static final int MAX_HOSTS = 40;
-
-  private final List<String> hostNames = new ArrayList<String>();
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   public Object[] getStatisticTrend(int trendId) {
 
@@ -789,12 +778,11 @@ public class Cluster extends Thread {
           existingClient.setUptime(updatedClient.getUptime());
 
           // set cpu usage
-          long lastCPUTime = 0;
-          lastCPUTime = existingClient.getProcessCpuTime();
-          long currCPUTime = 0;
-          currCPUTime = updatedClient.getProcessCpuTime();
+          long lastCPUTime = existingClient.getProcessCpuTime();
+          long currCPUTime = updatedClient.getProcessCpuTime();
 
-          double newCPUTime = (double) (currCPUTime - lastCPUTime) / (elapsedTime * 1000000000);
+          double newCPUTime =
+              (double) (((currCPUTime - lastCPUTime) / elapsedTime) / 1_000_000_000L);
 
           double newCPUUsage = 0;
           int availableCpus = updatedClient.getCpus();

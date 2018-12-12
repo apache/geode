@@ -47,9 +47,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.InterestType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
@@ -118,7 +116,7 @@ public class FetchKeysMessage extends PartitionMessage {
       Set failures = r.getDistributionManager().putOutgoing(m);
       if (failures != null && failures.size() > 0) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_FAILED_SENDING_0.toLocalizedString(m));
+            String.format("Failed sending < %s >", m));
       }
       return p;
     } finally {
@@ -151,7 +149,7 @@ public class FetchKeysMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.FetchKeysMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -189,13 +187,11 @@ public class FetchKeysMessage extends PartitionMessage {
           logger.debug("FetchKeysMessage Encountered PRLocallyDestroyedException");
         }
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_ENCOUNTERED_PRLOCALLYDESTROYEDEXCEPTION
-                .toLocalizedString(),
+            "Encountered PRLocallyDestroyedException",
             pde);
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.FetchKeysMessage_FETCHKEYSMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+      logger.warn("FetchKeysMessage: data store not configured for this member");
     }
 
     // Unless there was an exception thrown, this message handles sending the response
@@ -315,7 +311,7 @@ public class FetchKeysMessage extends PartitionMessage {
               public boolean executeWith(Object a, int b) {
                 // if (this.last)
                 // throw new
-                // InternalGemFireError(LocalizedStrings.FetchKeysMessage_ALREADY_PROCESSED_LAST_CHUNK.toLocalizedString());
+                // InternalGemFireError(LocalizedStrings.FetchKeysMessage_ALREADY_PROCESSED_LAST_CHUNK));
                 HeapDataOutputStream chunk = (HeapDataOutputStream) a;
                 this.last = b > 0;
                 try {
@@ -333,8 +329,7 @@ public class FetchKeysMessage extends PartitionMessage {
         }
       } catch (IOException io) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_UNABLE_TO_SEND_RESPONSE_TO_FETCH_KEYS_REQUEST
-                .toLocalizedString(),
+            "Unable to send response to fetch keys request",
             io);
       }
       // TODO [bruce] pass a reference to the cache or region down here so we can do this test
@@ -560,7 +555,7 @@ public class FetchKeysMessage extends PartitionMessage {
           }
         } catch (Exception e) {
           processException(new ReplyException(
-              LocalizedStrings.FetchKeysMessage_ERROR_DESERIALIZING_KEYS.toLocalizedString(), e));
+              "Error deserializing keys", e));
           checkIfDone(); // fix for hang in 41202
         }
 
@@ -584,21 +579,20 @@ public class FetchKeysMessage extends PartitionMessage {
           logger.debug("FetchKeysResponse got remote CacheClosedException; forcing reattempt. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.FetchKeysMessage_FETCHKEYSRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION_FORCING_REATTEMPT
-                  .toLocalizedString(),
+              "FetchKeysResponse got remote CacheClosedException; forcing reattempt.",
               t);
         }
         if (t instanceof ForceReattemptException) {
           logger.debug("FetchKeysResponse got remote ForceReattemptException; rethrowing. {}",
               e.getMessage(), e);
           throw new ForceReattemptException(
-              LocalizedStrings.FetchKeysMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
+              "Peer requests reattempt", t);
         }
         e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_NO_REPLIES_RECEIVED.toLocalizedString());
+            "No replies received");
       }
       return this.returnValue;
     }

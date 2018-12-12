@@ -35,11 +35,9 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * This class implements a connection pool manager for managed connections (JCA) for transactional
@@ -80,9 +78,10 @@ public class FacetsJCAConnectionManagerImpl
       isActive = true;
       mannPoolCache = new ManagedPoolCacheImpl(mcf, null, null, this, configs);
     } catch (Exception ex) {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_CONSTRUCTOR_AN_EXCEPTION_WAS_CAUGHT_WHILE_INITIALIZING_DUE_TO_0,
-          ex.getMessage()), ex);
+      logger.fatal(String.format(
+          "FacetsJCAConnectionManagerImpl::Constructor: An Exception was caught while initializing due to %s",
+          ex.getMessage()),
+          ex);
     }
   }
 
@@ -97,8 +96,7 @@ public class FacetsJCAConnectionManagerImpl
       throws ResourceException {
     if (!isActive) {
       throw new ResourceException(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPLALLOCATECONNECTIONNO_VALID_CONNECTION_AVAILABLE
-              .toLocalizedString());
+          "FacetsJCAConnectionManagerImpl::allocateConnection::No valid Connection available");
     }
     ManagedConnection conn = null;
     try {
@@ -106,8 +104,9 @@ public class FacetsJCAConnectionManagerImpl
     } catch (PoolException ex) {
       ex.printStackTrace();
       throw new ResourceException(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format(
+              "FacetsJCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to %s",
+              ex.getMessage()),
           ex);
     }
     // Check if a connection is having a transactional context
@@ -141,13 +140,15 @@ public class FacetsJCAConnectionManagerImpl
       }
     } catch (RollbackException ex) {
       String exception =
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_AN_EXCEPTION_WAS_CAUGHT_WHILE_ALLOCATING_A_CONNECTION_DUE_TO_0
-              .toLocalizedString(ex.getMessage());
+          String.format(
+              "FacetsJCAConnectionManagerImpl:: An Exception was caught while allocating a connection due to %s",
+              ex.getMessage());
       throw new ResourceException(exception, ex);
     } catch (SystemException ex) {
       throw new ResourceException(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format(
+              "FacetsJCAConnectionManagerImpl:: allocateConnection :system exception due to %s",
+              ex.getMessage()),
           ex);
     }
     return conn.getConnection(subject, reqInfo);

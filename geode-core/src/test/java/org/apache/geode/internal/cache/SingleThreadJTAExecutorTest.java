@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -23,9 +25,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -57,10 +57,26 @@ public class SingleThreadJTAExecutorTest {
     singleThreadJTAExecutor.executeBeforeCompletion(txState, executor, cancelCriterion);
 
     verify(beforeCompletion, times(1)).execute(eq(cancelCriterion));
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> inOrder.verify(beforeCompletion, times(1)).doOp(eq(txState)));
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(
+    await().untilAsserted(
         () -> inOrder.verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion)));
+  }
+
+  @Test
+  public void cleanupInvokesCancel() {
+    singleThreadJTAExecutor.cleanup();
+
+    verify(afterCompletion, times(1)).cancel();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void doOpsInvokesAfterCompletionDoOpWhenBeforeCompletionThrows() {
+    doThrow(RuntimeException.class).when(beforeCompletion).doOp(txState);
+
+    singleThreadJTAExecutor.doOps(txState, cancelCriterion);
+
+    verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion));
   }
 
 }

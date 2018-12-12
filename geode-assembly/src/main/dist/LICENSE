@@ -276,6 +276,7 @@ Distribution License:
   - javax.resource v 1.7 (https://glassfish.java.net/)
   - javax.servlet v3.1.0 (https://glassfish.java.net/)
   - javax.transaction v1.2 (https://glassfish.java.net/)
+  - javax.xml.bind v2.2.11
 
 1. Definitions.
   1.1. Contributor means each individual or entity that creates or
@@ -594,26 +595,6 @@ relating to this License shall be subject to the jurisdiction of the
 Federal Courts of the Northern District of California and the state courts
 of the State of California, with venue lying in Santa Clara County,
 California.
-
----------------------------------------------------------------------------
-The WTF Public License (http://www.wtfpl.net/about/)
----------------------------------------------------------------------------
-
-Apache Geode bundles the following files under the WTF license:
-
-  - Reflections v0.9.11 (https://github.com/ronmamo/reflections)
-
-  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-          Version 2, December 2004
-
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
-
-  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-
-0. You just DO WHAT THE FUCK YOU WANT TO.
 
 ---------------------------------------------------------------------------
 The MIT License (http://opensource.org/licenses/mit-license.html)

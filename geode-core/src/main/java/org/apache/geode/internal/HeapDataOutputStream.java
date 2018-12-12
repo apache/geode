@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 
@@ -191,7 +190,7 @@ public class HeapDataOutputStream extends OutputStream
       return;
     checkIfWritable();
     ensureCapacity(1);
-    buffer.put((byte) b);
+    buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
@@ -224,7 +223,7 @@ public class HeapDataOutputStream extends OutputStream
   private void checkIfWritable() {
     if (!this.writeMode) {
       throw new IllegalStateException(
-          LocalizedStrings.HeapDataOutputStream_NOT_IN_WRITE_MODE.toLocalizedString());
+          "not in write mode");
     }
   }
 
@@ -889,7 +888,7 @@ public class HeapDataOutputStream extends OutputStream
       return;
     checkIfWritable();
     ensureCapacity(2);
-    buffer.putShort((short) v);
+    buffer.putShort((short) (v & 0xffff));
   }
 
   /**
@@ -1265,7 +1264,7 @@ public class HeapDataOutputStream extends OutputStream
     } catch (UTFDataFormatException ex) {
       // this shouldn't happen since we did not encode the length
       throw new IllegalStateException(
-          LocalizedStrings.HeapDataOutputStream_UNEXPECTED_0.toLocalizedString(ex));
+          String.format("unexpected %s", ex));
     }
   }
 

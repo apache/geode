@@ -29,7 +29,6 @@ import org.xml.sax.ext.EntityResolver2;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}
@@ -838,7 +837,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
       result = new InputSource(stream);
     } else {
       throw new SAXNotRecognizedException(
-          LocalizedStrings.CacheXml_DTD_NOT_FOUND_0.toLocalizedString(location));
+          String.format("DTD not found: %s", location));
     }
     return result;
   }
@@ -895,7 +894,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    */
   public void error(SAXParseException ex) throws SAXException {
     throw new CacheXmlException(
-        LocalizedStrings.CacheXml_ERROR_WHILE_PARSING_XML.toLocalizedString(), ex);
+        "Error while parsing XML", ex);
   }
 
   /**
@@ -903,7 +902,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    */
   public void fatalError(SAXParseException ex) throws SAXException {
     throw new CacheXmlException(
-        LocalizedStrings.CacheXml_FATAL_ERROR_WHILE_PARSING_XML.toLocalizedString(), ex);
+        "Fatal error while parsing XML", ex);
   }
 
   /**

@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to remove a health listener.
@@ -43,7 +42,7 @@ public class RemoveHealthListenerRequest extends AdminRequest {
 
   public RemoveHealthListenerRequest() {
     friendlyName =
-        LocalizedStrings.RemoveHealthListenerRequest_REMOVE_HEALTH_LISTENER.toLocalizedString();
+        "Remove health listener";
   }
 
   /**

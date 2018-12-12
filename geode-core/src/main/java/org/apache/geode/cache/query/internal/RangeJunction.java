@@ -38,7 +38,6 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This structure contains all the filter evaluatable CompiledComparision conditions which are using
@@ -157,8 +156,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return organizeOperandsForAndJunction(context);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_IN_THE_CASE_OF_AN_OR_JUNCTION_A_RANGEJUNCTION_SHOULD_NOT_BE_FORMED_FOR_NOW
-              .toLocalizedString());
+          "In the case of an OR junction a RangeJunction should not be formed for now");
     }
   }
 
@@ -555,8 +553,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return Collections.unmodifiableSet(((NotEqualConditionEvaluator) o).notEqualTypeKeys);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -572,8 +569,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((SingleCondnEvaluator) o).condnOp;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -589,8 +585,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((SingleCondnEvaluator) o).condnKey;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -605,8 +600,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).lessCondnKey;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -622,8 +616,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).greaterCondnKey;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -638,8 +631,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).lessCondnOp;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -654,8 +646,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).greaterCondnOp;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -669,8 +660,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((NotEqualConditionEvaluator) o).indxInfo._index;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 

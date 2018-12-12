@@ -25,7 +25,6 @@ import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -67,6 +66,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -280,7 +280,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
                   + proxy;
             }
           };
-          waitForCriterion(wc, 60 * 1000, 1000, true);
+          GeodeAwaitility.await().untilAsserted(wc);
 
           cache.getLogger().fine("processed a proxy");
         }
@@ -350,7 +350,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
           return null;
         }
       };
-      waitForCriterion(ev, 30 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
       ev = new WaitCriterion() {
         public boolean done() {
           return pool.getRedundants().size() >= 1;
@@ -360,7 +360,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
           return null;
         }
       };
-      waitForCriterion(ev, 30 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
 
       assertNotNull(pool.getPrimary());
       assertTrue("backups=" + pool.getRedundants() + " expected=" + 1,

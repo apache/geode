@@ -16,9 +16,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -28,12 +27,13 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Test if exceptions are logged when thread is submitted using
  * {@code SingleHopClientExecutor#submitTask} method.
  */
-@Category(ClientServerTest.class)
+@Category({ClientServerTest.class, LoggingTest.class})
 public class SingleHopClientExecutorWithLoggingIntegrationTest {
 
   @Rule
@@ -59,8 +59,7 @@ public class SingleHopClientExecutorWithLoggingIntegrationTest {
     /*
      * Sometimes need to wait for more than sec as thread execution takes time.
      */
-    await().atMost(2, MINUTES)
+    await()
         .untilAsserted(() -> assertThat(systemErrRule.getLog()).contains(message));
   }
-
 }

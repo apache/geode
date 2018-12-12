@@ -478,29 +478,16 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     final String tenuredPoolName = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getName();
     logger.info("TenuredPoolName: {}", tenuredPoolName);
 
-    final List<Statistics> list = ((StatisticsManager) this.system).getStatsList();
-    assertFalse(list.isEmpty());
-
     boolean done = false;
     try {
       for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000;) {
         Thread.sleep(10);
-        int i = 0;
-        synchronized (list) {
-          for (Object obj : list) {
-            ++i;
-            logger.info("List:{}:{}", i, obj);
-            if (obj instanceof StatisticsImpl) {
-              StatisticsImpl si = (StatisticsImpl) obj;
-              logger.info("stat:{}", si.getTextId());
-              if (si.getTextId().contains(tenuredPoolName)) {
-                statSampler.addLocalStatListener(listener, si, "currentUsedMemory");
-                done = true;
-              }
-            }
-          }
+        Statistics si =
+            HeapMemoryMonitor.getTenuredPoolStatistics((StatisticsManager) this.system);
+        if (si != null) {
+          statSampler.addLocalStatListener(listener, si, "currentUsedMemory");
+          done = true;
         }
-        // done = false;
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

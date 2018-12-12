@@ -29,6 +29,9 @@ javax.mail-api
 javax.resource-api
 javax.servlet-api
 javax.transaction-api
+jaxb-api
+jaxb-core
+jaxb-impl
 jetty-http
 jetty-io
 jetty-security

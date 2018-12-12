@@ -114,12 +114,12 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Before
   public void setup() throws Exception {
-    tomcat7079AndOldModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT779,
+    tomcat7079AndOldModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
         ContainerInstall.ConnectionType.CLIENT_SERVER,
         ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7079AndOldModules",
         oldModules.getAbsolutePath(), oldBuild.getAbsolutePath() + "/lib");
 
-    tomcat7079AndCurrentModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT779,
+    tomcat7079AndCurrentModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
         ContainerInstall.ConnectionType.CLIENT_SERVER,
         ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7079AndCurrentModules");
 

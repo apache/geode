@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.lang.Thread.yield;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -50,12 +51,12 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.ha.HAHelper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -402,7 +403,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         return "Expected counterCreate to be 2. Instead it was " + counterCreate + ".";
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
       public boolean done() {
@@ -413,7 +414,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         return "Expected counterUpdate to be 2. Instead it was " + counterUpdate + ".";
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
       public boolean done() {
@@ -424,7 +425,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         return "Expected counterDestroy to be 2. Instead it was " + counterDestroy + ".";
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
 
@@ -435,7 +436,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void assertCounterSizesLessThan200() {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
 
@@ -443,12 +444,12 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     // assertIndexDetailsEquals("creates", 2, counterCreate);
 
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
 
@@ -456,13 +457,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     // assertIndexDetailsEquals("destroys", 2, counterDestroy);
     // assertTrue("updates", 20000 >= counterUpdate);
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
+        yield(); // TODO is this necessary?
         return counterUpdate <= 200;
       }
 
@@ -470,7 +471,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static void waitForMarker() {

@@ -473,8 +473,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * out if a previous test may have caused problems
    */
   private final void logTestHistory() {
-    String classname = getTestClass().getSimpleName();
-    testHistory.add(classname);
+    String name = getTestClass().getSimpleName() + "." + getTestMethodName();
+    testHistory.add(name);
     System.out.println("Previously run tests: " + testHistory);
   }
 
@@ -498,6 +498,9 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     } finally {
       postTearDown();
       postTearDownAssertions();
+
+      System.out.println(
+          "\n\n[setup] END TEST " + getTestClass().getSimpleName() + "." + testMethodName + "\n\n");
     }
   }
 

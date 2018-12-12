@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.RefusalReason;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
 
@@ -63,13 +62,15 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
     Member targetMember = model.getMember(target);
     if (sourceMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), source));
+          String.format(
+              "Source member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), source));
     }
     if (targetMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_TARGET_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), target));
+          String.format(
+              "Target member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), target));
     }
 
     if (bucket == null) {
@@ -91,13 +92,15 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
         Set allMembers = ds.getDistributionManager().getDistributionManagerIdsIncludingAdmin();
         if (!allMembers.contains(sourceMember)) {
           throw new IllegalStateException(
-              LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE
-                  .toLocalizedString(model.getName(), source));
+              String.format(
+                  "Source member does not exist or is not a data store for the partitioned region %s: %s",
+                  model.getName(), source));
         }
         if (!allMembers.contains(targetMember)) {
           throw new IllegalStateException(
-              LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_TARGET_NOT_DATA_STORE
-                  .toLocalizedString(model.getName(), target));
+              String.format(
+                  "Target member does not exist or is not a data store for the partitioned region %s: %s",
+                  model.getName(), target));
         }
         throw new IllegalStateException(
             "Unable to move bucket " + bucket + " from " + sourceMember + " to " + targetMember);

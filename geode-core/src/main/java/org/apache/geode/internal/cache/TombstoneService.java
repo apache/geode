@@ -41,10 +41,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.versions.CompactVersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
@@ -787,10 +785,7 @@ public class TombstoneService {
       this.tombstones = new ConcurrentLinkedQueue<Tombstone>();
       this.memoryUsedEstimate = new AtomicLong();
       this.queueHeadLock = new StoppableReentrantLock(cancelCriterion);
-      this.sweeperThread = new Thread(
-          LoggingThreadGroup.createThreadGroup("Destroyed Entries Processors", logger), this);
-      this.sweeperThread.setDaemon(true);
-      this.sweeperThread.setName(threadName);
+      this.sweeperThread = new LoggingThread(threadName, this);
       this.lastPurgeTimestamp = getNow();
     }
 
@@ -904,8 +899,8 @@ public class TombstoneService {
           throw err;
         } catch (Throwable e) {
           SystemFailure.checkFailure();
-          logger.fatal(
-              LocalizedMessage.create(LocalizedStrings.TombstoneService_UNEXPECTED_EXCEPTION), e);
+          logger.fatal("GemFire garbage collection service encountered an unexpected exception",
+              e);
         }
       } // while()
     } // run()
@@ -996,8 +991,7 @@ public class TombstoneService {
             } catch (CancelException ignore) {
               // nothing needed
             } catch (Exception e) {
-              logger.warn(
-                  LocalizedMessage.create(LocalizedStrings.GemFireCacheImpl_TOMBSTONE_ERROR), e);
+              logger.warn("Unexpected exception while processing tombstones", e);
             }
           } else {
             sleepTime = msTillHeadTombstoneExpires;

@@ -15,7 +15,6 @@
 package org.apache.geode.internal.admin;
 
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A <code>ListenerIdMap</code> maps ints to an <code>Object</code>. This is an optimization because
@@ -46,13 +45,13 @@ public class ListenerIdMap {
    */
   public ListenerIdMap(int initialCapacity, float loadFactor) {
     if (initialCapacity < 0) {
-      throw new IllegalArgumentException(LocalizedStrings.ListenerIdMap_ILLEGAL_INITIAL_CAPACITY_0
-          .toLocalizedString(Integer.valueOf(initialCapacity)));
+      throw new IllegalArgumentException(String.format("Illegal Initial Capacity: %s",
+          Integer.valueOf(initialCapacity)));
     }
 
     if (loadFactor <= 0 || Float.isNaN(loadFactor)) {
-      throw new IllegalArgumentException(LocalizedStrings.ListenerIdMap_ILLEGAL_LOAD_FACTOR_0
-          .toLocalizedString(new Float(loadFactor)));
+      throw new IllegalArgumentException(String.format("Illegal Load factor: %s",
+          new Float(loadFactor)));
     }
 
     if (initialCapacity == 0) {
@@ -240,7 +239,7 @@ public class ListenerIdMap {
   /**
    * Returns an iterator over the {@link Entry}s of this map. Note that this iterator is <b>not</b>
    * fail-fast. That is, it is the user's responsibility to ensure that the map does not change
-   * while he is iterating over it.
+   * while it is being iterated over.
    */
   public EntryIterator iterator() {
     return new EntryIterator();

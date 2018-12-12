@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.management.internal.cli.commands.StartServerCommand.addJvmOptionsForOutOfMemoryErrors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -27,8 +28,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -39,6 +42,7 @@ import org.junit.Test;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.PdxSerializer;
 
 public class StartServerCommandTest {
@@ -62,6 +66,29 @@ public class StartServerCommandTest {
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     String actualClasspath = serverCommands.getServerClasspath(false, userClasspath);
     assertEquals(expectedClasspath, actualClasspath);
+  }
+
+  @Test
+  public void testAddJvmOptionsForOutOfMemoryErrors() {
+    final List<String> jvmOptions = new ArrayList<>(1);
+
+    addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+
+    if (SystemUtils.isHotSpotVM()) {
+      if (SystemUtils.isWindows()) {
+        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=taskkill /F /PID %p"));
+      } else {
+        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=kill -KILL %p"));
+      }
+    } else if (SystemUtils.isJ9VM()) {
+      assertEquals(1, jvmOptions.size());
+      assertTrue(jvmOptions.contains("-Xcheck:memory"));
+    } else if (SystemUtils.isJRockitVM()) {
+      assertEquals(1, jvmOptions.size());
+      assertTrue(jvmOptions.contains("-XXexitOnOutOfMemory"));
+    } else {
+      assertTrue(jvmOptions.isEmpty());
+    }
   }
 
   @Test

@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -32,15 +31,18 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -51,21 +53,18 @@ public class CreateGatewaySenderCommandTest {
   private CreateGatewaySenderCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private InternalConfigurationPersistenceService ccService;
-  private CliFunctionResult result1, result2;
-  private XmlEntity xmlEntity;
+  private CliFunctionResult cliFunctionResult;
+  ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
+      ArgumentCaptor.forClass(GatewaySenderFunctionArgs.class);
 
   @Before
   public void before() {
     command = spy(CreateGatewaySenderCommand.class);
-    ccService = mock(InternalConfigurationPersistenceService.class);
-    xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();
-    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
-        any(Set.class));
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(),
+        any(), any(Set.class));
   }
 
   @Test
@@ -114,41 +113,56 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
-  public void whenNoCCService() {
-    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(null).when(command).getConfigurationPersistenceService();
-    result1 = new CliFunctionResult("member", xmlEntity, "result1");
-    functionResults.add(result1);
-    gfsh.executeAndAssertThat(command,
-        "create gateway-sender --id=1  --remote-distributed-system-id=1").statusIsSuccess()
-        .hasFailToPersistError();
-    verify(ccService, never()).deleteXmlEntity(any(), any());
-  }
-
-  @Test
   public void whenCommandOnMember() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-    result1 = new CliFunctionResult("member", xmlEntity, "result1");
-    functionResults.add(result1);
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
     gfsh.executeAndAssertThat(command,
         "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1")
-        .statusIsSuccess().hasFailToPersistError();
-    verify(ccService, never()).deleteXmlEntity(any(), any());
+        .statusIsSuccess();
   }
 
   @Test
-  public void whenNoXml() {
+  public void testFunctionArgs() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
-    result1 = new CliFunctionResult("member", false, "result1");
-    functionResults.add(result1);
-
-    // does not delete because command failed, so hasNoFailToPersistError should still be true
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
     gfsh.executeAndAssertThat(command,
-        "create gateway-sender --id=1 --remote-distributed-system-id=1").statusIsError()
-        .hasNoFailToPersistError();
-    verify(ccService, never()).deleteXmlEntity(any(), any());
+        "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1"
+            + " --order-policy=thread --dispatcher-threads=2 "
+            + "--gateway-event-filter=test1,test2 --gateway-transport-filter=test1,test2")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(),
+        any(Set.class));
+    assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isEqualTo(
+        GatewaySender.OrderPolicy.THREAD.toString());
+    assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
+    assertThat(argsArgumentCaptor.getValue().getDispatcherThreads()).isEqualTo(2);
+    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).containsExactly("test1",
+        "test2");
+    assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).containsExactly("test1",
+        "test2");
+  }
+
+  @Test
+  public void testReturnsConfigInResultModel() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult = new CliFunctionResult("member", CliFunctionResult.StatusState.OK,
+        "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    ResultModel resultModel = gfsh.executeAndAssertThat(command,
+        "create gateway-sender --group=xyz --id=1 --remote-distributed-system-id=1"
+            + " --order-policy=thread --dispatcher-threads=2 "
+            + "--gateway-event-filter=test1,test2 --gateway-transport-filter=test1,test2")
+        .getResultModel();
+
+    assertThat(resultModel.getConfigObject()).isNotNull();
+    CacheConfig.GatewaySender sender = (CacheConfig.GatewaySender) resultModel.getConfigObject();
+    assertThat(sender.getId()).isEqualTo("1");
+    assertThat(sender.getRemoteDistributedSystemId()).isEqualTo("1");
+    assertThat(sender.getOrderPolicy()).isEqualTo("THREAD");
   }
 
   @Test

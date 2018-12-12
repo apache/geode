@@ -37,9 +37,7 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 
@@ -302,7 +300,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
 
     } else {
       throw new InternalGemFireException(
-          LocalizedStrings.UNKNOWN_EVICTION_ACTION_0.toLocalizedString(action));
+          String.format("Unknown eviction action: %s", action));
     }
   }
 
@@ -421,9 +419,8 @@ public class VMLRURegionMap extends AbstractRegionMap {
                   region.cache.getCancelCriterion().checkCancelInProgress(rd);
                 } catch (Exception e) {
                   region.cache.getCancelCriterion().checkCancelInProgress(e);
-                  logger.warn(
-                      LocalizedMessage.create(LocalizedStrings.Eviction_EVICTOR_TASK_EXCEPTION,
-                          new Object[] {e.getMessage()}),
+                  logger.warn(String.format("Exception: %s occurred during eviction ",
+                      new Object[] {e.getMessage()}),
                       e);
                 }
               }

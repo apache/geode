@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.validateGetResponse;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -34,9 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,6 +81,12 @@ public class CacheConnectionJUnitTest {
   private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
 
+  /*
+   * This file was generated with the following command:
+   * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
+   * -keystore default.keystore -keypass password -storepass password \
+   * -ext san=ip:127.0.0.1 -storetype jks
+   */
   private final String DEFAULT_STORE = "default.keystore";
   private final String SSL_PROTOCOLS = "any";
   private final String SSL_CIPHERS = "any";
@@ -139,7 +144,7 @@ public class CacheConnectionJUnitTest {
     } else {
       socket = new Socket("localhost", cacheServerPort);
     }
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    await().until(socket::isConnected);
     outputStream = socket.getOutputStream();
 
     MessageUtil.performAndVerifyHandshake(socket);
@@ -192,7 +197,7 @@ public class CacheConnectionJUnitTest {
     CacheServer cacheServer = cacheServers.stream().findFirst().get();
     AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
 
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+    await()
         .until(() -> acceptor.getClientServerCnxCount() == 1);
 
     // make a request to the server
@@ -204,7 +209,7 @@ public class CacheConnectionJUnitTest {
     // make sure socket is still open
     assertFalse(socket.isClosed());
     socket.close();
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+    await()
         .until(() -> acceptor.getClientServerCnxCount() == 0);
   }
 
@@ -252,6 +257,7 @@ public class CacheConnectionJUnitTest {
     sslConfig.setKeystorePassword("password");
     sslConfig.setTruststore(trustStorePath);
     sslConfig.setKeystorePassword("password");
+    sslConfig.setEndpointIdentificationEnabled(false);
 
     SocketCreator socketCreator = new SocketCreator(sslConfig);
     return socketCreator.connectForClient("localhost", cacheServerPort, 5000);

@@ -35,9 +35,7 @@ import org.apache.geode.internal.cache.wan.AbstractRemoteGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -60,16 +58,14 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.GatewaySender_SENDER_0_IS_ALREADY_RUNNING, this.getId()));
+        logger.warn("Gateway Sender {} is already running", this.getId());
         return;
       }
       if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
         String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new GatewaySenderConfigurationException(
-              LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER
-                  .toLocalizedString());
+              "Locators must be configured before starting gateway-sender.");
         }
       }
       getSenderAdvisor().initDLockService();
@@ -101,7 +97,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger
-          .info(LocalizedMessage.create(LocalizedStrings.SerialGatewaySenderImpl_STARTED__0, this));
+          .info("Started  {}", this);
 
       enqueueTempEvents();
     } finally {
@@ -125,7 +121,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       for (AsyncEventListener listener : this.listeners) {
         listener.close();
       }
-      logger.info(LocalizedMessage.create(LocalizedStrings.GatewayImpl_STOPPED__0, this));
+      logger.info("Stopped  {}", this);
 
       clearTempEventsAfterSenderStopped();
     } finally {
@@ -159,8 +155,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         Thread.currentThread().interrupt();
       }
       if (lockObtainingThread.isAlive()) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GatewaySender_COULD_NOT_STOP_LOCK_OBTAINING_THREAD_DURING_GATEWAY_SENDER_STOP));
+        logger.info("Could not stop lock obtaining thread during gateway sender stop");
       }
     }
 

@@ -69,10 +69,8 @@ import org.apache.geode.internal.cache.tx.RemoteOperationMessage;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
@@ -747,8 +745,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
       return null;
     } catch (IllegalArgumentException i) {
-      IllegalArgumentException iae = new IllegalArgumentException(LocalizedStrings.DONT_RELEASE
-          .toLocalizedString("Error while deserializing value for key=" + getKey()));
+      IllegalArgumentException iae = new IllegalArgumentException(String.format("%s",
+          "Error while deserializing value for key=" + getKey()));
       iae.initCause(i);
       throw iae;
     }
@@ -1713,7 +1711,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       success = true;
     } finally {
       if (!success && reentry instanceof OffHeapRegionEntry && v instanceof StoredObject) {
-        OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry) reentry, (StoredObject) v);
+        if (!calledSetValue) {
+          OffHeapHelper.release(v);
+        } else {
+          OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry) reentry, (StoredObject) v);
+        }
       }
     }
     if (logger.isTraceEnabled()) {
@@ -1979,14 +1981,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return BlobHelper.deserializeBlob(bytes, version, in);
     } catch (IOException e) {
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_DESERIALIZING
-              .toLocalizedString(),
+          "An IOException was thrown while deserializing",
           e);
     } catch (ClassNotFoundException e) {
       // fix for bug 43602
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_A_CLASSNOTFOUNDEXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE_CACHED_VALUE
-              .toLocalizedString(),
+          "A ClassNotFoundException was thrown while trying to deserialize cached value.",
           e);
     }
   }
@@ -2002,14 +2002,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return BlobHelper.deserializeOffHeapBlob(bytes);
     } catch (IOException e) {
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_DESERIALIZING
-              .toLocalizedString(),
+          "An IOException was thrown while deserializing",
           e);
     } catch (ClassNotFoundException e) {
       // fix for bug 43602
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_A_CLASSNOTFOUNDEXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE_CACHED_VALUE
-              .toLocalizedString(),
+          "A ClassNotFoundException was thrown while trying to deserialize cached value.",
           e);
     }
   }
@@ -2031,14 +2029,13 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   public static byte[] serialize(Object obj, Version version) {
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
-          LocalizedStrings.EntryEventImpl_MUST_NOT_SERIALIZE_0_IN_THIS_CONTEXT
-              .toLocalizedString(obj));
+          String.format("Must not serialize %s in this context.",
+              obj));
     try {
       return BlobHelper.serializeToBlob(obj, version);
     } catch (IOException e) {
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-              .toLocalizedString(),
+          "An IOException was thrown while serializing.",
           e);
     }
   }
@@ -2058,7 +2055,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       byte userBits) {
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
-          LocalizedStrings.EntryEvents_MUST_NOT_SERIALIZE_0_IN_THIS_CONTEXT.toLocalizedString(obj));
+          String.format("Must not serialize %s in this context.", obj));
     try {
       HeapDataOutputStream hdos = null;
       if (wrapper.getBytes().length < 32) {
@@ -2071,8 +2068,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       hdos.sendTo(wrapper, userBits);
     } catch (IOException e) {
       RuntimeException e2 = new IllegalArgumentException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-              .toLocalizedString());
+          "An IOException was thrown while serializing.");
       e2.initCause(e);
       throw e2;
     }
@@ -2287,9 +2283,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         newSize = CachedDeserializableFactory.calcSerializedSize(v)
             + CachedDeserializableFactory.overhead();
       } catch (IllegalArgumentException iae) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.EntryEventImpl_DATASTORE_FAILED_TO_CALCULATE_SIZE_OF_NEW_VALUE),
+        logger.warn("DataStore failed to calculate size of new value",
             iae);
         newSize = 0;
       }
@@ -2308,9 +2302,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       try {
         oldSize = CachedDeserializableFactory.calcMemSize(basicGetOldValue());
       } catch (IllegalArgumentException iae) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.EntryEventImpl_DATASTORE_FAILED_TO_CALCULATE_SIZE_OF_OLD_VALUE),
+        logger.warn("DataStore failed to calculate size of old value",
             iae);
         oldSize = 0;
       }

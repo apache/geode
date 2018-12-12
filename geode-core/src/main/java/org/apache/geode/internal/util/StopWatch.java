@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.util;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /** Stop watch for measuring elapsed time. Not thread-safe. */
 public class StopWatch {
@@ -55,7 +54,7 @@ public class StopWatch {
   public void stop() {
     if (!isRunning()) {
       throw new IllegalStateException(
-          LocalizedStrings.StopWatch_ATTEMPTED_TO_STOP_NONRUNNING_STOPWATCH.toLocalizedString());
+          "Attempted to stop non-running StopWatch");
     }
     this.stopTime = System.currentTimeMillis();
   }

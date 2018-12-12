@@ -22,7 +22,6 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
 
@@ -74,7 +73,8 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
     if (this.realDeal == null || !this.realDeal.isDistTx() || !this.realDeal.isTxState()
         || this.realDeal.isCreatedOnDistTxCoordinator()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistTXStateOnDatanode",
+          String.format("Expected %s during a distributed transaction but got %s",
+              "DistTXStateOnDatanode",
               this.realDeal != null ? this.realDeal.getClass().getSimpleName() : "null"));
     }
     return (DistTXState) this.realDeal;

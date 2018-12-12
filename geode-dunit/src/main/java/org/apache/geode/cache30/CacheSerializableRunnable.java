@@ -16,7 +16,6 @@ package org.apache.geode.cache30;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.test.dunit.RepeatableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
@@ -26,8 +25,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
  *
  * @since GemFire 3.0
  */
-public abstract class CacheSerializableRunnable extends SerializableRunnable
-    implements RepeatableRunnable {
+public abstract class CacheSerializableRunnable extends SerializableRunnable {
 
   /**
    * Creates a new <code>CacheSerializableRunnable</code> with the given name
@@ -60,31 +58,6 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable
       String s = "While invoking \"" + this + "\"";
       throw new CacheSerializableRunnableException(s, ex);
     }
-  }
-
-  /**
-   * Invokes the {@link #run} method. If AssertionError is thrown, and repeatTimeoutMs is >0, then
-   * repeat the {@link #run} method until it either succeeds or repeatTimeoutMs milliseconds have
-   * passed. The AssertionError is only thrown to the caller if the last run still throws it.
-   */
-  public void runRepeatingIfNecessary(long repeatTimeoutMs) {
-    long start = System.currentTimeMillis();
-    AssertionError lastErr = null;
-    do {
-      try {
-        lastErr = null;
-        this.run();
-      } catch (AssertionError err) {
-        lastErr = err;
-        try {
-          Thread.sleep(50);
-        } catch (InterruptedException ex) {
-          throw new RuntimeException("interrupted", ex);
-        }
-      }
-    } while (lastErr != null && System.currentTimeMillis() - start < repeatTimeoutMs);
-    if (lastErr != null)
-      throw lastErr;
   }
 
   /**

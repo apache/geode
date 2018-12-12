@@ -282,8 +282,6 @@ public class CachePerfStats {
     final String reliableRegionsMissingNoAccessDesc =
         "Current number of regions configured for reliablity that are missing required roles with No access";
     final String clearsDesc = "The total number of times a clear has been done on this cache.";
-    final String nonSingleHopsDesc =
-        "Total number of times client request observed more than one hop during operation.";
     final String metaDataRefreshCountDesc =
         "Total number of times the meta data is refreshed due to hopping observed.";
     final String conflatedEventsDesc =
@@ -472,11 +470,8 @@ public class CachePerfStats {
                 "Number of jobs waiting to be picked up by evictor threads", "jobs"),
             f.createLongCounter("evictWorkTime",
                 "Total time spent doing eviction work in background threads", "nanoseconds", false),
-            f.createLongCounter("nonSingleHopsCount", nonSingleHopsDesc,
-                "Total number of times client request observed more than one hop during operation.",
-                false),
             f.createLongCounter("metaDataRefreshCount", metaDataRefreshCountDesc,
-                "Total number of times the meta data is refreshed due to hopping.", false),
+                "refreshes", false),
             f.createIntCounter("deltaUpdates", deltaUpdatesDesc, "operations"),
             f.createLongCounter("deltaUpdatesTime", deltaUpdatesTimeDesc, "nanoseconds", false),
             f.createIntCounter("deltaFailedUpdates", deltaFailedUpdatesDesc, "operations"),

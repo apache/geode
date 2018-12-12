@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.execute.MemberFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.ServerFunctionExecutor;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides the entry point into execution of user defined {@linkplain Function}s.
@@ -101,7 +100,7 @@ public class FunctionServiceManager {
   public Execution onRegion(Region region) {
     if (region == null) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Region instance "));
+          String.format("%s passed is null", "Region instance "));
     }
 
     ProxyCache proxyCache = null;
@@ -142,7 +141,7 @@ public class FunctionServiceManager {
   public Execution onServer(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Pool instance "));
+          String.format("%s passed is null", "Pool instance "));
     }
 
     if (pool.getMultiuserAuthentication()) {
@@ -164,7 +163,7 @@ public class FunctionServiceManager {
   public Execution onServers(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Pool instance "));
+          String.format("%s passed is null", "Pool instance "));
     }
 
     if (pool.getMultiuserAuthentication()) {
@@ -189,8 +188,8 @@ public class FunctionServiceManager {
    */
   public Execution onServer(RegionService regionService, String... groups) {
     if (regionService == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("RegionService instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "RegionService instance "));
     }
     if (regionService instanceof GemFireCacheImpl) {
       InternalClientCache internalCache = (InternalClientCache) regionService;
@@ -221,8 +220,8 @@ public class FunctionServiceManager {
    */
   public Execution onServers(RegionService regionService, String... groups) {
     if (regionService == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("RegionService instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "RegionService instance "));
     }
     if (regionService instanceof GemFireCacheImpl) {
       InternalClientCache internalCache = (InternalClientCache) regionService;
@@ -254,12 +253,12 @@ public class FunctionServiceManager {
    */
   public Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
     if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "DistributedSystem instance "));
     }
     if (distributedMember == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedMember instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "DistributedMember instance "));
     }
     return new MemberFunctionExecutor(system, distributedMember);
   }
@@ -276,8 +275,8 @@ public class FunctionServiceManager {
    */
   public Execution onMembers(DistributedSystem system, String... groups) {
     if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "DistributedSystem instance "));
     }
     if (groups.length == 0) {
       return new MemberFunctionExecutor(system);
@@ -287,8 +286,8 @@ public class FunctionServiceManager {
       members.addAll(system.getGroupMembers(group));
     }
     if (members.isEmpty()) {
-      throw new FunctionException(LocalizedStrings.FunctionService_NO_MEMBERS_FOUND_IN_GROUPS
-          .toLocalizedString(Arrays.toString(groups)));
+      throw new FunctionException(String.format("No members found in group(s) %s",
+          Arrays.toString(groups)));
     }
     return new MemberFunctionExecutor(system, members);
   }
@@ -305,12 +304,12 @@ public class FunctionServiceManager {
    */
   public Execution onMembers(DistributedSystem system, Set<DistributedMember> distributedMembers) {
     if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "DistributedSystem instance "));
     }
     if (distributedMembers == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("distributedMembers set "));
+      throw new FunctionException(String.format("%s passed is null",
+          "distributedMembers set "));
     }
     return new MemberFunctionExecutor(system, distributedMembers);
   }
@@ -324,8 +323,8 @@ public class FunctionServiceManager {
    */
   public Function getFunction(String functionId) {
     if (functionId == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("functionId instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "functionId instance "));
     }
     return idToFunctionMap.get(functionId);
   }
@@ -344,16 +343,16 @@ public class FunctionServiceManager {
    */
   public void registerFunction(Function function) {
     if (function == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("function instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "function instance "));
     }
     if (function.getId() == null) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_GET_ID_RETURNED_NULL.toLocalizedString());
+          "function.getId() returned null, implement the Function.getId() method properly");
     }
     if (function.isHA() && !function.hasResult()) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
+          "For Functions with isHA true, hasResult must also be true.");
     }
 
     idToFunctionMap.put(function.getId(), function);
@@ -369,8 +368,8 @@ public class FunctionServiceManager {
    */
   public void unregisterFunction(String functionId) {
     if (functionId == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("functionId instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "functionId instance "));
     }
     idToFunctionMap.remove(functionId);
   }
@@ -383,8 +382,8 @@ public class FunctionServiceManager {
    */
   public boolean isRegistered(String functionId) {
     if (functionId == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("functionId instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "functionId instance "));
     }
     return idToFunctionMap.containsKey(functionId);
   }
@@ -424,8 +423,8 @@ public class FunctionServiceManager {
 
   public Execution onMember(DistributedSystem system, String... groups) {
     if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "DistributedSystem instance "));
     }
     Set<DistributedMember> members = new HashSet<>();
     for (String group : groups) {
@@ -440,8 +439,8 @@ public class FunctionServiceManager {
       }
     }
     if (members.isEmpty()) {
-      throw new FunctionException(LocalizedStrings.FunctionService_NO_MEMBERS_FOUND_IN_GROUPS
-          .toLocalizedString(Arrays.toString(groups)));
+      throw new FunctionException(String.format("No members found in group(s) %s",
+          Arrays.toString(groups)));
     }
     return new MemberFunctionExecutor(system, members);
   }

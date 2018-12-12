@@ -42,9 +42,7 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
 import org.apache.geode.internal.cache.persistence.OplogType;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
 public class PersistentOplogSet implements OplogSet {
@@ -472,7 +470,8 @@ public class PersistentOplogSet implements OplogSet {
       }
       long endOpLogRecovery = System.currentTimeMillis();
       long elapsed = endOpLogRecovery - startOpLogRecovery;
-      logger.info(LocalizedMessage.create(LocalizedStrings.DiskRegion_OPLOG_LOAD_TIME, elapsed));
+      logger
+          .info("recovery oplog load took {} ms", elapsed);
     }
     if (!parent.isOfflineCompacting()) {
       long startRegionInit = System.currentTimeMillis();
@@ -513,8 +512,9 @@ public class PersistentOplogSet implements OplogSet {
         }
 
         long endRegionInit = System.currentTimeMillis();
-        logger.info(LocalizedMessage.create(LocalizedStrings.DiskRegion_REGION_INIT_TIME,
-            endRegionInit - startRegionInit));
+        logger
+            .info("recovery region initialization took {} ms",
+                endRegionInit - startRegionInit);
       }
     }
     return byteCount;
@@ -625,7 +625,7 @@ public class PersistentOplogSet implements OplogSet {
            * try { this.isThreadWaitingForSpace = true; this.directories.wait(MAX_WAIT_FOR_SPACE); }
            * catch (InterruptedException ie) { throw new DiskAccessException(LocalizedStrings.
            * DiskRegion_UNABLE_TO_GET_FREE_SPACE_FOR_CREATING_AN_OPLOG_AS_THE_THREAD_ENCOUNETERD_EXCEPTION_WHILE_WAITING_FOR_COMPACTOR_THREAD_TO_FREE_SPACE
-           * .toLocalizedString(), ie); }
+           * ), ie); }
            */
 
           selectedHolder = parent.directories[this.dirCounter];
@@ -635,17 +635,16 @@ public class PersistentOplogSet implements OplogSet {
             /*
              * throw new DiskAccessException(LocalizedStrings.
              * DiskRegion_UNABLE_TO_GET_FREE_SPACE_FOR_CREATING_AN_OPLOG_AFTER_WAITING_FOR_0_1_2_SECONDS
-             * .toLocalizedString(new Object[] {MAX_WAIT_FOR_SPACE, /, (1000)}));
+             * new Object[] {MAX_WAIT_FOR_SPACE, /, (1000)}));
              */
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.DiskRegion_COMPLEXDISKREGIONGETNEXTDIR_MAX_DIRECTORY_SIZE_WILL_GET_VIOLATED__GOING_AHEAD_WITH_THE_SWITCHING_OF_OPLOG_ANY_WAYS_CURRENTLY_AVAILABLE_SPACE_IN_THE_DIRECTORY_IS__0__THE_CAPACITY_OF_DIRECTORY_IS___1,
+            logger.warn(
+                "Even though the configured directory size limit has been exceeded a new oplog will be created because compaction is enabled. The configured limit is {}. The current space used in the directory by this disk store is {}.",
                 new Object[] {Long.valueOf(selectedHolder.getUsedSpace()),
-                    Long.valueOf(selectedHolder.getCapacity())}));
+                    Long.valueOf(selectedHolder.getCapacity())});
           }
         } else {
           throw new DiskAccessException(
-              LocalizedStrings.DiskRegion_DISK_IS_FULL_COMPACTION_IS_DISABLED_NO_SPACE_CAN_BE_CREATED
-                  .toLocalizedString(),
+              "Disk is full and compaction is disabled. No space can be created",
               parent);
         }
       }

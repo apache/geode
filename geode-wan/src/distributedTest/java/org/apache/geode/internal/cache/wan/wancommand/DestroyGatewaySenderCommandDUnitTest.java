@@ -72,13 +72,13 @@ public class DestroyGatewaySenderCommandDUnitTest {
   @Test
   public void testCreateDestroySerialGatewaySenderWithDefault() throws Exception {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"sender\" created on \"happyserver1\"");
+        "Message", "GatewaySender \"sender\" created on \"happyserver1\"");
 
     locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
+        "Message", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
 
     locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
 
@@ -89,14 +89,14 @@ public class DestroyGatewaySenderCommandDUnitTest {
   @Test
   public void testCreateDestroyParallellGatewaySenderWithDefault() throws Exception {
     gfsh.executeAndAssertThat(CREATE + " --parallel").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status",
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
             "GatewaySender \"sender\" created on \"happyserver1\"");
 
     locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
+        "Message", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
 
     locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
 

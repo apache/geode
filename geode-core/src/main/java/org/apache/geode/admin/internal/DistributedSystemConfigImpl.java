@@ -48,7 +48,6 @@ import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
@@ -158,8 +157,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public DistributedSystemConfigImpl(DistributionConfig distConfig, String remoteCommand) {
     if (distConfig == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_DISTRIBUTIONCONFIG_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "DistributionConfig must not be null.");
     }
 
     this.mcastAddress = InetAddressUtil.toString(distConfig.getMcastAddress());
@@ -238,8 +236,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         this.refreshInterval = Integer.parseInt(refreshInterval);
       } catch (NumberFormatException nfEx) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
-                .toLocalizedString(new Object[] {refreshInterval, REFRESH_INTERVAL_NAME}));
+            String.format("%s is not a valid integer for %s",
+                new Object[] {refreshInterval, REFRESH_INTERVAL_NAME}));
       }
     }
   }
@@ -324,8 +322,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   protected void checkReadOnly() {
     if (this.system != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedSystemConfigImpl_A_DISTRIBUTEDSYSTEMCONFIG_OBJECT_CANNOT_BE_MODIFIED_AFTER_IT_HAS_BEEN_USED_TO_CREATE_AN_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "A DistributedSystemConfig object cannot be modified after it has been used to create an AdminDistributedSystem.");
     }
   }
 
@@ -353,8 +350,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         return;
       } else {
         throw new AdminXmlException(
-            LocalizedStrings.DistributedSystemConfigImpl_ENTITY_CONFIGURATION_XML_FILE_0_DOES_NOT_EXIST
-                .toLocalizedString(fileName));
+            String.format("Entity configuration XML file %s does not exist",
+                fileName));
       }
     }
 
@@ -367,7 +364,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       }
     } catch (IOException ex) {
       throw new AdminXmlException(
-          LocalizedStrings.DistributedSystemConfigImpl_WHILE_PARSING_0.toLocalizedString(fileName),
+          String.format("While parsing %s", fileName),
           ex);
     }
   }
@@ -476,9 +473,10 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
           this.membershipPortRange = membershipPortRangeStr;
         } else {
           throw new IllegalArgumentException(
-              LocalizedStrings.DistributedSystemConfigImpl_INVALID_VALUE_FOR_MEMBERSHIP_PORT_RANGE
-                  .toLocalizedString(
-                      new Object[] {membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME}));
+              String.format(
+                  "The value specified %s is invalid for the property : %s. This range should be specified as min-max.",
+
+                  new Object[] {membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME}));
         }
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
@@ -599,8 +597,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void basicSetBindAddress(String bindAddress) {
     if (!validateBindAddress(bindAddress)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_INVALID_BIND_ADDRESS_0
-              .toLocalizedString(bindAddress));
+          String.format("Invalid bind address: %s",
+              bindAddress));
     }
     this.bindAddress = bindAddress;
   }
@@ -608,8 +606,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void basicSetServerBindAddress(String bindAddress) {
     if (!validateBindAddress(bindAddress)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_INVALID_BIND_ADDRESS_0
-              .toLocalizedString(bindAddress));
+          String.format("Invalid bind address: %s",
+              bindAddress));
     }
     this.serverBindAddress = bindAddress;
   }
@@ -1003,9 +1001,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public void validate() {
     if (this.getMcastPort() < MIN_MCAST_PORT || this.getMcastPort() > MAX_MCAST_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_MCASTPORT_MUST_BE_AN_INTEGER_INCLUSIVELY_BETWEEN_0_AND_1
-              .toLocalizedString(
-                  new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
+          String.format("mcastPort must be an integer inclusively between %s and %s",
+
+              new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
     }
 
     LogLevel.getLogWriterLevel(this.logLevel);
@@ -1013,16 +1011,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT
         || this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_LOGFILESIZELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1
-              .toLocalizedString(new Object[] {Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
+          String.format("LogFileSizeLimit must be an integer between %s and %s",
+              new Object[] {Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
                   Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)}));
     }
 
     if (this.logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT
         || this.logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_LOGDISKSPACELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1
-              .toLocalizedString(new Object[] {Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
+          String.format("LogDiskSpaceLimit must be an integer between %s and %s",
+              new Object[] {Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
                   Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)}));
     }
 

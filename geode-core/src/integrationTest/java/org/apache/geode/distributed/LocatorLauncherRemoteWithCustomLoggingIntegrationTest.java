@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.CONFIG_LAYOUT_PREFIX;
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.createConfigFileIn;
+import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.apache.logging.log4j.core.config.ConfigurationFactory.CONFIGURATION_FILE_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,16 +27,22 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Integration tests for using {@code LocatorLauncher} as an application main in a forked JVM with
  * custom logging configuration.
  */
+@Category({GfshTest.class, LoggingTest.class})
 public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest
     extends LocatorLauncherRemoteIntegrationTestCase {
+
+  private static final String CONFIG_LAYOUT_PREFIX = "CUSTOM";
 
   private File customLoggingConfigFile;
 
@@ -45,17 +51,19 @@ public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest
 
   @Before
   public void setUpLocatorLauncherRemoteWithCustomLoggingIntegrationTest() throws Exception {
-    this.customLoggingConfigFile = createConfigFileIn(getWorkingDirectory());
+    String configFileName = getClass().getSimpleName() + "_log4j2.xml";
+    customLoggingConfigFile = createFileFromResource(getResource(configFileName),
+        getWorkingDirectory(), configFileName);
   }
 
   @Test
-  public void startWithCustomLoggingConfiguration() throws Exception {
+  public void startWithCustomLoggingConfiguration() {
     startLocator(new LocatorCommand(this)
         .addJvmArgument("-D" + CONFIGURATION_FILE_PROPERTY + "=" + getCustomLoggingConfigFilePath())
         .withCommand(Command.START), new ToSystemOut(), new ToSystemOut());
 
     assertThat(systemOutRule.getLog()).contains(CONFIG_LAYOUT_PREFIX)
-        .contains("log4j.configurationFile = " + getCustomLoggingConfigFilePath());
+        .contains(CONFIGURATION_FILE_PROPERTY + " = " + getCustomLoggingConfigFilePath());
   }
 
   private String getCustomLoggingConfigFilePath() {

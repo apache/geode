@@ -35,9 +35,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -415,9 +413,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
           }
         }
       } catch (RuntimeException e) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.DLOCKRECOVERGRANTORPROCESSOR_DLOCKRECOVERGRANTORMESSAGE_PROCESS_THROWABLE),
+        logger.warn("[DLockRecoverGrantorMessage.process] throwable: ",
             e);
         replyException = new ReplyException(e);
       } finally {

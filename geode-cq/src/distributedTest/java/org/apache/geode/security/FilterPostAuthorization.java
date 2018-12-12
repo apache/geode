@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.OperationContext;
@@ -36,10 +37,8 @@ import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * An authorization implementation for testing that checks for authorization information in
@@ -52,7 +51,7 @@ public class FilterPostAuthorization implements AccessControl {
 
   private String principalName;
 
-  private LogWriterI18n logger;
+  private LogWriter logger;
 
   static {
     Instantiator.register(new Instantiator(ObjectWithAuthz.class, ObjectWithAuthz.CLASSID) {
@@ -78,7 +77,7 @@ public class FilterPostAuthorization implements AccessControl {
       throws NotAuthorizedException {
 
     this.principalName = (principal == null ? "" : principal.getName());
-    this.logger = cache.getSecurityLoggerI18n();
+    this.logger = cache.getSecurityLogger();
   }
 
   private byte[] checkObjectAuth(byte[] serializedObj, boolean isObject) {
@@ -97,7 +96,7 @@ public class FilterPostAuthorization implements AccessControl {
       }
     } catch (Exception ex) {
       this.logger.severe(
-          LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_AN_EXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE,
+          "FilterPostAuthorization: An exception was thrown while trying to de-serialize.",
           ex);
       return null;
     }
@@ -110,7 +109,7 @@ public class FilterPostAuthorization implements AccessControl {
         return hos.toByteArray();
       } catch (Exception ex) {
         this.logger.severe(
-            LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_AN_EXCEPTION_WAS_THROWN_WHILE_TRYING_TO_SERIALIZE,
+            "FilterPostAuthorization: An exception was thrown while trying to serialize.",
             ex);
       }
     }
@@ -131,8 +130,9 @@ public class FilterPostAuthorization implements AccessControl {
       authzIndex %= 10;
       if ((lastChar == 0) || (authzIndex % lastChar != 0)) {
         this.logger.warning(
-            LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_THE_USER_0_IS_NOT_AUTHORIZED_FOR_THE_OBJECT_1,
-            new Object[] {this.principalName, authzObj.getVal()});
+            String.format(
+                "FilterPostAuthorization: The user [%s] is not authorized for the object %s.",
+                new Object[] {this.principalName, authzObj.getVal()}));
         return null;
       } else {
         if (this.logger.fineEnabled()) {
@@ -147,8 +147,8 @@ public class FilterPostAuthorization implements AccessControl {
       }
     }
     this.logger.warning(
-        LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_THE_OBJECT_OF_TYPE_0_IS_NOT_AN_INSTANCE_OF_1,
-        new Object[] {obj.getClass(), ObjectWithAuthz.class});
+        String.format("FilterPostAuthorization: The object of type %s, is not an instance of %s.",
+            new Object[] {obj.getClass(), ObjectWithAuthz.class}));
     return null;
   }
 

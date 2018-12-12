@@ -1,7 +1,10 @@
 {
   "variables": {
-    "image_family_prefix": "local-testing-",
-    "geode_docker_image": "gcr.io/apachegeode-ci/test-container"
+    "pipeline_prefix": "local-testing-",
+    "hashed_pipeline_prefix": "0b7ad56c-671b-5244-9f36-01f92928abf8",
+    "geode_docker_image": "unset",
+    "gcp_project": "unset",
+    "java_build_version": "8"
   },
   "provisioners": [
     {
@@ -18,6 +21,9 @@
     },
     {
       "type": "shell",
+      "environment_vars": [
+        "JAVA_BUILD_VERSION={{user `java_build_version`}}"
+      ],
       "execute_command": "sudo -u geode -S sh -c '{{ .Vars }} {{ .Path }}'",
       "script": "scripts/cache_dependencies.sh"
     }
@@ -25,12 +31,13 @@
   "builders": [
     {
       "type": "googlecompute",
-      "project_id": "apachegeode-ci",
+      "project_id": "{{user `gcp_project`}}",
       "source_image_family": "debian-9",
       "ssh_username": "packer",
       "zone": "us-central1-f",
-      "image_family": "{{user `image_family_prefix`}}geode-builder",
-      "image_name": "{{user `image_family_prefix`}}geode-builder-{{timestamp}}"
+      "image_family": "{{user `pipeline_prefix`}}geode-builder",
+      "image_name": "{{user `hashed_pipeline_prefix`}}gb-{{timestamp}}",
+      "tags": ["packer"]
     }
   ]
 }

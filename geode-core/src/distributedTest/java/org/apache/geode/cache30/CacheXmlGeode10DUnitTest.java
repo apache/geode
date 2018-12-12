@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.IgnoredException;
 
 
@@ -94,8 +93,9 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     assertEquals(true, regionBefore.getAttributes().getOffHeap());
 
     IgnoredException.addIgnoredException(
-        LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED
-            .toLocalizedString("/" + regionName));
+        String.format(
+            "The region %s was configured to use off heap memory but no off heap memory was configured",
+            "/" + regionName));
 
     try {
       testXml(cache);
@@ -103,8 +103,9 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     } catch (IllegalStateException e) {
       // expected
       String msg =
-          LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED
-              .toLocalizedString("/" + regionName);
+          String.format(
+              "The region %s was configured to use off heap memory but no off heap memory was configured",
+              "/" + regionName);
       assertEquals(msg, e.getMessage());
     }
   }
@@ -133,8 +134,9 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     assertEquals(true, subRegionBefore.getAttributes().getOffHeap());
 
     IgnoredException.addIgnoredException(
-        LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED
-            .toLocalizedString("/" + rootRegionName + "/" + subRegionName));
+        String.format(
+            "The region %s was configured to use off heap memory but no off heap memory was configured",
+            "/" + rootRegionName + "/" + subRegionName));
 
     try {
       testXml(cache);
@@ -142,8 +144,9 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     } catch (IllegalStateException e) {
       // expected
       final String msg =
-          LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED
-              .toLocalizedString("/" + rootRegionName + "/" + subRegionName);
+          String.format(
+              "The region %s was configured to use off heap memory but no off heap memory was configured",
+              "/" + rootRegionName + "/" + subRegionName);
       assertEquals(msg, e.getMessage());
     }
   }
@@ -191,8 +194,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     rmc.setCriticalOffHeapPercentage(low);
     cache.setResourceManagerCreation(rmc);
     IgnoredException expectedException = IgnoredException.addIgnoredException(
-        LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE
-            .toLocalizedString());
+        "Eviction percentage must be less than the critical percentage.");
     try {
       testXml(cache);
       fail("Expected IllegalArgumentException to be thrown");

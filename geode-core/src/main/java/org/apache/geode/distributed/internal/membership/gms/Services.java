@@ -43,7 +43,6 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -52,9 +51,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class Services {
 
   private static final Logger logger = LogService.getLogger();
-
-  private static final ThreadGroup threadGroup =
-      LoggingThreadGroup.createThreadGroup("GemFire Membership", logger);
 
   private static InternalLogWriter staticLogWriter;
   private static InternalLogWriter staticSecurityLogWriter;
@@ -85,13 +81,6 @@ public class Services {
    */
   public static Logger getLogger() {
     return logger;
-  }
-
-  /**
-   * The thread group for all membership threads
-   */
-  public static ThreadGroup getThreadGroup() {
-    return threadGroup;
   }
 
   /**

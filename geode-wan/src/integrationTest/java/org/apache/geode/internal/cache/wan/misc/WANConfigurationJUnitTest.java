@@ -53,7 +53,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -77,8 +76,7 @@ public class WANConfigurationJUnitTest {
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
       if ((e instanceof IllegalStateException && e.getMessage().startsWith(
-          LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER
-              .toLocalizedString()))) {
+          "Locators must be configured before starting gateway-sender."))) {
       } else {
         fail("Expected IllegalStateException but received :" + e);
       }
@@ -437,25 +435,19 @@ public class WANConfigurationJUnitTest {
   public void test_ValidateGatewayReceiverAttributes_WrongBindAddress() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    fact.setStartPort(50504);
+    fact.setStartPort(50505);
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
-    fact.setEndPort(70707);
+    fact.setEndPort(50505);
     fact.setManualStart(true);
     fact.setBindAddress("200.112.204.10");
     GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
     fact.addGatewayTransportFilter(myStreamFilter1);
 
+    long then = System.currentTimeMillis();
     GatewayReceiver receiver = fact.create();
-    try {
-      receiver.start();
-      fail("Expected GatewayReceiverException");
-    } catch (GatewayReceiverException gRE) {
-      assertTrue(gRE.getMessage().contains("Failed to create server socket on"));
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("The test failed with IOException");
-    }
+    assertThatThrownBy(() -> receiver.start()).isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
   }
 
   @Test

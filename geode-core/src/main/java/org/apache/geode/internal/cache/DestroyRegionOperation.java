@@ -42,9 +42,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class DestroyRegionOperation extends DistributedCacheOperation {
 
@@ -254,9 +252,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                     getReplySender(dm));
               }
             } else if (thr != null) {
-              logger.error(
-                  LocalizedMessage.create(
-                      LocalizedStrings.DestroyRegionOperation_EXCEPTION_WHILE_PROCESSING__0_, this),
+              logger.error(String.format("Exception while processing [ %s ]", this),
                   thr);
             }
           }
@@ -372,19 +368,20 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                 rgn.reinitializeFromImageTarget(getSender());
               } catch (TimeoutException e) {
                 // dlock timed out, log message
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.DestroyRegionOperation_GOT_TIMEOUT_WHEN_TRYING_TO_RECREATE_REGION_DURING_REINITIALIZATION_1,
-                    rgn.getFullPath()), e);
+                logger.warn(String.format(
+                    "Got timeout when trying to recreate region during re-initialization: %s",
+                    rgn.getFullPath()),
+                    e);
               } catch (IOException e) {
                 // only if loading snapshot, not here
                 InternalGemFireError assErr = new InternalGemFireError(
-                    LocalizedStrings.UNEXPECTED_EXCEPTION.toLocalizedString());
+                    "unexpected exception");
                 assErr.initCause(e);
                 throw assErr;
               } catch (ClassNotFoundException e) {
                 // only if loading snapshot, not here
                 InternalGemFireError assErr = new InternalGemFireError(
-                    LocalizedStrings.UNEXPECTED_EXCEPTION.toLocalizedString());
+                    "unexpected exception");
                 assErr.initCause(e);
                 throw assErr;
               } finally {
@@ -403,12 +400,10 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
         }
       } catch (CacheWriterException ignore) {
         throw new Error(
-            LocalizedStrings.DestroyRegionOperation_CACHEWRITER_SHOULD_NOT_HAVE_BEEN_CALLED
-                .toLocalizedString());
+            "CacheWriter should not have been called");
       } catch (TimeoutException ignore) {
         throw new Error(
-            LocalizedStrings.DestroyRegionOperation_DISTRIBUTEDLOCK_SHOULD_NOT_HAVE_BEEN_ACQUIRED
-                .toLocalizedString());
+            "DistributedLock should not have been acquired");
       } catch (RejectedExecutionException ignore) {
         // rejected while trying to execute recreate thread
         // must be shutting down, so what we were trying to do must not be
@@ -421,8 +416,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       Assert.assertTrue(false,
-          LocalizedStrings.DestroyRegionOperation_REGION_DESTRUCTION_MESSAGE_IMPLEMENTATION_IS_IN_BASICPROCESS__NOT_THIS_METHOD
-              .toLocalizedString());
+          "Region Destruction message implementation is in basicProcess, not this method");
       return false;
     }
 

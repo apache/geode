@@ -17,6 +17,8 @@ package org.apache.geode.modules.session;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
+import javax.security.auth.message.config.AuthConfigFactory;
+
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
@@ -51,6 +53,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
     sessionManager = manager;
     sessionManager.setEnableCommitValve(true);
     server.getRootContext().setManager(sessionManager);
+    AuthConfigFactory.setFactory(null);
 
     servlet = server.addServlet("/test/*", "default", CommandServlet.class.getName());
     server.startContainer();

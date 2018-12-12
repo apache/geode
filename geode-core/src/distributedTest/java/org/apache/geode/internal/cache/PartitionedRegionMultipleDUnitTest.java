@@ -72,14 +72,14 @@ public class PartitionedRegionMultipleDUnitTest extends CacheTestCase {
    */
   @Test
   public void testPartitionedRegionDestroyAndContainsAPI() throws Exception {
-    vm0.invoke(() -> createPartitionRegion());
-    vm1.invoke(() -> createPartitionRegion());
+    vm0.invoke(this::createPartitionRegion);
+    vm1.invoke(this::createPartitionRegion);
 
     vm0.invoke(() -> putInPartitionRegion(startIndexForKey, endIndexForKey));
-    vm0.invoke(() -> destroyInPartitionedRegion());
+    vm0.invoke(this::destroyInPartitionedRegion);
 
-    vm0.invoke(() -> validateContainsAPIForPartitionRegion());
-    vm1.invoke(() -> validateContainsAPIForPartitionRegion());
+    vm0.invoke(this::validateContainsAPIForPartitionRegion);
+    vm1.invoke(this::validateContainsAPIForPartitionRegion);
   }
 
   private void putInPartitionRegion(int startIndexForKey, int endIndexForKey) {

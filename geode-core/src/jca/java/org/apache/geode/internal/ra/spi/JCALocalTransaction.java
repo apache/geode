@@ -26,7 +26,6 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class JCALocalTransaction implements LocalTransaction {
   private volatile InternalCache cache;
@@ -127,8 +126,7 @@ public class JCALocalTransaction implements LocalTransaction {
     } catch (IllegalStateException ise) {
       // It is possible that the GFE transaction has already been rolled back.
       if (ise.getMessage()
-          .equals(LocalizedStrings.TXManagerImpl_THREAD_DOES_NOT_HAVE_AN_ACTIVE_TRANSACTION
-              .toLocalizedString())) {
+          .equals("Thread does not have an active transaction")) {
         // ignore
       } else {
         throw new ResourceException(ise);

@@ -36,7 +36,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -118,9 +117,9 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       DistributionManager distributionManager) {
     if (pr != null && !pr.getDistributionAdvisor().isInitialized()) {
       Throwable thr = new ForceReattemptException(
-          LocalizedStrings.PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
-              .toLocalizedString(distributionManager.getDistributionManagerId(),
-                  pr.getRegionIdentifier()));
+          String.format("%s : could not find partitioned region with Id %s",
+              distributionManager.getDistributionManagerId(),
+              pr.getRegionIdentifier()));
       return thr;
     }
     return null;
@@ -153,7 +152,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       if (DistributionAdvisor.isNewerSerialNumber(oldSerial, this.prSerial)) {
         ok = false;
         if (logger.isDebugEnabled()) {
-          logger.debug("Not removing region {}l serial requested = {}; actual is {}", r.getName(),
+          logger.debug("Not removing region {} serial requested = {}; actual is {}", r.getName(),
               this.prSerial, r.getSerialNumber());
         }
       }

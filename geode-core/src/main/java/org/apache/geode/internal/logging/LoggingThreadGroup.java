@@ -22,10 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A <code>ThreadGroup</code> that logs all {@linkplain #uncaughtException uncaught exceptions} to a
@@ -78,7 +75,7 @@ public class LoggingThreadGroup extends ThreadGroup {
 
         LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
         if (group2.isDestroyed()) {
-          // Clean is this guy out
+          // Clean is this iterator out
           iter.remove();
           continue;
         }
@@ -128,7 +125,7 @@ public class LoggingThreadGroup extends ThreadGroup {
 
         LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
         if (group2.isDestroyed()) {
-          // Clean is this guy out
+          // Clean is this iterator out
           iter.remove();
           continue;
         }
@@ -265,30 +262,29 @@ public class LoggingThreadGroup extends ThreadGroup {
       String threadName = t.getName();
       if ((ex instanceof NoClassDefFoundError)
           && (threadName.equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
-        final StringId msg =
-            LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURRED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1;
+        final String msg =
+            "Uncaught exception in thread %s this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: %s";
         final Object[] msgArgs = new Object[] {t, ex.getLocalizedMessage()};
-        stderr.info(msg, msgArgs);
+        stderr.info(String.format(msg, msgArgs));
         if (this.logger != null) {
-          this.logger.info(LocalizedMessage.create(msg, msgArgs));
+          this.logger.info(String.format(msg, msgArgs));
         }
         if (this.logWriter != null) {
-          this.logWriter.info(msg, msgArgs);
+          this.logWriter.info(String.format(msg, msgArgs));
         }
       } else {
-        stderr.severe(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t, ex);
+        stderr.severe(String.format("Uncaught exception in thread %s", t), ex);
         if (this.logger != null) {
-          this.logger.fatal(
-              LocalizedMessage.create(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t), ex);
+          this.logger.fatal(String.format("Uncaught exception in thread %s", t), ex);
         }
         if (this.logWriter != null) {
-          this.logWriter.severe(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t, ex);
+          this.logWriter.severe(String.format("Uncaught exception in thread %s", t), ex);
         }
       }
       // if (!(ex instanceof RuntimeException) && (ex instanceof Exception)) {
       // something's fishy - checked exceptions shouldn't get here
       // this.logger.severe("stack trace showing origin of uncaught checked exception", new
-      // Exception("stack trace"));
+      // Exception("stack trace");
       // }
       this.uncaughtExceptionsCount++;
     }

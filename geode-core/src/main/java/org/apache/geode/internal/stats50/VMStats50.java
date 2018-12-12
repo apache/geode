@@ -165,6 +165,7 @@ public class VMStats50 implements VMStatsContract {
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
+        logger.warn(ex.getMessage());
         SystemFailure.checkFailure();
         // must be on a platform that does not support unix mxbean
         bean = null;

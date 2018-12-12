@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -126,7 +125,7 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
 
     identifyPrimaryServer();
 
-    client1.invoke(() -> await().atMost(1, MINUTES).until(() -> DESTROYED_COUNT.get() == 10));
+    client1.invoke(() -> await().until(() -> DESTROYED_COUNT.get() == 10));
 
     // totalEvents = putCount * 2 [eviction-destroys] + 1 [marker message]
     int totalEvents = putCount * 2 + 1;
@@ -214,7 +213,7 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
   }
 
   private void verifyClientSubscriptionStatsOnPrimary(final int eventsCount) {
-    await().atMost(1, MINUTES).until(() -> allEventsHaveBeenDispatched(eventsCount));
+    await().until(() -> allEventsHaveBeenDispatched(eventsCount));
   }
 
   private boolean allEventsHaveBeenDispatched(final int eventsCount) {
@@ -224,7 +223,7 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
   }
 
   private void verifyClientSubscriptionStatsOnSecondary(final int eventsCount) {
-    await().atMost(1, MINUTES).until(() -> {
+    await().until(() -> {
       HARegionQueueStats stats = getCacheClientProxy().getHARegionQueue().getStatistics();
 
       int numOfEvents = eventsCount - 1; // No marker

@@ -45,9 +45,7 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager.MemberRevocationListener;
 import org.apache.geode.internal.cache.persistence.PersistentStateQueryMessage.PersistentStateQueryReplyProcessor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
@@ -135,8 +133,8 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     }
 
     if (wasAboutToDestroy()) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PersistenceAdvisorImpl_FINISHING_INCOMPLETE_DESTROY, regionPath));
+      logger.info("Region {} crashed during a region destroy. Finishing the destroy.",
+          regionPath);
       finishPendingDestroy();
     }
 
@@ -176,11 +174,12 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           TransformUtils.transform(members, onlineMembers,
               TransformUtils.persistentMemberIdToLogEntryTransformer);
 
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.PersistenceAdvisorImpl_PERSISTENT_VIEW,
+          logger.info(
+              "The following persistent member has gone offline for region {}: {}  Remaining participating members for the region include: {}",
               new Object[] {regionPath,
-                  TransformUtils.persistentMemberIdToLogEntryTransformer.transform(persistentID),
-                  onlineMembers}));
+                  TransformUtils.persistentMemberIdToLogEntryTransformer
+                      .transform(persistentID),
+                  onlineMembers});
         }
       }
     });
@@ -511,13 +510,15 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
       if (PersistentMemberState.REVOKED.equals(stateOnPeer)) {
         throw new RevokedPersistentDataException(
-            LocalizedStrings.PersistentMemberManager_Member_0_is_already_revoked
-                .toLocalizedString(myId));
+            String.format(
+                "The persistent member id %s has been revoked in this distributed system. You cannot recover from disk files which have been revoked.",
+                myId));
       }
 
       if (myId != null && stateOnPeer == null) {
-        String message = LocalizedStrings.CreatePersistentRegionProcessor_SPLIT_DISTRIBUTED_SYSTEM
-            .toLocalizedString(regionPath, member, remoteId, myId);
+        String message = String.format(
+            "Region %s remote member %s with persistent data %s was not part of the same distributed system as the local data from %s",
+            regionPath, member, remoteId, myId);
         throw new ConflictingPersistentDataException(message);
       }
 
@@ -530,8 +531,9 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         PersistentMemberState remoteState = getPersistedStateOfMember(remoteId);
         if (remoteState == PersistentMemberState.OFFLINE) {
           String message =
-              LocalizedStrings.CreatePersistentRegionProcessor_INITIALIZING_FROM_OLD_DATA
-                  .toLocalizedString(regionPath, member, remoteId, myId);
+              String.format(
+                  "Region %s refusing to initialize from member %s with persistent data %s which was offline when the local data from %s was last online",
+                  regionPath, member, remoteId, myId);
           throw new ConflictingPersistentDataException(message);
         }
       }
@@ -580,8 +582,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
             PersistenceObserverHolder.getInstance().afterPersistedOffline(regionPath, persistentID);
           }
         } catch (DiskAccessException e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PersistenceAdvisorImpl_UNABLE_TO_PERSIST_MEMBERSHIP_CHANGE), e);
+          logger.warn("Unable to persist membership change", e);
         }
       }
       notifyListenersMemberOffline(distributedMember, persistentID);
@@ -605,8 +606,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           }
           PersistenceObserverHolder.getInstance().afterPersistedOnline(regionPath, persistentID);
         } catch (DiskAccessException e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PersistenceAdvisorImpl_UNABLE_TO_PERSIST_MEMBERSHIP_CHANGE), e);
+          logger.warn("Unable to persist membership change", e);
         }
       } else {
         if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
@@ -667,8 +667,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         }
         PersistenceObserverHolder.getInstance().afterRemovePersisted(regionPath, id);
       } catch (DiskAccessException e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.PersistenceAdvisorImpl_UNABLE_TO_PERSIST_MEMBERSHIP_CHANGE), e);
+        logger.warn("Unable to persist membership change", e);
       }
       notifyListenersMemberRemoved(id, revoked);
     }
@@ -860,7 +859,8 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       PersistentStateQueryResults results = fetchPersistentStateQueryResults(members,
           cacheDistributionAdvisor.getDistributionManager(), myPersistentID, myInitializingId);
 
-      // iterate through all of the peers. For each peer: if the guy was previously online according
+      // iterate through all of the peers. For each peer: if the member was previously online
+      // according
       // to us, grab its online members and add them to the members to wait for set. We may need to
       // do this several times until we discover all of the members that may have newer data than
       // us.
@@ -913,8 +913,9 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
         if (PersistentMemberState.REVOKED.equals(state)) {
           throw new RevokedPersistentDataException(
-              LocalizedStrings.PersistentMemberManager_Member_0_is_already_revoked
-                  .toLocalizedString(myPersistentID));
+              String.format(
+                  "The persistent member id %s has been revoked in this distributed system. You cannot recover from disk files which have been revoked.",
+                  myPersistentID));
         }
 
         // If the peer thinks we are newer or equal to them, we don't need to wait for this peer.
@@ -1066,18 +1067,21 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           TransformUtils.persistentMemberIdToLogEntryTransformer);
 
       StartupStatus.startup(
-          LocalizedStrings.CreatePersistentRegionProcessor_WAITING_FOR_LATEST_MEMBER, regionPath,
-          TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
-          membersToWaitForLogEntries);
+          String.format(
+              "Region %s has potentially stale data. It is waiting for another member to recover the latest data.My persistent id:%sMembers with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+              regionPath,
+              TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
+              membersToWaitForLogEntries));
     } else {
       TransformUtils.transform(allMembersWaitingFor, membersToWaitForLogEntries,
           TransformUtils.persistentMemberIdToLogEntryTransformer);
 
       StartupStatus.startup(
-          LocalizedStrings.CreatePersistentRegionProcessor_WAITING_FOR_ONLINE_LATEST_MEMBER,
-          regionPath,
-          TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
-          membersToWaitForLogEntries);
+          String.format(
+              "Region %s has potentially stale data. It is waiting for another online member to recover the latest data.My persistent id:%sMembers with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+              regionPath,
+              TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
+              membersToWaitForLogEntries));
     }
   }
 

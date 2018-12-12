@@ -17,7 +17,10 @@ package org.apache.geode.internal.cache;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.internal.logging.LogService;
 
 public class BeforeCompletion {
@@ -25,13 +28,17 @@ public class BeforeCompletion {
 
   private boolean started;
   private boolean finished;
-  private SynchronizationCommitConflictException exception;
+  private RuntimeException exception;
 
   public synchronized void doOp(TXState txState) {
     try {
       txState.doBeforeCompletion();
     } catch (SynchronizationCommitConflictException exception) {
       this.exception = exception;
+    } catch (CacheClosedException exception) {
+      this.exception = new TransactionDataNodeHasDepartedException(exception);
+    } catch (RuntimeException exception) {
+      this.exception = new TransactionException(exception);
     } finally {
       logger.debug("beforeCompletion notification completed");
       finished = true;

@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMembershipView;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -585,8 +584,9 @@ public class ProxyBucketRegion implements Bucket {
           if (offlineMembers != null && !offlineMembers.isEmpty() && redundancy == -1) {
             // If there are offline members, and no online members, throw
             // an exception indicating that we can't create the bucket.
-            String message = LocalizedStrings.PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE
-                .toLocalizedString(partitionedRegion.getFullPath(), bid, offlineMembers);
+            String message = String.format(
+                "Region %s bucket %s has persistent data that is no longer online stored at these locations: %s",
+                partitionedRegion.getFullPath(), bid, offlineMembers);
             throw new PartitionOfflineException((Set) offlineMembers, message);
           } else {
             // If there are online and offline members, add the offline

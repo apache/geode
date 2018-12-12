@@ -25,7 +25,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -68,7 +67,7 @@ public class CompiledNegation extends AbstractCompiledValue {
     if (obj == null || obj == QueryService.UNDEFINED)
       return QueryService.UNDEFINED;
     throw new TypeMismatchException(
-        LocalizedStrings.CompiledNegation_0_CANNOT_BE_NEGATED.toLocalizedString(obj.getClass()));
+        String.format("%s cannot be negated", obj.getClass()));
   }
 
   @Override

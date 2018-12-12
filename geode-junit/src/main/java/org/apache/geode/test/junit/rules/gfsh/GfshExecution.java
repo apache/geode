@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,16 +23,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Streams;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
+
+  private static final String DOUBLE_QUOTE = "\"";
+
   private final Process process;
   private final File workingDir;
   private final ProcessLogger processLogger;
@@ -107,5 +114,57 @@ public class GfshExecution {
   private Stream<File> findLogFiles(File memberDir) {
     return Arrays.stream(memberDir.listFiles()).filter(File::isFile)
         .filter(file -> file.getName().toLowerCase().endsWith(".log"));
+  }
+
+  protected void awaitTermination(GfshScript script) throws InterruptedException {
+    boolean exited = process.waitFor(script.getTimeout(), script.getTimeoutTimeUnit());
+
+    try {
+      assertThat(exited).isTrue();
+      assertThat(process.exitValue()).isEqualTo(script.getExpectedExitValue());
+    } catch (AssertionError error) {
+      printLogFiles();
+      throw error;
+    }
+  }
+
+  /**
+   * this only kills the process of "gfsh -e command", it does not kill the child processes started
+   * by this command.
+   */
+  public void killProcess() {
+    process.destroyForcibly();
+    if (process.isAlive()) {
+      // process may not terminate immediately after destroyForcibly
+      boolean exited = false;
+      try {
+        exited = process.waitFor(1, TimeUnit.MINUTES);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+      if (!exited) {
+        throw new RuntimeException("failed to destroy the process of " + workingDir.getName());
+      }
+    }
+  }
+
+  String[] getStopMemberCommands() {
+    Stream<String> stopServers =
+        getServerDirs().stream().map(f -> "stop server --dir=" + quoteArgument(f.toString()));
+    Stream<String> stopLocators =
+        getLocatorDirs().stream().map(f -> "stop locator --dir=" + quoteArgument(f.toString()));
+    return Streams.concat(stopServers, stopLocators).toArray(String[]::new);
+  }
+
+  private String quoteArgument(String argument) {
+    if (!argument.startsWith(DOUBLE_QUOTE)) {
+      argument = DOUBLE_QUOTE + argument;
+    }
+
+    if (!argument.endsWith(DOUBLE_QUOTE)) {
+      argument = argument + DOUBLE_QUOTE;
+    }
+
+    return argument;
   }
 }

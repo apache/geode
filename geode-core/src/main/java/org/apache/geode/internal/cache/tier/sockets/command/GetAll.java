@@ -29,8 +29,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -90,11 +88,7 @@ public class GetAll extends BaseCommand {
     // Process the getAll request
     if (regionName == null) {
       String message = null;
-      // if (regionName == null) (can only be null)
-      {
-        message = LocalizedStrings.GetAll_THE_INPUT_REGION_NAME_FOR_THE_GETALL_REQUEST_IS_NULL
-            .toLocalizedString();
-      }
+      message = "The input region name for the getAll request is null";
       logger.warn("{}: {}", serverConnection.getName(), message);
       writeChunkedErrorResponse(clientMessage, MessageType.GET_ALL_DATA_ERROR, message,
           serverConnection);
@@ -178,9 +172,10 @@ public class GetAll extends BaseCommand {
             logger.debug("{}: Passed GET pre-authorization for key={}", servConn.getName(), key);
           }
         } catch (NotAuthorizedException ex) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-              new Object[] {servConn.getName(), key}), ex);
+          logger.warn(
+              String.format("%s: Caught the following exception attempting to get value for key=%s",
+                  new Object[] {servConn.getName(), key}),
+              ex);
           values.addExceptionPart(key, ex);
           continue;
         }
@@ -189,9 +184,10 @@ public class GetAll extends BaseCommand {
       try {
         securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
       } catch (NotAuthorizedException ex) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-            new Object[] {servConn.getName(), key}), ex);
+        logger.warn(
+            String.format("%s: Caught the following exception attempting to get value for key=%s",
+                new Object[] {servConn.getName(), key}),
+            ex);
         values.addExceptionPart(key, ex);
         continue;
       }
@@ -222,9 +218,10 @@ public class GetAll extends BaseCommand {
                 key, value);
           }
         } catch (NotAuthorizedException ex) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-              new Object[] {servConn.getName(), key}), ex);
+          logger.warn(
+              String.format("%s: Caught the following exception attempting to get value for key=%s",
+                  new Object[] {servConn.getName(), key}),
+              ex);
           values.addExceptionPart(key, ex);
           continue;
         }

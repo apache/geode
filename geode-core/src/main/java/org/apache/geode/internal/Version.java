@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -56,7 +55,7 @@ public class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 90;
+  public static final int HIGHEST_VERSION = 95;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
 
@@ -220,13 +219,18 @@ public class Version implements Comparable<Version> {
   public static final Version GEODE_170 =
       new Version("GEODE", "1.7.0", (byte) 1, (byte) 7, (byte) 0, (byte) 0, GEODE_170_ORDINAL);
 
+  private static final byte GEODE_180_ORDINAL = 95;
+
+  public static final Version GEODE_180 =
+      new Version("GEODE", "1.8.0", (byte) 1, (byte) 8, (byte) 0, (byte) 0, GEODE_180_ORDINAL);
+
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!
    */
-  public static final Version CURRENT = GEODE_170;
+  public static final Version CURRENT = GEODE_180;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
@@ -268,8 +272,9 @@ public class Version implements Comparable<Version> {
     // for processing
     if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null
         || (forGFEClients && CommandInitializer.getCommands(VALUES[ordinal]) == null)) {
-      throw new UnsupportedVersionException(LocalizedStrings.Version_REMOTE_VERSION_NOT_SUPPORTED
-          .toLocalizedString(ordinal, CURRENT.name));
+      throw new UnsupportedVersionException(String.format(
+          "Peer or client version with ordinal %s not supported. Highest known version is %s",
+          ordinal, CURRENT.name));
     }
     return VALUES[ordinal];
   }

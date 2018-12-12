@@ -16,13 +16,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.awaitility.Awaitility.with;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -193,7 +192,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitForClientInvalidate() {
-    with().pollInterval(10, TimeUnit.MILLISECONDS).await().atMost(20, TimeUnit.SECONDS)
+    await()
         .until(() -> hasClientListenerAfterInvalidateBeenInvoked());
   }
 
@@ -328,8 +327,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     region1.registerInterest("ALL_KEYS", InterestResultPolicy.NONE, false, false);
     region1.getAttributesMutator().addCacheListener(new ClientListener());
     assertNotNull(region1);
-    with().pollDelay(1, TimeUnit.MILLISECONDS).pollInterval(1, TimeUnit.SECONDS).await()
-        .atMost(60, TimeUnit.SECONDS).until(() -> poolReady(p));
+    await().until(() -> poolReady(p));
   }
 
   private static boolean poolReady(final PoolImpl pool) {

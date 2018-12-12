@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A disk region that is created when doing offline validation.
@@ -84,7 +83,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     ValidatingDiskEntry de = new ValidatingDiskEntry(key, re);
     if (this.map.putIfAbsent(key, de) != null) {
       throw new InternalGemFireError(
-          LocalizedStrings.LocalRegion_ENTRY_ALREADY_EXISTED_0.toLocalizedString(key));
+          String.format("Entry already existed: %s", key));
     }
     return de;
   }

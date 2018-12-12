@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public abstract class TXMessage extends SerialDistributionMessage
@@ -76,12 +75,12 @@ public abstract class TXMessage extends SerialDistributionMessage
       InternalCache cache = dm.getCache();
       if (checkCacheClosing(cache) || checkDSClosing(cache.getInternalDistributedSystem())) {
         if (cache == null) {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
+              dm.getId()));
         } else {
           thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
+                  dm.getId()));
         }
         return;
       }
@@ -103,8 +102,8 @@ public abstract class TXMessage extends SerialDistributionMessage
         logger.debug("shutdown caught, abandoning message: " + se);
       }
     } catch (RegionDestroyedException rde) {
-      thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0
-          .toLocalizedString(dm.getDistributionManagerId()), rde);
+      thr = new ForceReattemptException(String.format("Region is destroyed in %s",
+          dm.getDistributionManagerId()), rde);
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned

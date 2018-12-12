@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
@@ -49,6 +50,11 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   public ClientTypeRegistration(InternalCache cache) {
     this.cache = cache;
+
+    // See GEODE-5771: Even when set, PDX persistence is internally ignored.
+    if (cache.getPdxPersistent() || StringUtils.isNotBlank(cache.getPdxDiskStore())) {
+      logger.warn("PDX persistence is not supported on client side.");
+    }
   }
 
   public int defineType(PdxType newType) {

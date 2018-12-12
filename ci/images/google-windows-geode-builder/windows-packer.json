@@ -1,0 +1,98 @@
+{
+  "variables": {
+    "pipeline_prefix": "local-testing-",
+    "hashed_pipeline_prefix": "0b7ad56c-671b-5244-9f36-01f92928abf8",
+    "geode_docker_image": "unset",
+    "gcp_project": "unset",
+    "gcp_network": "default",
+    "gcp_subnetwork": "default",
+    "use_internal_ip": "false",
+    "java_build_version": "8"
+  },
+  "builders": [
+    {
+      "image_name": "{{user `hashed_pipeline_prefix`}}wgb-{{timestamp}}",
+      "image_family": "{{user `pipeline_prefix`}}windows-geode-builder",
+      "type": "googlecompute",
+      "project_id": "{{user `gcp_project`}}",
+      "network": "{{user `gcp_network`}}",
+      "subnetwork": "{{user `gcp_subnetwork`}}",
+      "source_image_family": "windows-1709-core-for-containers",
+      "disk_size": "100",
+      "machine_type": "n1-standard-1",
+      "communicator": "winrm",
+      "winrm_username": "geode",
+      "winrm_insecure": true,
+      "winrm_use_ssl": true,
+      "state_timeout": "10m",
+      "metadata": {
+        "windows-startup-script-cmd": "winrm quickconfig -quiet & net user /add geode & net localgroup administrators geode /add & winrm set winrm/config/service/auth @{Basic=\"true\"}"
+      },
+      "zone": "us-central1-a",
+      "tags": ["packer"],
+      "omit_external_ip": false,
+      "use_internal_ip": "{{user `use_internal_ip`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "powershell",
+      "inline": [
+        "$ErrorActionPreference = \"Stop\"",
+        "Set-ExecutionPolicy Bypass -Scope Process -Force",
+
+        "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression",
+        "choco install -y git rsync openjdk",
+        "Move-Item \"C:\\Program Files\\OpenJDK\\jdk-11*\" c:\\java11",
+        "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
+        "Move-Item \"C:\\java8tmp\" c:\\java8",
+        "choco install -y openssh /SSHServerFeature",
+        "refreshenv",
+
+        "$a = 10",
+        "do {",
+        "write-output \">>>>>>>>>> Installing rsync: $a attempts remaining <<<<<<<<<<\"",
+        "choco install -y rsync",
+        "$a--",
+        "} while (-not (test-path C:\\ProgramData\\chocolatey\\bin\\rsync.exe) -and $a -gt 0)",
+        "get-item C:\\ProgramData\\chocolatey\\bin\\rsync.exe",
+
+        "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'",
+        "New-NetFirewallRule -DisplayName sshd -Direction inbound -Action allow -Protocol tcp -LocalPort 22",
+        "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound",
+        "New-Service -name sshd -description 'OpenSSH sshd server' -binarypathname 'c:\\Program Files\\OpenSSH-Win64\\sshd.exe' -startuptype automatic",
+        "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",
+        "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",
+        "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
+        "Install-Module -Name ProcessMitigations -Force",
+        "Get-ChildItem -Path \"C:\\Program Files\\Git\\bin\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
+        "Get-ChildItem -Path \"C:\\ProgramData\\chocolatey\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
+
+        "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
+        "docker pull openjdk:8u181-jdk-windowsservercore-1709",
+        "write-output '>>>>>>>>>> Removing unused docker images <<<<<<<<<<'",
+        "docker rmi microsoft/windowsservercore:1709",
+        "docker rmi microsoft/nanoserver:1709",
+
+        "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'",
+
+        "write-output '>>>>>>>>>> Cloning geode repo <<<<<<<<<<'",
+        "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
+        "pushd geode",
+        "$Env:JAVA_HOME = 'C:\\java8'",
+        ".\\gradlew.bat --no-daemon resolveDependencies",
+        "popd",
+
+        "write-output '>>>>>>>>>> Killing all java processes <<<<<<<<<<'",
+        "kill -name java -force",
+        "Start-Sleep 10",
+
+        "write-output '>>>>>>>>>> List remaining java processes for debug purposes <<<<<<<<<<'",
+        "ps -Name java -ErrorAction ignore",
+
+        "write-output '>>>>>>>>>> Final cleanup <<<<<<<<<<'",
+        "rm -force -recurse geode"
+      ]
+    }
+  ]
+}

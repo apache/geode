@@ -19,7 +19,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 
 /**
@@ -30,14 +29,12 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
  */
 public class OffHeapEvictor extends HeapEvictor {
 
-  private static final String EVICTOR_THREAD_GROUP_NAME = "OffHeapEvictorThreadGroup";
-
   private static final String EVICTOR_THREAD_NAME = "OffHeapEvictorThread";
 
   private long bytesToEvictWithEachBurst;
 
   public OffHeapEvictor(final InternalCache cache) {
-    super(cache, EVICTOR_THREAD_GROUP_NAME, EVICTOR_THREAD_NAME);
+    super(cache, EVICTOR_THREAD_NAME);
     calculateEvictionBurst();
   }
 
@@ -49,7 +46,7 @@ public class OffHeapEvictor extends HeapEvictor {
      */
     if (null == allocator) {
       throw new IllegalStateException(
-          LocalizedStrings.MEMSCALE_EVICTION_INIT_FAIL.toLocalizedString());
+          "Cannot initialize the off-heap evictor.  There is no off-heap memory available for eviction.");
     }
 
     float evictionBurstPercentage = Float.parseFloat(System.getProperty(

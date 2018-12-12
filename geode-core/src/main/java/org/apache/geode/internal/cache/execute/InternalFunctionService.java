@@ -24,7 +24,6 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  *
@@ -62,24 +61,21 @@ public class InternalFunctionService {
   public static Execution onRegions(Set<Region> regions) {
     if (regions == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("regions set"));
+          String.format("The input %s for the execute function request is null",
+              "regions set"));
     }
     if (regions.contains(null)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.OnRegionsFunctions_THE_REGION_SET_FOR_ONREGIONS_HAS_NULL
-              .toLocalizedString());
+          "One or more region references added to the regions set is(are) null");
     }
     if (regions.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.OnRegionsFunctions_THE_REGION_SET_IS_EMPTY_FOR_ONREGIONS
-              .toLocalizedString());
+          "Regions set is empty for onRegions function execution");
     }
     for (Region region : regions) {
       if (isClientRegion(region)) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.OnRegionsFunctions_NOT_SUPPORTED_FOR_CLIENT_SERVER
-                .toLocalizedString());
+            "FunctionService#onRegions() is not supported for cache clients in client server mode");
       }
     }
     return new MultiRegionFunctionExecutor(regions);

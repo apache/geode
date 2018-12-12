@@ -20,16 +20,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
 import static org.apache.geode.security.SecurableCommunicationChannels.GATEWAY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
 
-import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -186,16 +185,12 @@ public class WANHostNameVerificationDistributedTest {
   private static void verifySite2Received() {
     Region<String, String> region = ClusterStartupRule.getCache().getRegion("region");
     await()
-        .atMost(Duration.FIVE_SECONDS)
-        .pollInterval(Duration.ONE_SECOND)
         .untilAsserted(() -> assertThat("servervalue").isEqualTo(region.get("serverkey")));
   }
 
   private static void verifySite2DidNotReceived() {
     Region<String, String> region = ClusterStartupRule.getCache().getRegion("region");
     await()
-        .atMost(Duration.FIVE_SECONDS)
-        .pollInterval(Duration.ONE_SECOND)
         .untilAsserted(() -> assertThat(region.keySet().size()).isEqualTo(0));
   }
 
@@ -226,12 +221,14 @@ public class WANHostNameVerificationDistributedTest {
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
 
     CertificateBuilder server_ny_cert = new CertificateBuilder()
         .commonName("server_ny")
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost());
 
     setupWanSites(locator_ln_cert, server_ln_cert, locator_ny_cert, server_ny_cert);

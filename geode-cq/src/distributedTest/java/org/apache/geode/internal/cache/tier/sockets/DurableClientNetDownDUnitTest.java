@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
@@ -28,52 +31,72 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 
   @Override
-  protected final void preTearDownDurableClientTestCase() throws Exception {
-    // ensure that the test flag is no longer set in this vm
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
-  }
-
-  @Override
-  public void setPrimaryRecoveryCheck() {}
-
-  @Override
-  public void checkPrimaryRecovery() {}
-
-  @Override
-  public void configureClientStop1() {}
-
-  @Override
-  public void configureClientStop2() {}
-
-  @Override
   public void closeDurableClient() {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
+    this.durableClientVM.invoke(() -> {
+      if (CacheServerTestUtil.getPool() != null) {
+        CacheServerTestUtil.getPool().endpointsNetUpForDUnitTest();
+      }
+    });
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
   }
 
   @Override
-  public void disconnectDurableClient() {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.disconnectClient());
-  }
-
-  @Override
   public void disconnectDurableClient(boolean keepAlive) {
-    this.disconnectDurableClient();
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.getPool().endpointsNetDownForDUnitTest());
   }
 
   @Override
-  public void restartDurableClient(Object[] args) {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
+  public void restartDurableClient(int durableClientTimeout, Pool clientPool,
+      Boolean addControlListener) {
+    this.durableClientVM.invoke(() -> {
+      if (CacheServerTestUtil.getPool() != null) {
+        CacheServerTestUtil.getPool().endpointsNetUpForDUnitTest();
+      }
+    });
+
+  }
+
+  @Override
+  public void restartDurableClient(int durableClientTimeout, Boolean addControlListener) {
+    this.durableClientVM.invoke(() -> {
+      if (CacheServerTestUtil.getPool() != null) {
+        CacheServerTestUtil.getPool().endpointsNetUpForDUnitTest();
+      }
+    });
+
   }
 
   @Override
   public void verifyListenerUpdatesDisconnected(int numberOfEntries) {
-    this.verifyListenerUpdates(numberOfEntries);
+    this.checkListenerEvents(numberOfEntries, 1, -1, this.durableClientVM);
   }
 
-  @Override
-  public void verifyListenerUpdates(int numEntries, int numEntriesBeforeDisconnect) {
-    this.verifyListenerUpdatesEntries(numEntries, numEntriesBeforeDisconnect);
-  }
+  /**
+   * Test that starting, stopping then restarting a durable client is correctly processed by the
+   * server.
+   */
+  @Test
+  public void testDurableClient() {
 
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
+
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+
+    // Stop the durable client
+    this.disconnectDurableClient(true);
+
+    // Re-start the durable client
+    this.restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
+
+    // Verify durable client on server
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+
+    // Stop the durable client
+    closeDurableClient();
+
+    // Stop the server
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+
+  }
 }

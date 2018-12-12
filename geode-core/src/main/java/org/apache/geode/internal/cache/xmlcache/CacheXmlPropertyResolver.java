@@ -20,9 +20,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Property resolver for resolving ${} like strings with system or Gemfire properties in Cache.xml
@@ -120,9 +118,8 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
       if (ignoreUnresolvedProperties) {
         // Do Nothing
       } else {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.CacheXmlPropertyResolver_UNSEROLVAVLE_STRING_FORMAT_ERROR__0,
-            stringWithPrefixAndSuffix));
+        logger.error("Format of the string {} used for perameterization is unresolvable",
+            stringWithPrefixAndSuffix);
       }
     }
     return resolvedString;

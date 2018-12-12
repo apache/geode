@@ -63,7 +63,6 @@ import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -228,7 +227,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       assert this.deserializationPolicy == DistributedCacheOperation.DESERIALIZATION_POLICY_NONE : this.deserializationPolicy;
     }
 
-    // added for cqs on Bridge Servers. rdubey
+    // added for cqs on cache servers. rdubey
 
 
     if (event.hasOldValue()) {
@@ -381,7 +380,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return processor;
   }
@@ -640,8 +639,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
           if (!this.ifNew && !this.ifOld) {
             // no reason to be throwing an exception, so let's retry
             RemoteOperationException ex = new RemoteOperationException(
-                LocalizedStrings.RemotePutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0
-                    .toLocalizedString());
+                "unable to perform put, but operation should not fail");
             sendReply(getSender(), getProcessorId(), dm, new ReplyException(ex), r, startTime);
           }
         }
@@ -971,7 +969,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       waitForRemoteResponse();
       if (this.op == null) {
         throw new RemoteOperationException(
-            LocalizedStrings.RemotePutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());
+            "did not receive a valid reply");
       }
       return new PutResult(this.returnValue, this.op, this.oldValue, this.versionTag);
     }

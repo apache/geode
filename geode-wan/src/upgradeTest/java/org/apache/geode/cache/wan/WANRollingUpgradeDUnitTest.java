@@ -24,16 +24,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -315,7 +314,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitForEmptyQueueRegion(String gatewaySenderId, boolean primaryOnly) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> getQueueRegionSize(gatewaySenderId, primaryOnly) == 0);
   }
 

@@ -90,11 +90,9 @@ import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
@@ -309,8 +307,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   private void checkConnectCalled() {
     if (this.gfManagerAgent == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
   }
 
@@ -507,15 +504,15 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!locs[i].waitToStart(TIMEOUT_MS)) {
           throw new AdminException(
-              LocalizedStrings.AdminDistributedSystemImpl_0_DID_NOT_START_AFTER_1_MS
-                  .toLocalizedString(new Object[] {locs[i], Integer.valueOf(TIMEOUT_MS)}));
+              String.format("%s did not start after %s ms",
+                  new Object[] {locs[i], Integer.valueOf(TIMEOUT_MS)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            LocalizedStrings.AdminDistributedSystemImpl_INTERRUPTED_WHILE_WAITING_FOR_0_TO_START
-                .toLocalizedString(locs[i]),
+            String.format("Interrupted while waiting for %s to start.",
+                locs[i]),
             ex);
       }
     }
@@ -528,15 +525,15 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!servers[i].waitToStart(TIMEOUT_MS)) {
           throw new AdminException(
-              LocalizedStrings.AdminDistributedSystemImpl_0_DID_NOT_START_AFTER_1_MS
-                  .toLocalizedString(new Object[] {servers[i], Integer.valueOf(TIMEOUT_MS)}));
+              String.format("%s did not start after %s ms",
+                  new Object[] {servers[i], Integer.valueOf(TIMEOUT_MS)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            LocalizedStrings.AdminDistributedSystemImpl_INTERRUPTED_WHILE_WAITING_FOR_0_TO_START
-                .toLocalizedString(servers[i]),
+            String.format("Interrupted while waiting for %s to start.",
+                servers[i]),
             ex);
       }
     }
@@ -561,15 +558,15 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!servers[i].waitToStop(timeout * 1000)) {
           throw new AdminException(
-              LocalizedStrings.AdminDistributedSystemImpl_0_DID_NOT_STOP_AFTER_1_SECONDS
-                  .toLocalizedString(new Object[] {servers[i], Long.valueOf(timeout)}));
+              String.format("%s did not stop after %s seconds.",
+                  new Object[] {servers[i], Long.valueOf(timeout)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            LocalizedStrings.AdminDistributedSystemImpl_INTERRUPTED_WHILE_WAITING_FOR_0_TO_STOP
-                .toLocalizedString(servers[i]),
+            String.format("Interrupted while waiting for %s to stop.",
+                servers[i]),
             ex);
       }
     }
@@ -582,15 +579,15 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       try {
         if (!locs[i].waitToStop(timeout * 1000)) {
           throw new AdminException(
-              LocalizedStrings.AdminDistributedSystemImpl_0_DID_NOT_STOP_AFTER_1_SECONDS
-                  .toLocalizedString(new Object[] {locs[i], Long.valueOf(timeout)}));
+              String.format("%s did not stop after %s seconds.",
+                  new Object[] {locs[i], Long.valueOf(timeout)}));
         }
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new AdminException(
-            LocalizedStrings.AdminDistributedSystemImpl_INTERRUPTED_WHILE_WAITING_FOR_0_TO_STOP
-                .toLocalizedString(locs[i]),
+            String.format("Interrupted while waiting for %s to stop.",
+                locs[i]),
             ex);
       }
     }
@@ -650,8 +647,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     }
     if (cause instanceof CancelException) { // bug 37285
       throw new FutureCancelledException(
-          LocalizedStrings.AdminDistributedSystemImpl_FUTURE_CANCELLED_DUE_TO_SHUTDOWN
-              .toLocalizedString(),
+          "Future cancelled due to shutdown",
           ex);
     }
 
@@ -660,7 +656,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     // different thread. In addition to the cause, we also want to
     // know which code was waiting for the Future.
     throw new RuntimeAdminException(
-        LocalizedStrings.AdminDistributedSystemImpl_WHILE_WAITING_FOR_FUTURE.toLocalizedString(),
+        "While waiting for Future",
         ex);
   }
 
@@ -759,8 +755,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
       if (thisAdminDS != null) { // TODO: beef up toString and add thisAdminDS
         throw new IllegalStateException(
-            LocalizedStrings.AdminDistributedSystemImpl_ONLY_ONE_ADMINDISTRIBUTEDSYSTEM_CONNECTION_CAN_BE_MADE_AT_ONCE
-                .toLocalizedString());
+            "Only one AdminDistributedSystem connection can be made at once.");
       }
 
       thisAdminDS = this; // added for feature requests #32887
@@ -1089,10 +1084,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
             synchronized (this.cacheServerSet) {
               future = new AdminFutureTask(vm.getId(), new Callable() {
                 public Object call() throws Exception {
-                  logger.info(LogMarker.DM_MARKER,
-                      LocalizedMessage.create(
-                          LocalizedStrings.AdminDistributedSystemImpl_ADDING_NEW_CACHESERVER_FOR__0,
-                          vm));
+                  logger.info(LogMarker.DM_MARKER, "Adding new CacheServer for {}",
+                      vm);
                   return createCacheServer(app);
                 }
               });
@@ -1104,10 +1097,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
             synchronized (this.applicationSet) {
               future = new AdminFutureTask(vm.getId(), new Callable() {
                 public Object call() throws Exception {
-                  logger.info(LogMarker.DM_MARKER,
-                      LocalizedMessage.create(
-                          LocalizedStrings.AdminDistributedSystemImpl_ADDING_NEW_APPLICATION_FOR__0,
-                          vm));
+                  logger.info(LogMarker.DM_MARKER, "Adding new Application for {}",
+                      vm);
                   return createSystemMember(app);
                 }
               });
@@ -1400,8 +1391,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       }
     } catch (IOException ex) {
       // oh well...
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.AdminDistributedSystemImpl_WHILE_GETTING_CANONICAL_FILE), ex);
+      logger.info("While getting canonical file", ex);
     }
 
     return false;
@@ -1504,8 +1494,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         member.setGemFireVM(vm);
 
       } catch (AdminException ex) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.AdminDistributedSystem_COULD_NOT_SET_THE_GEMFIRE_VM), ex);
+        logger.warn("Could not set the GemFire VM.", ex);
       }
     }
 
@@ -1607,7 +1596,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           Thread.currentThread().interrupt();
           checkCancellation();
           throw new RuntimeException(
-              LocalizedStrings.AdminDistributedSystemImpl_INTERRUPTED.toLocalizedString(), ex);
+              "Interrupted", ex);
 
         } catch (CancellationException ex) {
           continue;
@@ -1633,8 +1622,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         }
 
       } catch (AdminException ex) {
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.AdminDistributedSystem_UNEXPECTED_ADMINEXCEPTION), ex);
+        logger.fatal("Unexpected AdminException", ex);
       }
       return member;
 
@@ -1833,8 +1821,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
         } catch (AdminException ex) {
           throw new RuntimeAdminException(
-              LocalizedStrings.AdminDistributedSystemImpl_AN_ADMINEXCEPTION_WAS_THROWN_WHILE_GETTING_THE_GEMFIRE_HEALTH
-                  .toLocalizedString(),
+              "An AdminException was thrown while getting the GemFire health.",
               ex);
         }
       }
@@ -1854,8 +1841,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
     if (agent == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_GFMANAGERAGENT_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "GfManagerAgent must not be null");
     }
     return new GemFireHealthImpl(agent, this);
   }
@@ -2150,9 +2136,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         for (Throwable cause = ex.getCause(); cause != null; cause = cause.getCause()) {
           if (cause instanceof InterruptedException) {
             // We interrupted the runnable but we don't want the thread
-            // that called get to think he was interrupted.
+            // that called get() to think that the runnable was interrupted.
             CancellationException ex2 = new CancellationException(
-                LocalizedStrings.AdminDistributedSystemImpl_BY_INTERRUPT.toLocalizedString());
+                "by interrupt");
             ex2.setStackTrace(cause.getStackTrace());
             throw ex2;
           }
@@ -2183,8 +2169,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
     return getMissingPersistentMembers(dm);
   }
@@ -2198,8 +2183,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
     revokePersistentMember(dm, host, directory);
 
@@ -2210,8 +2194,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
     revokePersistentMember(dm, diskStoreID);
 
@@ -2286,8 +2269,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
     return shutDownAllMembers(dm, timeout);
   }
@@ -2313,8 +2295,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
     return backupAllMembers(dm, targetDir, baselineDir);
   }
@@ -2331,8 +2312,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "connect() has not been invoked on this AdminDistributedSystem.");
     }
     return compactAllDiskStores(dm);
   }
@@ -2368,7 +2348,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     } else {
       System.out.println("ERROR:: " + level
           + " is invalid. Allowed alert levels are: WARNING, ERROR, SEVERE, OFF");
-      throw new IllegalArgumentException(LocalizedStrings.DEBUG.toLocalizedString(
+      throw new IllegalArgumentException(String.format("%s",
           level + " is invalid. Allowed alert levels are: WARNING, ERROR, SEVERE, OFF"));
     }
   }

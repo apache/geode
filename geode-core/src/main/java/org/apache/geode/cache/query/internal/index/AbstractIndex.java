@@ -72,7 +72,6 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.pdx.PdxInstance;
@@ -557,7 +556,6 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   private void addToResultsWithUnionOrIntersection(Collection results,
       SelectResults intermediateResults, boolean isIntersection, Object value) {
-
     value = verifyAndGetPdxDomainObject(value);
 
     if (intermediateResults == null) {
@@ -625,6 +623,17 @@ public abstract class AbstractIndex implements IndexProtocol {
           }
         }
       }
+    }
+  }
+
+  void applyCqOrProjection(List projAttrib, ExecutionContext context, Collection result,
+      Object iterValue, SelectResults intermediateResults, boolean isIntersection, Object key)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException {
+    if (context != null && context.isCqQueryContext()) {
+      result.add(new CqEntry(key, iterValue));
+    } else {
+      applyProjection(projAttrib, context, result, iterValue, intermediateResults, isIntersection);
     }
   }
 
@@ -1154,7 +1163,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
       if (QueryMonitor.isLowMemory()) {
         throw new IMQException(
-            LocalizedStrings.IndexCreationMsg_CANCELED_DUE_TO_LOW_MEMORY.toLocalizedString());
+            "Index creation canceled due to low memory");
       }
 
       LocalRegion.NonTXEntry temp;
@@ -1727,7 +1736,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     void addValuesToCollection(Collection result, int limit, ExecutionContext context) {
       for (final Object o : this.map.entrySet()) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
         if (this.verifyLimit(result, limit, context)) {
           return;
         }
@@ -1791,7 +1800,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
       for (Object o : this.map.entrySet()) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
         Entry e = (Entry) o;
         Object value = e.getValue();
         // Key is a RegionEntry here.
@@ -1886,7 +1895,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
     public boolean containsValue(Object value) {
       throw new RuntimeException(
-          LocalizedStrings.RangeIndex_NOT_YET_IMPLEMENTED.toLocalizedString());
+          "Not yet implemented");
     }
 
     public void clear() {

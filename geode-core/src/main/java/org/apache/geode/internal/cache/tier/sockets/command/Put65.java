@@ -45,8 +45,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -418,9 +416,8 @@ public class Put65 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (InvalidDeltaException ide) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1,
-          new Object[] {key, regionName, ide.getMessage()}));
+      logger.info("Error applying delta for key {} of region {}: {}",
+          new Object[] {key, regionName, ide.getMessage()});
       writeException(clientMessage, MessageType.PUT_DELTA_ERROR, ide, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       region.getCachePerfStats().incDeltaFullValuesRequested();

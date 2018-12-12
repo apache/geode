@@ -14,11 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,16 +29,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -52,251 +50,143 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  * @see org.apache.geode.internal.cache.DiskStoreImpl
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @see org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction
- * @see org.jmock.Expectations
- * @see org.jmock.Mockery
- * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0
  */
 public class ListDiskStoresFunctionJUnitTest {
-
-  private Mockery mockContext;
   private InternalCache mockCache;
   private FunctionContext mockFunctionContext;
 
-
-
   @Before
   public void setup() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-
-    mockCache = mockContext.mock(InternalCache.class, "Cache");
-    mockFunctionContext = mockContext.mock(FunctionContext.class, "FunctionContext");
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
-  }
-
-  private DiskStoreDetails createDiskStoreDetails(final UUID id, final String name,
-      final String memberName, final String memberId) {
-    return new DiskStoreDetails(id, name, memberId, memberName);
+    mockCache = mock(InternalCache.class, "Cache");
+    mockFunctionContext = mock(FunctionContext.class, "FunctionContext");
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testExecute() throws Throwable {
+    final String memberId = "mockMemberId";
+    final String memberName = "mockMemberName";
     final UUID mockDiskStoreOneId = UUID.randomUUID();
     final UUID mockDiskStoreTwoId = UUID.randomUUID();
     final UUID mockDiskStoreThreeId = UUID.randomUUID();
-
-    final String memberId = "mockMemberId";
-    final String memberName = "mockMemberName";
-
+    final DiskStoreImpl mockDiskStoreOne = mock(DiskStoreImpl.class, "DiskStoreOne");
+    final DiskStoreImpl mockDiskStoreTwo = mock(DiskStoreImpl.class, "DiskStoreTwo");
+    final DiskStoreImpl mockDiskStoreThree = mock(DiskStoreImpl.class, "DiskStoreThree");
     final InternalDistributedMember mockMember =
-        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
-
-    final DiskStoreImpl mockDiskStoreOne = mockContext.mock(DiskStoreImpl.class, "DiskStoreOne");
-    final DiskStoreImpl mockDiskStoreTwo = mockContext.mock(DiskStoreImpl.class, "DiskStoreTwo");
-    final DiskStoreImpl mockDiskStoreThree =
-        mockContext.mock(DiskStoreImpl.class, "DiskStoreThree");
-
-    final Collection<DiskStoreImpl> mockDiskStores = new ArrayList<DiskStoreImpl>();
-
-    mockDiskStores.add(mockDiskStoreOne);
-    mockDiskStores.add(mockDiskStoreTwo);
-    mockDiskStores.add(mockDiskStoreThree);
-
+        mock(InternalDistributedMember.class, "DistributedMember");
+    final Collection<DiskStore> mockDiskStores =
+        Arrays.asList(mockDiskStoreOne, mockDiskStoreTwo, mockDiskStoreThree);
     final TestResultSender testResultSender = new TestResultSender();
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMyId();
-        will(returnValue(mockMember));
-        oneOf(mockCache).listDiskStoresIncludingRegionOwned();
-        will(returnValue(mockDiskStores));
-        exactly(3).of(mockMember).getId();
-        will(returnValue(memberId));
-        exactly(3).of(mockMember).getName();
-        will(returnValue(memberName));
-        oneOf(mockDiskStoreOne).getDiskStoreUUID();
-        will(returnValue(mockDiskStoreOneId));
-        oneOf(mockDiskStoreOne).getName();
-        will(returnValue("ds-backup"));
-        oneOf(mockDiskStoreTwo).getDiskStoreUUID();
-        will(returnValue(mockDiskStoreTwoId));
-        oneOf(mockDiskStoreTwo).getName();
-        will(returnValue("ds-overflow"));
-        oneOf(mockDiskStoreThree).getDiskStoreUUID();
-        will(returnValue(mockDiskStoreThreeId));
-        oneOf(mockDiskStoreThree).getName();
-        will(returnValue("ds-persistence"));
-        oneOf(mockFunctionContext).getCache();
-        will(returnValue(mockCache));
-        oneOf(mockFunctionContext).getResultSender();
-        will(returnValue(testResultSender));
-      }
-    });
+    when(mockCache.getMyId()).thenReturn(mockMember);
+    when(mockCache.listDiskStoresIncludingRegionOwned()).thenReturn(mockDiskStores);
+    when(mockMember.getId()).thenReturn(memberId);
+    when(mockMember.getName()).thenReturn(memberName);
+    when(mockDiskStoreOne.getDiskStoreUUID()).thenReturn(mockDiskStoreOneId);
+    when(mockDiskStoreOne.getName()).thenReturn("ds-backup");
+    when(mockDiskStoreTwo.getDiskStoreUUID()).thenReturn(mockDiskStoreTwoId);
+    when(mockDiskStoreTwo.getName()).thenReturn("ds-overflow");
+    when(mockDiskStoreThree.getDiskStoreUUID()).thenReturn(mockDiskStoreThreeId);
+    when(mockDiskStoreThree.getName()).thenReturn("ds-persistence");
+    when(mockFunctionContext.getCache()).thenReturn(mockCache);
+    when(mockFunctionContext.getResultSender()).thenReturn(testResultSender);
 
     final ListDiskStoresFunction function = new ListDiskStoresFunction();
-
     function.execute(mockFunctionContext);
 
     final List<?> results = testResultSender.getResults();
-
-    assertNotNull(results);
-    assertEquals(1, results.size());
+    assertThat(results).isNotNull();
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<DiskStoreDetails> diskStoreDetails = (Set<DiskStoreDetails>) results.get(0);
-
-    assertNotNull(diskStoreDetails);
-    assertEquals(3, diskStoreDetails.size());
+    assertThat(diskStoreDetails).isNotNull();
+    assertThat(diskStoreDetails.size()).isEqualTo(3);
+    verify(mockMember, times(3)).getId();
+    verify(mockMember, times(3)).getName();
     diskStoreDetails.containsAll(
-        Arrays.asList(createDiskStoreDetails(mockDiskStoreOneId, "ds-backup", memberId, memberName),
-            createDiskStoreDetails(mockDiskStoreTwoId, "ds-overflow", memberId, memberName),
-            createDiskStoreDetails(mockDiskStoreThreeId, "ds-persistence", memberId, memberName)));
+        Arrays.asList(new DiskStoreDetails(mockDiskStoreOneId, "ds-backup", memberId, memberName),
+            new DiskStoreDetails(mockDiskStoreTwoId, "ds-overflow", memberId, memberName),
+            new DiskStoreDetails(mockDiskStoreThreeId, "ds-persistence", memberId, memberName)));
   }
 
-  @Test(expected = CacheClosedException.class)
-  public void testExecuteOnMemberWithNoCache() throws Throwable {
-    final FunctionContext mockFunctionContext =
-        mockContext.mock(FunctionContext.class, "MockFunctionContext");
-
+  @Test
+  public void testExecuteOnMemberWithNoCache() {
     final ListDiskStoresFunction testListDiskStoresFunction = new ListDiskStoresFunction();
-
     final TestResultSender testResultSender = new TestResultSender();
 
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockFunctionContext).getCache();
-        will(throwException(new CacheClosedException("Expected")));
-        oneOf(mockFunctionContext).getResultSender();
-        will(returnValue(testResultSender));
-      }
-    });
-
+    when(mockFunctionContext.getCache())
+        .thenThrow(new CacheClosedException("Mocked CacheClosedException"));
+    when(mockFunctionContext.getResultSender()).thenReturn(testResultSender);
     testListDiskStoresFunction.execute(mockFunctionContext);
-
-    try {
-      testResultSender.getResults();
-    } catch (CacheClosedException expected) {
-      assertEquals("Expected", expected.getMessage());
-      throw expected;
-    }
+    assertThatThrownBy(testResultSender::getResults).isInstanceOf(CacheClosedException.class)
+        .hasMessage("Mocked CacheClosedException");
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testExecuteOnMemberHavingNoDiskStores() throws Throwable {
     final InternalDistributedMember mockMember =
-        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
-
+        mock(InternalDistributedMember.class, "DistributedMember");
     final TestResultSender testResultSender = new TestResultSender();
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMyId();
-        will(returnValue(mockMember));
-        oneOf(mockCache).listDiskStoresIncludingRegionOwned();
-        will(returnValue(Collections.emptyList()));
-        oneOf(mockFunctionContext).getCache();
-        will(returnValue(mockCache));
-        oneOf(mockFunctionContext).getResultSender();
-        will(returnValue(testResultSender));
-      }
-    });
+    when(mockCache.getMyId()).thenReturn(mockMember);
+    when(mockCache.listDiskStoresIncludingRegionOwned()).thenReturn(Collections.emptyList());
+    when(mockFunctionContext.getCache()).thenReturn(mockCache);
+    when(mockFunctionContext.getResultSender()).thenReturn(testResultSender);
 
     final ListDiskStoresFunction function = new ListDiskStoresFunction();
-
     function.execute(mockFunctionContext);
 
     final List<?> results = testResultSender.getResults();
-
-    assertNotNull(results);
-    assertEquals(1, results.size());
+    assertThat(results).isNotNull();
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<DiskStoreDetails> diskStoreDetails = (Set<DiskStoreDetails>) results.get(0);
-
-    assertNotNull(diskStoreDetails);
-    assertTrue(diskStoreDetails.isEmpty());
+    assertThat(diskStoreDetails).isNotNull();
+    assertThat(diskStoreDetails.isEmpty()).isTrue();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testExecuteOnMemberWithANonGemFireCache() throws Throwable {
     final TestResultSender testResultSender = new TestResultSender();
-
-    final Cache mockNonGemCache = mockContext.mock(Cache.class, "NonGemCache");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockFunctionContext).getCache();
-        will(returnValue(mockNonGemCache));
-        oneOf(mockFunctionContext).getResultSender();
-        will(returnValue(testResultSender));
-      }
-    });
+    final Cache mockNonGemCache = mock(Cache.class, "NonGemCache");
+    when(mockFunctionContext.getCache()).thenReturn(mockNonGemCache);
+    when(mockFunctionContext.getResultSender()).thenReturn(testResultSender);
 
     final ListDiskStoresFunction function = new ListDiskStoresFunction();
-
     function.execute(mockFunctionContext);
 
     final List<?> results = testResultSender.getResults();
-
-    assertNotNull(results);
-    assertEquals(1, results.size());
+    assertThat(results).isNotNull();
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<DiskStoreDetails> diskStoreDetails = (Set<DiskStoreDetails>) results.get(0);
-
-    assertNotNull(diskStoreDetails);
-    assertTrue(diskStoreDetails.isEmpty());
+    assertThat(diskStoreDetails).isNotNull();
+    assertThat(diskStoreDetails.isEmpty()).isTrue();
   }
 
-  @Test(expected = RuntimeException.class)
-  public void testExecuteThrowsRuntimeException() throws Throwable {
+  @Test
+  public void testExecuteThrowsRuntimeException() {
     final InternalDistributedMember mockMember =
-        mockContext.mock(InternalDistributedMember.class, "DistributedMember");
-
+        mock(InternalDistributedMember.class, "DistributedMember");
     final TestResultSender testResultSender = new TestResultSender();
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMyId();
-        will(returnValue(mockMember));
-        oneOf(mockCache).listDiskStoresIncludingRegionOwned();
-        will(throwException(new RuntimeException("expected")));
-        oneOf(mockFunctionContext).getCache();
-        will(returnValue(mockCache));
-        oneOf(mockFunctionContext).getResultSender();
-        will(returnValue(testResultSender));
-      }
-    });
+    when(mockCache.getMyId()).thenReturn(mockMember);
+    when(mockCache.listDiskStoresIncludingRegionOwned())
+        .thenThrow(new RuntimeException("Mock RuntimeException"));
+    when(mockFunctionContext.getCache()).thenReturn(mockCache);
+    when(mockFunctionContext.getResultSender()).thenReturn(testResultSender);
 
     final ListDiskStoresFunction function = new ListDiskStoresFunction();
-
     function.execute(mockFunctionContext);
-
-    try {
-      testResultSender.getResults();
-    } catch (Throwable throwable) {
-      assertTrue(throwable instanceof RuntimeException);
-      assertEquals("expected", throwable.getMessage());
-      throw throwable;
-    }
+    assertThatThrownBy(testResultSender::getResults).isInstanceOf(RuntimeException.class)
+        .hasMessage("Mock RuntimeException");
   }
 
   private static class TestResultSender implements ResultSender {
-
-    private final List<Object> results = new LinkedList<Object>();
-
     private Throwable t;
+    private final List<Object> results = new LinkedList<>();
+
 
     protected List<Object> getResults() throws Throwable {
       if (t != null) {
@@ -320,5 +210,4 @@ public class ListDiskStoresFunctionJUnitTest {
       this.t = t;
     }
   }
-
 }

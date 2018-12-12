@@ -47,7 +47,7 @@ public class DestroyJndiBindingFunctionTest {
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     destroyJndiBindingFunction = spy(new DestroyJndiBindingFunction());
     context = mock(FunctionContext.class);
 

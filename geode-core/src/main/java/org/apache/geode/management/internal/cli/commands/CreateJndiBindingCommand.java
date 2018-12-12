@@ -50,8 +50,10 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       "This element specifies the maximum time to block while waiting for a connection before throwing an exception.";
   static final String CONNECTION_POOLED_DATASOURCE_CLASS = "conn-pooled-datasource-class";
   static final String CONNECTION_POOLED_DATASOURCE_CLASS__HELP =
-      "This is the fully qualified name of the connection pool implementation to hold XA datasource connections.";
+      "This is the fully qualified name of the connection pool implementation to hold XA datasource connections."
+          + " When used with --type=POOLED this class must implement org.apache.geode.datasource.PooledDataSourceFactory.";
   static final String CONNECTION_URL = "connection-url";
+  static final String URL = "url";
   static final String CONNECTION_URL__HELP =
       "This is the JDBC driver connection URL string, for example, jdbc:hsqldb:hsql://localhost:1701.";
   static final String IDLE_TIMEOUT_SECONDS = "idle-timeout-seconds";
@@ -92,10 +94,13 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       "Skip the create operation when a jndi binding with the same name already exists.  Without specifying this option, this command execution results into an error.";
   static final String DATASOURCE_CONFIG_PROPERTIES = "datasource-config-properties";
   static final String DATASOURCE_CONFIG_PROPERTIES_HELP =
-      "Properties for the custom XADataSource driver. Append json string containing (name, type, value) to set any property. Eg: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
+      "Properties for the data source. When used with the --type==POOLED, these properties will be used to configure the database data source unless the name begins with \"pool.\"."
+          + " If that prefix is used it will be used to configure the pool data source. Append json string containing (name, type, value) to set any property. "
+          + "For example: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
+      interceptor = "org.apache.geode.management.internal.cli.commands.UsernamePasswordInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createJDNIBinding(
@@ -103,11 +108,11 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
           help = BLOCKING_TIMEOUT_SECONDS__HELP) Integer blockingTimeout,
       @CliOption(key = CONNECTION_POOLED_DATASOURCE_CLASS,
           help = CONNECTION_POOLED_DATASOURCE_CLASS__HELP) String connectionPooledDatasource,
-      @CliOption(key = CONNECTION_URL, mandatory = true,
+      @CliOption(key = {URL, CONNECTION_URL}, mandatory = true,
           help = CONNECTION_URL__HELP) String connectionUrl,
       @CliOption(key = IDLE_TIMEOUT_SECONDS, help = IDLE_TIMEOUT_SECONDS__HELP) Integer idleTimeout,
       @CliOption(key = INIT_POOL_SIZE, help = INIT_POOL_SIZE__HELP) Integer initPoolSize,
-      @CliOption(key = JDBC_DRIVER_CLASS, mandatory = true,
+      @CliOption(key = JDBC_DRIVER_CLASS,
           help = JDBC_DRIVER_CLASS__HELP) String jdbcDriver,
       @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
       @CliOption(key = LOGIN_TIMEOUT_SECONDS,
@@ -115,10 +120,11 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
       @CliOption(key = MANAGED_CONN_FACTORY_CLASS,
           help = MANAGED_CONN_FACTORY_CLASS__HELP) String managedConnFactory,
       @CliOption(key = MAX_POOL_SIZE, help = MAX_POOL_SIZE__HELP) Integer maxPoolSize,
+      @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
       @CliOption(key = TRANSACTION_TYPE, help = TRANSACTION_TYPE__HELP) String transactionType,
-      @CliOption(key = TYPE, mandatory = true, help = TYPE__HELP) DATASOURCE_TYPE type,
-      @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
+      @CliOption(key = TYPE, unspecifiedDefaultValue = "SIMPLE",
+          help = TYPE__HELP) DATASOURCE_TYPE type,
       @CliOption(key = XA_DATASOURCE_CLASS, help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
@@ -162,8 +168,9 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
+      Object[] arguments = new Object[] {configuration, false};
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
-          new CreateJndiBindingFunction(), configuration, targetMembers);
+          new CreateJndiBindingFunction(), arguments, targetMembers);
       ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
       result.setConfigObject(configuration);
       return result;

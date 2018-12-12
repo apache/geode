@@ -33,7 +33,7 @@ public class CQDistributedSystemService implements DistributedSystemService {
   }
 
   @Override
-  public Collection<String> getSerializationWhitelist() throws IOException {
+  public Collection<String> getSerializationAcceptlist() throws IOException {
     URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
         "sanctioned-geode-cq-serializables.txt");
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);

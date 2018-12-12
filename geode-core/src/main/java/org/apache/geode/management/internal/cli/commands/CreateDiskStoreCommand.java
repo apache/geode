@@ -83,7 +83,7 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     diskStoreAttributes.allowForceCompaction = allowForceCompaction;
     diskStoreAttributes.autoCompact = autoCompact;
     diskStoreAttributes.compactionThreshold = compactionThreshold;
-    diskStoreAttributes.maxOplogSizeInBytes = maxOplogSize * (1024 * 1024);
+    diskStoreAttributes.maxOplogSizeInBytes = maxOplogSize * (1024L * 1024L);
     diskStoreAttributes.queueSize = queueSize;
     diskStoreAttributes.timeInterval = timeInterval;
     diskStoreAttributes.writeBufferSize = writeBufferSize;

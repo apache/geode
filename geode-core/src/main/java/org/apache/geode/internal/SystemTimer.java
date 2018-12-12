@@ -29,9 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Instances of this class are like {@link Timer}, but are associated with a "swarm", which can be
@@ -449,8 +447,7 @@ public class SystemTimer {
         throw e;
       } catch (Throwable t) {
         SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.SystemTimer_TIMER_TASK_0_ENCOUNTERED_EXCEPTION, this), t);
+        logger.warn(String.format("Timer task <%s> encountered exception", this), t);
         // Don't rethrow, it will just get eaten and kill the timer
       }
       if (isDebugEnabled) {

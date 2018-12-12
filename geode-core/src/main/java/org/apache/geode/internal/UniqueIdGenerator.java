@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * UniqueIdGenerator is factory that will produce unique ids that fall in a range between 0 and
@@ -193,7 +192,7 @@ public class UniqueIdGenerator {
   public UniqueIdGenerator(int numIds) {
     if (numIds <= 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.UniqueIdGenerator_NUMIDS_0.toLocalizedString());
+          "numIds < 0");
     }
     this.units = new long[(unitIndex(numIds - 1) + 1)];
     this.MAX_ID = numIds - 1;
@@ -218,7 +217,7 @@ public class UniqueIdGenerator {
       }
       if (result == -1) {
         throw new IllegalStateException(
-            LocalizedStrings.UniqueIdGenerator_RAN_OUT_OF_MESSAGE_IDS.toLocalizedString());
+            "Ran out of message ids");
       } else {
         setBit(result);
         if (result == MAX_ID) {
@@ -237,10 +236,10 @@ public class UniqueIdGenerator {
   public void release(int id) {
     if (id < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.UniqueIdGenerator_NEGATIVE_ID_0.toLocalizedString(Integer.valueOf(id)));
+          String.format("negative id: %s", Integer.valueOf(id)));
     } else if (id > this.MAX_ID) {
       throw new IllegalArgumentException(
-          LocalizedStrings.UniqueIdGenerator_ID_MAX_ID_0.toLocalizedString(Integer.valueOf(id)));
+          String.format("id > MAX_ID: %s", Integer.valueOf(id)));
     }
     synchronized (this) {
       clearBit(id);

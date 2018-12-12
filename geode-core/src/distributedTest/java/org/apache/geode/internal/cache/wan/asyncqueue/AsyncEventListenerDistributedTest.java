@@ -16,11 +16,10 @@ package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -278,7 +277,7 @@ public class AsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> waitForAsyncEventListenerWithEventsMapSize(0));
   }
 
-  @Test // serial, persistent, ReplicateRegion, FlakyTest, IntegrationTest
+  @Test // serial, persistent, ReplicateRegion, IntegrationTest
   public void testReplicatedSerialAsyncEventQueueWithPersistenceEnabled_Restart() {
     vm0.invoke(() -> {
       createCache();
@@ -290,6 +289,8 @@ public class AsyncEventListenerDistributedTest implements Serializable {
 
       // pause async channel and then do the puts
       getInternalGatewaySender().pause();
+      waitForDispatcherToPause();
+
       doPuts(replicateRegionName, 1000);
 
       // kill vm0 and rebuild
@@ -312,7 +313,7 @@ public class AsyncEventListenerDistributedTest implements Serializable {
    * TODO: fix this test
    */
   @Ignore("TODO: Disabled for 52351")
-  @Test // serial, persistent, ReplicateRegion, FlakyTest
+  @Test // serial, persistent, ReplicateRegion
   public void testReplicatedSerialAsyncEventQueueWithPersistenceEnabled_Restart2() {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
@@ -676,12 +677,12 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForAsyncEventListenerWithEventsMapSize(int expectedSize) {
-    await().atMost(TWO_MINUTES).untilAsserted(
+    await().untilAsserted(
         () -> assertThat(getSpyAsyncEventListener().getEventsMap()).hasSize(expectedSize));
   }
 
   private void waitForAsyncEventQueueSize(int expectedRegionQueueSize) {
-    await().atMost(TWO_MINUTES).untilAsserted(
+    await().untilAsserted(
         () -> assertThat(getTotalRegionQueueSize()).isEqualTo(expectedRegionQueueSize));
   }
 
@@ -690,13 +691,13 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForRegionQueuesToEmpty() {
-    await().atMost(TWO_MINUTES)
+    await()
         .untilAsserted(() -> assertRegionQueuesAreEmpty(getInternalGatewaySender()));
   }
 
   private void waitForSenderToBecomePrimary() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).untilAsserted(
+    await().untilAsserted(
         () -> assertThat(gatewaySender.isPrimary()).as("gatewaySender: " + gatewaySender).isTrue());
   }
 

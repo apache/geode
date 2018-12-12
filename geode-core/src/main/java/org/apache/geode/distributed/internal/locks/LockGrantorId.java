@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.locks;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Identifies specific lock grantor member and version.
@@ -47,7 +46,7 @@ public class LockGrantorId {
       long lockGrantorVersion, int lockGrantorSerialNumber) {
     if (lockGrantorMember == null) {
       throw new NullPointerException(
-          LocalizedStrings.LockGrantorId_LOCKGRANTORMEMBER_IS_NULL.toLocalizedString());
+          "lockGrantorMember is null");
     }
     this.dm = dm;
     this.lockGrantorMember = lockGrantorMember;
@@ -140,7 +139,7 @@ public class LockGrantorId {
       long someLockGrantorVersion, int someLockGrantorSerialNumber) {
     if (someLockGrantorMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.LockGrantorId_SOMELOCKGRANTORID_MUST_NOT_BE_NULL.toLocalizedString());
+          "someLockGrantorId must not be null");
     }
     return someLockGrantorMember.equals(this.lockGrantorMember)
         && someLockGrantorVersion == this.lockGrantorVersion

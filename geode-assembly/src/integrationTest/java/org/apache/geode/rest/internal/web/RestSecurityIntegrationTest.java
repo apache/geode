@@ -75,24 +75,24 @@ public class RestSecurityIntegrationTest {
 
   @Test
   public void testQueries() throws Exception {
-    assertResponse(restClient.doGet("/queries", "user", "wrongPswd"))
+    restClient.doGetAndAssert("/queries", "user", "wrongPswd")
         .hasStatusCode(401);
-    assertResponse(restClient.doGet("/queries", "user", "user"))
+    restClient.doGetAndAssert("/queries", "user", "user")
         .hasStatusCode(403);
-    assertResponse(restClient.doGet("/queries", "dataRead", "dataRead"))
+    restClient.doGetAndAssert("/queries", "dataRead", "dataRead")
         .hasStatusCode(200)
         .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
   }
 
   @Test
   public void testAdhocQuery() throws Exception {
-    assertResponse(restClient.doGet("/queries/adhoc?q=", "user", "wrongPswd"))
+    restClient.doGetAndAssert("/queries/adhoc?q=", "user", "wrongPswd")
         .hasStatusCode(401);
-    assertResponse(restClient.doGet("/queries/adhoc?q=", "user", "user"))
+    restClient.doGetAndAssert("/queries/adhoc?q=", "user", "user")
         .hasStatusCode(403);
     // because we're only testing the security of the endpoint, not the endpoint functionality, a
     // 500 is acceptable
-    assertResponse(restClient.doGet("/queries/adhoc?q=", "dataRead", "dataRead"))
+    restClient.doGetAndAssert("/queries/adhoc?q=", "dataRead", "dataRead")
         .hasStatusCode(500);
   }
 

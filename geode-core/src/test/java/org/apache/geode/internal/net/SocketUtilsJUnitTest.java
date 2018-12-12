@@ -14,20 +14,17 @@
  */
 package org.apache.geode.internal.net;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,106 +36,56 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * <p/>
  *
  * @see org.apache.geode.internal.net.SocketUtils
- * @see org.jmock.Expectations
- * @see org.jmock.Mockery
- * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category({MembershipTest.class})
+@Category(MembershipTest.class)
 public class SocketUtilsJUnitTest {
-
-  private Mockery mockContext;
-
-  @Before
-  public void setup() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-  }
 
   @Test
   public void testCloseSocket() throws IOException {
-    final Socket mockSocket = mockContext.mock(Socket.class, "closeSocketTest");
+    final Socket mockSocket = mock(Socket.class, "closeSocketTest");
+    doNothing().when(mockSocket).close();
 
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockSocket).close();
-      }
-    });
-
-    assertTrue(SocketUtils.close(mockSocket));
+    assertThat(SocketUtils.close(mockSocket)).isTrue();
+    verify(mockSocket, times(1)).close();
   }
 
   @Test
   public void testCloseSocketThrowsIOException() throws IOException {
-    final Socket mockSocket = mockContext.mock(Socket.class, "closeSocketThrowsIOExceptionTest");
+    final Socket mockSocket = mock(Socket.class, "closeSocketThrowsIOExceptionTest");
+    doThrow(new IOException("Mock Exception")).when(mockSocket).close();
 
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockSocket).close();
-        will(throwException(new IOException("test")));
-      }
-    });
-
-    try {
-      assertFalse(SocketUtils.close(mockSocket));
-    } catch (Throwable t) {
-      fail(
-          "Calling close on a Socket using SocketUtils threw an unexpected Throwable (" + t + ")!");
-    }
+    assertThat(SocketUtils.close(mockSocket)).isFalse();
+    verify(mockSocket, times(1)).close();
   }
 
   @Test
   public void testCloseSocketWithNull() {
-    assertTrue(SocketUtils.close((Socket) null));
+    assertThat(SocketUtils.close((Socket) null)).isTrue();
   }
 
   @Test
   public void testCloseServerSocket() throws IOException {
-    final ServerSocket mockServerSocket =
-        mockContext.mock(ServerSocket.class, "closeServerSocketTest");
+    final ServerSocket mockServerSocket = mock(ServerSocket.class, "closeServerSocketTest");
+    doNothing().when(mockServerSocket).close();
 
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockServerSocket).close();
-      }
-    });
-
-    assertTrue(SocketUtils.close(mockServerSocket));
+    assertThat(SocketUtils.close(mockServerSocket)).isTrue();
+    verify(mockServerSocket, times(1)).close();
   }
 
   @Test
   public void testCloseServerSocketThrowsIOException() throws IOException {
     final ServerSocket mockServerSocket =
-        mockContext.mock(ServerSocket.class, "closeServerSocketThrowsIOExceptionTest");
+        mock(ServerSocket.class, "closeServerSocketThrowsIOExceptionTest");
+    doThrow(new IOException("Mock Exception")).when(mockServerSocket).close();
 
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockServerSocket).close();
-        will(throwException(new IOException("test")));
-      }
-    });
-
-    try {
-      assertFalse(SocketUtils.close(mockServerSocket));
-    } catch (Throwable t) {
-      fail("Calling close on a ServerSocket using SocketUtils threw an unexpected Throwable (" + t
-          + ")!");
-    }
+    assertThat(SocketUtils.close(mockServerSocket)).isFalse();
+    verify(mockServerSocket, times(1)).close();
   }
 
   @Test
   public void testCloseServerSocketWithNull() {
-    assertTrue(SocketUtils.close((ServerSocket) null));
+    assertThat(SocketUtils.close((ServerSocket) null)).isTrue();
   }
-
 }

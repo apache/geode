@@ -17,6 +17,7 @@ package org.apache.geode.cache30;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.io.File;
@@ -26,10 +27,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 
 import org.apache.geode.cache.Cache;
@@ -84,7 +83,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
    */
   private static void waitForNoRebalancing() {
     if (cache != null && !cache.isClosed()) {
-      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      await().until(() -> {
         return cache.getResourceManager().getRebalanceOperations().size() == 0;
       });
     }

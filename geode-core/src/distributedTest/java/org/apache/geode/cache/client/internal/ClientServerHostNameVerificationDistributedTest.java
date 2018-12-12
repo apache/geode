@@ -76,12 +76,14 @@ public class ClientServerHostNameVerificationDistributedTest {
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
 
     CertificateBuilder serverCertificate = new CertificateBuilder()
         .commonName("server")
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost());
 
     CertificateBuilder clientCertificate = new CertificateBuilder()
@@ -132,6 +134,7 @@ public class ClientServerHostNameVerificationDistributedTest {
         .commonName("locator")
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost());
 
     CertificateBuilder serverCertificateWithNoSan = new CertificateBuilder()

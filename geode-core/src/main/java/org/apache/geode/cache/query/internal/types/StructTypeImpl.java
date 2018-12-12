@@ -25,7 +25,6 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of StructType
@@ -66,7 +65,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
     super(clazz);
     if (fieldNames == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructTypeImpl_FIELDNAMES_MUST_NOT_BE_NULL.toLocalizedString());
+          "fieldNames must not be null");
     }
     this.fieldNames = fieldNames;
     this.fieldTypes = fieldTypes == null ? new ObjectType[this.fieldNames.length] : fieldTypes;
@@ -93,7 +92,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.StructTypeImpl_FIELDNAME_0_NOT_FOUND.toLocalizedString(fieldName));
+        String.format("fieldName %s not found", fieldName));
   }
 
   @Override

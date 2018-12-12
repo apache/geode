@@ -23,7 +23,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation of <code>DistributionLocatorConfig</code>.
@@ -155,15 +154,15 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
 
     if (port < MIN_PORT || port > MAX_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributionLocatorConfigImpl_PORT_0_MUST_BE_AN_INTEGER_BETWEEN_1_AND_2
-              .toLocalizedString(new Object[] {Integer.valueOf(port), Integer.valueOf(MIN_PORT),
+          String.format("Port ( %s ) must be an integer between %s and %s",
+              new Object[] {Integer.valueOf(port), Integer.valueOf(MIN_PORT),
                   Integer.valueOf(MAX_PORT)}));
     }
 
     if (this.bindAddress != null && InetAddressUtil.validateHost(this.bindAddress) == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributionLocatorConfigImpl_INVALID_HOST_0
-              .toLocalizedString(this.bindAddress));
+          String.format("Invalid host %s",
+              this.bindAddress));
     }
   }
 

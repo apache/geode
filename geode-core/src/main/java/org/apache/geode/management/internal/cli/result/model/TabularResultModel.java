@@ -43,6 +43,14 @@ public class TabularResultModel extends AbstractResultModel {
     return this;
   }
 
+  public void addMemberStatusResultRow(String member, String result, String message) {
+    if (member != null) {
+      accumulate("Member", member);
+    }
+    accumulate("Result", result);
+    accumulate("Message", message);
+  }
+
   @Override
   public Map<String, List<String>> getContent() {
     return table;

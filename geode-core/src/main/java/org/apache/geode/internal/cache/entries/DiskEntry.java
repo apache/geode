@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.OffHeapHelper;
@@ -85,7 +84,7 @@ public interface DiskEntry extends RegionEntry {
    * @param context the value's context.
    * @param value an entry value.
    */
-  void setValueWithContext(RegionEntryContext context, Object value);
+  void setValueWithContext(RegionEntryContext context, @Unretained Object value);
 
   /**
    * In some cases we need to do something just before we drop the value from a DiskEntry that is
@@ -385,8 +384,7 @@ public interface DiskEntry extends RegionEntry {
                 entry.setSerialized(true);
               } catch (IOException e) {
                 throw new IllegalArgumentException(
-                    LocalizedStrings.DiskEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                        .toLocalizedString(),
+                    "An IOException was thrown while serializing.",
                     e);
               }
             }
@@ -426,8 +424,7 @@ public interface DiskEntry extends RegionEntry {
             entry.setSerialized(true);
           } catch (IOException e) {
             RuntimeException e2 = new IllegalArgumentException(
-                LocalizedStrings.DiskEntry_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                    .toLocalizedString());
+                "An IOException was thrown while serializing.");
             e2.initCause(e);
             throw e2;
           }
@@ -449,7 +446,7 @@ public interface DiskEntry extends RegionEntry {
       }
       if (drv == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DiskEntry_DISK_REGION_IS_NULL.toLocalizedString());
+            "Disk region is null");
       }
 
       if (newValue instanceof RecoveredEntry) {
@@ -829,7 +826,7 @@ public interface DiskEntry extends RegionEntry {
       region.getDiskRegion().put(entry, region, vw, async);
     }
 
-    public static void update(DiskEntry entry, InternalRegion region, Object newValue)
+    public static void update(DiskEntry entry, InternalRegion region, @Unretained Object newValue)
         throws RegionClearedException {
       update(entry, region, newValue, null);
     }
@@ -838,40 +835,53 @@ public interface DiskEntry extends RegionEntry {
      * Updates the value of the disk entry with a new value. This allows us to free up disk space in
      * the non-backup case.
      */
-    public static void update(DiskEntry entry, InternalRegion region, Object newValue,
+    public static void update(DiskEntry entry, InternalRegion region, @Unretained Object newValue,
         EntryEventImpl event) throws RegionClearedException {
       if (newValue == null) {
         throw new NullPointerException(
-            LocalizedStrings.DiskEntry_ENTRYS_VALUE_SHOULD_NOT_BE_NULL.toLocalizedString());
+            "Entry's value should not be null.");
       }
-
-      AsyncDiskEntry asyncDiskEntry = null;
-      DiskRegion dr = region.getDiskRegion();
-      DiskId did = entry.getDiskId();
-      Object syncObj = did;
-      if (syncObj == null) {
-        syncObj = entry;
-      }
-      if (syncObj == did) {
-        dr.acquireReadLock();
-      }
+      boolean basicUpdateCalled = false;
       try {
-        synchronized (syncObj) {
-          asyncDiskEntry = basicUpdate(entry, region, newValue, event);
+
+        AsyncDiskEntry asyncDiskEntry = null;
+        DiskRegion dr = region.getDiskRegion();
+        DiskId did = entry.getDiskId();
+        Object syncObj = did;
+        if (syncObj == null) {
+          syncObj = entry;
+        }
+        if (syncObj == did) {
+          dr.acquireReadLock();
+        }
+        try {
+          synchronized (syncObj) {
+            basicUpdateCalled = true;
+            asyncDiskEntry = basicUpdate(entry, region, newValue, event);
+          }
+        } finally {
+          if (syncObj == did) {
+            dr.releaseReadLock();
+          }
+        }
+        if (asyncDiskEntry != null && did.isPendingAsync()) {
+          // this needs to be done outside the above sync
+          scheduleAsyncWrite(asyncDiskEntry);
         }
       } finally {
-        if (syncObj == did) {
-          dr.releaseReadLock();
+        if (!basicUpdateCalled) {
+          OffHeapHelper.release(newValue);
         }
-      }
-      if (asyncDiskEntry != null && did.isPendingAsync()) {
-        // this needs to be done outside the above sync
-        scheduleAsyncWrite(asyncDiskEntry);
       }
     }
 
+    static AsyncDiskEntry basicUpdateForTesting(DiskEntry entry, InternalRegion region,
+        @Unretained Object newValue, EntryEventImpl event) throws RegionClearedException {
+      return basicUpdate(entry, region, newValue, event);
+    }
+
     private static AsyncDiskEntry basicUpdate(DiskEntry entry, InternalRegion region,
-        Object newValue, EntryEventImpl event) throws RegionClearedException {
+        @Unretained Object newValue, EntryEventImpl event) throws RegionClearedException {
       AsyncDiskEntry result = null;
       DiskRegion dr = region.getDiskRegion();
       DiskId did = entry.getDiskId();
@@ -903,67 +913,82 @@ public interface DiskEntry extends RegionEntry {
       } else if (newValue instanceof RecoveredEntry) {
         ((RecoveredEntry) newValue).applyToDiskEntry(entry, region, dr, did);
       } else {
-        // The new value in the entry needs to be set after the disk writing
-        // has succeeded.
+        boolean newValueStoredInEntry = false;
+        try {
+          // The new value in the entry needs to be set after the disk writing
+          // has succeeded.
 
-        // entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+          // entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
 
-        if (did != null && did.isPendingAsync()) {
-          // if the entry was not yet written to disk, we didn't update
-          // the bytes on disk.
-          oldValueLength = 0;
-        } else {
-          oldValueLength = getValueLength(did);
-        }
-
-        if (dr.isBackup()) {
-          dr.testIsRecoveredAndClear(did); // fixes bug 41409
-          if (doSynchronousWrite(region, dr)) {
-            if (AbstractRegionEntry.isCompressible(dr, newValue)) {
-              // In case of compression the value is being set first
-              // so that writeToDisk can get it back from the entry
-              // decompressed if it does not have it already in the event.
-              // TODO: this may have introduced a bug with clear since
-              // writeToDisk can throw RegionClearedException which
-              // was supposed to stop us from changing entry.
-              entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
-              // newValue is prepared and compressed. We can't write compressed values to disk.
-              writeToDisk(entry, region, false, event);
-            } else {
-              writeBytesToDisk(entry, region, false, createValueWrapper(newValue, event));
-              entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
-            }
-
+          if (did != null && did.isPendingAsync()) {
+            // if the entry was not yet written to disk, we didn't update
+            // the bytes on disk.
+            oldValueLength = 0;
           } else {
-            // If we have concurrency checks enabled for a persistent region, we need
-            // to add an entry to the async queue for every update to maintain the RVV
-            boolean maintainRVV = region.getConcurrencyChecksEnabled();
-
-            if (!did.isPendingAsync() || maintainRVV) {
-              // if the entry is not async, we need to schedule it
-              // for regions with concurrency checks enabled, we add an entry
-              // to the queue for every entry.
-              did.setPendingAsync(true);
-              VersionTag tag = null;
-              VersionStamp stamp = entry.getVersionStamp();
-              if (stamp != null) {
-                tag = stamp.asVersionTag();
-              }
-              result = new AsyncDiskEntry(region, entry, tag);
-            }
-            entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+            oldValueLength = getValueLength(did);
           }
-        } else if (did != null) {
-          entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
 
-          // Mark the id as needing to be written
-          // The disk remove that this section used to do caused bug 30961
-          // @todo this seems wrong. How does leaving it on disk fix the bug?
-          did.markForWriting();
-          // did.setValueSerializedSize(0);
-        } else {
-          entry.setValueWithContext(region, newValue);
+          if (dr.isBackup()) {
+            dr.testIsRecoveredAndClear(did); // fixes bug 41409
+            if (doSynchronousWrite(region, dr)) {
+              if (AbstractRegionEntry.isCompressible(dr, newValue)) {
+                // In case of compression the value is being set first
+                // so that writeToDisk can get it back from the entry
+                // decompressed if it does not have it already in the event.
+                // TODO: this may have introduced a bug with clear since
+                // writeToDisk can throw RegionClearedException which
+                // was supposed to stop us from changing entry.
+                newValueStoredInEntry = true;
+                entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+                // newValue is prepared and compressed. We can't write compressed values to disk.
+                if (!entry.isRemovedFromDisk()) {
+                  writeToDisk(entry, region, false, event);
+                }
+              } else {
+                writeBytesToDisk(entry, region, false, createValueWrapper(newValue, event));
+                newValueStoredInEntry = true;
+                entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+              }
+
+            } else {
+              // If we have concurrency checks enabled for a persistent region, we need
+              // to add an entry to the async queue for every update to maintain the RVV
+              boolean maintainRVV = region.getConcurrencyChecksEnabled();
+
+              if (!did.isPendingAsync() || maintainRVV) {
+                // if the entry is not async, we need to schedule it
+                // for regions with concurrency checks enabled, we add an entry
+                // to the queue for every entry.
+                did.setPendingAsync(true);
+                VersionTag tag = null;
+                VersionStamp stamp = entry.getVersionStamp();
+                if (stamp != null) {
+                  tag = stamp.asVersionTag();
+                }
+                result = new AsyncDiskEntry(region, entry, tag);
+              }
+              newValueStoredInEntry = true;
+              entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+            }
+          } else if (did != null) {
+            newValueStoredInEntry = true;
+            entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
+
+            // Mark the id as needing to be written
+            // The disk remove that this section used to do caused bug 30961
+            // @todo this seems wrong. How does leaving it on disk fix the bug?
+            did.markForWriting();
+            // did.setValueSerializedSize(0);
+          } else {
+            newValueStoredInEntry = true;
+            entry.setValueWithContext(region, newValue);
+          }
+        } finally {
+          if (!newValueStoredInEntry) {
+            OffHeapHelper.release(newValue);
+          }
         }
+
 
         if (Token.isInvalidOrRemoved(newValue)) {
           if (oldValue == null) {

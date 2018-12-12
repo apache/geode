@@ -15,9 +15,12 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.HashSet;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,8 +32,9 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.index.IndexManager.IndexUpdaterThread;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -68,18 +72,14 @@ public class AsyncIndexUpdaterThreadShutdownJUnitTest {
       localRegion.put(i, new Portfolio(i));
     }
 
-    GemFireCacheImpl internalCache = (GemFireCacheImpl) cache;
-    // Don't disconnect distributed system yet to keep system thread groups alive.
-    internalCache.close("Normal disconnect", null, false, false);
+    InternalRegion internalRegion = (InternalRegion) localRegion;
+    assertTrue(internalRegion.getIndexManager().getUpdaterThread().isAlive());
 
-    // Get Asynchronous index updater thread group from Distributed System.
-    ThreadGroup indexUpdaterThreadGroup =
-        LoggingThreadGroup.getThreadGroup("QueryMonitor Thread Group");
+    localRegion.close();
 
-    assertEquals(0, indexUpdaterThreadGroup.activeCount());
+    assertFalse(internalRegion.getIndexManager().getUpdaterThread().isAlive());
 
-    internalCache.getSystem().disconnect();
-
+    cache.close();
   }
 
   @Test
@@ -104,16 +104,22 @@ public class AsyncIndexUpdaterThreadShutdownJUnitTest {
       localRegion.put(i, new Portfolio(i));
     }
 
-    GemFireCacheImpl internalCache = (GemFireCacheImpl) cache;
-    // Don't disconnect distributed system yet to keep system thread groups alive.
-    internalCache.close("Normal disconnect", null, false, false);
+    InternalRegion internalRegion = (InternalRegion) localRegion;
+    assertTrue(internalRegion.getIndexManager().getUpdaterThread().isAlive());
 
-    // Get Asynchronous index updater thread group from Distributed System.
-    ThreadGroup indexUpdaterThreadGroup =
-        LoggingThreadGroup.getThreadGroup("QueryMonitor Thread Group");
+    PartitionedRegion pr = (PartitionedRegion) localRegion;
+    HashSet<BucketRegion> buckets = new HashSet<>(pr.getDataStore().getAllLocalBucketRegions());
+    for (BucketRegion br : buckets) {
+      assertTrue(br.getIndexManager().getUpdaterThread().isAlive());
+    }
 
-    assertEquals(0, indexUpdaterThreadGroup.activeCount());
+    localRegion.close();
 
-    internalCache.getSystem().disconnect();
+    assertFalse(internalRegion.getIndexManager().getUpdaterThread().isAlive());
+    for (BucketRegion br : buckets) {
+      assertFalse(br.getIndexManager().getUpdaterThread().isAlive());
+    }
+
+    cache.close();
   }
 }

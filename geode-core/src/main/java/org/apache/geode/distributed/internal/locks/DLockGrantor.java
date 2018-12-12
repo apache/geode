@@ -44,9 +44,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.internal.cache.TXReservationMgr;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
@@ -299,7 +298,7 @@ public class DLockGrantor {
         return null;
       if (!grantor.isReady())
         return null;
-      // Now make sure the service still has this guy as its grantor
+      // Now make sure the service still has this member as its grantor
       oldGrantor = grantor;
       grantor = getGrantorForService(svc);
     } while (oldGrantor != grantor);
@@ -458,7 +457,7 @@ public class DLockGrantor {
   private void throwIfDestroyed(boolean destroyed) {
     if (destroyed) {
       throw new LockGrantorDestroyedException(
-          LocalizedStrings.DLockGrantor_GRANTOR_IS_DESTROYED.toLocalizedString());
+          "Grantor is destroyed");
     }
   }
 
@@ -852,9 +851,8 @@ public class DLockGrantor {
             synchronized (grantToken) {
               if (grantToken.isLeaseHeld()) {
                 logger.error(LogMarker.DLS_MARKER,
-                    LocalizedMessage.create(
-                        LocalizedStrings.DLockGrantor_INITIALIZATION_OF_HELD_LOCKS_IS_SKIPPING_0_BECAUSE_LOCK_IS_ALREADY_HELD_1,
-                        new Object[] {token, grantToken}));
+                    "Initialization of held locks is skipping {} because lock is already held: {}",
+                    token, grantToken);
                 continue;
               }
 
@@ -1697,9 +1695,8 @@ public class DLockGrantor {
     if (localDebugHandleSuspendTimeouts > 0) {
       try {
         logger.info(LogMarker.DLS_MARKER,
-            LocalizedMessage.create(
-                LocalizedStrings.DLockGrantor_DEBUGHANDLESUSPENDTIMEOUTS_SLEEPING_FOR__0,
-                localDebugHandleSuspendTimeouts));
+            "debugHandleSuspendTimeouts sleeping for  {}",
+            localDebugHandleSuspendTimeouts);
         Thread.sleep(localDebugHandleSuspendTimeouts);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
@@ -1756,8 +1753,8 @@ public class DLockGrantor {
         break;
     }
     if (stateDesc == null) {
-      throw new IllegalArgumentException(LocalizedStrings.DLockGrantor_UNKNOWN_STATE_FOR_GRANTOR_0
-          .toLocalizedString(Integer.valueOf(state)));
+      throw new IllegalArgumentException(String.format("Unknown state for grantor: %s",
+          Integer.valueOf(state)));
     }
     return stateDesc;
   }
@@ -1771,8 +1768,8 @@ public class DLockGrantor {
     if (this.state != INITIALIZING) {
       String stateDesc = stateToString(this.state);
       throw new IllegalStateException(
-          LocalizedStrings.DLockGrantor_DLOCKGRANTOR_OPERATION_ONLY_ALLOWED_WHEN_INITIALIZING_NOT_0
-              .toLocalizedString(stateDesc));
+          String.format("DLockGrantor operation only allowed when initializing, not %s",
+              stateDesc));
     }
   }
 
@@ -1797,7 +1794,7 @@ public class DLockGrantor {
     Assert.assertTrue(myRThread != null, "Attempted to suspend locking for null RemoteThread");
     Assert.assertTrue(this.lockingSuspendedBy == null || this.lockingSuspendedBy.equals(myRThread),
         "Attempted to suspend locking for " + myRThread + " but locking is already suspended by "
-            + this.lockingSuspendedBy); // KIRK: assert fails in bug 37945
+            + this.lockingSuspendedBy);
     this.suspendedLockId = lockId;
     this.lockingSuspendedBy = myRThread;
   }
@@ -1954,7 +1951,6 @@ public class DLockGrantor {
     // boolean permitSuspend = false;
     Integer integer = (Integer) readLockCountMap.get(rThread);
     int readLockCount = integer == null ? 0 : integer.intValue();
-    // Assert.assertTrue(readLockCount > 0, rThread + " not found in " + readLockCountMap); // KIRK
     if (readLockCount < 1) {
       // hit bug 35749
       if (isDebugEnabled_DLS) {
@@ -1991,11 +1987,10 @@ public class DLockGrantor {
             .append(", writeLockWaiters=").append(writeLockWaiters).append(",\nsuspendQueue=")
             .append(suspendQueue).append(",\npermittedRequests=").append(permittedRequests)
             .toString();
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DLockGrantor_RELEASED_REGULAR_LOCK_WITH_WAITING_READ_LOCK_0, s));
+        logger.warn("Released regular lock with waiting read lock: {}", s);
         Assert.assertTrue(false,
-            LocalizedStrings.DLockGrantor_RELEASED_REGULAR_LOCK_WITH_WAITING_READ_LOCK_0
-                .toString(s));
+            String.format("Released regular lock with waiting read lock: %s",
+                s));
       }
     }
     if (isDebugEnabled_DLS) {
@@ -2096,9 +2091,9 @@ public class DLockGrantor {
 
         }
       } catch (RuntimeException e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.DLockGrantor_PROCESSING_OF_POSTREMOTERELEASELOCK_THREW_UNEXPECTED_RUNTIMEEXCEPTION,
-            e));
+        logger.error(
+            "Processing of postRemoteReleaseLock threw unexpected RuntimeException",
+            e);
         request.respondWithException(e);
       } finally {
 
@@ -2122,8 +2117,7 @@ public class DLockGrantor {
     synchronized (suspendLock) {
       checkDestroyed();
       if (!dm.isCurrentMember(request.getSender())) {
-        logger.info(LogMarker.DLS_MARKER, LocalizedMessage
-            .create(LocalizedStrings.DLockGrantor_IGNORING_LOCK_REQUEST_FROM_NONMEMBER_0, request));
+        logger.info(LogMarker.DLS_MARKER, "Ignoring lock request from non-member: {}", request);
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
@@ -2167,8 +2161,7 @@ public class DLockGrantor {
     synchronized (suspendLock) {
       checkDestroyed();
       if (!dm.isCurrentMember(request.getSender())) {
-        logger.info(LogMarker.DLS_MARKER, LocalizedMessage
-            .create(LocalizedStrings.DLockGrantor_IGNORING_LOCK_REQUEST_FROM_NONMEMBER_0, request));
+        logger.info(LogMarker.DLS_MARKER, "Ignoring lock request from non-member: %s", request);
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
@@ -2257,9 +2250,9 @@ public class DLockGrantor {
         DLockGrantToken token = (DLockGrantToken) entry.getValue();
         buffer.append(token.toString()).append("\n");
       }
-      logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(LocalizedStrings.TESTING, buffer));
-      logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(LocalizedStrings.TESTING,
-          "\nreadLockCountMap:\n" + readLockCountMap));
+      logger.info(LogMarker.DLS_MARKER, "{}", buffer);
+      logger.info(LogMarker.DLS_MARKER, "{}",
+          "\nreadLockCountMap:\n" + readLockCountMap);
     }
   }
 
@@ -2496,8 +2489,7 @@ public class DLockGrantor {
      * @return true if lock was granted to the request
      */
     protected synchronized boolean grantLockToRequest(DLockRequestMessage request) {
-      Assert.assertTrue(request.getRemoteThread() != null); // KIRK search for these assertions and
-                                                            // remove
+      Assert.assertTrue(request.getRemoteThread() != null);
       if (isGranted(true) || hasWaitingRequests()) {
         return false;
       }
@@ -3271,7 +3263,7 @@ public class DLockGrantor {
   /**
    * Thread dedicated to handling background tasks for this grantor.
    */
-  private static class DLockGrantorThread extends Thread {
+  private static class DLockGrantorThread extends LoggingThread {
     private static final long MAX_WAIT = 60 * 1000; // 60 seconds...
     private volatile boolean shutdown = false;
     private boolean waiting = false;
@@ -3290,8 +3282,7 @@ public class DLockGrantor {
     private long nextExpire = DLockGrantorThread.MAX_WAIT;
 
     DLockGrantorThread(DLockGrantor grantor, CancelCriterion stopper) {
-      super(DLockService.getThreadGroup(), "Lock Grantor for " + grantor.dlock.getName());
-      setDaemon(true);
+      super("Lock Grantor for " + grantor.dlock.getName());
       this.grantor = grantor;
       this.stopper = stopper;
     }
@@ -3495,6 +3486,9 @@ public class DLockGrantor {
             stats.endGrantorThread(statStart);
           }
 
+        } catch (LockGrantorDestroyedException ex) {
+          this.shutdown = true;
+          return;
         } catch (InterruptedException e) {
           // shutdown probably interrupted us
 
@@ -3504,9 +3498,7 @@ public class DLockGrantor {
           if (this.shutdown) {
             // ok to ignore since this thread will now shutdown
           } else {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.DLockGrantor_DLOCKGRANTORTHREAD_WAS_UNEXPECTEDLY_INTERRUPTED),
+            logger.warn("DLockGrantorThread was unexpectedly interrupted",
                 e);
             // do not set interrupt flag since this thread needs to resume
             stopper.checkCancelInProgress(e);

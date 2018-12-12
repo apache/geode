@@ -43,7 +43,6 @@ import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.NonLocalRegionEntry;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -88,7 +87,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.RemoteFetchEntryMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -113,7 +112,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(tex));
     } catch (EntryNotFoundException enfe) {
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(
-          LocalizedStrings.RemoteFetchEntryMessage_ENTRY_NOT_FOUND.toLocalizedString(), enfe));
+          "entry not found", enfe));
     }
 
     // Unless there was an exception thrown, this message handles sending the

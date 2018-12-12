@@ -25,9 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class MemberFunctionResultSender implements InternalResultSender {
 
@@ -81,8 +79,8 @@ public class MemberFunctionResultSender implements InternalResultSender {
   public void lastResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     if (this.serverSender != null) { // client-server
       if (this.localLastResultReceived) {
@@ -184,8 +182,8 @@ public class MemberFunctionResultSender implements InternalResultSender {
   public void sendResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("send"));
+          String.format("Cannot %s result as the Function#hasResult() is false",
+              "send"));
     }
     if (this.serverSender != null) { // Client-Server
       if (logger.isDebugEnabled()) {
@@ -223,9 +221,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
   public void setException(Throwable exception) {
     ((LocalResultCollector) this.rc).setException(exception);
     // this.lastResult(exception);
-    logger.info(
-        LocalizedMessage.create(
-            LocalizedStrings.MemberResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE),
+    logger.info("Unexpected exception during function execution local member",
         exception);
     this.rc.endResults();
     this.localLastResultReceived = true;

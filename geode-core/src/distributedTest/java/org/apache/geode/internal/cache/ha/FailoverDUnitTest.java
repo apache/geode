@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -46,11 +47,11 @@ import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -162,7 +163,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public void waitForPrimaryAndBackups(final int numBackups) {
-    final PoolImpl pool = (PoolImpl) PoolManager.find("FailoverPool");
+    final PoolImpl pool = (PoolImpl) find("FailoverPool");
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         if (pool.getPrimary() == null) {
@@ -178,7 +179,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertNotNull(pool.getPrimary());
     assertTrue("backups=" + pool.getRedundants() + " expected=" + numBackups,
         pool.getRedundants().size() >= numBackups);
@@ -252,7 +253,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     assertEquals("value-1", r.getEntry("key-1").getValue());
     assertEquals("value-2", r.getEntry("key-2").getValue());
@@ -293,7 +294,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals("value-5", r.getEntry("key-5").getValue());
     assertEquals("value-4", r.getEntry("key-4").getValue());
   }

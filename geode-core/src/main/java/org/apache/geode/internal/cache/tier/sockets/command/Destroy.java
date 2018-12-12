@@ -34,8 +34,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
@@ -101,19 +99,15 @@ public class Destroy extends BaseCommand {
     // Process the destroy request
     if (key == null || regionName == null) {
       if (key == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.Destroy_0_THE_INPUT_KEY_FOR_THE_DESTROY_REQUEST_IS_NULL,
-            serverConnection.getName()));
-        errMessage.append(LocalizedStrings.Destroy__THE_INPUT_KEY_FOR_THE_DESTROY_REQUEST_IS_NULL
-            .toLocalizedString());
+        logger.warn("{}: The input key for the destroy request is null",
+            serverConnection.getName());
+        errMessage.append("The input key for the destroy request is null");
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.Destroy_0_THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REQUEST_IS_NULL,
-            serverConnection.getName()));
+        logger.warn("{}: The input region name for the destroy request is null",
+            serverConnection.getName());
         errMessage
-            .append(LocalizedStrings.Destroy__THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REQUEST_IS_NULL
-                .toLocalizedString());
+            .append("The input region name for the destroy request is null");
       }
       writeErrorResponse(clientMessage, MessageType.DESTROY_DATA_ERROR, errMessage.toString(),
           serverConnection);
@@ -123,8 +117,8 @@ public class Destroy extends BaseCommand {
 
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.Destroy__0_WAS_NOT_FOUND_DURING_DESTROY_REQUEST
-          .toLocalizedString(regionName);
+      String reason = String.format("%s was not found during destroy request",
+          regionName);
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -159,9 +153,10 @@ public class Destroy extends BaseCommand {
     } catch (EntryNotFoundException e) {
       // Don't send an exception back to the client if this
       // exception happens. Just log it and continue.
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.Destroy_0_DURING_ENTRY_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
-          new Object[] {serverConnection.getName(), key}));
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: during entry destroy no entry was found for key {}",
+            serverConnection.getName(), key);
+      }
     } catch (RegionDestroyedException rde) {
       writeException(clientMessage, rde, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -180,7 +175,7 @@ public class Destroy extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", serverConnection.getName(), e);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.Destroy_0_UNEXPECTED_EXCEPTION,
+        logger.warn(String.format("%s: Unexpected Exception",
             serverConnection.getName()), e);
       }
       return;

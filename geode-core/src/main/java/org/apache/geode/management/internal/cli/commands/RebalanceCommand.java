@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -45,6 +44,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -77,7 +77,8 @@ public class RebalanceCommand extends InternalGfshCommand {
           help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate)
       throws Exception {
 
-    ExecutorService commandExecutors = Executors.newSingleThreadExecutor();
+    ExecutorService commandExecutors =
+        LoggingExecutors.newSingleThreadExecutor("RebalanceCommand", false);
     List<Future<Result>> commandResult = new ArrayList<>();
     Result result;
     try {

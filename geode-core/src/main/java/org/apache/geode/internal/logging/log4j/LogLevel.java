@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.logging.log4j;
 
 import java.util.Arrays;
@@ -25,7 +24,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
- * This class provides utility methods to hold all valid log4j levels and lgegacy geode log levels
+ * This class provides utility methods to hold all valid log4j levels and legacy geode log levels
  * and the mapping between the two level hierarchy.
  */
 public class LogLevel {
@@ -70,6 +69,7 @@ public class LogLevel {
     Arrays.stream(Level.values()).forEach(level -> {
       LEVELS.put(level.name(), level);
     });
+
     // map all the other logwriter level to log4j levels
     LEVELS.put("SEVERE", getLog4jLevel(InternalLogWriter.SEVERE_LEVEL));
     LEVELS.put("WARNING", getLog4jLevel(InternalLogWriter.WARNING_LEVEL));
@@ -86,7 +86,7 @@ public class LogLevel {
    * @param level either legacy level string or log4j level string
    * @return log4j level. Level.OFF is invalid string
    */
-  public static Level resolveLevel(String level) {
+  public static Level resolveLevel(final String level) {
     Level log4jLevel = LEVELS.get(level.toUpperCase());
     // make sure any unrecognizable log level is assigned a most specific level
     return log4jLevel == null ? Level.OFF : log4jLevel;
@@ -136,9 +136,9 @@ public class LogLevel {
    * @param levelName a string of level name
    * @return logwriter code
    */
-  public static int getLogWriterLevel(String levelName) {
+  public static int getLogWriterLevel(final String levelName) {
     if (levelName == null) {
-      throw new IllegalArgumentException("Levalname can't be null");
+      throw new IllegalArgumentException("LevelName cannot be null");
     }
 
     Integer level = S2I.get(levelName.toUpperCase());
@@ -162,7 +162,7 @@ public class LogLevel {
    * @param logWriterLevel integer code
    * @return log4j level string
    */
-  public static String getLog4jLevelAsString(int logWriterLevel) {
+  public static String getLog4jLevelAsString(final int logWriterLevel) {
     return getLog4jLevel(logWriterLevel).name().toLowerCase();
   }
 }

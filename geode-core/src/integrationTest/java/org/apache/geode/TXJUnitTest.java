@@ -97,7 +97,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
 
@@ -3939,8 +3938,9 @@ public class TXJUnitTest {
       } catch (IllegalStateException expected) {
         TransactionId txid = this.txMgr.getTransactionId();
         assertEquals(
-            LocalizedStrings.LocalRegion_NON_TRANSACTIONAL_REGION_COLLECTION_IS_BEING_USED_IN_A_TRANSACTION
-                .toLocalizedString(txid),
+            String.format(
+                "The Region collection is not transactional but is being used in a transaction %s.",
+                txid),
             expected.getMessage());
       }
       assertEquals(1, txKeys.size());
@@ -3950,8 +3950,9 @@ public class TXJUnitTest {
       } catch (IllegalStateException expected) {
         TransactionId txid = this.txMgr.getTransactionId();
         assertEquals(
-            LocalizedStrings.LocalRegion_NON_TRANSACTIONAL_REGION_COLLECTION_IS_BEING_USED_IN_A_TRANSACTION
-                .toLocalizedString(txid),
+            String.format(
+                "The Region collection is not transactional but is being used in a transaction %s.",
+                txid),
             expected.getMessage());
       }
       assertEquals(1, txValues.size());
@@ -4050,8 +4051,9 @@ public class TXJUnitTest {
       } catch (IllegalStateException expected) {
         TransactionId txid = this.txMgr.getTransactionId();
         assertEquals(
-            LocalizedStrings.LocalRegion_NON_TRANSACTIONAL_REGION_COLLECTION_IS_BEING_USED_IN_A_TRANSACTION
-                .toLocalizedString(txid),
+            String.format(
+                "The Region collection is not transactional but is being used in a transaction %s.",
+                txid),
             expected.getMessage());
       }
       assertEquals(1, txEntries.size());
@@ -4098,8 +4100,9 @@ public class TXJUnitTest {
       } catch (IllegalStateException expected) {
         TransactionId txid = this.txMgr.getTransactionId();
         assertEquals(
-            LocalizedStrings.LocalRegion_NON_TRANSACTIONAL_REGION_COLLECTION_IS_BEING_USED_IN_A_TRANSACTION
-                .toLocalizedString(txid),
+            String.format(
+                "The Region collection is not transactional but is being used in a transaction %s.",
+                txid),
             expected.getMessage());
       }
 

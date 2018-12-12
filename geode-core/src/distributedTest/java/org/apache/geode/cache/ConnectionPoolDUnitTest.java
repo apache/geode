@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -66,6 +67,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -90,7 +92,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @FixMethodOrder(NAME_ASCENDING)
 public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
-  /** The port on which the bridge server was started in this VM */
+  /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
 
   protected static int port = 0;
@@ -152,7 +154,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Create a bridge server on the given port without starting it.
+   * Create a cache server on the given port without starting it.
    *
    * @since GemFire 5.0.2
    */
@@ -164,7 +166,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Starts a bridge server on the given port, using the given deserializeValues and
+   * Starts a cache server on the given port, using the given deserializeValues and
    * notifyBySubscription to serve up the given region.
    *
    * @since GemFire 4.0
@@ -203,7 +205,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Stops the bridge server that serves up the given cache.
+   * Stops the cache server that serves up the given cache.
    *
    * @since GemFire 4.0
    */
@@ -445,7 +447,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool);
       }
     };
-    Wait.waitForCriterion(ev, 2 * 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     assertEquals("expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool),
         true, balanced(pool, expectedConsPerServer));
   }
@@ -477,19 +479,19 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     return result.toString();
   }
 
-  public void waitForBlacklistToClear(final PoolImpl pool) {
+  public void waitForDenylistToClear(final PoolImpl pool) {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        return pool.getBlacklistedServers().size() == 0;
+        return pool.getDenylistedServers().size() == 0;
       }
 
       public String description() {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 30 * 1000, 200, true);
-    assertEquals("unexpected blacklistedServers=" + pool.getBlacklistedServers(), 0,
-        pool.getBlacklistedServers().size());
+    GeodeAwaitility.await().untilAsserted(ev);
+    assertEquals("unexpected denylistedServers=" + pool.getDenylistedServers(), 0,
+        pool.getDenylistedServers().size());
   }
 
   public void verifyServerCount(final PoolImpl pool, final int expectedCount) {
@@ -510,7 +512,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return excuse;
       }
     };
-    Wait.waitForCriterion(ev, 5 * 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   /**
@@ -702,7 +704,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests for bug 36684 by having two bridge servers with cacheloaders that should always return a
+   * Tests for bug 36684 by having two cache servers with cacheloaders that should always return a
    * value and one client connected to each server reading values. If the bug exists, the clients
    * will get null sometimes.
    *
@@ -1050,7 +1052,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    // Create two bridge servers
+    // Create two cache servers
     SerializableRunnable createCacheServer = new CacheSerializableRunnable("Create Cache Server") {
       public void run2() throws CacheException {
         AttributesFactory factory = getBridgeServerRegionAttributes(null, null);
@@ -1257,7 +1259,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     try {
 
-      // Create two bridge servers
+      // Create two cache servers
       SerializableRunnable createCacheServer =
           new CacheSerializableRunnable("Create Cache Server") {
             public void run2() throws CacheException {
@@ -1380,7 +1382,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return null;
             }
           };
-          Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
 
           // make sure no replacements are happening.
           // since we have 2 threads and 2 cnxs and 1 server
@@ -1434,7 +1436,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return excuse;
             }
           };
-          Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+          GeodeAwaitility.await().untilAsserted(wc);
 
           assertTrue(stats.getLoadConditioningConnect() > baselineLifetimeConnect);
           assertTrue(stats.getLoadConditioningDisconnect() > baselineLifetimeDisconnect);
@@ -3257,7 +3259,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for entry " + key + " on region " + r;
       }
     };
-    Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   public static Region waitForSubRegion(final Region r, final String subRegName) {
@@ -3272,7 +3274,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for subregion " + subRegName;
       }
     };
-    Wait.waitForCriterion(ev, MAXWAIT, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     Region result = r.getSubregion(subRegName);
     return result;
   }
@@ -3517,7 +3519,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                   return null;
                 }
               };
-              Wait.waitForCriterion(ev, 62 * 1000, 200, true);
+              GeodeAwaitility.await().untilAsserted(ev);
               assertEquals("HealthMonitor Client Register/UnRegister mismatch.",
                   ccnStats.getClientRegisterRequests(), ccnStats.getClientUnRegisterRequests());
             }
@@ -4319,9 +4321,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test dynamic region creation instantiated from a bridge client causing regions to be created on
-   * two different bridge servers.
+   * two different cache servers.
    *
-   * Also tests the reverse situation, a dynamic region is created on the bridge server expecting
+   * Also tests the reverse situation, a dynamic region is created on the cache server expecting
    * the same region to be created on the client.
    *
    * Note: This test re-creates Distributed Systems for its own purposes and uses a Loner
@@ -4356,7 +4358,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (IOException ugh) {
-            fail("Bridge Server startup failed");
+            fail("cache server startup failed");
           }
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -4401,7 +4403,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return null;
               }
             };
-            Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             assertNotNull(pool.getPrimary());
             assertTrue("backups=" + pool.getRedundants() + " expected=" + 1,
                 pool.getRedundants().size() >= 1);
@@ -4433,7 +4435,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       srv1.invoke(new CacheSerializableRunnable("Validate Server1 update") {
         public void run2() throws CacheException {
-          CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+          CacheClientNotifier ccn = getInstance();
           final CacheClientNotifierStats ccnStats = ccn.getStats();
           final int eventCount = ccnStats.getEvents();
           Region r = getRootRegion(name);
@@ -4456,7 +4458,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return "waiting for ccnStat";
             }
           };
-          Wait.waitForCriterion(ev, maxTime, 200, true);
+          GeodeAwaitility.await().untilAsserted(ev);
           // Set prox = ccn.getClientProxies();
           // assertIndexDetailsEquals(1, prox.size());
           // for (Iterator cpi = prox.iterator(); cpi.hasNext(); ) {
@@ -5707,7 +5709,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for region to be size 3";
               }
             };
-            Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             // assertIndexDetailsEquals(3, region.size());
             assertTrue(region.containsKey("k1"));
             assertTrue(region.containsKey("k2"));
@@ -5825,7 +5827,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for region to be size 3";
               }
             };
-            Wait.waitForCriterion(ev, 10 * 1000, 200, true);
+            GeodeAwaitility.await().untilAsserted(ev);
             // assertIndexDetailsEquals(3, region.size());
             assertTrue(region.containsKey("k1"));
             assertTrue(region.containsKey("k2"));

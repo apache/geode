@@ -17,7 +17,7 @@ package org.apache.geode.internal.offheap;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
-import static org.awaitility.Awaitility.with;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -146,11 +145,11 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
     }
     assertNotNull(ooohme);
 
-    with().pollInterval(100, TimeUnit.MILLISECONDS).await().atMost(10, TimeUnit.SECONDS)
+    await()
         .until(() -> cache.isClosed() && !system.isConnected() && dm.isClosed());
 
     // wait for cache instance to be nulled out
-    with().pollInterval(100, TimeUnit.MILLISECONDS).await().atMost(10, TimeUnit.SECONDS)
+    await()
         .until(() -> cache.isClosed() && !system.isConnected());
 
     // verify system was closed out due to OutOfOffHeapMemoryException
@@ -293,9 +292,9 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
                                                                // member
           final int countOtherMembers = vmCount - 1 - 1; // -1 for self, -1 for OOOHME member
 
-          with().pollInterval(10, TimeUnit.MILLISECONDS).await().atMost(30, TimeUnit.SECONDS)
+          await()
               .until(numDistributionManagers(), equalTo(countMembersPlusLocator));
-          with().pollInterval(10, TimeUnit.MILLISECONDS).await().atMost(30, TimeUnit.SECONDS)
+          await()
               .until(numProfiles(), equalTo(countOtherMembers));
 
         }

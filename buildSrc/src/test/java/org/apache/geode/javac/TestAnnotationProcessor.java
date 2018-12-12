@@ -16,7 +16,6 @@
 package org.apache.geode.javac;
 
 import org.junit.Test;
-import sun.tools.java.CompilerError;
 
 public class TestAnnotationProcessor {
   private static final String VALID_CLASS_TEMPLATE = "package org.apache.geode;\n"
@@ -43,7 +42,7 @@ public class TestAnnotationProcessor {
     compiler.compile(qualifiedClassName, VALID_CLASS_TEMPLATE);
   }
 
-  @Test (expected = CompilerError.class)
+  @Test (expected = CompilerException.class)
   public void checkInvalidAnnotations() {
     String qualifiedClassName = "org.apache.geode.Test";
     compiler.compile(qualifiedClassName, INVALID_CLASS_TEMPLATE);

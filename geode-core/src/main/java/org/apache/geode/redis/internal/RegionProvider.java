@@ -214,7 +214,7 @@ public class RegionProvider implements Closeable {
     Region<?, ?> r = this.regions.get(key);
     if (r != null)
       return;
-    if (!this.regions.contains(key)) {
+    if (!this.regions.containsKey(key)) {
       String stringKey = key.toString();
       Lock lock = this.locks.get(stringKey);
       if (lock == null) {

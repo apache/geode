@@ -15,6 +15,7 @@
 package org.apache.geode.tools.pulse.tests;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
@@ -25,7 +26,6 @@ import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -37,8 +37,6 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
-
-import org.awaitility.Awaitility;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -132,7 +130,7 @@ public class Server {
     }
 
     cs.start();
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+    await()
         .until(() -> cs.isActive());
   }
 

@@ -14,15 +14,14 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.examples.snapshot.MyObject;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -50,7 +49,7 @@ public class WanSnapshotJUnitTest extends SnapshotTestCase {
     region.getSnapshotService().save(snapshot, SnapshotFormat.GEMFIRE);
     region.clear();
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).pollInterval(100, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> wan.ticker.compareAndSet(count, 0));
 
     region.getSnapshotService().load(snapshot, SnapshotFormat.GEMFIRE);

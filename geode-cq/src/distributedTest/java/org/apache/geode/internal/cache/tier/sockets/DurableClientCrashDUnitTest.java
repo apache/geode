@@ -14,12 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertNotNull;
-
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
@@ -29,58 +27,44 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * @since GemFire 5.2
  */
 @Category({ClientSubscriptionTest.class})
-public class DurableClientCrashDUnitTest extends DurableClientTestCase {
+public class DurableClientCrashDUnitTest extends DurableClientTestBase {
 
   @Override
-  protected final void postSetUpDurableClientTestCase() {
-    configureClientStop1();
-  }
-
-  public void configureClientStop1() {
+  protected final void postSetUpDurableClientTestBase() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.TRUE));
   }
 
   @Override
-  protected void preTearDownDurableClientTestCase() throws Exception {
-    configureClientStop2();
-  }
-
-  public void configureClientStop2() {
+  protected void preTearDownDurableClientTestBase() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.FALSE));
   }
 
-  @Override
-  public void verifySimpleDurableClient() {
-    this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
-      public void run2() throws CacheException {
-        // Find the proxy
-        checkNumberOfClientProxies(1);
-        CacheClientProxy proxy = getClientProxy();
-        assertNotNull(proxy);
-      }
-    });
-  }
+  /**
+   * Test that starting, stopping then restarting a durable client is correctly processed by the
+   * server.
+   */
+  @Test
+  public void testDurableClient() {
 
-  @Override
-  public void verifySimpleDurableClientMultipleServers() {
-    // Verify the durable client is no longer on server1
-    this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
-      public void run2() throws CacheException {
-        // Find the proxy
-        checkNumberOfClientProxies(1);
-        CacheClientProxy proxy = getClientProxy();
-        assertNotNull(proxy);
-      }
-    });
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
 
-    // Verify the durable client is no longer on server2
-    this.server2VM.invoke(new CacheSerializableRunnable("Verify durable client") {
-      public void run2() throws CacheException {
-        // Find the proxy
-        checkNumberOfClientProxies(1);
-        CacheClientProxy proxy = getClientProxy();
-        assertNotNull(proxy);
-      }
-    });
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+
+    // Stop the durable client
+    this.disconnectDurableClient(true);
+
+    // Re-start the durable client
+    this.restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
+
+    // Verify durable client on server
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+
+    // Stop the durable client
+    closeDurableClient();
+
+    // Stop the server
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+
   }
 }

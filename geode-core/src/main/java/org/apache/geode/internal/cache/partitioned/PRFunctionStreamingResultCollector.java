@@ -42,9 +42,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.execute.LocalResultCollectorImpl;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWaiter;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class PRFunctionStreamingResultCollector extends FunctionStreamingResultCollector
     implements ResultCollector {
@@ -353,13 +351,13 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
         if (removeMember(id, true)) {
           if (!this.fn.isHA()) {
             fite = new FunctionInvocationTargetException(
-                LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                    .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                String.format("memberDeparted event for < %s > crashed, %s",
+                    new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
           } else {
             fite = new InternalFunctionInvocationTargetException(
-                LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                    .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                String.format("memberDeparted event for < %s > crashed, %s",
+                    new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
             this.execution.addFailedNode(id.getId());
           }
@@ -369,10 +367,10 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       }
     } else {
       Exception e = new Exception(
-          LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0,
-          Boolean.valueOf(crashed)), e);
+          "memberDeparted got null memberId");
+      logger.info(String.format("memberDeparted got null memberId crashed=%s",
+          Boolean.valueOf(crashed)),
+          e);
     }
   }
 

@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.Bucket;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class QueryUtils {
@@ -390,7 +389,7 @@ public class QueryUtils {
       int len = itrsForFields.length;
       for (Object anIndividualResultSet : individualResultSet) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
         if (len == 1) {
           // this means we have a ResultSet
           itrsForFields[0].setCurrent(anIndividualResultSet);
@@ -431,8 +430,8 @@ public class QueryUtils {
       return (Boolean) result;
     } else if (result != null && result != QueryService.UNDEFINED) {
       throw new TypeMismatchException(
-          LocalizedStrings.QueryUtils_ANDOR_OPERANDS_MUST_BE_OF_TYPE_BOOLEAN_NOT_TYPE_0
-              .toLocalizedString(result.getClass().getName()));
+          String.format("AND/OR operands must be of type boolean, not type ' %s '",
+              result.getClass().getName()));
     } else {
       return false;
     }
@@ -494,7 +493,7 @@ public class QueryUtils {
     }
     for (int j = 0; j < resultSize; ++j) {
       // Check if query execution on this thread is canceled.
-      QueryMonitor.isQueryExecutionCanceled();
+      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
       if (setIndexFieldValuesInRespectiveIterators(values[level][j], indexFieldToItrsMapping[level],
           icdeh[level])) {
@@ -692,7 +691,7 @@ public class QueryUtils {
         // creates tuple
         while (itr.hasNext()) {
           // Check if query execution on this thread is canceled.
-          QueryMonitor.isQueryExecutionCanceled();
+          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
         }
@@ -723,13 +722,17 @@ public class QueryUtils {
       } else if (currentLevel.getCmpIteratorDefn().getCollectionExpr()
           .getType() == OQLLexerTokenTypes.LITERAL_select) {
         useDerivedResults = false;
-      } else {
-        key = getCompiledIdFromPath(currentLevel.getCmpIteratorDefn().getCollectionExpr()).getId()
-            + ':' + currentLevel.getDefinition();
       }
       SelectResults c;
-      if (useDerivedResults && derivedResults != null && derivedResults.containsKey(key)) {
-        c = derivedResults.get(key);
+      CompiledValue path = currentLevel.getCmpIteratorDefn().getCollectionExpr();
+      if (useDerivedResults && derivedResults != null && path.hasIdentifierAtLeafNode()) {
+        key = getCompiledIdFromPath(path).getId()
+            + ':' + currentLevel.getDefinition();
+        if (derivedResults.containsKey(key)) {
+          c = derivedResults.get(key);
+        } else {
+          c = currentLevel.evaluateCollection(context);
+        }
       } else {
         c = currentLevel.evaluateCollection(context);
       }
@@ -739,7 +742,7 @@ public class QueryUtils {
       }
       for (Object aC : c) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
         currentLevel.setCurrent(aC);
         doNestedIterationsForIndex(expansionItrs.hasNext(), resultSet, finalItrs, expansionItrs,

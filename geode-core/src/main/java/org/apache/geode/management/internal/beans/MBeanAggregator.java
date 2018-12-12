@@ -21,10 +21,10 @@ import java.util.Set;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
@@ -50,7 +50,7 @@ public class MBeanAggregator implements ProxyListener {
    * Log writer
    */
 
-  protected LogWriterI18n logger;
+  protected LogWriter logger;
 
 
 
@@ -118,7 +118,7 @@ public class MBeanAggregator implements ProxyListener {
     this.cacheServerHandler = new CacheServerHandler();
     this.gatewayReceiverHandler = new GatewayReceiverHandler();
     this.gatewaySenderHandler = new GatewaySenderHandler();
-    this.logger = InternalDistributedSystem.getLoggerI18n();
+    this.logger = InternalDistributedSystem.getLogger();
     this.distributedSystemBridge = distributedSystemBridge;
 
 

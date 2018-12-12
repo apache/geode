@@ -382,7 +382,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         // bucketRegion is not null only when !notificationOnly
         bucketRegion = ds.getInitializedBucketForId(null, bucketId);
 
-        this.versions = new VersionedObjectList(this.removeAllPRDataSize, true,
+        versions = new VersionedObjectList(this.removeAllPRDataSize, true,
             bucketRegion.getAttributes().getConcurrencyChecksEnabled());
 
         // create a base event and a DPAO for RemoveAllMessage distributed btw redundant buckets
@@ -401,15 +401,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         }
         op = new DistributedRemoveAllOperation(baseEvent, removeAllPRDataSize, false);
       }
-
-      // Fix the updateMsg misorder issue
-      // Lock the keys when doing postRemoveAll
-      Object keys[] = new Object[removeAllPRDataSize];
-      for (int i = 0; i < removeAllPRDataSize; ++i) {
-        keys[i] = removeAllPRData[i].getKey();
-      }
+      Object[] keys = getKeysToBeLocked();
 
       if (!notificationOnly) {
+        boolean locked = false;
         try {
           if (removeAllPRData.length > 0) {
             if (this.posDup && bucketRegion.getConcurrencyChecksEnabled()) {
@@ -434,7 +429,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
                 new ThreadIdentifier(eventID.getMembershipID(), eventID.getThreadID());
             bucketRegion.recordBulkOpStart(membershipID, eventID);
           }
-          bucketRegion.waitUntilLocked(keys);
+          locked = bucketRegion.waitUntilLocked(keys);
           boolean lockedForPrimary = false;
           final ArrayList<Object> succeeded = new ArrayList<Object>();
           PutAllPartialResult partialKeys = new PutAllPartialResult(removeAllPRDataSize);
@@ -516,17 +511,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
             // encounter cacheWriter exception
             partialKeys.saveFailedKey(key, cwe);
           } finally {
-            try {
-              // Only RemoveAllPRMessage knows if the thread id is fake. Event has no idea.
-              // So we have to manually set useFakeEventId for this op
-              op.setUseFakeEventId(true);
-              r.checkReadiness();
-              bucketRegion.getDataView().postRemoveAll(op, this.versions, bucketRegion);
-            } finally {
-              if (lockedForPrimary) {
-                bucketRegion.doUnlockForPrimary();
-              }
-            }
+            doPostRemoveAll(r, op, bucketRegion, lockedForPrimary);
           }
           if (partialKeys.hasFailure()) {
             partialKeys.addKeysAndVersions(this.versions);
@@ -540,7 +525,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         } catch (RegionDestroyedException e) {
           ds.checkRegionDestroyedOnBucket(bucketRegion, true, e);
         } finally {
-          bucketRegion.removeAndNotifyKeys(keys);
+          if (locked) {
+            bucketRegion.removeAndNotifyKeys(keys);
+          }
         }
       } else {
         for (int i = 0; i < removeAllPRDataSize; i++) {
@@ -565,6 +552,32 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     }
 
     return true;
+  }
+
+  Object[] getKeysToBeLocked() {
+    // Fix the updateMsg misorder issue
+    // Lock the keys when doing postRemoveAll
+    Object keys[] = new Object[removeAllPRDataSize];
+    for (int i = 0; i < removeAllPRDataSize; ++i) {
+      keys[i] = removeAllPRData[i].getKey();
+    }
+    return keys;
+  }
+
+  void doPostRemoveAll(PartitionedRegion r, DistributedRemoveAllOperation op,
+      BucketRegion bucketRegion, boolean lockedForPrimary) {
+    try {
+      // Only RemoveAllPRMessage knows if the thread id is fake. Event has no idea.
+      // So we have to manually set useFakeEventId for this op
+      op.setUseFakeEventId(true);
+      r.checkReadiness();
+      bucketRegion.getDataView().postRemoveAll(op, this.versions, bucketRegion);
+      r.checkReadiness();
+    } finally {
+      if (lockedForPrimary) {
+        bucketRegion.doUnlockForPrimary();
+      }
+    }
   }
 
   public VersionedObjectList getVersions() {

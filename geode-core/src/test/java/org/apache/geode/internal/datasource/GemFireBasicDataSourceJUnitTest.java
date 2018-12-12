@@ -38,7 +38,7 @@ public class GemFireBasicDataSourceJUnitTest {
 
   @Test
   public void connectWithoutUsernameOrPassword() throws DataSourceCreateException {
-    dataSource = (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(params);
+    dataSource = (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(params);
 
     assertThatThrownBy(() -> dataSource.getConnection())
         .hasMessage("Test Driver Connection attempted!");
@@ -48,7 +48,7 @@ public class GemFireBasicDataSourceJUnitTest {
   public void connectWithUsernameButNoPassword() throws DataSourceCreateException {
     params.put("user-name", "myUser");
 
-    dataSource = (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(params);
+    dataSource = (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(params);
 
     assertThatThrownBy(() -> dataSource.getConnection())
         .hasMessage("Test Driver Connection attempted!");
@@ -58,7 +58,7 @@ public class GemFireBasicDataSourceJUnitTest {
   public void connectWithPasswordButNoUsername() throws DataSourceCreateException {
     params.put("password", "myPassword");
 
-    dataSource = (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(params);
+    dataSource = (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(params);
 
     assertThatThrownBy(() -> dataSource.getConnection())
         .hasMessage("Test Driver Connection attempted!");

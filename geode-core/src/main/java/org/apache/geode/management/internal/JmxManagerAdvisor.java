@@ -34,9 +34,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * @since GemFire 7.0
@@ -202,9 +200,8 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       } finally {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE,
-              new Object[] {p, toString()}, thr));
+          logger.info(String.format("This member caught exception processing profile %s %s",
+              p, toString()), thr);
         }
       }
     }

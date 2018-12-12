@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.cli.util;
 
 import static org.apache.geode.management.internal.cli.util.LogFilter.LineFilterResult.LINE_ACCEPTED;
@@ -32,11 +31,16 @@ import java.time.LocalDateTime;
 
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
+@Category({GfshTest.class, LoggingTest.class})
 public class LogFilterTest {
+
   @Test
-  public void permittedLogLevelsCanFilterLines() throws Exception {
+  public void permittedLogLevelsCanFilterLines() {
     LogFilter logFilter = new LogFilter(Level.INFO, null, null);
 
     LocalDateTime now = LocalDateTime.now();
@@ -47,7 +51,7 @@ public class LogFilterTest {
   }
 
   @Test
-  public void permittedOnlyLogLevels() throws Exception {
+  public void permittedOnlyLogLevels() {
     LogFilter logFilter = new LogFilter(Level.INFO, true, null, null);
 
     LocalDateTime now = LocalDateTime.now();
@@ -58,7 +62,7 @@ public class LogFilterTest {
   }
 
   @Test
-  public void permittedLogLevelsALL() throws Exception {
+  public void permittedLogLevelsALL() {
     LogFilter logFilter = new LogFilter(Level.ALL, null, null);
 
     LocalDateTime now = LocalDateTime.now();
@@ -67,7 +71,6 @@ public class LogFilterTest {
     assertThat(logFilter.acceptsLogEntry(Level.DEBUG, now)).isEqualTo(LINE_ACCEPTED);
     assertThat(logFilter.acceptsLogEntry(Level.TRACE, now)).isEqualTo(LINE_ACCEPTED);
   }
-
 
   @Test
   public void startDateCanFilterLines() {
@@ -113,7 +116,6 @@ public class LogFilterTest {
 
     assertThat(logFilter.acceptsLogEntry(null)).isEqualTo(LINE_REJECTED);
 
-
     assertThat(logFilter.acceptsLogEntry(Level.ERROR, LocalDateTime.now().minusDays(6)))
         .isEqualTo(LINE_REJECTED);
     assertThat(logFilter.acceptsLogEntry(null)).isEqualTo(LINE_REJECTED);
@@ -121,8 +123,6 @@ public class LogFilterTest {
     assertThat(logFilter.acceptsLogEntry(Level.INFO, LocalDateTime.now().minusDays(4)))
         .isEqualTo(LINE_ACCEPTED);
     assertThat(logFilter.acceptsLogEntry(null)).isEqualTo(LINE_ACCEPTED);
-
-
 
     assertThat(logFilter.acceptsLogEntry(Level.ERROR, LocalDateTime.now().minusDays(1)))
         .isEqualTo(REMAINDER_OF_FILE_REJECTED);
@@ -145,7 +145,7 @@ public class LogFilterTest {
   }
 
   @Test
-  public void testAcceptFileWithCreateTimeNotAvailale() throws Exception {
+  public void testAcceptFileWithCreateTimeNotAvailale() {
     Path path = mock(Path.class);
     when(path.toFile()).thenReturn(mock(File.class));
     when(path.toFile().lastModified()).thenReturn(System.currentTimeMillis());
@@ -176,7 +176,6 @@ public class LogFilterTest {
 
   @Test
   public void testAcceptFileWithCreateTimeAvailable() throws Exception {
-    long now = System.currentTimeMillis();
     Path path = mock(Path.class);
     when(path.toFile()).thenReturn(mock(File.class));
     when(path.toFile().lastModified()).thenReturn(System.currentTimeMillis());

@@ -118,7 +118,7 @@ public class ServiceConfig {
 
     // we need to have enough time to figure out that the coordinator has crashed &
     // find a new one
-    long minimumJoinTimeout = dconfig.getMemberTimeout() * 2 + MEMBER_REQUEST_COLLECTION_INTERVAL;
+    long minimumJoinTimeout = dconfig.getMemberTimeout() * 2L + MEMBER_REQUEST_COLLECTION_INTERVAL;
     if (defaultJoinTimeout < minimumJoinTimeout) {
       defaultJoinTimeout = minimumJoinTimeout;
     }

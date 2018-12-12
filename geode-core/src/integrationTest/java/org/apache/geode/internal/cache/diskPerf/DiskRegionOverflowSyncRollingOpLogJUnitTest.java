@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -138,7 +138,7 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 30 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     }
 
     // Now get 0-9999 entries

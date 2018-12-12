@@ -20,8 +20,6 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides a set of APIs to help the implementation of the <code>CacheLoader</code> load method. An
@@ -37,8 +35,8 @@ public class LoaderHelperImpl implements LoaderHelper {
    * The message issued when the user attempts to netSearch on a LOCAL Region. It is public for
    * testing purposes only.
    */
-  public static final StringId NET_SEARCH_LOCAL =
-      LocalizedStrings.LoaderHelperImpl_CANNOT_NETSEARCH_FOR_A_SCOPELOCAL_OBJECT;
+  public static final String NET_SEARCH_LOCAL =
+      "Cannot netSearch for a Scope.LOCAL object";
 
   private final Object key;
   private final boolean netSearchAllowed;
@@ -88,7 +86,7 @@ public class LoaderHelperImpl implements LoaderHelper {
   public Object netSearch(final boolean doNetLoad) throws CacheLoaderException, TimeoutException {
 
     if (this.region.getAttributes().getScope().isLocal()) {
-      throw new CacheLoaderException(NET_SEARCH_LOCAL.toLocalizedString());
+      throw new CacheLoaderException(NET_SEARCH_LOCAL);
     }
 
     boolean removeSearcher = false;

@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-core</artifactId>
-  <version>1.7.0</version>
+  <version>1.8.0</version>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
   <url>http://geode.apache.org</url>
@@ -81,6 +81,30 @@
       <groupId>commons-digester</groupId>
       <artifactId>commons-digester</artifactId>
       <version>2.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>1.1.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.2.11</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>2.2.11</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>2.2.11</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -188,7 +212,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.4.8.v20171121</version>
+      <version>9.4.12.v20180830</version>
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
@@ -260,13 +284,13 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
-      <version>1.7.0</version>
+      <version>1.8.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-json</artifactId>
-      <version>1.7.0</version>
+      <version>1.8.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

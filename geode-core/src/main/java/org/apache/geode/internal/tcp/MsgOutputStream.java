@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * MsgOutputStream should no longer be used except in Connection to do the handshake. Otherwise
@@ -49,7 +48,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    buffer.put((byte) b);
+    buffer.put((byte) (b & 0xff));
   }
 
   /** override OutputStream's write() */
@@ -134,7 +133,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @exception IOException if an I/O error occurs.
    */
   public void writeShort(int v) throws IOException {
-    buffer.putShort((short) v);
+    buffer.putShort((short) (v & 0xffff));
   }
 
   /**
@@ -355,8 +354,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
     int strlen = str.length();
     if (strlen > 65535) {
       throw new UTFDataFormatException(
-          LocalizedStrings.MsgOutputStream_STRING_TOO_LONG_FOR_JAVA_SERIALIZATION
-              .toLocalizedString());
+          "String too long for java serialization");
     }
     // make room for worst case space 3 bytes for each char and 2 for len
     int utfSizeIdx = this.buffer.position();
@@ -380,8 +378,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
       // act as if we wrote nothing to this buffer
       this.buffer.position(utfSizeIdx);
       throw new UTFDataFormatException(
-          LocalizedStrings.MsgOutputStream_STRING_TOO_LONG_FOR_JAVA_SERIALIZATION
-              .toLocalizedString());
+          "String too long for java serialization");
     }
     this.buffer.putShort(utfSizeIdx, (short) utflen);
   }

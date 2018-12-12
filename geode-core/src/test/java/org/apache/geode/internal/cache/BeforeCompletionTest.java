@@ -14,21 +14,22 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
+import org.apache.geode.cache.TransactionException;
 
 public class BeforeCompletionTest {
 
@@ -54,10 +55,31 @@ public class BeforeCompletionTest {
   }
 
   @Test
+  public void executeThrowsTransactionDataNodeHasDepartedExceptionIfDoOpFailedWithCacheClosedException() {
+    doThrow(new CacheClosedException("")).when(txState).doBeforeCompletion();
+
+    beforeCompletion.doOp(txState);
+
+    assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
+        .isInstanceOf(TransactionDataNodeHasDepartedException.class);
+  }
+
+  @Test
+  public void executeThrowsTransactionExceptionIfDoOpFailedWithRuntimeException() {
+    doThrow(new RuntimeException("")).when(txState).doBeforeCompletion();
+
+    beforeCompletion.doOp(txState);
+
+    assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
+        .isInstanceOf(TransactionException.class);
+  }
+
+
+  @Test
   public void doOpCallsDoBeforeCompletion() {
     beforeCompletion.doOp(txState);
 
-    verify(txState, times(1)).doBeforeCompletion();
+    verify(txState).doBeforeCompletion();
   }
 
   @Test
@@ -82,17 +104,17 @@ public class BeforeCompletionTest {
   }
 
   @Test
-  public void executeWaitsUntilDoOpFinish() throws Exception {
+  public void executeWaitsUntilDoOpFinish() {
     Thread thread = new Thread(() -> beforeCompletion.execute(cancelCriterion));
     thread.start();
     // give the thread a chance to get past the "finished" check by waiting until
     // checkCancelInProgress is called
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .untilAsserted(() -> verify(cancelCriterion, times(1)).checkCancelInProgress(null));
+    await()
+        .untilAsserted(() -> verify(cancelCriterion, atLeastOnce()).checkCancelInProgress(null));
 
     beforeCompletion.doOp(txState);
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> !(thread.isAlive()));
+    await().until(() -> !(thread.isAlive()));
   }
 
 }

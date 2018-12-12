@@ -19,7 +19,6 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for region distribution scope.
@@ -171,8 +170,8 @@ public class Scope implements Serializable {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.Scope_0_IS_NOT_A_VALID_STRING_REPRESENTATION_OF_1
-            .toLocalizedString(new Object[] {scope, Scope.class.getName()}));
+        String.format("%s is not a valid string representation of %s.",
+            new Object[] {scope, Scope.class.getName()}));
   }
 
 }

@@ -14,7 +14,16 @@
  */
 package org.apache.geode.cache;
 
+import static java.lang.Math.abs;
+import static java.lang.System.currentTimeMillis;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.Wait.pause;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -25,19 +34,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DSClock;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -69,27 +73,27 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
             @Override
             public Object call() {
               Cache cache = getCache();
-              cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-              LogWriterUtils.getLogWriter().info("Done creating region, now creating CacheServer");
+              cache.createRegionFactory(REPLICATE).create(regionName);
+              getLogWriter().info("Done creating region, now creating CacheServer");
               CacheServer server = null;
               try {
                 server = cache.addCacheServer();
-                server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+                server.setPort(getRandomAvailableTCPPort());
                 server.start();
               } catch (IOException e) {
-                Assert.fail("Starting cache server failed.", e);
+                fail("Starting cache server failed.", e);
               }
 
               // now set an artificial time offset for the test
               basicGetSystem().getClock().setCacheTimeOffset(null, TEST_OFFSET, true);
 
-              LogWriterUtils.getLogWriter()
+              getLogWriter()
                   .info("Done creating and starting CacheServer on port " + server.getPort());
               return server.getPort();
             }
           });
 
-      final String hostName = NetworkUtils.getServerHostName(vm0.getHost());
+      final String hostName = getServerHostName(vm0.getHost());
 
       // Start client with proxy region and register interest
 
@@ -100,7 +104,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
       cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
           .addPoolServer(hostName, serverPort).setPoolPingInterval(5000).create();
       Region proxyRegion =
-          cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
+          cache.createClientRegionFactory(CACHING_PROXY).create(regionName);
 
       proxyRegion.registerInterestRegex(".*");
 
@@ -110,7 +114,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
           long clientTimeOffset = clock.getCacheTimeOffset();
-          LogWriterUtils.getLogWriter()
+          getLogWriter()
               .info("Client node's new time offset is: " + clientTimeOffset);
           return clientTimeOffset >= TEST_OFFSET;
         }
@@ -119,7 +123,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
           return "Waiting for cacheTimeOffset to be non-zero.  PingOp should have set it to something";
         }
       };
-      Wait.waitForCriterion(wc, 60000, 1000, true);
+      GeodeAwaitility.await().untilAsserted(wc);
     } finally {
       cache.close();
       vm1.invoke(() -> CacheTestCase.disconnectFromDS());
@@ -147,29 +151,29 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
             @Override
             public Object call() {
               Cache cache = getCache();
-              cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-              LogWriterUtils.getLogWriter().info("Done creating region, now creating CacheServer");
+              cache.createRegionFactory(REPLICATE).create(regionName);
+              getLogWriter().info("Done creating region, now creating CacheServer");
               CacheServer server = null;
               try {
                 server = cache.addCacheServer();
-                server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+                server.setPort(getRandomAvailableTCPPort());
                 server.start();
               } catch (IOException e) {
-                Assert.fail("Starting cache server failed.", e);
+                fail("Starting cache server failed.", e);
               }
 
               // now set an artificial time offset for the test
               basicGetSystem().getClock().setCacheTimeOffset(null, -TEST_OFFSET, true);
 
-              LogWriterUtils.getLogWriter()
+              getLogWriter()
                   .info("Done creating and starting CacheServer on port " + server.getPort());
               return server.getPort();
             }
           });
 
-      Wait.pause((int) TEST_OFFSET); // let cacheTimeMillis consume the time offset
+      pause((int) TEST_OFFSET); // let cacheTimeMillis consume the time offset
 
-      final String hostName = NetworkUtils.getServerHostName(vm0.getHost());
+      final String hostName = getServerHostName(vm0.getHost());
 
       // Start client with proxy region and register interest
 
@@ -180,7 +184,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
       cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
           .addPoolServer(hostName, serverPort).setPoolPingInterval(5000).create();
       Region proxyRegion =
-          cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
+          cache.createClientRegionFactory(CACHING_PROXY).create(regionName);
 
       proxyRegion.registerInterestRegex(".*");
 
@@ -190,20 +194,20 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
           long clientTimeOffset = clock.getCacheTimeOffset();
-          LogWriterUtils.getLogWriter()
+          getLogWriter()
               .info("Client node's new time offset is: " + clientTimeOffset);
           if (clientTimeOffset >= 0) {
             return false;
           }
           long cacheTime = clock.cacheTimeMillis();
-          return Math.abs(System.currentTimeMillis() - (cacheTime - clientTimeOffset)) < 5;
+          return abs(currentTimeMillis() - (cacheTime - clientTimeOffset)) < 5;
         }
 
         public String description() {
           return "Waiting for cacheTimeOffset to be negative and cacheTimeMillis to stabilize";
         }
       };
-      Wait.waitForCriterion(wc, 60000, 1000, true);
+      GeodeAwaitility.await().untilAsserted(wc);
     } finally {
       cache.close();
       vm1.invoke(() -> CacheTestCase.disconnectFromDS());

@@ -21,95 +21,49 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * <code>Wait</code> provides static utility methods to wait for some asynchronous action with
  * intermittent polling.
  *
- * These methods can be used directly: <code>Wait.waitForCriterion(...)</code>, however, they are
- * intended to be referenced through static import:
- *
- * <pre>
- * import static org.apache.geode.test.dunit.Wait.*;
- *    ...
- *    waitForCriterion(...);
- * </pre>
- *
- * Extracted from DistributedTestCase.
- *
  * <p>
- * Deprecated in favor of using {@link org.awaitility.Awaitility}.
+ * Deprecated in favor of using {@link GeodeAwaitility}.
  *
  * <p>
  * Examples of using Awaitility:
  *
  * <pre>
  *
- * import static org.awaitility.Awaitility.*;
+ * import static org.apache.geode.test.awaitility.GeodeAwaitility.*;
  * import static org.awaitility.Duration.*; // optional
  * import static java.util.concurrent.TimeUnit.*; // optional
  *
- * await().atMost(2, SECONDS).until(() -> isDone());
+ * await().until(() -> isDone());
  *
- * Host.getHost(0).getVM(0).invoke(() -> await().atMost(1, MINUTES).until(() -> isDone()));
+ * Host.getHost(0).getVM(0).invoke(() -> await().until(() -> isDone()));
  *
- * Host.getHost(0).getVM(0).invoke(() -> await("waiting for 4 members").atMost(5, SECONDS).until(() -> getMemberCount(), is(4)));
+ * Host.getHost(0).getVM(0).invoke(() -> await("waiting for 4 members").until(() -> getMemberCount(), is(4)));
  *
- * await().atMost(5, SECONDS).untilCall(getValue(), equalTo(5));
+ * await().untilCall(getValue(), equalTo(5));
  *
  * volatile boolean done = false;
- * await().atMost(2, SECONDS).untilCall(Boolean.class, equalTo(this.done));
+ * await().untilCall(Boolean.class, equalTo(this.done));
  *
  * AtomicBoolean closed = new AtomicBoolean();
- * await().atMost(5, SECONDS).untilTrue(closed);
+ * await().untilTrue(closed);
  *
  * AtomicBoolean running = new AtomicBoolean();
- * await().atMost(30, SECONDS).untilFalse(running);
+ * await().untilFalse(running);
  *
  * List members = new ArrayList();
  * await().untilCall(to(members).size(), greaterThan(2));
  * </pre>
  *
- * <p>
- * NOTE: By default, the pollDelay is equal to the pollInterval which defaults to
- * ONE_HUNDRED_MILLISECONDS. You may want to add pollDelay(ZERO) to force Awaitility to check your
- * condition before waiting the pollInterval.
  *
- * <p>
- * Example of detailed conversion to Awaitility:
+ * @deprecated Use {@link GeodeAwaitility} instead.
  *
- * <pre>
- * From:
- *
- * public boolean waitForClose() {
- *   WaitCriterion ev = new WaitCriterion() {
- *     public boolean done() {
- *       return isClosed();
- *     }
- *     public String description() {
- *       return "resource never closed";
- *     }
- *   };
- *   Wait.waitForCriterion(ev, 2000, 200, true);
- *   return true;
- * }
- *
- * To:
- *
- * import static org.awaitility.Awaitility.*;
- * import static org.awaitility.Duration.*;
- * import static java.util.concurrent.TimeUnit.*;
- *
- * await("resource never closed").atMost(2, SECONDS).untilCall(() -> isClosed());
- *
- * Or:
- *
- * await("resource never closed").atMost(2, SECONDS).pollDelay(ZERO).pollInterval(200, MILLISECONDS).untilCall(() -> isClosed());
- * </pre>
- *
- * @deprecated Use {@link org.awaitility.Awaitility} instead.
- *
- * @see org.awaitility.Awaitility
+ * @see GeodeAwaitility
  * @see org.awaitility.Duration
  * @see org.awaitility.core.ConditionFactory
  */
@@ -123,7 +77,7 @@ public class Wait {
   /**
    * Pause for a default interval (250 milliseconds).
    *
-   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link GeodeAwaitility} instead.
    */
   public static void pause() {
     pause(250);
@@ -133,7 +87,7 @@ public class Wait {
    * Pause for the specified milliseconds. Make sure system clock has advanced by the specified
    * number of millis before returning.
    *
-   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link GeodeAwaitility} instead.
    */
   public static void pause(final int milliseconds) {
     if (milliseconds >= 1000 || logger.isDebugEnabled()) { // check for debug but log at info
@@ -160,7 +114,7 @@ public class Wait {
    * @param timeoutMillis total time to wait, in milliseconds
    * @param pollingInterval pause interval between waits
    * @param throwOnTimeout if false, don't generate an error
-   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link GeodeAwaitility} instead.
    */
   @Deprecated
   public static void waitForCriterion(final WaitCriterion waitCriterion, final long timeoutMillis,
@@ -209,7 +163,7 @@ public class Wait {
    *
    * @param cacheTimeMillisSource region that provides cacheTimeMillis
    * @return the last time stamp observed
-   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link GeodeAwaitility} instead.
    */
   public static long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource) {
     return waitForExpiryClockToChange(cacheTimeMillisSource,
@@ -222,7 +176,7 @@ public class Wait {
    * @param cacheTimeMillisSource region that provides cacheTimeMillis
    * @param baseTime the timestamp that the clock must exceed
    * @return the last time stamp observed
-   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link GeodeAwaitility} instead.
    */
   public static long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource,
       final long baseTime) {
@@ -232,48 +186,5 @@ public class Wait {
       nowTime = cacheTimeMillisSource.cacheTimeMillis();
     } while ((nowTime - baseTime) <= 0L);
     return nowTime;
-  }
-
-  /**
-   * Wait on a mutex. This is done in a loop in order to address the "spurious wakeup" "feature" in
-   * Java.
-   *
-   * @param waitCriterion condition to test
-   * @param mutex object to lock and wait on
-   * @param milliseconds total amount of time to wait
-   * @param pollingInterval interval to pause for the wait
-   * @param throwOnTimeout if false, no error is thrown.
-   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
-   */
-  public static void waitMutex(final WaitCriterion waitCriterion, final Object mutex,
-      final long milliseconds, final long pollingInterval, final boolean throwOnTimeout) {
-    final long tilt = System.currentTimeMillis() + milliseconds;
-    long waitThisTime = jitterInterval(pollingInterval);
-    synchronized (mutex) {
-      for (;;) {
-        if (waitCriterion.done()) {
-          break;
-        }
-
-        long timeLeft = tilt - System.currentTimeMillis();
-        if (timeLeft <= 0) {
-          if (!throwOnTimeout) {
-            return; // not an error, but we're done
-          }
-          fail(
-              "Event never occurred after " + milliseconds + " ms: " + waitCriterion.description());
-        }
-
-        if (waitThisTime > timeLeft) {
-          waitThisTime = timeLeft;
-        }
-
-        try {
-          mutex.wait(waitThisTime);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
-      } // for
-    } // synchronized
   }
 }

@@ -28,7 +28,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields {
 
@@ -76,13 +75,14 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!this.elementType.equals(s.getStructType())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
-              .toLocalizedString(this.elementType, s.getStructType()));
+          String.format(
+              "obj does not have the same StructType.; collection structype,%s; added obj type=%s",
+              this.elementType, s.getStructType()));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -219,12 +219,12 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
     boolean modified = false;
     if (!this.elementType.equals(sb.getCollectionType().getElementType())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_TYPES_DONT_MATCH.toLocalizedString());
+          "types do not match");
     }
 
     for (Iterator itr = sb.fieldValuesIterator(); itr.hasNext();) {
       // Check if query execution on this thread is canceled.
-      QueryMonitor.isQueryExecutionCanceled();
+      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
       Object[] vals = (Object[]) itr.next();
       if (super.add(vals)) {
@@ -293,7 +293,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.elementType = elementType;
   }

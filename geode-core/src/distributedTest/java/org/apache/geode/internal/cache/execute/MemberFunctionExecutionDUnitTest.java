@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -50,9 +51,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.functions.TestFunction;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -549,8 +548,8 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       // boolean check = expected.getMessage().equals("Cannot return any result, as
       // Function.hasResult() is false");
       assertTrue(expected.getMessage()
-          .equals(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-              .toLocalizedString("return any")));
+          .equals(String.format("Cannot %s result as the Function#hasResult() is false",
+              "return any")));
     }
   }
 
@@ -584,9 +583,9 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
   public static void registerExpectedExceptions(boolean add) {
     final String action = add ? "add" : "remove";
-    LogWriterI18n log = InternalDistributedSystem.getLoggerI18n();
+    LogWriter log = InternalDistributedSystem.getLogger();
     if (log != null) {
-      log.convertToLogWriter().info(
+      log.info(
           "<ExpectedException action=" + action + ">ClassNotFoundException</ExpectedException>");
     }
   }

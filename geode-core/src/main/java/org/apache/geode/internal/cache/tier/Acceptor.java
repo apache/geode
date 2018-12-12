@@ -19,7 +19,7 @@ import java.io.IOException;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 
 /**
- * Defines the message listener/acceptor interface which is the GemFire Bridge Server. Multiple
+ * Defines the message listener/acceptor interface which is the GemFire cache server. Multiple
  * communication stacks may provide implementations for the interfaces defined in this package
  *
  * @since GemFire 2.0.2

@@ -28,7 +28,7 @@ public class TcpServerFactoryTest {
   @Test
   public void createsATcpServer() {
     TcpServerFactory factory = new TcpServerFactory();
-    TcpServer server = factory.makeTcpServer(80, null, null, null, null, null, null, null, null);
+    TcpServer server = factory.makeTcpServer(80, null, null, null, null, null, null, null);
     assertTrue(server != null);
   }
 }

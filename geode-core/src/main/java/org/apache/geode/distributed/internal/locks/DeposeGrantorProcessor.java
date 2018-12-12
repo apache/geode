@@ -34,7 +34,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * A processor for telling the old grantor that he is deposed by a new grantor. Processor waits for
+ * A processor for telling the old grantor that it is deposed by a new grantor. Processor waits for
  * ack before completing.
  *
  * @since GemFire 4.0 (renamed from ExpectTransferProcessor)
@@ -47,7 +47,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
 
   /**
-   * Send a message to oldGrantor telling him that he is deposed by newGrantor. Send does not
+   * Send a message to oldGrantor telling it that it is deposed by newGrantor. Send does not
    * complete until an ack is received or the oldGrantor leaves the system.
    */
   static void send(String serviceName, InternalDistributedMember oldGrantor,
@@ -137,7 +137,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     protected void process(final ClusterDistributionManager dm) {
       // if we are currently the grantor then
       // mark it as being destroyed until we hear from this.newGrantor
-      // or he goes away or the grantor that sent us this message goes away.
+      // or it goes away or the grantor that sent us this message goes away.
 
       InternalDistributedMember elder = this.getSender();
       InternalDistributedMember youngTurk = this.newGrantor;

@@ -39,6 +39,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalCache;
@@ -696,6 +697,42 @@ public class RegionMapCommitPutTest {
     boolean result = instance.entryExists(regionEntry);
 
     assertThat(result).isTrue();
+  }
+
+  @Test
+  public void runWileLockedForCacheModificationDoesNotLockGIIClearLockWhenRegionIsInitialized()
+      throws Exception {
+    DistributedRegion region = mock(DistributedRegion.class);
+    when(region.isInitialized()).thenReturn(true);
+    when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
+    RegionMapCommitPut regionMapCommitPut =
+        new RegionMapCommitPut(focusedRegionMap, region, event, Operation.UPDATE, false,
+            transactionId, txRmtEvent, pendingCallbacks, null);
+
+
+    regionMapCommitPut.runWhileLockedForCacheModification(() -> {
+    });
+
+    verify(region).lockWhenRegionIsInitializing();
+    assertThat(region.lockWhenRegionIsInitializing()).isFalse();
+    verify(region, never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void runWileLockedForCacheModificationLockGIIClearLockWhenRegionIsInitializing() {
+    DistributedRegion region = mock(DistributedRegion.class);
+    when(region.isInitialized()).thenReturn(false);
+    when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
+    RegionMapCommitPut regionMapCommitPut =
+        new RegionMapCommitPut(focusedRegionMap, region, event, Operation.UPDATE, false,
+            transactionId, txRmtEvent, pendingCallbacks, null);
+
+    regionMapCommitPut.runWhileLockedForCacheModification(() -> {
+    });
+
+    verify(region).lockWhenRegionIsInitializing();
+    assertThat(region.lockWhenRegionIsInitializing()).isTrue();
+    verify(region).unlockWhenRegionIsInitializing();
   }
 
 }

@@ -14,9 +14,8 @@
  */
 package org.apache.geode.cache.util;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -75,7 +74,7 @@ public class AutoBalancerIntegrationJUnitTest {
             ((InternalDistributedSystem) cache.getDistributedSystem()).getStatSampler();
         cache.close();
         // wait for the stat sampler to stand down
-        await().atMost(TIMEOUT_SECONDS, SECONDS).until(isAlive(statSampler), equalTo(false));
+        await().until(isAlive(statSampler), equalTo(false));
       } finally {
         cache = null;
       }

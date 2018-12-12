@@ -22,5 +22,5 @@ public interface DistributedSystemService {
 
   Class getInterface();
 
-  Collection<String> getSerializationWhitelist() throws IOException;
+  Collection<String> getSerializationAcceptlist() throws IOException;
 }

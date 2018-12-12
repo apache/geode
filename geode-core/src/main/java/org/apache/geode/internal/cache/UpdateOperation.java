@@ -37,7 +37,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -287,8 +286,8 @@ public class UpdateOperation extends AbstractUpdateOperation {
           break;
         default:
           throw new InternalGemFireError(
-              LocalizedStrings.UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0
-                  .toLocalizedString(Byte.valueOf(deserializationPolicy)));
+              String.format("unknown deserialization policy: %s",
+                  Byte.valueOf(deserializationPolicy)));
       }
     }
 
@@ -432,8 +431,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
         setHasDelta(false);
       } catch (RuntimeException re) {
         throw new InvalidDeltaException(
-            LocalizedStrings.DistributionManager_CAUGHT_EXCEPTION_WHILE_SENDING_DELTA
-                .toLocalizedString(),
+            "Caught exception while sending delta. ",
             re);
       }
     }

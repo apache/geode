@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -48,7 +47,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OneTaskOnlyExecutor;
@@ -84,9 +82,8 @@ import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 import org.apache.geode.internal.cache.persistence.MembershipFlushRequest;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -200,8 +197,8 @@ public class PRHARedundancyProvider {
     return sb.toString();
   }
 
-  public static final StringId TIMEOUT_MSG =
-      LocalizedStrings.PRHARedundancyProvider_IF_YOUR_SYSTEM_HAS_SUFFICIENT_SPACE_PERHAPS_IT_IS_UNDER_MEMBERSHIP_OR_REGION_CREATION_STRESS;
+  public static final String TIMEOUT_MSG =
+      "If your system has sufficient space, perhaps it is under membership or region creation stress?";
 
   /**
    * Indicate a timeout due to excessive retries among available peers
@@ -213,8 +210,8 @@ public class PRHARedundancyProvider {
   public static void timedOut(PartitionedRegion prRegion, Set allStores, Collection alreadyUsed,
       String opString, long timeOut) {
     final String tooManyRetries =
-        LocalizedStrings.PRHARedundancyProvider_TIMED_OUT_ATTEMPTING_TO_0_IN_THE_PARTITIONED_REGION__1_WAITED_FOR_2_MS
-            .toLocalizedString(new Object[] {opString,
+        String.format("Timed out attempting to %s in the partitioned region.%sWaited for: %s ms.",
+            new Object[] {opString,
                 regionStatus(prRegion, allStores, alreadyUsed, true), Long.valueOf(timeOut)})
             + TIMEOUT_MSG;
     throw new PartitionedRegionStorageException(tooManyRetries);
@@ -259,20 +256,20 @@ public class PRHARedundancyProvider {
   /**
    * Signature string indicating that not enough stores are available.
    */
-  public static final StringId INSUFFICIENT_STORES_MSG =
-      LocalizedStrings.PRHARedundancyProvider_CONSIDER_STARTING_ANOTHER_MEMBER;
+  public static final String INSUFFICIENT_STORES_MSG =
+      "Advise you to start enough data store nodes";
 
   /**
    * Signature string indicating that there are enough stores available.
    */
-  public static final StringId SUFFICIENT_STORES_MSG =
-      LocalizedStrings.PRHARRedundancyProvider_FOUND_A_MEMBER_TO_HOST_A_BUCKET;
+  public static final String SUFFICIENT_STORES_MSG =
+      "Found a member to host a bucket.";
 
   /**
    * string indicating the attempt to allocate a bucket
    */
-  private static final StringId ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET =
-      LocalizedStrings.PRHARRedundancyProvider_ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET;
+  private static final String ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET =
+      "allocate enough members to host a new bucket";
 
 
   /**
@@ -290,21 +287,21 @@ public class PRHARedundancyProvider {
     } else {
       newLine = '\n';
     }
-    final StringId notEnoughValidNodes;
+    final String notEnoughValidNodes;
     if (alreadyUsed.isEmpty()) {
       notEnoughValidNodes =
-          LocalizedStrings.PRHARRedundancyProvider_UNABLE_TO_FIND_ANY_MEMBERS_TO_HOST_A_BUCKET_IN_THE_PARTITIONED_REGION_0;
+          "Unable to find any members to host a bucket in the partitioned region. %s.%s";
     } else {
       notEnoughValidNodes =
-          LocalizedStrings.PRHARRedundancyProvider_CONFIGURED_REDUNDANCY_LEVEL_COULD_NOT_BE_SATISFIED_0;
+          "Configured redundancy level could not be satisfied. %s to satisfy redundancy for the region.%s";
     }
     final Object[] notEnoughValidNodesArgs = new Object[] {
         PRHARedundancyProvider.INSUFFICIENT_STORES_MSG, newLine + regionStat + newLine};
     if (onlyLog) {
-      logger.warn(LocalizedMessage.create(notEnoughValidNodes, notEnoughValidNodesArgs));
+      logger.warn(String.format(notEnoughValidNodes, notEnoughValidNodesArgs));
     } else {
       throw new PartitionedRegionStorageException(
-          notEnoughValidNodes.toLocalizedString(notEnoughValidNodesArgs));
+          String.format(notEnoughValidNodes, notEnoughValidNodesArgs));
     }
   }
 
@@ -591,7 +588,7 @@ public class PRHARedundancyProvider {
           if (timeLeft < 0) {
             // It took too long.
             timedOut(this.prRegion, getAllStores(partitionName), acceptedMembers,
-                ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET.toLocalizedString(), computeTimeout());
+                ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET, computeTimeout());
             // NOTREACHED
           }
           if (isDebugEnabled) {
@@ -616,8 +613,8 @@ public class PRHARedundancyProvider {
                 excludedMembers.addAll(exm);
               } else {
                 // log a warning if Loner
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.GemFireCache_ENFORCE_UNIQUE_HOST_NOT_APPLICABLE_FOR_LONER));
+                logger.warn(
+                    "enforce-unique-host and redundancy-zone properties have no effect for a LonerDistributedSystem.");
               }
             }
           }
@@ -745,7 +742,7 @@ public class PRHARedundancyProvider {
                 bucketPrimary, partitionName);
           } catch (Exception e) {
             // if region is going down, then no warning level logs
-            if (e instanceof CancelException || e instanceof CacheClosedException
+            if (e instanceof CancelException
                 || (prRegion.getCancelCriterion().isCancelInProgress())) {
               logger.debug("Exception trying choose a primary after bucket creation failure", e);
             } else {
@@ -1009,14 +1006,13 @@ public class PRHARedundancyProvider {
     } else {
       if (allStores.size() > 0) {
         // Excellent, sufficient resources were found!
-        final StringId logStr =
-            LocalizedStrings.PRHARRedundancyProvider_0_IN_THE_PARTITIONED_REGION_REGION_NAME_1;
+        final String logStr = "{} Region name, {}";
         final Object[] logArgs =
-            new Object[] {SUFFICIENT_STORES_MSG.toLocalizedString(), prRegion.getFullPath()};
+            new Object[] {SUFFICIENT_STORES_MSG, prRegion.getFullPath()};
         if (TEST_MODE) {
-          logger.fatal(LocalizedMessage.create(logStr, logArgs));
+          logger.fatal(logStr, logArgs);
         } else {
-          logger.info(LocalizedMessage.create(logStr, logArgs));
+          logger.info(logStr, logArgs);
         }
         return false;
       } else {
@@ -1115,9 +1111,9 @@ public class PRHARedundancyProvider {
             || (e.getCause() != null && (e.getCause() instanceof CancelException))) {
           // no need to log exceptions caused by cache closure
         } else {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PRHARedundancyProvider_EXCEPTION_CREATING_PARTITION_ON__0,
-              targetNMember), e);
+          logger.warn("Exception creating partition on " +
+              targetNMember,
+              e);
         }
         return false;
       }
@@ -1225,9 +1221,9 @@ public class PRHARedundancyProvider {
         } else if (e instanceof ForceReattemptException) {
           // no log needed see bug 37569
         } else {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PRHARedundancyProvider_EXCEPTION_CREATING_PARTITION_ON__0,
-              targetNMember), e);
+          logger.warn("Exception creating partition on " +
+              targetNMember,
+              e);
         }
         // isClosingReadLock.unlock();
         return ManageBucketRsp.NO;
@@ -1602,9 +1598,7 @@ public class PRHARedundancyProvider {
         } catch (RegionDestroyedException e) {
           logger.debug("Region destroyed while recovery in progress");
         } catch (Exception e) {
-          logger.error(
-              LocalizedMessage.create(
-                  LocalizedStrings.PRHARedundancyProvider_UNEXPECTED_EXCEPTION_DURING_BUCKET_RECOVERY),
+          logger.error("Unexpected exception during bucket recovery",
               e);
         }
       }
@@ -1710,8 +1704,8 @@ public class PRHARedundancyProvider {
     try {
       if (proxyBucketArray.length > 0) {
         this.redundancyLogger = new RedundancyLogger(this);
-        Thread loggingThread = new Thread(this.redundancyLogger,
-            "RedundancyLogger for region " + this.prRegion.getName());
+        Thread loggingThread = new LoggingThread(
+            "RedundancyLogger for region " + this.prRegion.getName(), false, this.redundancyLogger);
         loggingThread.start();
       }
     } catch (RuntimeException e) {
@@ -1757,7 +1751,8 @@ public class PRHARedundancyProvider {
           }
         };
         Thread recoveryThread =
-            new Thread(recoveryRunnable, "Recovery thread for bucket " + proxyBucket.getName());
+            new LoggingThread("Recovery thread for bucket " + proxyBucket.getName(),
+                false, recoveryRunnable);
         recoveryThread.start();
         bucketsHostedLocally.add(proxyBucket);
       } else {
@@ -2200,10 +2195,10 @@ public class PRHARedundancyProvider {
           wait(creationWaitMillis);
 
           if (oldArrivals == arrivals.get() && oldDepartures == departures.get()) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.PRHARedundancyProvider_TIME_OUT_WAITING_0_MS_FOR_CREATION_OF_BUCKET_FOR_PARTITIONED_REGION_1_MEMBERS_REQUESTED_TO_CREATE_THE_BUCKET_ARE_2,
+            logger.warn(
+                "Time out waiting {} ms for creation of bucket for partitioned region {}. Members requested to create the bucket are: {}",
                 new Object[] {Integer.valueOf(creationWaitMillis), prRegion.getFullPath(),
-                    expectedOwners}));
+                    expectedOwners});
           }
         } // for (;;)
       } // synchronized

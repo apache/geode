@@ -57,4 +57,14 @@ public class Shipment implements DataSerializable {
     }
     return false;
   }
+
+
+  @Override
+  public int hashCode() {
+    if (shipmentName == null) {
+      return super.hashCode();
+    }
+    return shipmentName.hashCode();
+  }
+
 }

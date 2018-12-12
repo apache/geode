@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.Node;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -108,7 +107,7 @@ public class ManageBucketMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.ManageBucketMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -386,8 +385,7 @@ public class ManageBucketMessage extends PartitionMessage {
               "NodeResponse got remote cancellation, throwing PartitionedRegionCommunication Exception. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.ManageBucketMessage_NODERESPONSE_GOT_REMOTE_CANCELLATION_THROWING_PARTITIONEDREGIONCOMMUNICATION_EXCEPTION
-                  .toLocalizedString(),
+              "NodeResponse got remote cancellation, throwing PartitionedRegionCommunication Exception.",
               t);
         }
         if (t instanceof PRLocallyDestroyedException) {
@@ -395,8 +393,7 @@ public class ManageBucketMessage extends PartitionMessage {
               "NodeResponse got local destroy on the PartitionRegion , throwing ForceReattemptException. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.ManageBucketMessage_NODERESPONSE_GOT_LOCAL_DESTROY_ON_THE_PARTITIONREGION_THROWING_FORCEREATTEMPTEXCEPTION
-                  .toLocalizedString(),
+              "NodeResponse got local destroy on the PartitionRegion , throwing ForceReattemptException.",
               t);
         }
         if (t instanceof PartitionOfflineException) {

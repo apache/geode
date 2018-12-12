@@ -44,6 +44,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.ImageState;
@@ -942,6 +943,41 @@ public class RegionMapPutTest {
         eq(false));
     verify(internalRegion, times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
         eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
+  }
+
+  @Test
+  public void runWileLockedForCacheModificationDoesNotLockGIIClearLockWhenRegionIsInitialized()
+      throws Exception {
+    DistributedRegion region = mock(DistributedRegion.class);
+    when(region.isInitialized()).thenReturn(true);
+    when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, region, cacheModificationLock,
+        entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
+        expectedOldValue);
+
+    regionMapPut.runWhileLockedForCacheModification(() -> {
+    });
+
+    verify(region).lockWhenRegionIsInitializing();
+    assertThat(region.lockWhenRegionIsInitializing()).isFalse();
+    verify(region, never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void runWileLockedForCacheModificationLockGIIClearLockWhenRegionIsInitializing() {
+    DistributedRegion region = mock(DistributedRegion.class);
+    when(region.isInitialized()).thenReturn(false);
+    when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, region, cacheModificationLock,
+        entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
+        expectedOldValue);
+
+    regionMapPut.runWhileLockedForCacheModification(() -> {
+    });
+
+    verify(region).lockWhenRegionIsInitializing();
+    assertThat(region.lockWhenRegionIsInitializing()).isTrue();
+    verify(region).unlockWhenRegionIsInitializing();
   }
 
   private void givenAnOperationThatDoesNotGuaranteeOldValue() {

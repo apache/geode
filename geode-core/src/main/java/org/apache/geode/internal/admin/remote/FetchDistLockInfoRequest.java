@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class FetchDistLockInfoRequest extends AdminRequest {
   /**
@@ -34,7 +33,7 @@ public class FetchDistLockInfoRequest extends AdminRequest {
 
   public FetchDistLockInfoRequest() {
     friendlyName =
-        LocalizedStrings.FetchDistLockInfoRequest_LIST_DISTRIBUTED_LOCKS.toLocalizedString();
+        "List distributed locks";
   }
 
   /**
@@ -62,7 +61,7 @@ public class FetchDistLockInfoRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchDistLockInfoRequest_FETCHDISTLOCKINFOREQUEST_FROM_0
-        .toLocalizedString(this.getSender());
+    return String.format("FetchDistLockInfoRequest from %s",
+        this.getSender());
   }
 }

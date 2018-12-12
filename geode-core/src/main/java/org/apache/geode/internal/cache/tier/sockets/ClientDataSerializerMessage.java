@@ -222,9 +222,10 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("ClientDataSerializerMessage[").append(";value=")
-        .append((Arrays.toString(this.serializedDataSerializer))).append(";memberId=")
+    StringBuilder buffer = new StringBuilder();
+    buffer.append("ClientDataSerializerMessage[value=")
+        .append(Arrays.toString(this.serializedDataSerializer))
+        .append(";memberId=")
         .append(getMembershipId()).append(";eventId=").append(getEventId()).append("]");
     return buffer.toString();
   }

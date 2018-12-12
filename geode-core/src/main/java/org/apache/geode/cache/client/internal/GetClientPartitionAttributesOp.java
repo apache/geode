@@ -24,7 +24,6 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -138,8 +137,8 @@ public class GetClientPartitionAttributesOp {
               "While performing  GetClientPartitionAttributesOp " + ((Throwable) obj).getMessage();
           throw new ServerOperationException(s, (Throwable) obj);
         default:
-          throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(msg.getMessageType())));
+          throw new InternalGemFireError(String.format("Unknown message type %s",
+              Integer.valueOf(msg.getMessageType())));
       }
     }
 

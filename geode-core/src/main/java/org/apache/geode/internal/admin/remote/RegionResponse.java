@@ -29,7 +29,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Responds to {@link RegionResponse}.
@@ -81,8 +80,8 @@ public class RegionResponse extends AdminResponse {
 
           default:
             throw new InternalGemFireException(
-                LocalizedStrings.RegionResponse_UNKNOWN_REGIONREQUEST_OPERATION_0
-                    .toLocalizedString(Integer.valueOf(action)));
+                String.format("Unknown RegionRequest operation: %s",
+                    Integer.valueOf(action)));
         }
 
         if (r != null) {

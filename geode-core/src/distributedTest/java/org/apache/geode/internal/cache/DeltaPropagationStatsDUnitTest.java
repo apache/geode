@@ -46,10 +46,10 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -330,7 +330,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         return "Last key NOT received.";
       }
     };
-    Wait.waitForCriterion(wc, 15 * 1000, 100, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void putCleanDelta(Integer keys, Long updates) {
@@ -418,7 +418,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         } catch (InvalidDeltaException ide) {
           assertTrue("InvalidDeltaException not expected.",
               delta.getIntVar() == DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
-          cache.getLoggerI18n().fine("Received InvalidDeltaException as expected.");
+          cache.getLogger().fine("Received InvalidDeltaException as expected.");
         }
       }
     }

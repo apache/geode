@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
 
@@ -28,11 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.client.ClientCache;
@@ -187,12 +186,12 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public MemberVM startLocatorVM(int index,
-      SerializableFunction1<LocatorStarterRule> ruleOperator) {
+      SerializableFunction<LocatorStarterRule> ruleOperator) {
     return startLocatorVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
   }
 
   public MemberVM startLocatorVM(int index, String version,
-      SerializableFunction1<LocatorStarterRule> ruleOperator) {
+      SerializableFunction<LocatorStarterRule> ruleOperator) {
     final String defaultName = "locator-" + index;
     VM locatorVM = getVM(index, version);
     Locator server = locatorVM.invoke(() -> {
@@ -227,12 +226,12 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
         x -> x.withProperties(properties).withConnectionToLocator(locatorPort));
   }
 
-  public MemberVM startServerVM(int index, SerializableFunction1<ServerStarterRule> ruleOperator) {
+  public MemberVM startServerVM(int index, SerializableFunction<ServerStarterRule> ruleOperator) {
     return startServerVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
   }
 
   public MemberVM startServerVM(int index, String version,
-      SerializableFunction1<ServerStarterRule> ruleOperator) {
+      SerializableFunction<ServerStarterRule> ruleOperator) {
     final String defaultName = "server-" + index;
     VM serverVM = getVM(index, version);
     Server server = serverVM.invoke(() -> {
@@ -358,7 +357,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     });
 
     // wait till member is not reachable anymore.
-    Awaitility.await().until(() -> {
+    await().until(() -> {
       try {
         member.invoke(() -> {
         });
@@ -382,6 +381,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   public static void stopElementInsideVM() {
     if (memberStarter != null) {
+      memberStarter.setCleanWorkingDir(false);
       memberStarter.after();
       memberStarter = null;
     }
@@ -391,6 +391,4 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     }
   }
 
-  public interface SerializableFunction1<T> extends UnaryOperator<T>, Serializable {
-  }
 }

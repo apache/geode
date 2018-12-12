@@ -16,9 +16,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 
@@ -67,17 +66,17 @@ public class ShowMetricsDUnitTest {
       dataRegionFactory.create("REGION1");
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-      await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 5, "", member, serverPort));
+      await().until(() -> isBeanReady(cache, 5, "", member, serverPort));
     });
 
     locator.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       // Wait for all of the relevant beans to be ready
-      await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 1, "", null, 0));
-      await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 2, "REGION1", null, 0));
+      await().until(() -> isBeanReady(cache, 1, "", null, 0));
+      await().until(() -> isBeanReady(cache, 2, "REGION1", null, 0));
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-      await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 3, "", member, 0));
+      await().until(() -> isBeanReady(cache, 3, "", member, 0));
     });
 
     gfsh.connect(locator);

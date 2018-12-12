@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -67,8 +66,9 @@ public class MethodDispatch {
       return _method.invoke(target, argsArray);
     } catch (IllegalAccessException e) {
       throw new NameNotFoundException(
-          LocalizedStrings.MethodDispatch_METHOD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-              .toLocalizedString(new Object[] {_method.getName(), target.getClass().getName()}),
+          String.format(
+              "Method ' %s ' in class ' %s ' is not accessible to the query processor",
+              new Object[] {_method.getName(), target.getClass().getName()}),
           e);
     } catch (InvocationTargetException e) {
       // if targetException is Exception, wrap it, otherwise wrap the InvocationTargetException
@@ -124,9 +124,10 @@ public class MethodDispatch {
 
     if (candidates.isEmpty()) {
       throw new NameNotFoundException(
-          LocalizedStrings.MethodDispatch_NO_APPLICABLE_AND_ACCESSIBLE_METHOD_NAMED_0_WAS_FOUND_IN_CLASS_1_FOR_THE_ARGUMENT_TYPES_2
-              .toLocalizedString(
-                  new Object[] {_methodName, _targetClass.getName(), Arrays.asList(_argTypes)}));
+          String.format(
+              "No applicable and accessible method named ' %s ' was found in class ' %s ' for the argument types %s",
+
+              new Object[] {_methodName, _targetClass.getName(), Arrays.asList(_argTypes)}));
     }
 
 
@@ -151,8 +152,9 @@ public class MethodDispatch {
 
     if (equalSpecificity(meth1, meth2, _argTypes))
       throw new AmbiguousNameException(
-          LocalizedStrings.MethodDispatch_TWO_OR_MORE_MAXIMALLY_SPECIFIC_METHODS_WERE_FOUND_FOR_THE_METHOD_NAMED_0_IN_CLASS_1_FOR_THE_ARGUMENT_TYPES_2
-              .toLocalizedString(new Object[] {meth1.getName(), _targetClass.getName(),
+          String.format(
+              "Two or more maximally specific methods were found for the method named ' %s ' in class ' %s ' for the argument types: %s",
+              new Object[] {meth1.getName(), _targetClass.getName(),
                   Arrays.asList(_argTypes)}));
 
     _method = meth1;

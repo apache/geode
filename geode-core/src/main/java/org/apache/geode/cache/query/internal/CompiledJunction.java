@@ -41,7 +41,6 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Conjunctions and Disjunctions (LITERAL_and LITERAL_or) As a part of feature development to ensure
@@ -134,8 +133,9 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     // short-circuiting truth value
     else if (!(r instanceof Boolean))
       throw new TypeMismatchException(
-          LocalizedStrings.CompiledJunction_LITERAL_ANDLITERAL_OR_OPERANDS_MUST_BE_OF_TYPE_BOOLEAN_NOT_TYPE_0
-              .toLocalizedString(r.getClass().getName()));
+          String.format(
+              "LITERAL_and/LITERAL_or operands must be of type boolean, not type ' %s '",
+              r.getClass().getName()));
     for (int i = 1; i < _operands.length; i++) {
       Object ri = null;
       try {
@@ -154,8 +154,9 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
         continue; // keep going to see if we hit a short-circuiting truth value
       } else if (!(ri instanceof Boolean))
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledJunction_LITERAL_ANDLITERAL_OR_OPERANDS_MUST_BE_OF_TYPE_BOOLEAN_NOT_TYPE_0
-                .toLocalizedString(ri.getClass().getName()));
+            String.format(
+                "LITERAL_and/LITERAL_or operands must be of type boolean, not type ' %s '",
+                ri.getClass().getName()));
       // now do the actual and/or
       if (_operator == LITERAL_and)
         r = Boolean.valueOf(((Boolean) r).booleanValue() && ((Boolean) ri).booleanValue());
@@ -336,8 +337,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     // signifies that the junction cannot be evaluated as a filter.
     if (intermediateResults == null)
       throw new RuntimeException(
-          LocalizedStrings.CompiledJunction_INTERMEDIATERESULTS_CAN_NOT_BE_NULL
-              .toLocalizedString());
+          "intermediateResults can not be null");
     if (intermediateResults.isEmpty()) // short circuit
       return intermediateResults;
     List currentIters = context.getCurrentIterators();
@@ -377,8 +377,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
             resultSet.add(tuple);
         } else if (result != null && result != QueryService.UNDEFINED)
           throw new TypeMismatchException(
-              LocalizedStrings.CompiledJunction_ANDOR_OPERANDS_MUST_BE_OF_TYPE_BOOLEAN_NOT_TYPE_0
-                  .toLocalizedString(result.getClass().getName()));
+              String.format("AND/OR operands must be of type boolean, not type ' %s '",
+                  result.getClass().getName()));
       }
     } finally {
       observer.endIteration(resultSet);

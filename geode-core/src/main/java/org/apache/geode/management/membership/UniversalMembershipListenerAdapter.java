@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.ManagementService;
 
 /**
@@ -163,8 +162,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
   public UniversalMembershipListenerAdapter(int historySize) {
     if (historySize < 10) {
       throw new IllegalArgumentException(
-          LocalizedStrings.UniversalMembershipListenerAdapter_ARGUMENT_HISTORYSIZE_MUST_BE_BETWEEN_10_AND_INTEGERMAX_INT_0
-              .toLocalizedString(Integer.valueOf(historySize)));
+          String.format("Argument historySize must be between 10 and Integer.MAX_INT: %s .",
+              Integer.valueOf(historySize)));
     }
     this.historySize = historySize;
     this.eventHistory = new LinkedList<String>();

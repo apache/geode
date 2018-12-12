@@ -16,6 +16,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
 import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.performAndVerifyHandshake;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -31,9 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -97,7 +96,7 @@ public class CacheMaxConnectionJUnitTest {
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
     socket = new Socket("localhost", cacheServerPort);
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+    await().until(socket::isConnected);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -149,14 +148,14 @@ public class CacheMaxConnectionJUnitTest {
     validateSocketCreationAndDestruction(cacheServerPort, connections);
 
     // Once all connections are closed, the acceptor should have a connection count of 0.
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+    await()
         .until(() -> acceptor.getClientServerCnxCount() == 0);
 
     // do it again, just to be sure there's no leak somewhere else.
     validateSocketCreationAndDestruction(cacheServerPort, connections);
 
     // Once all connections are closed, the acceptor should have a connection count of 0.
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+    await()
         .until(() -> acceptor.getClientServerCnxCount() == 0);
 
   }
@@ -181,7 +180,7 @@ public class CacheMaxConnectionJUnitTest {
             Socket socket = new Socket("localhost", cacheServerPort);
             sockets[j] = socket;
 
-            Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+            await().until(socket::isConnected);
             OutputStream outputStream = socket.getOutputStream();
 
             performAndVerifyHandshake(socket);
@@ -204,7 +203,7 @@ public class CacheMaxConnectionJUnitTest {
 
       // try to start a new socket, expecting it to be disconnected.
       try (Socket socket = new Socket("localhost", cacheServerPort)) {
-        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+        await().until(socket::isConnected);
         socket.getOutputStream()
             .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
         assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.

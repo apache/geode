@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -154,7 +154,7 @@ public class KeepEventsOnGatewaySenderQueueDUnitTest extends WANTestBase {
 
   private void waitForEventRetries(int numRetries) {
     GatewayReceiverStats stats = getGatewayReceiverStats();
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> stats.getEventsRetried() > numRetries);
   }
 

@@ -27,36 +27,62 @@ while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a sym
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-CHANGED_FILES=$(cd geode && git diff --name-only HEAD $(git merge-base HEAD origin/develop)  -- */src/test/java */src/integrationTest/java */src/distributedTest/java */src/upgradeTest/java */src/acceptanceTest/java )
+function changes_for_path() {
+  cd geode
+  local path="$1" # only expand once in the line below
+  git diff --name-only HEAD $(git merge-base HEAD origin/develop) -- $path
+}
 
-CHANGED_FILES_ARRAY=( $CHANGED_FILES )
+UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java')
+INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java')
+DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java')
+ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java')
+UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java')
+
+CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
-
-TESTS_FLAG=""
 
 echo "${NUM_CHANGED_FILES} changed tests"
 
 if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
-  then
-    echo "No changed test files, nothing to test."
-    exit 0
+then
+  echo "No changed test files, nothing to test."
+  exit 0
 fi
 
 if [[ "${NUM_CHANGED_FILES}" -gt 25 ]]
-  then
-    echo "${NUM_CHANGED_FILES} is many changed tests to stress test. Allowing this job to pass without stress testing."
-    exit 0
+then
+  echo "${NUM_CHANGED_FILES} is too many changed tests to stress test. Allowing this job to pass without stress testing."
+  exit 0
 fi
 
+TEST_TARGETS=""
 
-for FILENAME in $CHANGED_FILES ; do
-  SHORT_NAME=$(basename $FILENAME)
-  SHORT_NAME="${SHORT_NAME%.java}"
-  TESTS_FLAG="$TESTS_FLAG --tests $SHORT_NAME"
-done
+function append_to_test_targets() {
+  local target="$1"
+  local files="$2"
+  if [[ -n "$files" ]]
+  then
+    TEST_TARGETS="$TEST_TARGETS $target"
+    for FILENAME in $files
+    do
+      SHORT_NAME=$(basename $FILENAME)
+      SHORT_NAME="${SHORT_NAME%.java}"
+      TEST_TARGETS="$TEST_TARGETS --tests $SHORT_NAME"
+    done
+  fi
+}
 
-export GRADLE_TASK='compileTestJava compileIntegrationTestJava compileDistributedTestJava repeatTest'
-export GRADLE_TASK_OPTIONS="--no-parallel -Prepeat=50 -PfailOnNoMatchingTests=false $TESTS_FLAG"
+append_to_test_targets "repeatUnitTest" "$UNIT_TEST_CHANGES"
+append_to_test_targets "repeatIntegrationTest" "$INTEGRATION_TEST_CHANGES"
+append_to_test_targets "repeatDistributedTest" "$DISTRIBUTED_TEST_CHANGES"
+append_to_test_targets "repeatUpgradeTest" "$UPGRADE_TEST_CHANGES"
+
+# Acceptance tests cannot currently run in parallel, so do not stress these tests
+#append_to_test_targets "repeatAcceptanceTest" "$ACCEPTANCE_TEST_CHANGES"
+
+export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistributedTestJava $TEST_TARGETS"
+export GRADLE_TASK_OPTIONS="--no-parallel -Prepeat=50 -PfailOnNoMatchingTests=false"
 
 echo "GRADLE_TASK_OPTIONS=${GRADLE_TASK_OPTIONS}"
 

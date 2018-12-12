@@ -20,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 class RegionNameValidation {
 
@@ -37,16 +36,16 @@ class RegionNameValidation {
   static void validate(String name, InternalRegionArguments internalRegionArguments) {
     if (name == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
+          "name cannot be null");
     }
     if (name.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
+          "name cannot be empty");
     }
     if (name.contains(Region.SEPARATOR)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0
-              .toLocalizedString(Region.SEPARATOR));
+          String.format("name cannot contain the separator ' %s '",
+              Region.SEPARATOR));
     }
 
     // Validate the name of the region only if it isn't an internal region

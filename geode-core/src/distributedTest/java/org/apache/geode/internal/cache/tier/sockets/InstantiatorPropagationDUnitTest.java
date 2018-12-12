@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.InternalInstantiator.getInstantiators;
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -50,11 +51,11 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -180,16 +181,16 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
       String excuse;
 
       public boolean done() {
-        return InternalInstantiator.getInstantiators().length == numOfInstantiators;
+        return getInstantiators().length == numOfInstantiators;
       }
 
       public String description() {
         return "expected " + numOfInstantiators + " but got this "
-            + InternalInstantiator.getInstantiators().length + " instantiators="
-            + java.util.Arrays.toString(InternalInstantiator.getInstantiators());
+            + getInstantiators().length + " instantiators="
+            + java.util.Arrays.toString(getInstantiators());
       }
     };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static void registerTestObject1() throws Exception {

@@ -40,7 +40,6 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -72,7 +71,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.CompiledIteratorDef_NOT_TO_BE_EVALUATED_DIRECTLY.toLocalizedString());
+        "Not to be evaluated directly");
   }
 
   public RuntimeIterator getRuntimeIterator(ExecutionContext context)
@@ -141,8 +140,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
         logger.debug("Exception while getting runtime iterator.", e);
       }
       throw new TypeMismatchException(
-          LocalizedStrings.CompiledIteratorDef_EXCEPTION_IN_EVALUATING_THE_COLLECTION_EXPRESSION_IN_GETRUNTIMEITERATOR_EVEN_THOUGH_THE_COLLECTION_IS_INDEPENDENT_OF_ANY_RUNTIMEITERATOR
-              .toLocalizedString(),
+          "Exception in evaluating the Collection Expression in getRuntimeIterator() even though the Collection is independent of any RuntimeIterator",
           e);
     }
   }
@@ -152,8 +150,8 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     if (typ != null) {
       if (!(typ instanceof CollectionType)) {
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledIteratorDef_AN_ITERATOR_DEFINITION_MUST_BE_A_COLLECTION_TYPE_NOT_A_0
-                .toLocalizedString(typ));
+            String.format("An iterator definition must be a collection type, not a %s",
+                typ));
       }
       if (typ instanceof MapType) { // we iterate over map entries
         return ((MapType) typ).getEntryType();
@@ -179,9 +177,6 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     Object coll;
-
-    // Check if query execution on this thread is Canceled.
-    // QueryMonitor.isQueryExecutionCanceled();
 
     context.currentScope().setLimit(stopAtIter);
     try {

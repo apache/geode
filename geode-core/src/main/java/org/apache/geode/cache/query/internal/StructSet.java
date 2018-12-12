@@ -38,7 +38,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Set constrained to contain Structs of all the same type. To conserve on objects, we store the
@@ -102,7 +101,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -112,7 +111,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(c, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -148,7 +147,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(initialCapacity, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -158,7 +157,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
         new ObjectOpenCustomHashSet(initialCapacity, loadFactor, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -190,13 +189,13 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE_REQUIRED_0_ACTUAL_1
-              .toLocalizedString(new Object[] {this.structType, s.getStructType()}));
+          String.format("obj does not have the same StructType: required: %s , actual: %s",
+              new Object[] {this.structType, s.getStructType()}));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -281,7 +280,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     boolean modified = false;
     if (!this.structType.equals(ss.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_TYPES_DONT_MATCH.toLocalizedString());
+          "types do not match");
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
@@ -352,7 +351,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.structType = (StructType) elementType;
   }

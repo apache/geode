@@ -27,7 +27,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 
@@ -557,8 +556,8 @@ public abstract class StatisticsImpl implements Statistics {
         return Double.valueOf(_getDouble(stat.getId()));
       default:
         throw new RuntimeException(
-            LocalizedStrings.StatisticsImpl_UNEXPECTED_STAT_DESCRIPTOR_TYPE_CODE_0
-                .toLocalizedString(Byte.valueOf(stat.getTypeCode())));
+            String.format("unexpected stat descriptor type code: %s",
+                Byte.valueOf(stat.getTypeCode())));
     }
   }
 
@@ -575,8 +574,8 @@ public abstract class StatisticsImpl implements Statistics {
         return Double.doubleToRawLongBits(_getDouble(stat.getId()));
       default:
         throw new RuntimeException(
-            LocalizedStrings.StatisticsImpl_UNEXPECTED_STAT_DESCRIPTOR_TYPE_CODE_0
-                .toLocalizedString(Byte.valueOf(stat.getTypeCode())));
+            String.format("unexpected stat descriptor type code: %s",
+                Byte.valueOf(stat.getTypeCode())));
     }
   }
 

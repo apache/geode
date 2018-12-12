@@ -45,12 +45,9 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.DirectReplyMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
@@ -153,14 +150,13 @@ public class DirectChannel {
       disconnectCompleted = false;
       this.groupOrderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
       this.groupUnorderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0,
-              conduit.getSocketId()));
+      logger.info("GemFire P2P Listener started on {}",
+          conduit.getSocketId());
 
     } catch (ConnectionException ce) {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.DirectChannel_UNABLE_TO_INITIALIZE_DIRECT_CHANNEL_BECAUSE__0,
-          new Object[] {ce.getMessage()}), ce);
+      logger.fatal(String.format("Unable to initialize direct channel because: %s",
+          new Object[] {ce.getMessage()}),
+          ce);
       throw ce; // fix for bug 31973
     }
   }
@@ -194,7 +190,7 @@ public class DirectChannel {
   private void acquireGroupSendPermission(boolean ordered) {
     if (this.disconnected) {
       throw new org.apache.geode.distributed.DistributedSystemDisconnectedException(
-          LocalizedStrings.DirectChannel_DIRECT_CHANNEL_HAS_BEEN_STOPPED.toLocalizedString());
+          "Direct channel has been stopped");
     }
     // @todo darrel: add some stats
     final Semaphore s = getGroupSem(ordered);
@@ -215,7 +211,7 @@ public class DirectChannel {
     if (this.disconnected) {
       s.release();
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.DirectChannel_COMMUNICATIONS_DISCONNECTED.toLocalizedString());
+          "communications disconnected");
     }
   }
 
@@ -327,7 +323,7 @@ public class DirectChannel {
          * Exceptions that happened during one attempt to send
          */
         if (retryInfo != null) {
-          // need to retry to each of the guys in the exception
+          // need to retry to each of the members in the exception
           List retryMembers = retryInfo.getMembers();
           InternalDistributedMember[] retryDest =
               new InternalDistributedMember[retryMembers.size()];
@@ -363,7 +359,7 @@ public class DirectChannel {
         if (sendingToGroup) {
           acquireGroupSendPermission(orderedMsg);
         } else {
-          // sending to just one guy
+          // sending over just one connection
           permissionCon = (Connection) cons.get(0);
           if (permissionCon != null) {
             try {
@@ -410,8 +406,7 @@ public class DirectChannel {
             throw e;
           } catch (IOException ex) {
             throw new InternalGemFireException(
-                LocalizedStrings.DirectChannel_UNKNOWN_ERROR_SERIALIZING_MESSAGE
-                    .toLocalizedString(),
+                "Unknown error serializing message",
                 ex);
           } finally {
             try {
@@ -552,7 +547,7 @@ public class DirectChannel {
         if (ce == null)
           ce = new ConnectExceptions();
         ce.addFailure(destination, new ShunnedMemberException(
-            LocalizedStrings.DirectChannel_SHUNNING_0.toLocalizedString(destination)));
+            String.format("Member is being shunned: %s", destination)));
       } else {
         try {
           long startTime = 0;
@@ -674,19 +669,19 @@ public class DirectChannel {
 
     // an alert that will show up in the console
     {
-      final StringId msg =
-          LocalizedStrings.DirectChannel_0_SECONDS_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLY_FROM_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3;
+      String msg =
+          "%s seconds have elapsed while waiting for reply from %s on %s whose current membership list is: [%s]";
       final Object[] msgArgs = new Object[] {Long.valueOf(ackTimeout / 1000), c.getRemoteAddress(),
           dm.getId(), activeMembers};
-      logger.warn(LocalizedMessage.create(msg, msgArgs));
+      logger.warn(String.format(msg, msgArgs));
       msgArgs[3] = "(omitted)";
       Breadcrumbs.setProblem(msg, msgArgs);
 
       if (ReplyProcessor21.THROW_EXCEPTION_ON_TIMEOUT) {
         // init the cause to be a TimeoutException so catchers can determine cause
         TimeoutException cause =
-            new TimeoutException(LocalizedStrings.TIMED_OUT_WAITING_FOR_ACKS.toLocalizedString());
-        throw new InternalGemFireException(msg.toLocalizedString(msgArgs), cause);
+            new TimeoutException("Timed out waiting for ACKS.");
+        throw new InternalGemFireException(String.format(msg, msgArgs), cause);
       }
     }
 
@@ -699,23 +694,22 @@ public class DirectChannel {
         } catch (SocketTimeoutException e) {
           Object[] args = new Object[] {Long.valueOf((ackSATimeout + ackTimeout) / 1000),
               c.getRemoteAddress(), dm.getId(), activeMembers};
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.DirectChannel_0_SECONDS_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLY_FROM_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3,
-              args));
+          logger.fatal(
+              "{} seconds have elapsed while waiting for reply from {} on {} whose currentFull membership list is: [{}]",
+              args);
         }
       }
       try {
         c.readAck(0, 0, processor);
       } catch (SocketTimeoutException ex) {
         // this can never happen when called with timeout of 0
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.DirectChannel_UNEXPECTED_TIMEOUT_WHILE_WAITING_FOR_ACK_FROM__0,
-            c.getRemoteAddress()), ex);
+        logger.error(String.format("Unexpected timeout while waiting for ack from %s",
+            c.getRemoteAddress()),
+            ex);
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.DirectChannel_VIEW_NO_LONGER_HAS_0_AS_AN_ACTIVE_MEMBER_SO_WE_WILL_NO_LONGER_WAIT_FOR_IT,
-          c.getRemoteAddress()));
+      logger.warn("View no longer has {} as an active member, so we will no longer wait for it.",
+          c.getRemoteAddress());
       processor.memberDeparted(getDM(), c.getRemoteAddress(), true);
     }
   }
@@ -733,8 +727,7 @@ public class DirectChannel {
     } catch (Exception ex) {
       // Don't freak out if the DM is shutting down
       if (!conduit.getCancelCriterion().isCancelInProgress()) {
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.DirectChannel_WHILE_PULLING_A_MESSAGE), ex);
+        logger.fatal("While pulling a message", ex);
       }
     }
   }

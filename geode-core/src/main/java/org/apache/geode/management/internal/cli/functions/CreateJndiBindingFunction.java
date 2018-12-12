@@ -19,28 +19,57 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.naming.NamingException;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
-public class CreateJndiBindingFunction extends CliFunction<JndiBindingsType.JndiBinding> {
+public class CreateJndiBindingFunction extends CliFunction<Object[]> {
 
-  static final String RESULT_MESSAGE =
-      "Initiated jndi binding \"{0}\" on \"{1}\". See server logs to verify.";
+  private static final Logger logger = LogService.getLogger();
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<JndiBindingsType.JndiBinding> context) {
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context)
+      throws DataSourceCreateException, NamingException {
     ResultSender<Object> resultSender = context.getResultSender();
-    JndiBindingsType.JndiBinding configuration = context.getArguments();
-    JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
-        convert(configuration.getConfigProperties()));
+    Object[] arguments = context.getArguments();
+    JndiBinding configuration = (JndiBinding) arguments[0];
+    boolean creatingDataSource = (Boolean) arguments[1];
+    final String TYPE_NAME;
+    if (creatingDataSource) {
+      TYPE_NAME = "data-source";
+    } else {
+      TYPE_NAME = "jndi-binding";
+    }
+    try {
+      JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
+          convert(configuration.getConfigProperties()));
+    } catch (DataSourceCreateException ex) {
+      if (logger.isErrorEnabled()) {
+        logger.error("create " + TYPE_NAME + " failed", ex.getWrappedException());
+      }
+      throw ex;
+    } catch (NamingException ex) {
+      if (logger.isErrorEnabled()) {
+        logger.error("create " + TYPE_NAME + " failed", ex);
+      }
+      throw ex;
 
-    return new CliFunctionResult(context.getMemberName(), true,
-        CliStrings.format(RESULT_MESSAGE, configuration.getJndiName(), context.getMemberName()));
+    }
+
+    return new CliFunctionResult(context.getMemberName(), StatusState.OK,
+        String.format("Created %s \"%s\" on \"%s\".", TYPE_NAME, configuration.getJndiName(),
+            context.getMemberName()));
   }
 
   static Map getParamsAsMap(JndiBindingsType.JndiBinding binding) {

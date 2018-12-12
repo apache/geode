@@ -50,6 +50,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -247,6 +248,15 @@ public class QueryJUnitTest {
 
   @Test
   public void test008NullCollectionField() {
+
+    /*
+     * This test relies on the static Position counter starting at the same value each time.
+     * By starting the counter at a well-defined value, this test can be run more than once
+     * in the same JVM.
+     * Because of its reliance on that static counter, this test cannot be run in parallel.
+     */
+    Position.resetCounter();
+
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     for (int i = 0; i < 10; i++) {
       Portfolio p = new Portfolio(i);
@@ -376,7 +386,7 @@ public class QueryJUnitTest {
     }
   }
 
-  public class ScopeThreadingTestHook implements DefaultQuery.TestHook {
+  private static class ScopeThreadingTestHook implements DefaultQuery.TestHook {
     private CyclicBarrier barrier;
     private List<Exception> exceptionsThrown = new LinkedList<Exception>();
 
@@ -385,13 +395,8 @@ public class QueryJUnitTest {
     }
 
     @Override
-    public void doTestHook(int spot) {
-      this.doTestHook(spot + "");
-    }
-
-    @Override
-    public void doTestHook(String spot) {
-      if (spot.equals("1")) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+      if (spot == SPOTS.BEFORE_QUERY_EXECUTION) {
         try {
           barrier.await(8, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

@@ -14,11 +14,11 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 
@@ -170,7 +170,7 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
   private void verifySynchronized(VM vm, final InternalDistributedMember crashedMember) {
     vm.invoke("check that synchronization happened", () -> {
       final DistributedRegion dr = (DistributedRegion) testRegion;
-      Awaitility.await().until(() -> {
+      await().until(() -> {
 
         if (testRegion.getCache().getDistributionManager().isCurrentMember(crashedMember)) {
           return false;

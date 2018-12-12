@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedLockServiceName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getLockServiceMBeanName;
@@ -26,8 +25,6 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -35,6 +32,7 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 
 
@@ -103,7 +101,7 @@ public class DLockManagementDUnitTest implements Serializable {
 
       for (final DistributedMember member : otherMembers) {
         ObjectName objectName = service.getRegionMBeanName(member, LOCK_SERVICE_NAME);
-        await()
+        GeodeAwaitility.await()
             .untilAsserted(() -> assertThat(lockServiceMXBeanIsGone(service, objectName)).isTrue());
       }
     });
@@ -226,7 +224,7 @@ public class DLockManagementDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
 
       if (memberCount == 0) {
-        await().untilAsserted(
+        GeodeAwaitility.await().untilAsserted(
             () -> assertThat(service.getDistributedLockServiceMXBean(LOCK_SERVICE_NAME)).isNull());
         return;
       }
@@ -241,7 +239,8 @@ public class DLockManagementDUnitTest implements Serializable {
   private DistributedSystemMXBean awaitDistributedSystemMXBean() {
     ManagementService service = this.managementTestRule.getManagementService();
 
-    await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 
     return service.getDistributedSystemMXBean();
   }
@@ -253,7 +252,7 @@ public class DLockManagementDUnitTest implements Serializable {
       final String lockServiceName, final int memberCount) {
     ManagementService service = this.managementTestRule.getManagementService();
 
-    await().untilAsserted(() -> {
+    GeodeAwaitility.await().untilAsserted(() -> {
       assertThat(service.getDistributedLockServiceMXBean(lockServiceName)).isNotNull();
       assertThat(service.getDistributedLockServiceMXBean(lockServiceName).getMemberCount())
           .isEqualTo(memberCount);
@@ -270,7 +269,7 @@ public class DLockManagementDUnitTest implements Serializable {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
     ObjectName lockServiceMXBeanName = service.getLockServiceMBeanName(member, lockServiceName);
 
-    await().untilAsserted(
+    GeodeAwaitility.await().untilAsserted(
         () -> assertThat(service.getMBeanProxy(lockServiceMXBeanName, LockServiceMXBean.class))
             .isNotNull());
 
@@ -283,7 +282,7 @@ public class DLockManagementDUnitTest implements Serializable {
   private LockServiceMXBean awaitLockServiceMXBean(final String lockServiceName) {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
 
-    await().untilAsserted(
+    GeodeAwaitility.await().untilAsserted(
         () -> assertThat(service.getLocalLockServiceMBean(lockServiceName)).isNotNull());
 
     return service.getLocalLockServiceMBean(lockServiceName);
@@ -295,11 +294,8 @@ public class DLockManagementDUnitTest implements Serializable {
   private void awaitLockServiceMXBeanIsNull(final String lockServiceName) {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
 
-    await().untilAsserted(
+    GeodeAwaitility.await().untilAsserted(
         () -> assertThat(service.getLocalLockServiceMBean(lockServiceName)).isNull());
   }
 
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(MAX_WAIT_MILLIS, MILLISECONDS);
-  }
 }

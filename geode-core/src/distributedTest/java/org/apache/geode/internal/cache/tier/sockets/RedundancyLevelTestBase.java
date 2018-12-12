@@ -16,12 +16,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +34,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -50,13 +51,9 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -66,8 +63,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
 
-  protected static volatile boolean registerInterestCalled = false;
-  protected static volatile boolean makePrimaryCalled = false;
+  static volatile boolean registerInterestCalled = false;
+  static volatile boolean makePrimaryCalled = false;
 
   static Cache cache = null;
 
@@ -86,14 +83,14 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
   static String SERVER3;
   static String SERVER4;
 
-  static final String k1 = "k1";
-  static final String k2 = "k2";
+  private static final String k1 = "k1";
+  private static final String k2 = "k2";
 
-  static final String REGION_NAME = "RedundancyLevelTestBase_region";
+  private static final String REGION_NAME = "RedundancyLevelTestBase_region";
 
   static PoolImpl pool = null;
 
-  static ClientServerObserver oldBo = null;
+  private static ClientServerObserver oldBo = null;
 
   static boolean FailOverDetectionByCCU = false;
 
@@ -103,27 +100,21 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
   }
 
   @Override
-  public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-
-    server0 = host.getVM(0);
-    server1 = host.getVM(1);
-    server2 = host.getVM(2);
-    server3 = host.getVM(3);
+  public final void postSetUp() {
+    server0 = VM.getVM(0);
+    server1 = VM.getVM(1);
+    server2 = VM.getVM(2);
+    server3 = VM.getVM(3);
 
     IgnoredException.addIgnoredException("java.net.SocketException||java.net.ConnectException");
 
     // start servers first
-    PORT1 =
-        ((Integer) server0.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
-    PORT2 =
-        ((Integer) server1.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
-    PORT3 =
-        ((Integer) server2.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
-    PORT4 =
-        ((Integer) server3.invoke(() -> RedundancyLevelTestBase.createServerCache())).intValue();
+    PORT1 = server0.invoke(RedundancyLevelTestBase::createServerCache);
+    PORT2 = server1.invoke(RedundancyLevelTestBase::createServerCache);
+    PORT3 = server2.invoke(RedundancyLevelTestBase::createServerCache);
+    PORT4 = server3.invoke(RedundancyLevelTestBase::createServerCache);
 
-    String hostName = NetworkUtils.getServerHostName(Host.getHost(0));
+    String hostName = NetworkUtils.getServerHostName();
     SERVER1 = hostName + PORT1;
     SERVER2 = hostName + PORT2;
     SERVER3 = hostName + PORT3;
@@ -132,380 +123,228 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
-  public static void doPuts() {
+  public static void doPuts() throws InterruptedException {
     putEntriesK1andK2();
     putEntriesK1andK2();
     putEntriesK1andK2();
     putEntriesK1andK2();
   }
 
-  public static void putEntriesK1andK2() {
-    try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-      assertNotNull(r1);
-      r1.put(k1, k1);
-      r1.put(k2, k2);
-      assertEquals(r1.getEntry(k1).getValue(), k1);
-      assertEquals(r1.getEntry(k2).getValue(), k2);
-    } catch (Exception ignore) {
-      // not sure why it's ok to ignore but if you don't ignore it, RedundancyLevelPart3DUnitTest
-      // will fail
+  private static void putEntriesK1andK2() throws InterruptedException {
+    Region<String, String> r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    assertThat(r1).isNotNull();
+    r1.put(k1, k1);
+    r1.put(k2, k2);
+    assertThat(r1.get(k1)).isEqualTo(k1);
+    assertThat(r1.get(k2)).isEqualTo(k2);
+  }
+
+  static void verifyDispatcherIsAlive() {
+
+    await()
+        .until(() -> cache.getCacheServers().size(), equalTo(1));
+
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
+    assertThat(bs).isNotNull();
+    assertThat(bs.getAcceptor()).isNotNull();
+    assertThat(bs.getAcceptor().getCacheClientNotifier()).isNotNull();
+
+    final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
+
+    await().until(() -> ccn.getClientProxies().size(),
+        greaterThan(0));
+
+    Iterator<CacheClientProxy> cacheClientProxyIterator = ccn.getClientProxies().iterator();
+
+    if (ccn.getClientProxies().iterator().hasNext()) {
+
+      final CacheClientProxy proxy = cacheClientProxyIterator.next();
+      await()
+          .until(() -> proxy._messageDispatcher != null && proxy._messageDispatcher.isAlive());
     }
   }
 
-  public static void verifyDispatcherIsAlive() {
-    try {
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
+  static void verifyDispatcherIsNotAlive() {
 
-        public boolean done() {
-          return cache.getCacheServers().size() == 1;
-        }
+    await()
+        .until(() -> cache.getCacheServers().size(), equalTo(1));
 
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
+    assertThat(bs).isNotNull();
+    assertThat(bs.getAcceptor()).isNotNull();
+    assertThat(bs.getAcceptor().getCacheClientNotifier()).isNotNull();
 
-      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-      assertNotNull(bs);
-      assertNotNull(bs.getAcceptor());
-      assertNotNull(bs.getAcceptor().getCacheClientNotifier());
-      final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-      wc = new WaitCriterion() {
-        String excuse;
+    final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
 
-        public boolean done() {
-          return ccn.getClientProxies().size() > 0;
-        }
+    await().until(() -> ccn.getClientProxies().size(),
+        greaterThan(0));
 
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-
-
-      Iterator iter_prox = ccn.getClientProxies().iterator();
-      if (iter_prox.hasNext()) {
-        final CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
-        wc = new WaitCriterion() {
-          String excuse;
-
-          public boolean done() {
-            if (proxy._messageDispatcher == null) {
-              return false;
-            }
-            return proxy._messageDispatcher.isAlive();
-          }
-
-          public String description() {
-            return excuse;
-          }
-        };
-        Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-        // assertTrue("Dispatcher on primary should be alive", proxy._messageDispatcher.isAlive());
-      }
-
-    } catch (Exception ex) {
-      Assert.fail("while setting verifyDispatcherIsAlive  ", ex);
+    Iterator<CacheClientProxy> cacheClientProxyIterator = ccn.getClientProxies().iterator();
+    if (cacheClientProxyIterator.hasNext()) {
+      CacheClientProxy proxy = cacheClientProxyIterator.next();
+      assertThat(proxy._messageDispatcher.isAlive())
+          .describedAs("Dispatcher on secondary should not be alive").isFalse();
     }
   }
 
-  public static void verifyDispatcherIsNotAlive() {
-    try {
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
+  static void verifyRedundantServersContain(final String server) {
 
-        public boolean done() {
-          return cache.getCacheServers().size() == 1;
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
-
-      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-      assertNotNull(bs);
-      assertNotNull(bs.getAcceptor());
-      assertNotNull(bs.getAcceptor().getCacheClientNotifier());
-      final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-      wc = new WaitCriterion() {
-        String excuse;
-
-        public boolean done() {
-          return ccn.getClientProxies().size() > 0;
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
-
-      Iterator iter_prox = ccn.getClientProxies().iterator();
-      if (iter_prox.hasNext()) {
-        CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
-        assertFalse("Dispatcher on secondary should not be alive",
-            proxy._messageDispatcher.isAlive());
-      }
-
-    } catch (Exception ex) {
-      Assert.fail("while setting verifyDispatcherIsNotAlive  ", ex);
-    }
+    await()
+        .until(() -> pool.getRedundantNames().contains(server));
   }
 
-  public static void verifyRedundantServersContain(final String server) {
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return pool.getRedundantNames().contains(server);
-      }
-
-      public String description() {
-        return "Redundant servers (" + pool.getRedundantNames() + ") does not contain " + server;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 2000, true);
-  }
-
-  public static void verifyLiveAndRedundantServers(final int liveServers,
+  /**
+   * @param connectedServers is the expected number of connected servers (1 or more)
+   * @param redundantServers is the expected number of redundant servers (0 or more)
+   */
+  static void verifyConnectedAndRedundantServers(final int connectedServers,
       final int redundantServers) {
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return pool.getConnectedServerCount() == liveServers
-            && pool.getRedundantNames().size() == redundantServers;
-      }
-
-      public String description() {
-        return "Expected connected server count (" + pool.getConnectedServerCount() + ") to become "
-            + liveServers + "and redundant count (" + pool.getRedundantNames().size()
-            + ") to become " + redundantServers;
-      }
-    };
-    Wait.waitForCriterion(wc, 120 * 1000, 2 * 1000, true);
-  }
-
-  public static void verifyDeadServers(int deadServers) {
-    // this is now deadcode since it is always followed by verifyLiveAndRedundant
-    // long maxWaitTime = 180000;
-    // long start = System.currentTimeMillis();
-    // while (proxy.getDeadServers().size() != deadServers) { // wait until condition is
-    // // met
-    // assertTrue("Waited over " + maxWaitTime + "for dead servers to become "
-    // + deadServers, (System.currentTimeMillis() - start) < maxWaitTime);
-    // try {
-    // Thread.yield();
-    // synchronized(delayLock) {delayLock.wait(4000);}
-    // }
-    // catch (InterruptedException ie) {
-    // fail("Interrupted while waiting ", ie);
-    // }
-    // }
+    if (connectedServers < 1) {
+      throw new IllegalArgumentException("can't test for < 1 connected server via API");
+    }
+    if (redundantServers < 0) {
+      throw new IllegalArgumentException("can't test for < 0 redundant server via API");
+    }
+    await(
+        "Live server count didn't match expected and/or redundant server count didn't match expected in time")
+            .until(() -> {
+              try {
+                return pool.getConnectedServerCount() == connectedServers
+                    && pool.getRedundantNames().size() == redundantServers;
+              } catch (final NoSubscriptionServersAvailableException e) {
+                // when zero connected servers are actually available, we'll see this error
+              }
+              return false;
+            });
   }
 
   public static void createEntriesK1andK2() {
-    try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-      assertNotNull(r1);
-      if (!r1.containsKey(k1)) {
-        r1.create(k1, k1);
-      }
-      if (!r1.containsKey(k2)) {
-        r1.create(k2, k2);
-      }
-      assertEquals(r1.getEntry(k1).getValue(), k1);
-      assertEquals(r1.getEntry(k2).getValue(), k2);
-    } catch (Exception ex) {
-      Assert.fail("failed while createEntries()", ex);
+    Region<String, String> r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    assertThat(r1).isNotNull();
+    if (!r1.containsKey(k1)) {
+      r1.create(k1, k1);
     }
+    if (!r1.containsKey(k2)) {
+      r1.create(k2, k2);
+    }
+    assertThat(r1.getEntry(k1).getValue()).isEqualTo(k1);
+    assertThat(r1.getEntry(k2).getValue()).isEqualTo(k2);
   }
 
-  public static void registerK1AndK2() {
-    try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-      assertNotNull(r);
-      List list = new ArrayList();
-      list.add(k1);
-      list.add(k2);
-      r.registerInterest(list, InterestResultPolicy.KEYS_VALUES);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      Assert.fail("failed while region.registerK1AndK2()", ex);
-    }
+  static void registerK1AndK2() {
+    Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    assertThat(r).isNotNull();
+    List<String> list = new ArrayList<>();
+    list.add(k1);
+    list.add(k2);
+    r.registerInterest(list, InterestResultPolicy.KEYS_VALUES);
   }
 
   public static void unregisterInterest() {
-    try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-      r.unregisterInterest("k1");
-    } catch (Exception e) {
-      Assert.fail("test failed due to ", e);
-    }
+    Region<String, String> r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    r.unregisterInterest("k1");
   }
 
-  public static void verifyNoCCP() {
-    assertEquals("More than one BridgeServer", 1, cache.getCacheServers().size());
+  static void verifyNoCCP() {
+    assertThat(cache.getCacheServers().size()).describedAs("More than one BridgeServer")
+        .isEqualTo(1);
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-    assertNotNull(bs);
-    assertNotNull(bs.getAcceptor());
-    assertNotNull(bs.getAcceptor().getCacheClientNotifier());
+
+    assertThat(bs).isNotNull();
+    assertThat(bs.getAcceptor()).isNotNull();
+    assertThat(bs.getAcceptor().getCacheClientNotifier()).isNotNull();
+
     // no client is connected to this server
-    assertTrue(0 == bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
+    assertThat(bs.getAcceptor().getCacheClientNotifier().getClientProxies().size()).isEqualTo(0);
   }
 
-  public static void verifyCCP() {
-    try {
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
+  static void verifyCCP() {
+    await()
+        .until(() -> cache.getCacheServers().size(), equalTo(1));
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
 
-        public boolean done() {
-          return cache.getCacheServers().size() == 1;
-        }
+    assertThat(bs).isNotNull();
+    assertThat(bs.getAcceptor()).isNotNull();
+    assertThat(bs.getAcceptor().getCacheClientNotifier()).isNotNull();
 
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
-
-      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-
-      assertNotNull(bs);
-      assertNotNull(bs.getAcceptor());
-      assertNotNull(bs.getAcceptor().getCacheClientNotifier());
-      // one client is connected to this server
-      final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-      wc = new WaitCriterion() {
-        String excuse;
-
-        public boolean done() {
-          return ccn.getClientProxies().size() == 1;
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
-    } catch (Exception ex) {
-      Assert.fail("exception in verifyCCP()", ex);
-    }
+    // one client is connected to this server
+    final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
+    await().until(() -> ccn.getClientProxies().size(),
+        equalTo(1));
   }
 
-  public static void verifyInterestRegistration() {
-    try {
-      WaitCriterion wc = new WaitCriterion() {
-        public boolean done() {
-          return cache.getCacheServers().size() == 1;
-        }
+  static void verifyInterestRegistration() {
+    await("Number of cache servers (" + cache.getCacheServers().size() + ") never became 1")
+        .until(() -> cache.getCacheServers().size(), equalTo(1));
 
-        public String description() {
-          return "Number of bridge servers (" + cache.getCacheServers().size() + ") never became 1";
-        }
-      };
-      Wait.waitForCriterion(wc, 180 * 1000, 2000, true);
+    CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
+    assertThat(bs).isNotNull();
+    assertThat(bs.getAcceptor()).isNotNull();
+    assertThat(bs.getAcceptor().getCacheClientNotifier()).isNotNull();
 
-      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-      assertNotNull(bs);
-      assertNotNull(bs.getAcceptor());
-      assertNotNull(bs.getAcceptor().getCacheClientNotifier());
-      final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-      wc = new WaitCriterion() {
-        public boolean done() {
-          return ccn.getClientProxies().size() > 0;
-        }
+    final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
+    await("Notifier's proxies is empty")
+        .until(() -> ccn.getClientProxies().size(), greaterThan(0));
 
-        public String description() {
-          return "Notifier's proxies is empty";
-        }
-      };
-      Wait.waitForCriterion(wc, 180 * 1000, 2000, true);
+    Iterator<CacheClientProxy> cacheClientProxyIterator = ccn.getClientProxies().iterator();
 
-      Iterator iter_prox = ccn.getClientProxies().iterator();
+    assertThat(cacheClientProxyIterator.hasNext()).describedAs("A CCP was expected . Wasn't it?")
+        .isTrue();
+    final CacheClientProxy ccp = cacheClientProxyIterator.next();
 
-      if (iter_prox.hasNext()) {
-        final CacheClientProxy ccp = (CacheClientProxy) iter_prox.next();
-        wc = new WaitCriterion() {
-          String excuse;
-
-          public boolean done() {
-            Set keysMap = (Set) ccp.cils[RegisterInterestTracker.interestListIndex]
-                .getProfile(Region.SEPARATOR + REGION_NAME).getKeysOfInterestFor(ccp.getProxyID());
-            if (keysMap == null) {
-              excuse = "keys of interest is null";
-              return false;
-            }
-            if (keysMap.size() != 2) {
-              excuse = "keys of interest size (" + keysMap.size() + ") not 2";
-              return false;
-            }
-            return true;
-          }
-
-          public String description() {
-            return excuse;
-          }
-        };
-        Wait.waitForCriterion(wc, 180 * 1000, 2 * 1000, true);
-
-        Set keysMap = ccp.cils[RegisterInterestTracker.interestListIndex]
-            .getProfile(Region.SEPARATOR + REGION_NAME).getKeysOfInterestFor(ccp.getProxyID());
-        assertTrue(keysMap.contains(k1));
-        assertTrue(keysMap.contains(k2));
-
-      } else {
-        fail("A CCP was expected . Wasn't it?");
+    await().until(() -> {
+      Set keysMap = ccp.cils[RegisterInterestTracker.interestListIndex]
+          .getProfile(Region.SEPARATOR + REGION_NAME).getKeysOfInterestFor(ccp.getProxyID());
+      if (keysMap == null) {
+        return false;
       }
-    } catch (Exception ex) {
-      fail("while setting verifyInterestRegistration", ex);
-    }
+      if (keysMap.size() != 2) {
+        return false;
+      }
+      return true;
+    });
+
+    Set keysMap = ccp.cils[RegisterInterestTracker.interestListIndex]
+        .getProfile(Region.SEPARATOR + REGION_NAME).getKeysOfInterestFor(ccp.getProxyID());
+    assertThat(keysMap.contains(k1)).isTrue();
+    assertThat(keysMap.contains(k2)).isTrue();
   }
 
   public static void stopServer() {
-    try {
-      Iterator iter = cache.getCacheServers().iterator();
-      if (iter.hasNext()) {
-        CacheServer server = (CacheServer) iter.next();
-        server.stop();
-      }
-    } catch (Exception e) {
-      Assert.fail("failed while stopServer()", e);
+    Iterator<CacheServer> iterator = cache.getCacheServers().iterator();
+    if (iterator.hasNext()) {
+      CacheServer server = iterator.next();
+      server.stop();
     }
   }
 
-  public static void startServer() {
-    try {
-      Cache c = CacheFactory.getAnyInstance();
-      CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
-      assertNotNull(bs);
-      bs.start();
-    } catch (Exception ex) {
-      Assert.fail("while startServer()", ex);
-    }
+  public static void startServer() throws IOException {
+    Cache c = CacheFactory.getAnyInstance();
+    CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
+    assertThat(bs).isNotNull();
+    bs.start();
   }
 
-  private void createCache(Properties props) throws Exception {
+  private void createCache(Properties props) {
     DistributedSystem ds = getSystem(props);
-    assertNotNull(ds);
+    assertThat(ds).isNotNull();
     ds.disconnect();
     ds = getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
   }
 
 
   public static void createClientCache(String host, int port1, int port2, int port3, int port4,
       int redundancy) throws Exception {
     createClientCache(host, port1, port2, port3, port4, redundancy,
-        3000, /* defaul socket timeout of 250 millisec */
+        3000, /* default socket timeout of 250 milliseconds */
         10 /* default retry interval */);
   }
 
   public static void createClientCache(String host, int port1, int port2, int port3, int port4,
-      int redundancy, int socketReadTimeout, int retryInterval) throws Exception {
+      int redundancy, int socketReadTimeout, int retryInterval)
+      throws Exception {
     if (!FailOverDetectionByCCU) {
       oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
         public void beforeFailoverByCacheClientUpdater(ServerLocation epFailed) {
@@ -531,23 +370,23 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
         .setMinConnections(8).setSubscriptionRedundancy(redundancy).setRetryAttempts(5)
         .setPingInterval(retryInterval).create("DurableClientReconnectDUnitTestPool");
 
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.createRegionAttributes();
+    RegionAttributes<String, String> attrs = factory.createRegionAttributes();
     cache.createRegion(REGION_NAME, attrs);
     pool = p;
     createEntriesK1andK2();
     registerK1AndK2();
   }
 
-  public static Integer createServerCache() throws Exception {
+  private static Integer createServerCache() throws Exception {
     new RedundancyLevelTestBase().createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEnableConflation(true);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
-    RegionAttributes attrs = factory.createRegionAttributes();
+    factory.setEnableSubscriptionConflation(true);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
+    RegionAttributes<String, String> attrs = factory.createRegionAttributes();
     cache.createVMRegion(REGION_NAME, attrs);
 
     CacheServer server1 = cache.addCacheServer();
@@ -555,37 +394,18 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setMaximumTimeBetweenPings(180000);
     server1.setPort(port);
-    // ensures updates to be sent instead of invalidations
-    server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
-  public static void verifyOrderOfEndpoints() {
-    // I'm not sure this validation is needed anymore
-    // Endpoint[] eplist = proxy.getEndpoints();
-    // int len = eplist.length;
-    // int redundancyLevel = proxy.getRedundancyLevel();
-
-    // if (len > 0) {
-    // assertTrue(((EndpointImpl)eplist[0]).isPrimary());
-    // if (redundancyLevel == -1)
-    // redundancyLevel = len - 1;
-
-    // for (int i = len - 1, cnt = 0; i >= 1; i--, cnt++) {
-    // if (cnt < redundancyLevel)
-    // assertTrue(((EndpointImpl)eplist[i]).isRedundant());
-    // else
-    // assertFalse(((EndpointImpl)eplist[i]).isRedundant());
-    // }
-    // }
-  }
+  static void verifyOrderOfEndpoints() {}
 
   @Override
-  public final void preTearDown() throws Exception {
+  public final void preTearDown() {
     try {
-      if (!FailOverDetectionByCCU)
+      if (!FailOverDetectionByCCU) {
         ClientServerObserverHolder.setInstance(oldBo);
+      }
 
       FailOverDetectionByCCU = false;
 
@@ -593,10 +413,10 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
       closeCache();
 
       // then close the servers
-      server0.invoke(() -> RedundancyLevelTestBase.closeCache());
-      server1.invoke(() -> RedundancyLevelTestBase.closeCache());
-      server2.invoke(() -> RedundancyLevelTestBase.closeCache());
-      server3.invoke(() -> RedundancyLevelTestBase.closeCache());
+      server0.invoke(RedundancyLevelTestBase::closeCache);
+      server1.invoke(RedundancyLevelTestBase::closeCache);
+      server2.invoke(RedundancyLevelTestBase::closeCache);
+      server3.invoke(RedundancyLevelTestBase::closeCache);
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
@@ -604,7 +424,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 
-  public static void closeCache() {
+  private static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();

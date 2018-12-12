@@ -29,7 +29,6 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Configuration attributes for defining reliability requirements and behavior for a
@@ -114,8 +113,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     this.requiredRoles = toRoleSet(requiredRoles);
     if (this.requiredRoles.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MembershipAttributes_ONE_OR_MORE_REQUIRED_ROLES_MUST_BE_SPECIFIED
-              .toLocalizedString());
+          "One or more required roles must be specified.");
     }
     this.lossAction = lossAction;
     this.resumptionAction = resumptionAction;

@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.net;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import java.net.BindException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 import org.junit.Test;
@@ -53,16 +53,9 @@ public class SocketCreatorJUnitTest {
   public void testConfigureServerSSLSocketSetsSoTimeout() throws Exception {
     final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
     final SSLSocket socket = mock(SSLSocket.class);
-    Certificate[] certs = new Certificate[] {mock(X509Certificate.class)};
-    SSLSession session = mock(SSLSession.class);
-    when(session.getPeerCertificates()).thenReturn(certs);
-    when(socket.getSession()).thenReturn(session);
 
     final int timeout = 1938236;
     socketCreator.handshakeIfSocketIsSSL(socket, timeout);
-
-    verify(socket).getSession();
-    verify(session).getPeerCertificates();
     verify(socket).setSoTimeout(timeout);
   }
 
@@ -76,10 +69,36 @@ public class SocketCreatorJUnitTest {
     verify(socket, never()).setSoTimeout(timeout);
   }
 
+  @Test
+  public void testBindExceptionMessageFormattingWithBindAddr() throws Exception {
+    testBindExceptionMessageFormatting(InetAddress.getLocalHost());
+  }
+
+  @Test
+  public void testBindExceptionMessageFormattingNullBindAddr() throws Exception {
+    testBindExceptionMessageFormatting(null);
+  }
+
+  private void testBindExceptionMessageFormatting(InetAddress inetAddress) throws Exception {
+    final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
+    final Socket socket = mock(Socket.class);
+
+    ServerSocket serverSocket = null;
+    try {
+      serverSocket = socketCreator.createServerSocket(11234, 10, inetAddress);
+      assertThatExceptionOfType(BindException.class).isThrownBy(() -> {
+        // call twice on the same port to trigger exception
+        socketCreator.createServerSocket(11234, 10, inetAddress);
+      }).withMessageContaining("11234")
+          .withMessageContaining(InetAddress.getLocalHost().getHostAddress());
+    } finally {
+      if (serverSocket != null) {
+        serverSocket.close();
+      }
+    }
+  }
+
   private String getSingleKeyKeystore() {
     return TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore");
   }
-
-
-
 }

@@ -22,14 +22,14 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
-
-import org.apache.geode.internal.process.io.IntegerFileWriter;
 
 /**
  * Functional integration tests for {@link ProcessControllerFactory}.
@@ -73,7 +73,7 @@ public class ProcessControllerFactoryIntegrationTest {
   @Test
   public void createProcessController_returnsMBeanProcessController() throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile(pid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
 
     // act
     ProcessController controller =
@@ -87,7 +87,7 @@ public class ProcessControllerFactoryIntegrationTest {
   public void createProcessController_withoutAttachAPI_returnsFileProcessController()
       throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile(pid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
     factory = new ProcessControllerFactory();
 

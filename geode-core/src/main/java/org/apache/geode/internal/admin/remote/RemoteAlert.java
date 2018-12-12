@@ -24,7 +24,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
@@ -136,7 +135,7 @@ public class RemoteAlert implements Alert {
 
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
-          LocalizedStrings.RemoteAlert_INVALIDATE_TIMESTAMP_0.toLocalizedString(sb.toString()));
+          String.format("Invalidate timestamp: %s", sb.toString()));
     }
 
     // Assume that the connection name is only one token...

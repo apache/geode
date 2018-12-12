@@ -26,23 +26,22 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusGatewayReceiverCommand extends InternalGfshCommand {
+public class StatusGatewayReceiverCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER,
       help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result statusGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+  public ResultModel statusGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP) String[] onGroup,
 
@@ -50,24 +49,19 @@ public class StatusGatewayReceiverCommand extends InternalGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember) {
 
-    Result result;
-
-    SystemManagementService service = (SystemManagementService) getManagementService();
-
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    TabularResultData availableReceiverData =
-        crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-            .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-
-    TabularResultData notAvailableReceiverData =
-        crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
-            .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+    SystemManagementService service = getManagementService();
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
-
     if (dsMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    ResultModel crd = new ResultModel();
+    TabularResultModel availableReceiverData =
+        crd.addTable(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
+
+    TabularResultModel notAvailableReceiverData =
+        crd.addTable(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE);
 
     for (DistributedMember member : dsMembers) {
       ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -81,16 +75,15 @@ public class StatusGatewayReceiverCommand extends InternalGfshCommand {
       }
       buildReceiverStatus(member.getId(), null, notAvailableReceiverData);
     }
-    result = ResultBuilder.buildResult(crd);
 
-    return result;
+    return crd;
   }
 
-  private TabularResultData buildReceiverStatus(String memberId, GatewayReceiverMXBean bean,
-      TabularResultData resultData) {
+  private TabularResultModel buildReceiverStatus(String memberId, GatewayReceiverMXBean bean,
+      TabularResultModel resultData) {
     resultData.accumulate(CliStrings.RESULT_HOST_MEMBER, memberId);
     if (bean != null) {
-      resultData.accumulate(CliStrings.RESULT_PORT, bean.getPort());
+      resultData.accumulate(CliStrings.RESULT_PORT, Integer.toString(bean.getPort()));
       resultData.accumulate(CliStrings.RESULT_STATUS,
           bean.isRunning() ? CliStrings.GATEWAY_RUNNING : CliStrings.GATEWAY_NOT_RUNNING);
     } else {

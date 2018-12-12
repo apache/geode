@@ -128,7 +128,7 @@ public class UpdateAttributesProcessor {
     if (!exchangeProfiles) {
       if (this.removeProfile) {
         if (!advisor.isInitialized()) {
-          // no need to tell the other guy we are going away since
+          // no need to tell the other advisor we are going away since
           // never got initialized.
           return;
         }

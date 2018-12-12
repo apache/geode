@@ -46,7 +46,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -901,8 +900,8 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
     private AtomicInteger invocations = new AtomicInteger();
 
     public int sizeof(Object o) {
-      if (InternalDistributedSystem.getLoggerI18n().fineEnabled()) {
-        InternalDistributedSystem.getLoggerI18n()
+      if (InternalDistributedSystem.getLogger().fineEnabled()) {
+        InternalDistributedSystem.getLogger()
             .fine("TestObjectSizer invoked"/* , new Exception("stack trace") */);
       }
       if (o instanceof TestObject) {
@@ -1043,17 +1042,17 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void afterCreate(EntryEvent event) {
       // Make sure we deserialize the new value
-      event.getRegion().getCache().getLoggerI18n().fine("invoked afterCreate with " + event);
-      event.getRegion().getCache().getLoggerI18n().info(LocalizedStrings.DEBUG,
-          "value is " + event.getNewValue());
+      event.getRegion().getCache().getLogger().fine("invoked afterCreate with " + event);
+      event.getRegion().getCache().getLogger().info(String.format("%s",
+          "value is " + event.getNewValue()));
     }
 
     @Override
     public void afterUpdate(EntryEvent event) {
       // Make sure we deserialize the new value
-      event.getRegion().getCache().getLoggerI18n().fine("invoked afterUpdate with ");
-      event.getRegion().getCache().getLoggerI18n().info(LocalizedStrings.DEBUG,
-          "value is " + event.getNewValue());
+      event.getRegion().getCache().getLogger().fine("invoked afterUpdate with ");
+      event.getRegion().getCache().getLogger().info(String.format("%s",
+          "value is " + event.getNewValue()));
     }
 
   }

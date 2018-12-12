@@ -15,11 +15,9 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
@@ -77,7 +75,7 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
       event.setEventId(eventID);
       localRegion.getRegionMap().invalidate(event, false, false, false);
     });
-    Awaitility.await().atMost(5, TimeUnit.MINUTES)
+    await()
         .until(() -> entry.getVersionStamp().getEntryVersion() > entryVersion);
 
     System.out.println("do it again with a forceEntry==true code path");
@@ -100,7 +98,7 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
       event.setEventId(eventID);
       localRegion.getRegionMap().invalidate(event, false, true, false);
     });
-    Awaitility.await().atMost(5, TimeUnit.MINUTES)
+    await()
         .until(() -> entry2.getVersionStamp().getEntryVersion() > entryVersion2);
   }
 }

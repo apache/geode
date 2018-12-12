@@ -41,6 +41,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
 /**
@@ -151,17 +152,14 @@ public class ShutdownAllRequest extends AdminRequest {
       // and causes a 20 second delay.
       final InternalDistributedSystem ids = dm.getSystem();
       if (ids.isConnected()) {
-        Thread t = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              Thread.sleep(SLEEP_TIME_BEFORE_DISCONNECT_DS);
-            } catch (InterruptedException ignore) {
-            }
-            ConnectionTable.threadWantsSharedResources();
-            if (ids.isConnected()) {
-              ids.disconnect();
-            }
+        Thread t = new LoggingThread("ShutdownAllRequestDisconnectThread", false, () -> {
+          try {
+            Thread.sleep(SLEEP_TIME_BEFORE_DISCONNECT_DS);
+          } catch (InterruptedException ignore) {
+          }
+          ConnectionTable.threadWantsSharedResources();
+          if (ids.isConnected()) {
+            ids.disconnect();
           }
         });
         t.start();

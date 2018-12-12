@@ -418,8 +418,8 @@ public class CompiledLike extends CompiledComparison {
     if (!((value instanceof String) || (value instanceof PdxString)
         || (value == QueryService.UNDEFINED))) {
       // throw new TypeMismatchException(
-      // LocalizedStrings.TypeUtils_UNABLE_TO_COMPARE_OBJECT_OF_TYPE_0_WITH_OBJECT_OF_TYPE_1
-      // .toLocalizedString("java.lang.String", value.getClass().getName()));
+      // String.format("Unable to compare object of type ' %s ' with object of type ' %s '",
+      // "java.lang.String", value.getClass().getName()));
       if (getOperator() == TOK_NE) {
         return true;
       }

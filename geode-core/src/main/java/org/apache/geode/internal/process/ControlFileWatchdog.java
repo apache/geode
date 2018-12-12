@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Invokes a ControlRequestHandler when a control file has been created.
@@ -106,8 +107,7 @@ class ControlFileWatchdog implements Runnable {
   void start() {
     synchronized (this) {
       if (thread == null) {
-        thread = new Thread(this, createThreadName());
-        thread.setDaemon(true);
+        thread = new LoggingThread(createThreadName(), this);
         alive = true;
         thread.start();
       }

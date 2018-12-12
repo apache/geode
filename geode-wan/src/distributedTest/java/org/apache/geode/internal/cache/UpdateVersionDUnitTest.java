@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -35,9 +36,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -342,9 +341,9 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
   private VersionTag getReplicatedRegionVersionTag(final String key, final VersionTag localTag) {
     final Region region = cache.getRegion(regionName);
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> region.getEntry(key) != null);
+    await().until(() -> region.getEntry(key) != null);
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Entry entry = region.getEntry(key);
       assertTrue(entry instanceof NonTXEntry);
       RegionEntry regionEntry = ((NonTXEntry) entry).getRegionEntry();
@@ -363,7 +362,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
   private VersionTag getPartitionedRegionVersionTag(final String key, final VersionTag localTag) {
     final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Entry<?, ?> entry = null;
       try {
         entry = region.getDataStore().getEntryLocally(0, key, false, false);
@@ -378,7 +377,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
       return (entry != null);
     });
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Entry entry = region.getEntry(key);
       assertTrue(entry instanceof EntrySnapshot);
       RegionEntry regionEntry = ((EntrySnapshot) entry).getRegionEntry();
@@ -531,7 +530,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   private void waitForSenderRunningState(String senderId) {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .until(() -> sender != null && sender.isRunning());
   }
 

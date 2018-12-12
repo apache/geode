@@ -48,9 +48,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 public class IndexCreationMsg extends PartitionMessage {
@@ -125,7 +123,7 @@ public class IndexCreationMsg extends PartitionMessage {
       indexes = pr.createIndexes(true, indexDefinitions);
     } catch (IndexCreationException e1) {
       replyEx = new ReplyException(
-          LocalizedStrings.IndexCreationMsg_REMOTE_INDEX_CREAION_FAILED.toLocalizedString(), e1);
+          "Remote Index Creation Failed", e1);
     } catch (MultiIndexCreationException exx) {
       failedIndexNames.addAll(exx.getExceptionsMap().keySet());
 
@@ -138,7 +136,7 @@ public class IndexCreationMsg extends PartitionMessage {
         logger.debug("{} indexes were created succesfully", failedIndexNames.size());
       }
       replyEx = new ReplyException(
-          LocalizedStrings.IndexCreationMsg_REMOTE_INDEX_CREAION_FAILED.toLocalizedString(), exx);
+          "Remote Index Creation Failed", exx);
     }
 
     if (null == replyEx) {
@@ -277,8 +275,9 @@ public class IndexCreationMsg extends PartitionMessage {
 
       if (pr == null /* && failIfRegionMissing() */) {
         String msg =
-            LocalizedStrings.IndexCreationMsg_COULD_NOT_GET_PARTITIONED_REGION_FROM_ID_0_FOR_MESSAGE_1_RECEIVED_ON_MEMBER_2_MAP_3
-                .toLocalizedString(new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
+            String.format(
+                "Could not get Partitioned Region from Id %s for message %s received on member= %s map= %s",
+                new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
                     PartitionedRegion.dumpPRId()});
         throw new PartitionedRegionException(msg, new RegionNotFoundException(msg));
       }
@@ -310,12 +309,11 @@ public class IndexCreationMsg extends PartitionMessage {
       }
       if (t instanceof RegionDestroyedException && pr != null) {
         if (pr.isClosed) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.IndexCreationMsg_REGION_IS_LOCALLY_DESTROYED_THROWING_REGIONDESTROYEDEXCEPTION_FOR__0,
-              pr));
+          logger.info("Region is locally destroyed, throwing RegionDestroyedException for {}",
+              pr);
           thr = new RegionDestroyedException(
-              LocalizedStrings.IndexCreationMsg_REGION_IS_LOCALLY_DESTROYED_ON_0
-                  .toLocalizedString(dm.getId()),
+              String.format("Region is locally destroyed on %s",
+                  dm.getId()),
               pr.getFullPath());
         }
       } else {

@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -52,8 +53,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -151,16 +150,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
       public void run() throws Exception {
         final Region region = cache.getRegion(getTestMethodName() + "_PR");
 
-        Wait.waitForCriterion(new WaitCriterion() {
-          public boolean done() {
-            return region.size() == expect;
-          }
-
-          public String description() {
-            return null;
-          }
-        }, 60000, 100, false);
-        assertEquals(expect, region.size());
+        await().untilAsserted(() -> assertEquals(expect, region.size()));
       }
     };
     vm.invoke(verifyRegionSize);

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
@@ -20,10 +19,11 @@ import java.io.File;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({GfshTest.class})
-public class ExportLogsOverHttpDistributedTest extends ExportLogsDUnitTestBase {
+@Category({GfshTest.class, LoggingTest.class})
+public class ExportLogsOverHttpDistributedTest extends ExportLogsDistributedTestBase {
 
   @Override
   public void connect() throws Exception {
@@ -32,8 +32,8 @@ public class ExportLogsOverHttpDistributedTest extends ExportLogsDUnitTestBase {
     }
   }
 
-  public File getWorkingDirectory() throws Exception {
+  @Override
+  public File getWorkingDirectory() {
     return new File(System.getProperty("user.dir"));
   }
-
 }

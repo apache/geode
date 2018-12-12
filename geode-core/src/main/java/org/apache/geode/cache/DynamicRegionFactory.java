@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEventImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -294,29 +293,29 @@ public abstract class DynamicRegionFactory {
         } catch (IOException e) {
           // only if loading snapshot, not here
           throw new InternalGemFireError(
-              LocalizedStrings.DynamicRegionFactory_UNEXPECTED_EXCEPTION.toLocalizedString(), e);
+              "unexpected exception", e);
         } catch (ClassNotFoundException e) {
           // only if loading snapshot, not here
           throw new InternalGemFireError(
-              LocalizedStrings.DynamicRegionFactory_UNEXPECTED_EXCEPTION.toLocalizedString(), e);
+              "unexpected exception", e);
         }
         if (isClient) {
           this.dynamicRegionList.registerInterest("ALL_KEYS");
         }
-        if (theCache.getLoggerI18n().fineEnabled()) {
-          theCache.getLoggerI18n().fine("Created dynamic region: " + this.dynamicRegionList);
+        if (theCache.getLogger().fineEnabled()) {
+          theCache.getLogger().fine("Created dynamic region: " + this.dynamicRegionList);
         }
       } else {
-        if (theCache.getLoggerI18n().fineEnabled()) {
-          theCache.getLoggerI18n().fine("Retrieved dynamic region: " + this.dynamicRegionList);
+        if (theCache.getLogger().fineEnabled()) {
+          theCache.getLogger().fine("Retrieved dynamic region: " + this.dynamicRegionList);
         }
       }
 
       createDefinedDynamicRegions();
 
     } catch (CacheException e) {
-      theCache.getLoggerI18n().warning(
-          LocalizedStrings.DynamicRegionFactory_ERROR_INITIALIZING_DYNAMICREGIONFACTORY, e);
+      theCache.getLogger().warning(
+          "Error initializing DynamicRegionFactory", e);
       throw e;
     }
   }
@@ -407,9 +406,10 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.cache.getLoggerI18n().warning(
-            LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_BEFOREREGIONCREATED,
-            listener, t);
+        this.cache.getLogger().warning(
+            String.format("DynamicRegionListener %s threw exception on beforeRegionCreated",
+                listener),
+            t);
       }
     }
   }
@@ -434,9 +434,10 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.cache.getLoggerI18n().warning(
-            LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_AFTERREGIONCREATED,
-            listener, t);
+        this.cache.getLogger().warning(
+            String.format("DynamicRegionListener %s threw exception on afterRegionCreated",
+                listener),
+            t);
       }
     }
   }
@@ -466,9 +467,10 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.cache.getLoggerI18n().warning(
-            LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_BEFOREREGIONDESTROYED,
-            listener, t);
+        this.cache.getLogger().warning(
+            String.format("DynamicRegionListener %s threw exception on beforeRegionDestroyed",
+                listener),
+            t);
       }
     }
   }
@@ -498,9 +500,10 @@ public abstract class DynamicRegionFactory {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.cache.getLoggerI18n().warning(
-            LocalizedStrings.DynamicRegionFactory_DYNAMICREGIONLISTENER__0__THREW_EXCEPTION_ON_AFTERREGIONDESTROYED,
-            listener, t);
+        this.cache.getLogger().warning(
+            String.format("DynamicRegionListener %s threw exception on afterRegionDestroyed",
+                listener),
+            t);
       }
     }
   }
@@ -542,8 +545,8 @@ public abstract class DynamicRegionFactory {
   public void destroyDynamicRegion(String fullRegionName) throws CacheException {
     if (!this.dynamicRegionList.containsKey(fullRegionName)) {
       throw new RegionDestroyedException(
-          LocalizedStrings.DynamicRegionFactory_DYNAMIC_REGION_0_HAS_NOT_BEEN_CREATED
-              .toLocalizedString(fullRegionName),
+          String.format("Dynamic region %s has not been created.",
+              fullRegionName),
           fullRegionName);
     }
     if (isClosed()) {
@@ -573,12 +576,13 @@ public abstract class DynamicRegionFactory {
 
     if (parentRegion == null) {
       String errMsg =
-          LocalizedStrings.DynamicRegionFactory_ERROR__COULD_NOT_FIND_A_REGION_NAMED___0_
-              .toLocalizedString(parentRegionName);
+          String.format("Error -- Could not find a region named: '%s'",
+              parentRegionName);
       RegionDestroyedException e = new RegionDestroyedException(errMsg, parentRegionName);
-      this.cache.getLoggerI18n().warning(
-          LocalizedStrings.DynamicRegionFactory_ERROR__COULD_NOT_FIND_A_REGION_NAMED___0_,
-          parentRegionName, e);
+      this.cache.getLogger().warning(
+          String.format("Error -- Could not find a region named: '%s'",
+              parentRegionName),
+          e);
       throw e;
     }
 
@@ -604,10 +608,10 @@ public abstract class DynamicRegionFactory {
     Region newRegion;
     try {
       newRegion = parentRegion.createSubregion(newRegionName, newRegionAttributes);
-      this.cache.getLoggerI18n().fine("Created dynamic region " + newRegion);
+      this.cache.getLogger().fine("Created dynamic region " + newRegion);
     } catch (RegionExistsException ex) {
       // a race condition exists that can cause this so just fine log it
-      this.cache.getLoggerI18n().fine(
+      this.cache.getLogger().fine(
           "DynamicRegion " + newRegionName + " in parent " + parentRegionName + " already existed");
       newRegion = ex.getRegion();
     }
@@ -616,8 +620,8 @@ public abstract class DynamicRegionFactory {
       DynamicRegionAttributes dra = new DynamicRegionAttributes();
       dra.name = newRegionName;
       dra.rootRegionName = parentRegion.getFullPath();
-      if (this.cache.getLoggerI18n().fineEnabled()) {
-        this.cache.getLoggerI18n()
+      if (this.cache.getLogger().fineEnabled()) {
+        this.cache.getLogger()
             .fine("Putting entry into dynamic region list at key: " + newRegion.getFullPath());
       }
       this.dynamicRegionList.put(newRegion.getFullPath(), dra);
@@ -631,9 +635,10 @@ public abstract class DynamicRegionFactory {
             newRegion.registerInterest("ALL_KEYS");
           } catch (GemFireSecurityException ex) {
             // Ignore security exceptions here
-            this.cache.getSecurityLoggerI18n().warning(
-                LocalizedStrings.DynamicRegionFactory_EXCEPTION_WHEN_REGISTERING_INTEREST_FOR_ALL_KEYS_IN_DYNAMIC_REGION_0_1,
-                new Object[] {newRegion.getFullPath(), ex});
+            this.cache.getSecurityLogger().warning(
+                String.format(
+                    "Exception when registering interest for all keys in dynamic region [%s]. %s",
+                    new Object[] {newRegion.getFullPath(), ex}));
           }
         }
       }
@@ -647,8 +652,8 @@ public abstract class DynamicRegionFactory {
       }
     }
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine("Created Dynamic Region " + newRegion.getFullPath());
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger().fine("Created Dynamic Region " + newRegion.getFullPath());
     }
     return newRegion;
   }
@@ -656,20 +661,20 @@ public abstract class DynamicRegionFactory {
   private void destroyDynamicRegionImpl(String fullRegionName) throws CacheException {
     // Destroy the entry in the dynamicRegionList
     try {
-      if (this.cache.getLoggerI18n().fineEnabled()) {
-        this.cache.getLoggerI18n()
+      if (this.cache.getLogger().fineEnabled()) {
+        this.cache.getLogger()
             .fine("Destroying entry from dynamic region list at key: " + fullRegionName);
       }
       this.dynamicRegionList.destroy(fullRegionName);
     } catch (CacheException e) {
-      this.cache.getLoggerI18n().warning(
-          LocalizedStrings.DynamicRegionFactory_ERROR_DESTROYING_DYNAMIC_REGION__0, fullRegionName,
+      this.cache.getLogger().warning(
+          String.format("Error destroying Dynamic Region '%s'", fullRegionName),
           e);
       throw e;
     }
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine("Destroyed Dynamic Region " + fullRegionName);
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger().fine("Destroyed Dynamic Region " + fullRegionName);
     }
   }
 
@@ -826,9 +831,10 @@ public abstract class DynamicRegionFactory {
       Region region = createDynamicRegionImpl(parentRegionName, newRegionName, false);
       doAfterRegionCreated(region, true, true, event.getDistributedMember());
     } catch (Exception e) {
-      cache.getLoggerI18n().warning(
-          LocalizedStrings.DynamicRegionFactory_ERROR_ATTEMPTING_TO_LOCALLY_CREATE_DYNAMIC_REGION__0,
-          newRegionName, e);
+      cache.getLogger().warning(
+          String.format("Error attempting to locally create Dynamic Region: %s",
+              newRegionName),
+          e);
     }
   }
 
@@ -854,9 +860,10 @@ public abstract class DynamicRegionFactory {
         doAfterRegionDestroyed(drRegion, true, event.getOperation().isDistributed(),
             event.getOperation().isExpiration(), event.getDistributedMember());
       } catch (Exception e) {
-        cache.getLoggerI18n().warning(
-            LocalizedStrings.DynamicRegionFactory_ERROR_ATTEMPTING_TO_LOCALLY_DESTROY_DYNAMIC_REGION__0,
-            fullRegionName, e);
+        cache.getLogger().warning(
+            String.format("Error attempting to locally destroy Dynamic Region: %s",
+                fullRegionName),
+            e);
       }
     }
   }

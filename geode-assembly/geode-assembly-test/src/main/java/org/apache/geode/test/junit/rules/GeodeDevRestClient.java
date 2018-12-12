@@ -105,6 +105,11 @@ public class GeodeDevRestClient {
     return new HttpResponseAssert("Get " + uri, doGet(uri, null, null));
   }
 
+  public HttpResponseAssert doGetAndAssert(String uri, String username, String password) {
+    return new HttpResponseAssert("Get " + uri, doGet(uri, username, password));
+  }
+
+
   public HttpResponseAssert doPutAndAssert(String uri, String body) {
     return new HttpResponseAssert("Put " + uri, doPut(uri, null, null, body));
   }

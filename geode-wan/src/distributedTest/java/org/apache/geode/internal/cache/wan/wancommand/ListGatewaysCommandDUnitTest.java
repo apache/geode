@@ -23,7 +23,6 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.get
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewayReceiverMXBeanProxy;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewaySenderMXBeanProxy;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateMemberMXBeanProxy;
-import static org.apache.geode.management.MXBeanAwaitility.await;
 import static org.apache.geode.management.MXBeanAwaitility.awaitGatewayReceiverMXBeanProxy;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,6 +41,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -437,9 +437,9 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
       GatewayReceiverMXBean gatewayReceiverMXBean =
           awaitGatewayReceiverMXBeanProxy(getMember(server1.getVM()));
       assertThat(gatewayReceiverMXBean).isNotNull();
-      await("Awaiting GatewayReceiverMXBean.isRunning(true)")
+      GeodeAwaitility.await("Awaiting GatewayReceiverMXBean.isRunning(true)")
           .untilAsserted(() -> assertThat(gatewayReceiverMXBean.isRunning()).isTrue());
-      await("Awaiting GatewayReceiverMXBean.getClientConnectionCount() > 0")
+      GeodeAwaitility.await("Awaiting GatewayReceiverMXBean.getClientConnectionCount() > 0")
           .untilAsserted(
               () -> assertThat(gatewayReceiverMXBean.getClientConnectionCount()).isPositive());
     });

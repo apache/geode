@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.CacheInfo;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to get information on its current
@@ -47,8 +46,7 @@ public class CacheConfigRequest extends AdminRequest {
   }
 
   public CacheConfigRequest() {
-    friendlyName = LocalizedStrings.CacheConfigRequest_SET_A_SINGLE_CACHE_CONFIGURATION_ATTRIBUTE
-        .toLocalizedString();
+    friendlyName = "Set a single cache configuration attribute";
   }
 
   /**

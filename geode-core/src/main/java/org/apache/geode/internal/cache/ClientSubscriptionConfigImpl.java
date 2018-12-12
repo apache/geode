@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  *
@@ -104,8 +103,8 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   public void setOverflowDirectory(String overflowDirectory) {
     if (this.getDiskStoreName() != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"setOverflowDirectory", this.getDiskStoreName()}));
+          String.format("Deprecated API %s cannot be used with DiskStore %s",
+              new Object[] {"setOverflowDirectory", this.getDiskStoreName()}));
     }
     this.overflowDirectory = overflowDirectory;
     setHasOverflowDirectory(true);
@@ -122,8 +121,8 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   public String getOverflowDirectory() {
     if (this.getDiskStoreName() != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"getOverflowDirectory", this.getDiskStoreName()}));
+          String.format("Deprecated API %s cannot be used with DiskStore %s",
+              new Object[] {"getOverflowDirectory", this.getDiskStoreName()}));
     }
     return this.overflowDirectory;
   }
@@ -156,8 +155,8 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   public void setDiskStoreName(String diskStoreName) {
     if (hasOverflowDirectory()) {
       throw new IllegalStateException(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"setDiskStoreName", this.getDiskStoreName()}));
+          String.format("Deprecated API %s cannot be used with DiskStore %s",
+              new Object[] {"setDiskStoreName", this.getDiskStoreName()}));
     }
     this.diskStoreName = diskStoreName;
   }

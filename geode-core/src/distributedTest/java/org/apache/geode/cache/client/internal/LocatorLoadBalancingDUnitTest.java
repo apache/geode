@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -24,7 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -61,7 +62,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
   /**
    * The number of connections that we can be off by in the balancing tests We need this little
-   * fudge factor, because the locator can receive an update from the bridge server after it has
+   * fudge factor, because the locator can receive an update from the cache server after it has
    * made incremented its counter for a client connection, but the client hasn't connected yet. This
    * wipes out the estimation on the locator. This means that we may be slighly off in our balance.
    * <p>
@@ -75,8 +76,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   }
 
   /**
-   * Test the locator discovers a bridge server and is initialized with the correct load for that
-   * bridge server.
+   * Test the locator discovers a cache server and is initialized with the correct load for that
+   * cache server.
    */
   @Test
   public void testDiscovery() {
@@ -166,8 +167,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   }
 
   /**
-   * Test to make sure the bridge servers communicate their updated load to the controller when the
-   * load on the bridge server changes.
+   * Test to make sure the cache servers communicate their updated load to the controller when the
+   * load on the cache server changes.
    *
    */
   @Test
@@ -254,15 +255,14 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   private void checkConnectionCount(final int count) {
     Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
     final CacheServerImpl server = (CacheServerImpl) cache.getCacheServers().get(0);
-    Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
-        .pollInterval(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
-          int sz = server.getAcceptor().getStats().getCurrentClientConnections();
-          if (Math.abs(sz - count) <= ALLOWABLE_ERROR_IN_COUNT) {
-            return true;
-          }
-          System.out.println("Found " + sz + " connections, expected " + count);
-          return false;
-        });
+    await().timeout(300, TimeUnit.SECONDS).until(() -> {
+      int sz = server.getAcceptor().getStats().getCurrentClientConnections();
+      if (Math.abs(sz - count) <= ALLOWABLE_ERROR_IN_COUNT) {
+        return true;
+      }
+      System.out.println("Found " + sz + " connections, expected " + count);
+      return false;
+    });
   }
 
   private void waitForPrefilledConnections(final int count) throws Exception {
@@ -272,8 +272,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   private void waitForPrefilledConnections(final int count, final String poolName)
       throws Exception {
     final PoolImpl pool = (PoolImpl) PoolManager.getAll().get(poolName);
-    Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
-        .pollInterval(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
+    await().timeout(300, TimeUnit.SECONDS)
         .until(() -> pool.getConnectionCount() >= count);
   }
 
@@ -429,8 +428,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     final ServerLocator sl = locator.getServerLocatorAdvisee();
     InternalLogWriter log = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
     sl.getDistributionAdvisor().dumpProfiles("PROFILES= ");
-    Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
-        .pollInterval(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
+    await().timeout(300, TimeUnit.SECONDS)
         .until(() -> expected.equals(sl.getLoadMap()));
   }
 

@@ -17,7 +17,6 @@ package org.apache.geode.internal.process;
 import static org.apache.commons.lang.Validate.isTrue;
 import static org.apache.commons.lang.Validate.notNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
@@ -33,8 +32,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
@@ -233,32 +230,9 @@ class MBeanProcessController implements ProcessController {
       connectorAddress = agentProps.getProperty(PROPERTY_LOCAL_CONNECTOR_ADDRESS);
 
       if (connectorAddress == null) {
-        // need to load the management-agent and get the address
-
-        String javaHome = vm.getSystemProperties().getProperty("java.home");
-
-        // assume java.home is JDK and look in JRE for agent
-        String managementAgentPath = javaHome + File.separator + "jre" + File.separator + "lib"
-            + File.separator + "management-agent.jar";
-        File managementAgent = new File(managementAgentPath);
-        if (!managementAgent.exists()) {
-          // assume java.home is JRE and look in lib for agent
-          managementAgentPath =
-              javaHome + File.separator + "lib" + File.separator + "management-agent.jar";
-          managementAgent = new File(managementAgentPath);
-          if (!managementAgent.exists()) {
-            throw new IOException("JDK management agent not found");
-          }
-        }
-
-        // attempt to load the management agent
-        managementAgentPath = managementAgent.getCanonicalPath();
-        try {
-          vm.loadAgent(managementAgentPath, "com.sun.management.jmxremote");
-        } catch (AgentLoadException | AgentInitializationException e) {
-          throw new IOException(e);
-        }
-
+        // make sure the local management agent is started and this will ensure
+        // localConnectorAddress is present in the agent properties.
+        vm.startLocalManagementAgent();
         // get the connector address
         agentProps = vm.getAgentProperties();
         connectorAddress = agentProps.getProperty(PROPERTY_LOCAL_CONNECTOR_ADDRESS);

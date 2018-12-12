@@ -20,13 +20,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.process.io.IntegerFileWriter;
 import org.apache.geode.internal.process.lang.AvailablePid;
 
 /**
@@ -56,7 +57,7 @@ public class PidFileIntegrationTest {
   public void readsIntFromFile() throws Exception {
     // arrange
     String value = "42";
-    new IntegerFileWriter(pidFile).writeToFile(value);
+    FileUtils.writeStringToFile(pidFile, value, Charset.defaultCharset());
 
     // act
     int readValue = new PidFile(pidFile).readPid();
@@ -68,7 +69,7 @@ public class PidFileIntegrationTest {
   @Test
   public void readingEmptyFileThrowsIllegalArgumentException() throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile("");
+    FileUtils.writeStringToFile(pidFile, "", Charset.defaultCharset());
 
     // act/assert
     assertThatThrownBy(() -> new PidFile(pidFile).readPid())
@@ -79,7 +80,7 @@ public class PidFileIntegrationTest {
   public void readingFileWithNonIntegerThrowsIllegalArgumentException() throws Exception {
     // arrange
     String value = "forty two";
-    new IntegerFileWriter(pidFile).writeToFile(value);
+    FileUtils.writeStringToFile(pidFile, value, Charset.defaultCharset());
 
     // act/assert
     assertThatThrownBy(() -> new PidFile(pidFile).readPid())
@@ -91,7 +92,7 @@ public class PidFileIntegrationTest {
   public void readingFileWithNegativeIntegerThrowsIllegalArgumentException() throws Exception {
     // arrange
     String value = "-42";
-    new IntegerFileWriter(pidFile).writeToFile(value);
+    FileUtils.writeStringToFile(pidFile, value, Charset.defaultCharset());
 
     // act/assert
     assertThatThrownBy(() -> new PidFile(pidFile).readPid())
@@ -112,10 +113,12 @@ public class PidFileIntegrationTest {
   @Test
   public void findsCorrectFileByName() throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile(pid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
     int[] pids = new AvailablePid().findAvailablePids(4);
     for (int i = 1; i <= pids.length; i++) {
-      new IntegerFileWriter(new File(directory, "pid" + i + ".txt")).writeToFile(pids[i - 1]);
+      FileUtils.writeStringToFile(
+          new File(directory, "pid" + i + ".txt"), String.valueOf(pids[i - 1]),
+          Charset.defaultCharset());
     }
     assertThat(directory.listFiles()).hasSize(pids.length + 1);
 
@@ -162,7 +165,9 @@ public class PidFileIntegrationTest {
     // arrange
     int[] pids = new AvailablePid().findAvailablePids(4);
     for (int i = 1; i <= pids.length; i++) {
-      new IntegerFileWriter(new File(directory, "pid" + i + ".txt")).writeToFile(pids[i - 1]);
+      FileUtils.writeStringToFile(
+          new File(directory, "pid" + i + ".txt"), String.valueOf(pids[i - 1]),
+          Charset.defaultCharset());
     }
     assertThat(directory.listFiles()).hasSameSizeAs(pids);
 

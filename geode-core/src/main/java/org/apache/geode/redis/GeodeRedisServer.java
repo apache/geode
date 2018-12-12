@@ -64,7 +64,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
@@ -437,7 +436,7 @@ public class GeodeRedisServer {
       } catch (IOException | ClassNotFoundException e) {
         // only if loading snapshot, not here
         InternalGemFireError assErr = new InternalGemFireError(
-            LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+            "unexpected exception");
         assErr.initCause(e);
         throw assErr;
       }

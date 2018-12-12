@@ -46,8 +46,8 @@ if [ -z ${SERVICE_ACCOUNT+x} ]; then
   exit 1
 fi
 
-if [ -z ${PUBLIC_BUCKET+x} ]; then
-  echo "PUBLIC_BUCKET is unset. Check your pipeline configuration and make sure this script is called properly."
+if [ -z ${ARTIFACT_BUCKET+x} ]; then
+  echo "ARTIFACT_BUCKET is unset. Check your pipeline configuration and make sure this script is called properly."
   exit 1
 fi
 
@@ -92,13 +92,13 @@ pushd ${GEODE_BUILD_DIR}
   set +e
   set -x
     ./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" \
-      -PsourceRevision="$(git rev-parse HEAD)" -PsourceRepository="${SOURCE_REPOSITORY}" build install
+      build install
     GRADLE_EXIT_STATUS=$?
   set +x
   set -e
 popd
 
-ARTIFACTS_DESTINATION="${PUBLIC_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
+ARTIFACTS_DESTINATION="${ARTIFACT_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
 TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/build/"
 FULL_BUILD_ARCHIVE_DESTINATION="${ARTIFACTS_DESTINATION}/geodefiles-${FULL_PRODUCT_VERSION}.tgz"
 BUILD_ARTIFACTS_FILENAME=geode-build-artifacts-${FULL_PRODUCT_VERSION}.tgz

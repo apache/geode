@@ -36,7 +36,6 @@ import org.apache.geode.admin.internal.SystemMemberBridgeServerImpl;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * MBean representation of {@link org.apache.geode.admin.SystemMemberCache}.
@@ -160,7 +159,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       throws org.apache.geode.admin.AdminException {
     if (managed == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemMemberCacheJmxImpl_MANAGEDBEAN_IS_NULL.toLocalizedString());
+          "ManagedBean is null");
     }
 
     refresh(); // to get the stats...
@@ -210,8 +209,8 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
       if (region == null) {
         throw new AdminException(
-            LocalizedStrings.SystemMemberCacheJmxImpl_THIS_CACHE_DOES_NOT_CONTAIN_REGION_0
-                .toLocalizedString(path));
+            String.format("This cache does not contain region %s",
+                path));
 
       } else {
         return ObjectName.getInstance(region.getMBeanName());
@@ -310,7 +309,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   }
 
   /**
-   * Returns the MBean <code>ObjectName</code>s for all bridge servers that serve this cache.
+   * Returns the MBean <code>ObjectName</code>s for all cache servers that serve this cache.
    *
    * @since GemFire 4.0
    * @deprecated as of 5.7

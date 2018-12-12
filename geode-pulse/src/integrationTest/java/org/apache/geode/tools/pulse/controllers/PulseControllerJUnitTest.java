@@ -69,7 +69,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration("classpath*:mvc-dispatcher-servlet.xml")
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class PulseControllerJUnitTest {
 
   private static final String PRINCIPAL_USER = "test-user";

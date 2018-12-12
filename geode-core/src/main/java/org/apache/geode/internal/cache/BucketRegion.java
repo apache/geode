@@ -87,9 +87,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.concurrent.AtomicLong5;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -405,7 +403,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    *
    * @return first key found in CM null means not found
    */
-  private LockObject searchAndLock(Object keys[]) {
+  LockObject searchAndLock(Object keys[]) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     LockObject foundLock = null;
@@ -472,7 +470,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * This method will block current thread for long time. It only exits when current thread
    * successfully save its keys into CM.
    */
-  public void waitUntilLocked(Object keys[]) {
+  public boolean waitUntilLocked(Object keys[]) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     final String title = "BucketRegion.waitUntilLocked:";
@@ -483,7 +481,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         synchronized (foundLock) {
           try {
             while (!foundLock.isRemoved()) {
-              this.partitionedRegion.checkReadiness();
+              partitionedRegion.checkReadiness();
               foundLock.wait(1000);
               // primary could be changed by prRebalancing while waiting here
               checkForPrimary();
@@ -501,7 +499,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         }
       } else {
         // now the keys have been locked by this thread
-        break;
+        return true;
       } // to lock and process
     } // while
   }
@@ -509,7 +507,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // Entry (Put/Create) rules
   // If this is a primary for the bucket
   // 1) apply op locally, aka update or create entry
-  // 2) distribute op to bucket secondaries and bridge servers with synchrony on local entry
+  // 2) distribute op to bucket secondaries and cache servers with synchrony on local entry
   // 3) cache listener with synchrony on entry
   // Else not a primary
   // 1) apply op locally
@@ -518,7 +516,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
-    beginLocalWrite(event);
+    boolean locked = lockKeysAndPrimary(event);
 
     try {
       if (this.partitionedRegion.isParallelWanEnabled()) {
@@ -550,7 +548,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
       return true;
     } finally {
-      endLocalWrite(event);
+      if (locked) {
+        releaseLockForKeysAndPrimary(event);
+      }
     }
   }
 
@@ -558,9 +558,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public long generateTailKey() {
     long key = this.eventSeqNum.addAndGet(this.partitionedRegion.getTotalNumberOfBuckets());
     if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.GatewaySender_SEQUENCENUMBER_GENERATED_FOR_EVENT_IS_INVALID,
-          new Object[] {key, getId()}));
+      logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
+          new Object[] {key, getId()});
     }
     if (logger.isDebugEnabled()) {
       logger.debug("WAN: On primary bucket {}, setting the seq number as {}", getId(),
@@ -583,9 +582,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       if (getBucketAdvisor().isPrimary()) {
         long key = this.eventSeqNum.addAndGet(this.partitionedRegion.getTotalNumberOfBuckets());
         if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.GatewaySender_SEQUENCENUMBER_GENERATED_FOR_EVENT_IS_INVALID,
-              new Object[] {key, getId()}));
+          logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
+              new Object[] {key, getId()});
         }
         event.setTailKey(key);
         if (logger.isDebugEnabled()) {
@@ -738,10 +736,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   /**
    * Checks to make sure that this node is primary, and locks the bucket to make sure the bucket
-   * stays the primary bucket while the write is in progress. Any call to this method must be
-   * followed with a call to endLocalWrite().
+   * stays the primary bucket while the write is in progress. This method must be followed with
+   * a call to releaseLockForKeysAndPrimary() if keys and primary are locked.
    */
-  private boolean beginLocalWrite(EntryEventImpl event) {
+  boolean lockKeysAndPrimary(EntryEventImpl event) {
     if (!needWriteLock(event)) {
       return false;
     }
@@ -750,19 +748,27 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       throw cache.getCacheClosedException("Cache is shutting down");
     }
 
-    Object keys[] = new Object[1];
-    keys[0] = event.getKey();
+    Object[] keys = getKeysToBeLocked(event);
     waitUntilLocked(keys); // it might wait for long time
 
     boolean lockedForPrimary = false;
     try {
-      doLockForPrimary(false);
-      return lockedForPrimary = true;
+      lockedForPrimary = doLockForPrimary(false);
+      // tryLock is false means doLockForPrimary won't return false.
+      // either the method returns true or fails with an exception
+      assert lockedForPrimary : "expected doLockForPrimary returns true";
+      return lockedForPrimary;
     } finally {
       if (!lockedForPrimary) {
         removeAndNotifyKeys(keys);
       }
     }
+  }
+
+  Object[] getKeysToBeLocked(EntryEventImpl event) {
+    Object keys[] = new Object[1];
+    keys[0] = event.getKey();
+    return keys;
   }
 
   /**
@@ -798,8 +804,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   private boolean lockPrimaryStateReadLock(boolean tryLock) {
-    Lock activeWriteLock = this.getBucketAdvisor().getActiveWriteLock();
-    Lock parentLock = this.getBucketAdvisor().getParentActiveWriteLock();
+    Lock primaryMoveReadLock = getBucketAdvisor().getPrimaryMoveReadLock();
+    Lock parentLock = getBucketAdvisor().getParentPrimaryMoveReadLock();
     for (;;) {
       boolean interrupted = Thread.interrupted();
       try {
@@ -817,22 +823,22 @@ public class BucketRegion extends DistributedRegion implements Bucket {
             parentLock.lockInterruptibly();
           }
           if (tryLock) {
-            boolean locked = activeWriteLock.tryLock();
+            boolean locked = primaryMoveReadLock.tryLock();
             if (!locked) {
               parentLock.unlock();
               return false;
             }
           } else {
-            activeWriteLock.lockInterruptibly();
+            primaryMoveReadLock.lockInterruptibly();
           }
         } else {
           if (tryLock) {
-            boolean locked = activeWriteLock.tryLock();
+            boolean locked = primaryMoveReadLock.tryLock();
             if (!locked) {
               return false;
             }
           } else {
-            activeWriteLock.lockInterruptibly();
+            primaryMoveReadLock.lockInterruptibly();
           }
         }
         break; // success
@@ -851,9 +857,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   public void doUnlockForPrimary() {
-    Lock activeWriteLock = this.getBucketAdvisor().getActiveWriteLock();
-    activeWriteLock.unlock();
-    Lock parentLock = this.getBucketAdvisor().getParentActiveWriteLock();
+    Lock primaryMoveReadLock = getBucketAdvisor().getPrimaryMoveReadLock();
+    primaryMoveReadLock.unlock();
+    Lock parentLock = getBucketAdvisor().getParentPrimaryMoveReadLock();
     if (parentLock != null) {
       parentLock.unlock();
     }
@@ -861,17 +867,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   /**
    * Release the lock on the bucket that makes the bucket stay the primary during a write.
+   * And release/remove the lockObject on the key(s)
    */
-  private void endLocalWrite(EntryEventImpl event) {
-    if (!needWriteLock(event)) {
-      return;
-    }
-
-
+  void releaseLockForKeysAndPrimary(EntryEventImpl event) {
     doUnlockForPrimary();
 
-    Object keys[] = new Object[1];
-    keys[0] = event.getKey();
+    Object[] keys = getKeysToBeLocked(event);
     removeAndNotifyKeys(keys);
   }
 
@@ -891,7 +892,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // Entry Invalidation rules
   // If this is a primary for the bucket
   // 1) apply op locally, aka update entry
-  // 2) distribute op to bucket secondaries and bridge servers with synchrony on local entry
+  // 2) distribute op to bucket secondaries and cache servers with synchrony on local entry
   // 3) cache listener with synchrony on entry
   // 4) update local bs, gateway
   // Else not a primary
@@ -910,7 +911,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    beginLocalWrite(event);
+    boolean locked = lockKeysAndPrimary(event);
     try {
       // which performs the local op.
       // The ARM then calls basicInvalidatePart2 with the entry synchronized.
@@ -943,7 +944,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         return;
       }
     } finally {
-      endLocalWrite(event);
+      if (locked) {
+        releaseLockForKeysAndPrimary(event);
+      }
     }
   }
 
@@ -1136,8 +1139,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.LocalRegion_EXCEPTION_IN_EXPIRATION_TASK), ex);
+        logger.fatal("Exception in expiration task", ex);
       }
     }
   }
@@ -1160,7 +1162,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // Entry Destruction rules
   // If this is a primary for the bucket
   // 1) apply op locally, aka destroy entry (REMOVED token)
-  // 2) distribute op to bucket secondaries and bridge servers with synchrony on local entry
+  // 2) distribute op to bucket secondaries and cache servers with synchrony on local entry
   // 3) cache listener with synchrony on local entry
   // 4) update local bs, gateway
   // Else not a primary
@@ -1174,7 +1176,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    beginLocalWrite(event);
+    boolean locked = lockKeysAndPrimary(event);
     try {
       // increment the tailKey for the destroy event
       if (this.partitionedRegion.isParallelWanEnabled()) {
@@ -1211,7 +1213,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         return;
       }
     } finally {
-      endLocalWrite(event);
+      if (locked) {
+        releaseLockForKeysAndPrimary(event);
+      }
     }
   }
 
@@ -1320,7 +1324,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   protected RegionEntry basicPutEntry(final EntryEventImpl event, final long lastModified)
       throws TimeoutException, CacheWriterException {
-    beginLocalWrite(event);
+    boolean locked = lockKeysAndPrimary(event);
     try {
       if (getPartitionedRegion().isParallelWanEnabled()) {
         handleWANEvent(event);
@@ -1329,7 +1333,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       forceSerialized(event);
       return super.basicPutEntry(event, lastModified);
     } finally {
-      endLocalWrite(event);
+      if (locked) {
+        releaseLockForKeysAndPrimary(event);
+      }
     }
   }
 
@@ -1341,9 +1347,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
     InternalRegion internalRegion = event.getRegion();
     AbstractRegionMap arm = ((AbstractRegionMap) internalRegion.getRegionMap());
+
+    arm.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
-      arm.lockForCacheModification(internalRegion, event);
-      beginLocalWrite(event);
+      boolean keysAndPrimaryLocked = lockKeysAndPrimary(event);
       try {
         if (!hasSeenEvent(event)) {
           this.entries.updateEntryVersion(event);
@@ -1362,9 +1370,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         }
         return;
       } finally {
-        endLocalWrite(event);
+        if (keysAndPrimaryLocked) {
+          releaseLockForKeysAndPrimary(event);
+        }
       }
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       arm.releaseCacheModificationLock(event.getRegion(), event);
     }
   }
@@ -1379,8 +1392,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   public boolean isPrimary() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.BucketRegion_THIS_SHOULD_NEVER_BE_CALLED_ON_0
-            .toLocalizedString(getClass()));
+        String.format("This should never be called on %s",
+            getClass()));
   }
 
   @Override
@@ -1832,8 +1845,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           throw re;
         } catch (Exception e) {
           throw new DeltaSerializationException(
-              LocalizedStrings.DistributionManager_CAUGHT_EXCEPTION_WHILE_SENDING_DELTA
-                  .toLocalizedString(),
+              "Caught exception while sending delta. ",
               e);
         }
       }
@@ -2437,8 +2449,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         this.partitionedRegion.getRegionAdvisor().getBucketOwners(this.getId());
     hostingservers.remove(cache.getDistributedSystem().getDistributedMember());
 
-    if (cache.getLoggerI18n().fineEnabled())
-      cache.getLoggerI18n()
+    if (cache.getLogger().fineEnabled())
+      cache.getLogger()
           .fine("Pinging secondaries of bucket " + this.getId() + " on servers " + hostingservers);
 
     if (hostingservers.size() == 0)

@@ -267,11 +267,14 @@ public class DeployedJar {
 
   private byte[] fileDigest(File file) throws IOException {
     BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file));
-    byte[] data = new byte[8192];
-
-    int read;
-    while ((read = fis.read(data)) > 0) {
-      messageDigest.update(data, 0, read);
+    try {
+      byte[] data = new byte[8192];
+      int read;
+      while ((read = fis.read(data)) > 0) {
+        messageDigest.update(data, 0, read);
+      }
+    } finally {
+      fis.close();
     }
 
     return messageDigest.digest();

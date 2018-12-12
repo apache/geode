@@ -70,9 +70,7 @@ import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -549,8 +547,7 @@ public abstract class DistributedCacheOperation {
 
         if (region.cache.isClosed() && !canBeSentDuringShutdown()) {
           throw region.cache.getCacheClosedException(
-              LocalizedStrings.DistributedCacheOperation_THE_CACHE_HAS_BEEN_CLOSED
-                  .toLocalizedString(),
+              "The cache has been closed",
               null);
         }
 
@@ -687,8 +684,7 @@ public abstract class DistributedCacheOperation {
       }
       throw e;
     } catch (RuntimeException e) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.DistributedCacheOperation_EXCEPTION_OCCURRED_WHILE_PROCESSING__0, this),
+      logger.info(String.format("Exception occurred while processing %s", this),
           e);
       throw e;
     } finally {
@@ -727,7 +723,8 @@ public abstract class DistributedCacheOperation {
           Long cqID = e.getKey();
           // For the CQs satisfying the event with destroy CQEvent, remove
           // the entry form CQ cache.
-          if (cq.getFilterID() == cqID && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
+          if (cq != null && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
+              && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
             cq.removeFromCqResultKeys(((EntryOperation) event).getKey(), true);
           }
         }
@@ -769,8 +766,7 @@ public abstract class DistributedCacheOperation {
         handleClosedMembers(closedMembers, persistentIds);
       } catch (ReplyException e) {
         if (this instanceof DestroyRegionOperation) {
-          logger.fatal(LocalizedMessage
-              .create(LocalizedStrings.DistributedCacheOperation_WAITFORACKIFNEEDED_EXCEPTION), e);
+          logger.fatal("waitForAckIfNeeded: exception", e);
         }
         e.handleCause();
       }
@@ -1246,9 +1242,9 @@ public abstract class DistributedCacheOperation {
           }
           sendReply(getSender(), processorId, rex, getReplySender(dm));
         } else if (thr != null) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.DistributedCacheOperation_EXCEPTION_OCCURRED_WHILE_PROCESSING__0,
-              this), thr);
+          logger.error(String.format("Exception occurred while processing %s",
+              this),
+              thr);
         }
       } // finally
     }

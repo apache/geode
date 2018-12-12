@@ -229,7 +229,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
             return classInstance;
           } catch (Exception e) {
             throw new PdxSerializationException(
-                "Could not deserialize as java class type could not resolved", e);
+                "Could not deserialize as java class '" + className + "' could not be resolved", e);
           }
         }
       }

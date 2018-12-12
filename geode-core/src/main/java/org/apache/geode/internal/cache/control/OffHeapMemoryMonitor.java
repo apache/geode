@@ -23,10 +23,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.MemoryUsageListener;
 
@@ -89,12 +87,9 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
         return;
       }
 
-      ThreadGroup group =
-          LoggingThreadGroup.createThreadGroup("OffHeapMemoryMonitor Threads", logger);
-      Thread t = new Thread(group, this.offHeapMemoryUsageListener);
-      t.setName(t.getName() + " OffHeapMemoryListener");
+      Thread t =
+          new LoggingThread("OffHeapMemoryListener", this.offHeapMemoryUsageListener);
       t.setPriority(Thread.MAX_PRIORITY);
-      t.setDaemon(true);
       t.start();
       this.memoryListenerThread = t;
 
@@ -195,19 +190,16 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
       // Do some basic sanity checking on the new threshold
       if (criticalThreshold > 100.0f || criticalThreshold < 0.0f) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GT_ZERO_AND_LTE_100
-                .toLocalizedString());
+            "Critical percentage must be greater than 0.0 and less than or equal to 100.0.");
       }
       if (this.memoryAllocator == null) {
         throw new IllegalStateException(
-            LocalizedStrings.OffHeapMemoryMonitor_NO_OFF_HEAP_MEMORY_HAS_BEEN_CONFIGURED
-                .toLocalizedString());
+            "No off-heap memory has been configured.");
       }
       if (criticalThreshold != 0 && this.thresholds.isEvictionThresholdEnabled()
           && criticalThreshold <= this.thresholds.getEvictionThreshold()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GTE_EVICTION_PERCENTAGE
-                .toLocalizedString());
+            "Critical percentage must be greater than the eviction percentage.");
       }
 
       this.cache.setQueryMonitorRequiredForResourceManager(criticalThreshold != 0);
@@ -247,19 +239,16 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
       // Do some basic sanity checking on the new threshold
       if (evictionThreshold > 100.0f || evictionThreshold < 0.0f) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryThresholds_EVICTION_PERCENTAGE_GT_ZERO_AND_LTE_100
-                .toLocalizedString());
+            "Eviction percentage must be greater than 0.0 and less than or equal to 100.0.");
       }
       if (this.memoryAllocator == null) {
         throw new IllegalStateException(
-            LocalizedStrings.OffHeapMemoryMonitor_NO_OFF_HEAP_MEMORY_HAS_BEEN_CONFIGURED
-                .toLocalizedString());
+            "No off-heap memory has been configured.");
       }
       if (evictionThreshold != 0 && this.thresholds.isCriticalThresholdEnabled()
           && evictionThreshold >= this.thresholds.getCriticalThreshold()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE
-                .toLocalizedString());
+            "Eviction percentage must be less than the critical percentage.");
       }
 
       this.thresholds = new MemoryThresholds(this.thresholds.getMaxMemoryBytes(),
@@ -449,23 +438,21 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
     }
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
-      logger.error(
-          LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD,
-              new Object[] {event.getMember(), "off-heap"}));
+      logger.error("Member: {} above {} critical threshold",
+          new Object[] {event.getMember(), "off-heap"});
     } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()) {
-      logger.error(
-          LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD,
-              new Object[] {event.getMember(), "off-heap"}));
+      logger.error("Member: {} below {} critical threshold",
+          new Object[] {event.getMember(), "off-heap"});
     }
 
     if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
       logger
-          .info(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_HIGH_THRESHOLD,
-              new Object[] {event.getMember(), "off-heap"}));
+          .info("Member: {} above {} eviction threshold",
+              new Object[] {event.getMember(), "off-heap"});
     } else if (!event.getState().isEviction() && event.getPreviousState().isEviction()) {
       logger
-          .info(LocalizedMessage.create(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_HIGH_THRESHOLD,
-              new Object[] {event.getMember(), "off-heap"}));
+          .info("Member: {} below {} eviction threshold",
+              new Object[] {event.getMember(), "off-heap"});
     }
 
     if (logger.isDebugEnabled()) {
@@ -484,8 +471,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
       } catch (CancelException ignore) {
         // ignore
       } catch (Throwable t) {
-        logger.error(LocalizedMessage
-            .create(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURRED_WHEN_NOTIFYING_LISTENERS), t);
+        logger.error("Exception occurred when notifying listeners ", t);
       }
     }
   }

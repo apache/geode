@@ -79,11 +79,9 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -100,7 +98,7 @@ import org.apache.geode.security.GemFireSecurityException;
  *
  * @since GemFire 3.5
  */
-public class CacheClientUpdater extends Thread implements ClientUpdater, DisconnectListener {
+public class CacheClientUpdater extends LoggingThread implements ClientUpdater, DisconnectListener {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -220,20 +218,17 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     long tilt = System.currentTimeMillis() + MAX_CACHE_WAIT * 1000;
     for (;;) {
       if (quitting()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_0_ABANDONED_WAIT_DUE_TO_CANCELLATION, this));
+        logger.warn("{}: abandoned wait due to cancellation.", this);
         return false;
       }
       if (!this.connected) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_0_ABANDONED_WAIT_BECAUSE_IT_IS_NO_LONGER_CONNECTED,
-            this));
+        logger.warn("{}: abandoned wait because it is no longer connected",
+            this);
         return false;
       }
       if (System.currentTimeMillis() > tilt) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_0_WAIT_TIMED_OUT_MORE_THAN_1_SECONDS,
-            new Object[] {this, MAX_CACHE_WAIT}));
+        logger.warn("{}: wait timed out (more than {} seconds)",
+            new Object[] {this, MAX_CACHE_WAIT});
         return false;
       }
       cache = GemFireCacheImpl.getInstance();
@@ -277,9 +272,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       EndpointManager eManager, Endpoint endpoint, int handshakeTimeout,
       SocketCreator socketCreator) throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
-
-    super(LoggingThreadGroup.createThreadGroup("Client update thread"), name);
-    this.setDaemon(true);
+    super(name);
     this.system = (InternalDistributedSystem) ids;
     this.isDurableClient = handshake.getMembershipId().isDurable();
     this.isPrimary = primary;
@@ -363,42 +356,44 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       success = true;
     } catch (ConnectException ignore) {
       if (!quitting()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.CacheClientUpdater_0_CONNECTION_WAS_REFUSED, this));
+        logger.warn("{} connection was refused", this);
       }
     } catch (SSLException ex) {
       if (!quitting()) {
-        getSecurityLogger().warning(LocalizedStrings.CacheClientUpdater_0_SSL_NEGOTIATION_FAILED_1,
-            new Object[] {this, ex});
+        getSecurityLogger().warning(String.format("%s SSL negotiation failed. %s",
+            new Object[] {this, ex}));
         throw new AuthenticationFailedException(
-            LocalizedStrings.CacheClientUpdater_SSL_NEGOTIATION_FAILED_WITH_ENDPOINT_0
-                .toLocalizedString(location),
+            String.format("SSL negotiation failed with endpoint: %s",
+                location),
             ex);
       }
     } catch (GemFireSecurityException ex) {
       if (!quitting()) {
         getSecurityLogger().warning(
-            LocalizedStrings.CacheClientUpdater_0_SECURITY_EXCEPTION_WHEN_CREATING_SERVERTOCLIENT_COMMUNICATION_SOCKET_1,
-            new Object[] {this, ex});
+            String.format(
+                "%s: Security exception when creating server-to-client communication socket. %s",
+                new Object[] {this, ex}));
         throw ex;
       }
     } catch (IOException e) {
       if (!quitting()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_0_CAUGHT_FOLLOWING_EXECPTION_WHILE_ATTEMPTING_TO_CREATE_A_SERVER_TO_CLIENT_COMMUNICATION_SOCKET_AND_WILL_EXIT_1,
-            new Object[] {this, e}), logger.isDebugEnabled() ? e : null);
+        logger.warn(String.format(
+            "%s: Caught following exception while attempting to create a server-to-client communication socket and will exit: %s",
+            new Object[] {this, e}),
+            logger.isDebugEnabled() ? e : null);
       }
       eManager.serverCrashed(this.endpoint);
     } catch (ClassNotFoundException e) {
       if (!quitting()) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientUpdater_CLASS_NOT_FOUND,
-            e.getMessage()));
+        logger.warn("Unable to load the class: {}",
+            e.getMessage());
       }
     } catch (ServerRefusedConnectionException e) {
       if (!quitting()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_0_CAUGHT_FOLLOWING_EXECPTION_WHILE_ATTEMPTING_TO_CREATE_A_SERVER_TO_CLIENT_COMMUNICATION_SOCKET_AND_WILL_EXIT_1,
-            new Object[] {this, e}), logger.isDebugEnabled() ? e : null);
+        logger.warn(String.format(
+            "%s: Caught following exception while attempting to create a server-to-client communication socket and will exit: %s",
+            new Object[] {this, e}),
+            logger.isDebugEnabled() ? e : null);
       }
       throw e;
     } finally {
@@ -429,8 +424,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
           try {
             mySock.close();
           } catch (IOException ioe) {
-            logger.warn(LocalizedMessage
-                .create(LocalizedStrings.CacheClientUpdater_CLOSING_SOCKET_IN_0_FAILED, this), ioe);
+            logger.warn("Closing socket in {} failed", this, ioe);
           }
         }
       }
@@ -481,8 +475,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       addedListener = true;
 
       if (!waitForCache()) {
-        logger.warn(
-            LocalizedMessage.create(LocalizedStrings.CacheClientUpdater_0_NO_CACHE_EXITING, this));
+        logger.warn("{}: no cache (exiting)", this);
         return;
       }
       processMessages();
@@ -599,8 +592,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       }
     } catch (Exception e) {
       String message =
-          LocalizedStrings.CacheClientUpdater_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_HANDLE_A_MARKER
-              .toLocalizedString();
+          "The following exception occurred while attempting to handle a marker.";
       handleException(message, e);
     }
   }
@@ -763,8 +755,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       }
     } catch (Exception e) {
       String message =
-          LocalizedStrings.CacheClientUpdater_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_PUT_ENTRY_REGION_0_KEY_1_VALUE_2
-              .toLocalizedString(regionName, key, deserialize(valuePart.getSerializedForm()));
+          String.format(
+              "The following exception occurred while attempting to put entry (region: %s key: %s value: %s)",
+              regionName, key, deserialize(valuePart.getSerializedForm()));
       handleException(message, e);
     }
   }
@@ -890,8 +883,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       }
     } catch (Exception e) {
       final String message =
-          LocalizedStrings.CacheClientUpdater_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_INVALIDATE_ENTRY_REGION_0_KEY_1
-              .toLocalizedString(regionName, key);
+          String.format(
+              "The following exception occurred while attempting to invalidate entry (region: %s key: %s)",
+              regionName, key);
       handleException(message, e);
     }
   }
@@ -987,8 +981,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       }
     } catch (Exception e) {
       String message =
-          LocalizedStrings.CacheClientUpdater_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_DESTROY_ENTRY_REGION_0_KEY_1
-              .toLocalizedString(regionName, key);
+          String.format(
+              "The following exception occurred while attempting to destroy entry (region: %s key: %s)",
+              regionName, key);
       handleException(message, e);
     }
   }
@@ -1056,8 +1051,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       }
     } catch (Exception e) {
       String message =
-          LocalizedStrings.CacheClientUpdater_CAUGHT_AN_EXCEPTION_WHILE_ATTEMPTING_TO_DESTROY_REGION_0
-              .toLocalizedString(regionName);
+          String.format("Caught an exception while attempting to destroy region %s",
+              regionName);
       handleException(message, e);
     }
   }
@@ -1122,8 +1117,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       }
     } catch (Exception e) {
       String message =
-          LocalizedStrings.CacheClientUpdater_CAUGHT_THE_FOLLOWING_EXCEPTION_WHILE_ATTEMPTING_TO_CLEAR_REGION_0
-              .toLocalizedString(regionName);
+          String.format("Caught the following exception while attempting to clear region %s",
+              regionName);
       handleException(message, e);
     }
   }
@@ -1174,8 +1169,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
     } catch (Exception e) {
       String message =
-          LocalizedStrings.CacheClientUpdater_CAUGHT_THE_FOLLOWING_EXCEPTION_WHILE_ATTEMPTING_TO_INVALIDATE_REGION_0
-              .toLocalizedString(regionName);
+          String.format("Caught the following exception while attempting to invalidate region %s.",
+              regionName);
       handleException(message, e);
     }
   }
@@ -1305,9 +1300,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
           sb.append(cqNamePart.getString()).append(" op=").append(cqOpPart.getInt()).append("  ");
         }
       } catch (Exception ignore) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_ERROR_WHILE_PROCESSING_THE_CQ_MESSAGE_PROBLEM_WITH_READING_MESSAGE_FOR_CQ_0,
-            cqCnt));
+        logger.warn(
+            "Error while processing the CQ Message. Problem with reading message for CQ# : {}",
+            cqCnt);
       }
       if (isDebugEnabled) {
         logger.debug(sb);
@@ -1318,9 +1313,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     try {
       cqService.dispatchCqListeners(cqs, messageType, key, value, delta, this.qManager, eventId);
     } catch (Exception ex) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.CacheClientUpdater_FAILED_TO_INVOKE_CQ_DISPATCHER_ERROR___0,
-          ex.getMessage()));
+      logger.warn("Failed to invoke CQ Dispatcher. Error :  {}",
+          ex.getMessage());
       if (isDebugEnabled) {
         logger.debug("Failed to invoke CQ Dispatcher.", ex);
       }
@@ -1525,9 +1519,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
     boolean gotInterrupted = false;
     try {
       if (this.failedUpdater != null) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater__0_IS_WAITING_FOR_1_TO_COMPLETE,
-            new Object[] {this, this.failedUpdater}));
+        logger.info("{} is waiting for {} to complete.",
+            new Object[] {this, this.failedUpdater});
         while (this.failedUpdater.isAlive()) {
           if (quitting()) {
             return;
@@ -1540,9 +1533,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       // just bail, because I have not done anything yet
     } finally {
       if (!gotInterrupted && this.failedUpdater != null) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.CacheClientUpdater_0_HAS_COMPLETED_WAITING_FOR_1,
-            new Object[] {this, this.failedUpdater}));
+        logger.info("{} has completed waiting for {}",
+            new Object[] {this, this.failedUpdater});
         this.failedUpdater = null;
       }
     }
@@ -1581,8 +1573,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         return;
       }
 
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.CacheClientUpdater_0_READY_TO_PROCESS_MESSAGES, this));
+      logger.info("{} : ready to process messages.", this);
 
       while (this.continueProcessing.get()) {
         if (quitting()) {
@@ -1697,9 +1688,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
               handleTombstoneOperation(clientMessage);
               break;
             default:
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.CacheClientUpdater_0_RECEIVED_AN_UNSUPPORTED_MESSAGE_TYPE_1,
-                  new Object[] {this, MessageType.getString(clientMessage.getMessageType())}));
+              logger.warn("{}: Received an unsupported message (type={})",
+                  new Object[] {this, MessageType.getString(clientMessage.getMessageType())});
               break;
           }
 
@@ -1792,7 +1782,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
     // If this was a surprise, print a warning.
     if (unexpected && !(exception instanceof CancelException)) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientUpdater_0__1__2,
+      logger.warn(String.format("%s : %s : %s",
           new Object[] {this, message, exception}), exception);
     }
     // We can't shutdown the client updater just because of an exception.
@@ -1830,9 +1820,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   private void verifySocketBufferSize(int requestedBufferSize, int actualBufferSize, String type) {
     if (actualBufferSize < requestedBufferSize) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.Connection_SOCKET_0_IS_1_INSTEAD_OF_THE_REQUESTED_2,
-          new Object[] {type + " buffer size", actualBufferSize, requestedBufferSize}));
+      logger.info("Socket {} is {} instead of the requested {}.",
+          new Object[] {type + " buffer size", actualBufferSize, requestedBufferSize});
     }
   }
 

@@ -41,7 +41,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import org.apache.geode.pdx.FieldType;
@@ -2202,8 +2201,8 @@ public class AutoSerializableManager {
         }
       } catch (Exception ex) {
         throw new PdxSerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-                .toLocalizedString(clazz.getName()),
+            String.format("Could not create an instance of a class %s",
+                clazz.getName()),
             ex);
       }
       return result;

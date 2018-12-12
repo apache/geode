@@ -29,9 +29,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A message that is sent to a given collection of managers and then awaits replies. It is used by
@@ -179,9 +177,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
         }
         if (pool.getActiveCount() > 1) {
 
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.HighPriorityAckedMessage_0_THERE_ARE_STILL_1_OTHER_THREADS_ACTIVE_IN_THE_HIGH_PRIORITY_THREAD_POOL,
-              new Object[] {this, Integer.valueOf(pool.getActiveCount() - 1)}));
+          logger.warn(
+              "{}: There are still {} other threads active in the high priority thread pool.",
+              new Object[] {this, Integer.valueOf(pool.getActiveCount() - 1)});
         }
         ReplyMessage.send(getSender(), processorId, null, dm);
         break;

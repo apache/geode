@@ -12,32 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.gradle;
+package org.apache.geode.gradle
 
-import org.gradle.StartParameter;
-import org.gradle.api.file.FileTree;
-import org.gradle.api.internal.DocumentationRegistry;
-import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec;
+import org.gradle.StartParameter
+import org.gradle.api.file.FileTree
+import org.gradle.api.internal.DocumentationRegistry
+import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
-import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter;
-import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter;
-import org.gradle.api.tasks.testing.Test;
-import org.gradle.internal.operations.BuildOperationExecutor;
-import org.gradle.internal.time.Clock;
+import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter
+import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
+import org.gradle.api.tasks.testing.Test
+import org.gradle.internal.operations.BuildOperationExecutor
+import org.gradle.internal.time.Clock
 import org.gradle.internal.work.WorkerLeaseRegistry
-import org.gradle.process.internal.worker.WorkerProcessFactory;
 
 class RepeatTest extends Test {
-  int times = 1;
+  int times = 1
 
   @Override
   FileTree getCandidateClassFiles() {
-    FileTree candidates = super.getCandidateClassFiles();
-    for (int i = 0; i < times; i++) {
-      candidates = candidates.plus(super.getCandidateClassFiles());
+    FileTree candidates = super.getCandidateClassFiles()
+    int additionalRuns = times - 1
+    for (int i = 0; i < additionalRuns; i++) {
+      candidates = candidates.plus(super.getCandidateClassFiles())
     }
 
-    return candidates;
+    return candidates
   }
 
   /*
@@ -48,14 +48,10 @@ class RepeatTest extends Test {
   protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
     def oldExecutor = super.createTestExecuter()
 
-    def workerProcessFactory = getProcessBuilderFactory()
-
     //Use the previously set worker process factory. If the test is
     //being run using the parallel docker plugin, this will be a docker
     //process factory
-    if(oldExecutor instanceof DefaultTestExecuter) {
-      workerProcessFactory = oldExecutor.workerFactory
-    }
+    def workerProcessFactory = oldExecutor.workerFactory
 
     return new OverriddenTestExecutor(workerProcessFactory, getActorFactory(),
         getModuleRegistry(),
@@ -64,7 +60,7 @@ class RepeatTest extends Test {
         getServices().get(StartParameter.class).getMaxWorkerCount(),
         getServices().get(Clock.class),
         getServices().get(DocumentationRegistry.class),
-        (DefaultTestFilter) getFilter());
+        (DefaultTestFilter) getFilter())
   }
 
 }

@@ -68,9 +68,7 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -290,7 +288,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
         default:
           throw new InternalGemFireError(
-              LocalizedStrings.CacheClientProxy_UNKNOWN_INTEREST_TYPE.toLocalizedString());
+              "Unknown interest type");
       } // switch
       if (this.isLocalProfile && opType != null) {
         sendProfileOperation(clientID, opType, interest, updatesAsInvalidates);
@@ -307,11 +305,11 @@ public class FilterProfile implements DataSerializableFixedID {
       filterClass = ClassLoadUtil.classFromName((String) interest);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException cnfe) {
-      throw new RuntimeException(LocalizedStrings.CacheClientProxy_CLASS_0_NOT_FOUND_IN_CLASSPATH
-          .toLocalizedString(interest), cnfe);
+      throw new RuntimeException(String.format("Class %s not found in classpath.",
+          interest), cnfe);
     } catch (Exception e) {
-      throw new RuntimeException(LocalizedStrings.CacheClientProxy_CLASS_0_COULD_NOT_BE_INSTANTIATED
-          .toLocalizedString(interest), e);
+      throw new RuntimeException(String.format("Class %s could not be instantiated.",
+          interest), e);
     }
     Map interestMap = filts.get(clientID);
     if (interestMap == null) {
@@ -392,7 +390,7 @@ public class FilterProfile implements DataSerializableFixedID {
         }
         default:
           throw new InternalGemFireError(
-              LocalizedStrings.CacheClientProxy_BAD_INTEREST_TYPE.toLocalizedString());
+              "bad interest type");
       }
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, opType, interest, false);
@@ -1150,8 +1148,7 @@ public class FilterProfile implements DataSerializableFixedID {
         throw err;
       } catch (Throwable t) {
         SystemFailure.checkFailure();
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.CacheClientNotifier_EXCEPTION_OCCURRED_WHILE_PROCESSING_CQS), t);
+        logger.error("Exception occurred while processing CQs", t);
       }
     }
   }

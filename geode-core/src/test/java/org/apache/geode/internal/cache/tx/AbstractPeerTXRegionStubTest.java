@@ -35,6 +35,8 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -107,11 +109,6 @@ public class AbstractPeerTXRegionStubTest {
     }
 
     @Override
-    public int entryCount() {
-      return 0;
-    }
-
-    @Override
     public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
         InternalRegion region) {}
 
@@ -142,6 +139,8 @@ public class AbstractPeerTXRegionStubTest {
     state = mock(TXStateStub.class);
     region = mock(LocalRegion.class);
     txrStub = new TestingAbstractPeerTXRegionStub(state, region);
+
+    when(state.getTarget()).thenReturn(mock(DistributedMember.class));
   }
 
   @After
@@ -158,13 +157,12 @@ public class AbstractPeerTXRegionStubTest {
 
     txrStub.getRegionKeysForIteration();
     fail(
-        "AbstractPeerTXRegionStub expected to transalate CacheClosedException to TransactionDataNodeHasDepartedException ");
+        "AbstractPeerTXRegionStub expected to translate CacheClosedException to TransactionDataNodeHasDepartedException ");
   }
 
   @Test
   public void getRegionKeysForIterationTranslatesRemoteOperationException() {
     expectedException.expect(TransactionDataNodeHasDepartedException.class);
-
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     ClusterDistributionManager manager = mock(ClusterDistributionManager.class);
@@ -183,7 +181,7 @@ public class AbstractPeerTXRegionStubTest {
     spy.waitForKeys();
 
     fail(
-        "Expected to transalate RemoteOperationException.CacheClosedException to TransactionDataNodeHasDepartedException ");
+        "Expected to translate RemoteOperationException.CacheClosedException to TransactionDataNodeHasDepartedException ");
   }
 
   @Test
@@ -197,7 +195,73 @@ public class AbstractPeerTXRegionStubTest {
 
     txrStub.getRegionKeysForIteration();
     fail(
-        "AbstractPeerTXRegionStub expected to transalate CacheClosedException to TransactionDataNodeHasDepartedException ");
+        "AbstractPeerTXRegionStub expected to translate CacheClosedException to TransactionDataNodeHasDepartedException ");
+  }
+
+  @Test
+  public void getRegionKeysForIterationRethrowTransactionException() {
+    expectedException.expect(TransactionDataNodeHasDepartedException.class);
+
+    when((region).getSystem()).thenThrow(TransactionDataNodeHasDepartedException.class);
+
+    txrStub.getRegionKeysForIteration();
+    fail(
+        "AbstractPeerTXRegionStub expected to rethrow TransactionDataNodeHasDepartedException ");
+  }
+
+  @Test
+  public void getRegionKeysForIterationTranslatesRuntimeException() {
+    expectedException.expect(TransactionException.class);
+
+    when((region).getSystem()).thenThrow(new RuntimeException());
+
+    txrStub.getRegionKeysForIteration();
+    fail(
+        "AbstractPeerTXRegionStub expected to translate RuntimeException to TransactionException ");
+  }
+
+  @Test
+  public void entryCountTranslatesCacheClosedException() {
+    expectedException.expect(TransactionDataNodeHasDepartedException.class);
+
+    when((region).getSystem()).thenThrow(CacheClosedException.class);
+
+    txrStub.entryCount();
+    fail(
+        "AbstractPeerTXRegionStub expected to translate CacheClosedException to TransactionDataNodeHasDepartedException ");
+  }
+
+  @Test
+  public void entryCountTranslatesRegionDestroyedException() {
+    expectedException.expect(TransactionDataNotColocatedException.class);
+
+    when((region).getSystem()).thenThrow(RegionDestroyedException.class);
+
+    txrStub.entryCount();
+    fail(
+        "AbstractPeerTXRegionStub expected to translate CacheClosedException to TransactionDataNodeHasDepartedException ");
+  }
+
+  @Test
+  public void entryCountRethrowTransactionException() {
+    expectedException.expect(TransactionDataNodeHasDepartedException.class);
+
+    when((region).getSystem()).thenThrow(TransactionDataNodeHasDepartedException.class);
+
+    txrStub.entryCount();
+    fail(
+        "AbstractPeerTXRegionStub expected to rethrow TransactionDataNodeHasDepartedException ");
+  }
+
+  @Test
+  public void entryCountTranslatesRuntimeException() {
+    expectedException.expect(TransactionException.class);
+
+    when((region).getSystem()).thenThrow(new RuntimeException());
+
+    txrStub.entryCount();
+    fail(
+        "AbstractPeerTXRegionStub expected to translate RuntimeException to TransactionException ");
   }
 
 }

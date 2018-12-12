@@ -39,7 +39,6 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -83,16 +82,16 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         this.outStream =
             new GZIPOutputStream(new FileOutputStream(archiveDescriptor.getArchiveName()), 32768);
       } catch (IOException ex) {
-        throw new GemFireIOException(LocalizedStrings.StatArchiveWriter_COULD_NOT_OPEN_0
-            .toLocalizedString(archiveDescriptor.getArchiveName()), ex);
+        throw new GemFireIOException(String.format("Could not open %s",
+            archiveDescriptor.getArchiveName()), ex);
       }
     } else {
       try {
         this.outStream = new BufferedOutputStream(
             new FileOutputStream(archiveDescriptor.getArchiveName()), 32768);
       } catch (IOException ex) {
-        throw new GemFireIOException(LocalizedStrings.StatArchiveWriter_COULD_NOT_OPEN_0
-            .toLocalizedString(archiveDescriptor.getArchiveName()), ex);
+        throw new GemFireIOException(String.format("Could not open %s",
+            archiveDescriptor.getArchiveName()), ex);
       }
     }
 
@@ -156,7 +155,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.StatArchiveWriter_COULD_NOT_CLOSE_STATARCHIVER_FILE.toLocalizedString(),
+          "Could not close statArchiver file",
           ex);
     }
     if (getSampleCount() == 0) {
@@ -251,8 +250,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.StatArchiveWriter_FAILED_WRITING_HEADER_TO_STATISTIC_ARCHIVE
-              .toLocalizedString(),
+          "Failed writing header to statistic archive",
           ex);
     }
   }
@@ -264,8 +262,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
     if (resourceType.getStatisticDescriptors().length >= ILLEGAL_STAT_OFFSET) {
       throw new InternalGemFireException(
-          LocalizedStrings.StatArchiveWriter_COULD_NOT_ARCHIVE_TYPE_0_BECAUSE_IT_HAD_MORE_THAN_1_STATISTICS
-              .toLocalizedString(new Object[] {resourceType.getStatisticsType().getName(),
+          String.format("Could not archive type %s because it had more than %s statistics.",
+              new Object[] {resourceType.getStatisticsType().getName(),
                   Integer.valueOf(ILLEGAL_STAT_OFFSET - 1)}));
     }
     // write the type to the archive
@@ -316,8 +314,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.StatArchiveWriter_FAILED_WRITING_NEW_RESOURCE_TYPE_TO_STATISTIC_ARCHIVE
-              .toLocalizedString(),
+          "Failed writing new resource type to statistic archive",
           ex);
     }
   }
@@ -332,10 +329,10 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
     if (statResource.getResourceType().getStatisticDescriptors().length >= ILLEGAL_STAT_OFFSET) {
       throw new InternalGemFireException(
-          LocalizedStrings.StatArchiveWriter_COULD_NOT_ARCHIVE_TYPE_0_BECAUSE_IT_HAD_MORE_THAN_1_STATISTICS
-              .toLocalizedString(
-                  new Object[] {statResource.getResourceType().getStatisticsType().getName(),
-                      Integer.valueOf(ILLEGAL_STAT_OFFSET - 1)}));
+          String.format("Could not archive type %s because it had more than %s statistics.",
+
+              new Object[] {statResource.getResourceType().getStatisticsType().getName(),
+                  Integer.valueOf(ILLEGAL_STAT_OFFSET - 1)}));
     }
     if (statResource.getStatistics().isClosed()) {
       return;
@@ -371,8 +368,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.StatArchiveWriter_FAILED_WRITING_NEW_RESOURCE_INSTANCE_TO_STATISTIC_ARCHIVE
-              .toLocalizedString(),
+          "Failed writing new resource instance to statistic archive",
           ex);
     }
   }
@@ -405,8 +401,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.StatArchiveWriter_FAILED_WRITING_DELETE_RESOURCE_INSTANCE_TO_STATISTIC_ARCHIVE
-              .toLocalizedString(),
+          "Failed writing delete resource instance to statistic archive",
           ex);
     }
   }
@@ -433,9 +428,9 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     if (delta > MAX_SHORT_TIMESTAMP) {
       if (delta > Integer.MAX_VALUE) {
         throw new InternalGemFireException(
-            LocalizedStrings.StatArchiveWriter_TIMESTAMP_DELTA_0_WAS_GREATER_THAN_1
-                .toLocalizedString(
-                    new Object[] {Long.valueOf(delta), Integer.valueOf(Integer.MAX_VALUE)}));
+            String.format("timeStamp delta %s was greater than %s",
+
+                new Object[] {Long.valueOf(delta), Integer.valueOf(Integer.MAX_VALUE)}));
       }
       this.dataOut.writeShort(INT_TIMESTAMP_TOKEN);
       this.dataOut.writeInt((int) delta);
@@ -524,8 +519,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.StatArchiveWriter_FAILED_WRITING_SAMPLE_TO_STATISTIC_ARCHIVE
-              .toLocalizedString(),
+          "Failed writing sample to statistic archive",
           ex);
     }
     this.sampleCount++; // only inc after sample done w/o an exception thrown
@@ -691,9 +685,9 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
       if (idx <= 2) {
         throw new InternalGemFireException(
-            LocalizedStrings.StatArchiveWriter_EXPECTED_IDX_TO_BE_GREATER_THAN_2_IT_WAS_0_FOR_THE_VALUE_1
-                .toLocalizedString(
-                    new Object[] {Integer.valueOf(idx), Long.valueOf(originalValue)}));
+            String.format("Expected idx to be greater than 2. It was %s for the value %s",
+
+                new Object[] {Integer.valueOf(idx), Long.valueOf(originalValue)}));
       }
       int token = COMPACT_VALUE_2_TOKEN + (idx - 2);
       dataOut.writeByte(token);
@@ -753,8 +747,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         writeCompactValue(v, dataOut);
         break;
       default:
-        throw new InternalGemFireException(LocalizedStrings.StatArchiveWriter_UNEXPECTED_TYPE_CODE_0
-            .toLocalizedString(Byte.valueOf(typeCode)));
+        throw new InternalGemFireException(String.format("Unexpected type code %s",
+            Byte.valueOf(typeCode)));
     }
   }
 
@@ -812,42 +806,42 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
 
     public void write(int b) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void write(byte[] b) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void writeBytes(String v) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void writeChar(int v) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void writeChars(String v) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void writeDouble(double v) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void writeFloat(float v) throws IOException {
       throw new RuntimeException(
-          LocalizedStrings.StatArchiveWriter_METHOD_UNIMPLEMENTED.toLocalizedString());
+          "method unimplemented");
     }
 
     public void writeBoolean(boolean v) throws IOException {

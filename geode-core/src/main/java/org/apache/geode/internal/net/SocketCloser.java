@@ -19,19 +19,12 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -46,7 +39,7 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
  * This max threads can be configured using the "p2p.ASYNC_CLOSE_POOL_MAX_THREADS" system property.
  */
 public class SocketCloser {
-  private static final Logger logger = LogService.getLogger();
+
   /**
    * Number of seconds to wait before timing out an unused async close thread. Default is 120 (2
    * minutes).
@@ -65,7 +58,6 @@ public class SocketCloser {
    */
   static final long ASYNC_CLOSE_WAIT_MILLISECONDS =
       Long.getLong("p2p.ASYNC_CLOSE_WAIT_MILLISECONDS", 0).longValue();
-
 
   /**
    * map of thread pools of async close threads
@@ -120,27 +112,7 @@ public class SocketCloser {
   }
 
   private ExecutorService getWorkStealingPool(int maxParallelThreads) {
-    return Executors.newWorkStealingPool(maxParallelThreads);
-  }
-
-  /**
-   * @deprecated since GEODE 1.3.0. Use @link{getWorkStealingPool}
-   */
-  @Deprecated
-  private ExecutorService createThreadPoolExecutor() {
-    final ThreadGroup threadGroup =
-        LoggingThreadGroup.createThreadGroup("Socket asyncClose", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable command) {
-        Thread thread = new Thread(threadGroup, command);
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
-    return new ThreadPoolExecutor(asyncClosePoolMaxThreads, asyncClosePoolMaxThreads,
-        asyncClosePoolKeepAliveSeconds, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
-        threadFactory);
+    return LoggingExecutors.newWorkStealingPool("SocketCloser-", maxParallelThreads);
   }
 
   /**
@@ -148,7 +120,6 @@ public class SocketCloser {
    * longer needed. Currently a thread pool is kept for each address and if you know that an address
    * no longer needs its pool then you should call this method.
    */
-
   public void releaseResourcesForAddress(String address) {
     ExecutorService executorService = asyncCloseExecutors.remove(address);
     if (executorService != null) {
@@ -249,7 +220,6 @@ public class SocketCloser {
    *
    * @param sock the socket to close
    */
-
   private static void inlineClose(final Socket sock) {
     // the next two statements are a mad attempt to fix bug
     // 36041 - segv in jrockit in pthread signaling code. This

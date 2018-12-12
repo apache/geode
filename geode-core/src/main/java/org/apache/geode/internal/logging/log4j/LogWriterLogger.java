@@ -36,15 +36,12 @@ import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessa
 /**
  * Implements GemFireLogger with custom levels while also bridging LogWriter and LogWriterI18n to
  * Log4J.
- *
  */
 @SuppressWarnings("unused")
 public class LogWriterLogger extends FastLogger implements InternalLogWriter, GemFireLogger {
 
   private static final long serialVersionUID = 446081244292135L;
 
-  // TODO:LOG:SECURITY: need to use this either here if isSecure==true or in the security
-  // LogWriterAppender's PatternLayout but not both places
   public static final String SECURITY_PREFIX = DistributionConfig.SECURITY_PREFIX_NAME;
 
   private final ExtendedLoggerWrapper logWrapper;
@@ -55,9 +52,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   private LogWriterLogger(final Logger logger, final String connectionName,
       final boolean isSecure) {
     super((AbstractLogger) logger, logger.getName(), logger.getMessageFactory());
-    this.logWrapper = this;
+    logWrapper = this;
     this.connectionName = connectionName;
-    this.loggerName = getName();
+    loggerName = getName();
     this.isSecure = isSecure;
   }
 
@@ -82,7 +79,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   public static LogWriterLogger create(final String name, final String connectionName,
       final boolean isSecure) {
-    final Logger wrapped = LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE);
+    Logger wrapped = LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE);
     return new LogWriterLogger(wrapped, connectionName, isSecure);
   }
 
@@ -92,15 +89,15 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   public void setLevel(final Level level) {
     if (getLevel().isLessSpecificThan(Level.DEBUG) || level.isLessSpecificThan(Level.DEBUG)) {
-      debug("Changing level for Logger '{}' from {} to {}", this.loggerName, getLevel(), level);
+      debug("Changing level for Logger '{}' from {} to {}", loggerName, getLevel(), level);
     }
 
-    if (LogService.MAIN_LOGGER_NAME.equals(this.loggerName)) {
+    if (LogService.MAIN_LOGGER_NAME.equals(loggerName)) {
       LogService.setBaseLogLevel(level);
-    } else if (LogService.SECURITY_LOGGER_NAME.equals(this.loggerName)) {
+    } else if (LogService.SECURITY_LOGGER_NAME.equals(loggerName)) {
       LogService.setSecurityLogLevel(level);
     } else {
-      Configurator.setLevel(this.loggerName, level);
+      Configurator.setLevel(loggerName, level);
     }
   }
 
@@ -113,21 +110,23 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void finest(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, msg, (Throwable) null);
+  @Override
+  public void finest(final Marker marker, final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, null);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void finest(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, msg, t);
+  @Override
+  public void finest(final Marker marker, final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, throwable);
   }
 
   /**
@@ -136,8 +135,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void finest(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, null);
   }
 
   /**
@@ -146,10 +146,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void finest(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, t);
+  @Override
+  public void finest(final Marker marker, final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, throwable);
   }
 
   /**
@@ -158,8 +159,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void finest(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, (Throwable) null);
   }
 
   /**
@@ -167,11 +169,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void finest(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, params);
+  @Override
+  public void finest(final Marker marker, final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, parameters);
   }
 
   /**
@@ -180,29 +182,32 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void finest(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, t);
+  @Override
+  public void finest(final Marker marker, final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, throwable);
   }
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
    *
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void finest(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, msg, (Throwable) null);
+  @Override
+  public void finest(final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, null);
   }
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
    *
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void finest(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, msg, t);
+  @Override
+  public void finest(final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, throwable);
   }
 
   /**
@@ -210,19 +215,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message object to log.
    */
+  @Override
   public void finest(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void finest(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, t);
+  @Override
+  public void finest(final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, throwable);
   }
 
   /**
@@ -232,73 +239,53 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void finest(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, (Throwable) null);
   }
 
   /**
    * Logs a message with parameters at the {@code Level.TRACE} level.
    *
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
-   */
-  public void finest(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, params);
-  }
-
-  /**
-   * Logs a message at the {@code Level.TRACE} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
-   *
-   * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param parameters parameters to the message.
    */
   @Override
-  public void finest(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, t);
-  }
-
-  /**
-   * Logs a message with the specific Marker at the {@code Level.TRACE} level.
-   *
-   * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   */
-  public void finer(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, msg, (Throwable) null);
-  }
-
-  /**
-   * Logs a message with the specific Marker at the {@code Level.TRACE} level.
-   *
-   * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
-   */
-  public void finer(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, msg, t);
-  }
-
-  /**
-   * Logs a message object with the {@code Level.TRACE} level.
-   *
-   * @param marker the marker data specific to this log statement
-   * @param message the message object to log.
-   */
-  public void finer(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, (Throwable) null);
+  public void finest(final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, parameters);
   }
 
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
    *
-   * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void finer(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, t);
+  @Override
+  public void finest(final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, throwable);
+  }
+
+  /**
+   * Logs a message with the specific Marker at the {@code Level.TRACE} level.
+   *
+   * @param marker the marker data specific to this log statement
+   * @param message the message string to be logged
+   */
+  @Override
+  public void finer(final Marker marker, final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, null);
+  }
+
+  /**
+   * Logs a message with the specific Marker at the {@code Level.TRACE} level.
+   *
+   * @param marker the marker data specific to this log statement
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
+   */
+  @Override
+  public void finer(final Marker marker, final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, throwable);
   }
 
   /**
@@ -307,8 +294,33 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
+  public void finer(final Marker marker, final Object message) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, null);
+  }
+
+  /**
+   * Logs a message at the {@code Level.TRACE} level including the stack trace of the
+   * {@link Throwable} {@code throwable} passed as parameter.
+   *
+   * @param marker the marker data specific to this log statement
+   * @param message the message to log.
+   * @param throwable the exception to log, including its stack trace.
+   */
+  @Override
+  public void finer(final Marker marker, final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, throwable);
+  }
+
+  /**
+   * Logs a message object with the {@code Level.TRACE} level.
+   *
+   * @param marker the marker data specific to this log statement
+   * @param message the message object to log.
+   */
+  @Override
   public void finer(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, (Throwable) null);
   }
 
   /**
@@ -316,42 +328,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void finer(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, params);
+  @Override
+  public void finer(final Marker marker, final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, parameters);
   }
 
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void finer(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, marker, message, t);
+  @Override
+  public void finer(final Marker marker, final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, marker, message, throwable);
   }
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
    *
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void finer(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, msg, (Throwable) null);
+  @Override
+  public void finer(final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, null);
   }
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
    *
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void finer(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, msg, t);
+  @Override
+  public void finer(final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, throwable);
   }
 
   /**
@@ -359,19 +374,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message object to log.
    */
+  @Override
   public void finer(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void finer(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, t);
+  @Override
+  public void finer(final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, throwable);
   }
 
   /**
@@ -381,18 +398,18 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void finer(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, (Throwable) null);
   }
 
   /**
    * Logs a message with parameters at the {@code Level.TRACE} level.
    *
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void finer(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, params);
+  @Override
+  public void finer(final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, parameters);
   }
 
   /**
@@ -400,32 +417,34 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * {@link Throwable} {@code t} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
   @Override
-  public void finer(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.TRACE, null, message, t);
+  public void finer(final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.TRACE, null, message, throwable);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.DEBUG} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void fine(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, msg, (Throwable) null);
+  @Override
+  public void fine(final Marker marker, final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, null);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.DEBUG} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void fine(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, msg, t);
+  @Override
+  public void fine(final Marker marker, final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, throwable);
   }
 
   /**
@@ -434,20 +453,22 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void fine(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void fine(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, message, t);
+  @Override
+  public void fine(final Marker marker, final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, throwable);
   }
 
   /**
@@ -456,8 +477,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void fine(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, (Throwable) null);
   }
 
   /**
@@ -465,42 +487,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void fine(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, message, params);
+  @Override
+  public void fine(final Marker marker, final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, parameters);
   }
 
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void fine(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, marker, message, t);
+  @Override
+  public void fine(final Marker marker, final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, marker, message, throwable);
   }
 
   /**
    * Logs the specified Message at the {@code Level.DEBUG} level.
    *
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void fine(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, msg, (Throwable) null);
+  @Override
+  public void fine(final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, null);
   }
 
   /**
    * Logs the specified Message at the {@code Level.DEBUG} level.
    *
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void fine(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, msg, t);
+  @Override
+  public void fine(final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, throwable);
   }
 
   /**
@@ -508,19 +533,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message object to log.
    */
+  @Override
   public void fine(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void fine(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, message, t);
+  @Override
+  public void fine(final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, throwable);
   }
 
   /**
@@ -530,18 +557,18 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void fine(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, (Throwable) null);
   }
 
   /**
    * Logs a message with parameters at the {@code Level.DEBUG} level.
    *
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void fine(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, message, params);
+  @Override
+  public void fine(final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, parameters);
   }
 
   /**
@@ -549,32 +576,34 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * {@link Throwable} {@code t} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
   @Override
-  public void fine(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.DEBUG, null, message, t);
+  public void fine(final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.DEBUG, null, message, throwable);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.INFO} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void config(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, msg, (Throwable) null);
+  @Override
+  public void config(final Marker marker, final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, null);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.INFO} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void config(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, msg, t);
+  @Override
+  public void config(final Marker marker, final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, throwable);
   }
 
   /**
@@ -583,20 +612,22 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void config(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void config(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, t);
+  @Override
+  public void config(final Marker marker, final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, throwable);
   }
 
   /**
@@ -605,8 +636,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void config(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, (Throwable) null);
   }
 
   /**
@@ -614,42 +646,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void config(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, params);
+  @Override
+  public void config(final Marker marker, final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, parameters);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void config(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, t);
+  @Override
+  public void config(final Marker marker, final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, throwable);
   }
 
   /**
    * Logs the specified Message at the {@code Level.INFO} level.
    *
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void config(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, (Throwable) null);
+  @Override
+  public void config(final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, null);
   }
 
   /**
    * Logs the specified Message at the {@code Level.INFO} level.
    *
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void config(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, t);
+  @Override
+  public void config(final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, throwable);
   }
 
   /**
@@ -657,19 +692,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message object to log.
    */
+  @Override
   public void config(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void config(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, t);
+  @Override
+  public void config(final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, throwable);
   }
 
   /**
@@ -679,18 +716,18 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void config(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, (Throwable) null);
   }
 
   /**
    * Logs a message with parameters at the {@code Level.INFO} level.
    *
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void config(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, params);
+  @Override
+  public void config(final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, parameters);
   }
 
   /**
@@ -698,11 +735,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * {@link Throwable} {@code t} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
   @Override
-  public void config(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, t);
+  public void config(final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, throwable);
   }
 
   /**
@@ -713,7 +750,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, msg, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, msg, null);
   }
 
   /**
@@ -725,7 +762,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, msg, t);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, msg, t);
   }
 
   /**
@@ -736,12 +773,12 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
@@ -749,7 +786,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, t);
   }
 
   /**
@@ -760,7 +797,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, (Throwable) null);
   }
 
   /**
@@ -769,16 +806,15 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
-   * @see #getMessageFactory()
    */
   @Override
   public void info(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, params);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, params);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
@@ -786,7 +822,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, marker, message, t);
   }
 
   /**
@@ -796,7 +832,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, msg, null);
   }
 
   /**
@@ -807,7 +843,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, t);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, msg, t);
   }
 
   /**
@@ -817,19 +853,19 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
   @Override
   public void info(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, t);
   }
 
   /**
@@ -839,7 +875,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, (Throwable) null);
   }
 
   /**
@@ -847,44 +883,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
-   * @see #getMessageFactory()
    */
   @Override
   public void info(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, params);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, params);
   }
 
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
   @Override
   public void info(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.INFO, null, message, t);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.WARN} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void warning(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, msg, (Throwable) null);
+  @Override
+  public void warning(final Marker marker, final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, null);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.WARN} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void warning(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, msg, t);
+  @Override
+  public void warning(final Marker marker, final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, throwable);
   }
 
   /**
@@ -893,20 +930,22 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void warning(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void warning(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, message, t);
+  @Override
+  public void warning(final Marker marker, final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, throwable);
   }
 
   /**
@@ -915,8 +954,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void warning(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, (Throwable) null);
   }
 
   /**
@@ -924,42 +964,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void warning(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, message, params);
+  @Override
+  public void warning(final Marker marker, final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, parameters);
   }
 
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void warning(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, marker, message, t);
+  @Override
+  public void warning(final Marker marker, final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, marker, message, throwable);
   }
 
   /**
    * Logs the specified Message at the {@code Level.WARN} level.
    *
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void warning(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, msg, (Throwable) null);
+  @Override
+  public void warning(final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, null);
   }
 
   /**
    * Logs the specified Message at the {@code Level.WARN} level.
    *
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void warning(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, msg, t);
+  @Override
+  public void warning(final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, throwable);
   }
 
   /**
@@ -967,19 +1010,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message object to log.
    */
+  @Override
   public void warning(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void warning(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, message, t);
+  @Override
+  public void warning(final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, throwable);
   }
 
   /**
@@ -989,18 +1034,18 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void warning(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, (Throwable) null);
   }
 
   /**
    * Logs a message with parameters at the {@code Level.WARN} level.
    *
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void warning(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, message, params);
+  @Override
+  public void warning(final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, parameters);
   }
 
   /**
@@ -1008,11 +1053,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * {@link Throwable} {@code t} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
   @Override
-  public void warning(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.WARN, null, message, t);
+  public void warning(final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.WARN, null, message, throwable);
   }
 
   /**
@@ -1023,7 +1068,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, msg, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, msg, null);
   }
 
   /**
@@ -1035,7 +1080,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, msg, t);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, msg, t);
   }
 
   /**
@@ -1046,12 +1091,12 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
@@ -1059,7 +1104,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, message, t);
   }
 
   /**
@@ -1070,7 +1115,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, message, (Throwable) null);
   }
 
   /**
@@ -1079,16 +1124,15 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
-   * @see #getMessageFactory()
    */
   @Override
   public void error(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, message, params);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, message, params);
   }
 
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
@@ -1096,7 +1140,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, marker, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, marker, message, t);
   }
 
   /**
@@ -1106,7 +1150,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, msg, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, msg, null);
   }
 
   /**
@@ -1117,7 +1161,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, msg, t);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, msg, t);
   }
 
   /**
@@ -1127,19 +1171,19 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
   @Override
   public void error(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, message, t);
   }
 
   /**
@@ -1149,7 +1193,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void error(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, message, (Throwable) null);
   }
 
   /**
@@ -1157,44 +1201,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
-   * @see #getMessageFactory()
    */
   @Override
   public void error(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, message, params);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, message, params);
   }
 
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
   @Override
   public void error(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.ERROR, null, message, t);
+    logWrapper.logIfEnabled(loggerName, Level.ERROR, null, message, t);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.FATAL} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void severe(final Marker marker, final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, msg, (Throwable) null);
+  @Override
+  public void severe(final Marker marker, final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, null);
   }
 
   /**
    * Logs a message with the specific Marker at the {@code Level.FATAL} level.
    *
    * @param marker the marker data specific to this log statement
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void severe(final Marker marker, final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, msg, t);
+  @Override
+  public void severe(final Marker marker, final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, throwable);
   }
 
   /**
@@ -1203,20 +1248,22 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void severe(final Marker marker, final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void severe(final Marker marker, final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, message, t);
+  @Override
+  public void severe(final Marker marker, final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, throwable);
   }
 
   /**
@@ -1225,8 +1272,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
+  @Override
   public void severe(final Marker marker, final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, (Throwable) null);
   }
 
   /**
@@ -1234,42 +1282,45 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void severe(final Marker marker, final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, message, params);
+  @Override
+  public void severe(final Marker marker, final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, parameters);
   }
 
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void severe(final Marker marker, final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, marker, message, t);
+  @Override
+  public void severe(final Marker marker, final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, marker, message, throwable);
   }
 
   /**
    * Logs the specified Message at the {@code Level.FATAL} level.
    *
-   * @param msg the message string to be logged
+   * @param message the message string to be logged
    */
-  public void severe(final Message msg) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, msg, (Throwable) null);
+  @Override
+  public void severe(final Message message) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, null);
   }
 
   /**
    * Logs the specified Message at the {@code Level.FATAL} level.
    *
-   * @param msg the message string to be logged
-   * @param t A Throwable or null.
+   * @param message the message string to be logged
+   * @param throwable A Throwable or null.
    */
-  public void severe(final Message msg, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, msg, t);
+  @Override
+  public void severe(final Message message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, throwable);
   }
 
   /**
@@ -1277,19 +1328,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    *
    * @param message the message object to log.
    */
+  @Override
   public void severe(final Object message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, null);
   }
 
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
-   * {@link Throwable} {@code t} passed as parameter.
+   * {@link Throwable} {@code throwable} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack trace.
+   * @param throwable the exception to log, including its stack trace.
    */
-  public void severe(final Object message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, message, t);
+  @Override
+  public void severe(final Object message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, throwable);
   }
 
   /**
@@ -1299,18 +1352,18 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void severe(final String message) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, message, (Throwable) null);
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, (Throwable) null);
   }
 
   /**
    * Logs a message with parameters at the {@code Level.FATAL} level.
    *
    * @param message the message to log; the format depends on the message factory.
-   * @param params parameters to the message.
-   * @see #getMessageFactory()
+   * @param parameters parameters to the message.
    */
-  public void severe(final String message, final Object... params) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, message, params);
+  @Override
+  public void severe(final String message, final Object... parameters) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, parameters);
   }
 
   /**
@@ -1318,17 +1371,16 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    * {@link Throwable} {@code t} passed as parameter.
    *
    * @param message the message to log.
-   * @param t the exception to log, including its stack
-   *        trace.LogService.getLogWriterLogger().enter()
+   * @param throwable the exception to log, including its stack
    */
   @Override
-  public void severe(final String message, final Throwable t) {
-    this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, message, t);
+  public void severe(final String message, final Throwable throwable) {
+    logWrapper.logIfEnabled(loggerName, Level.FATAL, null, message, throwable);
   }
 
-  public void log(int logWriterLevel, final String message, final Throwable t) {
+  public void log(int logWriterLevel, final String message, final Throwable throwable) {
     Level level = LogLevel.getLog4jLevel(logWriterLevel);
-    this.logWrapper.logIfEnabled(this.loggerName, level, null, message, t);
+    logWrapper.logIfEnabled(loggerName, level, null, message, throwable);
   }
 
   @Override
@@ -1373,23 +1425,22 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   @Override
   public void entering(String sourceClass, String sourceMethod) {
-    this.finer("ENTRY {}:{}", sourceClass, sourceMethod);
+    finer("ENTRY {}:{}", sourceClass, sourceMethod);
   }
 
   @Override
   public void exiting(String sourceClass, String sourceMethod) {
-    this.finer("RETURN {}:{}", sourceClass, sourceMethod);
+    finer("RETURN {}:{}", sourceClass, sourceMethod);
   }
 
   @Override
   public void throwing(String sourceClass, String sourceMethod, Throwable thrown) {
-    this.finer("THROW {}:{}", sourceClass, sourceMethod, thrown);
+    finer("THROW {}:{}", sourceClass, sourceMethod, thrown);
   }
 
   @Override
   public Handler getHandler() {
-    return new GemFireHandler(this); // TODO:LOG:CLEANUP: DO WE NEED A DIFFERENT HANDLER OR IS THIS
-                                     // OKAY?
+    return new GemFireHandler(this);
   }
 
   @Override
@@ -1398,256 +1449,252 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   }
 
   @Override
-  public void severe(Throwable ex) {
-    severe((String) null, ex);
+  public void severe(Throwable throwable) {
+    severe((String) null, throwable);
   }
 
   @Override
-  public void error(Throwable ex) {
-    error((String) null, ex);
+  public void error(Throwable throwable) {
+    error((String) null, throwable);
   }
 
   @Override
-  public void warning(Throwable ex) {
-    warning((String) null, ex);
+  public void warning(Throwable throwable) {
+    warning((String) null, throwable);
   }
 
   @Override
-  public void info(Throwable ex) {
-    info((String) null, ex);
+  public void info(Throwable throwable) {
+    info((String) null, throwable);
   }
 
   @Override
-  public void config(Throwable ex) {
-    config((String) null, ex);
+  public void config(Throwable throwable) {
+    config((String) null, throwable);
   }
 
   @Override
-  public void fine(Throwable ex) {
-    fine((String) null, ex);
+  public void fine(Throwable throwable) {
+    fine((String) null, throwable);
   }
 
   @Override
-  public void finer(Throwable ex) {
-    finer((String) null, ex);
+  public void finer(Throwable throwable) {
+    finer((String) null, throwable);
   }
 
   @Override
-  public void finest(Throwable ex) {
-    finest((String) null, ex);
+  public void finest(Throwable throwable) {
+    finest((String) null, throwable);
   }
 
-  /********************************************
-   * Methods below are specific to LogWriterI18n
-   *********************************************/
-
   @Override
-  public void severe(StringId msgID, Object[] params, Throwable ex) {
+  public void severe(StringId messageId, Object[] parameters, Throwable throwable) {
     if (isEnabled(Level.FATAL)) {
-      severe(msgID.toLocalizedString(params), ex);
+      severe(messageId.toLocalizedString(parameters), throwable);
     }
   }
 
   @Override
-  public void severe(StringId msgID, Object param, Throwable ex) {
+  public void severe(StringId messageId, Object parameter, Throwable throwable) {
     if (isEnabled(Level.FATAL)) {
-      severe(msgID.toLocalizedString(param), ex);
+      severe(messageId.toLocalizedString(parameter), throwable);
     }
   }
 
   @Override
-  public void severe(StringId msgID, Throwable ex) {
+  public void severe(StringId messageId, Throwable throwable) {
     if (isEnabled(Level.FATAL)) {
-      severe(msgID.toLocalizedString(), ex);
+      severe(messageId.toLocalizedString(), throwable);
     }
   }
 
   @Override
-  public void severe(StringId msgID, Object[] params) {
+  public void severe(StringId messageId, Object[] parameters) {
     if (isEnabled(Level.FATAL)) {
-      severe(msgID.toLocalizedString(params));
+      severe(messageId.toLocalizedString(parameters));
     }
   }
 
   @Override
-  public void severe(StringId msgID, Object param) {
+  public void severe(StringId messageId, Object parameter) {
     if (isEnabled(Level.FATAL)) {
-      severe(msgID.toLocalizedString(param));
+      severe(messageId.toLocalizedString(parameter));
     }
   }
 
   @Override
-  public void severe(StringId msgID) {
+  public void severe(StringId messageId) {
     if (isEnabled(Level.FATAL)) {
-      severe(msgID.toLocalizedString());
+      severe(messageId.toLocalizedString());
     }
   }
 
   @Override
-  public void error(StringId msgID, Object[] params, Throwable ex) {
+  public void error(StringId messageId, Object[] parameters, Throwable throwable) {
     if (isEnabled(Level.ERROR)) {
-      error(msgID.toLocalizedString(params), ex);
+      error(messageId.toLocalizedString(parameters), throwable);
     }
   }
 
   @Override
-  public void error(StringId msgID, Object param, Throwable ex) {
+  public void error(StringId messageId, Object parameter, Throwable throwable) {
     if (isEnabled(Level.ERROR)) {
-      error(msgID.toLocalizedString(param), ex);
+      error(messageId.toLocalizedString(parameter), throwable);
     }
   }
 
   @Override
-  public void error(StringId msgID, Throwable ex) {
+  public void error(StringId messageId, Throwable throwable) {
     if (isEnabled(Level.ERROR)) {
-      error(msgID.toLocalizedString(), ex);
+      error(messageId.toLocalizedString(), throwable);
     }
   }
 
   @Override
-  public void error(StringId msgID, Object[] params) {
+  public void error(StringId messageId, Object[] parameters) {
     if (isEnabled(Level.ERROR)) {
-      error(msgID.toLocalizedString(params));
+      error(messageId.toLocalizedString(parameters));
     }
   }
 
   @Override
-  public void error(StringId msgID, Object param) {
+  public void error(StringId messageId, Object parameter) {
     if (isEnabled(Level.ERROR)) {
-      error(msgID.toLocalizedString(param));
+      error(messageId.toLocalizedString(parameter));
     }
   }
 
   @Override
-  public void error(StringId msgID) {
+  public void error(StringId messageId) {
     if (isEnabled(Level.ERROR)) {
-      error(msgID.toLocalizedString());
+      error(messageId.toLocalizedString());
     }
   }
 
   @Override
-  public void warning(StringId msgID, Object[] params, Throwable ex) {
+  public void warning(StringId messageId, Object[] parameters, Throwable throwable) {
     if (isEnabled(Level.WARN)) {
-      warning(msgID.toLocalizedString(params), ex);
+      warning(messageId.toLocalizedString(parameters), throwable);
     }
   }
 
   @Override
-  public void warning(StringId msgID, Object param, Throwable ex) {
+  public void warning(StringId messageId, Object parameter, Throwable throwable) {
     if (isEnabled(Level.WARN)) {
-      warning(msgID.toLocalizedString(param), ex);
+      warning(messageId.toLocalizedString(parameter), throwable);
     }
   }
 
   @Override
-  public void warning(StringId msgID, Throwable ex) {
+  public void warning(StringId messageId, Throwable throwable) {
     if (isEnabled(Level.WARN)) {
-      warning(msgID.toLocalizedString(), ex);
+      warning(messageId.toLocalizedString(), throwable);
     }
   }
 
   @Override
-  public void warning(StringId msgID, Object[] params) {
+  public void warning(StringId messageId, Object[] parameters) {
     if (isEnabled(Level.WARN)) {
-      warning(msgID.toLocalizedString(params));
+      warning(messageId.toLocalizedString(parameters));
     }
   }
 
   @Override
-  public void warning(StringId msgID, Object param) {
+  public void warning(StringId messageId, Object parameter) {
     if (isEnabled(Level.WARN)) {
-      warning(msgID.toLocalizedString(param));
+      warning(messageId.toLocalizedString(parameter));
     }
   }
 
   @Override
-  public void warning(StringId msgID) {
+  public void warning(StringId messageId) {
     if (isEnabled(Level.WARN)) {
-      warning(msgID.toLocalizedString());
+      warning(messageId.toLocalizedString());
     }
   }
 
   @Override
-  public void info(StringId msgID, Object[] params, Throwable ex) {
+  public void info(StringId messageId, Object[] parameters, Throwable throwable) {
     if (isEnabled(Level.INFO)) {
-      info(msgID.toLocalizedString(params), ex);
+      info(messageId.toLocalizedString(parameters), throwable);
     }
   }
 
   @Override
-  public void info(StringId msgID, Object param, Throwable ex) {
+  public void info(StringId messageId, Object parameter, Throwable throwable) {
     if (isEnabled(Level.INFO)) {
-      info(msgID.toLocalizedString(param), ex);
+      info(messageId.toLocalizedString(parameter), throwable);
     }
   }
 
   @Override
-  public void info(StringId msgID, Throwable ex) {
+  public void info(StringId messageId, Throwable throwable) {
     if (isEnabled(Level.INFO)) {
-      info(msgID.toLocalizedString(), ex);
+      info(messageId.toLocalizedString(), throwable);
     }
   }
 
   @Override
-  public void info(StringId msgID, Object[] params) {
+  public void info(StringId messageId, Object[] parameters) {
     if (isEnabled(Level.INFO)) {
-      info(msgID.toLocalizedString(params));
+      info(messageId.toLocalizedString(parameters));
     }
   }
 
   @Override
-  public void info(StringId msgID, Object param) {
+  public void info(StringId messageId, Object parameter) {
     if (isEnabled(Level.INFO)) {
-      info(msgID.toLocalizedString(param));
+      info(messageId.toLocalizedString(parameter));
     }
   }
 
   @Override
-  public void info(StringId msgID) {
+  public void info(StringId messageId) {
     if (isEnabled(Level.INFO)) {
-      info(msgID.toLocalizedString());
+      info(messageId.toLocalizedString());
     }
   }
 
   @Override
-  public void config(StringId msgID, Object[] params, Throwable ex) {
+  public void config(StringId messageId, Object[] parameters, Throwable throwable) {
     if (isEnabled(Level.INFO)) {
-      config(msgID.toLocalizedString(params), ex);
+      config(messageId.toLocalizedString(parameters), throwable);
     }
   }
 
   @Override
-  public void config(StringId msgID, Object param, Throwable ex) {
+  public void config(StringId messageId, Object parameter, Throwable throwable) {
     if (isEnabled(Level.INFO)) {
-      config(msgID.toLocalizedString(param), ex);
+      config(messageId.toLocalizedString(parameter), throwable);
     }
   }
 
   @Override
-  public void config(StringId msgID, Throwable ex) {
+  public void config(StringId messageId, Throwable throwable) {
     if (isEnabled(Level.INFO)) {
-      config(msgID.toLocalizedString(), ex);
+      config(messageId.toLocalizedString(), throwable);
     }
   }
 
   @Override
-  public void config(StringId msgID, Object[] params) {
+  public void config(StringId messageId, Object[] parameters) {
     if (isEnabled(Level.INFO)) {
-      config(msgID.toLocalizedString(params));
+      config(messageId.toLocalizedString(parameters));
     }
   }
 
   @Override
-  public void config(StringId msgID, Object param) {
+  public void config(StringId messageId, Object parameter) {
     if (isEnabled(Level.INFO)) {
-      config(msgID.toLocalizedString(param));
+      config(messageId.toLocalizedString(parameter));
     }
   }
 
   @Override
-  public void config(StringId msgID) {
+  public void config(StringId messageId) {
     if (isEnabled(Level.INFO)) {
-      config(msgID.toLocalizedString());
+      config(messageId.toLocalizedString());
     }
   }
 
@@ -1658,7 +1705,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   @Override
   public int getLogWriterLevel() {
-    final Level log4jLevel = this.logWrapper.getLevel();
+    final Level log4jLevel = logWrapper.getLevel();
 
     if (log4jLevel == Level.OFF) {
       return InternalLogWriter.NONE_LEVEL;
@@ -1684,21 +1731,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   @Override
   public boolean isSecure() {
-    return this.isSecure;
+    return isSecure;
   }
 
   @Override
-  public void put(int msgLevel, String msg, Throwable exception) {
-    log(msgLevel, msg, exception);
+  public void put(int messageLevel, String message, Throwable throwable) {
+    log(messageLevel, message, throwable);
   }
 
   @Override
-  public void put(int msgLevel, StringId msgId, Object[] params, Throwable exception) {
-    log(msgLevel, msgId.toLocalizedString(params), exception);
+  public void put(int messageLevel, StringId messageId, Object[] parameters, Throwable throwable) {
+    log(messageLevel, messageId.toLocalizedString(parameters), throwable);
   }
 
   @Override
   public String getConnectionName() {
-    return this.connectionName;
+    return connectionName;
   }
 }

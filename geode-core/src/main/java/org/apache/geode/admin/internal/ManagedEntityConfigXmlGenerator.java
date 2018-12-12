@@ -49,7 +49,6 @@ import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Generates XML data that represents the managed entities in an
@@ -115,8 +114,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
 
     } catch (Exception ex) {
       RuntimeException ex2 = new RuntimeException(
-          LocalizedStrings.ManagedEntityConfigXmlGenerator_EXCEPTION_THROWN_WHILE_GENERATING_XML
-              .toLocalizedString());
+          "Exception thrown while generating XML.");
       ex2.initCause(ex);
       throw ex2;
     }
@@ -146,8 +144,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
 
     } catch (AdminException ex) {
       throw new SAXException(
-          LocalizedStrings.ManagedEntityConfigXmlGenerator_AN_ADMINEXCEPTION_WAS_THROWN_WHILE_GENERATING_XML
-              .toLocalizedString(),
+          "An AdminException was thrown while generating XML.",
           ex);
     }
 

@@ -17,8 +17,7 @@
 apply plugin: 'war'
 
 dependencies {
-    compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-    testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
 }
 
 war {

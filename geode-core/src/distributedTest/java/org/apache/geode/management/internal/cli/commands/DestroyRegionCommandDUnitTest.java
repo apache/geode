@@ -115,12 +115,15 @@ public class DestroyRegionCommandDUnitTest {
       InternalConfigurationPersistenceService service =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration group1Config = service.getConfiguration("group1");
-      assertThat(group1Config.getCacheXmlContent()).contains("<region name=\"region1\">\n"
-          + "    <region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
+      assertThat(group1Config.getCacheXmlContent())
+          .containsOnlyOnce("<region name=\"region1\">")
+          .containsOnlyOnce("<region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
 
       Configuration clusterConfig = service.getConfiguration("group2");
-      assertThat(clusterConfig.getCacheXmlContent()).contains("<region name=\"region1\">\n"
-          + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>");
+      assertThat(clusterConfig.getCacheXmlContent())
+          .containsOnlyOnce("<region name=\"region1\">")
+          .containsOnlyOnce(
+              "<region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>");
     });
 
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()

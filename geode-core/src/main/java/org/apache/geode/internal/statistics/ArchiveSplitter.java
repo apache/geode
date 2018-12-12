@@ -31,7 +31,6 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -91,15 +90,15 @@ public class ArchiveSplitter implements StatArchiveFormat {
     byte archiveVersion = dataIn.readByte();
     if (archiveVersion <= 1) {
       throw new GemFireIOException(
-          LocalizedStrings.ArchiveSplitter_ARCHIVE_VERSION_0_IS_NO_LONGER_SUPPORTED
-              .toLocalizedString(new Byte(archiveVersion)),
+          String.format("Archive version: %s is no longer supported.",
+              new Byte(archiveVersion)),
           null);
     }
     if (archiveVersion > ARCHIVE_VERSION) {
       throw new GemFireIOException(
-          LocalizedStrings.ArchiveSplitter_UNSUPPORTED_ARCHIVE_VERSION_0_THE_SUPPORTED_VERSION_IS_1
-              .toLocalizedString(
-                  new Object[] {new Byte(archiveVersion), new Byte(ARCHIVE_VERSION)}),
+          String.format("Unsupported archive version: %s .  The supported version is: %s .",
+
+              new Object[] {new Byte(archiveVersion), new Byte(ARCHIVE_VERSION)}),
           null);
     }
 
@@ -242,8 +241,8 @@ public class ArchiveSplitter implements StatArchiveFormat {
             instBits[i] = readCompactValue();
             break;
           default:
-            throw new IOException(LocalizedStrings.ArchiveSplitter_UNEXPECTED_TYPECODE_VALUE_0
-                .toLocalizedString(new Byte(instTypeCodes[i])));
+            throw new IOException(String.format("unexpected typeCode value %s",
+                new Byte(instTypeCodes[i])));
         }
       }
     }
@@ -325,8 +324,8 @@ public class ArchiveSplitter implements StatArchiveFormat {
             statDeltaBits = readCompactValue();
             break;
           default:
-            throw new IOException(LocalizedStrings.ArchiveSplitter_UNEXPECTED_TYPECODE_VALUE_0
-                .toLocalizedString(new Byte(typeCodes[statOffset])));
+            throw new IOException(String.format("unexpected typeCode value %s",
+                new Byte(typeCodes[statOffset])));
         }
         bits[statOffset] += statDeltaBits;
         statOffset = dataIn.readUnsignedByte();
@@ -365,8 +364,8 @@ public class ArchiveSplitter implements StatArchiveFormat {
           this.myIs.putBytes(this.dataOut);
           break;
         default:
-          throw new IOException(LocalizedStrings.ArchiveSplitter_UNEXPECTED_TOKEN_BYTE_VALUE_0
-              .toLocalizedString(new Byte(token)));
+          throw new IOException(String.format("Unexpected token byte value: %s",
+              new Byte(token)));
       }
       return true;
     } catch (EOFException ignore) {
@@ -545,8 +544,8 @@ public class ArchiveSplitter implements StatArchiveFormat {
 
   public static void main(String args[]) throws IOException {
     if (args.length != 1) {
-      System.err.println(LocalizedStrings.ArchiveSplitter_USAGE.toLocalizedString()
-          + ": org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");
+      System.err
+          .println("Usage: org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");
       ExitCode.FATAL.doSystemExit();
     }
     ArchiveSplitter as = new ArchiveSplitter(new File(args[0]));

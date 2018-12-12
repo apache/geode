@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.DependenciesNotFoundException;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.remote.MemberCommandService;
@@ -123,8 +122,9 @@ public abstract class CommandService {
       String nonExistingDependency = CliUtil.cliDependenciesExist(false);
       if (nonExistingDependency != null) {
         throw new DependenciesNotFoundException(
-            LocalizedStrings.CommandServiceManager_COULD_NOT_FIND__0__LIB_NEEDED_FOR_CLI_GFSH
-                .toLocalizedString(nonExistingDependency));
+            String.format(
+                "Could not find %s library which is needed for CLI/gfsh in classpath. Internal support for CLI & gfsh is not enabled. Note: For convenience, absolute path of gfsh-dependencies.jar from lib directory of GemFire product distribution can be included in CLASSPATH of an application.",
+                nonExistingDependency));
       }
 
       localCommandService = new MemberCommandService((InternalCache) cache);

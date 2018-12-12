@@ -30,9 +30,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * AbstractPoolCache implements the ConnectionPoolCache interface. This is base class for the all
@@ -87,9 +86,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     INIT_LIMIT = Math.min(configs.getInitialPoolSize(), MAX_LIMIT);
     configProps = configs;
     cleaner = this.new ConnectionCleanUpThread();
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("Cleaner threads");
-    th = new Thread(group, cleaner);
-    th.setDaemon(true);
+    th = new LoggingThread("ConnectionCleanUpThread", cleaner);
     th.start();
   }
 
@@ -110,17 +107,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     }
   }
 
-  /**
-   * Authenticates the username and password for the database connection.
-   *
-   * @param user The username for the database connection
-   * @param pass The password for the database connection
-   *
-   *        public abstract void checkCredentials(String user, String pass)
-   */
-  /**
-   * @return ???
-   */
   public abstract Object getNewPoolConnection() throws PoolException;
 
   /**
@@ -246,8 +232,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
           long duration = newtime - now;
           if (duration > loginTimeOut)
             throw new PoolException(
-                LocalizedStrings.AbstractPoolCache_ABSTRACTPOOLEDCACHEGETPOOLEDCONNECTIONFROMPOOLLOGIN_TIMEOUT_EXCEEDED
-                    .toLocalizedString());
+                "AbstractPooledCache::getPooledConnectionFromPool:Login time-out exceeded");
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           // TODO add a cancellation check?
@@ -256,8 +241,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
                 "AbstractPooledCache::getPooledConnectionFromPool:InterruptedException in waiting thread");
           }
           throw new PoolException(
-              LocalizedStrings.AbstractPoolCache_ABSTRACTPOOLEDCACHEGETPOOLEDCONNECTIONFROMPOOLINTERRUPTEDEXCEPTION_IN_WAITING_THREAD
-                  .toLocalizedString());
+              "AbstractPooledCache::getPooledConnectionFromPool:InterruptedException in waiting thread");
         }
       }
       if ((totalConnections - activeConnections) > 0) {

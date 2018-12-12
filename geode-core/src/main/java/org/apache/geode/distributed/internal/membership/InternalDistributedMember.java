@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
@@ -46,7 +46,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -94,6 +93,19 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   /** product version bit flag */
   private static final int VERSION_BIT = 0x8;
+
+  @FunctionalInterface
+  public interface HostnameResolver {
+    InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
+  }
+
+  public static void setHostnameResolver(final HostnameResolver hostnameResolver) {
+    InternalDistributedMember.hostnameResolver = hostnameResolver;
+  }
+
+  /** Retrieves an InetAddress given the provided hostname */
+  private static HostnameResolver hostnameResolver =
+      (location) -> InetAddress.getByName(location.getHostName());
 
   /**
    * Representing the host name of this member.
@@ -214,12 +226,13 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   public InternalDistributedMember(ServerLocation location) {
     this.hostName = location.getHostName();
-    InetAddress addr = null;
+    final InetAddress addr;
     try {
-      addr = InetAddress.getByName(this.hostName);
+      addr = hostnameResolver.getInetAddress(location);
     } catch (UnknownHostException e) {
-      throw new GemFireConfigException("Unable to resolve server location " + location, e);
+      throw new ServerConnectivityException("Unable to resolve server location " + location, e);
     }
+
     netMbr = MemberFactory.newNetMember(addr, location.getPort());
     netMbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     versionObj = Version.CURRENT;
@@ -507,8 +520,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // obligatory type check
     if ((o == null) || !(o instanceof InternalDistributedMember))
       throw new ClassCastException(
-          LocalizedStrings.InternalDistributedMember_INTERNALDISTRIBUTEDMEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES
-              .toLocalizedString());
+          "InternalDistributedMember.compareTo(): comparison between different classes");
     InternalDistributedMember other = (InternalDistributedMember) o;
 
     int myPort = getPort();
@@ -922,8 +934,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // disabled to allow post-connect setting of the port for loner systems
     // Assert.assertTrue(getPort() > 0);
     // if (this.getPort() == 0) {
-    // InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG,
-    // "Serializing ID with zero port", new Exception("Stack trace"));
+    // InternalDistributedSystem.getLogger().warning(String.format("%s",
+    // "Serializing ID with zero port", new Exception("Stack trace")));
     // }
 
     // NOTE: If you change the serialized format of this class

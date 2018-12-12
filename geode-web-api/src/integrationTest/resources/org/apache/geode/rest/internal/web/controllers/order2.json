@@ -1,0 +1,28 @@
+{
+  "@type": "org.apache.geode.rest.internal.web.controllers.Order",
+  "purchaseOrderNo": 112,
+  "customerId": 102,
+  "description": "Purchase order for company - B",
+  "orderDate": "02/10/2014",
+  "deliveryDate": "02/20/2014",
+  "contact": "John Blum",
+  "email": "jblum@pivotal.io",
+  "phone": "01-2048096",
+  "totalPrice": 225,
+  "items": [
+    {
+      "itemNo": 1,
+      "description": "Product-3",
+      "quantity": 6,
+      "unitPrice": 20,
+      "totalPrice": 120
+    },
+    {
+      "itemNo": 2,
+      "description": "Product-4",
+      "quantity": 10,
+      "unitPrice": 10.5,
+      "totalPrice": 105
+    }
+  ]
+}

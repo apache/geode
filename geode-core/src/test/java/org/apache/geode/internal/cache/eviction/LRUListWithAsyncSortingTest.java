@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -178,7 +177,7 @@ public class LRUListWithAsyncSortingTest {
     list.incrementRecentlyUsed();
 
     // unsetRecentlyUsed() is called once during scan
-    await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     realExecutor.shutdown();
   }
@@ -197,7 +196,7 @@ public class LRUListWithAsyncSortingTest {
     list.incrementRecentlyUsed();
 
     // unsetRecentlyUsed() is called once during scan
-    await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     realExecutor.shutdown();
   }
@@ -227,7 +226,7 @@ public class LRUListWithAsyncSortingTest {
     list.incrementRecentlyUsed();
 
     // unsetRecentlyUsed() is called once during scan
-    await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     assertThat(list.tail.previous()).isEqualTo(recentlyUsedNode);
     realExecutor.shutdown();

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.cache.query.internal.cq.CqAttributesImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * The factory class for the CqAttributes instance. This provides the CqListener setter methods.
@@ -68,8 +67,7 @@ public class CqAttributesFactory {
   public void addCqListener(CqListener cqListener) {
     if (cqListener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.CqAttributesFactory_ADDCQLISTENER_PARAMETER_WAS_NULL
-              .toLocalizedString());
+          "addCqListener parameter was null");
     }
     this.cqAttributes.addCqListener(cqListener);
   }
@@ -87,8 +85,7 @@ public class CqAttributesFactory {
       List nl = Arrays.asList(cqListeners);
       if (nl.contains(null)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.CqAttributesFactory_INITCQLISTENERS_PARAMETER_HAD_A_NULL_ELEMENT
-                .toLocalizedString());
+            "initCqListeners parameter had a null element");
       }
       this.cqAttributes.setCqListeners(new ArrayList(nl));
     }

@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.map;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
@@ -85,7 +86,7 @@ public class RegionMapDestroy {
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     if (internalRegion == null) {
-      Assert.assertTrue(false, "The internalRegion for RegionMap " + this // "fix" for bug 32440
+      throw new InternalGemFireError("The internalRegion for RegionMap " + this
           + " is null for event " + event);
     }
 
@@ -105,8 +106,8 @@ public class RegionMapDestroy {
     }
 
     cacheModificationLock.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
-
       while (retry) {
         retry = false;
         opCompleted = false;
@@ -172,6 +173,9 @@ public class RegionMapDestroy {
       } // retry loop
 
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       cacheModificationLock.releaseCacheModificationLock(internalRegion, event);
     }
     return false;
@@ -354,8 +358,7 @@ public class RegionMapDestroy {
           doContinue = true;
           return;
         }
-        regionEntry = (RegionEntry) focusedRegionMap.getEntryMap().putIfAbsent(event.getKey(),
-            newRegionEntry);
+        regionEntry = focusedRegionMap.putEntryIfAbsent(event.getKey(), newRegionEntry);
         if (regionEntry != null && regionEntry != tombstone) {
           // concurrent change - try again
           retry = true;
@@ -484,6 +487,11 @@ public class RegionMapDestroy {
         // tombstone version info
         focusedRegionMap.processVersionTag(tombstone, event);
         if (doPart3) {
+          // TODO: this looks like dead code. We only get here if doPart3 is true
+          // but then only happens if !event.isOriginRemote() && concurrencyChecks().
+          // But if we have a versionTag then we will have concurrencyChecks().
+          // If concurrencyChecks is false then this code makes no sense;
+          // we should not be doing anything with version tags in that case.
           internalRegion.generateAndSetVersionTag(event, newRegionEntry);
         }
         // This is not conflict, we need to persist the tombstone again with new

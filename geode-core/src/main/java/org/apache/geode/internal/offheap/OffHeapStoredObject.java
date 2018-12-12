@@ -577,7 +577,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     }
   }
 
-  public void setDataSize(int dataSize) { // KIRK
+  public void setDataSize(int dataSize) {
     assert dataSize <= getSize();
     int delta = getSize() - dataSize;
     assert delta <= (DATA_SIZE_DELTA_MASK >> DATA_SIZE_SHIFT);

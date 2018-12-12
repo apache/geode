@@ -42,7 +42,7 @@ public class JdkTool {
         return getJdkToolPathname("jvisualvm" + getExecutableSuffix(),
             new VisualVmNotFoundException(CliStrings.START_JVISUALVM__NOT_FOUND_ERROR_MESSAGE));
       } catch (VisualVmNotFoundException e) {
-        if (!SystemUtils.isJavaVersionAtLeast("1.6")) {
+        if (!org.apache.commons.lang.SystemUtils.isJavaVersionAtLeast(1.6f)) {
           throw new VisualVmNotFoundException(
               CliStrings.START_JVISUALVM__EXPECTED_JDK_VERSION_ERROR_MESSAGE);
         }

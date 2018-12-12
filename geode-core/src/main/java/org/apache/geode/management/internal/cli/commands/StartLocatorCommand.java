@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +51,6 @@ import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
-import org.apache.geode.management.internal.cli.util.CauseFinder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.cli.util.HostUtils;
@@ -129,8 +129,47 @@ public class StartLocatorCommand extends InternalGfshCommand {
       memberName = StartMemberUtils.getNameGenerator().generate('-');
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
+    workingDirectory = StartMemberUtils.resolveWorkingDir(
+        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
 
+    return doStartLocator(memberName, bindAddress, classpath, force, group, hostnameForClients,
+        jmxManagerHostnameForClients, includeSystemClasspath, locators, logLevel, mcastBindAddress,
+        mcastPort, port, workingDirectory, gemfirePropertiesFile, gemfireSecurityPropertiesFile,
+        initialHeap, maxHeap, jvmArgsOpts, connect, enableSharedConfiguration,
+        loadSharedConfigurationFromDirectory, clusterConfigDir, httpServicePort,
+        httpServiceBindAddress, redirectOutput);
+
+  }
+
+  Result doStartLocator(
+      String memberName,
+      String bindAddress,
+      String classpath,
+      Boolean force,
+      String group,
+      String hostnameForClients,
+      String jmxManagerHostnameForClients,
+      Boolean includeSystemClasspath,
+      String locators,
+      String logLevel,
+      String mcastBindAddress,
+      Integer mcastPort,
+      Integer port,
+      String workingDirectory,
+      File gemfirePropertiesFile,
+      File gemfireSecurityPropertiesFile,
+      String initialHeap,
+      String maxHeap,
+      String[] jvmArgsOpts,
+      boolean connect,
+      boolean enableSharedConfiguration,
+      boolean loadSharedConfigurationFromDirectory,
+      String clusterConfigDir,
+      Integer httpServicePort,
+      String httpServiceBindAddress,
+      Boolean redirectOutput)
+      throws MalformedObjectNameException, IOException, InterruptedException,
+      ClassNotFoundException {
     if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
       return ResultBuilder.createUserErrorResult(
           CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
@@ -312,7 +351,6 @@ public class StartLocatorCommand extends InternalGfshCommand {
     }
 
     return ResultBuilder.buildResult(infoResultData);
-
   }
 
   // TODO should we connect implicitly when in non-interactive, headless mode (e.g. gfsh -e "start
@@ -353,10 +391,6 @@ public class StartLocatorCommand extends InternalGfshCommand {
 
         connectSuccess = true;
         responseFailureMessage = null;
-      } catch (IllegalStateException unexpected) {
-        if (CauseFinder.indexOfCause(unexpected, ClassCastException.class, false) != -1) {
-          responseFailureMessage = "The Locator might require SSL Configuration.";
-        }
       } catch (SecurityException ignore) {
         getGfsh().logToFile(ignore.getMessage(), ignore);
         jmxManagerAuthEnabled = true;

@@ -21,7 +21,7 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Tests populating a region with data that is ever-increasing in size. It is used for testing the
@@ -42,29 +42,25 @@ public class TestHeapLRU {
         .create("TestHeapLRU").getName());
     Region region = cache.createRegion("TestDiskRegion", factory.create());
 
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup("Annoying threads");
-    Thread thread = new Thread(tg, "Annoying thread") {
-      public void run() {
-        try {
-          while (true) {
-            System.out.println("Annoy...");
-            Object[] array = new Object[10 /* * 1024 */];
-            for (int i = 0; i < array.length; i++) {
-              array[i] = new byte[1024];
-              Thread.sleep(10);
-            }
-
-            System.out.println("SYSTEM GC");
-            System.gc();
-            Thread.sleep(1000);
+    Thread thread = new LoggingThread("Annoying thread", () -> {
+      try {
+        while (true) {
+          System.out.println("Annoy...");
+          Object[] array = new Object[10 /* * 1024 */];
+          for (int i = 0; i < array.length; i++) {
+            array[i] = new byte[1024];
+            Thread.sleep(10);
           }
 
-        } catch (InterruptedException ex) {
-          System.err.println("Interrupted"); // FIXME should throw
+          System.out.println("SYSTEM GC");
+          System.gc();
+          Thread.sleep(1000);
         }
+
+      } catch (InterruptedException ex) {
+        System.err.println("Interrupted"); // FIXME should throw
       }
-    };
-    thread.setDaemon(true);
+    });
     // thread.start();
 
     // ArrayList list = new ArrayList();

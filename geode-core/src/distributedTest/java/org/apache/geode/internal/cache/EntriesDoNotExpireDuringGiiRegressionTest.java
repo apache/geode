@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.Is.is;
 
 import java.io.Serializable;
@@ -122,12 +121,12 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
   private void doRegionOps() {
     Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
-    // let the main guys gii get started; we want to do updates during his gii
+    // let the main region's gii get started; we want to do updates during its gii
 
     // wait for profile of getInitialImage cache to show up
     CacheDistributionAdvisor advisor = ((DistributedRegion) region).getCacheDistributionAdvisor();
     int expectedProfiles = 1;
-    await().atMost(2, MINUTES)
+    await()
         .untilAsserted(
             () -> assertThat(numberProfiles(advisor)).isGreaterThanOrEqualTo(expectedProfiles));
 

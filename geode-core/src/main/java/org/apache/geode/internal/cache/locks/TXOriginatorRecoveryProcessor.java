@@ -35,9 +35,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXCommitMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Sends <code>TXOriginatorRecoveryMessage</code> to all participants of a given transaction when
@@ -153,8 +151,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
         final TXOriginatorRecoveryMessage msg) {
 
       ReplyException replyException = null;
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE));
+      logger.info("[processTXOriginatorRecoveryMessage]");
       try {
         // Wait for the transaction associated with this lockid to finish processing
         TXCommitMessage.getTracker().waitToProcess(msg.txLockId, dm);
@@ -165,9 +162,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
          * org.apache.geode.internal.cache.locks.TXLockServiceTest should be expanded upon also...
          */
       } catch (RuntimeException t) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE_THROWABLE),
+        logger.warn("[processTXOriginatorRecoveryMessage] throwable:",
             t);
         // if (replyException == null) (can only be null)
         {
@@ -221,13 +216,11 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
         if (getSender().equals(dm.getId())) {
           // process in-line in this VM
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE_LOCALLY_PROCESS_REPLY));
+          logger.info("[processTXOriginatorRecoveryMessage] locally process reply");
           replyMsg.setSender(dm.getId());
           replyMsg.dmProcess(dm);
         } else {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE_SEND_REPLY));
+          logger.info("[processTXOriginatorRecoveryMessage] send reply");
           dm.putOutgoing(replyMsg);
         }
       }

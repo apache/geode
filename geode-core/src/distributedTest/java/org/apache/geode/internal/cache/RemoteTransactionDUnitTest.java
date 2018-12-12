@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.cache.ExpiryTask.permitExpiration;
+import static org.apache.geode.internal.cache.ExpiryTask.suspendExpiration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -108,6 +110,7 @@ import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
@@ -304,7 +307,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           Map orders = new HashMap();
           orders.put(orderId2, expectedOrder2);
           orders.put(orderId3, expectedOrder3);
-          getGemfireCache().getLoggerI18n().fine("SWAP:doingPutAll");
+          getGemfireCache().getLogger().fine("SWAP:doingPutAll");
           // orderRegion.putAll(orders);
           refRegion.put(custId, expectedCust);
           Set<OrderId> ordersSet = new HashSet<OrderId>();
@@ -362,7 +365,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     boolean rContainsKC = custRegion.containsKey(custId);
     boolean rContainsKO = containsKey;
     for (OrderId o : ordersSet) {
-      getGemfireCache().getLoggerI18n()
+      getGemfireCache().getLogger()
           .fine("SWAP:rContainsKO:" + rContainsKO + " containsKey:" + orderRegion.containsKey(o));
       rContainsKO = rContainsKO && orderRegion.containsKey(o);
     }
@@ -971,7 +974,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region<CustId, Customer> cust = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> rr = getGemfireCache().getRegion(D_REFERENCE);
         Customer expectedCust = new Customer("customer" + 1, "address" + 1);
-        getGemfireCache().getLoggerI18n().fine("SWAP:doingPutIfAbsent");
+        getGemfireCache().getLogger().fine("SWAP:doingPutIfAbsent");
         CustId oldCustId = new CustId(1);
         Customer old = cust.putIfAbsent(oldCustId, updateCust);
         assertTrue("expected:" + expectedCust + " but was " + old, expectedCust.equals(old));
@@ -1118,7 +1121,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         CustId conflictCust = new CustId(2);
         Customer customer = new Customer("customer2", "address2");
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().fine("SWAP:removeConflict");
         assertTrue(cust.remove(conflictCust, customer));
         TXStateProxy tx = mgr.pauseTransaction();
         cust.put(conflictCust, new Customer("foo", "bar"));
@@ -1199,7 +1202,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         CustId custId3 = new CustId(3);
         CustId custId4 = new CustId(4);
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().fine("SWAP:removeConflict");
         cust.removeAll(Arrays.asList(custId3, custId20, custId4));
         TXStateProxy tx = mgr.pauseTransaction();
         // cust.put(custId3, new Customer("foo", "bar"));
@@ -1219,7 +1222,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         // Test a removeall an already missing key.
         // custId2 has already been removed
         mgr.begin();
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().fine("SWAP:removeConflict");
         cust.removeAll(Arrays.asList(custId2, custId3));
         tx = mgr.pauseTransaction();
         cust.put(custId2, new Customer("foo", "bar"));
@@ -1395,7 +1398,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         CustId conflictCust = new CustId(2);
         Customer customer = new Customer("customer2", "address2");
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().fine("SWAP:removeConflict");
         assertTrue(cust.replace(conflictCust, customer, new Customer("conflict", "conflict")));
         TXStateProxy tx = mgr.pauseTransaction();
         cust.put(conflictCust, new Customer("foo", "bar"));
@@ -3211,7 +3214,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public void beforeDestroy(EntryEvent event) throws CacheWriterException {
-        getGemfireCache().getLoggerI18n().fine("SWAP:writer:createEvent:" + event);
+        getGemfireCache().getLogger().fine("SWAP:writer:createEvent:" + event);
         if (!event.isOriginRemote()) {
           throw new CacheWriterException("SUP?? This DESTROY is supposed to be isOriginRemote");
         }
@@ -3953,7 +3956,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             return "listener was never invoked";
           }
         };
-        Wait.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
+        GeodeAwaitility.await().untilAsserted(waitForListenerInvocation);
         return null;
       }
     });
@@ -4036,7 +4039,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             return "listener invoked:" + l.invoked;
           }
         };
-        Wait.waitForCriterion(wc, 10 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(wc);
         return null;
       }
     });
@@ -4089,7 +4092,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             return "listener was never invoked";
           }
         };
-        Wait.waitForCriterion(waitForListenerInvocation, 10 * 1000, 10, true);
+        GeodeAwaitility.await().untilAsserted(waitForListenerInvocation);
         return null;
       }
     });
@@ -4428,7 +4431,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
                 + " r.containsKey(nonTXKey)=" + r.containsKey("nonTXKey");
           }
         };
-        ExpiryTask.suspendExpiration();
+        suspendExpiration();
         Region.Entry entry = null;
         long tilt;
         try {
@@ -4439,18 +4442,18 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           r.put("key", "newvalue");
           waitForEntryExpiration(lr, "key");
         } finally {
-          ExpiryTask.permitExpiration();
+          permitExpiration();
         }
         TransactionId tx = getCache().getCacheTransactionManager().suspend();
         // A remote tx will allow expiration to happen on the side that
         // is not hosting the tx. But it will not allow an expiration
         // initiated on the hosting jvm.
         // tx is hosted in vm2 so expiration can happen in vm1.
-        Wait.waitForCriterion(wc2, 30000, 5, true);
+        GeodeAwaitility.await().untilAsserted(wc2);
         getCache().getCacheTransactionManager().resume(tx);
         assertTrue(r.containsKey("key"));
         getCache().getCacheTransactionManager().commit();
-        Wait.waitForCriterion(wc2, 30000, 5, true);
+        GeodeAwaitility.await().untilAsserted(wc2);
         return null;
       }
     });

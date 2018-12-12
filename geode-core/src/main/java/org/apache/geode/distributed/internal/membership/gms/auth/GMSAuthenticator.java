@@ -16,10 +16,6 @@ package org.apache.geode.distributed.internal.membership.gms.auth;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
-import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED;
-import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION;
-import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS;
-import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT;
 
 import java.security.Principal;
 import java.util.Properties;
@@ -33,7 +29,6 @@ import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurityService;
@@ -116,8 +111,8 @@ public class GMSAuthenticator implements Authenticator {
     InternalLogWriter securityLogWriter = this.services.getSecurityLogWriter();
 
     if (credentials == null) {
-      securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS, member);
-      return AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS.toLocalizedString(member);
+      securityLogWriter.warning(String.format("Failed to find credentials from [%s]", member));
+      return String.format("Failed to find credentials from [%s]", member);
     }
 
     String failMsg = null;
@@ -129,9 +124,9 @@ public class GMSAuthenticator implements Authenticator {
         invokeAuthenticator(secProps, member, credentials);
       }
     } catch (Exception ex) {
-      securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION,
-          new Object[] {member, ex.getLocalizedMessage()}, ex);
-      failMsg = AUTH_PEER_AUTHENTICATION_FAILED.toLocalizedString(ex.getLocalizedMessage());
+      securityLogWriter.warning(String.format("Security check failed for [%s]. %s",
+          member, ex.getLocalizedMessage()), ex);
+      failMsg = String.format("Security check failed. %s", ex.getLocalizedMessage());
     }
 
     return failMsg;
@@ -162,7 +157,7 @@ public class GMSAuthenticator implements Authenticator {
 
     } catch (Exception ex) {
       throw new AuthenticationFailedException(
-          HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
+          "Failed to acquire Authenticator object", ex);
 
     } finally {
       if (auth != null)
@@ -184,8 +179,8 @@ public class GMSAuthenticator implements Authenticator {
     } catch (Exception e) {
       String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT);
       services.getSecurityLogWriter().warning(
-          LocalizedStrings.AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2,
-          new Object[] {authMethod, e.getLocalizedMessage()});
+          String.format("Failed to obtain credentials using AuthInitialize [%s]. %s",
+              new Object[] {authMethod, e.getLocalizedMessage()}));
       return null;
     }
   }

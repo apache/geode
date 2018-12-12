@@ -16,11 +16,14 @@ package org.apache.geode.internal.logging;
 
 import java.io.File;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+
 public interface LogConfig {
+
   /**
    * Returns the value of the <a href="../DistributedSystem.html#log-level">"log-level"</a> property
    *
-   * @see org.apache.geode.internal.logging.LogWriterImpl
+   * @see LogWriterImpl
    */
   int getLogLevel();
 
@@ -47,9 +50,10 @@ public interface LogConfig {
    * Returns the value of the <a href="../DistributedSystem.html#name">"name"</a> property Gets the
    * member's name. A name is optional and by default empty. If set it must be unique in the ds.
    * When set its used by tools to help identify the member.
+   *
    * <p>
    * The default value is:
-   * {@link org.apache.geode.distributed.internal.DistributionConfig#DEFAULT_NAME}.
+   * {@link DistributionConfig#DEFAULT_NAME}.
    *
    * @return the system's name.
    */

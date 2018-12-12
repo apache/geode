@@ -377,6 +377,7 @@ org/apache/geode/internal/hll/CardinalityMergeException,false
 org/apache/geode/internal/jta/TransactionManagerImpl,true,5033392316185449821,globalTransactionMap:java/util/Map,gtxSet:java/util/SortedSet,isActive:boolean,transactionMap:java/util/Map
 org/apache/geode/internal/jta/TransactionManagerImpl$GlobalTransactionComparator,false
 org/apache/geode/internal/jta/UserTransactionImpl,true,2994652455204901910,storedTimeOut:int,tm:javax/transaction/TransactionManager
+org/apache/geode/internal/logging/LogWriterLevel,false,logWriterLevel:int
 org/apache/geode/internal/memcached/Command,false
 org/apache/geode/internal/memcached/Command$1,false,processor:org/apache/geode/internal/memcached/CommandProcessor
 org/apache/geode/internal/memcached/Command$10,false,processor:org/apache/geode/internal/memcached/CommandProcessor
@@ -560,7 +561,7 @@ org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,t
 org/apache/geode/management/internal/cli/functions/GatewaySenderCreateFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunctionArgs,true,3848480256348119530,id:java/lang/String,ifExists:boolean
-org/apache/geode/management/internal/cli/functions/GatewaySenderFunctionArgs,true,-5158224572470173267,alertThreshold:java/lang/Integer,batchSize:java/lang/Integer,batchTimeInterval:java/lang/Integer,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/Integer,enableBatchConflation:java/lang/Boolean,enablePersistence:java/lang/Boolean,gatewayEventFilters:java/lang/String[],gatewayTransportFilters:java/lang/String[],id:java/lang/String,manualStart:java/lang/Boolean,maxQueueMemory:java/lang/Integer,orderPolicy:java/lang/String,parallel:java/lang/Boolean,remoteDSId:java/lang/Integer,socketBufferSize:java/lang/Integer,socketReadTimeout:java/lang/Integer
+org/apache/geode/management/internal/cli/functions/GatewaySenderFunctionArgs,true,4636678328980816780,alertThreshold:java/lang/Integer,batchSize:java/lang/Integer,batchTimeInterval:java/lang/Integer,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/Integer,enableBatchConflation:java/lang/Boolean,enablePersistence:java/lang/Boolean,gatewayEventFilters:java/util/List,gatewayTransportFilters:java/util/List,id:java/lang/String,manualStart:java/lang/Boolean,maxQueueMemory:java/lang/Integer,orderPolicy:java/lang/String,parallel:java/lang/Boolean,remoteDSId:java/lang/Integer,socketBufferSize:java/lang/Integer,socketReadTimeout:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/GetMemberConfigInformationFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetMemberInformationFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetRegionDescriptionFunction,true,1

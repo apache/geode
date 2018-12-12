@@ -100,7 +100,13 @@ pushd ${GEODE_BUILD}
   tar zcf ${DEST_DIR}/${FILENAME} -T ${directories_file}
 popd
 
-ARTIFACTS_DESTINATION="${PUBLIC_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
+if [[ "${ARTIFACT_BUCKET}" =~ \. ]]; then
+  ARTIFACT_SCHEME="http"
+else
+  ARTIFACT_SCHEME="gs"
+fi
+
+ARTIFACTS_DESTINATION="${ARTIFACT_BUCKET}/builds/${BUILD_PIPELINE_NAME}/${FULL_PRODUCT_VERSION}"
 TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/${SANITIZED_GRADLE_TASK}/${BUILD_TIMESTAMP}/"
 TEST_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-artifacts/${BUILD_TIMESTAMP}/"
 
@@ -130,17 +136,17 @@ set +x
 
 
 echo ""
-printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=  Test Results Website =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
-printf "\033[92mhttp://${TEST_RESULTS_DESTINATION}\033[0m\n"
+printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=  Test Results URI =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+printf "\033[92m${ARTIFACT_SCHEME}://${TEST_RESULTS_DESTINATION}\033[0m\n"
 printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
 printf "\n"
 
 printf "\033[92mTest report artifacts from this job are available at:\033[0m\n"
 printf "\n"
-printf "\033[92mhttp://${TEST_ARTIFACTS_DESTINATION}${FILENAME}\033[0m\n"
+printf "\033[92m${ARTIFACT_SCHEME}://${TEST_ARTIFACTS_DESTINATION}${FILENAME}\033[0m\n"
 
 if [ -n "${TAR_GEODE_BUILD_ARTIFACTS}" ] ; then
   printf "\033[92mBuild artifacts from this job are available at:\033[0m\n"
   printf "\n"
-  printf "\033[92mhttp://${BUILD_ARTIFACTS_DESTINATION}\033[0m\n"
+  printf "\033[92m${ARTIFACT_SCHEME}://${BUILD_ARTIFACTS_DESTINATION}\033[0m\n"
 fi

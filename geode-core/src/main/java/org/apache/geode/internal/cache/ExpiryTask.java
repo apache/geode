@@ -14,10 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.logging.log4j.Logger;
 
@@ -31,12 +29,9 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
 /**
@@ -48,38 +43,26 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   private LocalRegion region; // no longer final so cancel can null it out see bug 37574
 
-  private static final ThreadPoolExecutor executor;
+  private static final ExecutorService executor;
 
   static {
     // default to inline expiry to fix bug 37115
     int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
-      ThreadFactory tf = new ThreadFactory() {
-        private int nextId = 0;
-
-        public Thread newThread(final Runnable command) {
-          String name = "Expiration threads";
-          final ThreadGroup group = LoggingThreadGroup.createThreadGroup(name);
-          final Runnable r = new Runnable() {
-            public void run() {
-              ConnectionTable.threadWantsSharedResources();
-              try {
-                command.run();
-              } finally {
-                ConnectionTable.releaseThreadsSockets();
-              }
-            }
-          };
-          Thread thread = new Thread(group, r, "Expiry " + nextId++);
-          thread.setDaemon(true);
-          return thread;
-        }
-      };
-      // LinkedBlockingQueue q = new LinkedBlockingQueue();
-      SynchronousQueue q = new SynchronousQueue();
-      executor = new PooledExecutorWithDMStats(q, nThreads, tf, null);
+      executor = LoggingExecutors.newThreadPoolWithSynchronousFeed("Expiry ",
+          (Runnable command) -> doExpiryThread(command),
+          nThreads);
     } else {
       executor = null;
+    }
+  }
+
+  private static void doExpiryThread(Runnable command) {
+    ConnectionTable.threadWantsSharedResources();
+    try {
+      command.run();
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
     }
   }
 
@@ -309,7 +292,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     if (action.isLocalDestroy())
       return localDestroy();
     throw new InternalGemFireError(
-        LocalizedStrings.ExpiryTask_UNRECOGNIZED_EXPIRATION_ACTION_0.toLocalizedString(action));
+        String.format("unrecognized expiration action: %s", action));
   }
 
   /**
@@ -379,8 +362,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+      logger.fatal("Exception in expiration task", ex);
     }
   }
 
@@ -414,8 +396,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+      logger.fatal("Exception in expiration task", ex);
     } finally {
       if (expiryTaskListener != null) {
         expiryTaskListener.afterTaskRan(this);

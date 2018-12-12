@@ -23,7 +23,6 @@ import static org.apache.geode.admin.jmx.internal.AgentLauncher.RUNNING;
 import static org.apache.geode.admin.jmx.internal.AgentLauncher.SHUTDOWN;
 import static org.apache.geode.admin.jmx.internal.AgentLauncher.STARTING;
 import static org.apache.geode.admin.jmx.internal.AgentLauncher.VMARGS;
-import static org.apache.geode.internal.i18n.LocalizedStrings.AgentLauncher_0_IS_NOT_RUNNING_IN_SPECIFIED_WORKING_DIRECTORY_1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
@@ -183,8 +182,9 @@ public class DeprecatedAgentLauncherIntegrationTest {
     final Status status = launcher.getStatus();
 
     assertAgentLauncherStatus(status, "Agent", SHUTDOWN, 0);
-    assertThat(status.msg).isEqualTo(AgentLauncher_0_IS_NOT_RUNNING_IN_SPECIFIED_WORKING_DIRECTORY_1
-        .toLocalizedString("Agent", null));
+    assertThat(status.msg)
+        .isEqualTo(String.format("%s is not running in the specified working directory: (%s).",
+            "Agent", null));
     assertThat(status.exception).isNull();
   }
 

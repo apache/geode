@@ -139,7 +139,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
 
     } catch (CacheLoaderException ex) {
       String expected =
-          org.apache.geode.internal.cache.LoaderHelperImpl.NET_SEARCH_LOCAL.toLocalizedString();
+          org.apache.geode.internal.cache.LoaderHelperImpl.NET_SEARCH_LOCAL;
       String message = ex.getMessage();
       assertTrue("Unexpected message \"" + message + "\"", message.indexOf(expected) != -1);
     }

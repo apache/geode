@@ -36,7 +36,6 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {
@@ -364,8 +363,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     // cannot be evaluated as a filter.
     if (intermediateResults == null)
       throw new RuntimeException(
-          LocalizedStrings.AbstractGroupOrRangeJunction_INTERMEDIATERESULTS_CAN_NOT_BE_NULL
-              .toLocalizedString());
+          "intermediateResults can not be null");
     if (intermediateResults.isEmpty()) // short circuit
       return intermediateResults;
     List currentIters = (this.completeExpansion) ? context.getCurrentIterators()

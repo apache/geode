@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.util.LogFileUtils;
 
@@ -66,12 +65,12 @@ public class TestLogWriterFactory extends Assert {
               isSecurityLog || useChildLogging || statArchivesRolling);
           boolean succeeded = LogFileUtils.renameAggressively(logFile, oldMain);
           if (succeeded) {
-            firstMsg = LocalizedStrings.InternalDistributedSystem_RENAMED_OLD_LOG_FILE_TO_0
-                .toLocalizedString(oldMain);
+            firstMsg = String.format("Renamed old log file to %s.",
+                oldMain);
           } else {
             firstMsgWarning = true;
-            firstMsg = LocalizedStrings.InternalDistributedSystem_COULD_NOT_RENAME_0_TO_1
-                .toLocalizedString(logFile, oldMain);
+            firstMsg = String.format("Could not rename %s to %s.",
+                logFile, oldMain);
           }
         }
       }
@@ -80,8 +79,8 @@ public class TestLogWriterFactory extends Assert {
       try {
         fos = new FileOutputStream(logFile, true);
       } catch (FileNotFoundException ex) {
-        String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0
-            .toLocalizedString(logFile);
+        String s = String.format("Could not open log file %s.",
+            logFile);
         throw new GemFireIOException(s, ex);
       }
       out = new PrintStream(fos);
@@ -113,9 +112,9 @@ public class TestLogWriterFactory extends Assert {
       }
     }
     if (logConfig && logger.configEnabled()) {
-      logger.convertToLogWriterI18n().config(
-          LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
-          config.toLoggerString());
+      logger.config(
+          "Startup Configuration: " +
+              config.toLoggerString());
     }
 
     // fix #46493 by moving redirectOutput invocation here

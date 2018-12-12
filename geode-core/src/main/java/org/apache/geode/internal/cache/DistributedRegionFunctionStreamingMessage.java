@@ -40,7 +40,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -141,11 +140,11 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
         InternalCache cache = dm.getCache();
         if (cache != null) {
           thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
+                  dm.getId()));
         } else {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
+              dm.getId()));
         }
         return;
       }
@@ -237,8 +236,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     if (this.functionObject == null) {
       ReplyMessage.send(getSender(), this.processorId,
           new ReplyException(new FunctionException(
-              LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-                  .toLocalizedString(this.functionName))),
+              String.format("Function named %s is not registered to FunctionService",
+                  this.functionName))),
           dm, r.isInternalRegion());
 
       return false;
@@ -254,8 +253,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       if (!this.replyLastMsg && this.functionObject.hasResult()) {
         ReplyMessage.send(getSender(), this.processorId,
             new ReplyException(new FunctionException(
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                    .toString(functionObject.getId()))),
+                String.format("The function, %s, did not send last result",
+                    functionObject.getId()))),
             dm, r.isInternalRegion());
         return false;
       }

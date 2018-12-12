@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -22,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -108,7 +108,7 @@ public class ShowDeadlockDUnitTest {
     // This thread locks the lock server2 first, then server1.
     lockTheLocks(server2, server1, countDownLatch);
 
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).pollDelay(5, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> {
           gfsh.executeAndAssertThat(showDeadlockCommand).statusIsSuccess();
           String commandOutput = gfsh.getGfshOutput();

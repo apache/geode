@@ -14,9 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -26,7 +24,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -36,15 +34,15 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * functionality of the JettyHelper class. Does not start Jetty.
  *
  * @see org.apache.geode.management.internal.JettyHelper
- * @see org.jmock.Mockery
- * @see org.junit.Assert
  * @see org.junit.Test
  */
 public class JettyHelperJUnitTest {
+  private DistributionConfig distributionConfig;
 
   @Before
   public void setup() {
-    SSLConfigurationFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+    distributionConfig = new DistributionConfigImpl(new Properties());
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
   }
 
   @After
@@ -53,31 +51,20 @@ public class JettyHelperJUnitTest {
   }
 
   @Test
-  public void testSetPortNoBindAddress() throws Exception {
-
-    final Server jetty;
-    try {
-      jetty = JettyHelper.initJetty(null, 8090,
-          SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
-      assertNotNull(jetty);
-      assertNotNull(jetty.getConnectors()[0]);
-      assertEquals(8090, ((ServerConnector) jetty.getConnectors()[0]).getPort());
-    } catch (GemFireConfigException e) {
-      fail(e.getMessage());
-    }
+  public void testSetPortNoBindAddress() {
+    final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory
+        .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
+    assertThat(jetty).isNotNull();
+    assertThat(jetty.getConnectors()[0]).isNotNull();
+    assertThat(((ServerConnector) jetty.getConnectors()[0]).getPort()).isEqualTo(8090);
   }
 
   @Test
-  public void testSetPortWithBindAddress() throws Exception {
-    try {
-      final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480,
-          SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
-
-      assertNotNull(jetty);
-      assertNotNull(jetty.getConnectors()[0]);
-      assertEquals(10480, ((ServerConnector) jetty.getConnectors()[0]).getPort());
-    } catch (GemFireConfigException e) {
-      fail(e.getMessage());
-    }
+  public void testSetPortWithBindAddress() {
+    final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480, SSLConfigurationFactory
+        .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
+    assertThat(jetty).isNotNull();
+    assertThat(jetty.getConnectors()[0]).isNotNull();
+    assertThat(((ServerConnector) jetty.getConnectors()[0]).getPort()).isEqualTo(10480);
   }
 }

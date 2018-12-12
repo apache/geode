@@ -24,7 +24,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.beans.stats.GatewaySenderOverflowMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
@@ -57,10 +56,9 @@ public class GatewaySenderMBeanBridge {
   public GatewaySenderMBeanBridge(GatewaySender sender) {
     this.sender = sender;
     this.monitor =
-        new MBeanStatsMonitor(ManagementStrings.GATEWAY_SENDER_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("GatewaySenderMXBeanMonitor");
 
-    this.overflowMonitor = new GatewaySenderOverflowMonitor(
-        ManagementStrings.GATEWAY_SENDER_OVERFLOW_MONITOR.toLocalizedString());
+    this.overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
 
     this.abstractSender = ((AbstractGatewaySender) this.sender);
     GatewaySenderStats stats = abstractSender.getStatistics();

@@ -60,7 +60,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
@@ -197,7 +196,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // This is likely the case of server setup with SSL and client not using
         // SSL
         throw new AuthenticationRequiredException(
-            LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
+            "Server expecting SSL connection");
       }
       if (acceptanceCode == REPLY_SERVER_IS_LOCATOR) {
         throw new GemFireConfigException("Improperly configured client detected.  " + "Server at "
@@ -277,7 +276,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       throw e;
     } catch (Exception e) {
       throw new InternalGemFireException(
-          LocalizedStrings.HandShake_UNABLE_TO_DESERIALIZE_MEMBER.toLocalizedString(), e);
+          "Unable to deserialize member", e);
     }
   }
 
@@ -310,7 +309,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // This is likely the case of server setup with SSL and client not using
         // SSL
         throw new AuthenticationRequiredException(
-            LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
+            "Server expecting SSL connection");
       }
 
       byte endpointType = dis.readByte();

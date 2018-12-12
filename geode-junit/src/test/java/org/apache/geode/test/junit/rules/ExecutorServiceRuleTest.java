@@ -15,7 +15,7 @@
 package org.apache.geode.test.junit.rules;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
@@ -23,8 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -115,13 +113,6 @@ public class ExecutorServiceRuleTest {
   private static void awaitLatch(CountDownLatch latch) {
     await().untilAsserted(() -> assertThat(latch.getCount())
         .as("Latch failed to countDown within timeout").isZero());
-  }
-
-  /**
-   * All calls that require a timeout are routed to this method which specifies 2 minutes.
-   */
-  private static ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 
   private static boolean isTestHung() {

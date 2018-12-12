@@ -47,7 +47,7 @@ import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Provides access to a remote gemfire VM for purposes of gathering statistics and other info
@@ -111,8 +111,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     this.agent = agent;
     if (id == null) {
       throw new NullPointerException(
-          LocalizedStrings.RemoteGemFireVM_CANNOT_CREATE_A_REMOTEGEMFIREVM_WITH_A_NULL_ID
-              .toLocalizedString());
+          "Cannot create a RemoteGemFireVM with a null id.");
     }
     this.id = id;
     this.dispatcher = new StatDispatcher();
@@ -512,8 +511,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     Exception ex = resp.getException();
     if (ex != null) {
       throw new AdminException(
-          LocalizedStrings.RemoteGemFireVM_AN_EXCEPTION_WAS_THROWN_WHILE_CREATING_VM_ROOT_REGION_0
-              .toLocalizedString(regionPath),
+          String.format("An Exception was thrown while creating VM root region %s",
+              regionPath),
           ex);
     } else {
       return resp.getRegion(this);
@@ -528,8 +527,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
     Exception ex = resp.getException();
     if (ex != null) {
-      throw new AdminException(LocalizedStrings.RemoteGemFireVM_WHILE_CREATING_SUBREGION_0_OF_1
-          .toLocalizedString(new Object[] {regionPath, parentPath}), ex);
+      throw new AdminException(String.format("While creating subregion %s of %s",
+          new Object[] {regionPath, parentPath}), ex);
     } else {
       return resp.getRegion(this);
     }
@@ -793,13 +792,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * off of a queue and delivers callbacks to the appropriate
    * {@link org.apache.geode.internal.admin.StatListener}.
    */
-  private class StatDispatcher extends Thread {
+  private class StatDispatcher extends LoggingThread {
     private BlockingQueue queue = new LinkedBlockingQueue();
     private volatile boolean stopped = false;
 
     protected StatDispatcher() {
-      super(RemoteGemFireVM.this.agent.getThreadGroup(), "StatDispatcher");
-      setDaemon(true);
+      super("StatDispatcher");
     }
 
     protected synchronized void stopDispatching() {
@@ -872,13 +870,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   AdminResponse sendAndWait(AdminRequest msg) {
     if (unreachable) {
       throw new OperationCancelledException(
-          LocalizedStrings.RemoteGemFireVM_0_IS_UNREACHABLE_IT_HAS_EITHER_LEFT_OR_CRASHED
-              .toLocalizedString(this.name));
+          String.format("%s is unreachable. It has either left or crashed.",
+              this.name));
     }
     if (this.id == null) {
       throw new NullPointerException(
-          LocalizedStrings.RemoteGemFireVM_THE_ID_IF_THIS_REMOTEGEMFIREVM_IS_NULL
-              .toLocalizedString());
+          "The id of this RemoteGemFireVM is null!");
     }
     msg.setRecipient(this.id);
     msg.setModifiedClasspath(inspectionClasspath);

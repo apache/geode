@@ -64,8 +64,6 @@ PATH=${PATH}:${BIN_DIR}
 
 TARGET="geode"
 
-TEAM=${CONCOURSE_TEAM:-main}
-
 if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
   PIPELINE_NAME="pr-${SANITIZED_GEODE_BRANCH}"
   DOCKER_IMAGE_PREFIX=""
@@ -76,21 +74,21 @@ fi
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
   # Template and output share a directory with this script, but variables are shared in the parent directory.
-  python3 ../render.py $(basename ${SCRIPTDIR}) || exit 1
-
-  fly login -t ${TARGET} \
-            -n ${TEAM} \
-            -c https://concourse.apachegeode-ci.info \
-            -u ${CONCOURSE_USERNAME} \
-            -p ${CONCOURSE_PASSWORD}
-
-  fly -t ${TARGET} set-pipeline \
-    --non-interactive \
-    --pipeline ${PIPELINE_NAME} \
-    --config ${SCRIPTDIR}/generated-pipeline.yml \
-    --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-    --var concourse-team=${TEAM}
-
+  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} ${REPOSITORY_PUBLIC} || exit 1
 popd 2>&1 > /dev/null
 
+cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
+
+cat > ${OUTPUT_DIRECTORY}/pipeline-vars.yml <<YML
+geode-build-branch: ${GEODE_BRANCH}
+geode-fork: ${GEODE_FORK}
+geode-repo-name: ${GEODE_REPO_NAME}
+upstream-fork: ${UPSTREAM_FORK}
+pipeline-prefix: "${PIPELINE_PREFIX}"
+public-pipelines: ${PUBLIC_PIPELINES}
+gcp-project: ${GCP_PROJECT}
+version-bucket: ${VERSION_BUCKET}
+artifact-bucket: ${ARTIFACT_BUCKET}
+gradle-global-args: ${GRADLE_GLOBAL_ARGS}
+YML
 

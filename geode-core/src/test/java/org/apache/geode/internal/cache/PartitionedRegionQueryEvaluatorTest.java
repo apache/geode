@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -212,7 +211,7 @@ public class PartitionedRegionQueryEvaluatorTest {
         null, new LinkedResultSet(), bucketSet);
     RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
     when(regionAdvisor.adviseDataStore()).thenReturn(bucketSet);
-    await().atMost(10, TimeUnit.SECONDS)
+    await()
         .until(() -> !(bucketList.equals(prqe.getAllNodes(regionAdvisor))));
   }
 

@@ -67,9 +67,6 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
         getGatewayDeltaRegion().put(sessionId, new GatewayDeltaCreateEvent(regionName, sessionId,
             EntryEventImpl.serialize(event.getNewValue())));
       } else {
-        System.out.println(
-            "GatewayDeltaForwarderCacheListener event.getSerializedNewValue().getSerializedValue(): "
-                + event.getSerializedNewValue().getSerializedValue());
         getGatewayDeltaRegion().put(sessionId,
             new GatewayDeltaCreateEvent(regionName, sessionId, scv.getSerializedValue()));
       }
@@ -85,7 +82,6 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
   }
 
   public void afterUpdate(EntryEvent<String, GatewayDelta> event) {
-    // System.out.println("GatewayDeltaForwarderCacheListener.afterUpdate: " + event);
     // If the event is from the local site, create an 'update' event and send it to the
     // gateway delta region
     if (event.getCallbackArgument() == null) {

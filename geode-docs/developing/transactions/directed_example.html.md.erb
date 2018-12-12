@@ -56,8 +56,8 @@ try {
     // interfered with the transaction, or the server is gone.
     // Any exception thrown by a method other than commit() needs
     // to do a rollback to avoid leaking the transaction state.
-    if(mgr.exists()) {
-        mgr.rollback();
+    if(txManager.exists()) {
+        txManager.rollback();
     }       
 }
 ```
@@ -95,11 +95,11 @@ Region<String, Integer> trades =
            .create("trades");
 
 // transaction code
-CacheTransactionManager txmgr = cache.getCacheTransactionManager();
+CacheTransactionManager txManager = cache.getCacheTransactionManager();
 boolean retryTransaction = false;
 do {
   try {
-    txmgr.begin();
+    txManager.begin();
 
     // Subtract out the cost of the trade for this customer's balance
     Integer cashBalance = cash.get(customer);
@@ -111,7 +111,7 @@ do {
     newBalance = (tradeBalance != null ? tradeBalance : 0) + purchase;
     trades.put(customer, newBalance);
 
-    txmgr.commit();
+    txManager.commit();
     retryTransaction = false;
   } 
   catch (CommitConflictException conflict) {
@@ -121,8 +121,8 @@ do {
     // All other exceptions will be handled by the caller. 
     // Any exception thrown by a method other than commit() needs
     // to do a rollback to avoid leaking the transaction state.
-    if(mgr.exists()) {
-      mgr.rollback();
+    if(txManager.exists()) {
+      txManager.rollback();
     }       
   }       
 
@@ -172,30 +172,29 @@ public class TransactionalFunction extends Function {
     Region<ProductId, Integer> inventoryRegion = rfc.getDataSet();
 
     CacheTransactionManager 
-        mgr = CacheFactory.getAnyInstance().getCacheTransactionManager();
+        txManager = context.getCache().getCacheTransactionManager();
 
     // single argument will be a ProductId and a quantity
     ProductRequest request = (ProductRequest) rfc.getArguments();
     ProductId productRequested = request.getProductId();
     Integer qtyRequested = request.getQuantity();
  
-    Boolean success = false;
+    boolean success = false;
 
     do {
-      Boolean commitConflict = false;
+      boolean commitConflict = false;
       try {
-        mgr.begin();
+        txManager.begin();
 
         Integer qtyAvailable = inventoryRegion.get(productRequested);
-        Integer qtyRequested = request.getQuantity();
-        if (qtyAvail >= qtyRequested) {
+        if (qtyAvailable >= qtyRequested) {
           // enough inventory is available, so process request
           Integer remaining = qtyAvailable - qtyRequested;
           inventoryRegion.put(productRequested, remaining);
+          txManager.commit();
           success = true;
         } 
 
-        mgr.commit();
       } catch (CommitConflictException conflict) {
         // retry transaction, as another request on this same key succeeded,
         // so this transaction attempt failed
@@ -204,8 +203,8 @@ public class TransactionalFunction extends Function {
         // All other exceptions will be handled by the caller; however,
         // any exception thrown by a method other than commit() needs
         // to do a rollback to avoid leaking the transaction state.
-        if(mgr.exists()) {
-          mgr.rollback();
+        if(txManager.exists()) {
+          txManager.rollback();
         }       
       }
     
@@ -225,7 +224,7 @@ public class TransactionalFunction extends Function {
    * network hop from the secondary to the primary.
    */
   @Override
-  public Boolean optimizeForWrite() {
+  public boolean optimizeForWrite() {
     return true;
   }
 }

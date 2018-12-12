@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
@@ -90,12 +89,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       RuntimeException re;
       if (isBucketNotFoundException(e)) {
         re = new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
       } else {
         re = new TransactionDataNodeHasDepartedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTION_DATA_NODE_0_HAS_DEPARTED_TO_PROCEED_ROLLBACK_THIS_TRANSACTION_AND_BEGIN_A_NEW_ONE
-                .toLocalizedString(state.getTarget()));
+            String.format(
+                "Transaction data node %s has departed. To proceed, rollback this transaction and begin a new one.",
+                state.getTarget()));
       }
       re.initCause(e);
       waitToRetry();
@@ -117,15 +116,14 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
     if (isKeyInNonColocatedBucket(keyInfo)) {
       return new TransactionDataNotColocatedException(
-          LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(keyInfo.getKey()));
+          String.format("Key %s is not colocated with transaction",
+              keyInfo.getKey()));
     }
     ex = cause;
     while (ex != null) {
       if (ex instanceof PrimaryBucketException || ex instanceof BucketNotFoundException) {
         return new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
       }
       ex = ex.getCause();
     }
@@ -180,12 +178,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       RuntimeException re;
       if (isBucketNotFoundException(e)) {
         re = new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
       } else {
         re = new TransactionDataNodeHasDepartedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTION_DATA_NODE_0_HAS_DEPARTED_TO_PROCEED_ROLLBACK_THIS_TRANSACTION_AND_BEGIN_A_NEW_ONE
-                .toLocalizedString(state.getTarget()));
+            String.format(
+                "Transaction data node %s has departed. To proceed, rollback this transaction and begin a new one.",
+                state.getTarget()));
       }
       re.initCause(e);
       waitToRetry();
@@ -195,8 +193,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   private void trackBucketForTx(KeyInfo keyInfo) {
-    if (region.getCache().getLoggerI18n().fineEnabled()) {
-      region.getCache().getLoggerI18n()
+    if (region.getCache().getLogger().fineEnabled()) {
+      region.getCache().getLogger()
           .fine("adding bucket:" + keyInfo.getBucketId() + " for tx:" + state.getTransactionId());
     }
     if (keyInfo.getBucketId() >= 0) {
@@ -222,12 +220,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       RuntimeException re;
       if (isBucketNotFoundException(e)) {
         re = new TransactionDataRebalancedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-                .toLocalizedString());
+            "Transactional data moved, due to rebalancing.");
       } else {
         re = new TransactionDataNodeHasDepartedException(
-            LocalizedStrings.PartitionedRegion_TRANSACTION_DATA_NODE_0_HAS_DEPARTED_TO_PROCEED_ROLLBACK_THIS_TRANSACTION_AND_BEGIN_A_NEW_ONE
-                .toLocalizedString(state.getTarget()));
+            String.format(
+                "Transaction data node %s has departed. To proceed, rollback this transaction and begin a new one.",
+                state.getTarget()));
       }
       re.initCause(e);
       waitToRetry();
@@ -259,8 +257,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       }
       waitToRetry();
       RuntimeException re = new TransactionDataNodeHasDepartedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTION_DATA_NODE_0_HAS_DEPARTED_TO_PROCEED_ROLLBACK_THIS_TRANSACTION_AND_BEGIN_A_NEW_ONE
-              .toLocalizedString(state.getTarget()));
+          String.format(
+              "Transaction data node %s has departed. To proceed, rollback this transaction and begin a new one.",
+              state.getTarget()));
       re.initCause(e);
       throw re;
     }
@@ -301,8 +300,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       }
       waitToRetry();
       RuntimeException re = new TransactionDataNodeHasDepartedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTION_DATA_NODE_0_HAS_DEPARTED_TO_PROCEED_ROLLBACK_THIS_TRANSACTION_AND_BEGIN_A_NEW_ONE
-              .toLocalizedString(state.getTarget()));
+          String.format(
+              "Transaction data node %s has departed. To proceed, rollback this transaction and begin a new one.",
+              state.getTarget()));
       re.initCause(e);
       throw re;
     }
@@ -426,8 +426,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     pr.prStats.endPutAll(startTime);
 
     if (partialKeys.hasFailure()) {
-      pr.getCache().getLoggerI18n().info(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
-          new Object[] {pr.getFullPath(), partialKeys});
+      pr.getCache().getLogger().info(String.format("Region %s putAll: %s",
+          new Object[] {pr.getFullPath(), partialKeys}));
       if (putallO.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -486,8 +486,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     pr.prStats.endRemoveAll(startTime);
 
     if (partialKeys.hasFailure()) {
-      pr.getCache().getLoggerI18n().info(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
-          new Object[] {pr.getFullPath(), partialKeys});
+      pr.getCache().getLogger().info(String.format("Region %s removeAll: %s",
+          new Object[] {pr.getFullPath(), partialKeys}));
       if (op.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -520,8 +520,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
       try {
         throw new TransactionDataNotColocatedException(
-            LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-                .toLocalizedString(firstEvent.getKey()));
+            String.format("Key %s is not colocated with transaction",
+                firstEvent.getKey()));
       } finally {
         firstEvent.release();
       }
@@ -533,8 +533,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw new TransactionDataNotColocatedException(prce.getMessage());
     } catch (PrimaryBucketException notPrimary) {
       RuntimeException re = new TransactionDataRebalancedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-              .toLocalizedString());
+          "Transactional data moved, due to rebalancing.");
       re.initCause(notPrimary);
       throw re;
     } catch (DataLocationException dle) {
@@ -556,8 +555,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
       try {
         throw new TransactionDataNotColocatedException(
-            LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-                .toLocalizedString(firstEvent.getKey()));
+            String.format("Key %s is not colocated with transaction",
+                firstEvent.getKey()));
       } finally {
         firstEvent.release();
       }
@@ -569,8 +568,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw new TransactionDataNotColocatedException(prce.getMessage());
     } catch (PrimaryBucketException notPrimary) {
       RuntimeException re = new TransactionDataRebalancedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-              .toLocalizedString());
+          "Transactional data moved, due to rebalancing.");
       re.initCause(notPrimary);
       throw re;
     } catch (DataLocationException dle) {

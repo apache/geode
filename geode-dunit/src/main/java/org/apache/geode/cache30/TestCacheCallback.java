@@ -15,7 +15,7 @@
 package org.apache.geode.cache30;
 
 import org.apache.geode.cache.CacheCallback;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
@@ -67,7 +67,7 @@ public abstract class TestCacheCallback implements CacheCallback {
           return "listener was never invoked";
         }
       };
-      Wait.waitForCriterion(ev, timeoutMs, interval, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     }
     return wasInvoked();
   }

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.util;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
@@ -20,36 +19,55 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.management.internal.cli.functions.ExportLogsFunctionIntegrationTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
+@Category({GfshTest.class, LoggingTest.class})
 public class LogExporterIntegrationTest {
 
-  @Rule
-  public ServerStarterRule server = new ServerStarterRule().withWorkingDir();
+  private final LogFilter filter = new LogFilter(Level.INFO, null, null);
 
   private LogExporter logExporter;
-
   private Properties properties;
 
-  private LogFilter filter = new LogFilter(Level.INFO, null, null);
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule();
 
   @Before
   public void before() throws Exception {
     properties = new Properties();
+    // make sure the server's working dir has no log files or stats file to begin with, since in
+    // some tests we are asserting on the # of log files and stats files created by the server
+    File workingDir = server.getWorkingDir();
+    Arrays.stream(workingDir.listFiles())
+        .filter(f -> (f.getName().endsWith(".log") || f.getName().endsWith(".gfs")))
+        .forEach(FileUtils::deleteQuietly);
   }
 
   @Test
@@ -110,7 +128,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(LOG_FILE, logsFile.toString());
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
+    verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -121,7 +139,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
+    verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -131,7 +149,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString());
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
+    verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -149,12 +167,48 @@ public class LogExporterIntegrationTest {
 
     logExporter = new LogExporter(filter, logFile, statsFile);
     Path exportedZip = logExporter.export();
-    Set<String> actualFiles = LogExporterTest.getZipEntries(exportedZip.toString());
+    Set<String> actualFiles = getZipEntries(exportedZip.toString());
     Set<String> expectedFiles = Sets.newHashSet("server.log", "stats.gfs");
 
     assertThat(actualFiles).isEqualTo(expectedFiles);
-
   }
 
+  private static void verifyExportLogsFunctionDoesNotBlowUp(Cache cache) throws Throwable {
+    ExportLogsFunction.Args args =
+        new ExportLogsFunction.Args(null, null, "info", false, false, false);
+    CapturingResultSender resultSender = new CapturingResultSender();
+    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
+    new ExportLogsFunction().execute(context);
+    if (resultSender.getThrowable() != null) {
+      throw resultSender.getThrowable();
+    }
+  }
 
+  private static Set<String> getZipEntries(String zipFilePath) throws IOException {
+    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
+  }
+
+  private static class CapturingResultSender implements ResultSender {
+
+    private Throwable throwable;
+
+    public Throwable getThrowable() {
+      return throwable;
+    }
+
+    @Override
+    public void sendResult(Object oneResult) {
+      // nothing
+    }
+
+    @Override
+    public void lastResult(Object lastResult) {
+      // nothing
+    }
+
+    @Override
+    public void sendException(Throwable t) {
+      throwable = t;
+    }
+  }
 }

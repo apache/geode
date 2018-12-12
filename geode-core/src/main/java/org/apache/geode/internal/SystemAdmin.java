@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -38,6 +39,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -55,7 +57,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
@@ -77,7 +82,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.backup.BackupOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
 import org.apache.geode.internal.net.SocketCreator;
@@ -138,8 +142,8 @@ public class SystemAdmin {
       // make sure its a valid ip address
       if (!validLocalAddress(addressOption)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.SystemAdmin__0_IS_NOT_A_VALID_IP_ADDRESS_FOR_THIS_MACHINE
-                .toLocalizedString(addressOption));
+            String.format("' %s ' is not a valid IP address for this machine",
+                addressOption));
       }
     }
     // check to see if locator is already running
@@ -149,8 +153,9 @@ public class SystemAdmin {
       (new FileOutputStream(logFile.getPath(), true)).close();
     } catch (IOException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.SystemAdmin_LOGFILE_0_COULD_NOT_BE_OPENED_FOR_WRITING_VERIFY_FILE_PERMISSIONS_AND_THAT_ANOTHER_LOCATOR_IS_NOT_ALREADY_RUNNING
-              .toLocalizedString(logFile.getPath()),
+          String.format(
+              "Logfile %s could not be opened for writing. Verify file permissions are correct and that another locator is not already running in the same directory.",
+              logFile.getPath()),
           ex);
     }
 
@@ -201,13 +206,13 @@ public class SystemAdmin {
           try {
             String msg = tailFile(logFile, false);
             throw new GemFireIOException(
-                LocalizedStrings.SystemAdmin_START_OF_LOCATOR_FAILED_THE_END_OF_0_CONTAINED_THIS_MESSAGE_1
-                    .toLocalizedString(logFile, msg),
+                String.format("Start of locator failed. The end of %s contained this message: %s.",
+                    logFile, msg),
                 null);
           } catch (IOException ignore) {
             throw new GemFireIOException(
-                LocalizedStrings.SystemAdmin_START_OF_LOCATOR_FAILED_CHECK_END_OF_0_FOR_REASON
-                    .toLocalizedString(logFile),
+                String.format("Start of locator failed. Check end of %s for reason.",
+                    logFile),
                 null);
           }
         }
@@ -215,7 +220,7 @@ public class SystemAdmin {
       }
     } catch (IOException io) {
       throw new GemFireIOException(
-          LocalizedStrings.SystemAdmin_COULD_NOT_EXEC_0.toLocalizedString(cmd[0]), io);
+          String.format("Could not exec %s.", cmd[0]), io);
     }
   }
 
@@ -268,8 +273,8 @@ public class SystemAdmin {
         addr = InetAddress.getByName(addressOption);
       } catch (UnknownHostException ex) {
         throw new IllegalArgumentException(
-            LocalizedStrings.SystemAdmin_ADDRESS_VALUE_WAS_NOT_A_KNOWN_IP_ADDRESS_0
-                .toLocalizedString(ex));
+            String.format("-address value was not a known IP address: %s",
+                ex));
       }
     }
 
@@ -307,8 +312,7 @@ public class SystemAdmin {
         // format and change message
         if (!quiet) {
           System.out.println(
-              LocalizedStrings.SystemAdmin_WAITING_5_SECONDS_FOR_LOCATOR_PROCESS_TO_TERMINATE
-                  .toLocalizedString());
+              "Waiting 5 seconds for locator process to terminate...");
         }
         Thread.sleep(5000);
       } else {
@@ -318,13 +322,13 @@ public class SystemAdmin {
           Thread.sleep(1000);
           if (sleepCount == maxSleepCount / 3 && !quiet) {
             System.out.println(
-                LocalizedStrings.SystemAdmin_WAITING_FOR_LOCATOR_PROCESS_WITH_PID_0_TO_TERMINATE
-                    .toLocalizedString(Integer.valueOf(pid)));
+                String.format("Waiting for locator process, with pid %s to terminate...",
+                    Integer.valueOf(pid)));
           }
         }
         if (sleepCount > maxSleepCount && !quiet) {
           System.out.println(
-              LocalizedStrings.SystemAdmin_LOCATOR_PROCESS_HAS_TERMINATED.toLocalizedString());
+              "Locator process has terminated.");
         } else if (OSProcess.exists(pid)) {
           System.out
               .println("Locator process did not terminate within " + maxSleepCount + " seconds.");
@@ -333,8 +337,8 @@ public class SystemAdmin {
     } catch (UnstartedSystemException ex) {
       // fix for bug 28133
       throw new UnstartedSystemException(
-          LocalizedStrings.SystemAdmin_LOCATOR_IN_DIRECTORY_0_IS_NOT_RUNNING
-              .toLocalizedString(directory));
+          String.format("Locator in directory %s is not running.",
+              directory));
     } catch (NoSystemException ex) {
       // before returning see if a stale lock file/shared memory can be cleaned up
       cleanupAfterKilledLocator(directory);
@@ -373,17 +377,17 @@ public class SystemAdmin {
     try {
       ManagerInfo mi = ManagerInfo.loadLocatorInfo(directory);
       if (statusCode == ManagerInfo.KILLED_STATUS_CODE) {
-        return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_WAS_KILLED_WHILE_IT_WAS_1_LOCATOR_PROCESS_ID_WAS_2
-            .toLocalizedString(directory, ManagerInfo.statusToString(mi.getManagerStatus()),
-                Integer.valueOf(mi.getManagerProcessId()));
+        return String.format("Locator in %s was killed while it was %s. Locator process id was %s.",
+            directory, ManagerInfo.statusToString(mi.getManagerStatus()),
+            Integer.valueOf(mi.getManagerProcessId()));
       } else {
-        return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_IS_1_LOCATOR_PROCESS_ID_IS_2
-            .toLocalizedString(directory, statusString, Integer.valueOf(mi.getManagerProcessId()));
+        return String.format("Locator in %s is %s. Locator process id is %s.",
+            directory, statusString, Integer.valueOf(mi.getManagerProcessId()));
       }
     } catch (UnstartedSystemException ex) {
-      return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_IS_STOPPED.toLocalizedString(directory);
+      return String.format("Locator in %s is stopped.", directory);
     } catch (GemFireIOException ex) {
-      return LocalizedStrings.SystemAdmin_LOCATOR_IN_0_IS_STARTING.toLocalizedString(directory);
+      return String.format("Locator in %s is starting.", directory);
     }
   }
 
@@ -400,8 +404,7 @@ public class SystemAdmin {
           }
           if (!quiet) {
             System.out.println(
-                LocalizedStrings.SystemAdmin_CLEANED_UP_ARTIFACTS_LEFT_BY_THE_PREVIOUS_KILLED_LOCATOR
-                    .toLocalizedString());
+                "Cleaned up artifacts left by the previous killed locator.");
           }
         }
       }
@@ -417,7 +420,7 @@ public class SystemAdmin {
   public String locatorTailLog(File directory) {
     File logFile = new File(directory, DistributionLocator.DEFAULT_LOG_FILE);
     if (!logFile.exists()) {
-      return LocalizedStrings.SystemAdmin_LOG_FILE_0_DOES_NOT_EXIST.toLocalizedString(logFile);
+      return String.format("Log file %s does not exist.", logFile);
     }
 
     try {
@@ -425,8 +428,8 @@ public class SystemAdmin {
     } catch (IOException ex) {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw, true);
-      sw.write(LocalizedStrings.SystemAdmin_AN_IOEXCEPTION_WAS_THROWN_WHILE_TAILING_0
-          .toLocalizedString(logFile));
+      sw.write(String.format("An IOException was thrown while tailing %s",
+          logFile));
       ex.printStackTrace(pw);
       pw.flush();
       return sw.toString();
@@ -783,9 +786,8 @@ public class SystemAdmin {
     }
   }
 
-  public void mergeLogs(String outOption, List args) {
-    FileInputStream[] input = new FileInputStream[args.size()];
-    String[] inputNames = new String[args.size()]; // note we don't want any extra names printed.
+  public void mergeLogs(String outOption, List<String> args) {
+    Map<String, InputStream> inputs = new HashMap<>();
 
     PrintStream ps;
     if (outOption != null) {
@@ -793,62 +795,41 @@ public class SystemAdmin {
         ps = new PrintStream(new FileOutputStream(outOption));
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.SystemAdmin_COULD_NOT_CREATE_FILE_0_FOR_OUTPUT_BECAUSE_1
-                .toLocalizedString(outOption, getExceptionMessage(ex)));
+            String.format("Could not create file %s for output because %s",
+                outOption, getExceptionMessage(ex)));
       }
     } else {
       ps = System.out;
     }
     PrintWriter mergedFile = new PrintWriter(ps, true);
 
-    Iterator it = args.iterator();
-    int idx = 0;
+    List<String> normalizedFiles =
+        args.stream().map(f -> Paths.get(f).toAbsolutePath().toString()).collect(
+            Collectors.toList());
+    int prefixLength =
+        StringUtils.getCommonPrefix(normalizedFiles.toArray(new String[] {})).length();
+
     if (!quiet) {
-      ps.println(LocalizedStrings.SystemAdmin_MERGING_THE_FOLLOWING_LOG_FILES.toLocalizedString());
+      ps.println("Merging the following log files:");
     }
-    while (it.hasNext()) {
-      String fileName = (String) it.next();
+
+    for (String fileName : normalizedFiles) {
       try {
-        input[idx] = new FileInputStream(fileName);
-        inputNames[idx] = (new File(fileName)).getAbsolutePath();
-        idx++;
+        String shortName = fileName.substring(prefixLength);
+        inputs.put(shortName, new FileInputStream(fileName));
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.SystemAdmin_COULD_NOT_OPEN_TO_0_FOR_READING_BECAUSE_1
-                .toLocalizedString(fileName, getExceptionMessage(ex)));
+            String.format("Could not open to %s for reading because %s",
+                fileName, getExceptionMessage(ex)));
       }
       if (!quiet) {
         ps.println("  " + fileName);
       }
     }
 
-    if (idx > 0) {
-      // strip off any common filename prefix
-      boolean strip = true;
-      do {
-        if (inputNames[0].length() == 0) {
-          break;
-        }
-        if (inputNames[0].indexOf('/') == -1 && inputNames[0].indexOf('\\') == -1) {
-          // no more directories to strip off
-          break;
-        }
-        char c = inputNames[0].charAt(0);
-        for (int i = 1; i < idx; i++) {
-          if (inputNames[i].charAt(0) != c) {
-            strip = false;
-            break;
-          }
-        }
-        for (int i = 0; i < idx; i++) {
-          inputNames[i] = inputNames[i].substring(1);
-        }
-      } while (strip);
-    }
-
-    if (MergeLogFiles.mergeLogFiles(input, inputNames, mergedFile)) {
+    if (MergeLogFiles.mergeLogFiles(inputs, mergedFile)) {
       throw new GemFireIOException(
-          LocalizedStrings.SystemAdmin_TROUBLE_MERGING_LOG_FILES.toLocalizedString());
+          "trouble merging log files.");
     }
     mergedFile.flush();
     if (outOption != null) {
@@ -856,8 +837,9 @@ public class SystemAdmin {
     }
     if (!quiet) {
       System.out
-          .println(LocalizedStrings.SystemAdmin_COMPLETED_MERGE_OF_0_LOGS_TO_1.toLocalizedString(
-              new Object[] {Integer.valueOf(idx), ((outOption != null) ? outOption : "stdout")}));
+          .println(String.format("Completed merge of %s logs to %s.",
+              args.size(),
+              ((outOption != null) ? outOption : "stdout")));
     }
   }
 
@@ -1173,25 +1155,21 @@ public class SystemAdmin {
       long endTime, List cmdLineSpecs) {
     if (persec && nofilter) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemAdmin_THE_NOFILTER_AND_PERSEC_OPTIONS_ARE_MUTUALLY_EXCLUSIVE
-              .toLocalizedString());
+          "The -nofilter and -persec options are mutually exclusive.");
     }
     if (persec && persample) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemAdmin_THE_PERSAMPLE_AND_PERSEC_OPTIONS_ARE_MUTUALLY_EXCLUSIVE
-              .toLocalizedString());
+          "The -persample and -persec options are mutually exclusive.");
     }
     if (nofilter && persample) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemAdmin_THE_PERSAMPLE_AND_NOFILTER_OPTIONS_ARE_MUTUALLY_EXCLUSIVE
-              .toLocalizedString());
+          "The -persample and -nofilter options are mutually exclusive.");
     }
     StatSpec[] specs = createSpecs(cmdLineSpecs);
     if (archiveOption != null) {
       if (directory != null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.SystemAdmin_THE_ARCHIVE_AND_DIR_OPTIONS_ARE_MUTUALLY_EXCLUSIVE
-                .toLocalizedString());
+            "The -archive= and -dir= options are mutually exclusive.");
       }
       StatArchiveReader reader = null;
       boolean interrupted = false;
@@ -1233,8 +1211,8 @@ public class SystemAdmin {
               StatValue[] values = reader.matchSpec(specs[i]);
               if (values.length == 0) {
                 if (!quiet) {
-                  System.err.println(LocalizedStrings.SystemAdmin_WARNING_NO_STATS_MATCHED_0
-                      .toLocalizedString(specs[i].cmdLineSpec));
+                  System.err.println(String.format("[warning] No stats matched %s.",
+                      specs[i].cmdLineSpec));
                 }
               } else {
                 Map<CombinedResources, List<StatValue>> specMap =
@@ -1250,7 +1228,7 @@ public class SystemAdmin {
                 }
                 if (!quiet) {
                   System.out.println(
-                      LocalizedStrings.SystemAdmin_INFO_FOUND_0_MATCHES_FOR_1.toLocalizedString(
+                      String.format("[info] Found %s instances matching %s:",
                           new Object[] {Integer.valueOf(specMap.size()), specs[i].cmdLineSpec}));
                 }
                 for (Map.Entry<CombinedResources, List<StatValue>> me : specMap.entrySet()) {
@@ -1283,7 +1261,7 @@ public class SystemAdmin {
         } while (monitor && !interrupted);
       } catch (IOException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.SystemAdmin_FAILED_READING_0.toLocalizedString(archiveOption), ex);
+            String.format("Failed reading %s", archiveOption), ex);
       } finally {
         if (reader != null) {
           try {
@@ -1345,9 +1323,10 @@ public class SystemAdmin {
       }
     } else if (topic.equalsIgnoreCase("overview")) {
       pw.println(
-          LocalizedStrings.SystemAdmin_THIS_PROGRAM_ALLOWS_GEMFIRE_TO_BE_MANAGED_FROM_THE_COMMAND_LINE_IT_EXPECTS_A_COMMAND_TO_EXECUTE_SEE_THE_HELP_TOPIC_0_FOR_A_SUMMARY_OF_SUPPORTED_OPTIONS_SEE_THE_HELP_TOPIC_1_FOR_A_CONCISE_DESCRIPTION_OF_COMMAND_LINE_SYNTAX_SEE_THE_HELP_TOPIC_2_FOR_A_DESCRIPTION_OF_SYSTEM_CONFIGURATION_SEE_THE_HELP_TOPIC_3_FOR_HELP_ON_A_SPECIFIC_COMMAND_USE_THE_4_OPTION_WITH_THE_COMMAND_NAME
-              .toLocalizedString(
-                  new Object[] {"commands", "options", "usage", "configuration", "-h"}));
+          String.format(
+              "This program allows GemFire to be managed from the command line. It expects a command to execute.See the help topic %s. For a summary of supported options see the help topic %s.For a concise description of command line syntax see the help topic %s.For a description of system configuration see the help topic %s.For help on a specific command use the %s option with the command name.",
+
+              new Object[] {"commands", "options", "usage", "configuration", "-h"}));
     } else if (topic.equalsIgnoreCase("commands")) {
       pw.println(usageMap.get("gemfire") + " <command> ...");
       format(pw, (String) helpMap.get("gemfire"), "  ", 0);
@@ -1361,20 +1340,20 @@ public class SystemAdmin {
       }
     } else if (topic.equalsIgnoreCase("options")) {
       pw.println(
-          LocalizedStrings.SystemAdmin_ALL_COMMAND_LINE_OPTIONS_START_WITH_A_AND_ARE_NOT_REQUIRED_EACH_OPTION_HAS_A_DEFAULT_THAT_WILL_BE_USED_WHEN_ITS_NOT_SPECIFIED_OPTIONS_THAT_TAKE_AN_ARGUMENT_ALWAYS_USE_A_SINGLE_CHARACTER_WITH_NO_SPACES_TO_DELIMIT_WHERE_THE_OPTION_NAME_ENDS_AND_THE_ARGUMENT_BEGINS_OPTIONS_THAT_PRECEDE_THE_COMMAND_WORD_CAN_BE_USED_WITH_ANY_COMMAND_AND_ARE_ALSO_PERMITTED_TO_FOLLOW_THE_COMMAND_WORD
-              .toLocalizedString());
+          "All command line options start with a - and are not required.Each option has a default that will be used when its not specified.Options that take an argument always use a single = character, with no spaces, to delimit where the option name ends and the argument begins.Options that precede the command word can be used with any command and are also permitted to follow the command word.");
       for (int i = 0; i < validOptions.length; i++) {
         pw.print(validOptions[i] + ":");
         try {
           format(pw, (String) helpMap.get(validOptions[i]), "  ", validOptions[i].length() + 1);
         } catch (RuntimeException ex) {
           System.err.println(
-              LocalizedStrings.SystemAdmin_NO_HELP_FOR_OPTION_0.toLocalizedString(validOptions[i]));
+              String.format("no help for option %s]", validOptions[i]));
           throw ex;
         }
       }
     } else if (topic.equalsIgnoreCase("usage")) {
-      pw.println(LocalizedStrings.SystemAdmin_EXPLAINATION_OF_COMMAND_OPTIONS.toLocalizedString());
+      pw.println(
+          "The following synax is used in the usage strings:[] designate an optional item() are used to group items<> designate non-literal text. Used to designate logical items* suffix means zero or more of the previous item| means the item to the left or right is required");
       for (int i = 0; i < validCommands.length; i++) {
         pw.println(getUsageString(validCommands[i]));
       }
@@ -1387,7 +1366,7 @@ public class SystemAdmin {
       topic = (String) args.get(0);
       if (!Arrays.asList(helpTopics).contains(topic.toLowerCase())) {
         System.err.println(
-            LocalizedStrings.SystemAdmin_ERROR_INVALID_HELP_TOPIC_0.toLocalizedString(topic));
+            String.format("ERROR: Invalid help topic %s.", topic));
         usage();
       }
     }
@@ -1416,7 +1395,7 @@ public class SystemAdmin {
 
   protected void usage(String cmd) {
     System.err.println(
-        LocalizedStrings.SystemAdmin_USAGE.toLocalizedString() + " " + getUsageString(cmd));
+        "Usage " + getUsageString(cmd));
     ExitCode.FATAL.doSystemExit();
   }
 
@@ -1446,7 +1425,7 @@ public class SystemAdmin {
     if (!Arrays.asList(validCommands).contains(cmd.toLowerCase())) {
       if (!Arrays.asList(aliasCommands).contains(cmd.toLowerCase())) {
         System.err
-            .println(LocalizedStrings.SystemAdmin_ERROR_INVALID_COMMAND_0.toLocalizedString(cmd));
+            .println(String.format("ERROR: Invalid command %s.", cmd));
         usage();
       } else {
         if (cmd.equalsIgnoreCase("locator-start")) {
@@ -1475,7 +1454,7 @@ public class SystemAdmin {
           cmd = "validate-disk-store";
         } else {
           throw new InternalGemFireException(
-              LocalizedStrings.SystemAdmin_UNHANDLED_ALIAS_0.toLocalizedString(cmd));
+              String.format("Unhandled alias %s", cmd));
         }
       }
     }
@@ -1512,35 +1491,69 @@ public class SystemAdmin {
   protected final Map helpMap = new HashMap();
 
   protected void initHelpMap() {
-    helpMap.put("gemfire", LocalizedStrings.SystemAdmin_GEMFIRE_HELP
-        .toLocalizedString(join(validCommands), "-h", "-debug", "-help", "-q", "-J<vmOpt>"));
-    helpMap.put("version", LocalizedStrings.SystemAdmin_VERSION_HELP.toLocalizedString());
-    helpMap.put("help", LocalizedStrings.SystemAdmin_HELP_HELP.toLocalizedString());
+    helpMap.put("gemfire",
+        "GemFire requires one of the following command strings: " + join(validCommands)
+            + ". For additional help on a command specify it along with the '-h' option. "
+            + "The '-debug' option causes gemfire to print out extra information when it fails.  "
+            + "The '-h' and '-help' are synonyms that cause gemfire to print out help information instead of performing a task.  "
+            + "The '-q' option quiets GemFire down by suppressing extra messages.  The '-J<vmOpt>' option passes <vmOpt> to the Java VM's command line.");
+    helpMap.put("version", "Prints GemFire product version information.");
+    helpMap.put("help",
+        "Prints information on how to use this executable.  If an optional help topic is specified then more detailed help is printed.");
     helpMap.put("stats",
-        LocalizedStrings.SystemAdmin_STATS_HELP_PART_A.toLocalizedString("+", "++", ":", ".",
-            "-details", "-nofilter", "-archive=", "-persec", "-persample", "-prunezeros") + "\n"
-            + LocalizedStrings.SystemAdmin_STATS_HELP_PART_B.toLocalizedString("-starttime",
-                "-archive=", DateFormatter.FORMAT_STRING, "-endtime"));
+        "Prints statistic values from a statistic archive.  By default all statistics are printed.\n"
+            + "The 'statSpec' arguments can be used to print individual resources or a specific statistic.\n"
+            + "The format of a 'statSpec' is: an optional combine operator, followed by an optional instanceId, followed by an optional typeId, followed by an optional statId.\n"
+            + "The '+' operator combines all matches in the same file.  The '++' operator combines all matches across all files.\n"
+            + "An instanceId must be the name or id of a resource.  A typeId is a ':' followed by the name of a resource type.\n"
+            + "A statId is a '.' followed by the name of a statistic.  A typeId or instanceId with no statId prints out all the matching resources and all their statistics.\n"
+            + "A typeId or instanceId with a statId prints out just the named statistic on the matching resources.  A statId with no typeId or instanceId matches all statistics with that name.\n"
+            + "The '-details' option causes statistic descriptions to also be printed.\n"
+            + "The '-nofilter' option, in conjunction with '-archive=', causes the printed statistics to all be raw, unfiltered, values.\n"
+            + "The '-persec' option, in conjunction with '-archive=', causes the printed statistics to be the rate of change, per second, of the raw values.\n"
+            + "The '-persample' option, in conjunction with '-archive=', causes the printed statistics to be the rate of change, per sample, of the raw values.\n"
+            + "The '-prunezeros' option', in conjunction with '-archive=', causes statistics whose values are all zero to not be printed.\n"
+            + "The '-starttime=' option, in conjunction with '-archive=', causes statistics samples taken before this time to be ignored. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".\n"
+            + "The '-endtime' option, in conjunction with '-archive=', causes statistics samples taken after this time to be ignored. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".\n"
+            + "The '-archive=' option causes the data to come from an archive file.");
     helpMap.put(START_LOCATOR,
-        LocalizedStrings.SystemAdmin_START_LOCATOR_HELP.toLocalizedString("-port=",
-            Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir=",
-            "-properties=", "-peer=", "-server=", "-hostname-for-clients=", "-D", "-X"));
-    helpMap.put("stop-locator", LocalizedStrings.SystemAdmin_STOP_LOCATOR_HELP.toLocalizedString(
-        "-port=", Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir="));
-    helpMap.put("status-locator", LocalizedStrings.SystemAdmin_STATUS_LOCATOR_HELP
-        .toLocalizedString(join(ManagerInfo.statusNames), "-dir="));
+        "Starts a locator.\n"
+            + "The 'port=' option specifies the port the locator will listen on.  It defaults to "
+            + DistributionLocator.DEFAULT_LOCATOR_PORT + "\n."
+            + "The '-address=' option specifies the address the locator will listen on.  It defaults to listening on all local addresses.\n"
+            + "The '-dir=' option can be used to specify the directory the locator will run in.\n"
+            + "The '-properties=' option can be used to specify the gemfire.properties file for configuring the locator's distributed system.  The file's path should be absolute, or relative to the locator's directory ('-dir=').\n"
+            + "The '-peer=' option can be used to specify whether peer locator service should be enabled.  True (the default) will enable the service.\n"
+            + "The '-server=' option can be used to specify whether server locator service should be enabled. True (the default) will enable the service.\n"
+            + "The '-hostname-for-clients=' option can be used to specify a host name or ip address that will be sent to clients so they can connect to this locator. The default is to use the address the locator is listening on.\n"
+            + "The '-D' option can be used to set system properties for the locator VM.  "
+            + "The '-X' option can be used to set vendor-specific VM options and is usually used to increase the size of the locator VM when using multicast.");
+    helpMap.put("stop-locator",
+        "Stops a locator.\n"
+            + "The '-port=' option specifies the port the locator is listening on. It defaults to "
+            + DistributionLocator.DEFAULT_LOCATOR_PORT + ".\n"
+            + "The '-address=' option specifies the address the locator is listening on. It defaults to the local host's address.\n"
+            + "The '-dir=' option can be used to specify the directory the locator is running in.");
+    helpMap.put("status-locator",
+        "Prints the status of a locator. The status string will one of the following: "
+            + join(ManagerInfo.statusNames) + ".\n"
+            + "The '-dir=' option can be used to specify the directory of the locator whose status is desired.");
     helpMap.put("info-locator",
-        LocalizedStrings.SystemAdmin_INFO_LOCATOR_HELP.toLocalizedString("-dir="));
+        "Prints information on a locator.  The information includes the process id of the locator, if the product is not running in PureJava mode.  "
+            + "The '-dir=' option can be used to specify the directory of the locator whose information is desired.");
     helpMap.put("tail-locator-log",
-        LocalizedStrings.SystemAdmin_TAIL_LOCATOR_HELP.toLocalizedString("-dir="));
-    helpMap.put("merge-logs", LocalizedStrings.SystemAdmin_MERGE_LOGS.toLocalizedString("-out"));
+        "Prints the last 64K bytes of the locator's log file.  The '-dir=' option can be used to specify the directory of the locator whose information is desired.");
+    helpMap.put("merge-logs",
+        "Merges multiple logs files into a single log.The -out option can be used to specify the file to write the merged log to. The default is stdout.");
     helpMap.put("validate-disk-store",
-        LocalizedStrings.SystemAdmin_VALIDATE_DISK_STORE.toLocalizedString());
-    helpMap.put("upgrade-disk-store", "Upgrade an offline disk store with new version format. \n"
-        + "  -maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
+        "Checks to make sure files of a disk store are valid. The name of the disk store and the directories its files are stored in are required arguments.");
+    helpMap.put("upgrade-disk-store", "Upgrade an offline disk store with new version format.\n"
+        + "'-maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
     helpMap.put("compact-disk-store",
         "Compacts an offline disk store. Compaction removes all unneeded records from the persistent files.\n"
-            + "  -maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
+            + "-maxOplogSize=<long> causes the oplogs created by compaction to be no larger than the specified size in megabytes.");
     helpMap.put("compact-all-disk-stores",
         "Connects to a running system and tells its members to compact their disk stores. "
             + "This command uses the compaction threshold that each member has "
@@ -1548,7 +1561,7 @@ public class SystemAdmin {
             + "set to true in order for this command to work.\n"
             + "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("modify-disk-store",
-        LocalizedStrings.SystemAdmin_MODIFY_DISK_STORE.toLocalizedString());
+        "Modifies the contents stored in a disk store. Note that this operation writes to the disk store files so use it with care. Requires that a region name by specified using -region=<regionName> Options:   -remove will remove the region from the disk store causing any data stored in the disk store for this region to no longer exist. Subregions of the removed region will not be removed.   -lru=<type> Sets region's lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size   -lruAction=<action> Sets the region's lru action. Valid actions are: none, overflow-to-disk, local-destroy   -lruLimit=<int> Sets the region's lru limit. Valid values are >= 0   -concurrencyLevel=<int> Sets the region's concurrency level. Valid values are >= 0   -initialCapacity=<int> Sets the region's initial capacity. Valid values are >= 0.   -loadFactor=<float> Sets the region's load factory. Valid values are >= 0.0   -statisticsEnabled=<boolean> Sets the region's statistics enabled. Value values are true or false. The name of the disk store and the directories its files are stored in and the region to target are all required arguments.");
     helpMap.put("revoke-missing-disk-store",
         "Connects to a running system and tells its members to stop waiting for the "
             + "specified disk store to be available. Only revoke a disk store if its files "
@@ -1581,83 +1594,78 @@ public class SystemAdmin {
             + "Use -all-threads to include these threads in the dump.  "
             + "An optional filename may be given for storing the dumps.");
     helpMap.put("-out=",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_TO_WRITE_OUTPUT_TO_THE_SPECIFIED_FILE_THE_FILE_IS_OVERWRITTEN_IF_IT_ALREADY_EXISTS
-            .toLocalizedString());
+        "Causes gemfire to write output to the specified file. The file is overwritten if it already exists.");
     helpMap.put("-debug",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_TO_PRINT_OUT_EXTRA_INFORMATION_WHEN_IT_FAILS_THIS_OPTION_IS_SUPPORTED_BY_ALL_COMMANDS
-            .toLocalizedString());
+        "Causes gemfire to print out extra information when it fails. This option is supported by all commands.");
     helpMap.put("-details",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_TO_PRINT_DETAILED_INFORMATION_WITH_THE_0_COMMAND_IT_MEANS_STATISTIC_DESCRIPTIONS
-            .toLocalizedString("stats"));
+        "Causes gemfire to print detailed information.  With the 'stats' command it means statistic descriptions.");
     helpMap.put("-nofilter",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_0_COMMAND_TO_PRINT_UNFILTERED_RAW_STATISTIC_VALUES_THIS_IS_THE_DEFAULT_FOR_NONCOUNTER_STATISTICS
-            .toLocalizedString("stats"));
+        "Causes gemfire 'stats' command to print unfiltered, raw, statistic values. This is the default for non-counter statistics.");
     helpMap.put("-persec",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_0_COMMAND_TO_PRINT_THE_RATE_OF_CHANGE_PER_SECOND_FOR_STATISTIC_VALUES_THIS_IS_THE_DEFAULT_FOR_COUNTER_STATISTICS
-            .toLocalizedString("stats"));
+        "Causes gemfire 'stats' command to print the rate of change, per second, for statistic values. This is the default for counter statistics.");
     helpMap.put("-persample",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_0_COMMAND_TO_PRINT_THE_RATE_OF_CHANGE_PER_SAMPLE_FOR_STATISTIC_VALUES
-            .toLocalizedString("stats"));
+        "Causes gemfire 'stats' command to print the rate of change, per sample, for statistic values.");
     helpMap.put("-prunezeros",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_0_COMMAND_TO_NOT_PRINT_STATISTICS_WHOSE_VALUES_ARE_ALL_ZERO
-            .toLocalizedString("stats"));
+        "Causes gemfire 'stats' command to not print statistics whose values are all zero.");
     helpMap.put("-port=",
-        LocalizedStrings.SystemAdmin_USED_TO_SPECIFY_A_NONDEFAULT_PORT_WHEN_STARTING_OR_STOPPING_A_LOCATOR
-            .toLocalizedString());
+        "Used to specify a non-default port when starting or stopping a locator.");
     helpMap.put("-address=",
-        LocalizedStrings.SystemAdmin_USED_TO_SPECIFY_A_SPECIFIC_IP_ADDRESS_TO_LISTEN_ON_WHEN_STARTING_OR_STOPPING_A_LOCATOR
-            .toLocalizedString());
+        "Used to specify a specific IP address to listen on when starting or stopping a locator.");
     helpMap.put("-hostname-for-clients=",
-        LocalizedStrings.SystemAdmin_USED_TO_SPECIFY_A_HOST_NAME_OR_IP_ADDRESS_TO_GIVE_TO_CLIENTS_SO_THEY_CAN_CONNECT_TO_A_LOCATOR
-            .toLocalizedString());
+        "Used to specify a host name or IP address to give to clients so they can connect to a locator.");
     helpMap.put("-properties=",
-        LocalizedStrings.SystemAdmin_USED_TO_SPECIFY_THE_0_FILE_TO_BE_USED_IN_CONFIGURING_THE_LOCATORS_DISTRIBUTEDSYSTEM
-            .toLocalizedString(DistributionConfig.GEMFIRE_PREFIX + "properties"));
+        "Used to specify the " + DistributionConfig.GEMFIRE_PREFIX
+            + "properties file to be used in configuring the locator's DistributedSystem.");
     helpMap.put("-archive=",
-        LocalizedStrings.SystemAdmin_THE_ARGUMENT_IS_THE_STATISTIC_ARCHIVE_FILE_THE_0_COMMAND_SHOULD_READ
-            .toLocalizedString("stats"));
+        "The argument is the statistic archive file the 'stats' command should read.");
     helpMap.put("-h",
-        LocalizedStrings.SystemAdmin_CAUSES_GEMFIRE_TO_PRINT_OUT_INFORMATION_INSTEAD_OF_PERFORMING_THE_COMMAND_THIS_OPTION_IS_SUPPORTED_BY_ALL_COMMANDS
-            .toLocalizedString());
+        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
     helpMap.put("-help", helpMap.get("-h"));
     helpMap.put("-q",
-        LocalizedStrings.SystemAdmin_TURNS_ON_QUIET_MODE_THIS_OPTION_IS_SUPPORTED_BY_ALL_COMMANDS
-            .toLocalizedString());
+        "Turns on quiet mode. This option is supported by all commands.");
     helpMap.put("-starttime=",
-        LocalizedStrings.SystemAdmin_CAUSES_THE_0_COMMAND_TO_IGNORE_STATISTICS_SAMPLES_TAKEN_BEFORE_THIS_TIME_THE_ARGUMENT_FORMAT_MUST_MATCH_1
-            .toLocalizedString("stats", DateFormatter.FORMAT_STRING));
+        "Causes the 'stats' command to ignore statistics samples taken before this time. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".");
     helpMap.put("-endtime=",
-        LocalizedStrings.SystemAdmin_CAUSES_THE_0_COMMAND_TO_IGNORE_STATISTICS_SAMPLES_TAKEN_AFTER_THIS_TIME_THE_ARGUMENT_FORMAT_MUST_MATCH_1
-            .toLocalizedString("stats", DateFormatter.FORMAT_STRING));
+        "Causes the 'stats' command to ignore statistics samples taken after this time. The argument format must match "
+            + DateFormatter.FORMAT_STRING + ".");
     helpMap.put("-dir=",
-        LocalizedStrings.SystemAdmin_DIR_ARGUMENT_HELP.toLocalizedString(
-            DistributionConfig.GEMFIRE_PREFIX + "properties",
-            DistributionConfig.GEMFIRE_PREFIX + "systemDirectory", "GEMFIRE", "defaultSystem",
-            "version"));
+        "The argument is the system directory the command should operate on.  If the argument is empty then a default system directory will be search for.\n"
+            + "However the search will not include the " + DistributionConfig.GEMFIRE_PREFIX
+            + "properties file.  By default if a command needs a system directory, and one is not specified, then a search is done.\n"
+            + "If a " + DistributionConfig.GEMFIRE_PREFIX + "properties file can be located then "
+            + DistributionConfig.GEMFIRE_PREFIX
+            + "systemDirectory property from that file is used.\n"
+            + "Otherwise if the GEMFIRE environment variable is set to a directory that contains a subdirectory named defaultSystem then that directory is used.\n"
+            + "The property file is searched for in the following locations:\n"
+            + "1. The current working directory.\n"
+            + "2. The user's home directory.\n"
+            + "3. The class path.  All commands except 'version' use the system directory.");
     helpMap.put("-D",
-        LocalizedStrings.SystemAdmin_SETS_A_JAVA_SYSTEM_PROPERTY_IN_THE_LOCATOR_VM_USED_MOST_OFTEN_FOR_CONFIGURING_SSL_COMMUNICATION
-            .toLocalizedString());
+        "Sets a Java system property in the locator VM.  Used most often for configuring SSL communication.");
     helpMap.put("-X",
-        LocalizedStrings.SystemAdmin_SETS_A_JAVA_VM_X_SETTING_IN_THE_LOCATOR_VM_USED_MOST_OFTEN_FOR_INCREASING_THE_SIZE_OF_THE_VIRTUAL_MACHINE
-            .toLocalizedString());
-    helpMap.put("-remove", LocalizedStrings.SystemAdmin_REMOVE_OPTION_HELP.toLocalizedString());
+        "Sets a Java VM X setting in the locator VM.  Used most often for increasing the size of the virtual machine.");
+    helpMap.put("-remove",
+        "Causes the region specified by the -region=<regionName> to be removed from a disk store. Any records in the disk store for this region become garbage and will be deleted from the disk store files if compact-disk-store is called. Note that this option writes to the disk store files so use it with care.");
     helpMap.put("-maxOplogSize=",
         "Limits the size of any oplogs that are created to the specified size in megabytes.");
-    helpMap.put("-lru=", LocalizedStrings.SystemAdmin_LRU_OPTION_HELP.toLocalizedString());
+    helpMap.put("-lru=",
+        "-lru=<type> Sets region's lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size");
     helpMap.put("-lruAction=",
-        LocalizedStrings.SystemAdmin_LRUACTION_OPTION_HELP.toLocalizedString());
+        "-lruAction=<action> Sets the region's lru action. Valid actions are: none, overflow-to-disk, local-destroy");
     helpMap.put("-lruLimit=",
-        LocalizedStrings.SystemAdmin_LRULIMIT_OPTION_HELP.toLocalizedString());
+        "-lruLimit=<int> Sets the region's lru limit. Valid values are >= 0");
     helpMap.put("-concurrencyLevel=",
-        LocalizedStrings.SystemAdmin_CONCURRENCYLEVEL_OPTION_HELP.toLocalizedString());
+        "-concurrencyLevel=<int> Sets the region's concurrency level. Valid values are >= 0");
     helpMap.put("-initialCapacity=",
-        LocalizedStrings.SystemAdmin_INITIALCAPACITY_OPTION_HELP.toLocalizedString());
+        "-initialCapacity=<int> Sets the region's initial capacity. Valid values are >= 0");
     helpMap.put("-loadFactor=",
-        LocalizedStrings.SystemAdmin_LOADFACTOR_OPTION_HELP.toLocalizedString());
+        "-loadFactor=<float> Sets the region's load factory. Valid values are >= 0.0");
     helpMap.put("-statisticsEnabled=",
-        LocalizedStrings.SystemAdmin_STATISTICSENABLED_OPTION_HELP.toLocalizedString());
-    helpMap.put("-region=", LocalizedStrings.SystemAdmin_REGION_OPTION_HELP.toLocalizedString());
-    helpMap.put("-monitor", LocalizedStrings.SystemAdmin_MONITOR_OPTION_HELP.toLocalizedString());
+        "-statisticsEnabled=<boolean> Sets the region's statistics enabled. Value values are true or false");
+    helpMap.put("-region=", "Used to specify what region an operation is to be done on.");
+    helpMap.put("-monitor",
+        "-monitor Causes the stats command to keep periodically checking its statistic archives for updates.");
     helpMap.put("-peer=",
         "-peer=<true|false> True, the default, causes the locator to find peers for other peers. False will cause the locator to not locate peers.");
     helpMap.put("-server=",
@@ -1783,8 +1791,8 @@ public class SystemAdmin {
       return d.getTime();
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemAdmin_TIME_WAS_NOT_IN_THIS_FORMAT_0_1
-              .toLocalizedString(new Object[] {DateFormatter.FORMAT_STRING, ex}));
+          String.format("Time was not in this format %s. %s",
+              new Object[] {DateFormatter.FORMAT_STRING, ex}));
     }
   }
 
@@ -1849,8 +1857,8 @@ public class SystemAdmin {
             outputDir = argValue;
           } else {
             throw new InternalGemFireException(
-                LocalizedStrings.SystemAdmin_UNEXPECTED_VALID_OPTION_0
-                    .toLocalizedString(validArgs[i]));
+                String.format("unexpected valid option %s",
+                    validArgs[i]));
           }
           return true;
         }
@@ -1880,8 +1888,8 @@ public class SystemAdmin {
         } else if (validArgs[i].equals("-all-threads")) {
           printStacksOption = arg;
         } else {
-          throw new InternalGemFireException(LocalizedStrings.SystemAdmin_UNEXPECTED_VALID_OPTION_0
-              .toLocalizedString(validArgs[i]));
+          throw new InternalGemFireException(String.format("unexpected valid option %s",
+              validArgs[i]));
         }
         return true;
       }
@@ -1994,7 +2002,7 @@ public class SystemAdmin {
             it.remove();
           } else {
             System.err.println(
-                LocalizedStrings.SystemAdmin_ERROR_UNKNOWN_OPTION_0.toLocalizedString(arg));
+                String.format("ERROR: Unknown option %s.", arg));
             usage();
           }
         } else {
@@ -2003,7 +2011,7 @@ public class SystemAdmin {
       }
     } catch (IllegalArgumentException ex) {
       System.err.println(
-          LocalizedStrings.SystemAdmin_ERROR.toLocalizedString() + ": " + getExceptionMessage(ex));
+          "ERROR: " + getExceptionMessage(ex));
       if (debug) {
         ex.printStackTrace(System.err);
       }
@@ -2013,8 +2021,7 @@ public class SystemAdmin {
       if (help) {
         printHelp("gemfire");
       } else {
-        System.err.println(LocalizedStrings.SystemAdmin_ERROR_WRONG_NUMBER_OF_COMMAND_LINE_ARGS
-            .toLocalizedString());
+        System.err.println("ERROR: Wrong number of command line args.");
         usage();
       }
     }
@@ -2031,14 +2038,14 @@ public class SystemAdmin {
             it.remove();
           } else {
             System.err.println(
-                LocalizedStrings.SystemAdmin_ERROR_UNKNOWN_OPTION_0.toLocalizedString(arg));
+                String.format("ERROR: Unknown option %s.", arg));
             usage(cmd);
           }
         }
       }
     } catch (IllegalArgumentException ex) {
       System.err.println(
-          LocalizedStrings.SystemAdmin_ERROR.toLocalizedString() + ": " + getExceptionMessage(ex));
+          "ERROR: " + getExceptionMessage(ex));
       if (debug) {
         ex.printStackTrace(System.err);
       }
@@ -2072,49 +2079,49 @@ public class SystemAdmin {
         }
 
         if (!optionOK) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
-        System.out.println(LocalizedStrings.SystemAdmin_GEMFIRE_PRODUCT_DIRECTORY_0
-            .toLocalizedString(getProductDir()));
+        System.out.println(String.format("GemFire product directory: %s",
+            getProductDir()));
 
         GemFireVersion.print(System.out);
 
       } else if (cmd.equalsIgnoreCase("help")) {
         if (cmdLine.size() > 1) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
         help(cmdLine);
       } else if (cmd.equalsIgnoreCase(START_LOCATOR)) {
         if (cmdLine.size() != 0) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
         locatorStart(sysDir, portOption, addressOption, gemfirePropertiesFileOption, propertyOption,
             xoptions, peerOption, serverOption, hostnameForClientsOption);
         if (!quiet) {
           System.out
-              .println(LocalizedStrings.SystemAdmin_LOCATOR_START_COMPLETE.toLocalizedString());
+              .println("Locator start complete.");
         }
       } else if (cmd.equalsIgnoreCase("stop-locator")) {
         if (cmdLine.size() != 0) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
         locatorStop(sysDir, portOption, addressOption, propertyOption);
         if (!quiet) {
           System.out
-              .println(LocalizedStrings.SystemAdmin_LOCATOR_STOP_COMPLETE.toLocalizedString());
+              .println("Locator stop complete.");
         }
       } else if (cmd.equalsIgnoreCase("status-locator")) {
         if (cmdLine.size() != 0) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
         if (!quiet) {
@@ -2122,23 +2129,22 @@ public class SystemAdmin {
         }
       } else if (cmd.equalsIgnoreCase("info-locator")) {
         if (cmdLine.size() != 0) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
         System.out.println(locatorInfo(sysDir));
       } else if (cmd.equalsIgnoreCase("tail-locator-log")) {
         if (cmdLine.size() != 0) {
-          System.err.println(LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0
-              .toLocalizedString(join(cmdLine)));
+          System.err.println(String.format("ERROR: unexpected command line arguments: %s.",
+              join(cmdLine)));
           usage(cmd);
         }
         System.out.println(locatorTailLog(sysDir));
       } else if (cmd.equalsIgnoreCase("merge-logs")) {
         if (cmdLine.size() == 0) {
           System.err
-              .println(LocalizedStrings.SystemAdmin_ERROR_EXPECTED_AT_LEAST_ONE_LOG_FILE_TO_MERGE
-                  .toLocalizedString());
+              .println("ERROR: expected at least one log file to merge.");
           usage(cmd);
         }
         mergeLogs(outOption, cmdLine);
@@ -2229,27 +2235,27 @@ public class SystemAdmin {
         printStacks(cmdLine, printStacksOption != null);
       } else {
         System.err
-            .println(LocalizedStrings.SystemAdmin_ERROR_UNKNOWN_COMMAND_0.toLocalizedString(cmd));
+            .println(String.format("ERROR: Unknown command %s.", cmd));
         usage();
       }
     } catch (InterruptedException ex) {
-      System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
-          .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
+      System.err.println(String.format("ERROR: Operation %s failed because: %s.",
+          new Object[] {cmd, getExceptionMessage(ex)}));
       if (debug) {
         ex.printStackTrace(System.err);
       }
       ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (IllegalArgumentException ex) {
-      System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
-          .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
+      System.err.println(String.format("ERROR: Operation %s failed because: %s.",
+          new Object[] {cmd, getExceptionMessage(ex)}));
 
       if (debug) {
         ex.printStackTrace(System.err);
       }
       ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (Exception ex) {
-      System.err.println(LocalizedStrings.SystemAdmin_ERROR_OPERATION_0_FAILED_BECAUSE_1
-          .toLocalizedString(new Object[] {cmd, getExceptionMessage(ex)}));
+      System.err.println(String.format("ERROR: Operation %s failed because: %s.",
+          new Object[] {cmd, getExceptionMessage(ex)}));
       if (debug) {
         ex.printStackTrace(System.err);
       }

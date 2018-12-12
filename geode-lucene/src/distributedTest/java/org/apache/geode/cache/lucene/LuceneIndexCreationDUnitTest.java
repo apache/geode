@@ -56,7 +56,6 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.lucene.test.TestObject;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -450,8 +449,9 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
     // Attempt to create a Cache in dataStore2 with a PR defining 20 buckets. This will fail.
     String exceptionMessage =
-        LocalizedStrings.PartitionedRegion_THE_TOTAL_NUMBER_OF_BUCKETS_FOUND_IN_PARTITIONATTRIBUTES_0_IS_INCOMPATIBLE_WITH_THE_TOTAL_NUMBER_OF_BUCKETS_USED_BY_OTHER_DISTRIBUTED_MEMBERS_SET_THE_NUMBER_OF_BUCKETS_TO_1
-            .toLocalizedString(new Object[] {NUM_BUCKETS * 2, NUM_BUCKETS});
+        String.format(
+            "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
+            new Object[] {NUM_BUCKETS * 2, NUM_BUCKETS});
     dataStore2.invoke(() -> initDataStore(createIndex,
         RegionTestableType.PARTITION_WITH_DOUBLE_BUCKETS, exceptionMessage));
 

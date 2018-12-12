@@ -31,13 +31,13 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
@@ -219,7 +219,7 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
    * @param key the key to wait on.
    */
   private void waitOnPut(final VM vm, final String key) {
-    Wait.waitForCriterion(new WaitCriterion() {
+    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
       @Override
       public boolean done() {
         return (getUsingVM(vm, key) != null);
@@ -229,7 +229,7 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
       public String description() {
         return "Waiting on " + key + " to replicate.";
       }
-    }, 2000, 500, true);
+    });
   }
 
   /**

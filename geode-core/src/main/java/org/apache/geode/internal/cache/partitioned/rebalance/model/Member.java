@@ -213,7 +213,7 @@ public class Member implements Comparable<Member> {
   }
 
   void changeTotalBytes(float change) {
-    totalBytes += change;
+    totalBytes += (long) Math.round(change);
   }
 
   @Override

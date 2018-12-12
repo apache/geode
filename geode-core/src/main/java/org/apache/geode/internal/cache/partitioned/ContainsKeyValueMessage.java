@@ -39,9 +39,7 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
@@ -94,7 +92,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.ContainsKeyValueMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return p;
   }
@@ -119,8 +117,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         }
       } catch (PRLocallyDestroyedException pde) {
         throw new ForceReattemptException(
-            LocalizedStrings.ContainsKeyValueMessage_ENOUNTERED_PRLOCALLYDESTROYEDEXCEPTION
-                .toLocalizedString(),
+            "Enountered PRLocallyDestroyedException",
             pde);
       }
 
@@ -128,12 +125,11 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       ContainsKeyValueReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm),
           replyVal);
     } else {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.ContainsKeyValueMess_PARTITIONED_REGION_0_IS_NOT_CONFIGURED_TO_STORE_DATA,
-          r.getFullPath()));
+      logger.fatal("Partitioned Region <> is not configured to store data",
+          r.getFullPath());
       ForceReattemptException fre = new ForceReattemptException(
-          LocalizedStrings.ContainsKeyValueMessage_PARTITIONED_REGION_0_ON_1_IS_NOT_CONFIGURED_TO_STORE_DATA
-              .toLocalizedString(new Object[] {r.getFullPath(), dm.getId()}));
+          String.format("Partitioned Region %s on %s is not configured to store data",
+              new Object[] {r.getFullPath(), dm.getId()}));
       fre.setHash(key.hashCode());
       throw fre;
     }
@@ -297,13 +293,12 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt. {}",
             ce.getMessage(), ce);
         throw new ForceReattemptException(
-            LocalizedStrings.ContainsKeyValueMessage_CONTAINSKEYVALUERESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
+            "ContainsKeyValueResponse got remote CacheException; forcing reattempt.",
             ce);
       }
       if (!this.returnValueReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.ContainsKeyValueMessage_NO_RETURN_VALUE_RECEIVED.toLocalizedString());
+            "no return value received");
       }
       return this.returnValue;
     }

@@ -24,7 +24,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is an admin (meta) region used by the client health monitoring service to publish the client
@@ -85,8 +84,8 @@ public class ClientHealthMonitoringRegion {
 
       currentInstance = cache.createVMRegion(ADMIN_REGION_NAME, regionAttrs, internalArgs);
     } catch (Exception ex) {
-      cache.getLoggerI18n().error(
-          LocalizedStrings.ClientHealthMonitoringRegion_ERROR_WHILE_CREATING_AN_ADMIN_REGION, ex);
+      cache.getLogger().error(
+          "Error while creating an admin region", ex);
     }
   }
 

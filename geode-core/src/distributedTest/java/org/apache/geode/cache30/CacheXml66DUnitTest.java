@@ -131,7 +131,6 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
 import org.apache.geode.internal.cache.xmlcache.SerializerCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -329,7 +328,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       fail("Expected IllegalStateException to be thrown");
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage().contains(
-          LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString()));
+          "Only regions with persistence or overflow to disk can specify DiskStore"));
     }
 
     EvictionAttributes ea =
@@ -350,8 +349,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       fail("Expected IllegalStateException to be thrown");
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage()
-          .contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString("setDiskDirs or setDiskWriteAttributes", getUniqueName())));
+          .contains(String.format("Deprecated API %s cannot be used with DiskStore %s",
+              "setDiskDirs or setDiskWriteAttributes", getUniqueName())));
     }
 
     try {
@@ -362,8 +361,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       fail("Expected IllegalStateException to be thrown");
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage()
-          .contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString("setDiskDirs", getUniqueName())));
+          .contains(String.format("Deprecated API %s cannot be used with DiskStore %s",
+              "setDiskDirs", getUniqueName())));
     }
 
     testXml(cache);
@@ -482,8 +481,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       csc.setOverflowDirectory("overFlow");
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage()
-          .contains(LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString("setOverflowDirectory", getUniqueName())));
+          .contains(String.format("Deprecated API %s cannot be used with DiskStore %s",
+              "setOverflowDirectory", getUniqueName())));
     }
 
     cache.getLogger().config("Eviction disk store : " + csc.getDiskStoreName());
@@ -1473,7 +1472,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     txMgrCreation.setWriter(new TestTransactionWriter());
     cc.addCacheTransactionManagerCreation(txMgrCreation);
     IgnoredException expectedException = IgnoredException
-        .addIgnoredException(LocalizedStrings.TXManager_NO_WRITER_ON_CLIENT.toLocalizedString());
+        .addIgnoredException("A TransactionWriter cannot be registered on a client");
     try {
       testXml(cc);
       fail("expected exception not thrown");
@@ -1669,8 +1668,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     rmc.setCriticalHeapPercentage(low);
     cache.setResourceManagerCreation(rmc);
     IgnoredException expectedException = IgnoredException.addIgnoredException(
-        LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE
-            .toLocalizedString());
+        "Eviction percentage must be less than the critical percentage.");
     try {
       testXml(cache);
       assertTrue(false);
@@ -2382,8 +2380,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     attrs.setPoolName("mypool");
     cache.createVMRegion("rootNORMAL", attrs);
     IgnoredException expectedException = IgnoredException.addIgnoredException(
-        LocalizedStrings.AbstractRegion_THE_CONNECTION_POOL_0_HAS_NOT_BEEN_CREATED
-            .toLocalizedString("mypool"));
+        String.format("The connection pool %s has not been created",
+            "mypool"));
     try {
       testXml(cache);
       fail("expected IllegalStateException");
@@ -2403,7 +2401,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       CacheCreation cache = new CacheCreation();
       cache.createPoolFactory().addLocator(ALIAS2, 12345).create("mypool");
       IgnoredException expectedException = IgnoredException.addIgnoredException(
-          LocalizedStrings.PoolManagerImpl_POOL_NAMED_0_ALREADY_EXISTS.toLocalizedString("mypool"));
+          String.format("A pool named %s already exists", "mypool"));
       try {
         testXml(cache);
         fail("expected IllegalStateException");
@@ -3343,8 +3341,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     setXmlFile(findFile("unknownNamedAttributes.xml"));
 
     IgnoredException expectedException = IgnoredException.addIgnoredException(
-        LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0
-            .toLocalizedString());
+        "Cannot reference non-existing region attributes named");
     try {
       getCache();
       fail("Should have thrown an IllegalStateException");
@@ -3785,7 +3782,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests declarative bridge servers
+   * Tests declarative cache servers
    *
    * @since GemFire 4.0
    */
@@ -3876,8 +3873,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     // System.out.println("testNonExistentFile - set: " + System.currentTimeMillis());
 
     IgnoredException expectedException = IgnoredException.addIgnoredException(
-        LocalizedStrings.GemFireCache_DECLARATIVE_CACHE_XML_FILERESOURCE_0_DOES_NOT_EXIST
-            .toLocalizedString(nonExistent.getPath()));
+        String.format("Declarative Cache XML file/resource %s does not exist.",
+            nonExistent.getPath()));
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -3901,7 +3898,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     setXmlFile(dir);
 
     IgnoredException expectedException = IgnoredException.addIgnoredException(
-        LocalizedStrings.GemFireCache_DECLARATIVE_XML_FILE_0_IS_NOT_A_FILE.toLocalizedString(dir));
+        String.format("Declarative XML file %s is not a file.", dir));
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");

@@ -14,16 +14,13 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,125 +43,116 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.internal.cache.InternalCache;
 
 public class CompiledAggregateFunctionJUnitTest {
-
-  private Mockery context;
   private InternalCache cache;
-  private List bucketList;
+  private List<Integer> bucketList;
 
   @Before
   public void setUp() throws Exception {
-    context = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-    cache = context.mock(InternalCache.class);
-    bucketList = new ArrayList();
-    bucketList.add(1);
+    cache = mock(InternalCache.class);
+    bucketList = Collections.singletonList(1);
   }
 
   @Test
   public void testCount() throws Exception {
     CompiledAggregateFunction caf1 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.COUNT);
     ExecutionContext context1 = new ExecutionContext(null, cache);
-    assertTrue(caf1.evaluate(context1) instanceof Count);
+    assertThat(caf1.evaluate(context1)).isInstanceOf(Count.class);
 
     CompiledAggregateFunction caf2 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.COUNT, true);
     ExecutionContext context2 = new ExecutionContext(null, cache);
-    assertTrue(caf2.evaluate(context2) instanceof CountDistinct);
+    assertThat(caf2.evaluate(context2)).isInstanceOf(CountDistinct.class);
 
     CompiledAggregateFunction caf3 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.COUNT);
     ExecutionContext context3 = new ExecutionContext(null, cache);
     context3.setIsPRQueryNode(true);
-    assertTrue(caf3.evaluate(context3) instanceof CountPRQueryNode);
+    assertThat(caf3.evaluate(context3)).isInstanceOf(CountPRQueryNode.class);
 
     CompiledAggregateFunction caf4 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.COUNT);
     QueryExecutionContext context4 = new QueryExecutionContext(null, cache);
 
     context4.setBucketList(bucketList);
-    assertTrue(caf4.evaluate(context4) instanceof Count);
+    assertThat(caf4.evaluate(context4)).isInstanceOf(Count.class);
 
     CompiledAggregateFunction caf5 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.COUNT, true);
     ExecutionContext context5 = new ExecutionContext(null, cache);
     context5.setIsPRQueryNode(true);
-    assertTrue(caf5.evaluate(context5) instanceof CountDistinctPRQueryNode);
+    assertThat(caf5.evaluate(context5)).isInstanceOf(CountDistinctPRQueryNode.class);
 
     CompiledAggregateFunction caf6 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.COUNT, true);
     QueryExecutionContext context6 = new QueryExecutionContext(null, cache);
     context6.setBucketList(bucketList);
-    assertTrue(caf6.evaluate(context6) instanceof DistinctAggregator);
+    assertThat(caf6.evaluate(context6)).isInstanceOf(DistinctAggregator.class);
   }
 
   @Test
   public void testSum() throws Exception {
     CompiledAggregateFunction caf1 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.SUM);
     ExecutionContext context1 = new ExecutionContext(null, cache);
-    assertTrue(caf1.evaluate(context1) instanceof Sum);
+    assertThat(caf1.evaluate(context1)).isInstanceOf(Sum.class);
 
     CompiledAggregateFunction caf2 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.SUM, true);
     ExecutionContext context2 = new ExecutionContext(null, cache);
-    assertTrue(caf2.evaluate(context2) instanceof SumDistinct);
+    assertThat(caf2.evaluate(context2)).isInstanceOf(SumDistinct.class);
 
     CompiledAggregateFunction caf3 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.SUM);
     ExecutionContext context3 = new ExecutionContext(null, cache);
     context3.setIsPRQueryNode(true);
-    assertTrue(caf3.evaluate(context3) instanceof Sum);
+    assertThat(caf3.evaluate(context3)).isInstanceOf(Sum.class);
 
     CompiledAggregateFunction caf4 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.SUM);
     QueryExecutionContext context4 = new QueryExecutionContext(null, cache);
     context4.setBucketList(bucketList);
-    assertTrue(caf4.evaluate(context4) instanceof Sum);
+    assertThat(caf4.evaluate(context4)).isInstanceOf(Sum.class);
 
     CompiledAggregateFunction caf5 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.SUM, true);
     ExecutionContext context5 = new ExecutionContext(null, cache);
     context5.setIsPRQueryNode(true);
-    assertTrue(caf5.evaluate(context5) instanceof SumDistinctPRQueryNode);
+    assertThat(caf5.evaluate(context5)).isInstanceOf(SumDistinctPRQueryNode.class);
 
     CompiledAggregateFunction caf6 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.SUM, true);
     QueryExecutionContext context6 = new QueryExecutionContext(null, cache);
     context6.setBucketList(bucketList);
-    assertTrue(caf6.evaluate(context6) instanceof DistinctAggregator);
+    assertThat(caf6.evaluate(context6)).isInstanceOf(DistinctAggregator.class);
   }
 
   @Test
   public void testAvg() throws Exception {
     CompiledAggregateFunction caf1 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG);
     ExecutionContext context1 = new ExecutionContext(null, cache);
-    assertTrue(caf1.evaluate(context1) instanceof Avg);
+    assertThat(caf1.evaluate(context1)).isInstanceOf(Avg.class);
 
     CompiledAggregateFunction caf2 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG, true);
     ExecutionContext context2 = new ExecutionContext(null, cache);
-    assertTrue(caf2.evaluate(context2) instanceof AvgDistinct);
+    assertThat(caf2.evaluate(context2)).isInstanceOf(AvgDistinct.class);
 
     CompiledAggregateFunction caf3 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG);
     ExecutionContext context3 = new ExecutionContext(null, cache);
     context3.setIsPRQueryNode(true);
-    assertTrue(caf3.evaluate(context3) instanceof AvgPRQueryNode);
+    assertThat(caf3.evaluate(context3)).isInstanceOf(AvgPRQueryNode.class);
 
     CompiledAggregateFunction caf4 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG);
     QueryExecutionContext context4 = new QueryExecutionContext(null, cache);
     context4.setBucketList(this.bucketList);
-    assertTrue(caf4.evaluate(context4) instanceof AvgBucketNode);
+    assertThat(caf4.evaluate(context4)).isInstanceOf(AvgBucketNode.class);
 
     CompiledAggregateFunction caf5 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG, true);
     ExecutionContext context5 = new ExecutionContext(null, cache);
     context5.setIsPRQueryNode(true);
-    assertTrue(caf5.evaluate(context5) instanceof AvgDistinctPRQueryNode);
+    assertThat(caf5.evaluate(context5)).isInstanceOf(AvgDistinctPRQueryNode.class);
 
     CompiledAggregateFunction caf6 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG, true);
     QueryExecutionContext context6 = new QueryExecutionContext(null, cache);
     context6.setBucketList(this.bucketList);
-    assertTrue(caf6.evaluate(context6) instanceof DistinctAggregator);
+    assertThat(caf6.evaluate(context6)).isInstanceOf(DistinctAggregator.class);
   }
 
   @Test
@@ -172,18 +160,17 @@ public class CompiledAggregateFunctionJUnitTest {
     CompiledAggregateFunction caf1 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.MAX);
     ExecutionContext context1 = new ExecutionContext(null, cache);
     Aggregator agg = (Aggregator) caf1.evaluate(context1);
-    assertTrue(agg instanceof MaxMin);
+    assertThat(agg).isInstanceOf(MaxMin.class);
     MaxMin maxMin = (MaxMin) agg;
     Class maxMinClass = MaxMin.class;
     Field findMax = maxMinClass.getDeclaredField("findMax");
     findMax.setAccessible(true);
-    assertTrue((Boolean) findMax.get(maxMin));
+    assertThat(findMax.get(maxMin)).isEqualTo(Boolean.TRUE);
 
     CompiledAggregateFunction caf2 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.MIN);
-    ExecutionContext context2 = new ExecutionContext(null, cache);
     Aggregator agg1 = (Aggregator) caf2.evaluate(context1);
-    assertTrue(agg1 instanceof MaxMin);
+    assertThat(agg1).isInstanceOf(MaxMin.class);
     MaxMin maxMin1 = (MaxMin) agg1;
-    assertFalse((Boolean) findMax.get(maxMin1));
+    assertThat(findMax.get(maxMin1)).isEqualTo(Boolean.FALSE);
   }
 }

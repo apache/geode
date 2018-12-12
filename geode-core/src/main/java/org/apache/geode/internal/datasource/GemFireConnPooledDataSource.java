@@ -23,10 +23,7 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * GemFireTransactionDataSource extends AbstractDataSource. This is a datasource class which
@@ -44,14 +41,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   protected ConnectionProvider provider;
 
   /**
-   * Creates a new instance of GemFireConnPooledDataSource
-   *
-   * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
-   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
-   */
-
-
-  /**
    * Place holder for abstract method isWrapperFor(java.lang.Class) in java.sql.Wrapper required by
    * jdk 1.6
    *
@@ -67,20 +56,25 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
 
 
 
+  /**
+   * Creates a new instance of GemFireConnPooledDataSource
+   *
+   * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
+   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
+   */
   public GemFireConnPooledDataSource(ConnectionPoolDataSource connPoolDS,
       ConfiguredDataSourceProperties configs) throws SQLException {
     super(configs);
     if ((connPoolDS == null) || (configs == null))
       throw new SQLException(
-          LocalizedStrings.GemFireConnPooledDataSource_GEMFIRECONNPOOLEDDATASOURCECONNECTIONPOOLDATASOURCE_CLASS_OBJECT_IS_NULL_OR_CONFIGUREDDATASOURCEPROPERTIES_OBJECT_IS_NULL
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::ConnectionPoolDataSource class object is null or ConfiguredDataSourceProperties object is null");
     try {
       provider = new GemFireConnectionPoolManager(connPoolDS, configs, this);
     } catch (Exception ex) {
-      StringId exception =
-          LocalizedStrings.GemFireConnPooledDataSource_EXCEPTION_CREATING_GEMFIRECONNECTIONPOOLMANAGER;
-      logger.error(LocalizedMessage.create(exception, ex.getLocalizedMessage()), ex);
-      throw new SQLException(exception.toLocalizedString(ex));
+      String exception =
+          "An exception was caught while creating a GemFireConnectionPoolManager. %s";
+      logger.error(String.format(exception, ex.getLocalizedMessage()), ex);
+      throw new SQLException(String.format(exception, ex));
     }
   }
 
@@ -94,8 +88,7 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   public Connection getConnection() throws SQLException {
     if (!isActive) {
       throw new SQLException(
-          LocalizedStrings.GemFireConnPooledDataSource_GEMFIRECONNPOOLEDDATASOURCEGETCONNECTIONNO_VALID_CONNECTION_AVAILABLE
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::getConnection::No valid Connection available");
     }
     PooledConnection connPool = null;
     try {
@@ -188,8 +181,7 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
     else {
       provider.returnAndExpireConnection(poolC);
       throw new SQLException(
-          LocalizedStrings.GemFireConnPooledDataSource_GEMFIRECONNPOOLEDDATASOURCEGETCONNFROMCONNPOOLJAVASQLCONNECTION_OBTAINED_IS_INVALID
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::getConnFromConnPool:java.sql.Connection obtained is invalid");
     }
   }
 
@@ -206,8 +198,8 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Clean up the resources before restart of Cache
    */
   @Override
-  public void clearUp() {
-    super.clearUp();
+  public void close() {
+    super.close();
     provider.clearUp();
   }
 }

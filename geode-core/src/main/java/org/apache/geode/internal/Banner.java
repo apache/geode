@@ -124,7 +124,7 @@ public class Banner {
         out.println("    " + key + " = " + value);
       }
       out.println("Log4J 2 Configuration:");
-      out.println("    " + LogService.getConfigInformation());
+      out.println("    " + LogService.getConfigurationInfo());
     }
     out.println(SEPARATOR);
   }

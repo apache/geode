@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal;
 
 import java.beans.IntrospectionException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -25,6 +24,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
@@ -151,21 +151,23 @@ public class MBeanProxyFactory {
   public void removeAllProxies(DistributedMember member, Region<String, Object> monitoringRegion) {
 
     Set<Entry<String, Object>> entries = monitoringRegion.entrySet();
-    Iterator<Entry<String, Object>> entriesIt = entries.iterator();
 
     if (logger.isDebugEnabled()) {
       logger.debug("Removing {} proxies for member {}", entries.size(), member.getId());
     }
 
-    while (entriesIt.hasNext()) {
+    for (Entry<String, Object> entry : entries) {
       String key = null;
       Object val;
       try {
-        Entry<String, Object> entry = entriesIt.next();
         key = entry.getKey();// MBean Name in String format.
         val = entry.getValue(); // Federation Component
         ObjectName mbeanName = ObjectName.getInstance(key);
         removeProxy(member, mbeanName, val);
+      } catch (EntryNotFoundException entryNotFoundException) {
+        // Entry has already been removed by another thread, so no need to remove it
+        logger.warn("Proxy for entry {} and member {} has already been removed", entry,
+            member.getId());
       } catch (Exception e) {
         if (!(e.getCause() instanceof InstanceNotFoundException)) {
           logger.warn("Remove Proxy failed for {} due to {}", key, e.getMessage(), e);

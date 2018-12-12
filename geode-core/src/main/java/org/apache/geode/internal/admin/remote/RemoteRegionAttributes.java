@@ -49,7 +49,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation of RegionAttributes that can be used from a VM remote from the vm that
@@ -218,8 +217,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       return listeners[0];
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RemoteRegionAttributes_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
-              .toLocalizedString());
+          "More than one cache listener exists.");
     }
   }
 
@@ -335,8 +333,8 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RemoteRegionAttributes_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
+          String.format("No mirror type corresponds to data policy %s",
+              this.dataPolicy));
     }
   }
 

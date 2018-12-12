@@ -21,14 +21,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.UUID;
 
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 import org.apache.geode.pdx.internal.PdxUnreadData;
@@ -162,7 +160,7 @@ public final class CopyHelper {
         if (o instanceof Cloneable) {
           try {
             // Note that Object.clone is protected so we need to use reflection
-            // to call clone even though this guy implements Cloneable
+            // to call clone even though this object implements Cloneable
             Class<?> c = o.getClass();
             // By convention, the user should make the clone method public.
             // But even if they don't, let's go ahead and use it.
@@ -173,50 +171,19 @@ public final class CopyHelper {
             m.setAccessible(true);
             copy = (T) m.invoke(o, new Object[0]);
             return copy;
-          } catch (NoSuchMethodException ignore) {
-            // try using Serialization
-          } catch (IllegalAccessException ignore) {
-            // try using Serialization
-          } catch (SecurityException ignore) {
+          } catch (NoSuchMethodException | IllegalAccessException | SecurityException ignore) {
             // try using Serialization
           } catch (InvocationTargetException ex) {
             Throwable cause = ex.getTargetException();
             if (cause instanceof CloneNotSupportedException) {
               // try using Serialization
             } else {
-              throw new CopyException(LocalizedStrings.CopyHelper_CLONE_FAILED.toLocalizedString(),
+              throw new CopyException("Clone failed.",
                   cause != null ? cause : ex);
             }
           }
         } else if (o instanceof CachedDeserializable) {
           copy = (T) ((CachedDeserializable) o).getDeserializedWritableCopy(null, null);
-          return copy;
-        } else if (o.getClass().isArray() && o.getClass().getComponentType().isPrimitive()) {
-          if (o instanceof byte[]) {
-            byte[] a = (byte[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof boolean[]) {
-            boolean[] a = (boolean[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof char[]) {
-            char[] a = (char[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof int[]) {
-            int[] a = (int[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof long[]) {
-            long[] a = (long[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof short[]) {
-            short[] a = (short[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof float[]) {
-            float[] a = (float[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          } else if (o instanceof double[]) {
-            double[] a = (double[]) o;
-            copy = (T) Arrays.copyOf(a, a.length);
-          }
           return copy;
         }
         // Copy using serialization
@@ -275,11 +242,11 @@ public final class CopyHelper {
       return (T) DataSerializer.readObject(new DataInputStream(hdos.getInputStream()));
     } catch (ClassNotFoundException ex) {
       throw new CopyException(
-          LocalizedStrings.CopyHelper_COPY_FAILED_ON_INSTANCE_OF_0.toLocalizedString(o.getClass()),
+          String.format("Copy failed on instance of %s", o.getClass()),
           ex);
     } catch (IOException ex) {
       throw new CopyException(
-          LocalizedStrings.CopyHelper_COPY_FAILED_ON_INSTANCE_OF_0.toLocalizedString(o.getClass()),
+          String.format("Copy failed on instance of %s", o.getClass()),
           ex);
     }
 

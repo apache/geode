@@ -15,8 +15,10 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 import java.io.Serializable;
@@ -198,7 +200,9 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   @Test
-  public void deployJarToAllServersWithRestart() throws Exception {
+  public void deployJarToAllServersWithRestart() {
+    // TODO: Ignore on windows until GEODE-5787
+    assumeFalse(isWindows());
     // Deploy a jar to all servers
     gfshConnector.executeAndAssertThat("deploy --jar=" + jar1).statusIsSuccess();
     String resultString = gfshConnector.getGfshOutput();
@@ -227,6 +231,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
 
   @Test
   public void undeployJarFromAllServersWithRestart() throws Exception {
+    // TODO: Ignore on windows until GEODE-5787
+    assumeFalse(isWindows());
     // Deploy a jar to all servers
     gfshConnector.executeAndAssertThat("deploy --jar=" + jar1).statusIsSuccess();
     String resultString = gfshConnector.getGfshOutput();
@@ -239,7 +245,6 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
 
     gfshConnector.executeAndAssertThat("undeploy --jar=" + jar1.getName()).statusIsSuccess();
-    // Although the jar is undeployed, we can still access the class
     server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
     server2.invoke(() -> assertThatCannotLoad(jarName1, class1));
 

@@ -70,7 +70,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Tests 2 controllers and 2 bridge servers
+   * Tests 2 controllers and 2 cache servers
    */
   @Test
   public void test2by2() throws Exception {
@@ -283,7 +283,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
     vm1.invoke(
-        new SerializableRunnable("Verify bridge server view on " + bsPort1 + " and on " + bsPort3) {
+        new SerializableRunnable("Verify cache server view on " + bsPort1 + " and on " + bsPort3) {
           public void run() {
             Cache c = cache;
             List bslist = c.getCacheServers();
@@ -313,7 +313,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
           }
         });
     vm2.invoke(
-        new SerializableRunnable("Verify bridge server view on " + bsPort2 + " and on " + bsPort4) {
+        new SerializableRunnable("Verify cache server view on " + bsPort2 + " and on " + bsPort4) {
           public void run() {
             Cache c = cache;
             List bslist = c.getCacheServers();
@@ -343,7 +343,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
           }
         });
 
-    SerializableRunnable stopBS = new SerializableRunnable("stop bridge server") {
+    SerializableRunnable stopBS = new SerializableRunnable("stop cache server") {
       public void run() {
         Cache c = cache;
         List bslist = c.getCacheServers();
@@ -354,7 +354,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     };
     vm1.invoke(stopBS);
 
-    // now check to see if everyone else noticed him going away
+    // now check to see if everyone else noticed it going away
     vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
       public void run() {
         assertTrue(Locator.hasLocator());
@@ -452,7 +452,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
         assertEquals(0, others.size());
       }
     });
-    vm2.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
+    vm2.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
       public void run() {
         Cache c = cache;
         List bslist = c.getCacheServers();
@@ -475,7 +475,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     });
-    vm1.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
+    vm1.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
       public void run() {
         Cache c = cache;
         List bslist = c.getCacheServers();
@@ -503,7 +503,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    SerializableRunnable restartBS = new SerializableRunnable("restart bridge server") {
+    SerializableRunnable restartBS = new SerializableRunnable("restart cache server") {
       public void run() {
         try {
           Cache c = cache;
@@ -519,10 +519,10 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     };
-    // restart bridge server 1 and see if controller sees it
+    // restart cache server 1 and see if controller sees it
     vm1.invoke(restartBS);
 
-    vm3.invoke(new SerializableRunnable("Verify bridge server restart ") {
+    vm3.invoke(new SerializableRunnable("Verify cache server restart ") {
       public void run() {
         assertTrue(Locator.hasLocator());
         InternalLocator l = (InternalLocator) Locator.getLocator();
@@ -557,7 +557,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     vm1.invoke(disconnect);
     vm2.invoke(disconnect);
-    // now make sure controller saw all bridge servers stop
+    // now make sure controller saw all cache servers stop
 
     vm3.invoke(new SerializableRunnable("Verify locator stopped ") {
       public void run() {
@@ -783,7 +783,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
     vm1.invoke(
-        new SerializableRunnable("Verify bridge server view on " + bsPort1 + " and on " + bsPort3) {
+        new SerializableRunnable("Verify cache server view on " + bsPort1 + " and on " + bsPort3) {
           public void run() {
             Cache c = cache;
             List bslist = c.getCacheServers();
@@ -813,7 +813,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
           }
         });
     vm2.invoke(
-        new SerializableRunnable("Verify bridge server view on " + bsPort2 + " and on " + bsPort4) {
+        new SerializableRunnable("Verify cache server view on " + bsPort2 + " and on " + bsPort4) {
           public void run() {
             Cache c = cache;
             List bslist = c.getCacheServers();
@@ -843,7 +843,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
           }
         });
 
-    SerializableRunnable stopBS = new SerializableRunnable("stop bridge server") {
+    SerializableRunnable stopBS = new SerializableRunnable("stop cache server") {
       public void run() {
         Cache c = cache;
         List bslist = c.getCacheServers();
@@ -854,7 +854,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     };
     vm1.invoke(stopBS);
 
-    // now check to see if everyone else noticed him going away
+    // now check to see if everyone else noticed it going away
     vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
       public void run() {
         assertTrue(Locator.hasLocator());
@@ -952,7 +952,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
         assertEquals(0, others.size());
       }
     });
-    vm2.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
+    vm2.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
       public void run() {
         Cache c = cache;
         List bslist = c.getCacheServers();
@@ -975,7 +975,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     });
-    vm1.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
+    vm1.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
       public void run() {
         Cache c = cache;
         List bslist = c.getCacheServers();
@@ -1003,7 +1003,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    SerializableRunnable restartBS = new SerializableRunnable("restart bridge server") {
+    SerializableRunnable restartBS = new SerializableRunnable("restart cache server") {
       public void run() {
         try {
           Cache c = cache;
@@ -1019,10 +1019,10 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     };
-    // restart bridge server 1 and see if controller sees it
+    // restart cache server 1 and see if controller sees it
     vm1.invoke(restartBS);
 
-    vm3.invoke(new SerializableRunnable("Verify bridge server restart ") {
+    vm3.invoke(new SerializableRunnable("Verify cache server restart ") {
       public void run() {
         assertTrue(Locator.hasLocator());
         InternalLocator l = (InternalLocator) Locator.getLocator();
@@ -1057,7 +1057,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     vm1.invoke(disconnect);
     vm2.invoke(disconnect);
-    // now make sure controller saw all bridge servers stop
+    // now make sure controller saw all cache servers stop
 
     vm3.invoke(new SerializableRunnable("Verify locator stopped ") {
       public void run() {

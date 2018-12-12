@@ -14,17 +14,14 @@
  */
 package org.apache.geode.cache30;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseMessage;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Awaitility.waitAtMost;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
@@ -767,7 +764,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     invokeInEveryVM(new CacheSerializableRunnable("Verify region destruction") {
       @Override
       public void run2() throws CacheException {
-        waitAtMost(1, MINUTES).pollInterval(10, MILLISECONDS)
+        await()
             .until(() -> getRootRegion().getSubregion(name) == null);
       }
     });
@@ -2277,7 +2274,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
           final MemoryAllocatorImpl ma = (MemoryAllocatorImpl) gfc.getOffHeapStore();
           await("waiting for off-heap object count go to zero")
-              .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
               .until(() -> ma.getStats().getObjects(), equalTo(0));
 
         }
@@ -3596,7 +3592,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         public void run2() throws CacheException {
           final Region<Object, Object> region = getRootRegion().getSubregion(name);
           await("never saw create of " + key)
-              .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
               .until(() -> region.getEntry(key) != null);
         }
       });
@@ -3616,7 +3611,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       public void run2() throws CacheException {
         final Region<Object, Object> region = getRootRegion().getSubregion(name);
         await("never saw expire of " + key)
-            .atMost(4, SECONDS).pollInterval(10, MILLISECONDS)
             .until(() -> region.getEntry(key) == null);
       }
     });
@@ -3626,7 +3620,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       public void run2() throws CacheException {
         final Region<Object, Object> region = getRootRegion().getSubregion(name);
         await("never saw expire of " + key)
-            .atMost(4, SECONDS).pollInterval(10, MILLISECONDS)
             .until(() -> region.getEntry(key) == null);
 
         assertThat(destroyListener.waitForInvocation(555)).isTrue();
@@ -3732,7 +3725,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         CountingDistCacheListener<Object, Object> l =
             (CountingDistCacheListener<Object, Object>) region.getAttributes()
                 .getCacheListeners()[0];
-        waitAtMost(1, SECONDS).pollInterval(1, MILLISECONDS)
+        await()
             .untilAsserted(() -> l.assertCount(1, 0, 0, 0));
 
         // now make sure it expires
@@ -3742,7 +3735,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         // The previous code would fail after 100ms; now we wait 3000ms.
 
         try {
-          waitAtMost(30, SECONDS).pollInterval(1, MILLISECONDS)
+          await()
               .until(() -> {
                 Region.Entry re = region.getEntry(key);
                 if (re != null) {
@@ -3870,7 +3863,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
         // wait for update to reach us from vm1 (needed if no-ack)
         await("never saw key " + key + "equal to value " + value)
-            .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
             .until(() -> value.equals(region.get(key)));
 
         EntryExpiryTask eet = region.getEntryExpiryTask(key);
@@ -3981,7 +3973,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             final int expectedProfiles = 1;
 
             await("replicate count never reached " + expectedProfiles)
-                .atMost(60, SECONDS).pollInterval(200, MILLISECONDS)
                 .until(() -> {
                   DataPolicy currentPolicy = getRegionAttributes().getDataPolicy();
                   if (currentPolicy == DataPolicy.PRELOADED) {
@@ -4270,7 +4261,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             final int expectedProfiles = 1;
 
             await("replicate count never reached " + expectedProfiles)
-                .atMost(100, SECONDS).pollInterval(200, MILLISECONDS)
                 .until(() -> {
                   DataPolicy currentPolicy = getRegionAttributes().getDataPolicy();
                   if (currentPolicy == DataPolicy.PRELOADED) {
@@ -4592,7 +4582,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             final int expectedProfiles = 1;
 
             await("profile count never reached " + expectedProfiles)
-                .atMost(30, SECONDS).pollInterval(200, MILLISECONDS)
                 .until(() -> adv.adviseReplicates().size(), greaterThanOrEqualTo(expectedProfiles));
 
             // operate on every odd entry with different value, alternating between
@@ -4871,7 +4860,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm0.invokeAsync(new CacheSerializableRunnable("Do Nonblocking Operations") {
           @Override
           public void run2() throws CacheException {
-            Wait.pause(200); // give the gii guy a chance to start
+            Wait.pause(200); // give the gii a chance to start
             Region<Object, Object> region = getRootRegion().getSubregion(name);
 
             // wait for profile of getInitialImage cache to show up
@@ -4881,7 +4870,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             // int numProfiles;
             final int expectedProfiles = 1;
             await("profile count never became exactly " + expectedProfiles)
-                .atMost(1, MINUTES).pollInterval(200, MILLISECONDS)
                 .until(() -> adv.adviseReplicates().size(), equalTo(expectedProfiles));
 
             // since we want to force a GII while updates are flying, make sure
@@ -5106,7 +5094,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           InternalDataSerializer.GetMarker.WAIT_MS = 1;
           try {
             await("DataSerializer with id 120 was never registered")
-                .atMost(30, SECONDS).pollInterval(10, MILLISECONDS)
                 .until(() -> InternalDataSerializer.getSerializer((byte) 120) != null);
           } finally {
             InternalDataSerializer.GetMarker.WAIT_MS = savVal;
@@ -5527,10 +5514,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     synchronized void assertCounts(int commitCount, int failedCommitCount, int rollbackCount,
         int closeCount1) {
-      assertThat(this.afterCommitCount).isEqualTo(commitCount);
-      assertThat(this.afterFailedCommitCount).isEqualTo(failedCommitCount);
-      assertThat(this.afterRollbackCount).isEqualTo(rollbackCount);
-      assertThat(this.closeCount).isEqualTo(closeCount1);
+      assertSoftly((softly) -> {
+        softly.assertThat(afterCommitCount).describedAs("After Commit Count")
+            .isEqualTo(commitCount);
+        softly.assertThat(afterFailedCommitCount).describedAs("After Failed Commit Count")
+            .isEqualTo(failedCommitCount);
+        softly.assertThat(afterRollbackCount).describedAs("After Rollback Count")
+            .isEqualTo(rollbackCount);
+        softly.assertThat(closeCount).describedAs("Close Count")
+            .isEqualTo(closeCount1);
+      });
     }
   }
 
@@ -5621,7 +5614,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         (CountingDistCacheListener<Object, Object>) re.getAttributes().getCacheListeners()[0];
 
     await("retry event = null where it should not be")
-        .atMost(1, MINUTES).pollInterval(200, MILLISECONDS)
         .until(() -> cdcl.getEntryEvent() != null);
 
     EntryEvent<Object, Object> listenEvent = cdcl.getEntryEvent();
@@ -6984,12 +6976,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     getSystem().getLogWriter().info("textTXRmtMirror: create mirror and non-mirror");
     txMgr.commit();
 
-    if (!region.getAttributes().getScope().isAck()) {
-      waitAtMost(5, MINUTES)
-          .untilAsserted(() -> validateTXRmtMirror(rgnName, vm0, vm1));
-    } else {
-      validateTXRmtMirror(rgnName, vm0, vm1);
-    }
+    validateTXRmtMirror(rgnName, vm0, vm1);
   }
 
   private void validateTXRmtMirror(String rgnName, VM vm0, VM vm1) {
@@ -6997,58 +6984,68 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         Region<String, String> rgn = getRootRegion().getSubregion(rgnName);
-        {
-          assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'").isNotNull();
-          assertThat(rgn.getEntry("key").getValue()).isEqualTo("value");
-        }
-        CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
-        tl.checkAfterCommitCount(1);
-        assertThat(tl.afterFailedCommitCount).isEqualTo(0);
-        assertThat(tl.afterRollbackCount).isEqualTo(0);
-        assertThat(tl.closeCount).isEqualTo(0);
-        assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
-        {
-          Collection<EntryEvent<String, String>> events =
-              TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
-          assertThat(events.size()).isEqualTo(1);
-          EntryEvent<String, String> ev = events.iterator().next();
-          assertThat(rgn).isSameAs(ev.getRegion());
-          assertThat(ev.getKey()).isEqualTo("key");
-          assertThat(ev.getNewValue()).isEqualTo("value");
-          assertThat(ev.getOldValue()).isNull();
-          assertThat(ev.getOperation().isLocalLoad()).isFalse();
-          assertThat(ev.getOperation().isNetLoad()).isFalse();
-          assertThat(ev.getOperation().isLoad()).isFalse();
-          assertThat(ev.getOperation().isNetSearch()).isFalse();
-          assertThat(ev.getOperation().isExpiration()).isFalse();
-          assertThat(ev.getCallbackArgument()).isNull();
-          assertThat(ev.isCallbackArgumentAvailable()).isTrue();
-          assertThat(ev.isOriginRemote()).isTrue();
-          assertThat(ev.getOperation().isDistributed()).isTrue();
+
+        if (!rgn.getAttributes().getScope().isAck()) {
+          await().untilAsserted(() -> checkCommitAndDataExists(rgn));
+        } else {
+          checkCommitAndDataExists(rgn);
         }
       }
+
+      private void checkCommitAndDataExists(Region<String, String> rgn) {
+        assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'")
+            .isNotNull();
+        assertThat(rgn.getEntry("key").getValue()).isEqualTo("value");
+
+        CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
+        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        tl.assertCounts(1, 0, 0, 0);
+        assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
+        List<EntryEvent<String, String>> events =
+            TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
+        assertThat(events.size()).isEqualTo(1);
+        EntryEvent<String, String> ev = events.get(0);
+        assertThat(rgn).isSameAs(ev.getRegion());
+        assertThat(ev.getKey()).isEqualTo("key");
+        assertThat(ev.getNewValue()).isEqualTo("value");
+        assertThat(ev.getOldValue()).isNull();
+        assertThat(ev.getOperation().isLocalLoad()).isFalse();
+        assertThat(ev.getOperation().isNetLoad()).isFalse();
+        assertThat(ev.getOperation().isLoad()).isFalse();
+        assertThat(ev.getOperation().isNetSearch()).isFalse();
+        assertThat(ev.getOperation().isExpiration()).isFalse();
+        assertThat(ev.getCallbackArgument()).isNull();
+        assertThat(ev.isCallbackArgumentAvailable()).isTrue();
+        assertThat(ev.isOriginRemote()).isTrue();
+        assertThat(ev.getOperation().isDistributed()).isTrue();
+      }
     };
+
     SerializableRunnable checkNoKey = new SerializableRunnable("textTXRmtMirror: checkNoKey") {
       @Override
       public void run() {
         Region<String, String> rgn = getRootRegion().getSubregion(rgnName);
-        {
-          assertThat(rgn.getEntry("key")).isNull();
+
+        if (!rgn.getAttributes().getScope().isAck()) {
+          await().untilAsserted(() -> {
+            checkCommitAndNoData(rgn);
+          });
+        } else {
+          checkCommitAndNoData(rgn);
         }
+      }
+
+      private void checkCommitAndNoData(Region<String, String> rgn) {
+        assertThat(rgn.getEntry("key")).isNull();
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
-        tl.checkAfterCommitCount(1);
-        assertThat(tl.afterFailedCommitCount).isEqualTo(0);
-        assertThat(tl.afterRollbackCount).isEqualTo(0);
-        assertThat(tl.closeCount).isEqualTo(0);
-        assertThat(TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents()).size()).isEqualTo(
-            (long) 0);
-        assertThat(TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents()).size()).isEqualTo(
-            (long) 0);
+        tl.assertCounts(1, 0, 0, 0);
+        assertThat(TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents())).isEmpty();
+        assertThat(TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents())).isEmpty();
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
       }
     };
+
     vm0.invoke(checkExists);
     vm1.invoke(checkNoKey);
   }
@@ -7980,10 +7977,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   private void waitForAllTombstonesToExpire(int initialTombstoneCount) {
     try {
 
-      waitAtMost(TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT
-          + (TombstoneService.MAX_SLEEP_TIME * 9), MILLISECONDS)
-              .pollInterval(100, MILLISECONDS)
-              .until(() -> CCRegion.getTombstoneCount() == 0);
+      await()
+          .until(() -> CCRegion.getTombstoneCount() == 0);
     } catch (ConditionTimeoutException timeout) {
       fail("Timed out waiting for all tombstones to expire.  There are now "
           + CCRegion.getTombstoneCount() + " tombstones left out of " + initialTombstoneCount
@@ -8153,8 +8148,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   sendSerialMessageToAll(); // flush the ops
                 }
 
-                waitAtMost(TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT * 5, MILLISECONDS)
-                    .pollInterval(100, MILLISECONDS)
+                await()
                     .until(
                         () -> CCRegion.getCache().getTombstoneService()
                             .getScheduledTombstoneCount() == 0);
@@ -8179,8 +8173,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   numEntries);
           assertThat(CCRegion.size()).isEqualTo(numEntries);
           try {
-            waitAtMost(TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT * 5, MILLISECONDS)
-                .pollInterval(100, MILLISECONDS)
+            await()
                 .until(() -> CCRegion.getCache().getTombstoneService()
                     .getScheduledTombstoneCount() == 0);
           } catch (ConditionTimeoutException timeout) {
@@ -8284,45 +8277,41 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       fail("neither member saw event conflation - check stats for " + name);
     }
 
-    // Wait for the members to eventually be consistent
     // For no-ack regions, messages may still be in flight between replicas at this point
-    waitAtMost(5, MINUTES).until(() -> {
+    await("Wait for the members to eventually be consistent")
+        .untilAsserted(() -> {
 
-      // check consistency of the regions
-      Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
-      Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
-      Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
+          // check consistency of the regions
+          Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
+          Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
+          Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
 
-      try {
-        for (int i = 0; i < 10; i++) {
-          String key = "cckey" + i;
-          assertThat(r2Contents.get(key)).describedAs(
-              "1 region contents are not consistent for i " + key).isEqualTo(r1Contents.get(key));
-          assertThat(r3Contents.get(key)).describedAs(
-              "2 region contents are not consistent for i " + key).isEqualTo(r2Contents.get(key));
-          for (int subi = 1; subi < 3; subi++) {
-            String subkey = key + "-" + subi;
-            if (r1Contents.containsKey(subkey)) {
-              assertThat(r2Contents.get(subkey)).describedAs(
-                  "3 region contents are not consistent for " + subkey).isEqualTo(
-                      r1Contents.get(subkey));
-              assertThat(r3Contents.get(subkey)).describedAs(
-                  "4 region contents are not consistent for " + subkey).isEqualTo(
-                      r2Contents.get(subkey));
-            } else {
-              boolean condition1 = !r2Contents.containsKey(subkey);
-              assertThat(condition1).describedAs("5 r2contents").isTrue();
-              boolean condition = !r3Contents.containsKey(subkey);
-              assertThat(condition).describedAs("6 r3contents").isTrue();
+          for (int i = 0; i < 10; i++) {
+            String key = "cckey" + i;
+            assertThat(r2Contents.get(key)).describedAs(
+                "r2 contents are not consistent with r1 for " + key)
+                .isEqualTo(r1Contents.get(key));
+            assertThat(r3Contents.get(key)).describedAs(
+                "r3 contents are not consistent with r2 for " + key)
+                .isEqualTo(r2Contents.get(key));
+            for (int subi = 1; subi < 3; subi++) {
+              String subkey = key + "-" + subi;
+              if (r1Contents.containsKey(subkey)) {
+                assertThat(r2Contents.get(subkey)).describedAs(
+                    "r2 contents are not consistent with r1 for subkey " + subkey).isEqualTo(
+                        r1Contents.get(subkey));
+                assertThat(r3Contents.get(subkey)).describedAs(
+                    "r3 contents are not consistent with r2 for subkey " + subkey).isEqualTo(
+                        r2Contents.get(subkey));
+              } else {
+                assertThat(r2Contents.containsKey(subkey))
+                    .describedAs("r2 contains subkey " + subkey + " that r1 does not").isFalse();
+                assertThat(r3Contents.containsKey(subkey))
+                    .describedAs("r3 contains subkey " + subkey + " that r1 does not").isFalse();
+              }
             }
           }
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-        throw (e);
-      }
-      return true;
-    });
+        });
 
   }
 
@@ -8777,7 +8766,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   @SuppressWarnings("unchecked")
   private static <L extends TransactionListener> L firstTransactionListenerFrom(
       CacheTransactionManager transactionManager) {
-    return (L) transactionManager.getListeners()[0];
+    TransactionListener[] listeners = transactionManager.getListeners();
+    assertThat(listeners).describedAs("Listeners on transactionManager for transaction with id "
+        + transactionManager.getTransactionId()).hasSize(1);
+    return (L) listeners[0];
   }
 
   @SuppressWarnings("unchecked")
@@ -8808,9 +8800,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   private static SerializableRunnableIF repeatingIfNecessary(long timeoutMillis,
       SerializableRunnableIF runnable) {
     if (timeoutMillis > POLL_INTERVAL_MILLIS) {
-      return () -> waitAtMost(timeoutMillis, MILLISECONDS)
-          .pollInterval(POLL_INTERVAL_MILLIS, MILLISECONDS)
-          .pollDelay(0, MILLISECONDS)
+      return () -> await()
           .untilAsserted(runnable::run);
     }
     return runnable;

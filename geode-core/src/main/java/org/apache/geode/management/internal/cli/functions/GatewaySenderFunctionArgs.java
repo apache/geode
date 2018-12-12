@@ -15,10 +15,16 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DeclarableType;
 
 
 public class GatewaySenderFunctionArgs implements Serializable {
-  private static final long serialVersionUID = -5158224572470173267L;
+  private static final long serialVersionUID = 4636678328980816780L;
 
   private final String id;
   private final Integer remoteDSId;
@@ -37,34 +43,42 @@ public class GatewaySenderFunctionArgs implements Serializable {
   private final Integer dispatcherThreads;
   private final String orderPolicy;
   // array of fully qualified class names of the filters
-  private final String[] gatewayEventFilters;
-  private final String[] gatewayTransportFilters;
+  private final List<String> gatewayEventFilters;
+  private final List<String> gatewayTransportFilters;
 
-  public GatewaySenderFunctionArgs(String id, Integer remoteDSId, Boolean parallel,
-      Boolean manualStart, Integer socketBufferSize, Integer socketReadTimeout,
-      Boolean enableBatchConflation, Integer batchSize, Integer batchTimeInterval,
-      Boolean enablePersistence, String diskStoreName, Boolean diskSynchronous,
-      Integer maxQueueMemory, Integer alertThreshold, Integer dispatcherThreads, String orderPolicy,
-      String[] gatewayEventFilters, String[] gatewayTransportFilters) {
+  public GatewaySenderFunctionArgs(CacheConfig.GatewaySender sender) {
+    this.id = sender.getId();
+    this.remoteDSId = string2int(sender.getRemoteDistributedSystemId());
+    this.parallel = sender.isParallel();
+    this.manualStart = sender.isManualStart();
+    this.socketBufferSize = string2int(sender.getSocketBufferSize());
+    this.socketReadTimeout = string2int(sender.getSocketReadTimeout());
+    this.enableBatchConflation = sender.isEnableBatchConflation();
+    this.batchSize = string2int(sender.getBatchSize());
+    this.batchTimeInterval = string2int(sender.getBatchTimeInterval());
+    this.enablePersistence = sender.isEnablePersistence();
+    this.diskStoreName = sender.getDiskStoreName();
+    this.diskSynchronous = sender.isDiskSynchronous();
+    this.maxQueueMemory = string2int(sender.getMaximumQueueMemory());
+    this.alertThreshold = string2int(sender.getAlertThreshold());
+    this.dispatcherThreads = string2int(sender.getDispatcherThreads());
+    this.orderPolicy = sender.getOrderPolicy();
+    this.gatewayEventFilters =
+        Optional.of(sender.getGatewayEventFilters())
+            .map(filters -> filters
+                .stream().map(DeclarableType::getClassName)
+                .collect(Collectors.toList()))
+            .orElse(null);
+    this.gatewayTransportFilters =
+        Optional.of(sender.getGatewayTransportFilters())
+            .map(filters -> filters
+                .stream().map(DeclarableType::getClassName)
+                .collect(Collectors.toList()))
+            .orElse(null);
+  }
 
-    this.id = id;
-    this.remoteDSId = remoteDSId;
-    this.parallel = parallel;
-    this.manualStart = manualStart;
-    this.socketBufferSize = socketBufferSize;
-    this.socketReadTimeout = socketReadTimeout;
-    this.enableBatchConflation = enableBatchConflation;
-    this.batchSize = batchSize;
-    this.batchTimeInterval = batchTimeInterval;
-    this.enablePersistence = enablePersistence;
-    this.diskStoreName = diskStoreName;
-    this.diskSynchronous = diskSynchronous;
-    this.maxQueueMemory = maxQueueMemory;
-    this.alertThreshold = alertThreshold;
-    this.dispatcherThreads = dispatcherThreads;
-    this.orderPolicy = orderPolicy;
-    this.gatewayEventFilters = gatewayEventFilters;
-    this.gatewayTransportFilters = gatewayTransportFilters;
+  private Integer string2int(String x) {
+    return Optional.ofNullable(x).map(Integer::valueOf).orElse(null);
   }
 
   public String getId() {
@@ -131,11 +145,11 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.orderPolicy;
   }
 
-  public String[] getGatewayEventFilter() {
+  public List<String> getGatewayEventFilter() {
     return this.gatewayEventFilters;
   }
 
-  public String[] getGatewayTransportFilter() {
+  public List<String> getGatewayTransportFilter() {
     return this.gatewayTransportFilters;
   }
 }

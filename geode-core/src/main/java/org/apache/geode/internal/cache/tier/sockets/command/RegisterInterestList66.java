@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -32,8 +31,6 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -139,20 +136,19 @@ public class RegisterInterestList66 extends BaseCommand {
 
     // Process the register interest request
     if (keys.isEmpty() || regionName == null) {
-      StringId errMessage = null;
+      String errMessage = null;
       if (keys.isEmpty() && regionName == null) {
         errMessage =
-            LocalizedStrings.RegisterInterestList_THE_INPUT_LIST_OF_KEYS_IS_EMPTY_AND_THE_INPUT_REGION_NAME_IS_NULL_FOR_THE_REGISTER_INTEREST_REQUEST;
+            "The input list of keys is empty and the input region name is null for the register interest request.";
       } else if (keys.isEmpty()) {
         errMessage =
-            LocalizedStrings.RegisterInterestList_THE_INPUT_LIST_OF_KEYS_FOR_THE_REGISTER_INTEREST_REQUEST_IS_EMPTY;
+            "The input list of keys for the register interest request is empty.";
       } else if (regionName == null) {
         errMessage =
-            LocalizedStrings.RegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_REGISTER_INTEREST_REQUEST_IS_NULL;
+            "The input region name for the register interest request is null.";
       }
-      String s = errMessage.toLocalizedString();
-      logger.warn("{}: {}", serverConnection.getName(), s);
-      writeChunkedErrorResponse(clientMessage, MessageType.REGISTER_INTEREST_DATA_ERROR, s,
+      logger.warn("{}: {}", serverConnection.getName(), errMessage);
+      writeChunkedErrorResponse(clientMessage, MessageType.REGISTER_INTEREST_DATA_ERROR, errMessage,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     }
@@ -160,9 +156,8 @@ public class RegisterInterestList66 extends BaseCommand {
     // key not null
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST,
-          new Object[] {serverConnection.getName(), regionName}));
+      logger.info("{}: Region named {} was not found during register interest list request.",
+          new Object[] {serverConnection.getName(), regionName});
     }
     try {
       securityService.authorize(Resource.DATA, Operation.READ, regionName);

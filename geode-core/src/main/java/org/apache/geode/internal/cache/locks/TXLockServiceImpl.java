@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 
@@ -74,8 +73,7 @@ public class TXLockServiceImpl extends TXLockService {
   TXLockServiceImpl(String name, InternalDistributedSystem sys) {
     if (sys == null) {
       throw new IllegalStateException(
-          LocalizedStrings.TXLockServiceImpl_TXLOCKSERVICE_CANNOT_BE_CREATED_UNTIL_CONNECTED_TO_DISTRIBUTED_SYSTEM
-              .toLocalizedString());
+          "TXLockService cannot be created until connected to distributed system.");
     }
     sys.getCancelCriterion().checkCancelInProgress(null);
     this.system = sys;
@@ -108,7 +106,7 @@ public class TXLockServiceImpl extends TXLockService {
   public TXLockId txLock(List regionLockReqs, Set txParticipants) throws CommitConflictException {
     if (regionLockReqs == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.TXLockServiceImpl_REGIONLOCKREQS_MUST_NOT_BE_NULL.toLocalizedString());
+          "regionLockReqs must not be null");
     }
     Set participants = txParticipants;
     if (participants == null) {
@@ -133,12 +131,12 @@ public class TXLockServiceImpl extends TXLockService {
         acquireRecoveryReadLock();
       } else if (keyIfFail[0] != null) {
         throw new CommitConflictException(
-            LocalizedStrings.TXLockServiceImpl_CONCURRENT_TRANSACTION_COMMIT_DETECTED_0
-                .toLocalizedString(keyIfFail[0]));
+            String.format("Concurrent transaction commit detected %s",
+                keyIfFail[0]));
       } else {
         throw new CommitConflictException(
-            LocalizedStrings.TXLockServiceImpl_FAILED_TO_REQUEST_TRY_LOCKS_FROM_GRANTOR_0
-                .toLocalizedString(this.dlock.getLockGrantorId()));
+            String.format("Failed to request try locks from grantor: %s",
+                this.dlock.getLockGrantorId()));
       }
 
       logger.debug("[TXLockServiceImpl.txLock] gotLocks is {}, returning txLockId:{}", gotLocks,
@@ -157,8 +155,7 @@ public class TXLockServiceImpl extends TXLockService {
       }
       // TODO: change to be TransactionFailedException (after creating TFE)...
       throw new CommitConflictException(
-          LocalizedStrings.TXLockServiceImpl_CONCURRENT_TRANSACTION_COMMIT_DETECTED_BECAUSE_REQUEST_WAS_INTERRUPTED
-              .toLocalizedString(),
+          "Concurrent transaction commit detected because request was interrupted.",
           e);
     }
   }
@@ -168,8 +165,8 @@ public class TXLockServiceImpl extends TXLockService {
     synchronized (this.txLockIdList) {
       if (!this.txLockIdList.contains(txLockId)) {
         IllegalArgumentException e = new IllegalArgumentException(
-            LocalizedStrings.TXLockServiceImpl_INVALID_TXLOCKID_NOT_FOUND_0
-                .toLocalizedString(txLockId));
+            String.format("Invalid txLockId not found: %s",
+                txLockId));
         system.getDistributionManager().getCancelCriterion().checkCancelInProgress(e);
         Cache cache = system.getCache();
         if (cache != null) {
@@ -180,7 +177,7 @@ public class TXLockServiceImpl extends TXLockService {
     }
     if (updatedParticipants == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.TXLockServiceImpl_INVALID_UPDATEDPARTICIPANTS_NULL.toLocalizedString());
+          "Invalid updatedParticipants, null");
     }
     if (updatedParticipants.isEmpty()) {
       return;
@@ -195,7 +192,7 @@ public class TXLockServiceImpl extends TXLockService {
       } else { // not lock grantor
         LockGrantorId lockGrantorId = txLockId.getLockGrantorId();
         if (lockGrantorId == null || !this.dlock.isLockGrantorId(lockGrantorId)) {
-          return; // grantor is gone so we cannot update him
+          return; // grantor is gone so we cannot update it
         }
         InternalDistributedMember grantorId = lockGrantorId.getLockGrantorMember();
 
@@ -228,8 +225,8 @@ public class TXLockServiceImpl extends TXLockService {
         // which will have a new empty list (txLockIdList) and it will not
         // contain the originally added txLockId
         throw new IllegalArgumentException(
-            LocalizedStrings.TXLockServiceImpl_INVALID_TXLOCKID_NOT_FOUND_0
-                .toLocalizedString(txLockId));
+            String.format("Invalid txLockId not found: %s",
+                txLockId));
       }
 
       this.dlock.releaseTryLocks(txLockId, () -> {

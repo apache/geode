@@ -61,7 +61,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -315,8 +314,9 @@ public abstract class DataSerializer {
           .getRegion(fullPath);
       if (rgn == null) {
         throw new RegionNotFoundException(
-            LocalizedStrings.DataSerializer_REGION_0_COULD_NOT_BE_FOUND_WHILE_READING_A_DATASERIALIZER_STREAM
-                .toLocalizedString(fullPath));
+            String.format(
+                "Region ' %s ' could not be found while reading a DataSerializer stream",
+                fullPath));
       }
     }
     return rgn;
@@ -475,7 +475,7 @@ public abstract class DataSerializer {
       return addr;
     } catch (UnknownHostException ex) {
       IOException ex2 = new IOException(
-          LocalizedStrings.DataSerializer_WHILE_READING_AN_INETADDRESS.toLocalizedString());
+          "While reading an InetAddress");
       ex2.initCause(ex);
       throw ex2;
     }
@@ -1321,7 +1321,7 @@ public abstract class DataSerializer {
           DataSerializer.writeObject(object, hdos);
         } catch (IOException e) {
           RuntimeException e2 = new IllegalArgumentException(
-              LocalizedStrings.DataSerializer_PROBELM_WHILE_SERIALIZING.toLocalizedString());
+              "Problem while serializing.");
           e2.initCause(e);
           throw e2;
         }
@@ -1481,8 +1481,7 @@ public abstract class DataSerializer {
    * @since GemFire 5.7
    */
   public static void writeCharArray(char[] array, DataOutput out) throws IOException {
-
-    InternalDataSerializer.writeCharArray(array, array != null ? array.length : -1, out);
+    InternalDataSerializer.writeCharArray(array, out);
   }
 
   /**
@@ -3186,7 +3185,7 @@ public abstract class DataSerializer {
 
     if (e == null) {
       throw new NullPointerException(
-          LocalizedStrings.DataSerializer_ENUM_TO_SERIALIZE_IS_NULL.toLocalizedString());
+          "The enum constant to serialize is null");
     }
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
@@ -3215,10 +3214,10 @@ public abstract class DataSerializer {
 
     if (clazz == null) {
       throw new NullPointerException(
-          LocalizedStrings.DataSerializer_ENUM_CLASS_TO_DESERIALIZE_IS_NULL.toLocalizedString());
+          "the enum class to deserialize is null");
     } else if (!clazz.isEnum()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataSerializer_CLASS_0_NOT_ENUM.toLocalizedString(clazz.getName()));
+          String.format("Class %s is not an enum", clazz.getName()));
     }
 
     int ordinal = InternalDataSerializer.readArrayLength(in);

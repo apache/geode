@@ -22,10 +22,8 @@ import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.admin.internal.GemFireHealthEvaluator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.HealthListenerMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Implements a thread that monitors the health of the vm it lives in.
@@ -62,10 +60,8 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
     this.dm = dm;
     this.eval = new GemFireHealthEvaluator(config, dm);
     this.currentStatus = GemFireHealth.GOOD_HEALTH;
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup("HealthMonitor Threads", logger);
-    this.t = new Thread(tg, this,
-        LocalizedStrings.HealthMonitorImpl_HEALTH_MONITOR_OWNED_BY_0.toLocalizedString(owner));
-    this.t.setDaemon(true);
+    String threadName = String.format("Health Monitor owned by %s", owner);
+    this.t = new LoggingThread(threadName, this);
   }
 
   /************** HealthMonitor interface implementation ******************/
@@ -96,8 +92,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
   public void start() {
     if (this.stopRequested) {
       throw new RuntimeException(
-          LocalizedStrings.HealthMonitorImpl_A_HEALTH_MONITOR_CAN_NOT_BE_STARTED_ONCE_IT_HAS_BEEN_STOPPED
-              .toLocalizedString());
+          "A health monitor can not be started once it has been stopped");
     }
     if (this.t.isAlive()) {
       // it is already running
@@ -133,8 +128,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
     } catch (InterruptedException ex) {
       // No need to reset interrupt bit, we're exiting.
       if (!this.stopRequested) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.HealthMonitorImpl_UNEXPECTED_STOP_OF_HEALTH_MONITOR), ex);
+        logger.warn("Unexpected stop of health monitor", ex);
       }
     } finally {
       this.eval.close();

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -48,11 +49,11 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
@@ -572,7 +573,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
 
       public boolean done() {
         int sz = pool.getConnectedServerCount();
-        LogWriterUtils.getLogWriter().info("Checking for the Live Servers : Expected  : "
+        getLogWriter().info("Checking for the Live Servers : Expected  : "
             + expectedLiveServers + " Available :" + sz);
         if (sz == expectedLiveServers.intValue()) {
           return true;
@@ -585,7 +586,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
         return excuse;
       }
     };
-    Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   public static Object serverExecutionHAOneServerDown(Boolean isByName, Function function,

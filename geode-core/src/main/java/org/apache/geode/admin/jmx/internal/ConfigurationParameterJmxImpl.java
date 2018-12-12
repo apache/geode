@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Level;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.UnmodifiableConfigurationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides MBean support for managing accessing a ConfigurationParameter.
@@ -64,8 +63,7 @@ public class ConfigurationParameterJmxImpl
   public void setValue(Object value) throws UnmodifiableConfigurationException {
     if (deserialized) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.ConfigurationParameterJmxImpl_REMOTE_MUTATION_OF_CONFIGURATIONPARAMETER_IS_CURRENTLY_UNSUPPORTED
-              .toLocalizedString());
+          "Remote mutation of ConfigurationParameter is currently unsupported.");
     }
     try {
       super.setValue(value);

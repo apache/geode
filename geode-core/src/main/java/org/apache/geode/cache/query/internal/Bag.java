@@ -34,7 +34,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo probably should assert element type when elements added
 // @todo support generics when no longer support Java 1.4
@@ -113,8 +112,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsBag_THIS_COLLECTION_DOES_NOT_SUPPORT_STRUCT_ELEMENTS
-              .toLocalizedString());
+          "This collection does not support struct elements");
     this.elementType = elementType;
   }
 
@@ -487,7 +485,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
         if (this.currentDup == 0) {
           // next has not yet been called
           throw new IllegalStateException(
-              LocalizedStrings.ResultsBag_NEXT_MUST_BE_CALLED_BEFORE_REMOVE.toLocalizedString());
+              "next() must be called before remove()");
         }
 
         this.dupLimit--;

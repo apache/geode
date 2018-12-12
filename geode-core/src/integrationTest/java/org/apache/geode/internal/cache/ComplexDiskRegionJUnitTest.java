@@ -56,7 +56,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
     Oplog oplog1 = new Oplog(11, dr.getOplogSet(), new DirectoryHolder(factory, dirs[1], 1000, 0));
     Oplog oplog2 = new Oplog(12, dr.getOplogSet(), new DirectoryHolder(factory, dirs[2], 1000, 1));
     Oplog oplog3 = new Oplog(13, dr.getOplogSet(), new DirectoryHolder(factory, dirs[3], 1000, 2));
-    // give these guys some fake "live" entries
+    // give these Oplogs some fake "live" entries
     oplog1.incTotalCount();
     oplog1.incLiveCount();
     oplog2.incTotalCount();
@@ -113,7 +113,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
     Oplog oplog1 = new Oplog(11, dr.getOplogSet(), new DirectoryHolder(factory, dirs[1], 1000, 0));
     Oplog oplog2 = new Oplog(12, dr.getOplogSet(), new DirectoryHolder(factory, dirs[2], 1000, 1));
     Oplog oplog3 = new Oplog(13, dr.getOplogSet(), new DirectoryHolder(factory, dirs[3], 1000, 2));
-    // give these guys some fake "live" entries
+    // give these Oplogs some fake "live" entries
     oplog1.incTotalCount();
     oplog1.incLiveCount();
     oplog2.incTotalCount();

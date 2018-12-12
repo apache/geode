@@ -35,10 +35,13 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskStoreMXBean;
@@ -68,10 +71,11 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   private DistributedMember distMember;
 
+  private Logger logger = LogService.getLogger();
+
   /**
    * public constructor
    */
-
   public MBeanJMXAdapter() {
     this.localGemFireMBean = new ConcurrentHashMap<>();
     this.distMember = InternalDistributedSystem.getConnectedInstance().getDistributedMember();
@@ -152,19 +156,20 @@ public class MBeanJMXAdapter implements ManagementConstants {
    *
    */
   public void registerMBeanProxy(Object object, ObjectName objectName) {
-
     try {
       if (isRegistered(objectName)) {
         return;
       }
 
       mbeanServer.registerMBean(object, objectName);
-
-    } catch (InstanceAlreadyExistsException | NullPointerException | NotCompliantMBeanException
+    } catch (InstanceAlreadyExistsException instanceAlreadyExistsException) {
+      // An InstanceAlreadyExistsException in this context means that the MBean
+      // has already been registered, so just log a warning message.
+      logger.warn("MBean with ObjectName " + objectName + " has already been registered.");
+    } catch (NullPointerException | NotCompliantMBeanException
         | MBeanRegistrationException e) {
       throw new ManagementException(e);
     }
-
   }
 
   /**
@@ -173,21 +178,26 @@ public class MBeanJMXAdapter implements ManagementConstants {
    *
    */
   public void unregisterMBean(ObjectName objectName) {
-
     try {
       if (!isRegistered(objectName)) {
         return;
       }
-      mbeanServer.unregisterMBean(objectName);
-      // For Local GemFire MBeans
 
+      mbeanServer.unregisterMBean(objectName);
+
+      // For Local GemFire MBeans
       if (localGemFireMBean.get(objectName) != null) {
         localGemFireMBean.remove(objectName);
       }
-    } catch (NullPointerException | MBeanRegistrationException | InstanceNotFoundException e) {
+    } catch (InstanceNotFoundException instanceNotFoundException) {
+      // An InstanceNotFoundException in this context means that the MBean
+      // has already been unregistered, so just log a debug message as it is
+      // essentially a no-op.
+      // has already been unregistered, so just log a warning message.
+      logger.warn("MBean with ObjectName " + objectName + " has already been unregistered.");
+    } catch (NullPointerException | MBeanRegistrationException e) {
       throw new ManagementException(e);
     }
-
   }
 
   public Object getMBeanObject(ObjectName objectName) {

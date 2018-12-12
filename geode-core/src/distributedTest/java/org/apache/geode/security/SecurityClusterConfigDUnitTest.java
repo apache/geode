@@ -33,7 +33,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -49,8 +48,11 @@ public class SecurityClusterConfigDUnitTest {
 
   @Before
   public void before() throws Exception {
-    addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
-    addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+    addIgnoredException(
+        "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
+            .toString());
+    addIgnoredException(
+        "A server must use cluster configuration when joining a secured cluster.".toString());
 
     Properties props = new Properties();
     props.setProperty(JMX_MANAGER, "false");
@@ -120,7 +122,7 @@ public class SecurityClusterConfigDUnitTest {
     assertThatThrownBy(
         () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
-                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
+                "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
   }
 
   @Test
@@ -138,7 +140,7 @@ public class SecurityClusterConfigDUnitTest {
     assertThatThrownBy(
         () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
-                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
+                "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
   }
 
   @Test
@@ -154,7 +156,7 @@ public class SecurityClusterConfigDUnitTest {
     assertThatThrownBy(
         () -> this.serverStarter.startServer(props, this.lsRule.getMember(0).getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
-                LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toLocalizedString());
+                "A server must use cluster configuration when joining a secured cluster.");
   }
 
 }

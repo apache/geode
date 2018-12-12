@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_CIPHERS;
@@ -35,8 +36,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -69,7 +72,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,7 +80,6 @@ import javax.management.ObjectName;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
@@ -176,7 +177,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -380,7 +380,7 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
     props.setProperty(LOCATORS, "localhost[" + localPort + "]");
     props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    Locator locator = Locator.startLocatorAndDS(0, null, InetAddress.getByName("localhost"), props,
+    Locator locator = Locator.startLocatorAndDS(0, null, InetAddress.getByName("0.0.0.0"), props,
         true, true, hostnameForClients);
     return locator.getPort();
   }
@@ -960,11 +960,12 @@ public class WANTestBase extends DistributedTestCase {
     gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, String.valueOf(gatewaySslRequireAuth));
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
+    // this uses the default.keystore which is all jdk compliant in geode-dunit module
     gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/client.keystore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/client.truststore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -1011,7 +1012,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   /**
-   * Method that creates a bridge server
+   * Method that creates a cache server
    *
    * @return Integer Port on which the server is started.
    */
@@ -1030,7 +1031,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   /**
-   * Returns a Map that contains the count for number of bridge server and number of Receivers.
+   * Returns a Map that contains the count for number of cache server and number of Receivers.
    *
    */
   public static Map getCacheServers() {
@@ -1187,7 +1188,7 @@ public class WANTestBase extends DistributedTestCase {
         PartitionedRegion pr =
             parallelGatewaySenderQueue.getRegions().toArray(new PartitionedRegion[1])[0];
       }
-      Awaitility.await().atMost(120, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals("Expected queue entries: " + expectedQueueSize
               + " but actual entries: " + regionQueue.size(), expectedQueueSize,
               regionQueue.size()));
@@ -1251,7 +1252,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void validateGatewaySenderQueueHasContent(String senderId, VM... targetVms) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> Arrays.stream(targetVms).map(vm -> vm.invoke(() -> {
           AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
           logger.info(displaySerialQueueContent(sender));
@@ -1359,7 +1360,7 @@ public class WANTestBase extends DistributedTestCase {
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
       final GatewaySender sender = getGatewaySenderById(senders, senderId);
-      Awaitility.await().atMost(300, TimeUnit.SECONDS)
+      await()
           .untilAsserted(
               () -> assertEquals("Expected sender isRunning state to " + "be true but is false",
                   true, (sender != null && sender.isRunning())));
@@ -1371,7 +1372,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void waitForSenderToBecomePrimary(String senderId) {
     Set<GatewaySender> senders = ((GemFireCacheImpl) cache).getAllGatewaySenders();
     final GatewaySender sender = getGatewaySenderById(senders, senderId);
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals("Expected sender primary state to " + "be true but is false",
                 true, (sender != null && ((AbstractGatewaySender) sender).isPrimary())));
@@ -1401,7 +1402,7 @@ public class WANTestBase extends DistributedTestCase {
     secondaryUpdatesMap.put("Update", listener1.updateList);
     secondaryUpdatesMap.put("Destroy", listener1.destroyList);
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       secondaryUpdatesMap.put("Create", listener1.createList);
       secondaryUpdatesMap.put("Update", listener1.updateList);
       secondaryUpdatesMap.put("Destroy", listener1.destroyList);
@@ -2017,16 +2018,9 @@ public class WANTestBase extends DistributedTestCase {
     fact.setManualStart(true);
     fact.setBindAddress("200.112.204.10");
     GatewayReceiver receiver = fact.create();
-    try {
-      receiver.start();
-      fail("Expected GatewayReceiver Exception");
-    } catch (GatewayReceiverException gRE) {
-      logger.debug("Got the GatewayReceiverException", gRE);
-      assertTrue(gRE.getMessage().contains("Failed to create server socket on"));
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port);
-    }
+    assertThatThrownBy(receiver::start)
+        .isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
   }
 
   public static int createReceiverWithSSL(int locPort) {
@@ -2042,10 +2036,10 @@ public class WANTestBase extends DistributedTestCase {
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/cacheserver.keystore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/cacheserver.truststore"));
+        "/org/apache/geode/cache/client/internal/default.keystore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -2233,7 +2227,7 @@ public class WANTestBase extends DistributedTestCase {
       Region r = cache.getRegion(Region.SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
-        r.put(i, i);
+        r.put(i, "Value_" + i);
       }
     } finally {
       exp1.remove();
@@ -2245,7 +2239,7 @@ public class WANTestBase extends DistributedTestCase {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = 300; i < numPuts; i++) {
-      r.put(i, i);
+      r.put(i, "Value_" + i);
     }
   }
 
@@ -2253,7 +2247,7 @@ public class WANTestBase extends DistributedTestCase {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = from; i < numPuts; i++) {
-      r.put(i, i);
+      r.put(i, "Value_" + i);
     }
   }
 
@@ -2271,7 +2265,7 @@ public class WANTestBase extends DistributedTestCase {
     for (long i = 0; i < numPuts; i++) {
       Map putAllMap = new HashMap();
       for (long j = 0; j < size; j++) {
-        putAllMap.put((size * i) + j, i);
+        putAllMap.put((size * i) + j, "Value_" + i);
       }
       r.putAll(putAllMap, "putAllCallback");
       putAllMap.clear();
@@ -2283,7 +2277,7 @@ public class WANTestBase extends DistributedTestCase {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = 0; i < numPuts; i++) {
-      r.put("Object_" + i, i);
+      r.put("Object_" + i, "Value_" + i);
     }
   }
 
@@ -2302,7 +2296,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void destroyRegion(String regionName, final int min) {
     final Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> r.size() > min);
+    await().until(() -> r.size() > min);
     r.destroyRegion();
   }
 
@@ -2606,7 +2600,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void checkQueueSize(String senderId, int numQueueEntries) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> testQueueSize(senderId, numQueueEntries));
   }
 
@@ -2647,7 +2641,7 @@ public class WANTestBase extends DistributedTestCase {
 
     if (sender.isParallel()) {
       final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
-      Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         int size = 0;
         for (RegionQueue q : queues) {
           ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
@@ -2730,8 +2724,7 @@ public class WANTestBase extends DistributedTestCase {
       final Region r = cache.getRegion(Region.SEPARATOR + regionName);
       assertNotNull(r);
       if (regionSize != r.keySet().size()) {
-        Awaitility.await().atMost(waitTimeInMilliSec, TimeUnit.MILLISECONDS)
-            .pollInterval(500, TimeUnit.MILLISECONDS)
+        await()
             .untilAsserted(() -> assertEquals(
                 "Expected region entries: " + regionSize + " but actual entries: "
                     + r.keySet().size() + " present region keyset " + r.keySet(),
@@ -2755,7 +2748,7 @@ public class WANTestBase extends DistributedTestCase {
 
     final Map eventsMap = ((MyAsyncEventListener) theListener).getEventsMap();
     assertNotNull(eventsMap);
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(
             "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size(),
             expectedSize, eventsMap.size()));
@@ -2775,7 +2768,7 @@ public class WANTestBase extends DistributedTestCase {
 
     if (sender.isParallel()) {
       final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         int size = 0;
         for (RegionQueue q : queues) {
           size += q.size();
@@ -2783,7 +2776,7 @@ public class WANTestBase extends DistributedTestCase {
         assertEquals("Expected queue size to be : " + 0 + " but actual entries: " + size, 0, size);
       });
     } else {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
         int size = 0;
         for (RegionQueue q : queues) {
@@ -2813,7 +2806,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void validateRegionSize_PDX(String regionName, final int regionSize) {
     final Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
-    Awaitility.await().atMost(200, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertEquals("Expected region entries: " + regionSize + " but actual entries: "
           + r.keySet().size() + " present region keyset " + r.keySet(), true,
           (regionSize <= r.keySet().size()));
@@ -2823,7 +2816,7 @@ public class WANTestBase extends DistributedTestCase {
     for (int i = 0; i < regionSize; i++) {
       final int temp = i;
       logger.info("For Key : Key_" + i + " : Values : " + r.get("Key_" + i));
-      Awaitility.await().atMost(200, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(
               "keySet = " + r.keySet() + " values() = " + r.values() + "Region Size = " + r.size(),
               new SimpleClass(temp, (byte) temp), r.get("Key_" + temp)));
@@ -2833,7 +2826,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void validateRegionSizeOnly_PDX(String regionName, final int regionSize) {
     final Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
-    Awaitility.await().atMost(200, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals(
                 "Expected region entries: " + regionSize + " but actual entries: "
@@ -2843,14 +2836,14 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void validateQueueSizeStat(String id, final int queueSize) {
     final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(id);
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(queueSize, sender.getEventQueueSize()));
     assertEquals(queueSize, sender.getEventQueueSize());
   }
 
   public static void validateSecondaryQueueSizeStat(String id, final int queueSize) {
     final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(id);
-    Awaitility.await().atMost(120, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(
             "Expected unprocessedEventMap is drained but actual is "
                 + sender.getStatistics().getUnprocessedEventMapSize(),
@@ -2866,7 +2859,7 @@ public class WANTestBase extends DistributedTestCase {
    *
    */
   public static void validateRegionSizeRemainsSame(String regionName, final int regionSizeLimit) {
-    final Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     WaitCriterion wc = new WaitCriterion() {
       final int MIN_VERIFICATION_RUNS = 20;
@@ -2898,7 +2891,7 @@ public class WANTestBase extends DistributedTestCase {
             + sameRegionSizeCounter + " :regionSize " + previousSize;
       }
     };
-    Wait.waitForCriterion(wc, 200000, 500, true);
+    await().untilAsserted(wc);
   }
 
   public static String getRegionFullPath(String regionName) {
@@ -2916,7 +2909,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void validateRegionContents(String regionName, final Map keyValues) {
     final Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       boolean matchFlag = true;
       for (Object key : keyValues.keySet()) {
         if (!r.get(key).equals(keyValues.get(key))) {
@@ -2994,7 +2987,7 @@ public class WANTestBase extends DistributedTestCase {
       Map<Integer, Set<InetSocketAddress>> dsIdToLocatorAddresses) {
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       Map<Integer, Set<DistributionLocatorId>> allSiteMetaData =
           ((InternalLocator) locator).getlocatorMembershipListener().getAllLocatorsInfo();
       for (Map.Entry<Integer, Set<InetSocketAddress>> entry : dsIdToLocatorAddresses.entrySet()) {
@@ -3010,7 +3003,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Long checkAllSiteMetaDataFor3Sites(final Map<Integer, Set<String>> dsVsPort) {
-    Awaitility.await().atMost(50, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals("System is not initialized", true, (getSystemStatic() != null)));
     List<Locator> locatorsConfigured = Locator.getLocators();
@@ -3023,7 +3016,7 @@ public class WANTestBase extends DistributedTestCase {
     final Map<Integer, Set<DistributionLocatorId>> allSiteMetaData = listener.getAllLocatorsInfo();
     System.out.println("allSiteMetaData : " + allSiteMetaData);
 
-    Awaitility.await().atMost(300, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertEquals(true, (dsVsPort.size() == allSiteMetaData.size()));
       boolean completeFlag = true;
       for (Map.Entry<Integer, Set<String>> entry : dsVsPort.entrySet()) {
@@ -3093,7 +3086,7 @@ public class WANTestBase extends DistributedTestCase {
 
       if (!sender.isParallel()) {
         final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
-        Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().untilAsserted(() -> {
           int size = 0;
           for (RegionQueue q : queues) {
             size += q.size();
@@ -3104,7 +3097,7 @@ public class WANTestBase extends DistributedTestCase {
       } else if (sender.isParallel()) {
         final RegionQueue regionQueue;
         regionQueue = ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-        Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(
+        await().untilAsserted(() -> assertEquals(
             "Expected queue entries: " + regionSize + " but actual entries: " + regionQueue.size(),
             regionSize, regionQueue.size()));
       }
@@ -3150,7 +3143,7 @@ public class WANTestBase extends DistributedTestCase {
     } else {
       regionQueue = null;
     }
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       int size = 0;
       for (RegionQueue q : regionQueue) {
         size += q.size();
@@ -3286,14 +3279,14 @@ public class WANTestBase extends DistributedTestCase {
       }
       final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
       RegionQueue queue = abstractSender.getEventProcessor().queue;
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         assertEquals("Expected events in all primary queues are drained but actual is "
             + abstractSender.getEventQueueSize() + ". Queue content is: "
             + displayQueueContent(queue), 0, abstractSender.getEventQueueSize());
       });
       assertEquals("Expected events in all primary queues after drain is 0", 0,
           abstractSender.getEventQueueSize());
-      Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         assertEquals("Expected events in all secondary queues are drained but actual is "
             + abstractSender.getSecondaryEventQueueSize() + ". Queue content is: "
             + displayQueueContent(queue), 0, abstractSender.getSecondaryEventQueueSize());
@@ -3438,7 +3431,7 @@ public class WANTestBase extends DistributedTestCase {
     GatewaySender sender =
         senders.stream().filter(s -> s.getId().equals(senderId)).findFirst().get();
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       for (RegionQueue q : queues) {
         assertEquals(0, q.size());
@@ -3543,7 +3536,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   protected static void verifyListenerEvents(final long expectedNumEvents) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> listener1.getNumEvents() == expectedNumEvents);
   }
 
@@ -3907,7 +3900,7 @@ public class WANTestBase extends DistributedTestCase {
 
         if (service.isManager()) {
           DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
-          Awaitility.await().atMost(1, TimeUnit.MINUTES).untilAsserted(() -> {
+          await().untilAsserted(() -> {
             Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
             dsMap.entrySet().stream()
                 .forEach(entry -> assertTrue("Should be true " + entry.getKey(), entry.getValue()));
@@ -3946,6 +3939,10 @@ public class WANTestBase extends DistributedTestCase {
             DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
             ObjectName expectedName = service.getGatewayReceiverMBeanName(receiverMember);
             try {
+              await("wait for member to be added to DistributedSystemBridge membership list")
+                  .untilAsserted(
+                      () -> assertThat(bean.fetchGatewayReceiverObjectName(receiverMember.getId()))
+                          .isNotNull());
               ObjectName actualName = bean.fetchGatewayReceiverObjectName(receiverMember.getId());
               assertEquals(expectedName, actualName);
             } catch (Exception e) {
@@ -3972,7 +3969,7 @@ public class WANTestBase extends DistributedTestCase {
 
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
         assertNotNull(bean);
-        Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        await()
             .untilAsserted(() -> assertEquals(connected, bean.isConnected()));
 
         ObjectName regionBeanName = service.getRegionMBeanName(
@@ -4108,7 +4105,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkRemoteClusterStatus(final VM vm, final DistributedMember senderMember) {
     SerializableRunnable checkProxySender = new SerializableRunnable("DS Map Size") {
       public void run() {
-        Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().untilAsserted(() -> {
           final ManagementService service = ManagementService.getManagementService(cache);
           final DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
           assertEquals(

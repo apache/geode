@@ -14,15 +14,14 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.DistributedTestUtils.crashDistributedSystem;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.List;
@@ -169,7 +168,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
         .getTotalNumBuckets(); i++) {
       int bucketId = i;
 
-      await().atMost(2, MINUTES).until(() -> hasBucketOwners(partitionedRegion, bucketId));
+      await().until(() -> hasBucketOwners(partitionedRegion, bucketId));
 
       List owners = partitionedRegion.getBucketOwnersForValidation(bucketId);
       assertThat(owners).isNotNull();

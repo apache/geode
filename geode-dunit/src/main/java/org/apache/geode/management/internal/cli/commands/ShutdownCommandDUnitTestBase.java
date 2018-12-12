@@ -14,12 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -93,7 +92,7 @@ public class ShutdownCommandDUnitTestBase {
     for (MemberVM member : members) {
       Callable<Boolean> isMemberShutDown = () -> !member.getVM().invoke(isCacheOpenInThisVM);
 
-      Awaitility.await().atMost(2, TimeUnit.MINUTES).until(isMemberShutDown);
+      await().until(isMemberShutDown);
     }
   }
 }

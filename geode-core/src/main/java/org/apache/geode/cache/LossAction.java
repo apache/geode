@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Specifies how access to the region is affected when one or more required roles are lost. A role
@@ -98,7 +97,7 @@ public class LossAction implements Serializable {
   public static LossAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LossAction_INVALID_LOSSACTION_NAME_0.toLocalizedString(name));
+          String.format("Invalid LossAction name: %s", name));
     }
     for (int i = 0; i < PRIVATE_VALUES.length; i++) {
       if (name.equals(PRIVATE_VALUES[i].name)) {
@@ -106,7 +105,7 @@ public class LossAction implements Serializable {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.LossAction_INVALID_LOSSACTION_NAME_0.toLocalizedString(name));
+        String.format("Invalid LossAction name: %s", name));
   }
 
   /** Returns true if this is <code>NO_ACCESS</code>. */

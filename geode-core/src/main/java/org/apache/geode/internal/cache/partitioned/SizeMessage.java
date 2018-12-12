@@ -40,9 +40,7 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -159,25 +157,22 @@ public class SizeMessage extends PartitionMessage {
         SizeReplyMessage.send(getSender(), getProcessorId(), dm, sizes);
       } // datastore exists
       else {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.SizeMessage_SIZEMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+        logger.warn("SizeMessage: data store not configured for this member");
         ReplyMessage.send(getSender(), getProcessorId(),
             new ReplyException(new ForceReattemptException(
-                LocalizedStrings.SizeMessage_0_1_NO_DATASTORE_HERE_2.toLocalizedString())),
+                "no datastore here")),
             dm, r.isInternalRegion());
       }
     } else {
       if (logger.isDebugEnabled()) {
         // Note that this is more likely to happen with this message
         // because of it returning false from failIfRegionMissing.
-        logger.debug(LocalizedMessage.create(
-            LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+        logger.debug("SizeMessage: Region {} not found for this member", regionId);
       }
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
-              LocalizedStrings.SizeMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
-                  .toLocalizedString(
-                      new Object[] {dm.getDistributionManagerId(), Integer.valueOf(regionId)}))),
+              String.format("%s : could not find partitioned region with Id %s",
+                  dm.getDistributionManagerId(), Integer.valueOf(regionId)))),
           dm, r != null && r.isInternalRegion());
     }
     // Unless there was an exception thrown, this message handles sending the

@@ -73,9 +73,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OriginalServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
@@ -112,7 +110,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private volatile CacheServerAdvisor advisor;
 
   /**
-   * The monitor used to monitor load on this bridge server and distribute load to the locators
+   * The monitor used to monitor load on this cache server and distribute load to the locators
    *
    * @since GemFire 5.7
    */
@@ -129,7 +127,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private boolean isDefaultServer;
 
   /**
-   * Needed because this guy is an advisee
+   * Needed because this server is an advisee
    *
    * @since GemFire 5.7
    */
@@ -159,14 +157,13 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Checks to see whether or not this bridge server is running. If so, an
+   * Checks to see whether or not this cache server is running. If so, an
    * {@link IllegalStateException} is thrown.
    */
   private void checkRunning() {
     if (this.isRunning()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheServerImpl_A_CACHE_SERVERS_CONFIGURATION_CANNOT_BE_CHANGED_ONCE_IT_IS_RUNNING
-              .toLocalizedString());
+          "A cache server's configuration cannot be changed once it is running.");
     }
   }
 
@@ -329,8 +326,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       // force notifyBySubscription to be true so that meta info is pushed
       // from servers to clients instead of invalidates.
       if (!this.notifyBySubscription) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.CacheServerImpl_FORCING_NOTIFYBYSUBSCRIPTION_TO_SUPPORT_DYNAMIC_REGIONS));
+        logger.info("Forcing notifyBySubscription to support dynamic regions");
         this.notifyBySubscription = true;
       }
     }
@@ -355,7 +351,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         getSocketBufferSize(), getMaximumTimeBetweenPings(), this.cache, getMaxConnections(),
         getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), this.loadMonitor,
         overflowAttributesList, this.isGatewayReceiver, this.gatewayTransportFilters,
-        this.tcpNoDelay, serverConnectionFactory);
+        this.tcpNoDelay, serverConnectionFactory, 120000);
 
     this.acceptor.start();
     this.advisor.handshake();
@@ -366,11 +362,11 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // Creating ClientHealthMonitoring region.
     // Force initialization on current cache
     ClientHealthMonitoringRegion.getInstance(this.cache);
-    this.cache.getLoggerI18n()
-        .config(LocalizedStrings.CacheServerImpl_CACHESERVER_CONFIGURATION___0, getConfig());
+    this.cache.getLogger()
+        .config(String.format("CacheServer Configuration:  %s", getConfig()));
 
     /*
-     * If the stopped bridge server is restarted, we'll need to re-register the client membership
+     * If the stopped cache server is restarted, we'll need to re-register the client membership
      * listener. If the listener is already registered it won't be registered as would the case when
      * start() is invoked for the first time.
      */
@@ -399,7 +395,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
 
   /**
-   * Gets the address that this bridge server can be contacted on from external processes.
+   * Gets the address that this cache server can be contacted on from external processes.
    *
    * @since GemFire 5.7
    */
@@ -410,7 +406,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public String getExternalAddress(boolean checkServerRunning) {
     if (checkServerRunning) {
       if (!this.isRunning()) {
-        String s = "A bridge server's bind address is only available if it has been started";
+        String s = "A cache server's bind address is only available if it has been started";
         this.cache.getCancelCriterion().checkCancelInProgress(null);
         throw new IllegalStateException(s);
       }
@@ -444,8 +440,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.loadMonitor.stop();
       }
     } catch (RuntimeException e) {
-      cache.getLoggerI18n()
-          .warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR, e);
+      cache.getLogger()
+          .warning("CacheServer - Error closing load monitor", e);
       firstException = e;
     }
 
@@ -454,8 +450,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.advisor.close();
       }
     } catch (RuntimeException e) {
-      cache.getLoggerI18n()
-          .warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR, e);
+      cache.getLogger()
+          .warning("CacheServer - Error closing advisor", e);
       firstException = e;
     }
 
@@ -464,8 +460,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.acceptor.close();
       }
     } catch (RuntimeException e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR), e);
+      logger.warn("CacheServer - Error closing acceptor monitor", e);
       if (firstException != null) {
         firstException = e;
       }
@@ -623,7 +618,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     } else {
       // throw invalid eviction policy exception
       throw new InvalidValueException(
-          LocalizedStrings.CacheServerImpl__0_INVALID_EVICTION_POLICY.toLocalizedString(ePolicy));
+          String.format("%s Invalid eviction policy", ePolicy));
     }
     return factory;
   }
@@ -716,7 +711,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   /**
-   * Returns an array of all the groups of this bridge server. This includes those from the groups
+   * Returns an array of all the groups of this cache server. This includes those from the groups
    * gemfire property and those explicitly added to this server.
    */
   public String[] getCombinedGroups() {
@@ -773,7 +768,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     if (!this.isRunning()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheServerImpl_MUST_BE_RUNNING.toLocalizedString());
+          "The cache server must be running to use this operation");
     }
     getCacheClientNotifier().registerInterestRegistrationListener(listener);
   }

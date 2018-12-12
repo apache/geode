@@ -45,12 +45,12 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -268,7 +268,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
         Region region = cache.getRegion(name);
         final MyListener listener = (MyListener) region.getAttributes().getCacheListeners()[0];
         if (invalidated) {
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
             public String description() {
               return "Didn't receive invalidate after 30 seconds";
@@ -278,7 +278,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
               return listener.remove(key);
             }
 
-          }, 30000, 100, true);
+          });
         } else {
           assertFalse(listener.remove(key));
         }
@@ -294,7 +294,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
         Cache cache = getCache();
         final LocalRegion region = (LocalRegion) cache.getRegion(name);
 
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           public boolean done() {
             Object value = null;
@@ -312,7 +312,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
           public String description() {
             return "Value did not become " + expected + " after 30s: " + region.getValueInVM(key);
           }
-        }, 30000, 100, true);
+        });
 
       }
     });
@@ -367,7 +367,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
 
   private int addCacheServer(VM vm) {
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    vm.invoke(new SerializableRunnable("add bridge server") {
+    vm.invoke(new SerializableRunnable("add cache server") {
       public void run() {
         Cache cache = getCache();
         CacheServer server = cache.addCacheServer();

@@ -24,7 +24,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CompiledUnaryMinus extends AbstractCompiledValue {
 
@@ -72,8 +71,8 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
         return Short.valueOf((short) (((Short) obj).shortValue() * -1));
     } else if (obj == null || obj == QueryService.UNDEFINED)
       return QueryService.UNDEFINED;
-    throw new TypeMismatchException(LocalizedStrings.CompiledUnaryMinus_0_CANNOT_BE_UNARY_MINUS
-        .toLocalizedString(obj.getClass()));
+    throw new TypeMismatchException(String.format("%s cannot be unary minus",
+        obj.getClass()));
   }
 
 }

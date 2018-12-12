@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.AsyncEventQueueMXBean;
@@ -130,8 +129,7 @@ public class SystemManagementService extends BaseManagementService {
     // point.
     if (!system.isConnected()) {
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
-              .toLocalizedString());
+          "This connection to a distributed system has been disconnected.");
     }
     this.jmxAdapter = new MBeanJMXAdapter();
     this.repo = new ManagementResourceRepo();
@@ -202,17 +200,15 @@ public class SystemManagementService extends BaseManagementService {
   private void verifyManagementService() {
     if (!isStarted) {
       throw new ManagementException(
-          ManagementStrings.Management_Service_MANAGEMENT_SERVICE_NOT_STARTED_YET
-              .toLocalizedString());
+          "Management Service Not Started Yet");
     }
     if (!system.isConnected()) {
       throw new ManagementException(
-          ManagementStrings.Management_Service_NOT_CONNECTED_TO_DISTRIBUTED_SYSTEM
-              .toLocalizedString());
+          "Not Connected To Distributed System");
     }
     if (closed) {
       throw new ManagementException(
-          ManagementStrings.Management_Service_MANAGEMENT_SERVICE_IS_CLOSED.toLocalizedString());
+          "Management Service Is Closed");
     }
   }
 
@@ -256,18 +252,16 @@ public class SystemManagementService extends BaseManagementService {
     verifyManagementService();
     if (!objectName.getDomain().equalsIgnoreCase(ManagementConstants.OBJECTNAME__DEFAULTDOMAIN)) {
       throw new ManagementException(
-          ManagementStrings.Management_Service_NOT_A_GEMFIRE_DOMAIN_MBEAN.toLocalizedString());
+          "Not A GemFire Domain MBean, can not Federate");
     }
 
     if (!jmxAdapter.isRegistered(objectName)) {
       throw new ManagementException(
-          ManagementStrings.Management_Service_MBEAN_NOT_REGISTERED_IN_GEMFIRE_DOMAIN
-              .toLocalizedString());
+          "MBean Not Registered In GemFire Domain");
     }
     if (notificationEmitter && !jmxAdapter.hasNotificationSupport(objectName)) {
       throw new ManagementException(
-          ManagementStrings.Management_Service_MBEAN_DOES_NOT_HAVE_NOTIFICATION_SUPPORT
-              .toLocalizedString());
+          "MBean Does Not Have Notification Support");
     }
 
     // All validation Passed. Now create the federation Component
@@ -416,7 +410,7 @@ public class SystemManagementService extends BaseManagementService {
       verifyManagementService();
       if (federatingManager != null && federatingManager.isRunning()) {
         throw new AlreadyRunningException(
-            ManagementStrings.Management_Service_MANAGER_ALREADY_RUNNING.toLocalizedString());
+            "Manager is already running");
       }
 
       boolean needsToBeStarted = false;

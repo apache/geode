@@ -169,7 +169,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   String getFullPath();
 
   /**
-   * Gets the parent region of this region. If this region is a root region, returns null.
+   * Gets the parent region of this region. If this region is a root region (i.e. has no parents),
+   * returns null.
    * <p>
    * Does not throw a <code>CacheClosedException</code> or a <code>RegionDestroyedException</code>.
    *
@@ -192,7 +193,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see #getAttributesMutator
    */
   RegionAttributes<K, V> getAttributes();
-
 
   /**
    * Returns a mutator object used for modifying this region's attributes after region creation.

@@ -46,7 +46,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class FunctionStreamingResultCollector extends ReplyProcessor21 implements ResultCollector {
@@ -126,7 +125,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
   public Object getResult() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
+          "Function results already collected");
     }
 
     this.resultCollected = true;
@@ -239,7 +238,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     long timeoutInMillis = unit.toMillis(timeout);
     if (this.resultCollected) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
+          "Function results already collected");
     }
 
     this.resultCollected = true;
@@ -256,8 +255,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
         }
         if (!isNotTimedOut) {
           throw new FunctionException(
-              LocalizedStrings.ExecuteFunction_RESULTS_NOT_COLLECTED_IN_TIME_PROVIDED
-                  .toLocalizedString());
+              "All results not received in time provided");
         }
         long timeAfter = System.currentTimeMillis();
         timeoutInMillis = timeoutInMillis - (timeAfter - timeBefore);
@@ -382,15 +380,15 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
           if (execution instanceof DistributedRegionFunctionExecutor
               || execution instanceof MultiRegionFunctionExecutor) {
             if (!this.fn.isHA()) {
-              // need to add LocalizedStrings messages
               fe = new FunctionInvocationTargetException(
-                  LocalizedStrings.MemberMessage_MEMBERRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                      .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                  String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
+                      new Object[] {id, Boolean.valueOf(crashed)}),
                   id);
             } else {
               fe = new InternalFunctionInvocationTargetException(
-                  LocalizedStrings.DistributionMessage_DISTRIBUTIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                      .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                  String.format(
+                      "DistributionResponse got memberDeparted event for < %s > crashed, %s",
+                      new Object[] {id, Boolean.valueOf(crashed)}),
                   id);
               if (execution.isClientServerMode()) {
                 if (this.userRC != null) {
@@ -408,8 +406,8 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
             this.fites.add(fe);
           } else {
             fe = new FunctionInvocationTargetException(
-                LocalizedStrings.MemberMessage_MEMBERRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                    .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
+                    new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
           }
           this.fites.add(fe);
@@ -555,7 +553,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
       // failed computation. If you set the exception in onShutdown,
       // the resulting stack is not of interest.
       ReplyException re = new ReplyException(new DistributedSystemDisconnectedException(
-          LocalizedStrings.ReplyProcessor21_ABORTED_DUE_TO_SHUTDOWN.toLocalizedString()));
+          "aborted due to shutdown"));
       this.exception = re;
       return false;
     }

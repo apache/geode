@@ -16,7 +16,6 @@ package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Calendar.MONTH;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.EvictionAction.LOCAL_DESTROY;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
@@ -32,6 +31,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedRegionMbeanName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getRegionMBeanName;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -56,8 +56,6 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -350,14 +348,6 @@ public class RegionManagementDUnitTest implements Serializable {
     }
 
     managerVM.invoke(() -> verifyEntrySize(regionName, 3));
-  }
-
-  private ConditionFactory await() {
-    return await(null);
-  }
-
-  private ConditionFactory await(final String alias) {
-    return Awaitility.await(alias).atMost(5, MINUTES);
   }
 
   private InternalCache getCache() {

@@ -58,7 +58,7 @@ public class SystemMemberCacheEventProcessor {
   public static void send(Cache c, Region region, Operation op) {
     InternalDistributedSystem system = (InternalDistributedSystem) c.getDistributedSystem();
     Set recps = system.getDistributionManager().getAdminMemberSet();
-    // @todo darrel: find out if any of these guys have region listeners
+    // @todo darrel: find out if any of these admin members have region listeners
     if (recps.isEmpty()) {
       return;
     }

@@ -27,7 +27,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Region.Entry implementation for remote entries and all PR entries
@@ -178,8 +177,8 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     checkEntryDestroyed();
     if (!regionEntry.hasStats() || !region.statisticsEnabled) {
       throw new StatisticsDisabledException(
-          LocalizedStrings.PartitionedRegion_STATISTICS_DISABLED_FOR_REGION_0
-              .toLocalizedString(region.getFullPath()));
+          String.format("Statistics disabled for region ' %s '",
+              region.getFullPath()));
     }
     return new CacheStatisticsImpl(this.regionEntry, region);
   }
@@ -242,7 +241,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   private void checkEntryDestroyed() throws EntryDestroyedException {
     if (isDestroyed()) {
       throw new EntryDestroyedException(
-          LocalizedStrings.PartitionedRegion_ENTRY_DESTROYED.toLocalizedString());
+          "entry destroyed");
     }
   }
 

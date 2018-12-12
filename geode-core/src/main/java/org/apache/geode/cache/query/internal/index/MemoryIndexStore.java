@@ -101,7 +101,9 @@ public class MemoryIndexStore implements IndexStore {
     try {
 
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(3);
+        DefaultQuery.testHook.doTestHook(
+            DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
+            null);
       }
 
       // Check if reverse-map is present.
@@ -149,7 +151,8 @@ public class MemoryIndexStore implements IndexStore {
         } else if (regionEntries instanceof RegionEntry) {
           IndexElemArray elemArray = new IndexElemArray();
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook("BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY");
+            DefaultQuery.testHook.doTestHook(
+                DefaultQuery.TestHook.SPOTS.BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY, null);
           }
           elemArray.add(regionEntries);
           elemArray.add(re);
@@ -157,10 +160,14 @@ public class MemoryIndexStore implements IndexStore {
             retry = true;
           }
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook("TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY");
+            DefaultQuery.testHook
+                .doTestHook(DefaultQuery.TestHook.SPOTS.TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY,
+                    null);
           }
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook("COMPLETE_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY");
+            DefaultQuery.testHook.doTestHook(
+                DefaultQuery.TestHook.SPOTS.COMPLETE_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY,
+                null);
           }
         } else if (regionEntries instanceof IndexConcurrentHashSet) {
           // This synchronized is for avoiding conflcts with remove of
@@ -182,10 +189,11 @@ public class MemoryIndexStore implements IndexStore {
               // index then we should add old elements in the new set.
 
               if (DefaultQuery.testHook != null) {
-                DefaultQuery.testHook
-                    .doTestHook("BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET");
+                DefaultQuery.testHook.doTestHook(
+                    DefaultQuery.TestHook.SPOTS.BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
+                    null);
               }
-              // on a remove from the elem array, another thread could start and complete his remove
+              // on a remove from the elem array, another thread could start and complete its remove
               // at this point, that is why we need to replace before adding the elem array elements
               // once we put this set into the forward map, we know any future removes are either
               // captured
@@ -195,7 +203,9 @@ public class MemoryIndexStore implements IndexStore {
                 retry = true;
               } else {
                 if (DefaultQuery.testHook != null) {
-                  DefaultQuery.testHook.doTestHook("TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN");
+                  DefaultQuery.testHook
+                      .doTestHook(DefaultQuery.TestHook.SPOTS.TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN,
+                          null);
                 }
                 set.add(re);
                 set.addAll(elemArray);
@@ -209,8 +219,9 @@ public class MemoryIndexStore implements IndexStore {
                       "Unable to transition from index elem to concurrent hash set.  Index needs to be recreated");
                 }
                 if (DefaultQuery.testHook != null) {
-                  DefaultQuery.testHook
-                      .doTestHook("COMPLETE_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET");
+                  DefaultQuery.testHook.doTestHook(
+                      DefaultQuery.TestHook.SPOTS.COMPLETE_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
+                      null);
                 }
               }
             } else {
@@ -293,7 +304,7 @@ public class MemoryIndexStore implements IndexStore {
     try {
       Object newKey = convertToIndexKey(key, entry);
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook("ATTEMPT_REMOVE");
+        DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_REMOVE, null);
       }
       boolean retry = false;
       do {
@@ -301,7 +312,7 @@ public class MemoryIndexStore implements IndexStore {
         Object regionEntries = this.valueToEntriesMap.get(newKey);
         if (regionEntries == TRANSITIONING_TOKEN) {
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook("ATTEMPT_RETRY");
+            DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_RETRY, null);
           }
           retry = true;
           continue;
@@ -320,11 +331,13 @@ public class MemoryIndexStore implements IndexStore {
           } else {
             Collection entries = (Collection) regionEntries;
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook("BEGIN_REMOVE_FROM_ELEM_ARRAY");
+              DefaultQuery.testHook
+                  .doTestHook(DefaultQuery.TestHook.SPOTS.BEGIN_REMOVE_FROM_ELEM_ARRAY, null);
             }
             found = entries.remove(entry);
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook("REMOVE_CALLED_FROM_ELEM_ARRAY");
+              DefaultQuery.testHook
+                  .doTestHook(DefaultQuery.TestHook.SPOTS.REMOVE_CALLED_FROM_ELEM_ARRAY, null);
             }
             // This could be IndexElementArray and might be changing to Set
             // If the remove occurred before changing to a set, then next time it will not be
@@ -351,7 +364,8 @@ public class MemoryIndexStore implements IndexStore {
               }
             }
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook("COMPLETE_REMOVE_FROM_ELEM_ARRAY");
+              DefaultQuery.testHook
+                  .doTestHook(DefaultQuery.TestHook.SPOTS.COMPLETE_REMOVE_FROM_ELEM_ARRAY, null);
             }
           }
         }

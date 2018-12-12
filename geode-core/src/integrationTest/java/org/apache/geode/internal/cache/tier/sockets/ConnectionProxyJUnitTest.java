@@ -18,6 +18,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.client.PoolManager.createFactory;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -54,7 +55,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -65,9 +66,9 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class ConnectionProxyJUnitTest {
   private static final String expectedRedundantErrorMsg =
-      "Could not find any server to create redundant client queue on.";
+      "Could not find any server to host redundant client queue.";
   private static final String expectedPrimaryErrorMsg =
-      "Could not find any server to create primary client queue on.";
+      "Could not find any server to host primary client queue.";
 
   DistributedSystem system;
 
@@ -248,7 +249,7 @@ public class ConnectionProxyJUnitTest {
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 90 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } finally {
       if (server != null) {
         server.stop();
@@ -305,7 +306,7 @@ public class ConnectionProxyJUnitTest {
           return null;
         }
       };
-      Wait.waitForCriterion(ev, 90 * 1000, 200, true);
+      GeodeAwaitility.await().untilAsserted(ev);
     } finally {
       if (server != null) {
         server.stop();
@@ -413,7 +414,7 @@ public class ConnectionProxyJUnitTest {
         fail("Failed to create server");
       }
       try {
-        PoolFactory pf = PoolManager.createFactory();
+        PoolFactory pf = createFactory();
         pf.addServer("localhost", port3);
         pf.setSubscriptionEnabled(true);
         pf.setSubscriptionRedundancy(-1);
@@ -435,7 +436,7 @@ public class ConnectionProxyJUnitTest {
             return null;
           }
         };
-        Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+        GeodeAwaitility.await().untilAsserted(ev);
       } catch (Exception ex) {
         ex.printStackTrace();
         fail("Failed to initialize client");
@@ -786,7 +787,7 @@ public class ConnectionProxyJUnitTest {
         return "ack flag never became " + expectedAckSend;
       }
     };
-    Wait.waitForCriterion(wc, timeToWait, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
   private void verifyExpiry(long timeToWait) {
@@ -799,7 +800,7 @@ public class ConnectionProxyJUnitTest {
         return "Entry never expired";
       }
     };
-    Wait.waitForCriterion(wc, timeToWait * 2, 200, true);
+    GeodeAwaitility.await().untilAsserted(wc);
   }
 
 }

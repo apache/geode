@@ -16,13 +16,11 @@ package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -97,7 +95,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     httpPort = config.getHttpServicePort();
 
     if (config.getEnableClusterConfiguration()) {
-      Awaitility.await().atMost(65, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
   }

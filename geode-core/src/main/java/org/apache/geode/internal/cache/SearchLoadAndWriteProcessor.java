@@ -66,9 +66,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -627,8 +625,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             locked = this.lock.tryLock(region.getCache().getLockTimeout(), TimeUnit.SECONDS);
             if (!locked) {
               throw new TimeoutException(
-                  LocalizedStrings.SearchLoadAndWriteProcessor_TIMED_OUT_LOCKING_0_BEFORE_LOAD
-                      .toLocalizedString(key));
+                  String.format("Timed out locking %s before load",
+                      key));
             }
             break;
           } catch (InterruptedException ignore) {
@@ -746,8 +744,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               cause = this.remoteException;
             }
             throw new CacheLoaderException(
-                LocalizedStrings.SearchLoadAndWriteProcessor_WHILE_INVOKING_A_REMOTE_NETLOAD_0
-                    .toLocalizedString(cause),
+                String.format("While invoking a remote netLoad: %s",
+                    cause),
                 cause);
           }
 
@@ -949,8 +947,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           cause = this.remoteException;
         }
         throw new CacheWriterException(
-            LocalizedStrings.SearchLoadAndWriteProcessor_WHILE_INVOKING_A_REMOTE_NETWRITE_0
-                .toLocalizedString(cause),
+            String.format("While invoking a remote netWrite: %s",
+                cause),
             cause);
       }
     } while (index < writeCandidates.length);
@@ -1218,8 +1216,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           }
           if (waitTimeMs <= 0) {
             throw new TimeoutException(
-                LocalizedStrings.SearchLoadAndWriteProcessor_TIMED_OUT_WHILE_DOING_NETSEARCHNETLOADNETWRITE_PROCESSORID_0_KEY_IS_1
-                    .toLocalizedString(new Object[] {this.processorId, this.key}));
+                String.format(
+                    "Timed out while doing netsearch/netload/netwrite processorId= %s Key is %s",
+                    new Object[] {this.processorId, this.key}));
           }
 
           boolean interrupted = Thread.interrupted();
@@ -1256,8 +1255,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                 sb.append(" lastNotifySpot=").append(lastNS);
               }
               throw new TimeoutException(
-                  LocalizedStrings.SearchLoadAndWriteProcessor_TIMEOUT_DURING_NETSEARCHNETLOADNETWRITE_DETAILS_0
-                      .toLocalizedString(sb));
+                  String.format("Timeout during netsearch/netload/netwrite. Details: %s",
+                      sb));
             }
             return;
           } catch (InterruptedException ignore) {
@@ -1390,7 +1389,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       msg.initialize(processor, regionName, key, multicast, timeoutMs, ttl, idleTime);
       msg.setRecipients(recipients);
       if (!multicast && recipients.size() == 1) {
-        // we are only searching one guy so tell him to send the value
+        // we are only searching one recipient, so tell it to send the value
         msg.alwaysSendResult = true;
       }
       processor.distributionManager.putOutgoing(msg);
@@ -1927,8 +1926,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.SearchLoadAndWriteProcessor_UNEXPECTED_EXCEPTION), t);
+        logger.warn("Unexpected exception creating net search reply", t);
         replyWithNull(dm);
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
@@ -2144,8 +2142,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         processor.distributionManager.putOutgoing(msg);
       } catch (InternalGemFireException e) {
         throw new IllegalArgumentException(
-            LocalizedStrings.SearchLoadAndWriteProcessor_MESSAGE_NOT_SERIALIZABLE
-                .toLocalizedString());
+            "Message not serializable");
       }
     }
 
@@ -2231,16 +2228,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               stats.endLoad(start);
             }
           } else {
-            replyWithException(new TryAgainException(
-                LocalizedStrings.SearchLoadAndWriteProcessor_NO_LOADER_DEFINED_0
-                    .toLocalizedString()),
+            replyWithException(new TryAgainException("No loader defined"),
                 dm);
           }
 
         } else {
           replyWithException(new TryAgainException(
-              LocalizedStrings.SearchLoadAndWriteProcessor_TIMEOUT_EXPIRED_OR_REGION_NOT_READY_0
-                  .toLocalizedString()),
+              "Timeout expired or region not ready"),
               dm);
         }
 
@@ -2263,8 +2257,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // is still usable:
         SystemFailure.checkFailure();
         replyWithException(new InternalGemFireException(
-            LocalizedStrings.SearchLoadAndWriteProcessor_ERROR_PROCESSING_REQUEST
-                .toLocalizedString(),
+            "Error processing request",
             t), dm);
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
@@ -2538,17 +2531,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
                 dm, false,
                 new TryAgainException(
-                    LocalizedStrings.SearchLoadAndWriteProcessor_NO_CACHEWRITER_DEFINED_0
-                        .toLocalizedString()),
+                    "No cachewriter defined"),
                 true);
           }
 
         } else {
           NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
               false,
-              new TryAgainException(
-                  LocalizedStrings.SearchLoadAndWriteProcessor_TIMEOUT_EXPIRED_OR_REGION_NOT_READY_0
-                      .toLocalizedString()),
+              new TryAgainException("Timeout expired or region not ready"),
               true);
 
         }
@@ -2579,8 +2569,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
             false,
             new InternalGemFireException(
-                LocalizedStrings.SearchLoadAndWriteProcessor_ERROR_PROCESSING_REQUEST
-                    .toLocalizedString(),
+                "Error processing request",
                 t),
             true);
       } finally {

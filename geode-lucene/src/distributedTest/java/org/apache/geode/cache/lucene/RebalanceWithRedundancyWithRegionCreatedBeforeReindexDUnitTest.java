@@ -16,15 +16,14 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,7 +111,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
       RebalanceResults rebalanceResults = null;
       RebalanceOperation rebalanceOp = factory.start();
       rebalanceResults = rebalanceOp.getResults();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> rebalanceOp.isDone());
+      await().until(() -> rebalanceOp.isDone());
       logger.info("Rebalance completed: "
           + RebalanceResultsToString(rebalanceResults, "Rebalance completed"));
     }

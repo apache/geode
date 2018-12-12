@@ -37,7 +37,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -255,7 +254,7 @@ public class MsgStreamer extends OutputStream
       this.overflowBuf.write(b);
       return;
     }
-    this.buffer.put((byte) b);
+    this.buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
@@ -321,14 +320,14 @@ public class MsgStreamer extends OutputStream
           this.ce = new ConnectExceptions();
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
-            LocalizedStrings.MsgStreamer_CLOSING_DUE_TO_0.toLocalizedString("IOException"));
+            String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {
         it.remove();
         if (this.ce == null)
           this.ce = new ConnectExceptions();
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
-            LocalizedStrings.MsgStreamer_CLOSING_DUE_TO_0.toLocalizedString("ConnectionException"));
+            String.format("closing due to %s", "ConnectionException"));
       }
       this.buffer.rewind();
     }
@@ -503,7 +502,7 @@ public class MsgStreamer extends OutputStream
       this.overflowBuf.writeShort(v);
       return;
     }
-    this.buffer.putShort((short) v);
+    this.buffer.putShort((short) (v & 0xffff));
   }
 
   /**
@@ -929,8 +928,7 @@ public class MsgStreamer extends OutputStream
         DataSerializer.writeObject(v, this);
       } catch (IOException e) {
         RuntimeException e2 = new IllegalArgumentException(
-            LocalizedStrings.MsgStreamer_AN_EXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                .toLocalizedString());
+            "An Exception was thrown while serializing.");
         e2.initCause(e);
         throw e2;
       }

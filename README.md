@@ -113,6 +113,10 @@ Apache Geode includes the following features:
 See [BUILDING.md](https://github.com/apache/geode/blob/develop/BUILDING.md) for
 instructions on how to build the project.
 
+## <a name="testing"></a>Running Tests
+See [TESTING.md](https://github.com/apache/geode/blob/develop/TESTING.md) for
+instructions on how to run tests.
+
 ## <a name="started"></a>Geode in 5 minutes
 
 Geode requires installation of JDK version 1.8.  After installing Apache Geode,
@@ -237,3 +241,4 @@ The following provides more details on the included cryptographic software:
   The [JCE Unlimited Strength Jurisdiction Policy](https://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html)
   may need to be installed separately to use keystore passwords with 7 or more characters.
 * Apache Geode links to and uses [OpenSSL](https://www.openssl.org/) ciphers.
+

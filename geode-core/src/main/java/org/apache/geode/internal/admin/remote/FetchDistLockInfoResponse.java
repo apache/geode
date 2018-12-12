@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockToken;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.DLockInfo;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class FetchDistLockInfoResponse extends AdminResponse {
   // instance variables
@@ -89,7 +88,7 @@ public class FetchDistLockInfoResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchDistLockInfoResponse_FETCHDISTLOCKINFORESPONSE_FROM_0
-        .toLocalizedString(this.getSender());
+    return String.format("FetchDistLockInfoResponse from %s",
+        this.getSender());
   }
 }

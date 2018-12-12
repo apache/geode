@@ -23,7 +23,6 @@ import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Used by {@link AdminRequest} to wait for a {@link AdminResponse}. Prior to GemFire 4.0, a
@@ -68,11 +67,11 @@ public class AdminWaiters {
             // it's still in the view
             String s = " (" + msg + ")";
             throw new RuntimeAdminException(
-                LocalizedStrings.AdminWaiters_COULD_NOT_SEND_REQUEST_0.toLocalizedString(s));
+                String.format("Could not send request.%s", s));
           }
           throw new OperationCancelledException(
-              LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1
-                  .toLocalizedString(new Object[] {msg.getRecipient(), ""}));
+              String.format("Request sent to %s failed since member departed.%s",
+                  new Object[] {msg.getRecipient(), ""}));
         }
         // sent it
 
@@ -94,8 +93,8 @@ public class AdminWaiters {
           // recipient vanished
           String s = " (" + msg + ")";
           throw new OperationCancelledException(
-              LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1
-                  .toLocalizedString(new Object[] {msg.getRecipient(), s}));
+              String.format("Request sent to %s failed since member departed.%s",
+                  new Object[] {msg.getRecipient(), s}));
         } // !gotResponse
 
         result = msg.getResponse();
@@ -103,7 +102,7 @@ public class AdminWaiters {
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       dm.getCancelCriterion().checkCancelInProgress(ex);
-      String s = LocalizedStrings.AdminWaiters_REQUEST_WAIT_WAS_INTERRUPTED.toLocalizedString();
+      String s = "Request wait was interrupted.";
       s += " (" + msg + ")";
       throw new RuntimeAdminException(s, ex);
     }
@@ -111,12 +110,12 @@ public class AdminWaiters {
     if (result == null) {
       String s = " (" + msg + ")";
       throw new OperationCancelledException(
-          LocalizedStrings.AdminWaiters_REQUEST_SEND_TO_0_WAS_CANCELLED_1
-              .toLocalizedString(new Object[] {msg.getRecipient(), s}));
+          String.format("Request sent to %s was cancelled. %s",
+              msg.getRecipient(), s));
 
     } else if (result instanceof AdminFailureResponse) {
       throw new RuntimeAdminException(
-          LocalizedStrings.AdminWaiters_REQUEST_FAILED.toLocalizedString(),
+          "Request failed.",
           ((AdminFailureResponse) result).getCause());
     }
     return result;

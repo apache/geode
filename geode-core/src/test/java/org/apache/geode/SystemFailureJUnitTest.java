@@ -14,12 +14,12 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,8 +51,8 @@ public class SystemFailureJUnitTest {
     long start = System.nanoTime();
     Thread watchDog = SystemFailure.getWatchDogForTest();
     Thread proctor = SystemFailure.getProctorForTest();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> watchDog.isAlive());
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> proctor.isAlive());
+    await().until(() -> watchDog.isAlive());
+    await().until(() -> proctor.isAlive());
     SystemFailure.stopThreads();
     long elapsed = System.nanoTime() - start;
     assertTrue("Waited too long to shutdown: " + elapsed,

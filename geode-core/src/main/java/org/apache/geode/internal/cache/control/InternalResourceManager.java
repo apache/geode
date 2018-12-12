@@ -19,15 +19,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -42,18 +38,14 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
-import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -118,22 +110,8 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor that other classes may use for handling resource
     // related tasks
-    final ThreadGroup threadGroup =
-        LoggingThreadGroup.createThreadGroup("ResourceManagerThreadGroup", logger);
-
-    ThreadFactory tf = new ThreadFactory() {
-      AtomicInteger ai = new AtomicInteger();
-
-      @Override
-      public Thread newThread(Runnable r) {
-        int tId = ai.getAndIncrement();
-        Thread thread = new Thread(threadGroup, r, "ResourceManagerRecoveryThread " + tId);
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
-    this.scheduledExecutor = new ScheduledThreadPoolExecutor(MAX_RESOURCE_MANAGER_EXE_THREADS, tf);
+    this.scheduledExecutor = LoggingExecutors
+        .newScheduledThreadPool("ResourceManagerRecoveryThread ", MAX_RESOURCE_MANAGER_EXE_THREADS);
 
     // Initialize the load probe
     try {
@@ -145,22 +123,11 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
-    final ThreadGroup listenerInvokerthrdGrp =
-        LoggingThreadGroup.createThreadGroup("ResourceListenerInvokerThreadGroup", logger);
-
-    ThreadFactory eventProcessorFactory = new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread thread = new Thread(listenerInvokerthrdGrp, r, "Notification Handler");
-        thread.setDaemon(true);
-        thread.setPriority(Thread.MAX_PRIORITY);
-        return thread;
-      }
-    };
-    BlockingQueue<Runnable> threadQ =
-        new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
-    this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ,
-        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory, getThreadMonitorObj());
+    this.notifyExecutor =
+        LoggingExecutors.newSerialThreadPoolWithFeedStatistics("Notification Handler",
+            thread -> thread.setPriority(Thread.MAX_PRIORITY), null,
+            this.stats.getResourceEventPoolStatHelper(), getThreadMonitorObj(),
+            0, this.stats.getResourceEventQueueStatHelper());
 
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();
@@ -241,13 +208,13 @@ public class InternalResourceManager implements ResourceManager {
   public void deliverEventFromRemote(final ResourceEvent event) {
     assert !event.isLocal();
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n()
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger()
           .fine("New remote event to deliver for member " + event.getMember() + ": event=" + event);
     }
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n()
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger()
           .fine("Remote event to deliver for member " + event.getMember() + ":" + event);
     }
 
@@ -296,8 +263,8 @@ public class InternalResourceManager implements ResourceManager {
       this.notifyExecutor.execute(runnable);
     } catch (RejectedExecutionException ignore) {
       if (!isClosed()) {
-        this.cache.getLoggerI18n()
-            .warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);
+        this.cache.getLogger()
+            .warning("No memory events will be delivered because of RejectedExecutionException");
       }
     }
   }
@@ -377,9 +344,8 @@ public class InternalResourceManager implements ResourceManager {
       logger.debug("Failed in interrupting the Resource Manager Thread due to interrupt");
     }
     if (!executor.isTerminated()) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ResourceManager_FAILED_TO_STOP_RESOURCE_MANAGER_THREADS,
-          new Object[] {secToWait}));
+      logger.warn("Failed to stop resource manager threads in {} seconds",
+          secToWait);
     }
   }
 

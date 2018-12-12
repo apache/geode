@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.BlobHelper;
 
@@ -73,8 +72,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
   @Override
   public void getDataFromAll(Set recipients) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.StreamingPartitionOperation_CALL_GETPARTITIONEDDATAFROM_INSTEAD
-            .toLocalizedString());
+        "call getPartitionedDataFrom instead");
   }
 
   /**
@@ -207,8 +205,9 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       if (id != null && waitingOnMember(id)) {
         this.failedMembers.add(id);
         this.memberDepartedMessage =
-            LocalizedStrings.StreamingPartitionOperation_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)});
+            String.format(
+                "Streaming reply processor got memberDeparted event for < %s > crashed, %s",
+                new Object[] {id, Boolean.valueOf(crashed)});
       }
       super.memberDeparted(distributionManager, id, crashed);
     }
@@ -456,7 +455,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
       if (!sentFinalMessage && !receiverCacheClosed) {
         throw new InternalGemFireError(
-            LocalizedStrings.StreamingPartitionOperation_UNEXPECTED_CONDITION.toLocalizedString());
+            "unexpected condition");
       }
 
       // otherwise, we're already done, so don't send another reply
@@ -471,8 +470,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
     protected Object getNextReplyObject() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.StreamingPartitionOperation_USE_GETNEXTREPLYOBJECTPARTITIONEDREGION_INSTEAD
-              .toLocalizedString());
+          "use getNextReplyObject(PartitionedRegion) instead");
     }
   }
 }

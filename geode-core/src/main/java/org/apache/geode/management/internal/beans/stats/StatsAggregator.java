@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.management.internal.ManagementConstants;
 
@@ -30,12 +30,12 @@ public class StatsAggregator {
 
   private Map<String, AtomicReference<Number>> aggregateMap;
 
-  private LogWriterI18n logger;
+  private LogWriter logger;
 
   public StatsAggregator(Map<String, Class<?>> typeMap) {
     this.typeMap = typeMap;
     this.aggregateMap = new HashMap<String, AtomicReference<Number>>();
-    this.logger = InternalDistributedSystem.getLoggerI18n();
+    this.logger = InternalDistributedSystem.getLogger();
     initAggregateMap();
   }
 

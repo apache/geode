@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -192,7 +191,7 @@ public class ExecutionContext {
   public Object getBindArgument(int index) {
     if (index > this.bindArguments.length)
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecutionContext_TOO_FEW_QUERY_PARAMETERS.toLocalizedString());
+          "Too few query parameters");
     return this.bindArguments[index - 1];
   }
 
@@ -214,8 +213,8 @@ public class ExecutionContext {
     if (value == null)
       // cannot be resolved
       throw new TypeMismatchException(
-          LocalizedStrings.ExecutionContext_THE_ATTRIBUTE_OR_METHOD_NAME_0_COULD_NOT_BE_RESOLVED
-              .toLocalizedString(name));
+          String.format("The attribute or method name ' %s ' could not be resolved",
+              name));
     return value;
   }
 
@@ -351,11 +350,13 @@ public class ExecutionContext {
       // ambiguous
       if (mustBeMethod)
         throw new AmbiguousNameException(
-            LocalizedStrings.ExecutionContext_METHOD_NAMED_0_WITH_1_ARGUMENTS_IS_AMBIGUOUS_BECAUSE_IT_CAN_APPLY_TO_MORE_THAN_ONE_VARIABLE_IN_SCOPE
-                .toLocalizedString(name, numArgs));
+            String.format(
+                "Method named ' %s ' with %s arguments is ambiguous because it can apply to more than one variable in scope.",
+                name, numArgs));
       throw new AmbiguousNameException(
-          LocalizedStrings.ExecutionContext_ATTRIBUTE_NAMED_0_IS_AMBIGUOUS_BECAUSE_IT_CAN_APPLY_TO_MORE_THAN_ONE_VARIABLE_IN_SCOPE
-              .toLocalizedString(name));
+          String.format(
+              "Attribute named ' %s ' is ambiguous because it can apply to more than one variable in scope.",
+              name));
     }
     Assert.assertTrue(hits.isEmpty());
     // if there is a single unknown, then return that one under the assumption

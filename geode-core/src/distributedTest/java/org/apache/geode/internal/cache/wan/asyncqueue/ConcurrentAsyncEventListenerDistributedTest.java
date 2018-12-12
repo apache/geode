@@ -18,10 +18,9 @@ package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -254,9 +253,9 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 1000));
 
-    vm0.invoke(() -> await().atMost(TWO_MINUTES)
+    vm0.invoke(() -> await()
         .untilAsserted(() -> assertThat(getAsyncEventQueue().size()).isEqualTo(1000)));
-    vm1.invoke(() -> await().atMost(TWO_MINUTES)
+    vm1.invoke(() -> await()
         .untilAsserted(() -> assertThat(getAsyncEventQueue().size()).isEqualTo(1000)));
   }
 
@@ -338,7 +337,7 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
 
   private void validateAsyncEventListener(int expectedSize) {
     Map<?, ?> eventsMap = getSpyAsyncEventListener().getEventsMap();
-    await().atMost(TWO_MINUTES).until(() -> eventsMap.size() == expectedSize);
+    await().until(() -> eventsMap.size() == expectedSize);
   }
 
   private void waitForDispatcherToPause() {

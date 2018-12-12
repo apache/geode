@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.Thread.sleep;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getDMStats;
+import static org.apache.geode.test.dunit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -33,6 +36,7 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.ImageReplyMessage;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -40,7 +44,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -123,7 +126,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableRunnable("Wait for chunks") {
 
       public void run() {
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           public String description() {
             return "Waiting for messages to be at least 2: " + observer.messageCount.get();
@@ -133,13 +136,13 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
             return observer.messageCount.get() >= 2;
           }
 
-        }, MAX_WAIT, 100, true);
+        });
 
         // Make sure no more messages show up
         try {
-          Thread.sleep(500);
+          sleep(500);
         } catch (InterruptedException e) {
-          Assert.fail("interrupted", e);
+          fail("interrupted", e);
         }
         assertEquals(2, observer.messageCount.get());
         observer.allowMessages.countDown();
@@ -191,7 +194,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableRunnable("Wait to flow control messages") {
 
       public void run() {
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           public String description() {
             return "Waiting for messages to be at least 2: " + observer.messageCount.get();
@@ -201,13 +204,13 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
             return observer.messageCount.get() >= 2;
           }
 
-        }, MAX_WAIT, 100, true);
+        });
 
         // Make sure no more messages show up
         try {
-          Thread.sleep(500);
+          sleep(500);
         } catch (InterruptedException e) {
-          Assert.fail("interrupted", e);
+          fail("interrupted", e);
         }
         assertEquals(2, observer.messageCount.get());
       }
@@ -278,7 +281,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
       vm1.invoke(new SerializableRunnable("Wait to flow control messages") {
 
         public void run() {
-          Wait.waitForCriterion(new WaitCriterion() {
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
             public String description() {
               return "Waiting for messages to be at least 2: " + observer.messageCount.get();
@@ -288,13 +291,13 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
               return observer.messageCount.get() >= 2;
             }
 
-          }, MAX_WAIT, 100, true);
+          });
 
           // Make sure no more messages show up
           try {
-            Thread.sleep(500);
+            sleep(500);
           } catch (InterruptedException e) {
-            Assert.fail("interrupted", e);
+            fail("interrupted", e);
           }
           assertEquals(2, observer.messageCount.get());
         }
@@ -333,8 +336,8 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
       vm0.invoke(new SerializableRunnable("check for in progress messages") {
 
         public void run() {
-          final DMStats stats = getSystem().getDMStats();
-          Wait.waitForCriterion(new WaitCriterion() {
+          final DMStats stats = getDMStats();
+          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
             public boolean done() {
               return stats.getInitialImageMessagesInFlight() == 0;
@@ -344,7 +347,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
               return "Timeout waiting for all initial image messages to be processed: "
                   + stats.getInitialImageMessagesInFlight();
             }
-          }, MAX_WAIT, 100, true);
+          });
         }
       });
 

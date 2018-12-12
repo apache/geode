@@ -556,9 +556,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     other.mergeBitSet();
     List<RVVException> mine = canonicalExceptions(this.exceptions);
     Iterator<RVVException> myIterator = mine.iterator();
-    List<RVVException> his = canonicalExceptions(other.exceptions);
-    Iterator<RVVException> otherIterator = his.iterator();
-    // System.out.println("comparing " + mine + " with " + his);
+    List<RVVException> others = canonicalExceptions(other.exceptions);
+    Iterator<RVVException> otherIterator = others.iterator();
+    // System.out.println("comparing " + mine + " with " + others);
     RVVException myException = myIterator.hasNext() ? myIterator.next() : null;
     RVVException otherException = otherIterator.hasNext() ? otherIterator.next() : null;
     // I can't fill exceptions that are newer than anything I've seen, so skip them

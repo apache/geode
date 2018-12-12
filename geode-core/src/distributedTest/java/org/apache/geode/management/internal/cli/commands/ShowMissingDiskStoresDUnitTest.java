@@ -15,12 +15,12 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -80,7 +80,7 @@ public class ShowMissingDiskStoresDUnitTest {
         .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
     gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
-    Awaitility.await().until(() -> {
+    await().until(() -> {
       return new File(server1.getWorkingDir(), "diskStoreDir").exists()
           && new File(server2.getWorkingDir(), "diskStoreDir").exists();
     });
@@ -129,7 +129,7 @@ public class ShowMissingDiskStoresDUnitTest {
   private void checkAsyncResults(AsyncInvocation ai, GfshCommandRule gfsh, int secsToWait)
       throws Exception {
     try {
-      Awaitility.await().atLeast(secsToWait, TimeUnit.SECONDS).until(() -> ai.isDone());
+      await().atLeast(secsToWait, TimeUnit.SECONDS).until(() -> ai.isDone());
     } catch (Exception e) {
       // e.printStackTrace();
     }

@@ -34,7 +34,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A TreeSet constrained to contain Structs of all the same type. To conserve on objects, we store
@@ -67,7 +66,7 @@ public class SortedStructSet extends TreeSet
     this(c);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -76,7 +75,7 @@ public class SortedStructSet extends TreeSet
   public SortedStructSet(StructTypeImpl structType) {
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -97,13 +96,12 @@ public class SortedStructSet extends TreeSet
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
-              .toLocalizedString());
+          "obj does not have the same StructType");
     }
     // return addFieldValues(s.getFieldValues());
     return this.addFieldValues(s.getFieldValues());
@@ -198,7 +196,7 @@ public class SortedStructSet extends TreeSet
     boolean modified = false;
     if (!this.structType.equals(ss.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_TYPES_DONT_MATCH.toLocalizedString());
+          "types do not match");
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       if (this.addFieldValues((Object[]) itr.next())) {
@@ -269,7 +267,7 @@ public class SortedStructSet extends TreeSet
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.structType = (StructTypeImpl) elementType;
   }

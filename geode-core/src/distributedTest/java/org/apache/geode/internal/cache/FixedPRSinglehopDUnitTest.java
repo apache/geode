@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.out;
+import static java.util.Map.Entry;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,9 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -54,6 +55,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -61,7 +63,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -299,7 +300,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       getFromPartitionedRegionsFor3Qs();
       // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
       // primary set to true.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+      await()
           .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6)
               && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3));
 
@@ -328,7 +329,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
       putIntoPartitionedRegions();
       // Wait to make sure that the buckets have actually moved.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+      await()
           .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
               && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
               && (server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6));
@@ -872,7 +873,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
         return "expected no metadata to be refreshed";
       }
     };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    GeodeAwaitility.await().untilAsserted(wc);
 
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
@@ -886,11 +887,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
             + " entries but found " + prMetaData.getBucketServerLocationsMap_TEST_ONLY();
       }
     };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-    System.out.println("metadata is " + prMetaData);
-    System.out.println(
+    GeodeAwaitility.await().untilAsserted(wc);
+    out.println("metadata is " + prMetaData);
+    out.println(
         "metadata bucket locations map is " + prMetaData.getBucketServerLocationsMap_TEST_ONLY());
-    for (Map.Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
       assertEquals("list has wrong contents: " + entry.getValue(), currentRedundancy,
           ((List) entry.getValue()).size());
     }

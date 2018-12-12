@@ -85,18 +85,18 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
   @Override
   @Test
-  public void testLocalDestroy() throws InterruptedException {
+  public void testLocalDestroy() {
     // replicates don't allow local destroy
   }
 
   @Override
   @Test
-  public void testEntryTtlLocalDestroy() throws InterruptedException {
+  public void testEntryTtlLocalDestroy() {
     // replicates don't allow local destroy
   }
 
   @Test
-  public void testClearWithManyEventsInFlight() throws Exception {
+  public void testClearWithManyEventsInFlight() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -131,10 +131,10 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
     Wait.pause(2000);// this test has with noack, thus we should wait before validating entries
     // check consistency of the regions
-    Map r0Contents = (Map) vm0.invoke(() -> this.getCCRegionContents());
-    Map r1Contents = (Map) vm1.invoke(() -> this.getCCRegionContents());
-    Map r2Contents = (Map) vm2.invoke(() -> this.getCCRegionContents());
-    Map r3Contents = (Map) vm3.invoke(() -> this.getCCRegionContents());
+    Map r0Contents = vm0.invoke(() -> getCCRegionContents());
+    Map r1Contents = vm1.invoke(() -> getCCRegionContents());
+    Map r2Contents = vm2.invoke(() -> getCCRegionContents());
+    Map r3Contents = vm3.invoke(() -> getCCRegionContents());
 
     for (int i = 0; i < 10; i++) {
       String key = "cckey" + i;
@@ -234,7 +234,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
    */
 
   @Test
-  public void testGIISendsTombstones() throws Exception {
+  public void testGIISendsTombstones() {
     versionTestGIISendsTombstones();
   }
 
@@ -255,23 +255,23 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
 
   @Test
-  public void testClearWithConcurrentEvents() throws Exception {
+  public void testClearWithConcurrentEvents() {
     // need to figure out how to flush clear() ops for verification steps
   }
 
   @Test
-  public void testClearWithConcurrentEventsAsync() throws Exception {
+  public void testClearWithConcurrentEventsAsync() {
     // need to figure out how to flush clear() ops for verification steps
   }
 
   @Test
-  public void testClearOnNonReplicateWithConcurrentEvents() throws Exception {
+  public void testClearOnNonReplicateWithConcurrentEvents() {
     // need to figure out how to flush clear() ops for verification steps
   }
 
 
   @Test
-  public void testTombstones() throws Exception {
+  public void testTombstones() {
     versionTestTombstones();
   }
 

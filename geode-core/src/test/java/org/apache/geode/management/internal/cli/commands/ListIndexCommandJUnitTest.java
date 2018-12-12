@@ -14,9 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,21 +31,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
@@ -57,35 +54,23 @@ import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
  * @see org.apache.geode.management.internal.cli.commands.ListIndexCommand
  * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
- * @see org.jmock.Expectations
- * @see org.jmock.Mockery
- * @see org.jmock.lib.legacy.ClassImposteriser
- * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0
  */
 public class ListIndexCommandJUnitTest {
-  private Mockery mockContext;
+  private ListIndexCommand listIndexCommand;
+  private ResultCollector mockResultCollector;
+  private AbstractExecution mockFunctionExecutor;
 
   @Before
   public void setup() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
-  }
-
-  private ListIndexCommand createListIndexCommand(final InternalCache cache,
-      final Execution functionExecutor) {
-    return new TestListIndexCommands(cache, functionExecutor);
+    listIndexCommand = spy(ListIndexCommand.class);
+    mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    mockFunctionExecutor = mock(AbstractExecution.class, "Function Executor");
+    when(mockFunctionExecutor.execute(any(ListIndexFunction.class)))
+        .thenReturn(mockResultCollector);
+    doReturn(Collections.emptySet()).when(listIndexCommand).getAllMembers();
+    doReturn(mockFunctionExecutor).when(listIndexCommand).getMembersFunctionExecutor(any());
   }
 
   private IndexDetails createIndexDetails(final String memberId, final String indexName) {
@@ -93,129 +78,44 @@ public class ListIndexCommandJUnitTest {
   }
 
   @Test
-  public void testGetIndexListing() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final AbstractExecution mockFunctionExecutor =
-        mockContext.mock(AbstractExecution.class, "Function Executor");
-
-    final ResultCollector mockResultCollector =
-        mockContext.mock(ResultCollector.class, "ResultCollector");
-
-    final IndexDetails indexDetails1 = createIndexDetails("memberOne", "empIdIdx");
-    final IndexDetails indexDetails2 = createIndexDetails("memberOne", "empLastNameIdx");
-    final IndexDetails indexDetails3 = createIndexDetails("memberTwo", "empDobIdx");
-
-    final List<IndexDetails> expectedIndexDetails =
-        Arrays.asList(indexDetails1, indexDetails2, indexDetails3);
-
-    final List<Set<IndexDetails>> results = new ArrayList<>(2);
-
-    results.add(CollectionUtils.asSet(indexDetails2, indexDetails1));
-    results.add(CollectionUtils.asSet(indexDetails3));
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
-        oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
-        will(returnValue(mockResultCollector));
-        oneOf(mockResultCollector).getResult();
-        will(returnValue(results));
-      }
-    });
-
-    final ListIndexCommand commands = createListIndexCommand(mockCache, mockFunctionExecutor);
-    final List<IndexDetails> actualIndexDetails = commands.getIndexListing();
-
-    assertNotNull(actualIndexDetails);
-    assertEquals(expectedIndexDetails, actualIndexDetails);
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testGetIndexListingThrowsRuntimeException() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-    final Execution mockFunctionExecutor = mockContext.mock(Execution.class, "Function Executor");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
-        will(throwException(new RuntimeException("expected")));
-      }
-    });
-
-    final ListIndexCommand commands = createListIndexCommand(mockCache, mockFunctionExecutor);
-
-    try {
-      commands.getIndexListing();
-    } catch (RuntimeException expected) {
-      assertEquals("expected", expected.getMessage());
-      throw expected;
-    }
+  public void getIndexListingShouldPropagateExceptionsThrownByTheInternalFunctionExecution() {
+    doThrow(new RuntimeException("Mock RuntimeException")).when(mockFunctionExecutor)
+        .execute(any(ListIndexFunction.class));
+    assertThatThrownBy(() -> listIndexCommand.getIndexListing())
+        .isInstanceOf(RuntimeException.class).hasMessageContaining("Mock RuntimeException");
   }
 
   @Test
-  public void testGetIndexListingReturnsFunctionInvocationTargetExceptionInResults() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
+  public void getIndexListingShouldReturnTheIndexesOrdered() {
+    final IndexDetails indexDetails1 = createIndexDetails("memberOne", "empIdIdx");
+    final IndexDetails indexDetails2 = createIndexDetails("memberOne", "empLastNameIdx");
+    final IndexDetails indexDetails3 = createIndexDetails("memberTwo", "empDobIdx");
+    final List<Set<IndexDetails>> results = new ArrayList<>();
+    results.add(CollectionUtils.asSet(indexDetails2, indexDetails1, indexDetails3));
+    when(mockResultCollector.getResult()).thenReturn(results);
+    final List<IndexDetails> expectedIndexDetails =
+        Arrays.asList(indexDetails1, indexDetails2, indexDetails3);
 
-    final AbstractExecution mockFunctionExecutor =
-        mockContext.mock(AbstractExecution.class, "Function Executor");
-
-    final ResultCollector mockResultCollector =
-        mockContext.mock(ResultCollector.class, "ResultCollector");
-
-    final IndexDetails indexDetails = createIndexDetails("memberOne", "empIdIdx");
-
-    final List<IndexDetails> expectedIndexDetails = Collections.singletonList(indexDetails);
-
-    final List<Object> results = new ArrayList<>(2);
-
-    results.add(CollectionUtils.asSet(indexDetails));
-    results.add(new FunctionInvocationTargetException("expected"));
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
-        oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
-        will(returnValue(mockResultCollector));
-        oneOf(mockResultCollector).getResult();
-        will(returnValue(results));
-      }
-    });
-
-    final ListIndexCommand commands = createListIndexCommand(mockCache, mockFunctionExecutor);
-
-    final List<IndexDetails> actualIndexDetails = commands.getIndexListing();
-
-    assertNotNull(actualIndexDetails);
-    assertEquals(expectedIndexDetails, actualIndexDetails);
+    final List<IndexDetails> actualIndexDetails = listIndexCommand.getIndexListing();
+    assertThat(actualIndexDetails).isNotNull();
+    assertThat(actualIndexDetails).isEqualTo(expectedIndexDetails);
+    verify(mockFunctionExecutor, times(1)).setIgnoreDepartedMembers(true);
+    verify(mockFunctionExecutor, times(1)).execute(any(ListIndexFunction.class));
   }
 
-  private static class TestListIndexCommands extends ListIndexCommand {
-    private final InternalCache cache;
-    private final Execution functionExecutor;
+  @Test
+  public void getIndexListingShouldIgnoreExceptionsReturnedAsResultsFromTheInternalFunctionExecution() {
+    final IndexDetails indexDetails = createIndexDetails("memberOne", "empIdIdx");
+    final List<Object> results = new ArrayList<>(2);
+    results.add(CollectionUtils.asSet(indexDetails));
+    results.add(new FunctionInvocationTargetException("Mock FunctionInvocationTargetException"));
+    when(mockResultCollector.getResult()).thenReturn(results);
+    final List<IndexDetails> expectedIndexDetails = Collections.singletonList(indexDetails);
 
-    TestListIndexCommands(final InternalCache cache, final Execution functionExecutor) {
-      assert cache != null : "The InternalCache cannot be null!";
-      assert functionExecutor != null : "The function executor cannot be null!";
-      this.cache = cache;
-      this.functionExecutor = functionExecutor;
-    }
-
-    @Override
-    public Cache getCache() {
-      return this.cache;
-    }
-
-    @Override
-    public Set<DistributedMember> getAllMembers() {
-      assertSame(getCache(), cache);
-      return Collections.emptySet();
-    }
-
-    @Override
-    public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
-      Assert.assertNotNull(members);
-      return functionExecutor;
-    }
+    final List<IndexDetails> actualIndexDetails = listIndexCommand.getIndexListing();
+    assertThat(actualIndexDetails).isNotNull();
+    assertThat(actualIndexDetails).isEqualTo(expectedIndexDetails);
+    verify(mockFunctionExecutor, times(1)).setIgnoreDepartedMembers(true);
+    verify(mockFunctionExecutor, times(1)).execute(any(ListIndexFunction.class));
   }
 }

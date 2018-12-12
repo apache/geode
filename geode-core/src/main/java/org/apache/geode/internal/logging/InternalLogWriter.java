@@ -34,7 +34,7 @@ import org.apache.geode.i18n.StringId;
  * <li>{@link #NONE_LEVEL}
  * </ol>
  *
- * @deprecated use log4j api instead
+ * @deprecated Please use Log4J2 instead.
  */
 @Deprecated
 public interface InternalLogWriter extends LogWriter, LogWriterI18n {
@@ -95,7 +95,7 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
 
   int getLogWriterLevel();
 
-  void setLogWriterLevel(int LogWriterLevel);
+  void setLogWriterLevel(int logWriterLevel);
 
   boolean isSecure();
 
@@ -104,19 +104,19 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
   /**
    * Logs a message and an exception of the given level.
    *
-   * @param msgLevel the level code for the message to log
-   * @param msg the actual message to log
-   * @param exception the actual Exception to log
+   * @param messageLevel the level code for the message to log
+   * @param message the actual message to log
+   * @param throwable the actual Exception to log
    */
-  void put(int msgLevel, String msg, Throwable exception);
+  void put(int messageLevel, String message, Throwable throwable);
 
   /**
    * Logs a message and an exception of the given level.
    *
-   * @param msgLevel the level code for the message to log
-   * @param msgId A locale agnostic form of the message
-   * @param params the Object arguments to plug into the message
-   * @param exception the actual Exception to log
+   * @param messageLevel the level code for the message to log
+   * @param messageId A locale agnostic form of the message
+   * @param parameters the Object arguments to plug into the message
+   * @param throwable the actual Exception to log
    */
-  void put(int msgLevel, StringId msgId, Object[] params, Throwable exception);
+  void put(int messageLevel, StringId messageId, Object[] parameters, Throwable throwable);
 }

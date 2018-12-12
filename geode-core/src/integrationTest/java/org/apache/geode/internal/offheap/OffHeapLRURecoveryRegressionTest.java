@@ -16,12 +16,11 @@ package org.apache.geode.internal.offheap;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.fail;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -61,7 +60,7 @@ public class OffHeapLRURecoveryRegressionTest {
     } finally {
       closeCache(gfc);
     }
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       return MemoryAllocatorImpl.getAllocator().getStats().getObjects() == 0;
     });
     System.setProperty("gemfire.disk.recoverValuesSync", "true");

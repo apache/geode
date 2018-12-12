@@ -86,6 +86,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.BucketCountLoadProbe;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -3333,7 +3334,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
         Cache cache = getCache();
         final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
 
-        Wait.waitForCriterion(new WaitCriterion() {
+        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
           @Override
           public boolean done() {
@@ -3352,7 +3353,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
             return "Timeout waiting for buckets to match. Expected " + expected + " but got "
                 + getBuckets();
           }
-        }, 60000, 100, true);
+        });
 
         return null;
       }

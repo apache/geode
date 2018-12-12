@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * "License")); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -73,9 +73,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
@@ -98,7 +97,6 @@ import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.stats.AggregateRegionStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.GCStatsMonitor;
@@ -371,15 +369,15 @@ public class MemberMBeanBridge {
 
     // Initialize all the Stats Monitors
     this.monitor =
-        new MBeanStatsMonitor(ManagementStrings.MEMBER_CACHE_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("MemberMXBeanMonitor");
     this.diskMonitor = new MemberLevelDiskMonitor(MEMBER_LEVEL_DISK_MONITOR);
     this.regionMonitor = new AggregateRegionStatsMonitor(MEMBER_LEVEL_REGION_MONITOR);
-    this.gcMonitor = new GCStatsMonitor(ManagementStrings.GC_STATS_MONITOR.toLocalizedString());
+    this.gcMonitor = new GCStatsMonitor("GCStatsMonitor");
     this.vmStatsMonitor =
-        new VMStatsMonitor(ManagementStrings.VM_STATS_MONITOR.toLocalizedString());
+        new VMStatsMonitor("VMStatsMonitor");
 
     this.systemStatsMonitor =
-        new MBeanStatsMonitor(ManagementStrings.SYSTEM_STATS_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("SystemStatsManager");
 
     // Initialize Proecess related informations
 
@@ -404,14 +402,14 @@ public class MemberMBeanBridge {
 
   public MemberMBeanBridge() {
     this.monitor =
-        new MBeanStatsMonitor(ManagementStrings.MEMBER_CACHE_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("MemberMXBeanMonitor");
     this.diskMonitor = new MemberLevelDiskMonitor(MEMBER_LEVEL_DISK_MONITOR);
     this.regionMonitor = new AggregateRegionStatsMonitor(MEMBER_LEVEL_REGION_MONITOR);
-    this.gcMonitor = new GCStatsMonitor(ManagementStrings.GC_STATS_MONITOR.toLocalizedString());
+    this.gcMonitor = new GCStatsMonitor("GCStatsMonitor");
     this.vmStatsMonitor =
-        new VMStatsMonitor(ManagementStrings.VM_STATS_MONITOR.toLocalizedString());
+        new VMStatsMonitor("VMStatsMonitor");
     this.systemStatsMonitor =
-        new MBeanStatsMonitor(ManagementStrings.SYSTEM_STATS_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("SystemStatsManager");
 
     this.system = InternalDistributedSystem.getConnectedInstance();
 
@@ -922,22 +920,19 @@ public class MemberMBeanBridge {
         mainTail = BeanUtilFuncs.tailSystemLog(sys.getConfig(), numLines);
         if (mainTail == null) {
           mainTail =
-              LocalizedStrings.TailLogResponse_NO_LOG_FILE_WAS_SPECIFIED_IN_THE_CONFIGURATION_MESSAGES_WILL_BE_DIRECTED_TO_STDOUT
-                  .toLocalizedString();
+              "No log file was specified in the configuration, messages will be directed to stdout.";
         }
       } else {
         throw new IllegalStateException(
             "TailLogRequest/Response processed in application vm with shared logging. This would occur if there is no 'log-file' defined.");
       }
     } catch (IOException e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.TailLogResponse_ERROR_OCCURRED_WHILE_READING_SYSTEM_LOG__0, e));
+      logger.warn("Error occurred while reading system log:", e);
       mainTail = "";
     }
 
     if (childTail == null && mainTail == null) {
-      return LocalizedStrings.SystemMemberImpl_NO_LOG_FILE_CONFIGURED_LOG_MESSAGES_WILL_BE_DIRECTED_TO_STDOUT
-          .toLocalizedString();
+      return "No log file configured, log messages will be directed to stdout.";
     } else {
       StringBuilder result = new StringBuilder();
       if (mainTail != null) {
@@ -945,7 +940,7 @@ public class MemberMBeanBridge {
       }
       if (childTail != null) {
         result.append(getLineSeparator())
-            .append(LocalizedStrings.SystemMemberImpl_TAIL_OF_CHILD_LOG.toLocalizedString())
+            .append("-------------------- tail of child log --------------------")
             .append(getLineSeparator());
         result.append(childTail);
       }
@@ -962,20 +957,17 @@ public class MemberMBeanBridge {
   public void shutDownMember() {
     final InternalDistributedSystem ids = dm.getSystem();
     if (ids.isConnected()) {
-      Thread t = new Thread(new Runnable() {
-        public void run() {
-          try {
-            // Allow the Function call to exit
-            Thread.sleep(1000);
-          } catch (InterruptedException ignore) {
-          }
-          ConnectionTable.threadWantsSharedResources();
-          if (ids.isConnected()) {
-            ids.disconnect();
-          }
+      Thread t = new LoggingThread("Shutdown member", false, () -> {
+        try {
+          // Allow the Function call to exit
+          Thread.sleep(1000);
+        } catch (InterruptedException ignore) {
+        }
+        ConnectionTable.threadWantsSharedResources();
+        if (ids.isConnected()) {
+          ids.disconnect();
         }
       });
-      t.setDaemon(false);
       t.start();
     }
   }

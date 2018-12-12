@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.cache.ha.HARegionQueue.createRegionName;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Properties;
@@ -38,6 +40,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -174,7 +177,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void checkSizeBeforeExpiration() throws Exception {
     HARegion regionForQueue = (HARegion) cache
-        .getRegion(Region.SEPARATOR + HARegionQueue.createRegionName(regionQueueName));
+        .getRegion(SEPARATOR + createRegionName(regionQueueName));
     final HARegionQueue regionqueue = regionForQueue.getOwner();
     regionQueueSize = regionqueue.size();
     cache.getLogger().info("Size of the regionqueue before expiration is " + regionQueueSize);
@@ -187,7 +190,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
     /*
      * if (regionqueue.size() < 1) fail("RegionQueue size canot be less than 1 before expiration");
      */
@@ -200,7 +203,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
   public static void checkSizeAfterExpiration() throws Exception {
 
     HARegion regionForQueue = (HARegion) cache
-        .getRegion(Region.SEPARATOR + HARegionQueue.createRegionName(regionQueueName));
+        .getRegion(SEPARATOR + createRegionName(regionQueueName));
     final HARegionQueue regionqueue = regionForQueue.getOwner();
     cache.getLogger().info("Size of the regionqueue After expiration is " + regionqueue.size());
     WaitCriterion ev = new WaitCriterion() {
@@ -212,7 +215,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 60 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
 
     /*
      * if (regionqueue.size() > regionQueueSize) fail("RegionQueue size should be 0 after

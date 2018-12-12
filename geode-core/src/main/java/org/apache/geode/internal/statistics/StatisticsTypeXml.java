@@ -40,7 +40,6 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo davidw Use a SAX parser instead of DOM
 /**
@@ -75,12 +74,12 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
       } else {
         throw new SAXNotRecognizedException(
-            LocalizedStrings.StatisticsTypeXml_DTD_NOT_FOUND_0.toLocalizedString(location));
+            String.format("DTD not found: %s", location));
       }
 
     } else {
       throw new SAXNotRecognizedException(
-          LocalizedStrings.StatisticsTypeXml_INVALID_PUBLIC_ID_0.toLocalizedString(publicId));
+          String.format("Invalid public ID: ' %s '", publicId));
     }
   }
 
@@ -92,14 +91,13 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
   public void error(SAXParseException exception) throws SAXException {
     throw new GemFireConfigException(
-        LocalizedStrings.StatisticsTypeXml_SAX_ERROR_WHILE_WORKING_WITH_XML.toLocalizedString(),
+        "SAX error while working with XML",
         exception);
   }
 
   public void fatalError(SAXParseException exception) throws SAXException {
     throw new GemFireConfigException(
-        LocalizedStrings.StatisticsTypeXml_SAX_FATAL_ERROR_WHILE_WORKING_WITH_XML
-            .toLocalizedString(),
+        "SAX fatal error while working with XML",
         exception);
   }
 
@@ -119,7 +117,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
     } catch (ParserConfigurationException ex) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_PARSING_XML.toLocalizedString(), ex);
+          "Failed parsing XML", ex);
     }
 
     parser.setErrorHandler(this);
@@ -129,22 +127,20 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
       doc = parser.parse(new InputSource(reader));
     } catch (SAXException se) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_PARSING_XML.toLocalizedString(), se);
+          "Failed parsing XML", se);
     } catch (IOException io) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_READING_XML_DATA.toLocalizedString(), io);
+          "Failed reading XML data", io);
     }
 
     if (doc == null) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_READING_XML_DATA_NO_DOCUMENT
-              .toLocalizedString());
+          "Failed reading XML data; no document");
     }
     Element root = doc.getDocumentElement();
     if (root == null) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_READING_XML_DATA_NO_ROOT_ELEMENT
-              .toLocalizedString());
+          "Failed reading XML data; no root element");
     }
     return extractStatistics(root, statFactory);
   }
@@ -264,8 +260,8 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
         case DOUBLE_STORAGE:
           return statFactory.createDoubleCounter(statName, description, unit, largerBetter);
         default:
-          throw new RuntimeException(LocalizedStrings.StatisticsTypeXml_UNEXPECTED_STORAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(storage)));
+          throw new RuntimeException(String.format("unexpected storage type %s",
+              Integer.valueOf(storage)));
       }
     } else {
       switch (storage) {
@@ -276,8 +272,8 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
         case DOUBLE_STORAGE:
           return statFactory.createDoubleGauge(statName, description, unit, largerBetter);
         default:
-          throw new RuntimeException(LocalizedStrings.StatisticsTypeXml_UNEXPECTED_STORAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(storage)));
+          throw new RuntimeException(String.format("unexpected storage type %s",
+              Integer.valueOf(storage)));
       }
     }
   }

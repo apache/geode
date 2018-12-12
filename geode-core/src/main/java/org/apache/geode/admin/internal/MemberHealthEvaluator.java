@@ -26,7 +26,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 
@@ -101,8 +100,8 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
     long threshold = this.config.getMaxVMProcessSize();
     if (vmSize > threshold) {
       String s =
-          LocalizedStrings.MemberHealthEvaluator_THE_SIZE_OF_THIS_VM_0_MEGABYTES_EXCEEDS_THE_THRESHOLD_1_MEGABYTES
-              .toLocalizedString(vmSize, threshold);
+          String.format("The size of this VM (%s megabytes) exceeds the threshold (%s megabytes)",
+              vmSize, threshold);
       status.add(okayHealth(s));
     }
   }
@@ -118,8 +117,8 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
     long overflowSize = this.dmStats.getOverflowQueueSize();
     if (overflowSize > threshold) {
       String s =
-          LocalizedStrings.MemberHealthEvaluator_THE_SIZE_OF_THE_OVERFLOW_QUEUE_0_EXCEEDS_THE_THRESHOLD_1
-              .toLocalizedString(overflowSize, threshold);
+          String.format("The size of the overflow queue (%s) exceeds the threshold (%s).",
+              overflowSize, threshold);
       status.add(okayHealth(s));
     }
   }
@@ -138,8 +137,8 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
     long deltaReplyTimeouts = this.dmStats.getReplyTimeouts() - prevReplyTimeouts;
     if (deltaReplyTimeouts > threshold) {
       String s =
-          LocalizedStrings.MemberHealthEvaluator_THE_NUMBER_OF_MESSAGE_REPLY_TIMEOUTS_0_EXCEEDS_THE_THRESHOLD_1
-              .toLocalizedString(deltaReplyTimeouts, threshold);
+          String.format("The number of message reply timeouts (%s) exceeds the threshold (%s)",
+              deltaReplyTimeouts, threshold);
       status.add(okayHealth(s));
     }
   }
@@ -159,20 +158,23 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
         // health is okay.
         int numRegions = cPStats.getReliableRegionsMissingFullAccess();
         status.add(okayHealth(
-            LocalizedStrings.MemberHealthEvaluator_THERE_ARE_0_REGIONS_MISSING_REQUIRED_ROLES_BUT_ARE_CONFIGURED_FOR_FULL_ACCESS
-                .toLocalizedString(numRegions)));
+            String.format(
+                "There are %s regions missing required roles; however, they are configured for full access.",
+                numRegions)));
       } else if (cPStats.getReliableRegionsMissingLimitedAccess() > 0) {
         // health is poor
         int numRegions = cPStats.getReliableRegionsMissingLimitedAccess();
         status.add(poorHealth(
-            LocalizedStrings.MemberHealthEvaluator_THERE_ARE_0_REGIONS_MISSING_REQUIRED_ROLES_AND_CONFIGURED_WITH_LIMITED_ACCESS
-                .toLocalizedString(numRegions)));
+            String.format(
+                "There are %s regions missing required roles and configured with limited access.",
+                numRegions)));
       } else if (cPStats.getReliableRegionsMissingNoAccess() > 0) {
         // health is poor
         int numRegions = cPStats.getReliableRegionsMissingNoAccess();
         status.add(poorHealth(
-            LocalizedStrings.MemberHealthEvaluator_THERE_ARE_0_REGIONS_MISSING_REQUIRED_ROLES_AND_CONFIGURED_WITHOUT_ACCESS
-                .toLocalizedString(numRegions)));
+            String.format(
+                "There are %s regions missing required roles and configured without access.",
+                numRegions)));
       }
     } catch (CancelException ignore) {
     }

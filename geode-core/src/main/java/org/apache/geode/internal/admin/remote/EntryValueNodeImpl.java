@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.admin.EntryValueNode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class holds the metadata for a single object field in a value stored in the cache. They are
@@ -274,8 +273,7 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
         AccessibleObject.setAccessible(fields, true);
       } catch (SecurityException se) {
         throw new InternalGemFireException(
-            LocalizedStrings.EntryValueNodeImpl_UNABLE_TO_SET_ACCESSIBILITY_OF_FIELD_OBJECTS_DURING_CACHE_VALUE_DISPLAY_CONSTRUCTION
-                .toLocalizedString(),
+            "Unable to set accessibility of Field objects during cache value display construction",
             se);
       }
       List fieldList = new ArrayList();
@@ -289,8 +287,7 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
           fieldVal = fields[i].get(obj);
         } catch (Exception e) {
           throw new InternalGemFireException(
-              LocalizedStrings.EntryValueNodeImpl_UNABLE_TO_BUILD_CACHE_VALUE_DISPLAY
-                  .toLocalizedString(),
+              "Unable to build cache value display",
               e);
         }
         String name = fields[i].getName();

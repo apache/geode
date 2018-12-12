@@ -88,10 +88,8 @@ import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Provides MBean support for managing a GemFire distributed system.
@@ -301,8 +299,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       throws org.apache.geode.admin.AdminException {
     if (system == null) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminDistributedSystemJmxImpl_GFMANAGERAGENT_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "GfManagerAgent must not be null");
     }
     return new GemFireHealthJmxImpl(system, this);
   }
@@ -387,10 +384,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
         if (isEmailNotificationEnabled) {
           String mess =
-              LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_JOINED_THE_DISTRIBUTED_SYSTEM_MEMBER_ID_0
-                  .toLocalizedString(new Object[] {joined.getId().toString()});
+              String.format("Member joined the Distributed SystemMember Id: %s",
+                  joined.getId().toString());
           sendEmail(EML_SUBJ_PRFX_GFE_NOTFY + EML_SUBJ_ITEM_GFE_DS + getName() + " <"
-              + LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_JOINED.toLocalizedString()
+              + "Member Joined"
               + ">", mess);
         }
       } catch (javax.management.MBeanException e) {
@@ -442,10 +439,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
         if (isEmailNotificationEnabled) {
           String mess =
-              LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_LEFT_THE_DISTRIBUTED_SYSTEM_MEMBER_ID_0
-                  .toLocalizedString(new Object[] {left.getId().toString()});
+              String.format("Member left the Distributed SystemMember Id: %s",
+                  left.getId().toString());
           sendEmail(EML_SUBJ_PRFX_GFE_NOTFY + EML_SUBJ_ITEM_GFE_DS + getName() + " <"
-              + LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_LEFT.toLocalizedString()
+              + "Member Left"
               + ">", mess);
         }
       } catch (javax.management.MBeanException e) {
@@ -504,10 +501,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
         if (isEmailNotificationEnabled) {
           String mess =
-              LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_CRASHED_IN_THE_DISTRIBUTED_SYSTEM_MEMBER_ID_0
-                  .toLocalizedString(new Object[] {crashed.getId().toString()});
+              String.format("Member crashed in the Distributed SystemMember Id: %s",
+                  crashed.getId().toString());
           sendEmail(EML_SUBJ_PRFX_GFE_ALERT + EML_SUBJ_ITEM_GFE_DS + getName() + " <"
-              + LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_CRASHED.toLocalizedString()
+              + "Member Crashed"
               + ">", mess);
         }
       } catch (javax.management.MBeanException e) {
@@ -559,8 +556,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
         if (isEmailNotificationEnabled) {
           String mess =
-              LocalizedStrings.AdminDistributedSystemJmxImpl_SYSTEM_ALERT_FROM_DISTRIBUTED_SYSTEM_0
-                  .toLocalizedString(strAlert);
+              String.format("System Alert from Distributed System: %s",
+                  strAlert);
           sendEmail(EML_SUBJ_PRFX_GFE_ALERT + EML_SUBJ_ITEM_GFE_DS + getName() + " <System Alert>",
               mess);
         }
@@ -1071,7 +1068,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
     if (isRmiClientCountZero) {
       logger.info(
-          LocalizedStrings.AdminDistributedSystemJmxImpl_JMX_CLIENT_COUNT_HAS_DROPPED_TO_ZERO);
+          "JMX Client count has dropped to zero.");
     }
   }
 
@@ -1298,56 +1295,56 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   }
 
   public CacheServerConfig[] getCacheServerConfigs() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public CacheServerConfig createCacheServerConfig() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void removeCacheServerConfig(CacheServerConfig config) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public CacheVmConfig[] getCacheVmConfigs() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public CacheVmConfig createCacheVmConfig() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void removeCacheVmConfig(CacheVmConfig config) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public DistributionLocatorConfig[] getDistributionLocatorConfigs() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public DistributionLocatorConfig createDistributionLocatorConfig() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void removeDistributionLocatorConfig(DistributionLocatorConfig config) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void addListener(ConfigListener listener) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void removeListener(ConfigListener listener) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void validate() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
 
@@ -1475,14 +1472,16 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       ooStr = new DataInputStream(foStr);
       defns = (StatAlertDefinition[]) DataSerializer.readObjectArray(ooStr);
     } catch (ClassNotFoundException cnfEx) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.AdminDistributedSystem_ENCOUNTERED_A_0_WHILE_LOADING_STATALERTDEFINITIONS_1,
-          new Object[] {cnfEx.getClass().getName(), statAlertDefnSerFile}), cnfEx);
+      logger.error(String.format(
+          "Encountered a %s while loading StatAlertDefinitions [from %s]. This could be due to GemFire version mismatch. Loading of statAlertDefinitions has been aborted.",
+          new Object[] {cnfEx.getClass().getName(), statAlertDefnSerFile}),
+          cnfEx);
       canPersistStatAlertDefs = false;
     } catch (IOException ex) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.AdminDistributedSystem_ENCOUNTERED_A_0_WHILE_LOADING_STATALERTDEFINITIONS_1_LOADING_ABORTED,
-          new Object[] {ex.getClass().getName(), statAlertDefnSerFile}), ex);
+      logger.error(String.format(
+          "Encountered a %s while loading StatAlertDefinitions [from %s]. Loading of statAlertDefinitions has been aborted.",
+          new Object[] {ex.getClass().getName(), statAlertDefnSerFile}),
+          ex);
       canPersistStatAlertDefs = false;
     } finally {
       if (foStr != null) {
@@ -1548,9 +1547,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
       DataSerializer.writeObjectArray(defs, ooStr);
     } catch (IOException ex) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.AdminDistributedSystem_ENCOUNTERED_A_0_WHILE_SAVING_STATALERTDEFINITIONS_1,
-          new Object[] {ex.getClass().getName(), statAlertDefnSerFile}), ex);
+      logger.error(String.format(
+          "Encountered a %s while saving StatAlertDefinitions [from %s]. This could be due to GemFire version mismatch. Saving of statAlertDefinitions has been aborted.",
+          new Object[] {ex.getClass().getName(), statAlertDefnSerFile}),
+          ex);
     } finally {
       if (foStr != null)
         try {
@@ -1584,18 +1584,18 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     // necessary.
     if (file.exists()) {
       if (!file.canWrite()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.AdminDistributedSystemJmxImpl_READONLY_STAT_ALERT_DEF_FILE_0,
-            new Object[] {file}));
+        logger.warn("stat-alert definitions could not be saved in the read-only file {}.",
+            new Object[] {file});
         fileIsWritable = false;
       }
     } else {
       try {
         file.createNewFile();
       } catch (IOException e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.AdminDistributedSystemJmxImpl_FAILED_TO_CREATE_STAT_ALERT_DEF_FILE_0,
-            new Object[] {file}), e);
+        logger.warn(String.format(
+            "Could not create file %s to save stat-alert definitions. stat-alert definitions could not be saved",
+            new Object[] {file}),
+            e);
         fileIsWritable = false;
       } finally {
         // Since we had created this file only for testing purpose, delete the
@@ -1975,9 +1975,9 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       str.flush();
       arr = byteArrStr.toByteArray();
     } catch (IOException ex) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.AdminDistributedSystem_ENCOUNTERED_AN_IOEXCEPTION_0,
-          ex.getLocalizedMessage()));
+      logger.warn(
+          "Encountered an IOException while serializing notifications, objects were not sent to the jmx clients as a result. {}",
+          ex.getLocalizedMessage());
     }
 
     return arr;
@@ -2011,11 +2011,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       }
       if (isEmailNotificationEnabled) {
         String mess =
-            LocalizedStrings.AdminDistributedSystemJmxImpl_STATISTICS_ALERT_FROM_DISTRIBUTED_SYSTEM_MEMBER_0_STATISTICS_1
-                .toLocalizedString(new Object[] {objName.getCanonicalName(), buf.toString()});
+            String.format("Statistics Alert from Distributed SystemMember: %sStatistics: %s",
+                objName.getCanonicalName(), buf.toString());
         sendEmail(EML_SUBJ_PRFX_GFE_ALERT + EML_SUBJ_ITEM_GFE_DS + getName() + " <"
-            + LocalizedStrings.AdminDistributedSystemJmxImpl_STATISTICS_ALERT_FOR_MEMBER
-                .toLocalizedString()
+            + "Statistics Alert for member"
             + ">", mess);
       }
     } catch (javax.management.MBeanException e) {
@@ -2077,10 +2076,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   @Override
   public void processClientMembership(String senderId, String clientId, String clientHost,
       int eventType) {
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.AdminDistributedSystemJmxImpl_PROCESSING_CLIENT_MEMBERSHIP_EVENT_0_FROM_1_FOR_2_RUNNING_ON_3,
-        new String[] {ClientMembershipMessage.getEventTypeString(eventType), senderId, clientId,
-            clientHost}));
+    logger.info(
+        "Processing client membership event {} from {} for client with id: {} running on host: {}",
+        ClientMembershipMessage.getEventTypeString(eventType), senderId, clientId,
+        clientHost);
     try {
       SystemMemberJmx systemMemberJmx = null;
       CacheVm[] cacheVms = getCacheVms();
@@ -2108,9 +2107,9 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         systemMemberJmx.handleClientMembership(clientId, eventType);
       }
     } catch (AdminException e) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.AdminDistributedSystemJmxImpl_FAILED_TO_PROCESS_CLIENT_MEMBERSHIP_FROM_0_FOR_1,
-          new Object[] {senderId, clientId}), e);
+      logger.error(String.format(
+          "Could not process client membership notification from %s for client with id %s.",
+          senderId, clientId), e);
       return;
     } catch (RuntimeOperationsException e) {
       logger.warn(e.getMessage(), e);// failed to send notification

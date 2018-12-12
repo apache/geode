@@ -17,10 +17,7 @@ package org.apache.geode.internal.logging.log4j;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
@@ -35,33 +32,28 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LoggingPerformanceTestCase;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
-@Category(PerformanceTest.class)
-@Ignore("Tests have no assertions")
+@Category({PerformanceTest.class, LoggingTest.class})
+@Ignore("TODO: repackage as jmh benchmark")
 public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
 
-  protected static final int DEFAULT_LOG_FILE_SIZE_LIMIT = Integer.MAX_VALUE;
-  protected static final int DEFAULT_LOG_FILE_COUNT_LIMIT = 20;
+  private static final int DEFAULT_LOG_FILE_SIZE_LIMIT = Integer.MAX_VALUE;
+  private static final int DEFAULT_LOG_FILE_COUNT_LIMIT = 20;
 
-  protected static final String SYS_LOG_FILE = "gemfire-log-file";
-  protected static final String SYS_LOG_FILE_SIZE_LIMIT = "gemfire-log-file-size-limit";
-  protected static final String SYS_LOG_FILE_COUNT_LIMIT = "gemfire-log-file-count-limit";
+  private static final String SYS_LOG_FILE = "gemfire-log-file";
+  private static final String SYS_LOG_FILE_SIZE_LIMIT = "gemfire-log-file-size-limit";
+  private static final String SYS_LOG_FILE_COUNT_LIMIT = "gemfire-log-file-count-limit";
 
-  private File config = null;
+  private File config;
 
   @After
-  public void tearDownLog4J2PerformanceTest() throws Exception {
-    this.config = null; // leave this file in place for now
+  public void tearDownLog4J2PerformanceTest() {
+    config = null; // leave this file in place for now
   }
 
-  protected void writeConfigFile(final File file) throws FileNotFoundException {
-    final PrintWriter pw = new PrintWriter(new FileOutputStream(file));
-    pw.println();
-    pw.close();
-  }
-
-  protected void setPropertySubstitutionValues(final String logFile, final int logFileSizeLimitMB,
+  private void setPropertySubstitutionValues(final String logFile, final int logFileSizeLimitMB,
       final int logFileCountLimit) {
     if (logFileSizeLimitMB < 0) {
       throw new IllegalArgumentException("logFileSizeLimitMB must be zero or positive integer");
@@ -83,22 +75,22 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
     System.setProperty(SYS_LOG_FILE_COUNT_LIMIT, logFileCountLimitValue);
   }
 
-  protected Logger createLogger() throws IOException {
+  Logger createLogger() throws IOException {
     // create configuration with log-file and log-level
-    this.configDirectory = new File(getUniqueName());
-    this.configDirectory.mkdir();
-    assertTrue(this.configDirectory.isDirectory() && this.configDirectory.canWrite());
+    configDirectory = new File(getUniqueName());
+    configDirectory.mkdir();
+    assertTrue(configDirectory.isDirectory() && configDirectory.canWrite());
 
     // copy the log4j2-test.xml to the configDirectory
     // final URL srcURL =
     // getClass().getResource("/org/apache/geode/internal/logging/log4j/log4j2-test.xml");
     final URL srcURL = getClass().getResource("log4j2-test.xml");
     final File src = new File(srcURL.getFile());
-    FileUtils.copyFileToDirectory(src, this.configDirectory);
-    this.config = new File(this.configDirectory, "log4j2-test.xml");
-    assertTrue(this.config.exists());
+    FileUtils.copyFileToDirectory(src, configDirectory);
+    config = new File(configDirectory, "log4j2-test.xml");
+    assertTrue(config.exists());
 
-    this.logFile = new File(this.configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
+    logFile = new File(configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
     final String logFilePath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
     final String logFileName =
         logFilePath.substring(0, logFilePath.lastIndexOf(File.separatorChar));
@@ -106,7 +98,7 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
         DEFAULT_LOG_FILE_COUNT_LIMIT);
 
     final String configPath =
-        "file://" + IOUtils.tryGetCanonicalPathElseGetAbsolutePath(this.config);
+        "file://" + IOUtils.tryGetCanonicalPathElseGetAbsolutePath(config);
     System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configPath);
 
     final Logger logger = LogManager.getLogger();

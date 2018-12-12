@@ -24,7 +24,6 @@ import java.util.Set;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.PureLogWriter;
 
@@ -54,7 +53,7 @@ public class ProductUseLog implements MembershipListener {
 
   public ProductUseLog(File productUseLogFile) {
     // GEODE-4180, use absolute paths
-    this.productUseLogFile = new File(productUseLogFile.getAbsolutePath());
+    this.productUseLogFile = productUseLogFile.getAbsoluteFile();
     this.logLevel = InternalLogWriter.INFO_LEVEL;
     createLogWriter();
   }
@@ -119,8 +118,8 @@ public class ProductUseLog implements MembershipListener {
     try {
       fos = new FileOutputStream(productUseLogFile, true);
     } catch (FileNotFoundException ex) {
-      String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0
-          .toLocalizedString(productUseLogFile.getAbsolutePath());
+      String s = String.format("Could not open log file %s.",
+          productUseLogFile.getAbsolutePath());
       throw new GemFireIOException(s, ex);
     }
     PrintStream out = new PrintStream(fos);

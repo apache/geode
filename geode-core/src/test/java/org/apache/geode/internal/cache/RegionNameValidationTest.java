@@ -20,9 +20,6 @@ import static java.lang.Character.MAX_VALUE;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.RegionNameValidation.getNamePattern;
 import static org.apache.geode.internal.cache.RegionNameValidation.validate;
-import static org.apache.geode.internal.i18n.LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY;
-import static org.apache.geode.internal.i18n.LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL;
-import static org.apache.geode.internal.i18n.LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -35,20 +32,20 @@ public class RegionNameValidationTest {
   @Test
   public void nullThrows() {
     assertThatThrownBy(() -> validate(null)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
+        .hasMessageContaining("name cannot be null");
   }
 
   @Test
   public void emptyThrows() {
     assertThatThrownBy(() -> validate("")).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
+        .hasMessageContaining("name cannot be empty");
   }
 
   @Test
   public void endingWithSeparatorThrows() {
     assertThatThrownBy(() -> validate("foo" + SEPARATOR))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(
+        .hasMessageContaining(String.format("name cannot contain the separator ' %s '",
             SEPARATOR));
   }
 
@@ -56,7 +53,7 @@ public class RegionNameValidationTest {
   public void startingWithSeparatorThrows() {
     assertThatThrownBy(() -> validate(SEPARATOR + "foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(
+        .hasMessageContaining(String.format("name cannot contain the separator ' %s '",
             SEPARATOR));
   }
 
@@ -64,7 +61,7 @@ public class RegionNameValidationTest {
   public void containingSeparatorThrows() {
     assertThatThrownBy(() -> validate("foo" + SEPARATOR + "bar"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(
+        .hasMessageContaining(String.format("name cannot contain the separator ' %s '",
             SEPARATOR));
   }
 

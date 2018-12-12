@@ -22,23 +22,21 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyGatewaySenderCommand extends InternalGfshCommand {
+public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
@@ -46,7 +44,7 @@ public class DestroyGatewaySenderCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public Result destroyGatewaySender(
+  public ResultModel destroyGatewaySender(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
@@ -67,23 +65,13 @@ public class DestroyGatewaySenderCommand extends InternalGfshCommand {
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         GatewaySenderDestroyFunction.INSTANCE, gatewaySenderDestroyFunctionArgs, members);
 
-    CommandResult result = ResultBuilder.buildResult(functionResults);
-    XmlEntity xmlEntity = findXmlEntity(functionResults);
+    ResultModel resultModel = ResultModel.createMemberStatusResult(functionResults);
+    resultModel.setConfigObject(id);
+    return resultModel;
+  }
 
-    // no xml needs to be updated, simply return
-    if (xmlEntity == null) {
-      return result;
-    }
-
-    // has xml but unable to persist to cluster config, need to print warning message and return
-    if (onMember != null || getConfigurationPersistenceService() == null) {
-      result.setCommandPersisted(false);
-      return result;
-    }
-
-    // update cluster config
-    ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-        .deleteXmlEntity(xmlEntity, onGroups);
-    return result;
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object id) {
+    config.getGatewaySenders().removeIf((sender) -> sender.getId().equals(id));
   }
 }

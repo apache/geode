@@ -118,7 +118,6 @@ public class FunctionAccessController extends AbstractBaseController {
    * @param filter list of keys which the function will use to determine on which node to execute
    *        the function.
    * @param argsInBody function argument as a JSON document
-   *
    * @return result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
@@ -148,8 +147,14 @@ public class FunctionAccessController extends AbstractBaseController {
           String.format("The function %s is not registered.", functionId));
     }
 
+    Object[] args = null;
+    if (argsInBody != null) {
+      args = jsonToObjectArray(argsInBody);
+    }
+
     // check for required permissions of the function
-    Collection<ResourcePermission> requiredPermissions = function.getRequiredPermissions(region);
+    Collection<ResourcePermission> requiredPermissions =
+        function.getRequiredPermissions(region, args);
     for (ResourcePermission requiredPermission : requiredPermissions) {
       securityService.authorize(requiredPermission);
     }
@@ -213,9 +218,7 @@ public class FunctionAccessController extends AbstractBaseController {
     final ResultCollector<?, ?> results;
 
     try {
-      if (argsInBody != null) {
-        Object[] args = jsonToObjectArray(argsInBody);
-
+      if (args != null) {
         // execute function with specified arguments
         if (args.length == 1) {
           results = execution.setArguments(args[0]).execute(functionId);
@@ -245,9 +248,9 @@ public class FunctionAccessController extends AbstractBaseController {
       headers.setLocation(toUri("functions", functionId));
 
       Object functionResult = null;
-      if (results instanceof NoResult)
+      if (results instanceof NoResult) {
         return new ResponseEntity<>("", headers, HttpStatus.OK);
-
+      }
       functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {

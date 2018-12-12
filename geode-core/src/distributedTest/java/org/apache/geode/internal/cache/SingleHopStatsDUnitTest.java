@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -23,9 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -293,8 +293,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         cms = ((GemFireCacheImpl) cache).getClientMetadataService();
         // since PR metadata is fetched in a background executor thread
         // we need to wait for it to arrive for a bit
-        Awaitility.await().timeout(120, TimeUnit.SECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
-            .pollInterval(500, TimeUnit.MILLISECONDS).until(() -> regionMetaData.size() == 1);
+        await().timeout(120, SECONDS).until(() -> regionMetaData.size() == 1);
 
         assertTrue(regionMetaData.containsKey(region.getFullPath()));
         regionMetaData.get(region.getFullPath());

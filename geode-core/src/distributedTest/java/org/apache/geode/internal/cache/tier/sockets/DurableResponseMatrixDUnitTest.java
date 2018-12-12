@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.Entry;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -44,12 +45,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -181,7 +182,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
   private void waitForValue(final Region r, final Object key, final Object expected) {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        org.apache.geode.cache.Region.Entry entry = r.getEntry(KEY);
+        Entry entry = r.getEntry(KEY);
         if (expected == null) {
           if (!r.containsValueForKey(key)) {
             return true; // success!
@@ -200,7 +201,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
         return null;
       }
     };
-    Wait.waitForCriterion(ev, 120 * 1000, 200, true);
+    GeodeAwaitility.await().untilAsserted(ev);
   }
 
   @Test

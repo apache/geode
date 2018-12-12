@@ -39,9 +39,7 @@ import org.apache.geode.admin.SystemMemberRegionEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Defines methods that all <code>SystemMember</code> MBeans should implement.
@@ -243,8 +241,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
         if (cache == null) {
           IthrewIt = true;
           throw new AdminException(
-              LocalizedStrings.SystemMemberJmx_THIS_SYSTEM_MEMBER_DOES_NOT_HAVE_A_CACHE
-                  .toLocalizedString());
+              "This System Member does not have a Cache.");
         }
         SystemMemberCacheJmxImpl cacheJmx = (SystemMemberCacheJmxImpl) cache;
         return ObjectName.getInstance(cacheJmx.getMBeanName());
@@ -374,7 +371,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
 
       if (managed == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.SystemMemberJmx_MANAGEDBEAN_IS_NULL.toLocalizedString());
+            "ManagedBean is null");
       }
 
       member.refreshConfig(); // to get the config parms...
@@ -453,17 +450,13 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
         }
       } catch (RuntimeOperationsException e) {
         logger
-            .info(
-                LocalizedMessage.create(
-                    LocalizedStrings.SystemMemberJmx_FAILED_TO_SEND_0_NOTIFICATION_FOR_1,
-                    new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+            .info(String.format("Failed to send %s notification for %s",
+                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
                 e);
       } catch (MBeanException e) {
         logger
-            .info(
-                LocalizedMessage.create(
-                    LocalizedStrings.SystemMemberJmx_FAILED_TO_SEND_0_NOTIFICATION_FOR_1,
-                    new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+            .info(String.format("Failed to send %s notification for %s",
+                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
                 e);
       }
     }

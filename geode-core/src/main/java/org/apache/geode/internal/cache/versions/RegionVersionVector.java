@@ -47,9 +47,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -363,8 +361,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
               acquiredLock.countDown();
             } catch (IllegalMonitorStateException e) {
               // dlock on the clear() operation should prevent this from happening
-              logger.fatal(LocalizedMessage.create(LocalizedStrings.RVV_LOCKING_CONFUSED,
-                  new Object[] {locker, lockOwner}));
+              logger.fatal(
+                  "Request from {} to block operations found that operations are already blocked by member {}.",
+                  new Object[] {locker, lockOwner});
               return;
             }
 

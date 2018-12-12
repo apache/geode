@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -290,16 +289,15 @@ public class CacheFactory {
     InternalCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
       throw new CacheClosedException(
-          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+          "A cache has not yet been created.");
     } else {
       if (instance.isClosed() && !closeOk) {
         throw instance.getCacheClosedException(
-            LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+            "The cache has been closed.", null);
       }
       if (!instance.getDistributedSystem().equals(system)) {
         throw instance.getCacheClosedException(
-            LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED_FOR_THE_GIVEN_DISTRIBUTED_SYSTEM
-                .toLocalizedString());
+            "A cache has not yet been created for the given distributed system.");
       }
       return instance;
     }
@@ -324,7 +322,7 @@ public class CacheFactory {
     InternalCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
       throw new CacheClosedException(
-          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+          "A cache has not yet been created.");
     } else {
       instance.getCancelCriterion().checkCancelInProgress(null);
       return instance;

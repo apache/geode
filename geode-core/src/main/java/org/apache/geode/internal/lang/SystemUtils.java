@@ -51,46 +51,6 @@ public class SystemUtils {
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
   /**
-   * Utility method to determine whether the installed Java Runtime Environment (JRE) is minimally
-   * at the specified, expected version. Typically, Java versions are of the form "1.6.0_31"... In
-   * the Azul JVM java.version does not have the "_NN" suffix. Instead it has the azul product
-   * version as the suffix like so "-zing_NN.NN.N.N". So on azul we instead use the
-   * "java.specification.version" sys prop and only compare the major and minor version numbers. All
-   * the stuff after the second "." in expectedVersion is ignored.
-   *
-   * @param expectedVersion an string value specifying the minimum expected version of the Java
-   *        Runtime.
-   * @return a boolean value indicating if the Java Runtime meets the expected version requirement.
-   * @see java.lang.System#getProperty(String) with "java.version".
-   */
-  public static boolean isJavaVersionAtLeast(String expectedVersion) {
-    String actualVersionDigits;
-    if (isAzulJVM()) {
-      actualVersionDigits =
-          StringUtils.getDigitsOnly(System.getProperty("java.specification.version"));
-      int dotIdx = expectedVersion.indexOf('.');
-      if (dotIdx != -1) {
-        dotIdx = expectedVersion.indexOf('.', dotIdx + 1);
-        if (dotIdx != -1) {
-          // strip off everything after the second dot.
-          expectedVersion = expectedVersion.substring(0, dotIdx);
-        }
-      }
-    } else {
-      actualVersionDigits = StringUtils.getDigitsOnly(System.getProperty("java.version"));
-    }
-
-    String expectedVersionDigits = StringUtils.rightPad(StringUtils.getDigitsOnly(expectedVersion),
-        actualVersionDigits.length(), '0');
-
-    try {
-      return Long.parseLong(actualVersionDigits) >= Long.parseLong(expectedVersionDigits);
-    } catch (NumberFormatException ignore) {
-      return false;
-    }
-  }
-
-  /**
    * Utility method to determine whether the Java application process is executing on the Apple JVM.
    *
    * @return a boolean value indicating whether the Java application process is executing and
@@ -302,10 +262,4 @@ public class SystemUtils {
     return LINE_SEPARATOR;
   }
 
-  /**
-   * Returns the value of {@code System.getProperty("java.version")}.
-   */
-  public static String getJavaVersion() {
-    return System.getProperty("java.version");
-  }
 }

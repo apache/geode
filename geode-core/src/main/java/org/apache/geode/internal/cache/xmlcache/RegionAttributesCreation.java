@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents {@link RegionAttributes} that are created declaratively. Notice that it implements the
@@ -220,7 +219,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    * code should be changed to use attrs' hasXXX methods to initialize the has booleans when
    * defaults is false.
    *
-   * @param attrs the attributes to initialize this guy with.
+   * @param attrs the attributes with which to initialize this region.
    * @param defaults true if <code>attrs</code> are defaults; false if they are not
    */
   public RegionAttributesCreation(CacheCreation cc, RegionAttributes attrs, boolean defaults) {
@@ -381,150 +380,129 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   public boolean sameAs(RegionAttributes other) {
     if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
-              .toLocalizedString());
+          "CacheListeners are not the same");
     }
     if (!equal(this.entryIdleTimeout, other.getEntryIdleTimeout())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_ENTRYIDLETIMEOUT_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "EntryIdleTimeout is not the same");
     }
     if (!equal(this.customEntryIdleTimeout, other.getCustomEntryIdleTimeout())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_CUSTOMENTRYIDLETIMEOUT_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "CustomEntryIdleTimeout is not the same");
     }
     if (!equal(this.entryTimeToLive, other.getEntryTimeToLive())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_ENTRYTIMETOLIVE_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "EntryTimeToLive is not the same");
     }
     if (!equal(this.customEntryTimeToLive, other.getCustomEntryTimeToLive())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_CUSTOMENTRYTIMETOLIVE_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "CustomEntryTimeToLive is not the same");
     }
     if (!equal(this.partitionAttributes, other.getPartitionAttributes())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_PARTITIONATTRIBUTES_ARE_NOT_THE_SAME_0_1
-              .toLocalizedString(new Object[] {this, other.getPartitionAttributes()}));
+          String.format("PartitionAttributes are not the same. this: %s, other: %s",
+              new Object[] {this, other.getPartitionAttributes()}));
     }
     if (!equal(this.membershipAttributes, other.getMembershipAttributes())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_MEMBERSHIP_ATTRIBUTES_ARE_NOT_THE_SAME
-              .toLocalizedString());
+          "Membership Attributes are not the same");
     }
     if (!equal(this.subscriptionAttributes, other.getSubscriptionAttributes())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_SUBSCRIPTION_ATTRIBUTES_ARE_NOT_THE_SAME
-              .toLocalizedString());
+          "Subscription Attributes are not the same");
     }
     if (!equal(this.evictionAttributes, other.getEvictionAttributes())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_EVICTION_ATTRIBUTES_ARE_NOT_THE_SAME_THIS_0_OTHER_1
-              .toLocalizedString(
-                  new Object[] {this.evictionAttributes, other.getEvictionAttributes()}));
+          String.format("Eviction Attributes are not the same: this: %s other: %s",
+
+              new Object[] {this.evictionAttributes, other.getEvictionAttributes()}));
     }
     if (this.diskStoreName == null) {
       // only compare the DWA, diskDirs and diskSizes when disk store is not configured
       if (!equal(this.diskWriteAttributes, other.getDiskWriteAttributes())) {
         throw new RuntimeException(
-            LocalizedStrings.RegionAttributesCreation_DISTWRITEATTRIBUTES_ARE_NOT_THE_SAME
-                .toLocalizedString());
+            "DistWriteAttributes are not the same");
       }
       if (!equal(this.diskDirs, other.getDiskDirs())) {
         throw new RuntimeException(
-            LocalizedStrings.RegionAttributesCreation_DISK_DIRS_ARE_NOT_THE_SAME
-                .toLocalizedString());
+            "Disk Dirs are not the same");
       }
       if (!equal(this.diskSizes, other.getDiskDirSizes())) {
         throw new RuntimeException(
-            LocalizedStrings.RegionAttributesCreation_DISK_DIR_SIZES_ARE_NOT_THE_SAME
-                .toLocalizedString());
+            "Disk Dir Sizes are not the same");
       }
     }
     if (!equal(this.diskStoreName, other.getDiskStoreName())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_DISKSTORE_IS_NOT_THE_SAME_THIS_0_OTHER_1
-              .toLocalizedString(new Object[] {this.diskStoreName, other.getDiskStoreName()}));
+          String.format("DiskStore is not the same: this: %s other: %s",
+              new Object[] {this.diskStoreName, other.getDiskStoreName()}));
     }
     if (this.isDiskSynchronous != other.isDiskSynchronous()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_DISKSYNCHRONOUS_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "Disk Synchronous write is not the same.");
     }
     if (this.dataPolicy != other.getDataPolicy()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_DATA_POLICIES_ARE_NOT_THE_SAME_THIS_0_OTHER_1
-              .toLocalizedString(new Object[] {this.getDataPolicy(), other.getDataPolicy()}));
+          String.format("Data Policies are not the same: this: %s other: %s",
+              new Object[] {this.getDataPolicy(), other.getDataPolicy()}));
     }
     if (this.earlyAck != other.getEarlyAck()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_EARLY_ACK_IS_NOT_THE_SAME.toLocalizedString());
+          "Early Ack is not the same");
     }
     if (this.enableSubscriptionConflation != other.getEnableSubscriptionConflation()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_ENABLE_SUBSCRIPTION_CONFLATION_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "Enable Subscription Conflation is not the same");
     }
     if (this.enableAsyncConflation != other.getEnableAsyncConflation()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_ENABLE_ASYNC_CONFLATION_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "Enable Async Conflation is not the same");
     }
     if (this.initialCapacity != other.getInitialCapacity()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_INITIAL_CAPACITY_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "initial Capacity is not the same");
     }
     if (!equal(this.keyConstraint, other.getKeyConstraint())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_KEY_CONSTRAINTS_ARE_NOT_THE_SAME
-              .toLocalizedString());
+          "Key Constraints are not the same");
     }
     if (!equal(this.valueConstraint, other.getValueConstraint())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_VALUE_CONSTRAINTS_ARE_NOT_THE_SAME
-              .toLocalizedString());
+          "Value Constraints are not the same");
     }
     if (this.loadFactor != other.getLoadFactor()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_LOAD_FACTORS_ARE_NOT_THE_SAME
-              .toLocalizedString());
+          "Load Factors are not the same");
     }
     if (!equal(this.regionIdleTimeout, other.getRegionIdleTimeout())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_REGION_IDLE_TIMEOUT_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "Region Idle Timeout is not the same");
     }
     if (!equal(this.scope, this.getScope())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_SCOPE_IS_NOT_THE_SAME.toLocalizedString());
+          "Scope is not the same");
     }
     if (this.statisticsEnabled != other.getStatisticsEnabled()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_STATISTICS_ENABLED_IS_NOT_THE_SAME_THIS_0_OTHER_1
-              .toLocalizedString(new Object[] {Boolean.valueOf(this.statisticsEnabled),
+          String.format("Statistics enabled is not the same: this: %s other: %s",
+              new Object[] {Boolean.valueOf(this.statisticsEnabled),
                   Boolean.valueOf(other.getStatisticsEnabled())}));
     }
     if (this.ignoreJTA != other.getIgnoreJTA()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_IGNORE_JTA_IS_NOT_THE_SAME.toLocalizedString());
+          "Ignore JTA is not the same");
     }
     if (this.concurrencyLevel != other.getConcurrencyLevel()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_CONCURRENCYLEVEL_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "ConcurrencyLevel is not the same");
     }
     if (this.concurrencyChecksEnabled != other.getConcurrencyChecksEnabled()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_CONCURRENCYCHECKSENABLED_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "ConcurrencyChecksEnabled is not the same");
     }
     if (this.indexMaintenanceSynchronous != other.getIndexMaintenanceSynchronous()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_INDEX_MAINTENANCE_SYNCHRONOUS_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "Index Maintenance Synchronous is not the same");
     }
     if (!equal(this.poolName, other.getPoolName())) {
       throw new RuntimeException(
@@ -543,8 +521,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     }
     if (this.cloningEnabled != other.getCloningEnabled()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1
-              .toLocalizedString(new Object[] {Boolean.valueOf(this.cloningEnabled),
+          String.format("Cloning enabled is not the same: this: %s other: %s",
+              new Object[] {Boolean.valueOf(this.cloningEnabled),
                   Boolean.valueOf(other.getCloningEnabled())}));
     }
     if (!equal(this.compressor, other.getCompressor())) {
@@ -552,8 +530,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     }
     if (this.offHeap != other.getOffHeap()) {
       throw new RuntimeException(
-          LocalizedStrings.RegionAttributesCreation_ENABLE_OFF_HEAP_MEMORY_IS_NOT_THE_SAME
-              .toLocalizedString());
+          "EnableOffHeapMemory is not the same");
     }
     return true;
   }
@@ -672,8 +649,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RegionAttributesCreation_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
+          String.format("No mirror type corresponds to data policy %s",
+              this.dataPolicy));
     }
   }
 
@@ -733,8 +710,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       return (CacheListener) this.cacheListeners.get(0);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RegionAttributesCreation_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
-              .toLocalizedString());
+          "more than one cache listener exists");
     }
   }
 
@@ -1011,8 +987,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     for (int i = 0; i < diskDirs.length; i++) {
       if (!diskDirs[i].isDirectory()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.RegionAttributesCreation__0_WAS_NOT_AN_EXISTING_DIRECTORY
-                .toLocalizedString(diskDirs[i]));
+            String.format("%s was not an existing directory.",
+                diskDirs[i]));
       }
     }
   }
@@ -1027,9 +1003,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     this.diskDirs = diskDirs;
     if (sizes.length != this.diskDirs.length) {
       throw new IllegalArgumentException(
-          LocalizedStrings.RegionAttributesCreation_NUMBER_OF_DISKSIZES_IS_0_WHICH_IS_NOT_EQUAL_TO_NUMBER_OF_DISK_DIRS_WHICH_IS_1
-              .toLocalizedString(
-                  new Object[] {Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)}));
+          String.format(
+              "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
+
+              new Object[] {Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)}));
     }
     verifyNonNegativeDirSize(sizes);
     this.diskSizes = sizes;
@@ -1040,8 +1017,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     for (int i = 0; i < sizes.length; i++) {
       if (sizes[i] < 0) {
         throw new IllegalArgumentException(
-            LocalizedStrings.RegionAttributesCreation_DIR_SIZE_CANNOT_BE_NEGATIVE_0
-                .toLocalizedString(Integer.valueOf(sizes[i])));
+            String.format("Dir size cannot be negative : %s",
+                Integer.valueOf(sizes[i])));
       }
     }
   }
@@ -1124,8 +1101,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     RegionAttributes parent = cache.getRegionAttributes(this.refid);
     if (parent == null) {
       throw new IllegalStateException(
-          LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0
-              .toLocalizedString(this.refid));
+          String.format("Cannot reference non-existing region attributes named %s",
+              this.refid));
     }
 
     final boolean parentIsUserSpecified = parent instanceof UserSpecifiedRegionAttributes;
@@ -1574,7 +1551,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   }
 
   public Region getRegion() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public void setEvictionAttributes(EvictionAttributes ea) {

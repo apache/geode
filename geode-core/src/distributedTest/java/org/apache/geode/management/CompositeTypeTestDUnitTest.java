@@ -14,20 +14,18 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 
 /**
@@ -75,7 +73,8 @@ public class CompositeTypeTestDUnitTest implements Serializable {
       ObjectName objectName =
           new ObjectName("GemFire:service=custom,type=composite,member=" + memberId);
 
-      await().until(() -> service.getMBeanInstance(objectName, CompositeTestMXBean.class) != null);
+      GeodeAwaitility.await()
+          .until(() -> service.getMBeanInstance(objectName, CompositeTestMXBean.class) != null);
 
       CompositeTestMXBean compositeTestMXBean =
           service.getMBeanInstance(objectName, CompositeTestMXBean.class);
@@ -100,7 +99,4 @@ public class CompositeTypeTestDUnitTest implements Serializable {
         () -> this.managementTestRule.getDistributedMember().getId());
   }
 
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
-  }
 }

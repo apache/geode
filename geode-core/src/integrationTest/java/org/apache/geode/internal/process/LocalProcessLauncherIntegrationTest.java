@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +30,6 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.process.io.EmptyFileWriter;
-import org.apache.geode.internal.process.io.IntegerFileWriter;
 import org.apache.geode.internal.process.lang.AvailablePid;
 import org.apache.geode.test.junit.Retry;
 import org.apache.geode.test.junit.rules.RetryRule;
@@ -80,7 +81,7 @@ public class LocalProcessLauncherIntegrationTest {
   public void existingPidFileThrowsFileAlreadyExistsException() throws Exception {
     // arrange
     System.setProperty(PROPERTY_IGNORE_IS_PID_ALIVE, "true");
-    new IntegerFileWriter(pidFile).writeToFile(fakePid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(fakePid), Charset.defaultCharset());
 
     // act/assert
     assertThatThrownBy(() -> new LocalProcessLauncher(pidFile, false))
@@ -90,7 +91,7 @@ public class LocalProcessLauncherIntegrationTest {
   @Test
   public void overwritesPidFileIfForce() throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile(actualPid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(actualPid), Charset.defaultCharset());
 
     // act
     new LocalProcessLauncher(pidFile, true);
@@ -103,7 +104,7 @@ public class LocalProcessLauncherIntegrationTest {
   @Retry(3)
   public void overwritesPidFileIfOtherPidIsNotAlive() throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile(fakePid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(fakePid), Charset.defaultCharset());
 
     // act
     new LocalProcessLauncher(pidFile, false);

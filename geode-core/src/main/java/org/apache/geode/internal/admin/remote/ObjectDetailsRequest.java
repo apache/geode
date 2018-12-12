@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular app vm to request the value, stats, and attributes of a
@@ -46,7 +45,7 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   }
 
   public ObjectDetailsRequest() {
-    friendlyName = LocalizedStrings.ObjectDetailsRequest_INSPECT_CACHED_OBJECT.toLocalizedString();
+    friendlyName = "Inspect cached object";
   }
 
   public synchronized void cancel() {

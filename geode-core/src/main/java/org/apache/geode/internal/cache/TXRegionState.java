@@ -32,7 +32,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -65,13 +64,11 @@ public class TXRegionState {
     if (r.getPersistBackup() && !r.isMetaRegionWithTransactions()
         && !TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.TXRegionState_OPERATIONS_ON_PERSISTBACKUP_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
-              .toLocalizedString());
+          "Operations on persist-backup regions are not allowed because this thread has an active transaction");
     }
     if (r.getScope().isGlobal()) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.TXRegionState_OPERATIONS_ON_GLOBAL_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
-              .toLocalizedString());
+          "Operations on global regions are not allowed because this thread has an active transaction");
     }
     this.entryMods = new HashMap<Object, TXEntryState>();
     this.uaMods = null;
@@ -603,8 +600,9 @@ public class TXRegionState {
     int entryModsSize = this.entryMods.size();
     int entryEventListSize = entryEventList.size();
     if (entryModsSize != entryEventListSize) {
-      throw new UnsupportedOperationInTransactionException(LocalizedStrings.DISTTX_TX_EXPECTED
-          .toLocalizedString("entry size of " + entryModsSize + " for region " + regionFullPath,
+      throw new UnsupportedOperationInTransactionException(
+          String.format("Expected %s during a distributed transaction but got %s",
+              "entry size of " + entryModsSize + " for region " + regionFullPath,
               entryEventListSize));
     }
 

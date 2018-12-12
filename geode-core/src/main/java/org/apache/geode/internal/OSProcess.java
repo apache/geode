@@ -40,10 +40,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.TeePrintStream;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process
@@ -207,8 +206,8 @@ public class OSProcess {
     }
     File cmd = new File(cmdarray[0]);
     if (!cmd.exists()) {
-      throw new IOException(LocalizedStrings.OSProcess_THE_EXECUTABLE_0_DOES_NOT_EXIST
-          .toLocalizedString(cmd.getPath()));
+      throw new IOException(String.format("the executable %s does not exist",
+          cmd.getPath()));
     }
     SecurityManager security = System.getSecurityManager();
     if (security != null) {
@@ -217,8 +216,8 @@ public class OSProcess {
     if (workdir != null && !workdir.isDirectory()) {
       String curDir = new File("").getAbsolutePath();
       System.out.println(
-          LocalizedStrings.OSProcess_WARNING_0_IS_NOT_A_DIRECTORY_DEFAULTING_TO_CURRENT_DIRECTORY_1
-              .toLocalizedString(new Object[] {workdir, curDir}));
+          String.format("WARNING: %s is not a directory. Defaulting to current directory %s.",
+              new Object[] {workdir, curDir}));
       workdir = null;
     }
     if (workdir == null) {
@@ -235,19 +234,19 @@ public class OSProcess {
     if (logfile.exists()) {
       // it already exists so make sure its a file and can be written
       if (!logfile.isFile()) {
-        throw new IOException(LocalizedStrings.OSProcess_THE_LOG_FILE_0_WAS_NOT_A_NORMAL_FILE
-            .toLocalizedString(logfile.getPath()));
+        throw new IOException(String.format("The log file %s was not a normal file.",
+            logfile.getPath()));
       }
       if (!logfile.canWrite()) {
-        throw new IOException(LocalizedStrings.OSProcess_NEED_WRITE_ACCESS_FOR_THE_LOG_FILE_0
-            .toLocalizedString(logfile.getPath()));
+        throw new IOException(String.format("Need write access for the log file %s.",
+            logfile.getPath()));
       }
     } else {
       try {
         logfile.createNewFile();
       } catch (IOException io) {
-        throw new IOException(LocalizedStrings.OSProcess_COULD_NOT_CREATE_LOG_FILE_0_BECAUSE_1
-            .toLocalizedString(new Object[] {logfile.getPath(), io.getMessage()}));
+        throw new IOException(String.format("Could not create log file %s because: %s.",
+            new Object[] {logfile.getPath(), io.getMessage()}));
       }
     }
     String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
@@ -369,8 +368,8 @@ public class OSProcess {
   private static void checkPid(int pid) {
     if (pid <= 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.OSProcess_SHOULD_NOT_SEND_A_SIGNAL_TO_PID_0
-              .toLocalizedString(Integer.valueOf(pid)));
+          String.format("Should not send a signal to pid %s",
+              Integer.valueOf(pid)));
     }
   }
 
@@ -384,7 +383,7 @@ public class OSProcess {
   public static boolean shutdown(int pid) {
     if (pureMode) {
       throw new RuntimeException(
-          LocalizedStrings.OSProcess_SHUTDOWN_NOT_ALLOWED_IN_PURE_JAVA_MODE.toLocalizedString());
+          "shutdown not allowed in pure java mode");
     } else {
       checkPid(pid);
       return _shutdown(pid);
@@ -404,7 +403,7 @@ public class OSProcess {
   public static boolean kill(int pid) {
     if (pureMode) {
       throw new RuntimeException(
-          LocalizedStrings.OSProcess_KILL_NOT_ALLOWED_IN_PURE_JAVA_MODE.toLocalizedString());
+          "kill not allowed in pure java mode");
     } else {
       checkPid(pid);
       return _kill(pid);
@@ -563,7 +562,7 @@ public class OSProcess {
   public static boolean exists(int pid) {
     if (pureMode) {
       throw new RuntimeException(
-          LocalizedStrings.OSProcess_EXISTS_NOT_ALLOWED_IN_PURE_JAVA_MODE.toLocalizedString());
+          "exists not allowed in pure java mode");
     }
     checkPid(pid);
 
@@ -595,8 +594,7 @@ public class OSProcess {
   public static void waitForPidToExit(int pid) {
     if (pureMode) {
       throw new RuntimeException(
-          LocalizedStrings.OSProcess_WAITFORPIDTOEXIT_NOT_ALLOWED_IN_PURE_JAVA_MODE
-              .toLocalizedString());
+          "waitForPidToExit not allowed in pure java mode");
     }
     checkPid(pid);
     waitForPid(pid);
@@ -610,8 +608,7 @@ public class OSProcess {
   public static boolean setCurrentDirectory(File curDir) {
     if (pureMode) {
       throw new RuntimeException(
-          LocalizedStrings.OSProcess_SETCURRENTDIRECTORY_NOT_ALLOWED_IN_PURE_JAVA_MODE
-              .toLocalizedString());
+          "setCurrentDirectory not allowed in pure java mode");
     }
     return jniSetCurDir(curDir.getAbsolutePath());
   }
@@ -667,56 +664,51 @@ public class OSProcess {
     } else {
       if (reapPid(-1)) {
         pids = Collections.synchronizedSet(new HashSet());
-        ThreadGroup group = LoggingThreadGroup
-            .createThreadGroup(LocalizedStrings.OSProcess_REAPER_THREAD.toLocalizedString());
-        reaperThread = new Thread(group, new Runnable() {
-          public void run() {
-            synchronized (myPid) {
-              myPid[0] = getProcessId();
-              reaperStarted = true;
-            }
-            String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
-            int secondsToSleep = (1000 * 60) * 1; // one minute
-            if (trace != null && trace.length() > 0) {
-              secondsToSleep = 1000; // every second
-            }
-            // reap all the pids we have every once in a while
-            while (true) {
-              SystemFailure.checkFailure();
-              try {
-                Iterator it = pids.iterator();
-                while (it.hasNext()) {
-                  Object o = it.next();
-                  int pid = ((Integer) o).intValue();
-                  if (reapPid(pid)) {
-                    try {
-                      it.remove();
-                      if (trace != null && trace.length() > 0) {
-                        System.out.println("reaped pid: " + pid);
-                      }
-                    } catch (Exception e) {
-                      // make sure and remove it since it was
-                      // reaped.
-                      pids.remove(o);
-                      if (trace != null && trace.length() > 0) {
-                        System.out.println("reaped pid: " + pid);
-                      }
-                      throw e;
+        reaperThread = new LoggingThread("osprocess reaper", () -> {
+          synchronized (myPid) {
+            myPid[0] = getProcessId();
+            reaperStarted = true;
+          }
+          String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
+          int secondsToSleep = (1000 * 60) * 1; // one minute
+          if (trace != null && trace.length() > 0) {
+            secondsToSleep = 1000; // every second
+          }
+          // reap all the pids we have every once in a while
+          while (true) {
+            SystemFailure.checkFailure();
+            try {
+              Iterator it = pids.iterator();
+              while (it.hasNext()) {
+                Object o = it.next();
+                int pid = ((Integer) o).intValue();
+                if (reapPid(pid)) {
+                  try {
+                    it.remove();
+                    if (trace != null && trace.length() > 0) {
+                      System.out.println("reaped pid: " + pid);
                     }
+                  } catch (Exception e) {
+                    // make sure and remove it since it was
+                    // reaped.
+                    pids.remove(o);
+                    if (trace != null && trace.length() > 0) {
+                      System.out.println("reaped pid: " + pid);
+                    }
+                    throw e;
                   }
                 }
-                Thread.sleep(secondsToSleep);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-              } catch (Exception e) {
-                // e.printStackTrace(); // DEBUG
-                // ignore
               }
+              Thread.sleep(secondsToSleep);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
+            } catch (Exception e) {
+              // e.printStackTrace(); // DEBUG
+              // ignore
             }
           }
-        }, "osprocess reaper");
-        reaperThread.setDaemon(true);
+        });
         reaperThread.start();
       } else {
         // platform does not need a reaper thread,

@@ -33,7 +33,7 @@ public class ConnectorsDistributedSystemService implements DistributedSystemServ
   }
 
   @Override
-  public Collection<String> getSerializationWhitelist() throws IOException {
+  public Collection<String> getSerializationAcceptlist() throws IOException {
     URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
         "sanctioned-geode-connectors-serializables.txt");
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);
