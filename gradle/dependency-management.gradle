@@ -35,11 +35,14 @@ project.ext.setProperty('protobuf-java.version', '3.6.1')
 
 // These version numbers are used in testing various versions of tomcat and are consumed explicitly
 // in will be called explicitly in the relevant extensions module, and respective configurations
-// in geode-assembly.gradle.
+// in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to place nicely when
+// specifying @zip in a dependency, in the manner in which we consume them in custom configurations.
+// This would possibly be corrected if they were proper source sets.
 project.ext.setProperty('tomcat6.version', '6.0.37')
 project.ext.setProperty('tomcat7.version', '7.0.90')
 project.ext.setProperty('tomcat8.version', '8.5.34')
 project.ext.setProperty('tomcat9.version', '9.0.12')
+project.ext.setProperty('jetty.version', '9.4.12.v20180830')
 
 
 allprojects {
@@ -143,7 +146,6 @@ allprojects {
       dependency('org.awaitility:awaitility:3.1.2')
       dependency('org.bouncycastle:bcpkix-jdk15on:1.60')
       dependency('org.codehaus.cargo:cargo-core-uberjar:1.6.3')
-      dependency('org.eclipse.jetty:jetty-distribution:9.4.12.v20180830@zip') // required as @zip
       dependencySet(group: 'org.eclipse.jetty', version: '9.4.12.v20180830') {
         entry 'jetty-http'
         entry 'jetty-server'

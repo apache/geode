@@ -218,8 +218,8 @@ dependencies {
   webServerTomcat7('org.apache.tomcat:tomcat:' + project.'tomcat7.version' + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + project.'tomcat8.version' + '@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + project.'tomcat9.version' + '@zip')
-  webServerJetty('org.eclipse.jetty:jetty-distribution@zip')
-  
+  webServerJetty('org.eclipse.jetty:jetty-distribution:' + project.'jetty.version' + '@zip')
+
   gfshDependencies ('org.springframework:spring-web'){
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
