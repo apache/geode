@@ -14,6 +14,10 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,6 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Before;
@@ -33,6 +39,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -41,6 +48,11 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 public class DescribeMappingFunctionTest {
 
   private static final String EXISTING_MAPPING = "existingMapping";
+  private static final String TEST_REGION = "testRegion";
+  private static final String TEST_PDX = "testPdx";
+  private static final String TEST_TABLE = "testTableName";
+  private static final String TEST_DATASOURCE = "testDataSource";
+  private static final String TEST_SYNCHRONOUS = "true";
 
   private DescribeMappingFunction function;
   private JdbcConnectorService service;
@@ -67,6 +79,10 @@ public class DescribeMappingFunctionTest {
     when(service.getMappingForRegion(EXISTING_MAPPING)).thenReturn(regionMapping);
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
+    when(regionMapping.getRegionName()).thenReturn(TEST_REGION);
+    when(regionMapping.getDataSourceName()).thenReturn(TEST_DATASOURCE);
+    when(regionMapping.getTableName()).thenReturn(TEST_TABLE);
+    when(regionMapping.getPdxName()).thenReturn(TEST_PDX);
   }
 
   @Test
@@ -92,9 +108,17 @@ public class DescribeMappingFunctionTest {
 
     function.execute(context);
 
+    Map<String, String> expectedAttributes = new HashMap<>();
+    expectedAttributes.put(REGION_NAME, TEST_REGION);
+    expectedAttributes.put(PDX_NAME, TEST_PDX);
+    expectedAttributes.put(TABLE_NAME, TEST_TABLE);
+    expectedAttributes.put(DATA_SOURCE_NAME, TEST_DATASOURCE);
+    // expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
+
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getResultObject()).isSameAs(regionMapping);
+    DescribeMappingResult result = (DescribeMappingResult) argument.getValue().getResultObject();
+    assertThat(result.getAttributeMap()).isEqualTo(expectedAttributes);
   }
 
   @Test

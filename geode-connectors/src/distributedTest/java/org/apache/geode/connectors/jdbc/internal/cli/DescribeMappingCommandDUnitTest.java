@@ -15,13 +15,11 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -51,7 +49,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @RunWith(JUnitParamsRunner.class)
 public class DescribeMappingCommandDUnitTest implements Serializable {
 
-  private static final String REGION_NAME = "testRegion";
+  private static final String TEST_REGION = "testRegion";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -72,7 +70,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void describesExistingMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
@@ -82,26 +80,25 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
         .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "testTable");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__ID_NAME, "myId");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "testTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(DESCRIBE_MAPPING__REGION_NAME,
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
         regionName);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME,
+    commandResultAssert.containsKeyValuePair(REGION_NAME,
         convertRegionPathToName(regionName));
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__ID_NAME, "myId");
+
+    commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
+    commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
   }
 
   @Test
@@ -109,11 +106,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+    gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=REPLICATE")
         .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_MAPPING)
-        .addOption(DESCRIBE_MAPPING__REGION_NAME, "nonExisting");
+        .addOption(REGION_NAME, "nonExisting");
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
@@ -130,19 +127,18 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0, properties);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+    gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=REPLICATE")
         .statusIsSuccess();
 
     server.invoke(() -> createRegionMapping());
 
     CommandResultAssert commandResultAssert =
-        gfsh.executeAndAssertThat(DESCRIBE_MAPPING + " --region=" + REGION_NAME).statusIsSuccess();
+        gfsh.executeAndAssertThat(DESCRIBE_MAPPING + " --region=" + TEST_REGION).statusIsSuccess();
 
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME, REGION_NAME);
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    commandResultAssert.containsKeyValuePair(CREATE_MAPPING__ID_NAME, "myId");
+    commandResultAssert.containsKeyValuePair(REGION_NAME, TEST_REGION);
+    commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
+    commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
   }
 
   private void createRegionMapping() throws RegionMappingExistsException {

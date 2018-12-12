@@ -14,8 +14,18 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
@@ -26,6 +36,19 @@ public class DescribeMappingFunction extends CliFunction<String> {
     JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
 
     return new CliFunctionResult(context.getMemberName(),
-        service.getMappingForRegion(context.getArguments()));
+        getResult(service.getMappingForRegion(context.getArguments())));
+  }
+
+  private DescribeMappingResult getResult(RegionMapping mapping) {
+    if (mapping == null) {
+      return null;
+    }
+    Map<String, String> attributes = new HashMap<>();
+    attributes.put(REGION_NAME, mapping.getRegionName());
+    attributes.put(DATA_SOURCE_NAME, mapping.getDataSourceName());
+    attributes.put(TABLE_NAME, mapping.getTableName());
+    attributes.put(PDX_NAME, mapping.getPdxName());
+
+    return new DescribeMappingResult(attributes);
   }
 }
