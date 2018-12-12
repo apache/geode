@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -122,5 +123,10 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
   public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
     CacheElement.removeElement(config.getJndiBindings(), (String) element);
     return true;
+  }
+
+  @CliAvailabilityIndicator({DESTROY_DATA_SOURCE})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 }
