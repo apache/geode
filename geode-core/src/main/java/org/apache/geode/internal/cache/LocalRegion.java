@@ -11877,7 +11877,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         clientEvent.setVersionTag(event.getVersionTag());
         clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
       } else {
-        assert (value instanceof byte[]);
+        if (value != null) {
+          assert (value instanceof byte[]);
+        }
         if (event.isPossibleDuplicate()
             && bridgePutIfAbsentResultHasSameValue((byte[]) value, isObject, oldValue)) {
           // result is possibly due to the retry
