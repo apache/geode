@@ -143,6 +143,9 @@ public class AvailablePortHelper {
     int i = 0;
     while (i < count) {
       int port = getUniquePort(false, AvailablePort.SOCKET);
+      // This logic is from AvailablePort.getRandomAvailablePortWithMod which this method used to
+      // call. It seems like the check should be (port % FOO == site) for some FOO, but given how
+      // widely this is used, it's not at all clear that no one's depending on the current behavior.
       while (port % site != 0) {
         port = getUniquePort(false, AvailablePort.SOCKET);
       }
