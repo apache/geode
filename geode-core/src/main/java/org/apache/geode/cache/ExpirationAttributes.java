@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.configuration.ExpirationAttributesType;
 import org.apache.geode.internal.InternalDataSerializer;
 
 /**
@@ -157,14 +156,6 @@ public class ExpirationAttributes implements DataSerializable {
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.timeout);
     DataSerializer.writeObject(this.action, out);
-  }
-
-  public ExpirationAttributesType toConfigType() {
-    ExpirationAttributesType t = new ExpirationAttributesType();
-    t.setTimeout(Integer.toString(this.timeout));
-    t.setAction(this.action.toXmlString());
-
-    return t;
   }
 
   public boolean isDefault() {

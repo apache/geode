@@ -36,7 +36,6 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.ExpirationAttributesType;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -175,7 +174,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(attr.isStatisticsEnabled()).isTrue();
       assertThat(attr.isEnableAsyncConflation()).isTrue();
 
-      ExpirationAttributesType entryIdleTimeExp = attr.getEntryIdleTime().getExpirationAttributes();
+      RegionAttributesType.ExpirationAttributesType entryIdleTimeExp = attr.getEntryIdleTime();
       assertThat(entryIdleTimeExp.getTimeout()).isEqualTo("100");
     });
 
@@ -225,7 +224,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(attr.isStatisticsEnabled()).isTrue();
       assertThat(attr.isEnableAsyncConflation()).isTrue();
 
-      ExpirationAttributesType entryIdleTimeExp = attr.getEntryIdleTime().getExpirationAttributes();
+      RegionAttributesType.ExpirationAttributesType entryIdleTimeExp = attr.getEntryIdleTime();
       assertThat(entryIdleTimeExp.getTimeout()).isEqualTo("100");
     });
   }
@@ -318,18 +317,18 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
             .describedAs("Expecting subscription conflation to be enabled for region "
                 + name)
             .isTrue();
-        assertThat(attr.getEntryIdleTime().getExpirationAttributes().getTimeout())
+        assertThat(attr.getEntryIdleTime().getTimeout())
             .describedAs("Entry idle time timeout should be 100 for region " + name)
             .isEqualTo("100");
-        assertThat(attr.getEntryIdleTime().getExpirationAttributes().getAction())
+        assertThat(attr.getEntryIdleTime().getAction())
             .describedAs("Entry idle time expiration action should be local-destroy for region "
                 + name)
             .isEqualTo("local-destroy");
-        assertThat(attr.getEntryTimeToLive().getExpirationAttributes().getTimeout())
+        assertThat(attr.getEntryTimeToLive().getTimeout())
             .describedAs("Expecting entry time to live expiration to be 200 for region "
                 + name)
             .isEqualTo("200");
-        assertThat(attr.getEntryTimeToLive().getExpirationAttributes().getAction())
+        assertThat(attr.getEntryTimeToLive().getAction())
             .describedAs("Entry time to live expiration action should be local-destroy "
                 + "for region " + name)
             .isEqualTo("local-destroy");
@@ -343,19 +342,19 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         assertThat(attr.isOffHeap())
             .describedAs("Expected off heap to be false for region " + name)
             .isFalse();
-        assertThat(attr.getRegionIdleTime().getExpirationAttributes().getTimeout())
+        assertThat(attr.getRegionIdleTime().getTimeout())
             .describedAs("Expecting region idle time expiration to be 100 for region "
                 + name)
             .isEqualTo("100");
-        assertThat(attr.getRegionIdleTime().getExpirationAttributes().getAction())
+        assertThat(attr.getRegionIdleTime().getAction())
             .describedAs("Expecting region idle time expiration action to be "
                 + "local-destroy for region " + name)
             .isEqualTo("local-destroy");
-        assertThat(attr.getRegionTimeToLive().getExpirationAttributes().getTimeout())
+        assertThat(attr.getRegionTimeToLive().getTimeout())
             .describedAs("Expecting region idle time timeout to be 200 for "
                 + "region " + name)
             .isEqualTo("200");
-        assertThat(attr.getRegionTimeToLive().getExpirationAttributes().getAction())
+        assertThat(attr.getRegionTimeToLive().getAction())
             .describedAs("Expecting region ttl action to be local-destroy for "
                 + "region " + name)
             .isEqualTo("local-destroy");
@@ -739,7 +738,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regionConfig.getName()).isEqualTo(regionName);
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       RegionAttributesType attr = regionConfig.getRegionAttributes();
-      assertThat(attr.getEntryIdleTime().getExpirationAttributes().getCustomExpiry().toString())
+      assertThat(attr.getEntryIdleTime().getCustomExpiry().toString())
           .describedAs("Entry expiration custom expiration should be DummyCustomExpiry")
           .isEqualTo(DummyCustomExpiry.class.getName());
     });

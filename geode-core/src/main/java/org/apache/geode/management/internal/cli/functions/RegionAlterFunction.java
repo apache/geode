@@ -30,7 +30,6 @@ import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -315,47 +314,6 @@ public class RegionAlterFunction implements InternalFunction {
     } catch (PRLocallyDestroyedException e) {
       throw new IllegalStateException("Partitioned Region not found registered", e);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <K> Class<K> forName(String classToLoadName, String neededFor) {
-    Class<K> loadedClass = null;
-    try {
-      // Set Constraints
-      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
-      if (classToLoadName != null && !classToLoadName.isEmpty()) {
-        loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(
-          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              classToLoadName, neededFor),
-          e);
-    } catch (ClassCastException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          classToLoadName, neededFor), e);
-    }
-
-    return loadedClass;
-  }
-
-  private static <K> K newInstance(Class<K> klass, String neededFor) {
-    K instance = null;
-    try {
-      instance = klass.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
-          neededFor), e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(
-          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-              klass, neededFor),
-          e);
-    }
-
-    return instance;
   }
 
   @Override
