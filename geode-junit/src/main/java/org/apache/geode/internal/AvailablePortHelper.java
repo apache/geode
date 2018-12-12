@@ -17,16 +17,12 @@ package org.apache.geode.internal;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getAddress;
-import static org.apache.geode.internal.AvailablePort.isPortKeepable;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
 
@@ -38,6 +34,26 @@ import org.apache.geode.internal.AvailablePort.Keeper;
  * further calls to getRandomAvailablePort.
  */
 public class AvailablePortHelper {
+  private final AtomicInteger currentMembershipPort;
+  private final AtomicInteger currentAvailablePort;
+
+  // Singleton object is only used to track the current ports
+  private static AvailablePortHelper singleton = new AvailablePortHelper();
+
+  AvailablePortHelper() {
+    Random rand;
+    boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
+    if (fast)
+      rand = new Random();
+    else
+      rand = new java.security.SecureRandom();
+    currentMembershipPort = new AtomicInteger(
+        rand.nextInt(DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0])
+            + DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+    currentAvailablePort =
+        new AtomicInteger(rand.nextInt(AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND)
+            + AVAILABLE_PORTS_LOWER_BOUND);
+  }
 
   /**
    * Returns array of unique randomly available tcp ports of specified count.
@@ -73,8 +89,7 @@ public class AvailablePortHelper {
       boolean useMembershipPortRange) {
     List<Keeper> result = new ArrayList<Keeper>();
     while (result.size() < count) {
-      result.add(AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET,
-          getAddress(AvailablePort.SOCKET), useMembershipPortRange));
+      result.add(getUniquePortKeeper(useMembershipPortRange, AvailablePort.SOCKET));
     }
     return result;
   }
@@ -85,7 +100,9 @@ public class AvailablePortHelper {
 
   public static int[] getRandomAvailableTCPPortRange(final int count,
       final boolean useMembershipPortRange) {
-    List<Keeper> list = getRandomAvailableTCPPortRangeKeepers(count, useMembershipPortRange);
+    List<Keeper> list =
+        getUniquePortRangeKeepers(useMembershipPortRange, AvailablePort.SOCKET,
+            count);
     int[] ports = new int[list.size()];
     int i = 0;
     for (Keeper k : list) {
@@ -102,33 +119,8 @@ public class AvailablePortHelper {
 
   public static List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count,
       final boolean useMembershipPortRange) {
-    List<Keeper> result = new ArrayList<>();
-
-    InetAddress addr = getAddress(AvailablePort.SOCKET);
-
-    int lowerBound =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
-
-    int upperBound =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
-
-    for (int i = lowerBound; i <= upperBound; i++) {
-      for (int j = 0; j < count && ((i + j) <= upperBound); j++) {
-        int port = i + j;
-        Keeper keeper = isPortKeepable(port, SOCKET, addr);
-        if (keeper == null) {
-          releaseKeepers(result);
-          result.clear();
-          break;
-        }
-        result.add(keeper);
-        if (result.size() == count) {
-          return result;
-        }
-      }
-    }
-
-    return result;
+    return getUniquePortRangeKeepers(useMembershipPortRange, AvailablePort.SOCKET,
+        count);
   }
 
   private static void releaseKeepers(List<Keeper> keepers) {
@@ -147,16 +139,18 @@ public class AvailablePortHelper {
       site = Integer.parseInt(hostName.substring(4));
     }
 
-    Set set = new HashSet();
-    while (set.size() < count) {
-      int port = AvailablePort.getRandomAvailablePortWithMod(AvailablePort.SOCKET, site);
-      set.add(new Integer(port));
-    }
-    int[] ports = new int[set.size()];
+    int[] ports = new int[count];
     int i = 0;
-    for (Iterator iter = set.iterator(); iter.hasNext();) {
-      ports[i] = ((Integer) iter.next()).intValue();
-      i++;
+    while (i < count) {
+      int port = getUniquePort(false, AvailablePort.SOCKET);
+      // This logic is from AvailablePort.getRandomAvailablePortWithMod which this method used to
+      // call. It seems like the check should be (port % FOO == site) for some FOO, but given how
+      // widely this is used, it's not at all clear that no one's depending on the current behavior.
+      while (port % site != 0) {
+        port = getUniquePort(false, AvailablePort.SOCKET);
+      }
+      ports[i] = port;
+      ++i;
     }
     return ports;
   }
@@ -166,15 +160,7 @@ public class AvailablePortHelper {
    * Returns array of unique randomly available tcp ports of specified count.
    */
   public static int getRandomAvailablePortForDUnitSite() {
-    int site = 1;
-    String hostName = System.getProperty("hostName");
-    if (hostName != null && hostName.startsWith("host")) {
-      if (hostName.length() > 4) {
-        site = Integer.parseInt(hostName.substring(4));
-      }
-    }
-    int port = AvailablePort.getRandomAvailablePortWithMod(AvailablePort.SOCKET, site);
-    return port;
+    return getRandomAvailableTCPPortsForDUnitSite(1)[0];
   }
 
 
@@ -189,16 +175,11 @@ public class AvailablePortHelper {
    * Returns array of unique randomly available udp ports of specified count.
    */
   public static int[] getRandomAvailableUDPPorts(int count) {
-    Set set = new HashSet();
-    while (set.size() < count) {
-      int port = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
-      set.add(new Integer(port));
-    }
-    int[] ports = new int[set.size()];
+    int[] ports = new int[count];
     int i = 0;
-    for (Iterator iter = set.iterator(); iter.hasNext();) {
-      ports[i] = ((Integer) iter.next()).intValue();
-      i++;
+    while (i < count) {
+      ports[i] = getUniquePort(false, AvailablePort.MULTICAST);
+      ++i;
     }
     return ports;
   }
@@ -210,4 +191,100 @@ public class AvailablePortHelper {
     return getRandomAvailableUDPPorts(1)[0];
   }
 
+  public static void initializeUniquePortRange(int rangeNumber) {
+    if (rangeNumber < 0) {
+      throw new RuntimeException("Range number cannot be negative.");
+    }
+    singleton.currentMembershipPort.set(DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+    singleton.currentAvailablePort.set(AVAILABLE_PORTS_LOWER_BOUND);
+    if (rangeNumber != 0) {
+      // This code will generate starting points such that range 0 starts at the lowest possible
+      // value, range 1 starts halfway through the total available ports, 2 starts 1/4 of the way
+      // through, then further ranges are 3/4, 1/8, 3/8, 5/8, 7/8, 1/16, etc.
+
+      // This spaces the ranges out as much as possible for low numbers of ranges, while also making
+      // it possible to grow the number of ranges without bound (within some reasonable fraction of
+      // the number of available ports)
+      int membershipRange = DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+      int availableRange = AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND;
+      int numChunks = Integer.highestOneBit(rangeNumber) << 1;
+      int chunkNumber = 2 * (rangeNumber - Integer.highestOneBit(rangeNumber)) + 1;
+
+      singleton.currentMembershipPort.addAndGet(chunkNumber * membershipRange / numChunks);
+      singleton.currentAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
+    }
+  }
+
+  /**
+   * Get keeper objects for the next unused, consecutive 'rangeSize' ports on this machine.
+   *
+   * @param useMembershipPortRange - if true, select ports from the
+   *        DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE
+   * @param protocol - either AvailablePort.SOCKET (TCP) or AvailablePort.MULTICAST (UDP)
+   * @param rangeSize - number of contiguous ports needed
+   * @return Keeper objects associated with a range of ports satisfying the request
+   */
+  private static List<Keeper> getUniquePortRangeKeepers(boolean useMembershipPortRange,
+      int protocol, int rangeSize) {
+    AtomicInteger targetRange =
+        useMembershipPortRange ? singleton.currentMembershipPort : singleton.currentAvailablePort;
+    int targetBound =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+
+    while (true) {
+      int uniquePort = targetRange.getAndAdd(rangeSize);
+      if (uniquePort + rangeSize > targetBound) {
+        targetRange.set(useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0]
+            : AVAILABLE_PORTS_LOWER_BOUND);
+        continue;
+      }
+      List<Keeper> keepers = new ArrayList<>();
+      int validPortsFound = 0;
+
+      while (validPortsFound < rangeSize) {
+        Keeper testKeeper =
+            AvailablePort.isPortKeepable(uniquePort++, protocol,
+                getAddress(protocol));
+        if (testKeeper == null) {
+          break;
+        }
+
+        keepers.add(testKeeper);
+        ++validPortsFound;
+      }
+
+      if (validPortsFound == rangeSize) {
+        return keepers;
+      }
+
+      releaseKeepers(keepers);
+    }
+  }
+
+  private static Keeper getUniquePortKeeper(boolean useMembershipPortRange, int protocol) {
+    return getUniquePortRangeKeepers(useMembershipPortRange, protocol, 1).get(0);
+  }
+
+  /**
+   * Get the next available port on this machine.
+   */
+  private static int getUniquePort(boolean useMembershipPortRange, int protocol) {
+    AtomicInteger targetRange =
+        useMembershipPortRange ? singleton.currentMembershipPort : singleton.currentAvailablePort;
+    int targetBound =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+
+    while (true) {
+      int uniquePort = targetRange.getAndIncrement();
+      if (uniquePort > targetBound) {
+        targetRange.set(useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0]
+            : AVAILABLE_PORTS_LOWER_BOUND);
+        continue;
+      }
+
+      if (AvailablePort.isPortAvailable(uniquePort++, protocol, getAddress(protocol))) {
+        return uniquePort;
+      }
+    }
+  }
 }

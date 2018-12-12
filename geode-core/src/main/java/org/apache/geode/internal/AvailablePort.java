@@ -110,6 +110,7 @@ public class AvailablePort {
         InetAddress localHost = SocketCreator.getLocalHost();
         socket.setInterface(localHost);
         socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
+        socket.setReuseAddress(true);
         byte[] buffer = new byte[4];
         buffer[0] = (byte) 'p';
         buffer[1] = (byte) 'i';
