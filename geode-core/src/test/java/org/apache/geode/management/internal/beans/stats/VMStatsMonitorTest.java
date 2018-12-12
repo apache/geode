@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.beans.stats;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,47 +25,30 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 @Category(StatisticsTest.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest(MBeanJMXAdapter.class)
 public class VMStatsMonitorTest {
   @Rule
   public TestName testName = new TestName();
 
   private VMStatsMonitor vmStatsMonitor;
 
-  @Before
-  public void setUp() {
-    PowerMockito.mockStatic(MBeanJMXAdapter.class);
-  }
-
   @Test
   public void statisticInitialValueShouldBeZeroWhenTheProcessCpuTimeJmxAttributeIsAvailable() {
-    when(MBeanJMXAdapter.isAttributeAvailable(anyString(), anyString())).thenReturn(true);
-    vmStatsMonitor = new VMStatsMonitor(testName.getMethodName());
+    vmStatsMonitor = new VMStatsMonitor(testName.getMethodName(), true);
     assertThat(vmStatsMonitor).isNotNull();
     assertThat(vmStatsMonitor.getCpuUsage()).isEqualTo(0);
   }
 
   @Test
   public void statisticInitialValueShouldBeUndefinedWhenTheProcessCpuTimeJmxAttributeIsNotAvailable() {
-    when(MBeanJMXAdapter.isAttributeAvailable(anyString(), anyString())).thenReturn(false);
-    vmStatsMonitor = new VMStatsMonitor(testName.getMethodName());
+    vmStatsMonitor = new VMStatsMonitor(testName.getMethodName(), false);
     assertThat(vmStatsMonitor).isNotNull();
     assertThat(vmStatsMonitor.getCpuUsage()).isEqualTo(VMStatsMonitor.VALUE_NOT_AVAILABLE);
   }
@@ -107,8 +89,7 @@ public class VMStatsMonitorTest {
   @Test
   public void refreshStatsShouldUpdateCpuUsage() {
     ZonedDateTime now = ZonedDateTime.now();
-    when(MBeanJMXAdapter.isAttributeAvailable(anyString(), anyString())).thenReturn(true);
-    vmStatsMonitor = spy(new VMStatsMonitor(testName.getMethodName()));
+    vmStatsMonitor = spy(new VMStatsMonitor(testName.getMethodName(), true));
     assertThat(vmStatsMonitor).isNotNull();
     assertThat(vmStatsMonitor.getCpuUsage()).isEqualTo(0);
     Number processCpuTime = spy(Number.class);

@@ -60,13 +60,17 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
     return lastProcessCpuTime;
   }
 
-  public VMStatsMonitor(String name) {
+  public VMStatsMonitor(String name, boolean processCPUTimeAvailable) {
     super(name);
-    processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(PROCESS_CPU_TIME_ATTRIBUTE,
-        ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
+    this.processCPUTimeAvailable = processCPUTimeAvailable;
     if (!processCPUTimeAvailable) {
       cpuUsage = VALUE_NOT_AVAILABLE;
     }
+  }
+
+  public VMStatsMonitor(String name) {
+    this(name, MBeanJMXAdapter.isAttributeAvailable(PROCESS_CPU_TIME_ATTRIBUTE,
+        ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME));
   }
 
   long currentTimeMillis() {
@@ -74,7 +78,6 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
   }
 
   /**
-   *
    * @param systemTime Current system time.
    * @param cpuTime Last gathered cpu time.
    * @return The time (as a percentage) that this member's process time with respect to Statistics
