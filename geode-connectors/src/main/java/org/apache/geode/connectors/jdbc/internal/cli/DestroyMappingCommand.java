@@ -62,7 +62,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
     }
 
     // input
-    Set<DistributedMember> targetMembers = getMembers(null, null);
+    Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
 
     // action
     List<CliFunctionResult> results =
