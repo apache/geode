@@ -15,6 +15,14 @@
  * limitations under the License.
  */
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+
 dependencies {
   compile(project(':geode-core'))
   distributedTestCompile(project(':geode-dunit')){
@@ -22,5 +30,5 @@ dependencies {
   }
 
 
-  distributedTestCompile('junit:junit:' + project.'junit.version')
+  distributedTestCompile('junit:junit')
 }

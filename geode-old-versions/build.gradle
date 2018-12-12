@@ -16,6 +16,14 @@
  */
 
 disableMavenPublishing()
+
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
 def generatedResources = "$buildDir/generated-resources/main"
 project.ext.installs = new Properties()
 

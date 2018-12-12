@@ -16,8 +16,16 @@
  */
 apply plugin: 'war'
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+
 dependencies {
-  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compile('javax.servlet:javax.servlet-api')
 }
 
 war {

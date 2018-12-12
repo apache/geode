@@ -16,17 +16,25 @@
  */
 
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+
 dependencies {
   compileOnly(project(':extensions:geode-modules-test'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-pulse'))
-  compileOnly('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
-  compileOnly('commons-io:commons-io:' + project.'commons-io.version')
-  compileOnly('junit:junit:' + project.'junit.version')
-  compileOnly('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
-  compileOnly('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compileOnly('org.assertj:assertj-core:' + project.'assertj-core.version')
-  compileOnly('org.codehaus.cargo:cargo-core-uberjar:' + project.'uberjar.version')
+  compileOnly('com.fasterxml.jackson.core:jackson-databind')
+  compileOnly('commons-io:commons-io')
+  compileOnly('junit:junit')
+  compileOnly('org.apache.httpcomponents:httpclient')
+  compileOnly('org.apache.logging.log4j:log4j-api')
+  compileOnly('org.assertj:assertj-core')
+  compileOnly('org.codehaus.cargo:cargo-core-uberjar')
 }
 
 disableMavenPublishing()

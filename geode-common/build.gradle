@@ -15,7 +15,15 @@
  * limitations under the License.
  */
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+
 dependencies {
-  testCompile('junit:junit:' + project.'junit.version')
-  testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  testCompile('junit:junit')
+  testCompile('org.assertj:assertj-core')
 }

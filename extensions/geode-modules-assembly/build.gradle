@@ -22,9 +22,17 @@ configurations {
   slf4jDeps
 }
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+
 dependencies {
-  slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
+  slf4jDeps 'org.slf4j:slf4j-api'
+  slf4jDeps 'org.slf4j:slf4j-jdk14'
 }
 
 jar.enabled = true

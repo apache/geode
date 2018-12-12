@@ -16,83 +16,91 @@
  */
 apply plugin: 'war'
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+
 dependencies {
-  compile('org.springframework.security:spring-security-core:' + project.'spring-security.version')
-  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
-  compile('mx4j:mx4j:' + project.'mx4j.version') {
+  compile('org.springframework.security:spring-security-core')
+  compile('javax.servlet:javax.servlet-api')
+  compile('mx4j:mx4j') {
     ext.optional = true 
   }
-  compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
+  compile('mx4j:mx4j-remote') {
     ext.optional = true
   }
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  uiTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
-  integrationTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
-  integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
-  uiTestCompile('org.apache.httpcomponents:httpcore:' + project.'httpcore.version')
-  uiTestCompile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')
-  uiTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
-  uiTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
-  uiTestCompile('org.seleniumhq.selenium:selenium-support:' + project.'selenium.version')
-  compile('org.springframework:spring-beans:' + project.'springframework.version')
+  integrationTestCompile('junit:junit')
+  uiTestCompile('junit:junit')
+  integrationTestCompile('org.hamcrest:hamcrest-core')
+  integrationTestCompile('org.hamcrest:hamcrest-library')
+  integrationTestCompile('org.hamcrest:hamcrest-all')
+  uiTestCompile('org.apache.httpcomponents:httpcore')
+  uiTestCompile('org.seleniumhq.selenium:selenium-api')
+  uiTestCompile('org.assertj:assertj-core')
+  uiTestCompile('org.apache.httpcomponents:httpclient')
+  uiTestCompile('org.seleniumhq.selenium:selenium-support')
+  compile('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
-  compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
+  compile('org.apache.logging.log4j:log4j-jcl')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.logging.log4j:log4j-core')
 
-  compile('commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version')
-  compile('commons-collections:commons-collections:' + project.'commons-collections.version')
-  compile('commons-digester:commons-digester:' + project.'commons-digester.version')
-  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
-  compile('org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version')
+  compile('commons-beanutils:commons-beanutils')
+  compile('commons-collections:commons-collections')
+  compile('commons-digester:commons-digester')
+  compile('org.apache.commons:commons-lang3')
+  compile('org.springframework.ldap:spring-ldap-core')
   
-  compile('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
   }
-  compile('org.springframework.security:spring-security-ldap:' + project.'spring-security.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
-  }
-  compile('org.springframework.security:spring-security-web:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-ldap') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile('org.springframework:spring-context:' + project.'springframework.version')
-  compile('org.springframework:spring-web:' + project.'springframework.version')
-  runtimeOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compile('org.springframework.security:spring-security-web') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-asm'
+    exclude module: 'spring-expression'
+    exclude module: 'spring-jdbc'
+  }
+  compile('org.springframework:spring-context')
+  compile('org.springframework:spring-web')
+  runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile('org.springframework:spring-tx:' + project.'spring-tx.version')
-  compile('com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version')
-  compile('com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version')
-  compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
+  compile('org.springframework:spring-tx')
+  compile('com.fasterxml.jackson.core:jackson-annotations')
+  compile('com.fasterxml.jackson.core:jackson-core')
+  compile('com.fasterxml.jackson.core:jackson-databind')
 
   compileOnly('org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version')
 
-  runtimeOnly('org.springframework:spring-expression:' + project.'springframework.version')
+  runtimeOnly('org.springframework:spring-expression')
 
   // added only to ensure common version with other geode modules
-  runtimeOnly('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
+  runtimeOnly('org.slf4j:slf4j-api')
 
-  providedCompile('commons-logging:commons-logging:' + project.'commons-logging.version')
+  providedCompile('commons-logging:commons-logging')
 
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testCompile(project(':geode-core'))
-  testCompile('org.springframework:spring-test:' + project.'springframework.version')
-  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
-  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
-  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
+  testCompile('org.springframework:spring-test')
+  testCompile('org.powermock:powermock-core')
+  testCompile('org.powermock:powermock-module-junit4')
+  testCompile('org.powermock:powermock-api-mockito2')
 
 
 
@@ -101,10 +109,10 @@ dependencies {
   }
   integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
-  integrationTestCompile('org.powermock:powermock-core:' + project.'powermock.version')
-  integrationTestCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
-  integrationTestCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
-  integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
+  integrationTestCompile('org.powermock:powermock-core')
+  integrationTestCompile('org.powermock:powermock-module-junit4')
+  integrationTestCompile('org.powermock:powermock-api-mockito2')
+  integrationTestCompile('org.springframework:spring-test')
 
 
   uiTestCompile(project(':geode-junit')) {
@@ -112,7 +120,7 @@ dependencies {
   }
   uiTestCompile(project(':geode-json'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
-  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
 
   uiTestRuntime(project(':geode-core'))
 }

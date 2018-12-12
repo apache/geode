@@ -21,6 +21,12 @@ import java.nio.file.Paths
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
 
 // disable artifact generation for this project
 jar.enabled = false
@@ -162,8 +168,8 @@ dependencies {
   }
   integrationTestCompile(project(':geode-pulse'))
   integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
-  integrationTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
-  integrationTestCompile('javax.annotation:javax.annotation-api:' + project.'javax-annotation.version')
+  integrationTestCompile('org.apache.httpcomponents:httpclient')
+  integrationTestCompile('javax.annotation:javax.annotation-api')
 
 
   distributedTestCompile(project(':geode-core'))
@@ -172,12 +178,12 @@ dependencies {
   }
   distributedTestCompile(project(':extensions:session-testing-war'))
   distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
-  distributedTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  distributedTestCompile('org.apache.httpcomponents:httpclient')
 
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar:' + project.'uberjar.version')
+  distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
 
 
   acceptanceTestCompile(project(':geode-core'))
@@ -193,12 +199,12 @@ dependencies {
   uiTestCompile(project(':geode-pulse'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
   uiTestCompile(project(':geode-assembly:geode-assembly-test'))
-  uiTestCompile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')
-  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version')
-  uiTestCompile('org.seleniumhq.selenium:selenium-support:' + project.'selenium.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-api')
+  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
+  uiTestCompile('org.seleniumhq.selenium:selenium-support')
 
   uiTestRuntime(project(':geode-core'))
-  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version')
+  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver')
 
 
   upgradeTestCompile(project(':geode-core'))
@@ -209,8 +215,8 @@ dependencies {
 
   upgradeTestRuntime(project(':geode-old-versions'))
   upgradeTestRuntime(project(':extensions:session-testing-war'))
-  upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar:' + project.'uberjar.version')
-  upgradeTestRuntime('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
+  upgradeTestRuntime('org.apache.httpcomponents:httpclient')
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing
@@ -220,7 +226,7 @@ dependencies {
   webServerTomcat9('org.apache.tomcat:tomcat:' + project.'tomcat9.version' + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + project.'jetty.version' + '@zip')
   
-  gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
+  gfshDependencies ('org.springframework:spring-web') {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
