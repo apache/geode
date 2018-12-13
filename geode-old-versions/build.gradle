@@ -16,7 +16,6 @@
  */
 
 disableMavenPublishing()
-
 def generatedResources = "$buildDir/generated-resources/main"
 project.ext.installs = new Properties()
 
