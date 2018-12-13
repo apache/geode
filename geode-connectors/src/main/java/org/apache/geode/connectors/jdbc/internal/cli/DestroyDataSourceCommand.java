@@ -82,7 +82,7 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
         checkIfDataSourceIsInUse(service, dataSourceName);
       } catch (IllegalStateException ex) {
         return ResultModel.createError(CliStrings.format(
-            "Data source named \"{0}\" is still being used by region \"{1}\". Use destroy jdbc-mapping --name={1} and then try again.",
+            "Data source named \"{0}\" is still being used by region \"{1}\". Use destroy jdbc-mapping --region={1} and then try again.",
             dataSourceName, ex.getMessage()));
 
       }

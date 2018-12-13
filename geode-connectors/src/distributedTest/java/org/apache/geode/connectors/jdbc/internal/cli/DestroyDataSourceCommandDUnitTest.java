@@ -120,6 +120,6 @@ public class DestroyDataSourceCommandDUnitTest {
     gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsError()
         .containsOutput(
             "Data source named \"datasource1\" is still being used by region \"myRegion\"."
-                + " Use destroy jdbc-mapping --name=myRegion and then try again.");
+                + " Use destroy jdbc-mapping --region=myRegion and then try again.");
   }
 }

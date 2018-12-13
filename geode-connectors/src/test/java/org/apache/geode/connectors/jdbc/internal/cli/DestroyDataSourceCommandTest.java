@@ -151,7 +151,7 @@ public class DestroyDataSourceCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND + " --name=" + DATA_SOURCE_NAME).statusIsError()
         .containsOutput("Data source named \\\"" + DATA_SOURCE_NAME
             + "\\\" is still being used by region \\\"regionUsingDataSource\\\"."
-            + " Use destroy jdbc-mapping --name=regionUsingDataSource and then try again.");
+            + " Use destroy jdbc-mapping --region=regionUsingDataSource and then try again.");
   }
 
   private void setupRegionConfigToUseDataSource(String dataSourceName) {
