@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply plugin: "io.spring.dependency-management"
-dependencyManagement {
-  imports {
-    mavenBom "${project.group}:geode-all-bom:${project.version}"
-  }
-}
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
 
 
 dependencies {

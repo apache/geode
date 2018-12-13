@@ -15,10 +15,18 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+// This gradle should be applied as a plugin to every subproject that requires our dependency management
+// E.g.:  apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
 
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
 
-dependencies {
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
+afterEvaluate {
+  tasks.withType(SourceTask).each { t ->
+    t.dependsOn project(':boms:geode-all-bom').tasks.publishToMavenLocal
+  }
 }

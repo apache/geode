@@ -17,12 +17,7 @@
 
 apply plugin: 'antlr'
 apply plugin: 'me.champeau.gradle.jmh'
-apply plugin: "io.spring.dependency-management"
-dependencyManagement {
-  imports {
-    mavenBom "${project.group}:geode-all-bom:${project.version}"
-  }
-}
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
 
 sourceSets {
   jca {

@@ -18,13 +18,6 @@
 apply plugin: 'com.google.protobuf'
 apply plugin: 'idea'
 
-apply plugin: "io.spring.dependency-management"
-dependencyManagement {
-  imports {
-    mavenBom "${project.group}:geode-all-bom:${project.version}"
-  }
-}
-
 
 buildscript {
   repositories {
@@ -36,7 +29,7 @@ buildscript {
 }
 
 dependencies {
-  compile('com.google.protobuf:protobuf-java')
+  compile('com.google.protobuf:protobuf-java:' + project.'protobuf-java.version')
 }
 
 protobuf {

@@ -21,12 +21,7 @@ import java.nio.file.Paths
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
-apply plugin: "io.spring.dependency-management"
-dependencyManagement {
-  imports {
-    mavenBom "${project.group}:geode-all-bom:${project.version}"
-  }
-}
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
 
 // disable artifact generation for this project
 jar.enabled = false
@@ -124,6 +119,9 @@ sourceSets {
 task downloadWebServers(type:Copy) {
   from {configurations.findAll {it.name.startsWith("webServer")}}
   into webServersDir
+  // An explicit dependency is required because the webServer* is recognized by dependencyManagement
+  // but does not invoke the standard compile path
+  dependsOn project(':boms:geode-all-bom').tasks.publishToMavenLocal
 }
 
 dependencies {

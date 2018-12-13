@@ -22,12 +22,7 @@ configurations {
   slf4jDeps
 }
 
-apply plugin: "io.spring.dependency-management"
-dependencyManagement {
-  imports {
-    mavenBom "${project.group}:geode-all-bom:${project.version}"
-  }
-}
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
 
 
 dependencies {
