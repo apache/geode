@@ -83,7 +83,7 @@ dependencies {
   compile('com.fasterxml.jackson.core:jackson-core')
   compile('com.fasterxml.jackson.core:jackson-databind')
 
-  compileOnly('org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version')
+  compileOnly('org.mortbay.jetty:servlet-api')
 
   runtimeOnly('org.springframework:spring-expression')
 
