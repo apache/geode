@@ -75,7 +75,7 @@ public class MemoryThresholds {
    * When this property is set to true, a {@link LowMemoryException} is not thrown, even when usage
    * crosses the critical threshold.
    */
-  private static final boolean DISABLE_LOW_MEM_EXCEPTION =
+  private static boolean DISABLE_LOW_MEM_EXCEPTION =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableLowMemoryException");
 
   /**
@@ -166,6 +166,10 @@ public class MemoryThresholds {
 
   public static boolean isLowMemoryExceptionDisabled() {
     return DISABLE_LOW_MEM_EXCEPTION;
+  }
+
+  static void setLowMemoryExceptionDisabled(boolean toDisableLowMemoryException) {
+    DISABLE_LOW_MEM_EXCEPTION = toDisableLowMemoryException;
   }
 
   public MemoryState computeNextState(final MemoryState oldState, final long bytesUsed) {

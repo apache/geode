@@ -25,10 +25,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Function;
@@ -37,8 +33,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({MemoryThresholds.class})
 public class HeapMemoryMonitorTest {
 
   private HeapMemoryMonitor heapMonitor;
@@ -318,8 +312,6 @@ public class HeapMemoryMonitorTest {
 
   private void setIsLowMemoryExceptionDisabled(boolean isLowMemoryExceptionDisabled)
       throws Exception {
-    PowerMockito.mockStatic(MemoryThresholds.class);
-    PowerMockito.when(MemoryThresholds.class, MemoryThresholds.isLowMemoryExceptionDisabled())
-        .thenReturn(isLowMemoryExceptionDisabled);
+    MemoryThresholds.setLowMemoryExceptionDisabled(isLowMemoryExceptionDisabled);
   }
 }
