@@ -141,15 +141,17 @@ public class TableMetaDataManagerTest {
 
   @Test
   public void givenFourColumnsAndCompositeIdsThenOnlyKeyColumnNamesAreReturned()
-          throws Exception {
+      throws Exception {
     setupTableMetaData();
     when(columnResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true)
-            .thenReturn(true).thenReturn(false);
-    when(columnResultSet.getString("COLUMN_NAME")).thenReturn("LeadingNonKeyColumn").thenReturn(KEY_COLUMN).thenReturn(KEY_COLUMN2)
-            .thenReturn("NonKeyColumn");
+        .thenReturn(true).thenReturn(false);
+    when(columnResultSet.getString("COLUMN_NAME")).thenReturn("LeadingNonKeyColumn")
+        .thenReturn(KEY_COLUMN).thenReturn(KEY_COLUMN2)
+        .thenReturn("NonKeyColumn");
 
     TableMetaDataView data =
-            tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, KEY_COLUMN + "," + KEY_COLUMN2);
+        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME,
+            KEY_COLUMN + "," + KEY_COLUMN2);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
   }
@@ -377,7 +379,8 @@ public class TableMetaDataManagerTest {
   }
 
   private void setupCompositePrimaryKeysMetaData() throws SQLException {
-    when(primaryKeysResultSet.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN).thenReturn(KEY_COLUMN2);
+    when(primaryKeysResultSet.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN)
+        .thenReturn(KEY_COLUMN2);
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
     setupTableMetaData();
   }

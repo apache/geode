@@ -14,13 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -88,25 +88,26 @@ public class TableMetaDataManager {
     return result;
   }
 
-  private List<String> getPrimaryKeyColumnNamesFromMetaData(String tableName, DatabaseMetaData metaData,
-                                                            String ids)
+  private List<String> getPrimaryKeyColumnNamesFromMetaData(String tableName,
+      DatabaseMetaData metaData,
+      String ids)
       throws SQLException {
     List<String> keys = new ArrayList<>();
 
     if (ids != null && !ids.isEmpty()) {
       keys.addAll(Arrays.asList(ids.split(",")));
-      for( String key : keys) {
+      for (String key : keys) {
         checkColumnExistsInTable(tableName, metaData, key);
       }
     } else {
       try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
-        while(primaryKeys.next()) {
+        while (primaryKeys.next()) {
           String key = primaryKeys.getString("COLUMN_NAME");
           keys.add(key);
         }
         if (keys.isEmpty()) {
           throw new JdbcConnectorException(
-                  "The table " + tableName + " does not have a primary key column.");
+              "The table " + tableName + " does not have a primary key column.");
         }
       }
     }
@@ -140,9 +141,9 @@ public class TableMetaDataManager {
     if (caseInsensitiveMatches > 1) {
       throw new JdbcConnectorException(
           "The table " + tableName + " has more than one column that matches " + columnName);
-    } else if(caseInsensitiveMatches == 0) {
-        throw new JdbcConnectorException(
-              "The table " + tableName + " does not have a column named " + columnName);
+    } else if (caseInsensitiveMatches == 0) {
+      throw new JdbcConnectorException(
+          "The table " + tableName + " does not have a column named " + columnName);
     }
   }
 }

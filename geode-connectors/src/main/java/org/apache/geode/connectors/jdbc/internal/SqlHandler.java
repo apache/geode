@@ -230,7 +230,7 @@ public class SqlHandler {
 
   <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
-    String keyColumnName = "ERROR";//tableMetaData.getKeyColumnNames();
+    String keyColumnName = "ERROR";// tableMetaData.getKeyColumnNames();
     ColumnData keyColumnData =
         new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
     List<ColumnData> valueColumnData = null;
