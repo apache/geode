@@ -14,61 +14,31 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({MemoryThresholds.class})
-public class HeapMemoryMonitorTest {
+public class HeapMemoryMonitorEnableLowMemoryExceptionTest extends HeapMemoryMonitorTestBase {
 
-  private HeapMemoryMonitor heapMonitor;
-  private Function function;
-  private Set memberSet;
-  private DistributedMember member;
-  private InternalDistributedMember myself;
-  private ResourceAdvisor resourceAdvisor;
-  private static final String LOW_MEMORY_REGEX =
-      "Function: null cannot be executed because the members.*are running low on memory";
+  private static String savedParam = "false";
 
-  @Before
-  public void setup() {
-    InternalCache internalCache = mock(InternalCache.class);
-    DistributedSystem distributedSystem = mock(DistributedSystem.class);
-    function = mock(Function.class);
-    member = mock(InternalDistributedMember.class);
-    myself = mock(InternalDistributedMember.class);
-    resourceAdvisor = mock(ResourceAdvisor.class);
-
-    when(internalCache.getDistributedSystem()).thenReturn(distributedSystem);
-    when(internalCache.getDistributionAdvisor()).thenReturn(resourceAdvisor);
-    when(internalCache.getMyId()).thenReturn(myself);
-
-    heapMonitor = new HeapMemoryMonitor(null, internalCache, null);
-    memberSet = new HashSet<>();
-    memberSet.add(member);
-    heapMonitor.setMostRecentEvent(new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
-        MemoryThresholds.MemoryState.DISABLED, MemoryThresholds.MemoryState.DISABLED, null, 0L,
-        true, null)); // myself is not critical
+  @BeforeClass
+  public static void setupSystemProperties() {
+    savedParam =
+        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "disableLowMemoryException");
+    assertTrue(savedParam == null || savedParam.equals("false"));
   }
 
   // ========== tests for getHeapCriticalMembersFrom ==========
@@ -154,12 +124,6 @@ public class HeapMemoryMonitorTest {
   }
 
   @Test
-  public void createLowMemoryIfNeededWithSetArg_ReturnsNullWhenLowMemoryExceptionDisabled()
-      throws Exception {
-    createLowMemoryIfNeededWithSetArg_returnsNull(true, true, memberSet);
-  }
-
-  @Test
   public void createLowMemoryIfNeededWithSetArg_ReturnsNullWhenNoCriticalMembers()
       throws Exception {
     createLowMemoryIfNeededWithSetArg_returnsNull(true, false, Collections.emptySet());
@@ -209,12 +173,6 @@ public class HeapMemoryMonitorTest {
   }
 
   @Test
-  public void checkForLowMemoryWithSetArg_DoesNotThrowWhenLowMemoryExceptionDisabled()
-      throws Exception {
-    checkForLowMemoryWithSetArg_doesNotThrow(true, true, memberSet);
-  }
-
-  @Test
   public void checkForLowMemoryWithSetArg_DoesNotThrowWhenNoCriticalMembers() throws Exception {
     checkForLowMemoryWithSetArg_doesNotThrow(true, false, Collections.emptySet());
   }
@@ -254,72 +212,4 @@ public class HeapMemoryMonitorTest {
         .isExactlyInstanceOf(LowMemoryException.class).hasMessageMatching(LOW_MEMORY_REGEX);
   }
 
-  // ========== private methods ==========
-  private void getHeapCriticalMembersFrom_returnsEmptySet(Set adviseCriticalMembers, Set argSet) {
-    when(resourceAdvisor.adviseCriticalMembers()).thenReturn(adviseCriticalMembers);
-
-    Set<DistributedMember> criticalMembers = heapMonitor.getHeapCriticalMembersFrom(argSet);
-
-    assertThat(criticalMembers).isEmpty();
-  }
-
-  private void getHeapCriticalMembersFrom_returnsNonEmptySet(Set adviseCriticalMembers, Set argSet,
-      Set expectedResult) {
-    when(resourceAdvisor.adviseCriticalMembers()).thenReturn(adviseCriticalMembers);
-
-    Set<DistributedMember> criticalMembers = heapMonitor.getHeapCriticalMembersFrom(argSet);
-
-    assertThat(criticalMembers).containsAll(expectedResult);
-  }
-
-  private void createLowMemoryIfNeededWithSetArg_returnsNull(boolean optimizeForWrite,
-      boolean isLowMemoryExceptionDisabled, Set memberSetArg) throws Exception {
-    setMocking(optimizeForWrite, isLowMemoryExceptionDisabled, memberSetArg);
-
-    LowMemoryException exception = heapMonitor.createLowMemoryIfNeeded(function, memberSetArg);
-
-    assertThat(exception).isNull();
-  }
-
-  private void createLowMemoryIfNeededWithMemberArg_returnsNull(boolean optimizeForWrite,
-      boolean isLowMemoryExceptionDisabled, DistributedMember memberArg) throws Exception {
-    setMocking(optimizeForWrite, isLowMemoryExceptionDisabled, Collections.emptySet());
-
-    LowMemoryException exception = heapMonitor.createLowMemoryIfNeeded(function, memberArg);
-
-    assertThat(exception).isNull();
-  }
-
-  private void checkForLowMemoryWithSetArg_doesNotThrow(boolean optimizeForWrite,
-      boolean isLowMemoryExceptionDisabled, Set memberSetArg) throws Exception {
-    setMocking(optimizeForWrite, isLowMemoryExceptionDisabled, memberSetArg);
-
-    heapMonitor.checkForLowMemory(function, memberSetArg);
-  }
-
-  private void checkForLowMemoryWithMemberArg_doesNotThrow(boolean optimizeForWrite,
-      boolean isLowMemoryExceptionDisabled, DistributedMember memberArg) throws Exception {
-    setMocking(optimizeForWrite, isLowMemoryExceptionDisabled, Collections.emptySet());
-
-    heapMonitor.checkForLowMemory(function, memberArg);
-  }
-
-  private void setMocking(boolean optimizeForWrite, boolean isLowMemoryExceptionDisabled,
-      Set argSet) throws Exception {
-    when(function.optimizeForWrite()).thenReturn(optimizeForWrite);
-    setIsLowMemoryExceptionDisabled(isLowMemoryExceptionDisabled);
-    when(resourceAdvisor.adviseCriticalMembers()).thenReturn(argSet);
-  }
-
-  private void assertLowMemoryException(LowMemoryException exception) {
-    assertThat(exception).isExactlyInstanceOf(LowMemoryException.class);
-    assertThat(exception.getMessage()).containsPattern(LOW_MEMORY_REGEX);
-  }
-
-  private void setIsLowMemoryExceptionDisabled(boolean isLowMemoryExceptionDisabled)
-      throws Exception {
-    PowerMockito.mockStatic(MemoryThresholds.class);
-    PowerMockito.when(MemoryThresholds.class, MemoryThresholds.isLowMemoryExceptionDisabled())
-        .thenReturn(isLowMemoryExceptionDisabled);
-  }
 }
