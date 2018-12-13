@@ -1,7 +1,6 @@
 HikariCP
 animal-sniffer-annotations
 antlr
-
 aopalliance
 byte-buddy
 checker-qual
