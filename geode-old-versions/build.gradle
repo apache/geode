@@ -17,8 +17,6 @@
 
 disableMavenPublishing()
 
-// apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
-
 def generatedResources = "$buildDir/generated-resources/main"
 project.ext.installs = new Properties()
 
