@@ -230,7 +230,7 @@ public class SqlHandler {
 
   <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
-    String keyColumnName = tableMetaData.getKeyColumnName();
+    String keyColumnName = "ERROR";//tableMetaData.getKeyColumnNames();
     ColumnData keyColumnData =
         new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
     List<ColumnData> valueColumnData = null;
@@ -247,7 +247,7 @@ public class SqlHandler {
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
-      if (tableMetaData.getKeyColumnName().equals(columnName)) {
+      if (tableMetaData.getKeyColumnNames().equals(columnName)) {
         continue;
       }
       ColumnData columnData = new ColumnData(columnName, value.getField(fieldName),

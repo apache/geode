@@ -85,7 +85,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
     createTable();
     TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
 
-    String keyColumnName = metaData.getKeyColumnName();
+    String keyColumnName = metaData.getKeyColumnNames();
 
     assertThat(keyColumnName).isEqualTo("id");
   }
@@ -96,7 +96,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
     TableMetaDataView metaData =
         manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "nonprimaryid");
 
-    String keyColumnName = metaData.getKeyColumnName();
+    String keyColumnName = metaData.getKeyColumnNames();
 
     assertThat(keyColumnName).isEqualTo("nonprimaryid");
   }
@@ -107,7 +107,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
     TableMetaDataView metaData =
         manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "NonPrimaryId");
 
-    String keyColumnName = metaData.getKeyColumnName();
+    String keyColumnName = metaData.getKeyColumnNames();
 
     assertThat(keyColumnName).isEqualTo("NonPrimaryId");
   }
