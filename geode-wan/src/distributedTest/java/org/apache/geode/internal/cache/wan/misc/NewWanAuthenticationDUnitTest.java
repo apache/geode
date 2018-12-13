@@ -55,6 +55,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
   private static final Logger logger = LogService.getLogger();
 
   private static boolean isDifferentServerInGetCredentialCall = false;
+  private static final int numPuts = 10;
 
   private static final String securityJsonResource =
       "org/apache/geode/security/templates/security.json";
@@ -65,7 +66,6 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
   private String regionName;
   private final VM sender = vm2;
   private final VM receiver = vm3;
-  private final int numPuts = 10;
 
   @Before
   public void setup() {
