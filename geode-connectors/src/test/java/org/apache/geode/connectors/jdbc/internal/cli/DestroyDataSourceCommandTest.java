@@ -40,7 +40,10 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -134,7 +137,53 @@ public class DestroyDataSourceCommandTest {
             "Data source named \\\"name\\\" does not exist. A jndi-binding was found with that name.");
   }
 
+  @Test
+  public void whenClusterConfigRunningAndDataSourceInUseByRegionThenError() {
+    String DATA_SOURCE_NAME = "myDataSourceName";
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName(DATA_SOURCE_NAME);
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+    setupRegionConfigToUseDataSource(DATA_SOURCE_NAME);
 
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=" + DATA_SOURCE_NAME).statusIsError()
+        .containsOutput("Data source named \\\"" + DATA_SOURCE_NAME
+            + "\\\" is still being used by region \\\"regionUsingDataSource\\\"."
+            + " Use destroy jdbc-mapping --region=regionUsingDataSource and then try again.");
+  }
+
+  private void setupRegionConfigToUseDataSource(String dataSourceName) {
+    RegionConfig regionConfig = mock(RegionConfig.class);
+    when(regionConfig.getName()).thenReturn("regionUsingDataSource");
+    List<RegionConfig> regionConfigList = new ArrayList<>();
+    regionConfigList.add(regionConfig);
+    when(cacheConfig.getRegions()).thenReturn(regionConfigList);
+    RegionMapping regionMapping = mock(RegionMapping.class);
+    when(regionMapping.getDataSourceName()).thenReturn(dataSourceName);
+    List<CacheElement> cacheElementList = new ArrayList<>();
+    cacheElementList.add(regionMapping);
+    when(regionConfig.getCustomRegionElements()).thenReturn(cacheElementList);
+  }
+
+  @Test
+  public void whenNoMembersFoundAndClusterConfigRunningAndRegionUsingOtherDataSourceThenUpdateClusterConfig() {
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    jndiBinding.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+    setupRegionConfigToUseDataSource("otherDataSource");
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
+        .containsOutput("No members found, data source removed from cluster configuration.")
+        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+
+    verify(ccService).updateCacheConfig(any(), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
+  }
 
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
