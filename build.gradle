@@ -90,7 +90,7 @@ subprojects {
 }
 
 allprojects { 
-  it.tasks.withType(JavaCompile) { task ->
+  it.tasks.withType(SourceTask) { task ->
     task.dependsOn project(':boms:geode-all-bom').tasks.publishToMavenLocal
   }
 }
