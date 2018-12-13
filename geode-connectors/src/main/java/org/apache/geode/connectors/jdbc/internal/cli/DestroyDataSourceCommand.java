@@ -24,6 +24,8 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -75,6 +77,15 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
             "Data source named \"{0}\" does not exist. A jndi-binding was found with that name.",
             dataSourceName));
       }
+
+      try {
+        checkIfDataSourceIsInUse(service, dataSourceName);
+      } catch (IllegalStateException ex) {
+        return ResultModel.createError(CliStrings.format(
+            "Data source named \"{0}\" is still being used by region \"{1}\". Use destroy jdbc-mapping --name={1} and then try again.",
+            dataSourceName, ex.getMessage()));
+
+      }
     }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
@@ -110,6 +121,25 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
         return result;
       } else {
         return ResultModel.createError("No members found and cluster configuration disabled.");
+      }
+    }
+  }
+
+  /**
+   * @throws IllegalStateException if the data source is used by a jdbc-mapping. The exception
+   *         message names the region using this data source
+   */
+  private void checkIfDataSourceIsInUse(InternalConfigurationPersistenceService service,
+      String dataSourceName) {
+    CacheConfig cacheConfig = service.getCacheConfig(null);
+    for (RegionConfig regionConfig : cacheConfig.getRegions()) {
+      for (CacheElement cacheElement : regionConfig.getCustomRegionElements()) {
+        if (cacheElement instanceof RegionMapping) {
+          RegionMapping regionMapping = (RegionMapping) cacheElement;
+          if (dataSourceName.equals(regionMapping.getDataSourceName())) {
+            throw new IllegalStateException(regionConfig.getName());
+          }
+        }
       }
     }
   }
