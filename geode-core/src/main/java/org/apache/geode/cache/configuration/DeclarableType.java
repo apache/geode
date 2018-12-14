@@ -29,7 +29,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 
 /**
@@ -66,6 +71,10 @@ public class DeclarableType extends ClassNameType implements Serializable {
   @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
   protected List<ParameterType> parameters;
 
+  // used to remove a Declarable through gfsh command
+  // e.g. alter region --name=regionA --cache-loader=''
+  public static DeclarableType EMPTY = new DeclarableType("");
+
   public DeclarableType() {}
 
   public DeclarableType(String className) {
@@ -77,6 +86,10 @@ public class DeclarableType extends ClassNameType implements Serializable {
   }
 
   public DeclarableType(String className, Properties properties) {
+    if (StringUtils.isBlank(className)) {
+      return;
+    }
+
     this.className = className;
     if (properties != null) {
       parameters = properties.stringPropertyNames().stream()
@@ -109,7 +122,7 @@ public class DeclarableType extends ClassNameType implements Serializable {
    */
   public List<ParameterType> getParameters() {
     if (parameters == null) {
-      parameters = new ArrayList<ParameterType>();
+      parameters = new ArrayList<>();
     }
     return this.parameters;
   }
@@ -139,5 +152,23 @@ public class DeclarableType extends ClassNameType implements Serializable {
 
     return className + "{"
         + parameters.stream().map(Objects::toString).collect(Collectors.joining(",")) + "}";
+  }
+
+  public <T> T newInstance(Cache cache) {
+    try {
+      Class<T> loadedClass = (Class<T>) ClassPathLoader.getLatest().forName(className);
+      T object = loadedClass.newInstance();
+      if (object instanceof Declarable) {
+        Declarable declarable = (Declarable) object;
+        Properties initProperties = new Properties();
+        for (ParameterType parameter : parameters) {
+          initProperties.put(parameter.getName(), parameter.newInstance(cache));
+        }
+        declarable.initialize(cache, initProperties);
+      }
+      return object;
+    } catch (Exception e) {
+      throw new RuntimeException("Error instantiating class: <" + className + ">", e);
+    }
   }
 }

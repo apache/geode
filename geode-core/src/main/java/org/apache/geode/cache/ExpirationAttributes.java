@@ -91,6 +91,13 @@ public class ExpirationAttributes implements DataSerializable {
     }
   }
 
+  public void setTimeout(int timeout) {
+    this.timeout = timeout;
+  }
+
+  public void setAction(ExpirationAction action) {
+    this.action = action;
+  }
 
   /**
    * Returns the number of seconds before a region or value expires.

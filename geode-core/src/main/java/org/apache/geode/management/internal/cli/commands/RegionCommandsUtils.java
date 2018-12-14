@@ -15,18 +15,10 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class RegionCommandsUtils {
 
@@ -46,24 +38,4 @@ public class RegionCommandsUtils {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_OVERFLOW);
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
   }
-
-  static void validateGroups(InternalCache cache, String[] groups) {
-    if (groups != null && groups.length != 0) {
-      Set<String> existingGroups = new HashSet<>();
-      Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
-      for (DistributedMember distributedMember : members) {
-        List<String> memberGroups = distributedMember.getGroups();
-        existingGroups.addAll(memberGroups);
-      }
-      List<String> groupsList = new ArrayList<>(Arrays.asList(groups));
-      groupsList.removeAll(existingGroups);
-
-      if (!groupsList.isEmpty()) {
-        throw new IllegalArgumentException(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
-                new Object[] {String.valueOf(groupsList)}));
-      }
-    }
-  }
-
 }

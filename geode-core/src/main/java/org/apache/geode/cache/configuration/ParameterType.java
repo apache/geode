@@ -53,6 +53,7 @@ import org.apache.geode.annotations.Experimental;
  * &lt;/complexType>
  * </pre>
  *
+ * This represents a key/value pair, name is the key, another string or object is the value
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -117,4 +118,5 @@ public class ParameterType extends ObjectType {
   public String toString() {
     return name + ":" + super.toString();
   }
+
 }

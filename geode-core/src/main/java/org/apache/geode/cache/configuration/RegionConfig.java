@@ -316,7 +316,11 @@ public class RegionConfig implements CacheElement {
    *
    */
   public void setName(String value) {
-    this.name = value;
+    if (value != null && value.startsWith("/")) {
+      this.name = value.substring(1);
+    } else {
+      this.name = value;
+    }
   }
 
   /**

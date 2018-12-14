@@ -75,4 +75,10 @@ public class AlterRegionCommandTest {
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValue("name")).isEqualTo("/Person");
   }
+
+  @Test
+  public void name() throws Exception {
+    parser.executeAndAssertThat(command, "alter region --name=/Person --entry-idle-time-expiration=30")
+        .statusIsSuccess();
+  }
 }

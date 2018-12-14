@@ -33,10 +33,17 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
+import org.apache.geode.cache.configuration.RegionAttributesType;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -61,6 +68,7 @@ public class AlterRegionCommandDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    IgnoredException.addIgnoredException("Cannot set time to live when statistics are disabled");
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
@@ -228,6 +236,50 @@ public class AlterRegionCommandDUnitTest {
       assertThat(expiry.getTimeout()).isEqualTo(0);
       assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
       assertThat(region.getAttributes().getCustomEntryIdleTimeout()).isNull();
+    });
+  }
+
+  @Test
+  public void alterRegionWithEvictionMaxHasNoEffect() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE").statusIsSuccess();
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 3);
+
+    gfsh.executeAndAssertThat("alter region --name=regionA --eviction-max=20").statusIsSuccess();
+
+    locator.invoke(() -> {
+      CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("cluster");
+      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), "regionA");
+      RegionAttributesType.EvictionAttributes evictionAttributes =
+          regionConfig.getRegionAttributes().getEvictionAttributes();
+      assertThat(evictionAttributes).isNull();
+    });
+
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("/regionA");
+      EvictionAttributes evictionAttributes = region.getAttributes().getEvictionAttributes();
+      assertThat(evictionAttributes.getAlgorithm()).isEqualTo(EvictionAlgorithm.NONE);
+    });
+  }
+
+  @Test
+  public void alterRegionWithEvictionMaxOnRegionWithEviction() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create region --name=regionA --type=REPLICATE --eviction-entry-count=20 --eviction-action=local-destroy")
+        .statusIsSuccess();
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 3);
+
+    gfsh.executeAndAssertThat("alter region --name=regionA --eviction-max=30").statusIsSuccess();
+
+    locator.invoke(() -> {
+      CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("cluster");
+      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), "regionA");
+      RegionAttributesType.EvictionAttributes evictionAttributes =
+          regionConfig.getRegionAttributes().getEvictionAttributes();
+      assertThat(evictionAttributes.getLruEntryCount().getMaximum()).isEqualTo("30");
+      assertThat(evictionAttributes.getLruEntryCount().getAction()).isEqualTo(
+          EnumActionDestroyOverflow.LOCAL_DESTROY);
     });
   }
 

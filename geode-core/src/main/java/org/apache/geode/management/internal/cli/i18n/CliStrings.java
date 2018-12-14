@@ -396,8 +396,6 @@ public class CliStrings {
   public static final String ALTER_RUNTIME_CONFIG__MEMBER__HELP =
       "Name/Id of the member in whose configuration will be altered.";
 
-  public static final String ALTER_RUNTIME_CONFIG__GROUP__HELP =
-      "Group of members whose configuration will be altered.";
   public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT =
       ARCHIVE_FILE_SIZE_LIMIT;
   public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT__HELP =

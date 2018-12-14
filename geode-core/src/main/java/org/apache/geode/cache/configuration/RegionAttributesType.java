@@ -20,7 +20,12 @@ package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,6 +34,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.ExpirationAction;
 
 
 /**
@@ -928,6 +934,13 @@ public class RegionAttributesType implements Serializable {
     return gatewaySenderIds;
   }
 
+  public Set<String> getGatewaySenderIdsAsSet() {
+    if (gatewaySenderIds == null) {
+      return null;
+    }
+    return Arrays.stream(gatewaySenderIds.split(",")).collect(Collectors.toSet());
+  }
+
   /**
    * Sets the value of the gatewaySenderIds property.
    *
@@ -948,6 +961,13 @@ public class RegionAttributesType implements Serializable {
    */
   public String getAsyncEventQueueIds() {
     return asyncEventQueueIds;
+  }
+
+  public Set<String> getAsyncEventQueueIdsAsSet() {
+    if (asyncEventQueueIds == null) {
+      return null;
+    }
+    return Arrays.stream(asyncEventQueueIds.split(",")).collect(Collectors.toSet());
   }
 
   /**
@@ -1441,7 +1461,7 @@ public class RegionAttributesType implements Serializable {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"asynchronousWrites", "synchronousWrites"})
-  public static class DiskWriteAttributes {
+  public static class DiskWriteAttributes implements Serializable {
 
     @XmlElement(name = "asynchronous-writes", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.DiskWriteAttributes.AsynchronousWrites asynchronousWrites;
@@ -1647,6 +1667,27 @@ public class RegionAttributesType implements Serializable {
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected ExpirationAttributesDetail expirationAttributes = new ExpirationAttributesDetail();
+
+    public ExpirationAttributesType() {}
+
+    public ExpirationAttributesType(Integer timeout, ExpirationAction action, String expiry,
+        Properties iniProps) {
+      expirationAttributes.setTimeout(Objects.toString(timeout, null));
+      if (action != null) {
+        expirationAttributes.setAction(action.toXmlString());
+      }
+      if (expiry != null) {
+        expirationAttributes.setCustomExpiry(new DeclarableType(expiry, iniProps));
+      }
+    }
+
+    public boolean hasTimoutOrAction() {
+      return (getTimeout() != null || getAction() != null);
+    }
+
+    public boolean hasCustomExpiry() {
+      return getCustomExpiry() != null;
+    }
 
     public DeclarableType getCustomExpiry() {
       return expirationAttributes.getCustomExpiry();
