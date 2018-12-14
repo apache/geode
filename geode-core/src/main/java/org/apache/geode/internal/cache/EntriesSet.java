@@ -178,7 +178,11 @@ public class EntriesSet extends AbstractSet {
                 } else if (ignoreCopyOnReadForQuery) {
                   result = ((NonTXEntry) re).getValue(true);
                 } else {
-                  result = re.getValue();
+                  if ((re instanceof TXEntry)) {
+                    result = ((TXEntry) re).getValue(allowTombstones);
+                  } else {
+                    result = re.getValue();
+                  }
                 }
                 if (result != null && !Token.isInvalidOrRemoved(result)) { // fix for bug 34583
                   return result;

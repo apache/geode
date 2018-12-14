@@ -1399,7 +1399,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       KeyInfo keyInfo = getKeyInfo(key, aCallbackArgument);
       Object value = getDataView().getDeserializedValue(keyInfo, this, true, disableCopyOnRead,
-          preferCD, clientEvent, returnTombstones, retainResult);
+          preferCD, clientEvent, returnTombstones, retainResult, true);
       final boolean isCreate = value == null;
       isMiss = value == null || Token.isInvalid(value)
           || (!returnTombstones && value == Token.TOMBSTONE);
