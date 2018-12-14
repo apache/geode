@@ -240,16 +240,16 @@ public class RegionCreateFunction implements InternalFunction {
   private <K, V> void validateAndSetExpirationAttributes(RegionAttributesType regionAttributes,
       RegionFactory<K, V> factory) {
     if (regionAttributes.getEntryIdleTime() != null) {
-      RegionAttributesType.EntryIdleTime eitl = regionAttributes.getEntryIdleTime();
+      RegionAttributesType.ExpirationAttributesType eitl = regionAttributes.getEntryIdleTime();
       factory.setEntryIdleTimeout(
-          new ExpirationAttributes(Integer.valueOf(eitl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(eitl.getExpirationAttributes().getAction().toUpperCase()
+          new ExpirationAttributes(Integer.valueOf(eitl.getTimeout()),
+              ExpirationAction.fromString(eitl.getAction().toUpperCase()
                   .replace("-", "_"))));
 
       try {
-        if (eitl.getExpirationAttributes().getCustomExpiry() != null) {
+        if (eitl.getCustomExpiry() != null) {
           factory.setCustomEntryIdleTimeout((CustomExpiry) ClassPathLoader.getLatest()
-              .forName(eitl.getExpirationAttributes().getCustomExpiry().getClassName())
+              .forName(eitl.getCustomExpiry().getClassName())
               .newInstance());
         }
       } catch (Exception e) {
@@ -257,16 +257,16 @@ public class RegionCreateFunction implements InternalFunction {
     }
 
     if (regionAttributes.getEntryTimeToLive() != null) {
-      RegionAttributesType.EntryTimeToLive ettl = regionAttributes.getEntryTimeToLive();
+      RegionAttributesType.ExpirationAttributesType ettl = regionAttributes.getEntryTimeToLive();
       factory.setEntryTimeToLive(
-          new ExpirationAttributes(Integer.valueOf(ettl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(ettl.getExpirationAttributes().getAction().toUpperCase()
+          new ExpirationAttributes(Integer.valueOf(ettl.getTimeout()),
+              ExpirationAction.fromString(ettl.getAction().toUpperCase()
                   .replace("-", "_"))));
 
       try {
-        if (ettl.getExpirationAttributes().getCustomExpiry() != null) {
+        if (ettl.getCustomExpiry() != null) {
           factory.setCustomEntryTimeToLive((CustomExpiry) ClassPathLoader.getLatest()
-              .forName(ettl.getExpirationAttributes().getCustomExpiry().getClassName())
+              .forName(ettl.getCustomExpiry().getClassName())
               .newInstance());
         }
       } catch (Exception e) {
@@ -274,18 +274,18 @@ public class RegionCreateFunction implements InternalFunction {
     }
 
     if (regionAttributes.getRegionIdleTime() != null) {
-      RegionAttributesType.RegionIdleTime ritl = regionAttributes.getRegionIdleTime();
+      RegionAttributesType.ExpirationAttributesType ritl = regionAttributes.getRegionIdleTime();
       factory.setRegionIdleTimeout(
-          new ExpirationAttributes(Integer.valueOf(ritl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(ritl.getExpirationAttributes().getAction().toUpperCase()
+          new ExpirationAttributes(Integer.valueOf(ritl.getTimeout()),
+              ExpirationAction.fromString(ritl.getAction().toUpperCase()
                   .replace("-", "_"))));
     }
 
     if (regionAttributes.getRegionTimeToLive() != null) {
-      RegionAttributesType.RegionTimeToLive rttl = regionAttributes.getRegionTimeToLive();
+      RegionAttributesType.ExpirationAttributesType rttl = regionAttributes.getRegionTimeToLive();
       factory.setRegionTimeToLive(
-          new ExpirationAttributes(Integer.valueOf(rttl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(rttl.getExpirationAttributes().getAction().toUpperCase()
+          new ExpirationAttributes(Integer.valueOf(rttl.getTimeout()),
+              ExpirationAction.fromString(rttl.getAction().toUpperCase()
                   .replace("-", "_"))));
     }
   }
@@ -293,22 +293,16 @@ public class RegionCreateFunction implements InternalFunction {
   private <K, V> void validateAndSetCustomClasses(RegionAttributesType regionAttributes,
       RegionFactory<K, V> factory) {
     if (regionAttributes.getEntryIdleTime() != null
-        && regionAttributes.getEntryIdleTime().getExpirationAttributes()
-            .getCustomExpiry() != null) {
-      String customExpiry =
-          regionAttributes.getEntryIdleTime().getExpirationAttributes().getCustomExpiry()
-              .getClassName();
+        && regionAttributes.getEntryIdleTime().getCustomExpiry() != null) {
+      String customExpiry = regionAttributes.getEntryIdleTime().getCustomExpiry().getClassName();
       String neededFor = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY;
       Class<CustomExpiry> customExpiryClass = CliUtil.forName(customExpiry, neededFor);
       CliUtil.newInstance(customExpiryClass, neededFor);
     }
 
     if (regionAttributes.getEntryTimeToLive() != null
-        && regionAttributes.getEntryTimeToLive().getExpirationAttributes()
-            .getCustomExpiry() != null) {
-      String customExpiry =
-          regionAttributes.getEntryTimeToLive().getExpirationAttributes().getCustomExpiry()
-              .getClassName();
+        && regionAttributes.getEntryTimeToLive().getCustomExpiry() != null) {
+      String customExpiry = regionAttributes.getEntryTimeToLive().getCustomExpiry().getClassName();
       String neededFor = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY;
       Class<CustomExpiry> customExpiryClass = CliUtil.forName(customExpiry, neededFor);
       CliUtil.newInstance(customExpiryClass, neededFor);

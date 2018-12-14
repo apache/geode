@@ -543,7 +543,7 @@ public abstract class EvictionAttributes implements DataSerializable {
     return configAttributes;
   }
 
-  public boolean isEmpty() {
+  public boolean isNoEviction() {
     return getAction() == EvictionAction.NONE;
   }
 

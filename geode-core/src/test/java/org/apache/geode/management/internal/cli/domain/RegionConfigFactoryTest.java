@@ -153,12 +153,6 @@ public class RegionConfigFactoryTest {
   }
 
   @Test
-  public void generatesNullWithNoAttributes() {
-    generate();
-    assertThat(config.getRegionAttributes()).isNull();
-  }
-
-  @Test
   public void generatesWithConstraintAttributes() {
     keyConstraint = "key-const";
     valueConstraint = "value-const";
@@ -186,7 +180,7 @@ public class RegionConfigFactoryTest {
 
     generate();
     RegionAttributesType.ExpirationAttributesType regionTimeToLive =
-            config.getRegionAttributes().getRegionTimeToLive();
+        config.getRegionAttributes().getRegionTimeToLive();
     assertThat(regionTimeToLive.getTimeout()).isEqualTo("10");
 
     RegionAttributesType.ExpirationAttributesType entryTimeToLive =

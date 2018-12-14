@@ -168,7 +168,7 @@ public class CreateRegionCommandTest {
     verify(command).executeFunction(any(), argsCaptor.capture(), any(Set.class));
     CreateRegionFunctionArgs args = argsCaptor.getValue();
 
-    assertThat(args.getConfig().getRegionAttributes()).isNull();
+    assertThat(args.getConfig().getRegionAttributes()).isNotNull();
   }
 
   @Test

@@ -167,11 +167,6 @@ public class EvictionAttributesImpl extends EvictionAttributes {
       throws ClassCastException, InstantiationException,
       IllegalAccessException {
     EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
-    if (configAttributes == null) {
-      evictionAttributes.setAction(EvictionAction.NONE);
-      evictionAttributes.setAlgorithm(EvictionAlgorithm.NONE);
-      return evictionAttributes;
-    }
 
     if (configAttributes.getLruHeapPercentage() != null) {
       evictionAttributes.setAlgorithm(EvictionAlgorithm.LRU_HEAP);
