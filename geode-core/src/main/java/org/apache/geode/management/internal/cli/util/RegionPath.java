@@ -38,7 +38,7 @@ public class RegionPath {
     regionPath = pathName;
     String[] regions = pathName.split(Region.SEPARATOR);
 
-    LinkedList<String> regionsNames = new LinkedList<String>();
+    LinkedList<String> regionsNames = new LinkedList<>();
     for (String region : regions) {
       if (!region.isEmpty()) {
         regionsNames.add(region);

@@ -209,7 +209,6 @@ public class CreateRegionCommand extends SingleGfshCommand {
     InternalCache cache = (InternalCache) getCache();
 
     // validate the parent region
-    // TODO Refactor? and add null check for getParent
     RegionPath regionPathData = new RegionPath(regionPath);
     if (!regionPathData.isRoot() && !regionExists(regionPathData.getParent())) {
       return ResultModel.createError(

@@ -153,7 +153,145 @@ public class RegionCreateFunction implements InternalFunction {
     Region<K, V> createdRegion;
     RegionFactory<K, V> factory = cache.createRegionFactory();
 
-    // Perform classpath validations
+    validateAndSetCustomClasses(regionAttributes, factory);
+
+    if (regionAttributes.getPartitionAttributes() != null) {
+      factory.setPartitionAttributes(
+          PartitionAttributesImpl.fromConfig(regionAttributes.getPartitionAttributes()));
+    }
+
+    factory
+        .setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().value().toUpperCase()
+            .replace("-", "_")));
+
+    validateAndSetExpirationAttributes(regionAttributes, factory);
+
+    if (regionAttributes.getEvictionAttributes() != null) {
+      try {
+        factory.setEvictionAttributes(
+            EvictionAttributesImpl.fromConfig(regionAttributes.getEvictionAttributes()));
+      } catch (Exception e) {
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
+      }
+    }
+
+    if (regionAttributes.getDiskStoreName() != null) {
+      factory.setDiskStoreName(regionAttributes.getDiskStoreName());
+    }
+
+    if (regionAttributes.isDiskSynchronous() != null) {
+      factory.setDiskSynchronous(regionAttributes.isDiskSynchronous());
+    }
+
+    if (regionAttributes.isOffHeap() != null) {
+      factory.setOffHeap(regionAttributes.isOffHeap());
+    }
+
+    if (regionAttributes.isStatisticsEnabled() != null) {
+      factory.setStatisticsEnabled(regionAttributes.isStatisticsEnabled());
+    }
+
+    if (regionAttributes.isEnableAsyncConflation() != null) {
+      factory.setEnableAsyncConflation(regionAttributes.isEnableAsyncConflation());
+    }
+
+    if (regionAttributes.isEnableSubscriptionConflation() != null) {
+      factory.setEnableSubscriptionConflation(regionAttributes.isEnableSubscriptionConflation());
+    }
+
+    if (regionAttributes.getGatewaySenderIds() != null) {
+      Arrays.stream(regionAttributes.getGatewaySenderIds().split(","))
+          .forEach(gsi -> factory.addGatewaySenderId(gsi));
+    }
+
+    if (regionAttributes.getAsyncEventQueueIds() != null) {
+      Arrays.stream(regionAttributes.getAsyncEventQueueIds().split(","))
+          .forEach(gsi -> factory.addAsyncEventQueueId(gsi));
+    }
+
+    factory.setConcurrencyChecksEnabled(regionAttributes.isConcurrencyChecksEnabled());
+
+    if (regionAttributes.getConcurrencyLevel() != null) {
+      factory.setConcurrencyLevel(Integer.valueOf(regionAttributes.getConcurrencyLevel()));
+    }
+
+    if (regionAttributes.isCloningEnabled() != null) {
+      factory.setCloningEnabled(regionAttributes.isCloningEnabled());
+    }
+
+    if (regionAttributes.isMulticastEnabled() != null) {
+      factory.setMulticastEnabled(regionAttributes.isMulticastEnabled());
+    }
+
+    RegionPath regionPathData = new RegionPath(regionPath);
+    String regionName = regionPathData.getName();
+    String parentRegionPath = regionPathData.getParent();
+    if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
+      Region<?, ?> parentRegion = cache.getRegion(parentRegionPath);
+      createdRegion = factory.createSubregion(parentRegion, regionName);
+    } else {
+      createdRegion = factory.create(regionName);
+    }
+
+    return createdRegion;
+  }
+
+  private <K, V> void validateAndSetExpirationAttributes(RegionAttributesType regionAttributes,
+      RegionFactory<K, V> factory) {
+    if (regionAttributes.getEntryIdleTime() != null) {
+      RegionAttributesType.EntryIdleTime eitl = regionAttributes.getEntryIdleTime();
+      factory.setEntryIdleTimeout(
+          new ExpirationAttributes(Integer.valueOf(eitl.getExpirationAttributes().getTimeout()),
+              ExpirationAction.fromString(eitl.getExpirationAttributes().getAction().toUpperCase()
+                  .replace("-", "_"))));
+
+      try {
+        if (eitl.getExpirationAttributes().getCustomExpiry() != null) {
+          factory.setCustomEntryIdleTimeout((CustomExpiry) ClassPathLoader.getLatest()
+              .forName(eitl.getExpirationAttributes().getCustomExpiry().getClassName())
+              .newInstance());
+        }
+      } catch (Exception e) {
+      }
+    }
+
+    if (regionAttributes.getEntryTimeToLive() != null) {
+      RegionAttributesType.EntryTimeToLive ettl = regionAttributes.getEntryTimeToLive();
+      factory.setEntryTimeToLive(
+          new ExpirationAttributes(Integer.valueOf(ettl.getExpirationAttributes().getTimeout()),
+              ExpirationAction.fromString(ettl.getExpirationAttributes().getAction().toUpperCase()
+                  .replace("-", "_"))));
+
+      try {
+        if (ettl.getExpirationAttributes().getCustomExpiry() != null) {
+          factory.setCustomEntryTimeToLive((CustomExpiry) ClassPathLoader.getLatest()
+              .forName(ettl.getExpirationAttributes().getCustomExpiry().getClassName())
+              .newInstance());
+        }
+      } catch (Exception e) {
+      }
+    }
+
+    if (regionAttributes.getRegionIdleTime() != null) {
+      RegionAttributesType.RegionIdleTime ritl = regionAttributes.getRegionIdleTime();
+      factory.setRegionIdleTimeout(
+          new ExpirationAttributes(Integer.valueOf(ritl.getExpirationAttributes().getTimeout()),
+              ExpirationAction.fromString(ritl.getExpirationAttributes().getAction().toUpperCase()
+                  .replace("-", "_"))));
+    }
+
+    if (regionAttributes.getRegionTimeToLive() != null) {
+      RegionAttributesType.RegionTimeToLive rttl = regionAttributes.getRegionTimeToLive();
+      factory.setRegionTimeToLive(
+          new ExpirationAttributes(Integer.valueOf(rttl.getExpirationAttributes().getTimeout()),
+              ExpirationAction.fromString(rttl.getExpirationAttributes().getAction().toUpperCase()
+                  .replace("-", "_"))));
+    }
+  }
+
+  private <K, V> void validateAndSetCustomClasses(RegionAttributesType regionAttributes,
+      RegionFactory<K, V> factory) {
     if (regionAttributes.getEntryIdleTime() != null
         && regionAttributes.getEntryIdleTime().getExpirationAttributes()
             .getCustomExpiry() != null) {
@@ -215,20 +353,9 @@ public class RegionCreateFunction implements InternalFunction {
         Class<CacheListener> cacheListenerClass = CliUtil.forName(listener, neededFor);
         listeners[i] = CliUtil.newInstance(cacheListenerClass, neededFor);
       }
-
       factory.initCacheListeners(listeners);
     }
 
-    if (regionAttributes.getPartitionAttributes() != null) {
-      factory.setPartitionAttributes(
-          PartitionAttributesImpl.fromConfig(regionAttributes.getPartitionAttributes()));
-    }
-
-    factory
-        .setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().value().toUpperCase()
-            .replace("-", "_")));
-
-    // Set Constraints
     final String keyConstraint = (String) regionAttributes.getKeyConstraint();
     final String valueConstraint = regionAttributes.getValueConstraint();
     if (keyConstraint != null && !keyConstraint.isEmpty()) {
@@ -243,134 +370,6 @@ public class RegionCreateFunction implements InternalFunction {
       factory.setValueConstraint(valueConstraintClass);
     }
 
-    // Expiration attributes
-    if (regionAttributes.getEntryIdleTime() != null) {
-      RegionAttributesType.EntryIdleTime eitl = regionAttributes.getEntryIdleTime();
-      factory.setEntryIdleTimeout(
-          new ExpirationAttributes(Integer.valueOf(eitl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(eitl.getExpirationAttributes().getAction().toUpperCase()
-                  .replace("-", "_"))));
-
-      try {
-        if (eitl.getExpirationAttributes().getCustomExpiry() != null) {
-          factory.setCustomEntryIdleTimeout((CustomExpiry) ClassPathLoader.getLatest()
-              .forName(eitl.getExpirationAttributes().getCustomExpiry().getClassName())
-              .newInstance());
-        }
-      } catch (Exception e) {
-      }
-    }
-
-    if (regionAttributes.getEntryTimeToLive() != null) {
-      RegionAttributesType.EntryTimeToLive ettl = regionAttributes.getEntryTimeToLive();
-      factory.setEntryTimeToLive(
-          new ExpirationAttributes(Integer.valueOf(ettl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(ettl.getExpirationAttributes().getAction().toUpperCase()
-                  .replace("-", "_"))));
-
-      try {
-        if (ettl.getExpirationAttributes().getCustomExpiry() != null) {
-          factory.setCustomEntryTimeToLive((CustomExpiry) ClassPathLoader.getLatest()
-              .forName(ettl.getExpirationAttributes().getCustomExpiry().getClassName())
-              .newInstance());
-        }
-      } catch (Exception e) {
-      }
-    }
-
-    if (regionAttributes.getRegionIdleTime() != null) {
-      RegionAttributesType.RegionIdleTime ritl = regionAttributes.getRegionIdleTime();
-      factory.setRegionIdleTimeout(
-          new ExpirationAttributes(Integer.valueOf(ritl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(ritl.getExpirationAttributes().getAction().toUpperCase()
-                  .replace("-", "_"))));
-    }
-
-    if (regionAttributes.getRegionTimeToLive() != null) {
-      RegionAttributesType.RegionTimeToLive rttl = regionAttributes.getRegionTimeToLive();
-      factory.setRegionTimeToLive(
-          new ExpirationAttributes(Integer.valueOf(rttl.getExpirationAttributes().getTimeout()),
-              ExpirationAction.fromString(rttl.getExpirationAttributes().getAction().toUpperCase()
-                  .replace("-", "_"))));
-    }
-
-    if (regionAttributes.getEvictionAttributes() != null) {
-      try {
-        factory.setEvictionAttributes(
-            EvictionAttributesImpl.fromConfig(regionAttributes.getEvictionAttributes()));
-      } catch (Exception e) {
-        throw new IllegalArgumentException(
-            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
-      }
-    }
-
-    // Associate a Disk Store
-    if (regionAttributes.getDiskStoreName() != null) {
-      factory.setDiskStoreName(regionAttributes.getDiskStoreName());
-    }
-
-    if (regionAttributes.isDiskSynchronous() != null) {
-      factory.setDiskSynchronous(regionAttributes.isDiskSynchronous());
-    }
-
-    if (regionAttributes.isOffHeap() != null) {
-      factory.setOffHeap(regionAttributes.isOffHeap());
-    }
-
-    if (regionAttributes.isStatisticsEnabled() != null) {
-      factory.setStatisticsEnabled(regionAttributes.isStatisticsEnabled());
-    }
-
-    if (regionAttributes.isEnableAsyncConflation() != null) {
-      factory.setEnableAsyncConflation(regionAttributes.isEnableAsyncConflation());
-    }
-
-    if (regionAttributes.isEnableSubscriptionConflation() != null) {
-      factory.setEnableSubscriptionConflation(regionAttributes.isEnableSubscriptionConflation());
-    }
-
-    // Gateway Sender Ids
-    if (regionAttributes.getGatewaySenderIds() != null) {
-      Arrays.stream(regionAttributes.getGatewaySenderIds().split(","))
-          .forEach(gsi -> factory.addGatewaySenderId(gsi));
-    }
-
-    // Async Queue Ids
-    if (regionAttributes.getAsyncEventQueueIds() != null) {
-      Arrays.stream(regionAttributes.getAsyncEventQueueIds().split(","))
-          .forEach(gsi -> factory.addAsyncEventQueueId(gsi));
-    }
-
-    factory.setConcurrencyChecksEnabled(regionAttributes.isConcurrencyChecksEnabled());
-
-    if (regionAttributes.getConcurrencyLevel() != null) {
-      factory.setConcurrencyLevel(Integer.valueOf(regionAttributes.getConcurrencyLevel()));
-    }
-
-    if (regionAttributes.isCloningEnabled() != null) {
-      factory.setCloningEnabled(regionAttributes.isCloningEnabled());
-    }
-
-    if (regionAttributes.isMulticastEnabled() != null) {
-      factory.setMulticastEnabled(regionAttributes.isMulticastEnabled());
-    }
-
-    // Set plugins
-    if (regionAttributes.getCacheListeners() != null) {
-      List<DeclarableType> configListeners = regionAttributes.getCacheListeners();
-      CacheListener[] listeners = new CacheListener[configListeners.size()];
-      try {
-        for (int i = 0; i < configListeners.size(); i++) {
-          listeners[i] = (CacheListener) ClassPathLoader.getLatest()
-              .forName(configListeners.get(i).getClassName())
-              .newInstance();
-        }
-      } catch (Exception e) {
-      }
-      factory.initCacheListeners(listeners);
-    }
-
-    // Compression provider
     if (regionAttributes.getCompressor() != null) {
       Class<Compressor> compressorKlass =
           CliUtil.forName(regionAttributes.getCompressor().getClassName(),
@@ -378,19 +377,6 @@ public class RegionCreateFunction implements InternalFunction {
       factory.setCompressor(
           CliUtil.newInstance(compressorKlass, CliStrings.CREATE_REGION__COMPRESSOR));
     }
-
-    // If a region path indicates a sub-region,
-    RegionPath regionPathData = new RegionPath(regionPath);
-    String regionName = regionPathData.getName();
-    String parentRegionPath = regionPathData.getParent();
-    if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
-      Region<?, ?> parentRegion = cache.getRegion(parentRegionPath);
-      createdRegion = factory.createSubregion(parentRegion, regionName);
-    } else {
-      createdRegion = factory.create(regionName);
-    }
-
-    return createdRegion;
   }
 
 
