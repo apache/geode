@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -39,7 +40,7 @@ public class SqlStatementFactoryTest {
     columnData.add(new ColumnData(VALUE_COLUMN_1_NAME, null, 0));
     columnData.add(new ColumnData(VALUE_COLUMN_2_NAME, null, 0));
     ColumnData keyColumnData = new ColumnData(KEY_COLUMN_NAME, null, 0);
-    entryColumnData = new EntryColumnData(keyColumnData, columnData);
+    entryColumnData = new EntryColumnData(Arrays.asList(keyColumnData), columnData);
   }
 
   @Test
@@ -74,7 +75,7 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getInsertSqlString() throws Exception {
-    String expectedStatement = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?)",
+    String expectedStatement = String.format("INSERT INTO %s (%s,%s,%s) VALUES (?,?,?)",
         TABLE_NAME, VALUE_COLUMN_1_NAME, VALUE_COLUMN_2_NAME, KEY_COLUMN_NAME);
 
     String statement = factory.createInsertSqlString(TABLE_NAME, entryColumnData);

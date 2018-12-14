@@ -18,16 +18,17 @@ import java.util.Collections;
 import java.util.List;
 
 class EntryColumnData {
-  private final ColumnData entryKeyColumnData;
+  private final List<ColumnData> entryKeyColumnData;
   private final List<ColumnData> entryValueColumnData;
 
-  EntryColumnData(ColumnData entryKeyColumnData, List<ColumnData> entryValueColumnData) {
-    this.entryKeyColumnData = entryKeyColumnData;
+  EntryColumnData(List<ColumnData> entryKeyColumnData, List<ColumnData> entryValueColumnData) {
+    this.entryKeyColumnData =
+        entryKeyColumnData != null ? entryKeyColumnData : Collections.emptyList();
     this.entryValueColumnData =
         entryValueColumnData != null ? entryValueColumnData : Collections.emptyList();
   }
 
-  public ColumnData getEntryKeyColumnData() {
+  public List<ColumnData> getEntryKeyColumnData() {
     return entryKeyColumnData;
   }
 

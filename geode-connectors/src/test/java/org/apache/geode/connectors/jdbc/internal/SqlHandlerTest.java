@@ -512,7 +512,9 @@ public class SqlHandlerTest {
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
-    assertThat(entryColumnData.getEntryKeyColumnData().getColumnName()).isEqualTo(KEY_COLUMN);
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
   }
 
   @Test
@@ -531,7 +533,9 @@ public class SqlHandlerTest {
     assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
     assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
         .isEqualTo(nonKeyColumn);
-    assertThat(entryColumnData.getEntryKeyColumnData().getColumnName()).isEqualTo(KEY_COLUMN);
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
   }
 
   @Test
@@ -544,7 +548,9 @@ public class SqlHandlerTest {
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
-    assertThat(entryColumnData.getEntryKeyColumnData().getColumnName()).isEqualTo(KEY_COLUMN);
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
   }
 
   private ResultSet getPrimaryKeysMetaData() throws SQLException {
