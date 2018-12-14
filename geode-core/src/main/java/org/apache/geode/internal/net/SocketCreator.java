@@ -960,22 +960,30 @@ public class SocketCreator {
   }
 
   /**
+   * Returns an SSLEngine that can be used to perform TLS handshakes and communication
+   */
+  public SSLEngine createSSLEngine() {
+    return sslContext.createSSLEngine();
+  }
+
+  /**
    * See
    * https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG
    *
    * @param socketChannel the socket's NIO channel
+   * @param engine the sslEngine (see createSSLEngine)
    * @param timeout handshake timeout in milliseconds. No timeout if <= 0
    * @param clientSocket set to true if you initiated the connect(), false if you accepted it
    * @param peerNetBuffer the buffer to use in reading data fron socketChannel. This should also be
    *        used in subsequent I/O operations
    * @return The SSLEngine to be used in processing data for sending/receiving from the channel
    */
-  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel, int timeout,
+  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel, SSLEngine engine,
+      int timeout,
       boolean clientSocket,
       ByteBuffer peerNetBuffer,
       DMStats stats)
       throws IOException {
-    SSLEngine engine = sslContext.createSSLEngine();
     engine.setUseClientMode(clientSocket);
     while (!socketChannel.finishConnect()) {
       LockSupport.parkNanos(100L);

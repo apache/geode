@@ -105,6 +105,47 @@ public class Buffers {
     releaseBuffer(bb, stats, false);
   }
 
+  public static ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
+      int desiredCapacity, DMStats stats) {
+    if (existing.capacity() >= desiredCapacity) {
+      existing.compact();
+      return existing;
+    }
+    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
+    newBuffer.clear();
+    existing.flip();
+    newBuffer.put(existing);
+    releaseBuffer(type, existing, stats);
+    return newBuffer;
+  }
+
+  public static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
+    switch (type) {
+      case UNTRACKED:
+        return ByteBuffer.allocate(capacity);
+      case TRACKED_SENDER:
+        return Buffers.acquireSenderBuffer(capacity, stats);
+      case TRACKED_RECEIVER:
+        return Buffers.acquireReceiveBuffer(capacity, stats);
+    }
+    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
+  }
+
+  public static void releaseBuffer(Buffers.BufferType type, ByteBuffer buffer, DMStats stats) {
+    switch (type) {
+      case UNTRACKED:
+        return;
+      case TRACKED_SENDER:
+        Buffers.releaseSenderBuffer(buffer, stats);
+        return;
+      case TRACKED_RECEIVER:
+        Buffers.releaseReceiveBuffer(buffer, stats);
+        return;
+    }
+    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
+  }
+
+
   /**
    * Releases a previously acquired buffer.
    */
@@ -133,6 +174,16 @@ public class Buffers {
         }
       }
     }
+  }
+
+  /**
+   * Buffers may be acquired from the Buffers pool
+   * or they may be allocated using Buffer.allocate(). This enum is used
+   * to note the different types. Tracked buffers come from the Buffers pool
+   * and need to be released when we're done using them.
+   */
+  public enum BufferType {
+    UNTRACKED, TRACKED_SENDER, TRACKED_RECEIVER
   }
 
   /**

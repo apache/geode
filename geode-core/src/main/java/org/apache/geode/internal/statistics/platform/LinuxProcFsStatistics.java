@@ -343,10 +343,8 @@ public class LinuxProcFsStatistics {
    * ListenOverflows=20 ListenDrops=21
    */
   private static void getNetStatStats(long[] longs, int[] ints) {
-    InputStreamReader isr;
     BufferedReader br = null;
-    try {
-      isr = new InputStreamReader(new FileInputStream("/proc/net/netstat"));
+    try (InputStreamReader isr = new InputStreamReader(new FileInputStream("/proc/net/netstat"))) {
       br = new BufferedReader(isr);
       String line;
       do {
@@ -369,12 +367,14 @@ public class LinuxProcFsStatistics {
 
       if (!soMaxConnProcessed) {
         br.close();
-        isr = new InputStreamReader(new FileInputStream("/proc/sys/net/core/somaxconn"));
-        br = new BufferedReader(isr);
-        line = br.readLine();
-        st.setString(line);
-        soMaxConn = st.nextTokenAsInt();
-        soMaxConnProcessed = true;
+        try (InputStreamReader soMaxConnIsr =
+            new InputStreamReader(new FileInputStream("/proc/sys/net/core/somaxconn"))) {
+          br = new BufferedReader(soMaxConnIsr);
+          line = br.readLine();
+          st.setString(line);
+          soMaxConn = st.nextTokenAsInt();
+          soMaxConnProcessed = true;
+        }
       }
 
       ints[LinuxSystemStats.tcpSOMaxConnINT] = soMaxConn;
@@ -383,12 +383,6 @@ public class LinuxProcFsStatistics {
     } catch (IOException ioe) {
     } finally {
       st.releaseResources();
-      if (br != null) {
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
-      }
     }
   }
 

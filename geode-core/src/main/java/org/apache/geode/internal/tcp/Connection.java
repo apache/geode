@@ -40,6 +40,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
@@ -107,7 +108,7 @@ public class Connection implements Runnable {
    * Small buffer used for send socket buffer on receiver connections and receive buffer on sender
    * connections.
    */
-  static final int SMALL_BUFFER_SIZE =
+  public static final int SMALL_BUFFER_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SMALL_BUFFER_SIZE", 4096);
 
   /** counter to give connections a unique id */
@@ -749,6 +750,9 @@ public class Connection implements Runnable {
       } // synchronized
 
     } finally {
+      // if (!this.isReceiver) {
+      // ioFilter.doneReading(getInputBuffer());
+      // }
       if (needToClose) {
         // moved this call outside of the sync for bug 42159
         try {
@@ -782,6 +786,8 @@ public class Connection implements Runnable {
 
     // we do the close in a background thread because the operation may hang if
     // there is a problem with the network. See bug #46659
+
+    releaseInputBuffer();
 
     // if simulating sickness, sockets must be closed in-line so that tests know
     // that the vm is sick when the beSick operation completes
@@ -872,7 +878,7 @@ public class Connection implements Runnable {
     // send HANDSHAKE
     // send this member's information. It's expected on the other side
     if (logger.isDebugEnabled()) {
-      logger.debug("starting handshake on socket {}", socket);
+      logger.debug("starting peer-to-peer handshake on socket {}", socket);
     }
     handshakeFromNewSender();
     startReader(connTable); // this reader only reads the handshake and then exits
@@ -1216,6 +1222,10 @@ public class Connection implements Runnable {
     }
   }
 
+  public void setInputBuffer(ByteBuffer buffer) {
+    this.inputBuffer = buffer;
+  }
+
   private class BatchBufferFlusher extends Thread {
     private volatile boolean flushNeeded = false;
     private volatile boolean timeToStop = false;
@@ -1439,9 +1449,6 @@ public class Connection implements Runnable {
               }
             }
           }
-          if (logger.isDebugEnabled()) {
-            logger.debug("Closing socket for {}", this);
-          }
         } else if (!forceRemoval) {
           removeEndpoint = false;
         }
@@ -1572,19 +1579,17 @@ public class Connection implements Runnable {
       if (logger.isDebugEnabled()) {
         logger.debug("Stopping {} for {}", p2pReaderName(), remoteAddr);
       }
-      initiateSuspicionIfSharedUnordered();
       if (this.isReceiver) {
+        initiateSuspicionIfSharedUnordered();
         if (!this.sharedResource) {
           this.conduit.getStats().incThreadOwnedReceivers(-1L, dominoCount.get());
         }
         asyncClose(false);
         this.owner.removeAndCloseThreadOwnedSockets();
-      }
-      ByteBuffer tmp = this.inputBuffer;
-      if (tmp != null) {
-        this.inputBuffer = null;
-        final DMStats stats = this.owner.getConduit().getStats();
-        Buffers.releaseReceiveBuffer(tmp, stats);
+
+        if (this.isSharedResource()) {
+          releaseInputBuffer();
+        }
       }
       // make sure that if the reader thread exits we notify a thread waiting
       // for the handshake.
@@ -1596,6 +1601,15 @@ public class Connection implements Runnable {
         this.readerThread = null;
       }
     } // finally
+  }
+
+  private void releaseInputBuffer() {
+    ByteBuffer tmp = this.inputBuffer;
+    if (tmp != null) {
+      this.inputBuffer = null;
+      final DMStats stats = this.owner.getConduit().getStats();
+      Buffers.releaseReceiveBuffer(tmp, stats);
+    }
   }
 
   private String p2pReaderName() {
@@ -1662,7 +1676,7 @@ public class Connection implements Runnable {
     // fix for #40869
     boolean isHandShakeReader = false;
     // if we're using SSL/TLS the input buffer may already have data to process
-    boolean skipInitialRead = inputBuffer.position() > 0;
+    boolean skipInitialRead = getInputBuffer().position() > 0;
     boolean isInitialRead = true;
     try {
       for (;;) {
@@ -1674,6 +1688,7 @@ public class Connection implements Runnable {
           Socket s = this.socket;
           if (s != null) {
             try {
+              logger.debug("closing socket", new Exception("closing socket"));
               ioFilter.close();
               s.close();
             } catch (IOException e) {
@@ -1701,6 +1716,9 @@ public class Connection implements Runnable {
             } else {
               amountRead = buff.position();
             }
+          }
+          if (amountRead == 0) {
+            Thread.sleep(1000);
           }
           synchronized (stateLock) {
             connectionState = STATE_IDLE;
@@ -1805,13 +1823,22 @@ public class Connection implements Runnable {
   }
 
   private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
-    ByteBuffer myBuffer = getInputBuffer();
+    if (ioFilter != null) {
+      logger.warn("creating another IoFilter", new Exception("oops"));
+    }
     if (TCPConduit.useSSL && channel != null) {
-      ioFilter =
-          getConduit().getSocketCreator()
-              .handshakeSSLSocketChannel(channel, getConduit().idleConnectionTimeout, clientSocket,
-                  myBuffer, getConduit().getStats());
-
+      SSLEngine engine = getConduit().getSocketCreator().createSSLEngine();
+      if (inputBuffer == null
+          || (inputBuffer.capacity() < engine.getSession().getPacketBufferSize())) {
+        // TLS has a minimum input buffer size constraint
+        if (inputBuffer != null) {
+          Buffers.releaseReceiveBuffer(inputBuffer, getConduit().getStats());
+        }
+        inputBuffer = Buffers.acquireReceiveBuffer(engine.getSession().getPacketBufferSize(),
+            getConduit().getStats());
+      }
+      ioFilter = getConduit().getSocketCreator().handshakeSSLSocketChannel(channel, engine,
+          getConduit().idleConnectionTimeout, clientSocket, inputBuffer, getConduit().getStats());
     } else {
       ioFilter = new NioEngine();
     }
@@ -2400,6 +2427,7 @@ public class Connection implements Runnable {
               Socket s = this.socket;
               if (s != null) {
                 try {
+                  logger.debug("closing socket", new Exception("closing socket"));
                   ioFilter.close();
                   s.close();
                 } catch (IOException e) {
@@ -2748,6 +2776,9 @@ public class Connection implements Runnable {
       if (allocSize == -1) {
         allocSize = this.owner.getConduit().tcpBufferSize;
       }
+      if (allocSize < 32768) { // for SSL comms we need a minimum of 32k
+        allocSize = 32768;
+      }
       inputBuffer = Buffers.acquireReceiveBuffer(allocSize, this.owner.getConduit().getStats());
     }
     return inputBuffer;
@@ -2799,7 +2830,7 @@ public class Connection implements Runnable {
     DMStats stats = owner.getConduit().getStats();
     final Version version = getRemoteVersion();
     try {
-      msgReader = new NIOMsgReader(this, version);
+      msgReader = new MsgReader(this, ioFilter, getInputBuffer(), version);
 
       Header header = msgReader.readHeader();
 
@@ -2891,6 +2922,7 @@ public class Connection implements Runnable {
     inputBuffer.flip();
 
     ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
+    peerDataBuffer.flip();
 
     boolean done = false;
 
@@ -2918,15 +2950,16 @@ public class Connection implements Runnable {
             readMessage(peerDataBuffer);
 
           } else {
-            // read HANDSHAKE ---------------------------------------------
             ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
             DataInputStream dis = new DataInputStream(bbis);
             if (!this.isReceiver) {
               if (readHandshakeForSender(dis)) {
+                ioFilter.doneReading(peerDataBuffer);
                 return;
               }
             } else {
               if (readHandshakeForReceiver(dis)) {
+                ioFilter.doneReading(peerDataBuffer);
                 return;
               }
             }
@@ -2941,6 +2974,7 @@ public class Connection implements Runnable {
           done = true;
           if (TCPConduit.useSSL) {
             ioFilter.doneReading(peerDataBuffer);
+            compactOrResizeBuffer(messageLength * 2);
           } else {
             // if not using SSL we might want to increase our nioInputBuffer size
             compactOrResizeBuffer(messageLength);
@@ -3167,7 +3201,6 @@ public class Connection implements Runnable {
       try {
         md.addChunk(peerDataBuffer, messageLength);
       } catch (IOException ex) {
-        logger.fatal("Failed handling chunk message", ex);
       }
     } else /* (nioMessageType == END_CHUNKED_MSG_TYPE) */ {
       // logger.info("END_CHUNK msgId="+nioMsgId);

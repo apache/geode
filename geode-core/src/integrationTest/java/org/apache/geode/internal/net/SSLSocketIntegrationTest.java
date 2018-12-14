@@ -207,7 +207,8 @@ public class SSLSocketIntegrationTest {
     clientChannel.connect(new InetSocketAddress(localHost, serverPort));
     clientSocket = clientChannel.socket();
     NioSslEngine engine =
-        clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(), 0, true,
+        clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
+            clusterSocketCreator.createSSLEngine(), 0, true,
             ByteBuffer.allocate(65535), mock(DMStats.class));
     clientChannel.configureBlocking(true);
 
@@ -249,7 +250,8 @@ public class SSLSocketIntegrationTest {
         Socket socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
         NioSslEngine engine =
-            sc.handshakeSSLSocketChannel(socket.getChannel(), timeoutMillis, false,
+            sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine(), timeoutMillis,
+                false,
                 ByteBuffer.allocate(500),
                 mock(DMStats.class));
 
@@ -272,6 +274,7 @@ public class SSLSocketIntegrationTest {
     System.out.println("server bytes read is " + bytesRead + ": buffer position is "
         + buffer.position() + " and limit is " + buffer.limit());
     ByteBuffer unwrapped = engine.unwrap(buffer);
+    unwrapped.flip();
     System.out.println("server unwrapped buffer position is " + unwrapped.position()
         + " and limit is " + unwrapped.limit());
     ByteBufferInputStream bbis = new ByteBufferInputStream(unwrapped);

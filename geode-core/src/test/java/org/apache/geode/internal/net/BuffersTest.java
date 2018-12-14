@@ -17,34 +17,17 @@ package org.apache.geode.internal.net;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLSession;
-
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DMStats;
 
-public class NioSslEngineJUnitTest {
-  SSLEngine engine;
-  SSLSession session;
-
-  @Before
-  public void setup() {
-    engine = mock(SSLEngine.class);
-    session = mock(SSLSession.class);
-    when(engine.getSession()).thenReturn(session);
-    when(session.getApplicationBufferSize()).thenReturn(100);
-    when(session.getPacketBufferSize()).thenReturn(100);
-  }
+public class BuffersTest {
 
   @Test
-  public void newBuffer() throws Exception {
+  public void expandBuffer() throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate(256);
     buffer.clear();
     for (int i = 0; i < 256; i++) {
@@ -57,8 +40,8 @@ public class NioSslEngineJUnitTest {
   }
 
   private void createAndVerifyNewBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
-    ByteBuffer newBuffer = new NioSslEngine(mock(SocketChannel.class), engine,
-        mock(DMStats.class)).expandBuffer(NioSslEngine.BufferType.UNTRACKED, buffer, 500);
+    ByteBuffer newBuffer =
+        Buffers.expandBuffer(Buffers.BufferType.UNTRACKED, buffer, 500, mock(DMStats.class));
     assertEquals(buffer.position(), newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     newBuffer.flip();

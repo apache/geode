@@ -17,6 +17,8 @@ package org.apache.geode.internal.net;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.distributed.internal.DMStats;
+
 /**
  * Prior to transmitting a buffer or processing a received buffer
  * a NioFilter should be called to wrap (transmit) or unwrap (received)
@@ -24,10 +26,16 @@ import java.nio.ByteBuffer;
  */
 public interface NioFilter {
 
-  /** wrap bytes for transmission to another process */
+  /**
+   * wrap bytes for transmission to another process
+   */
   ByteBuffer wrap(ByteBuffer buffer) throws IOException;
 
-  /** unwrap bytes received from another process */
+  /**
+   * unwrap bytes received from another process. The unwrapped
+   * buffer should be flipped before reading. When done reading invoke
+   * doneReading() to reset for future read ops
+   */
   ByteBuffer unwrap(ByteBuffer wrappedBuffer) throws IOException;
 
   /**
@@ -44,5 +52,19 @@ public interface NioFilter {
 
   /** invoke this method when you are done using the NioFilter */
   void close();
+
+  /**
+   * returns the unwrapped byte buffer associated with the given wrapped buffer
+   */
+  ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer);
+
+  /**
+   * ensures that the unwrapped buffer associated with the given wrapped buffer has
+   * sufficient capacity for the given amount of bytes. This may compact the
+   * buffer or it may return a new buffer.
+   */
+  ByteBuffer ensureUnwrappedCapacity(int amount, ByteBuffer wrappedBuffer,
+      Buffers.BufferType bufferType,
+      DMStats stats);
 
 }
