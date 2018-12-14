@@ -43,7 +43,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
@@ -59,7 +58,6 @@ public class CreateMappingCommandTest {
   private String dataSourceName;
   private String tableName;
   private String pdxClass;
-  private DistributionManager distributionManager;
   private Set<InternalDistributedMember> members;
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
@@ -76,11 +74,8 @@ public class CreateMappingCommandTest {
     tableName = "testTable";
     pdxClass = "myPdxClass";
     cache = mock(InternalCache.class);
-    distributionManager = mock(DistributionManager.class);
-    when(cache.getDistributionManager()).thenReturn(distributionManager);
     members = new HashSet<>();
     members.add(mock(InternalDistributedMember.class));
-    when(distributionManager.getNormalDistributionManagerIds()).thenReturn(members);
     createRegionMappingCommand = spy(CreateMappingCommand.class);
     createRegionMappingCommand.setCache(cache);
     results = new ArrayList<>();
@@ -89,6 +84,7 @@ public class CreateMappingCommandTest {
 
     doReturn(results).when(createRegionMappingCommand).executeAndGetFunctionResult(any(), any(),
         any());
+    doReturn(members).when(createRegionMappingCommand).findMembersForRegion(regionName);
 
     mapping = mock(RegionMapping.class);
     when(mapping.getRegionName()).thenReturn(regionName);
