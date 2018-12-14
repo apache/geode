@@ -150,6 +150,21 @@ public class ExpirationAction implements Serializable {
     return null;
   }
 
+  public static ExpirationAction fromXmlString(String xmlValue) {
+    switch (xmlValue) {
+      case "invalidate":
+        return INVALIDATE;
+      case "destroy":
+        return DESTROY;
+      case "local-destroy":
+        return LOCAL_DESTROY;
+      case "local-invalidate":
+        return LOCAL_INVALIDATE;
+      default:
+        throw new IllegalArgumentException("invalid expiration action: " + xmlValue);
+    }
+  }
+
   // The 4 declarations below are necessary for serialization
   private static int nextOrdinal = 0;
   public final int ordinal = nextOrdinal++;
