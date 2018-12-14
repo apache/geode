@@ -149,8 +149,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
     if (dsConfigProperties != null && dsConfigProperties.length > 0)
       configuration.getConfigProperties().addAll(Arrays.asList(dsConfigProperties));
 
-    InternalConfigurationPersistenceService service =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService service = getConfigurationPersistenceService();
 
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");

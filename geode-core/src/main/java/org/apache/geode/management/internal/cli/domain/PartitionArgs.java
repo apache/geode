@@ -53,6 +53,12 @@ public class PartitionArgs {
         partitionResolver == null;
   }
 
+  /*
+   * This method is duplicated in RegionFunctionArgs.PartitionArgs, but the latter
+   * will be removed after we refactor AlterRegionCommand to not use RegionFunctionArgs,
+   * because at that point RegionFunctionArgs will be unused.
+   * GEODE-5971
+   */
   public Set<String> getUserSpecifiedPartitionAttributes() {
     Set<String> userSpecifiedPartitionAttributes = new HashSet<>();
 

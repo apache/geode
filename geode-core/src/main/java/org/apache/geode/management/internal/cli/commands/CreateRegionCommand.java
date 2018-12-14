@@ -209,6 +209,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
     InternalCache cache = (InternalCache) getCache();
 
     // validate the parent region
+    // TODO Refactor? and add null check for getParent
     RegionPath regionPathData = new RegionPath(regionPath);
     if (!regionPathData.isRoot() && !regionExists(regionPathData.getParent())) {
       return ResultModel.createError(
@@ -576,8 +577,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
   }
 
   private void failIfRegionAlreadyExists(String regionPath, RegionShortcut regionShortcut,
-      String[] groups)
-      throws EntityExistsException {
+      String[] groups) throws EntityExistsException {
     /*
      * Adding name collision check for regions created with regionShortcut only.
      * Regions can be categories as Proxy(replicate/partition), replicate/partition, and local
