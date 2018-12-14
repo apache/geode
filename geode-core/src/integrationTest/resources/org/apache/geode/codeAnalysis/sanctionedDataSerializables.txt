@@ -287,7 +287,7 @@ fromData,62
 toData,62
 
 org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorRequest,2
-fromData,97
+fromData,94
 toData,114
 
 org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorResponse,2
@@ -529,7 +529,7 @@ fromData,6
 toData,6
 
 org/apache/geode/internal/admin/remote/FetchDistLockInfoResponse,2
-fromData,20
+fromData,17
 toData,14
 
 org/apache/geode/internal/admin/remote/FetchHealthDiagnosisRequest,2
@@ -553,7 +553,7 @@ fromData,16
 toData,16
 
 org/apache/geode/internal/admin/remote/FetchResourceAttributesResponse,2
-fromData,20
+fromData,17
 toData,14
 
 org/apache/geode/internal/admin/remote/FetchStatsRequest,2
@@ -561,7 +561,7 @@ fromData,14
 toData,14
 
 org/apache/geode/internal/admin/remote/FetchStatsResponse,2
-fromData,20
+fromData,17
 toData,14
 
 org/apache/geode/internal/admin/remote/FetchSysCfgRequest,2
@@ -696,7 +696,7 @@ fromData,27
 toData,27
 
 org/apache/geode/internal/admin/remote/RemoteRegionAttributes,2
-fromData,404
+fromData,398
 toData,353
 
 org/apache/geode/internal/admin/remote/RemoteRegionSnapshot,2
@@ -776,7 +776,7 @@ fromData,6
 toData,6
 
 org/apache/geode/internal/admin/remote/SubRegionResponse,2
-fromData,34
+fromData,28
 toData,22
 
 org/apache/geode/internal/admin/remote/TailLogRequest,2
@@ -959,7 +959,7 @@ fromData,197
 toData,165
 
 org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2
-fromData,171
+fromData,168
 toData,173
 
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllEntryData,1
@@ -1076,7 +1076,7 @@ fromData,224
 toData,234
 
 org/apache/geode/internal/cache/InitialImageOperation$InitialImageVersionedEntryList,2
-fromData,406
+fromData,402
 toData,396
 
 org/apache/geode/internal/cache/InitialImageOperation$RVVReplyMessage,2

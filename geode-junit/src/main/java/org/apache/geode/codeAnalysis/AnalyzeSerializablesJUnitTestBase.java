@@ -78,7 +78,8 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   private static final String FAIL_MESSAGE = NEW_LINE + NEW_LINE
       + "If the class is not persisted or sent over the wire add it to the file " + NEW_LINE + "%s"
       + NEW_LINE + "Otherwise if this doesn't break backward compatibility, copy the file "
-      + NEW_LINE + "%s to " + NEW_LINE + "%s.";
+      + NEW_LINE + "%s to " + NEW_LINE + "%s." + NEW_LINE
+      + "Please note that these files are sorted, so you will need to insert your class in the right place.";
   private static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
   private static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
   private static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
