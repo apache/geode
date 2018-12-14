@@ -38,6 +38,7 @@ import java.util.Date;
 import javax.sql.DataSource;
 
 import junitparams.JUnitParamsRunner;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -125,8 +126,12 @@ public class SqlHandlerTest {
   @SuppressWarnings("unchecked")
   @Test
   public void readThrowsIfNoMapping() throws Exception {
+    Region region = mock(Region.class);
+    when(region.getName()).thenReturn("myRegionName");
     thrown.expect(JdbcConnectorException.class);
-    handler.read(mock(Region.class), new Object());
+    thrown.expectMessage(
+        "JDBC mapping for region myRegionName not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+    handler.read(region, new Object());
   }
 
   @Test
@@ -355,13 +360,33 @@ public class SqlHandlerTest {
     verify(statement).close();
   }
 
-
   @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     Object createKey = "createKey";
     handler.write(region, Operation.CREATE, createKey, value);
     verify(statement).setObject(1, createKey);
+    verify(statement).executeUpdate();
+    verify(statement).close();
+  }
+
+  @Test
+  public void insertActionSucceedsWithCompositeKey() throws Exception {
+    when(statement.executeUpdate()).thenReturn(1);
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    Object compositeKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+
+    handler.write(region, Operation.CREATE, compositeKey.toString(), value);
+
+    verify(statement).setObject(1, compositeKeyFieldValueOne);
+    verify(statement).setObject(2, compositeKeyFieldValueTwo);
+    verify(statement, times(2)).setObject(anyInt(), any());
     verify(statement).executeUpdate();
     verify(statement).close();
   }
@@ -377,12 +402,53 @@ public class SqlHandlerTest {
   }
 
   @Test
+  public void updateActionSucceedsWithCompositeKey() throws Exception {
+    when(statement.executeUpdate()).thenReturn(1);
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    Object compositeKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+
+    handler.write(region, Operation.UPDATE, compositeKey.toString(), value);
+
+    verify(statement).setObject(1, compositeKeyFieldValueOne);
+    verify(statement).setObject(2, compositeKeyFieldValueTwo);
+    verify(statement, times(2)).setObject(anyInt(), any());
+    verify(statement).executeUpdate();
+    verify(statement).close();
+  }
+
+  @Test
   public void destroyActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     Object destroyKey = "destroyKey";
     handler.write(region, Operation.DESTROY, destroyKey, value);
     verify(statement).setObject(1, destroyKey);
     verify(statement, times(1)).setObject(anyInt(), any());
+    verify(statement).close();
+  }
+
+  @Test
+  public void destroyActionSucceedsWithCompositeKey() throws Exception {
+    when(statement.executeUpdate()).thenReturn(1);
+    Object destroyKeyFieldValueOne = "fieldValueOne";
+    Object destroyKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject destroyKey = new JSONObject();
+    destroyKey.put("fieldOne", destroyKeyFieldValueOne);
+    destroyKey.put("fieldTwo", destroyKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+
+    handler.write(region, Operation.DESTROY, destroyKey.toString(), value);
+
+    verify(statement).setObject(1, destroyKeyFieldValueOne);
+    verify(statement).setObject(2, destroyKeyFieldValueTwo);
+    verify(statement, times(2)).setObject(anyInt(), any());
     verify(statement).close();
   }
 
@@ -504,9 +570,6 @@ public class SqlHandlerTest {
 
   @Test
   public void returnsCorrectColumnForGet() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
-
     EntryColumnData entryColumnData =
         handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.GET);
 
@@ -518,16 +581,81 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void returnsCorrectColumnsForUpsertOperations() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
+  public void returnsCorrectColumnForGetGivenCompositeKey() throws Exception {
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    Object compositeKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+            Operation.GET);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(2);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo("fieldOne");
+    assertThat(entryColumnData.getEntryKeyColumnData().get(1).getColumnName())
+        .isEqualTo("fieldTwo");
+  }
+
+  @Test
+  public void getEntryColumnDataGivenWrongNumberOfCompositeKeyFieldsFails() throws Exception {
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage(
+        "The key \"" + compositeKey.toString() + "\" should have 2 fields but has 1 fields.");
+
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+        Operation.GET);
+  }
+
+  @Test
+  public void getEntryColumnDataGivenWrongFieldNameInCompositeKeyFails() throws Exception {
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    Object compositeKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    compositeKey.put("fieldTwoWrong", compositeKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("The key \"" + compositeKey.toString()
+        + "\" has the field \"fieldTwoWrong\" which does not match any of the key columns: [fieldOne, fieldTwo]");
+
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+        Operation.GET);
+  }
+
+  @Test
+  public void returnsCorrectColumnsForUpdate() throws Exception {
+    testGetEntryColumnDataForCreateOrUpdate(Operation.UPDATE);
+  }
+
+  @Test
+  public void returnsCorrectColumnsForCreate() throws Exception {
+    testGetEntryColumnDataForCreateOrUpdate(Operation.CREATE);
+  }
+
+  private void testGetEntryColumnDataForCreateOrUpdate(Operation operation) {
     String nonKeyColumn = "otherColumn";
     when(regionMapping.getColumnNameForField(eq(KEY_COLUMN), any())).thenReturn(KEY_COLUMN);
     when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.UPDATE);
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, operation);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
@@ -539,10 +667,69 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void returnsCorrectColumnForDestroy() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+  public void returnsCorrectColumnsForUpdateWithCompositeKey() throws Exception {
+    testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation.UPDATE);
+  }
 
+  @Test
+  public void returnsCorrectColumnsForCreateWithCompositeKey() throws Exception {
+    testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation.CREATE);
+  }
+
+  private void testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation operation) {
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    Object compositeKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    String nonKeyColumn = "otherColumn";
+    when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
+    when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo", nonKeyColumn));
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+            operation);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+        .isEqualTo(nonKeyColumn);
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(2);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo("fieldOne");
+    assertThat(entryColumnData.getEntryKeyColumnData().get(1).getColumnName())
+        .isEqualTo("fieldTwo");
+  }
+
+  @Test
+  public void returnsCorrectColumnForDestroy() throws Exception {
+    Object compositeKeyFieldValueOne = "fieldValueOne";
+    Object compositeKeyFieldValueTwo = "fieldValueTwo";
+    JSONObject compositeKey = new JSONObject();
+    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+            Operation.DESTROY);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(2);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo("fieldOne");
+    assertThat(entryColumnData.getEntryKeyColumnData().get(1).getColumnName())
+        .isEqualTo("fieldTwo");
+  }
+
+  @Test
+  public void returnsCorrectColumnForDestroyWithCompositeKey() throws Exception {
     EntryColumnData entryColumnData =
         handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.DESTROY);
 
