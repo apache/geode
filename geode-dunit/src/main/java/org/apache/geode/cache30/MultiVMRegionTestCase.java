@@ -4875,10 +4875,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             // since we want to force a GII while updates are flying, make sure
             // the other VM gets its CreateRegionResponse and starts its GII
             // before falling into the update loop
-            /*
-             * pause(50); ((org.apache.geode.distributed.internal.InternalDistributedSystem)
-             * region.getCache().getDistributedSystem()).flushUnicastMessages();
-             */
 
             // operate on every odd entry with different value, alternating between
             // updates, invalidates, and destroys. These operations are likely

@@ -29,7 +29,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.admin.ListenerIdMap;
 import org.apache.geode.internal.admin.remote.StatListenerMessage;
@@ -185,6 +184,11 @@ public class GemFireStatSampler extends HostStatSampler {
   }
 
   @Override
+  public long getSystemId() {
+    return con.getId();
+  }
+
+  @Override
   protected void checkListeners() {
     checkLocalListeners();
     synchronized (listeners) {
@@ -230,21 +234,12 @@ public class GemFireStatSampler extends HostStatSampler {
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return this.con;
+    return this.con.getStatisticsManager();
   }
 
   @Override
   protected OsStatisticsFactory getOsStatisticsFactory() {
-    return this.con;
-  }
-
-  @Override
-  protected long getSpecialStatsId() {
-    long statId = OSProcess.getId();
-    if (statId == 0 || statId == -1) {
-      statId = getStatisticsManager().getId();
-    }
-    return statId;
+    return this.con.getStatisticsManager();
   }
 
   @Override
@@ -262,7 +257,7 @@ public class GemFireStatSampler extends HostStatSampler {
         HostStatHelper.newSystem(getOsStatisticsFactory());
         String statName = getStatisticsManager().getName();
         if (statName == null || statName.length() == 0) {
-          statName = "javaApp" + getStatisticsManager().getId();
+          statName = "javaApp" + getSystemId();
         }
         Statistics stats =
             HostStatHelper.newProcess(getOsStatisticsFactory(), id, statName + "-proc");
@@ -445,7 +440,11 @@ public class GemFireStatSampler extends HostStatSampler {
     static RemoteStatListenerImpl create(int listenerId, InternalDistributedMember recipient,
         long resourceId, String statName, HostStatSampler sampler) {
       RemoteStatListenerImpl result = null;
-      Statistics stats = sampler.getStatisticsManager().findStatistics(resourceId);
+      Statistics stats = sampler.getStatisticsManager().findStatisticsByUniqueId(resourceId);
+      if (stats == null) {
+        throw new RuntimeException(
+            "Could not find statistics instance with unique id " + resourceId);
+      }
       StatisticDescriptorImpl stat = (StatisticDescriptorImpl) stats.nameToDescriptor(statName);
       switch (stat.getTypeCode()) {
         case StatisticDescriptorImpl.BYTE:

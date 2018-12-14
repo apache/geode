@@ -16,7 +16,6 @@ package org.apache.geode.internal.statistics;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.OSProcess;
 
 /**
  * An implementation of {@link Statistics} that stores its statistics in local java memory.
@@ -54,7 +53,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   private final transient Object[] doubleLocks;
 
   /** The StatisticsFactory that created this instance */
-  private final StatisticsManager dSystem;
+  private final StatisticsManager statisticsManager;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -69,15 +68,16 @@ public class LocalStatisticsImpl extends StatisticsImpl {
    *        increments a statistic, then a <code>false</code> value may yield better performance.
    * @param osStatFlags Non-zero if stats require system calls to collect them; for internal use
    *        only
-   * @param system The distributed system that determines whether or not these statistics are stored
+   * @param statisticsManager The distributed system that determines whether or not these statistics
+   *        are stored
    *        (and collected) in GemFire shared memory or in the local VM
    */
   public LocalStatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
-      boolean atomicIncrements, int osStatFlags, StatisticsManager system) {
-    super(type, calcTextId(system, textId), calcNumericId(system, numericId), uniqueId,
+      boolean atomicIncrements, int osStatFlags, StatisticsManager statisticsManager) {
+    super(type, textId, numericId, uniqueId,
         osStatFlags);
 
-    this.dSystem = system;
+    this.statisticsManager = statisticsManager;
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
     int intCount = realType.getIntStatCount();
@@ -130,35 +130,25 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     }
   }
 
-  ////////////////////// Static Methods //////////////////////
-
-  private static long calcNumericId(StatisticsManager system, long userValue) {
-    if (userValue != 0) {
-      return userValue;
-    } else {
-      long result = OSProcess.getId(); // fix for bug 30239
-      if (result == 0) {
-        if (system != null) {
-          result = system.getId();
-        }
-      }
-      return result;
-    }
+  /**
+   * Creates a new non-atomic statistics instance of the given type
+   *
+   * @param type A description of the statistics
+   * @param textId Text that identifies this statistic when it is monitored
+   * @param numericId A number that displayed when this statistic is monitored
+   * @param uniqueId A number that uniquely identifies this instance
+   *        increments a statistic, then a <code>false</code> value may yield better performance.
+   * @param osStatFlags Non-zero if stats require system calls to collect them; for internal use
+   *        only
+   * @param statisticsManager The distributed system that determines whether or not these statistics
+   *        are stored
+   *        (and collected) in GemFire shared memory or in the local VM
+   */
+  public static Statistics createNonAtomic(StatisticsType type, String textId, long numericId,
+      long uniqueId, int osStatFlags, StatisticsManager statisticsManager) {
+    return new LocalStatisticsImpl(type, textId, numericId, uniqueId, false, osStatFlags,
+        statisticsManager);
   }
-
-  private static String calcTextId(StatisticsManager system, String userValue) {
-    if (userValue != null && !userValue.equals("")) {
-      return userValue;
-    } else {
-      if (system != null) {
-        return system.getName();
-      } else {
-        return "";
-      }
-    }
-  }
-
-  ////////////////////// Instance Methods //////////////////////
 
   @Override
   public boolean isAtomic() {
@@ -168,8 +158,8 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   @Override
   public void close() {
     super.close();
-    if (this.dSystem != null) {
-      dSystem.destroyStatistics(this);
+    if (this.statisticsManager != null) {
+      statisticsManager.destroyStatistics(this);
     }
   }
 

@@ -41,7 +41,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -55,7 +54,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
@@ -108,15 +106,13 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.internal.statistics.DummyStatisticsImpl;
+import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.LocalStatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsConfig;
-import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.StatisticsManagerFactory;
+import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -130,7 +126,7 @@ import org.apache.geode.security.SecurityManager;
  * @since GemFire 3.0
  */
 public class InternalDistributedSystem extends DistributedSystem
-    implements OsStatisticsFactory, StatisticsManager, LogConfigSupplier {
+    implements LogConfigSupplier {
 
   /**
    * True if the user is allowed lock when memory resources appear to be overcommitted.
@@ -176,6 +172,8 @@ public class InternalDistributedSystem extends DistributedSystem
       return Boolean.FALSE;
     }
   };
+
+  private final StatisticsManager statisticsManager;
 
   /**
    * The distribution manager that is used to communicate with the distributed system.
@@ -293,13 +291,13 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private final DistributionConfig originalConfig;
 
+  private final boolean statsDisabled =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
+
   /**
    * The config object to which most configuration work is delegated
    */
   private DistributionConfig config;
-
-  private final boolean statsDisabled =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
 
   private volatile boolean shareSockets = DistributionConfig.DEFAULT_CONSERVE_SOCKETS;
 
@@ -390,6 +388,10 @@ public class InternalDistributedSystem extends DistributedSystem
     sys.dm = dm;
     sys.isConnected = true;
     return sys;
+  }
+
+  public static InternalDistributedSystem newInstanceForTesting(StatisticsManagerFactory factory) {
+    return new InternalDistributedSystem(new Properties(), factory);
   }
 
   public static boolean removeSystem(InternalDistributedSystem oldSystem) {
@@ -504,8 +506,9 @@ public class InternalDistributedSystem extends DistributedSystem
     reconnectAttemptCounter = 0;
   }
 
-
-  ////////////////////// Constructors //////////////////////
+  private InternalDistributedSystem(Properties properties) {
+    this(properties, defaultStatisticsManagerFactory());
+  }
 
   /**
    * Creates a new <code>InternalDistributedSystem</code> with the given configuration properties.
@@ -516,7 +519,8 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @see DistributedSystem#connect
    */
-  private InternalDistributedSystem(Properties nonDefault) {
+  private InternalDistributedSystem(Properties nonDefault,
+      StatisticsManagerFactory statisticsManagerFactory) {
     alertingSession = AlertingSession.create();
     alertingService = new AlertingService();
     loggingSession = LoggingSession.create();
@@ -553,10 +557,13 @@ public class InternalDistributedSystem extends DistributedSystem
 
     this.creationStack =
         TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(this.originalConfig);
+
+    statisticsManager =
+        statisticsManagerFactory.create(originalConfig.getName(), startTime, statsDisabled);
   }
 
-  //////////////////// Instance Methods ////////////////////
 
+  //////////////////// Instance Methods ////////////////////
   public SecurityService getSecurityService() {
     return this.securityService;
   }
@@ -649,7 +656,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
     this.config = new RuntimeDistributionConfigImpl(this);
 
-    this.securityService = SecurityServiceFactory.create(this.config.getSecurityProps(),
+    this.securityService = SecurityServiceFactory.create(
+        this.config.getSecurityProps(),
         securityManager, postProcessor);
 
     if (!this.isLoner) {
@@ -801,15 +809,7 @@ public class InternalDistributedSystem extends DistributedSystem
         throw new GemFireIOException("Problem finishing a locator service start", e);
       }
 
-      if (!statsDisabled) {
-        Optional<LogFile> logFile = loggingSession.getLogFile();
-        if (logFile.isPresent()) {
-          sampler = new GemFireStatSampler(this, logFile.get());
-        } else {
-          sampler = new GemFireStatSampler(this);
-        }
-        this.sampler.start();
-      }
+      startSampler();
 
       alertingSession.createSession(new AlertMessaging(this));
       alertingSession.startSession();
@@ -825,6 +825,16 @@ public class InternalDistributedSystem extends DistributedSystem
     resourceListeners = new CopyOnWriteArrayList<>();
     this.reconnected = this.attemptingToReconnect;
     this.attemptingToReconnect = false;
+  }
+
+  private void startSampler() {
+    if (statsDisabled) {
+      return;
+    }
+    sampler = loggingSession.getLogFile()
+        .map(logFile -> new GemFireStatSampler(this, logFile))
+        .orElseGet(() -> new GemFireStatSampler(this));
+    this.sampler.start();
   }
 
   /**
@@ -933,6 +943,175 @@ public class InternalDistributedSystem extends DistributedSystem
       return false;
     }
     return this.isConnected;
+  }
+
+  public StatisticsManager getStatisticsManager() {
+    return statisticsManager;
+  }
+
+  @Override
+  public StatisticDescriptor createIntCounter(String name,
+      String description,
+      String units) {
+    return statisticsManager.createIntCounter(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createLongCounter(String name,
+      String description,
+      String units) {
+    return statisticsManager.createLongCounter(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleCounter(String name,
+      String description,
+      String units) {
+    return statisticsManager.createDoubleCounter(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createIntGauge(String name,
+      String description,
+      String units) {
+    return statisticsManager.createIntGauge(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createLongGauge(String name,
+      String description,
+      String units) {
+    return statisticsManager.createLongGauge(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleGauge(String name,
+      String description,
+      String units) {
+    return statisticsManager.createDoubleGauge(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createIntCounter(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createIntCounter(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createLongCounter(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createLongCounter(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleCounter(String name,
+      String description,
+      String units,
+      boolean largerBetter) {
+    return statisticsManager.createDoubleCounter(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createIntGauge(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createIntGauge(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createLongGauge(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createLongGauge(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleGauge(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createDoubleGauge(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticsType createType(String name, String description,
+      StatisticDescriptor[] stats) {
+    return statisticsManager.createType(name, description, stats);
+  }
+
+  @Override
+  public StatisticsType findType(String name) {
+    return statisticsManager.findType(name);
+  }
+
+  @Override
+  public StatisticsType[] createTypesFromXml(Reader reader)
+      throws IOException {
+    return statisticsManager.createTypesFromXml(reader);
+  }
+
+  @Override
+  public Statistics createStatistics(StatisticsType type) {
+    return statisticsManager.createStatistics(type);
+  }
+
+  @Override
+  public Statistics createStatistics(StatisticsType type,
+      String textId) {
+    return statisticsManager.createStatistics(type, textId);
+  }
+
+  @Override
+  public Statistics createStatistics(StatisticsType type,
+      String textId, long numericId) {
+    return statisticsManager.createStatistics(type, textId, numericId);
+  }
+
+  @Override
+  public Statistics createAtomicStatistics(StatisticsType type) {
+    return statisticsManager.createAtomicStatistics(type);
+  }
+
+  @Override
+  public Statistics createAtomicStatistics(StatisticsType type,
+      String textId) {
+    return statisticsManager.createAtomicStatistics(type, textId);
+  }
+
+  @Override
+  public Statistics createAtomicStatistics(StatisticsType type,
+      String textId, long numericId) {
+    return statisticsManager.createAtomicStatistics(type, textId, numericId);
+  }
+
+  @Override
+  public Statistics[] findStatisticsByType(StatisticsType type) {
+    return statisticsManager.findStatisticsByType(type);
+  }
+
+  @Override
+  public Statistics[] findStatisticsByTextId(String textId) {
+    return statisticsManager.findStatisticsByTextId(textId);
+  }
+
+  @Override
+  public Statistics[] findStatisticsByNumericId(long numericId) {
+    return statisticsManager.findStatisticsByNumericId(numericId);
+  }
+
+  @Override
+  public String getName() {
+    return getOriginalConfig().getName();
+  }
+
+  @Override
+  public long getId() {
+    return this.id;
+  }
+
+  public long getStartTime() {
+    return this.startTime;
   }
 
   /**
@@ -1115,7 +1294,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private void runDisconnectForReconnect(final DisconnectListener dc) {
     try {
-      dc.onDisconnect(InternalDistributedSystem.this);
+      dc.onDisconnect(this);
     } catch (DistributedSystemDisconnectedException e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Disconnect listener <{}> thwarted by shutdown: {}", dc, e,
@@ -1628,16 +1807,6 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * Returns the id of this connection to the distributed system. This is actually the port of the
-   * distribution manager's distribution channel.
-   *
-   */
-  @Override
-  public long getId() {
-    return this.id;
-  }
-
-  /**
    * Returns the string value of the distribution manager's id.
    */
   @Override
@@ -1695,11 +1864,6 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public DistributionConfig getOriginalConfig() {
     return this.originalConfig;
-  }
-
-  @Override
-  public String getName() {
-    return getOriginalConfig().getName();
   }
 
   /////////////////////// Utility Methods ///////////////////////
@@ -1776,96 +1940,11 @@ public class InternalDistributedSystem extends DistributedSystem
     return sb.toString().trim();
   }
 
-  private final CopyOnWriteArrayList<Statistics> statsList = new CopyOnWriteArrayList<Statistics>();
-  private int statsListModCount = 0;
-  private AtomicLong statsListUniqueId = new AtomicLong(1);
-
   // As the function execution stats can be lot in number, its better to put
   // them in a map so that it will be accessible immediately
   private final ConcurrentHashMap<String, FunctionStats> functionExecutionStatsMap =
       new ConcurrentHashMap<String, FunctionStats>();
   private FunctionServiceStats functionServiceStats = null;
-
-  @Override
-  public int getStatListModCount() {
-    return this.statsListModCount;
-  }
-
-  @Override
-  public List<Statistics> getStatsList() {
-    return this.statsList;
-  }
-
-  @Override
-  public int getStatisticsCount() {
-    int result = 0;
-    List<Statistics> statsList = this.statsList;
-    if (statsList != null) {
-      result = statsList.size();
-    }
-    return result;
-  }
-
-  @Override
-  public Statistics findStatistics(long id) {
-    List<Statistics> statsList = this.statsList;
-    for (Statistics s : statsList) {
-      if (s.getUniqueId() == id) {
-        return s;
-      }
-    }
-    throw new RuntimeException(
-        "Could not find statistics instance");
-  }
-
-  @Override
-  public boolean statisticsExists(long id) {
-    List<Statistics> statsList = this.statsList;
-    for (Statistics s : statsList) {
-      if (s.getUniqueId() == id) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public Statistics[] getStatistics() {
-    List<Statistics> statsList = this.statsList;
-    return statsList.toArray(new Statistics[0]);
-  }
-
-  // StatisticsFactory methods
-  @Override
-  public Statistics createStatistics(StatisticsType type) {
-    return createOsStatistics(type, null, 0, 0);
-  }
-
-  @Override
-  public Statistics createStatistics(StatisticsType type, String textId) {
-    return createOsStatistics(type, textId, 0, 0);
-  }
-
-  @Override
-  public Statistics createStatistics(StatisticsType type, String textId, long numericId) {
-    return createOsStatistics(type, textId, numericId, 0);
-  }
-
-  @Override
-  public Statistics createOsStatistics(StatisticsType type, String textId, long numericId,
-      int osStatFlags) {
-    if (this.statsDisabled) {
-      return new DummyStatisticsImpl(type, textId, numericId);
-    }
-    long myUniqueId = statsListUniqueId.getAndIncrement();
-    Statistics result =
-        new LocalStatisticsImpl(type, textId, numericId, myUniqueId, false, osStatFlags, this);
-    synchronized (statsList) {
-      statsList.add(result);
-      statsListModCount++;
-    }
-    return result;
-  }
 
   public FunctionStats getFunctionStats(String textId) {
     FunctionStats stats = functionExecutionStatsMap.get(textId);
@@ -1892,214 +1971,10 @@ public class InternalDistributedSystem extends DistributedSystem
     return functionServiceStats;
   }
 
-  /**
-   * For every registered statistic instance call the specified visitor. This method was added to
-   * fix bug 40358
-   */
-  public void visitStatistics(StatisticsVisitor visitor) {
-    for (Statistics s : this.statsList) {
-      visitor.visit(s);
-    }
-  }
-
-  /**
-   * Used to "visit" each instance of Statistics registered with
-   *
-   * @see #visitStatistics
-   */
-  public interface StatisticsVisitor {
-
-    void visit(Statistics stat);
-  }
-
   public Set<String> getAllFunctionExecutionIds() {
     return functionExecutionStatsMap.keySet();
   }
 
-
-  @Override
-  public Statistics[] findStatisticsByType(final StatisticsType type) {
-    final ArrayList hits = new ArrayList();
-    visitStatistics(new StatisticsVisitor() {
-      @Override
-      public void visit(Statistics s) {
-        if (type == s.getType()) {
-          hits.add(s);
-        }
-      }
-    });
-    Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
-  }
-
-  @Override
-  public Statistics[] findStatisticsByTextId(final String textId) {
-    final ArrayList hits = new ArrayList();
-    visitStatistics(new StatisticsVisitor() {
-      @Override
-      public void visit(Statistics s) {
-        if (s.getTextId().equals(textId)) {
-          hits.add(s);
-        }
-      }
-    });
-    Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
-  }
-
-  @Override
-  public Statistics[] findStatisticsByNumericId(final long numericId) {
-    final ArrayList hits = new ArrayList();
-    visitStatistics(new StatisticsVisitor() {
-      @Override
-      public void visit(Statistics s) {
-        if (numericId == s.getNumericId()) {
-          hits.add(s);
-        }
-      }
-    });
-    Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
-  }
-
-  public Statistics findStatisticsByUniqueId(final long uniqueId) {
-    for (Statistics s : this.statsList) {
-      if (uniqueId == s.getUniqueId()) {
-        return s;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * for internal use only. Its called by {@link LocalStatisticsImpl#close}.
-   */
-  @Override
-  public void destroyStatistics(Statistics stats) {
-    synchronized (statsList) {
-      if (statsList.remove(stats)) {
-        statsListModCount++;
-      }
-    }
-  }
-
-  @Override
-  public Statistics createAtomicStatistics(StatisticsType type) {
-    return createAtomicStatistics(type, null, 0);
-  }
-
-  @Override
-  public Statistics createAtomicStatistics(StatisticsType type, String textId) {
-    return createAtomicStatistics(type, textId, 0);
-  }
-
-  @Override
-  public Statistics createAtomicStatistics(StatisticsType type, String textId, long numericId) {
-    if (this.statsDisabled) {
-      return new DummyStatisticsImpl(type, textId, numericId);
-    }
-
-    long myUniqueId = statsListUniqueId.getAndIncrement();
-    Statistics result = StatisticsImpl.createAtomicNoOS(type, textId, numericId, myUniqueId, this);
-    synchronized (statsList) {
-      statsList.add(result);
-      statsListModCount++;
-    }
-    return result;
-  }
-
-
-  // StatisticsTypeFactory methods
-  private static final StatisticsTypeFactory tf = StatisticsTypeFactoryImpl.singleton();
-
-  /**
-   * Creates or finds a StatisticType for the given shared class.
-   */
-  @Override
-  public StatisticsType createType(String name, String description, StatisticDescriptor[] stats) {
-    return tf.createType(name, description, stats);
-  }
-
-  @Override
-  public StatisticsType findType(String name) {
-    return tf.findType(name);
-  }
-
-  @Override
-  public StatisticsType[] createTypesFromXml(Reader reader) throws IOException {
-    return tf.createTypesFromXml(reader);
-  }
-
-  @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return tf.createIntCounter(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createLongCounter(String name, String description, String units) {
-    return tf.createLongCounter(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units) {
-    return tf.createDoubleCounter(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return tf.createIntGauge(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createLongGauge(String name, String description, String units) {
-    return tf.createLongGauge(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units) {
-    return tf.createDoubleGauge(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createIntCounter(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createLongCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createLongCounter(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createDoubleCounter(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createIntGauge(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createLongGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createLongGauge(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createDoubleGauge(name, description, units, largerBetter);
-  }
-
-  @Override
-  public long getStartTime() {
-    return this.startTime;
-  }
 
   /**
    * Makes note of a <code>ConnectListener</code> whose <code>onConnect</code> method will be
@@ -3135,4 +3010,15 @@ public class InternalDistributedSystem extends DistributedSystem
   public InternalCache getCache() {
     return this.dm == null ? null : this.dm.getCache();
   }
+
+  private static StatisticsManagerFactory defaultStatisticsManagerFactory() {
+    return (name, startTime, statsDisabled) -> {
+      if (statsDisabled) {
+        return new DummyStatisticsRegistry(name, startTime);
+      } else {
+        return new StatisticsRegistry(name, startTime);
+      }
+    };
+  }
+
 }

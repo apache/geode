@@ -369,27 +369,6 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
 
     ThreadUtils.join(async1, 30 * 1000);
 
-    // verify stats for client putAll into distributed region
-    // 1. verify client staus
-    /*
-     * server2.invoke(new CacheSerializableRunnable("server2 execute putAll") { public void run2()
-     * throws CacheException { try { DistributedSystemConfig config =
-     * AdminDistributedSystemFactory.defineDistributedSystem(system, null); AdminDistributedSystem
-     * ads = AdminDistributedSystemFactory.getDistributedSystem(config); ads.connect();
-     * DistributedMember distributedMember = system.getDistributedMember(); SystemMember member =
-     * ads.lookupSystemMember(distributedMember);
-     *
-     * StatisticResource[] resources = member.getStats(); for (int i=0; i<resources.length; i++) {
-     * System.out.println("GGG:"+resources[i].getType()); if
-     * (resources[i].getType().equals("CacheServerClientStats")) { Statistic[] stats =
-     * resources[i].getStatistics(); for (int j=0; i<stats.length; i++) { if
-     * (stats[j].getName().equals("putAll")) {
-     * System.out.println("GGG:"+stats[j].getName()+":"+stats[j].getValue()); } else if
-     * (stats[j].getName().equals("sendPutAllTime")) {
-     * System.out.println("GGG:"+stats[j].getName()+":"+stats[j].getValue()); } } } } } catch
-     * (AdminException e) { fail("Failed while creating AdminDS", e); } } });
-     */
-
     // Test Exception handling
     // verify CQ is ready
     client1.invoke(new CacheSerializableRunnable(title + "test exception handling") {

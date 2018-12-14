@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeImpl;
@@ -65,7 +64,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
    */
   public Atomic50StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
       StatisticsManager system) {
-    super(type, calcTextId(system, textId), calcNumericId(system, numericId), uniqueId, 0);
+    super(type, textId, numericId, uniqueId, 0);
     this.dSystem = system;
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
@@ -100,34 +99,6 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
       this.longStorage = null;
       this.longDirty = null;
       this.longReadPrepLock = null;
-    }
-  }
-
-  ////////////////////// Static Methods //////////////////////
-
-  private static long calcNumericId(StatisticsManager system, long userValue) {
-    if (userValue != 0) {
-      return userValue;
-    } else {
-      long result = OSProcess.getId(); // fix for bug 30239
-      if (result == 0) {
-        if (system != null) {
-          result = system.getId();
-        }
-      }
-      return result;
-    }
-  }
-
-  private static String calcTextId(StatisticsManager system, String userValue) {
-    if (userValue != null && !userValue.equals("")) {
-      return userValue;
-    } else {
-      if (system != null) {
-        return system.getName();
-      } else {
-        return "";
-      }
     }
   }
 
