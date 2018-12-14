@@ -282,7 +282,7 @@ public class AvailablePortHelper {
         continue;
       }
 
-      if (AvailablePort.isPortAvailable(uniquePort++, protocol, getAddress(protocol))) {
+      if (AvailablePort.isPortAvailable(uniquePort, protocol, getAddress(protocol))) {
         return uniquePort;
       }
     }
