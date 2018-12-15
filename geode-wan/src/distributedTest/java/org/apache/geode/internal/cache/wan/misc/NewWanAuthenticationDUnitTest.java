@@ -25,6 +25,7 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -37,6 +38,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.AuthInitialize;
@@ -208,7 +210,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> {
       startSender(senderId);
-      doPutsAndVerifyQueue(regionName, numPuts, false, numPuts);
+      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, false, true, false);
     });
 
     receiver.invoke(() -> validateRegionSize(regionName, 0));
@@ -244,7 +246,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> {
       startSender(senderId);
-      doPutsAndVerifyQueue(regionName, numPuts, false, numPuts);
+      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, false, true, false);
     });
 
     receiver.invoke(() -> validateRegionSize(regionName, 0));
@@ -257,7 +259,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     });
 
     sender.invoke(() -> {
-      doPutsAndVerifyQueue(regionName, numPuts, true, 0);
+      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, true, false, true);
     });
 
     receiver.invoke(() -> validateRegionSize(regionName, numPuts));
@@ -281,17 +283,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     sender.invoke(() -> {
       createSecuredCache(senderSecurityProps, null, lnPort);
       createReplicatedRegion(regionName, senderId, isOffHeap());
-      try {
-        /*
-         * Setting the gateway-connection-retry-interval to 0 ensures that the Dispatcher and
-         * AckReader eagerly retry connections, so we may detect any issues with the retry logic
-         * early.
-         */
-        System.setProperty(gatewayConnectionRetryIntervalConfigParameter, "0");
-        createSender(senderId, 2, false, 100, 10, false, false, null, true);
-      } finally {
-        System.clearProperty(gatewayConnectionRetryIntervalConfigParameter);
-      }
+      createSender(senderId, 2, false, 100, 10, false, false, null, true);
     });
 
     receiver.invoke(() -> {
@@ -300,7 +292,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> {
       startSender(senderId);
-      doPutsAndVerifyQueue(regionName, numPuts, true, 0);
+      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, true, false, true);
     });
 
     receiver.invoke(() -> validateRegionSize(regionName, numPuts));
@@ -315,7 +307,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     });
 
     sender.invoke(() -> {
-      doPutsAndVerifyQueue(regionName, numPuts, false, numPuts);
+      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, false, true, true);
     });
 
     receiver.invoke(() -> validateRegionSize(regionName, 0));
@@ -329,8 +321,12 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     });
 
     sender.invoke(() -> {
-      // Data should be able to flow properly after valid credentials have been restored.
-      doPutsAndVerifyQueue(regionName, numPuts, true, 0);
+      /*
+       * Data should be able to flow properly after valid credentials have been restored.
+       * No more puts are needed because we already have numPuts queued from when credentials
+       * were invalid (see above).
+       */
+      doPutsAndVerifyQueueSizeAfterProcessing(regionName, 0, true, false, true);
     });
 
     receiver.invoke(() -> validateRegionSize(regionName, numPuts));
@@ -411,12 +407,49 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     // sender.invoke(() -> verifyDifferentServerInGetCredentialCall());
   }
 
-  private void doPutsAndVerifyQueue(final String regionName, final int numPuts,
-      final boolean shouldBeConnected,
-      final int expectedQueueSize) {
-    doPuts(regionName, numPuts);
+  private void doPutsAndVerifyQueueSizeAfterProcessing(final String regionName, final int numPuts,
+                                                       final boolean shouldBeConnected,
+                                                       final boolean isQueueBlocked,
+                                                       final boolean isAckThreadRunning) {
+    if (isQueueBlocked) {
+      // caller is assuming that queue processing will not make progress
+      try {
+        final LongAdder dispatchAttempts = new LongAdder();
+        final LongAdder ackReadAttempts = new LongAdder();
+
+        GatewaySenderEventRemoteDispatcher.messageProcessingAttempted = isAck -> {
+          if (isAck)
+            ackReadAttempts.increment();
+          else
+            dispatchAttempts.increment();
+        };
+
+        doPuts(regionName, numPuts);
+
+        /*
+         * The game here is to ensure that both the dispatcher thread and the ack reader thread
+         * each get at least one whack at processing (a batch or an ack, respectively).
+         * Note: both those conditions aren't obviously necessary from our method signature, but
+         * trust us: callers rely on that guarantee! (the "Processing" in the method name
+         * implies that _both_ threads tried).
+         *
+         * Notice the particular awfulness of the second term in the conditional below. Callers
+         * have to send us a flag to tell us that the ack reader thread is not running so we know
+         * not to look for its attempts.
+         */
+        await().until(() -> dispatchAttempts.sum() > 0 &&
+            (!isAckThreadRunning || ackReadAttempts.sum() > 0));
+
+        checkQueueSize(senderId, numPuts);
+      } finally {
+        GatewaySenderEventRemoteDispatcher.messageProcessingAttempted = isAck -> {};
+      }
+    } else {
+      doPuts(regionName, numPuts);
+      // caller is assuming queue will drain eventually
+      checkQueueSize(senderId, 0);
+    }
     verifyRunningWithConnectedState(senderId, shouldBeConnected);
-    checkQueueSize(senderId, expectedQueueSize);
   }
 
   private void createSecuredReceiver(Integer nyPort, String regionName,

@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 
@@ -59,6 +60,14 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   private AckReaderThread ackReaderThread;
 
   private ReentrantReadWriteLock connectionLifeCycleLock = new ReentrantReadWriteLock();
+
+  /*
+   * Called after each attempt at processing an outbound (dispatch) or inbound (ack)
+   * message, whether the attempt is successful or not. The purpose is testability.
+   * Without this hook, negative tests, can't ensure that message processing was
+   * attempted, so they wouldn't know how long to wait for some sort of failure.
+   */
+  public static Consumer<Boolean> messageProcessingAttempted = isAck -> {};
 
   /**
    * This count is reset to 0 each time a successful connection is made.
@@ -129,7 +138,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       } else {
         logAndStopProcessor(ex);
       }
+    } finally {
+      messageProcessingAttempted.accept(true);
     }
+
     return ack;
   }
 
@@ -163,6 +175,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       throw e;
     } catch (Exception e) {
       logAndStopProcessor(e);
+    } finally {
+      messageProcessingAttempted.accept(false);
     }
     return success;
   }
@@ -821,11 +835,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   private static class RecoverableExceptionPredicates {
 
-    /**
-     * Certain exception types are considered recoverable when reading an acknowledgement.
-     */
     static boolean isRecoverableWhenReadingAck(final Exception ex) {
-      /**
+      /*
        * It is considered non-recoverable if the PDX registry files are deleted from the sending
        * side of a WAN Gateway. This is determined by checking if the cause of the
        * {@link ServerConnectivityException} is caused by a {@link PdxRegistryMismatchException}
@@ -835,11 +846,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               && !(ex.getCause() instanceof PdxRegistryMismatchException));
     }
 
-    /**
-     * Certain exception types are considered recoverable when dispatching a batch.
-     */
     static boolean isRecoverableWhenDispatchingBatch(final Throwable t) {
-      /**
+      /*
        * We consider {@link ServerConnectivityException} to be a temporary connectivity issue and
        * is therefore recoverable. The {@link IllegalStateException} can occur if off-heap is used,
        * and a GatewaySenderEventImpl is serialized after being freed. This can happen if the
@@ -855,7 +863,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
      * reading an acknowledgement.
      */
     private static boolean isRecoverableInAllCases(final Throwable t) {
-      /**
+      /*
        * {@link IOException} and {@link ConnectionDestroyedException} can occur
        * due to temporary network issues and therefore are recoverable.
        * {@link GemFireSecurityException} represents an inability to authenticate with the
