@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -118,6 +119,26 @@ public abstract class JdbcLoaderIntegrationTest {
   }
 
   @Test
+  public void verifyGetWithPdxClassNameAndCompositeKey() throws Exception {
+    createEmployeeTable();
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
+    String ids = "id,name";
+    Region<String, Employee> region =
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids);
+    createPdxType();
+
+    JSONObject key = new JSONObject();
+    key.put("id", "1");
+    key.put("name", "Emp1");
+    Employee value = region.get(key.toString());
+
+    assertThat(value.getId()).isEqualTo("1");
+    assertThat(value.getName()).isEqualTo("Emp1");
+    assertThat(value.getAge()).isEqualTo(21);
+  }
+
+  @Test
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
     createClassWithSupportedPdxFieldsTable(statement, REGION_TABLE_NAME);
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
@@ -149,21 +170,27 @@ public abstract class JdbcLoaderIntegrationTest {
     assertThat(pdx).isNull();
   }
 
-  private SqlHandler createSqlHandler(String pdxClassName)
+  private SqlHandler createSqlHandler(String pdxClassName, String ids)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            getConnectionUrl()),
+            getConnectionUrl(), ids),
         testDataSourceFactory);
+  }
+
+  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
+      String ids)
+      throws RegionMappingExistsException {
+    JdbcLoader<K, V> jdbcLoader =
+        new JdbcLoader<>(createSqlHandler(pdxClassName, ids), cache);
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
+    regionFactory.setCacheLoader(jdbcLoader);
+    return regionFactory.create(regionName);
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName)
       throws RegionMappingExistsException {
-    JdbcLoader<K, V> jdbcLoader =
-        new JdbcLoader<>(createSqlHandler(pdxClassName), cache);
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
-    regionFactory.setCacheLoader(jdbcLoader);
-    return regionFactory.create(regionName);
+    return createRegionWithJDBCLoader(regionName, pdxClassName, null);
   }
 
   private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert(String key) {

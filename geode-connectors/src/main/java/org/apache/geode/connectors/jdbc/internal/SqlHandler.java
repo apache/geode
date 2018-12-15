@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.apache.geode.InternalGemFireException;
@@ -260,7 +261,18 @@ public class SqlHandler {
           new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
       result.add(columnData);
     } else {
-      JSONObject compositeKey = new JSONObject((String) key);
+      if (!(key instanceof String)) {
+        throw new JdbcConnectorException("The key \"" + key + "\" of class \"" + key.getClass()
+            + "\" must be a java.lang.String because multiple columns are configured as ids.");
+      }
+      JSONObject compositeKey = null;
+      try {
+        compositeKey = new JSONObject((String) key);
+      } catch (JSONException ex) {
+        throw new JdbcConnectorException("The key \"" + key
+            + "\" must be a valid JSON string because multiple columns are configured as ids. Details: "
+            + ex.getMessage());
+      }
       Set<String> fieldNames = compositeKey.keySet();
       if (fieldNames.size() != keyColumnNames.size()) {
         throw new JdbcConnectorException("The key \"" + key + "\" should have "
