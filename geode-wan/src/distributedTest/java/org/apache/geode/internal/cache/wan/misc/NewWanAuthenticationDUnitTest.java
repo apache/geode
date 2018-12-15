@@ -407,10 +407,12 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     // sender.invoke(() -> verifyDifferentServerInGetCredentialCall());
   }
 
-  private void doPutsAndVerifyQueueSizeAfterProcessing(final String regionName, final int numPuts,
-                                                       final boolean shouldBeConnected,
-                                                       final boolean isQueueBlocked,
-                                                       final boolean isAckThreadRunning) {
+  private void doPutsAndVerifyQueueSizeAfterProcessing(
+      final String regionName,
+      final int numPuts,
+      final boolean shouldBeConnected,
+      final boolean isQueueBlocked,
+      final boolean isAckThreadRunning) {
     if (isQueueBlocked) {
       // caller is assuming that queue processing will not make progress
       try {
@@ -442,7 +444,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
         checkQueueSize(senderId, numPuts);
       } finally {
-        GatewaySenderEventRemoteDispatcher.messageProcessingAttempted = isAck -> {};
+        GatewaySenderEventRemoteDispatcher.messageProcessingAttempted = isAck -> {
+        };
       }
     } else {
       doPuts(regionName, numPuts);
