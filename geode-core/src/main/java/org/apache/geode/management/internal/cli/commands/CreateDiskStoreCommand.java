@@ -133,7 +133,9 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     List<DiskDirType> diskDirs = diskDirsType.getDiskDirs();
     for (int i = 0; i < diskStoreAttributes.getDiskDirs().length; i++) {
       DiskDirType diskDir = new DiskDirType();
-      diskDir.setContent(diskStoreAttributes.getDiskDirs()[i].getName());
+      File diskDirFile = diskStoreAttributes.getDiskDirs()[i];
+      diskDir.setContent(
+          diskDirFile.isAbsolute() ? diskDirFile.getAbsolutePath() : diskDirFile.getName());
       diskDir.setDirSize(Integer.toString(diskStoreAttributes.getDiskDirSizes()[i]));
 
       diskDirs.add(diskDir);
