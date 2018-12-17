@@ -1413,7 +1413,7 @@ public class CacheClientNotifier {
    * It will remove the clients connected to the passed acceptorId. If its the only server, shuts
    * down this instance.
    */
-  protected synchronized void shutdown(long acceptorId) {
+  public synchronized void shutdown(long acceptorId) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("At cache server shutdown time, the number of cache servers in the cache is {}",
