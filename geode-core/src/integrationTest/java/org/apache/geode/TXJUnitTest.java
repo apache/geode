@@ -15,6 +15,7 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -142,12 +143,22 @@ public class TXJUnitTest {
   }
 
   protected void createRegion() throws Exception {
+    region = createRegion(getClass().getSimpleName(), false);
+  }
+
+  protected Region createRegion(String regionName, boolean isConcurrencyChecksEnabled)
+      throws Exception {
     AttributesFactory<String, String> attributesFactory = new AttributesFactory<>();
-    attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-    attributesFactory.setConcurrencyChecksEnabled(false); // test validation expects this behavior
+    attributesFactory
+        .setDataPolicy(isConcurrencyChecksEnabled ? DataPolicy.REPLICATE : DataPolicy.NORMAL);
+    attributesFactory
+        .setScope(isConcurrencyChecksEnabled ? Scope.DISTRIBUTED_ACK : Scope.DISTRIBUTED_NO_ACK);
+    attributesFactory.setConcurrencyChecksEnabled(isConcurrencyChecksEnabled); // test validation
+                                                                               // expects this
+                                                                               // behavior
     attributesFactory.setIndexMaintenanceSynchronous(true);
 
-    this.region = this.cache.createRegion(getClass().getSimpleName(), attributesFactory.create());
+    return this.cache.createRegion(regionName, attributesFactory.create());
   }
 
   protected void closeCache() {
@@ -5097,6 +5108,86 @@ public class TXJUnitTest {
         dr.localDestroyRegion();
       }
     }
+  }
+
+  @Test
+  public void valuesRepeatableReadDoesNotIncludeTombstones() throws Exception {
+    Region newRegion = createRegion("newRegion", true);
+    newRegion.put("key1", "value1");
+    newRegion.destroy("key1"); // creates a tombstone
+
+    txMgr.begin(); // tx1
+    newRegion.values().toArray(); // this is a repeatable read, does not read tombstone
+    TransactionId txId = txMgr.suspend();
+
+    txMgr.begin(); // tx2
+    newRegion.put("key1", "newValue");
+    txMgr.commit();
+
+    txMgr.resume(txId);
+    newRegion.put("key1", "value1");
+    txMgr.commit();
+    assertThat(newRegion.get("key1")).isEqualTo("value1");
+  }
+
+  @Test
+  public void keySetRepeatableReadDoesNotIncludeTombstones() throws Exception {
+    Region newRegion = createRegion("newRegion", true);
+    newRegion.put("key1", "value1");
+    newRegion.destroy("key1"); // creates a tombstone
+
+    txMgr.begin(); // tx1
+    newRegion.keySet().toArray(); // this is a repeatable read, does not read tombstone
+    TransactionId txId = txMgr.suspend();
+
+    txMgr.begin(); // tx2
+    newRegion.put("key1", "newValue");
+    txMgr.commit();
+
+    txMgr.resume(txId);
+    newRegion.put("key1", "value1");
+    txMgr.commit();
+    assertThat(newRegion.get("key1")).isEqualTo("value1");
+  }
+
+  @Test
+  public void valuesRepeatableReadIncludesInvalidates() throws Exception {
+    Region newRegion = createRegion("newRegion", true);
+    newRegion.put("key1", "value1");
+    newRegion.invalidate("key1");
+
+    txMgr.begin(); // tx1
+    newRegion.values().toArray(); // this is a repeatable read, reads invalidate
+    TransactionId txId = txMgr.suspend();
+
+    txMgr.begin(); // tx2
+    newRegion.put("key1", "newValue");
+    txMgr.commit();
+
+    txMgr.resume(txId);
+    newRegion.put("key1", "value1");
+    assertThatThrownBy(() -> txMgr.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThat(newRegion.get("key1")).isEqualTo("newValue");
+  }
+
+  @Test
+  public void keySetRepeatableReadIncludesInvalidates() throws Exception {
+    Region newRegion = createRegion("newRegion", true);
+    newRegion.put("key1", "value1");
+    newRegion.invalidate("key1");
+
+    txMgr.begin(); // tx1
+    newRegion.keySet().toArray(); // this is a repeatable read, reads invalidate
+    TransactionId txId = txMgr.suspend();
+
+    txMgr.begin(); // tx2
+    newRegion.put("key1", "newValue");
+    txMgr.commit();
+
+    txMgr.resume(txId);
+    newRegion.put("key1", "value1");
+    assertThatThrownBy(() -> txMgr.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThat(newRegion.get("key1")).isEqualTo("newValue");
   }
 
   @Test

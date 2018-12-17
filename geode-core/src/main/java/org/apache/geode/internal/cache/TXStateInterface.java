@@ -110,13 +110,6 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    */
   Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
 
-  /**
-   * @param updateStats TODO
-   */
-  Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
-      boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-      boolean returnTombstones, boolean retainResult);
-
   TXEvent getEvent();
 
   TXRegionState txWriteRegion(final InternalRegion internalRegion, final KeyInfo entryKey);
