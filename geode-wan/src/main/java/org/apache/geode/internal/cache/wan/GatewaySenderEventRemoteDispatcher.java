@@ -67,7 +67,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    * Without this hook, negative tests, can't ensure that message processing was
    * attempted, so they wouldn't know how long to wait for some sort of failure.
    */
-  public static Consumer<Boolean> messageProcessingAttempted = isAck -> {
+  public static volatile Consumer<Boolean> messageProcessingAttempted = isAck -> {
   };
 
   /**
