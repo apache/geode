@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,7 +56,7 @@ public class ProductUseLog implements MembershipListener {
   public ProductUseLog(File productUseLogFile) {
     // GEODE-4180, use absolute paths
     this.productUseLogFile = productUseLogFile.getAbsoluteFile();
-    this.logLevel = InternalLogWriter.INFO_LEVEL;
+    this.logLevel = INFO.intLevel();
     createLogWriter();
   }
 

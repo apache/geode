@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -277,7 +279,7 @@ public class CacheCreation implements InternalCache {
    * A logger that is used in debugging
    */
   private final InternalLogWriter logWriter =
-      new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+      new LocalLogWriter(ALL.intLevel(), System.out);
 
   private final InternalLogWriter securityLogWriter =
       LogWriterFactory.toSecurityLogWriter(this.logWriter);

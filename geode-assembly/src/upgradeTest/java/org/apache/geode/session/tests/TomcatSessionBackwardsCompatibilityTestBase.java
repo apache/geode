@@ -31,7 +31,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
@@ -47,6 +47,7 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class TomcatSessionBackwardsCompatibilityTestBase {
+  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
 
   @Parameterized.Parameters
   public static Collection<String> data() {
@@ -114,23 +115,28 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Before
   public void setup() throws Exception {
-    tomcat7079AndOldModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7079AndOldModules",
-        oldModules.getAbsolutePath(), oldBuild.getAbsolutePath() + "/lib");
+    tomcat7079AndOldModules =
+        new TomcatInstall("Tomcat7079AndOldModules", TomcatInstall.TomcatVersion.TOMCAT7,
+            ContainerInstall.ConnectionType.CLIENT_SERVER,
+            oldModules.getAbsolutePath(), oldBuild.getAbsolutePath() + "/lib",
+            portSupplier::getAvailablePort);
 
-    tomcat7079AndCurrentModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7079AndCurrentModules");
+    tomcat7079AndCurrentModules =
+        new TomcatInstall("Tomcat7079AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT7,
+            ContainerInstall.ConnectionType.CLIENT_SERVER,
+            portSupplier::getAvailablePort);
 
-    tomcat8AndOldModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat8AndOldModules", oldModules.getAbsolutePath(),
-        oldBuild.getAbsolutePath() + "/lib");
+    tomcat8AndOldModules =
+        new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
+            ContainerInstall.ConnectionType.CLIENT_SERVER,
+            oldModules.getAbsolutePath(),
+            oldBuild.getAbsolutePath() + "/lib",
+            portSupplier::getAvailablePort);
 
-    tomcat8AndCurrentModules = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat8AndCurrentModules");
+    tomcat8AndCurrentModules =
+        new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
+            ContainerInstall.ConnectionType.CLIENT_SERVER,
+            portSupplier::getAvailablePort);
 
     classPathTomcat7079 = tomcat7079AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
         + tomcat7079AndCurrentModules.getHome() + "/bin/*";
@@ -138,13 +144,13 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
         + tomcat8AndCurrentModules.getHome() + "/bin/*";
 
     // Get available port for the locator
-    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    locatorPort = portSupplier.getAvailablePort();
 
-    tomcat7079AndOldModules.setDefaultLocator("localhost", locatorPort);
-    tomcat7079AndCurrentModules.setDefaultLocator("localhost", locatorPort);
+    tomcat7079AndOldModules.setDefaultLocatorPort(locatorPort);
+    tomcat7079AndCurrentModules.setDefaultLocatorPort(locatorPort);
 
-    tomcat8AndOldModules.setDefaultLocator("localhost", locatorPort);
-    tomcat8AndCurrentModules.setDefaultLocator("localhost", locatorPort);
+    tomcat8AndOldModules.setDefaultLocatorPort(locatorPort);
+    tomcat8AndCurrentModules.setDefaultLocatorPort(locatorPort);
 
     client = new Client();
     manager = new ContainerManager();

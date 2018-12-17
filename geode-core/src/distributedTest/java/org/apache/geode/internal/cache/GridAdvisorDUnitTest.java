@@ -19,7 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
@@ -38,13 +40,11 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -55,8 +55,273 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
  */
 
 public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
-
+  private final Logger logger = LogService.getLogger();
   private static InternalCache cache;
+
+
+  /**
+   * Tests 2 controllers and 2 cache servers
+   */
+  @Test
+  public void test2by2() {
+    disconnectAllFromDS();
+
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    VM vm2 = VM.getVM(2);
+    VM vm3 = VM.getVM(3);
+
+    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    final Keeper keeper1 = freeTCPPorts.get(0);
+    final int port1 = keeper1.getPort();
+    final Keeper keeper2 = freeTCPPorts.get(1);
+    final int port2 = keeper2.getPort();
+    final Keeper bsKeeper1 = freeTCPPorts.get(2);
+    final int bsPort1 = bsKeeper1.getPort();
+    final Keeper bsKeeper2 = freeTCPPorts.get(3);
+    final int bsPort2 = bsKeeper2.getPort();
+    final Keeper bsKeeper3 = freeTCPPorts.get(4);
+    final int bsPort3 = bsKeeper3.getPort();
+    final Keeper bsKeeper4 = freeTCPPorts.get(5);
+    final int bsPort4 = bsKeeper4.getPort();
+
+    final String host0 = NetworkUtils.getServerHostName();
+    final String locators = host0 + "[" + port1 + "]" + "," + host0 + "[" + port2 + "]";
+
+    final Properties dsProps = new Properties();
+    dsProps.setProperty(LOCATORS, locators);
+    dsProps.setProperty(MCAST_PORT, "0");
+    dsProps.setProperty(LOG_LEVEL, String.valueOf(logger.getLevel()));
+    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+
+    keeper1.release();
+    vm0.invoke(() -> startLocatorOnPort(port1, dsProps, null));
+
+    keeper2.release();
+    vm3.invoke(() -> startLocatorOnPort(port2, dsProps, "locator2HNFC"));
+
+    vm1.invoke(() -> createCache(locators, null));
+    vm2.invoke(() -> createCache(locators, null));
+
+    bsKeeper1.release();
+    vm1.invoke(() -> startBridgeServerOnPort(bsPort1, "bs1Group1", "bs1Group2"));
+    bsKeeper3.release();
+    vm1.invoke(() -> startBridgeServerOnPort(bsPort3, "bs3Group1", "bs3Group2"));
+    bsKeeper2.release();
+    vm2.invoke(() -> startBridgeServerOnPort(bsPort2, "bs2Group1", "bs2Group2"));
+    bsKeeper4.release();
+    vm2.invoke(() -> startBridgeServerOnPort(bsPort4, "bs4Group1", "bs4Group2"));
+
+    // verify that locators know about each other
+    vm0.invoke(() -> {
+      assertTrue(Locator.hasLocator());
+      InternalLocator l = (InternalLocator) Locator.getLocator();
+      DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+      ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+      List others = ca.fetchControllers();
+      assertThat(others.size()).isEqualTo(1);
+      {
+        ControllerAdvisor.ControllerProfile cp =
+            (ControllerAdvisor.ControllerProfile) others.get(0);
+        assertThat(cp.getPort()).isEqualTo(port2);
+        assertThat(cp.getHost()).isEqualTo("locator2HNFC");
+      }
+
+      others = ca.fetchBridgeServers();
+      assertThat(others.size()).isEqualTo(4);
+      for (Object other : others) {
+        CacheServerAdvisor.CacheServerProfile bsp =
+            (CacheServerAdvisor.CacheServerProfile) other;
+        if (bsp.getPort() == bsPort1) {
+          assertThat(new String[] {"bs1Group1", "bs1Group2"}).isEqualTo(bsp.getGroups());
+        } else {
+          comparePortGroups(bsp, bsPort2, bsPort3, bsPort4);
+        }
+      }
+    });
+
+    vm3.invoke(
+        () -> verifyLocatorOnOtherPort(port1, bsPort1, bsPort2, bsPort3, bsPort4, "bs3Group1",
+            "bs3Group2", "bs4Group1",
+            "bs4Group2"));
+    vm1.invoke(
+        () -> verifyBridgeServerViewOnTwoPorts(port1, port2));
+    vm2.invoke(
+        () -> verifyBridgeServerViewOnTwoPorts(port1, port2));
+
+    vm1.invoke(this::stopBridgeServer);
+
+    // now check to see if everyone else noticed it going away
+    vm0.invoke(() -> verifyOtherLocatorOnPortWithName(port2, bsPort2, bsPort3, bsPort4, "bs3Group1",
+        "bs3Group2",
+        "bs4Group1", "bs4Group2"));
+
+    vm3.invoke(() -> {
+      assertTrue(Locator.hasLocator());
+      InternalLocator l = (InternalLocator) Locator.getLocator();
+      DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+      ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+      List others = ca.fetchControllers();
+      assertThat(others.size()).isEqualTo(1);
+      {
+        ControllerAdvisor.ControllerProfile cp =
+            (ControllerAdvisor.ControllerProfile) others.get(0);
+        assertThat(cp.getPort()).isEqualTo(port1);
+      }
+      others = ca.fetchBridgeServers();
+      assertThat(others.size()).isEqualTo(3);
+      for (Object other : others) {
+        CacheServerAdvisor.CacheServerProfile bsp =
+            (CacheServerAdvisor.CacheServerProfile) other;
+        comparePortGroups(bsp, bsPort2, bsPort3, bsPort4);
+      }
+    });
+
+    vm0.invoke(() -> stopLocatorAndCheckIt());
+
+    // now make sure everyone else saw the locator go away
+    vm3.invoke(() -> verifyLocatorStopped());
+    vm2.invoke(() -> verifyBridgeServerSawLocatorStop(port2));
+    vm1.invoke(() -> verifyBridgeServerSawLocatorStopWithName(port2));
+
+    // restart bridge server 1 and see if controller sees it
+    vm1.invoke(() -> restartBridgeServer());
+
+    vm3.invoke(() -> verifyBridgeServerRestart(bsPort1, bsPort2, bsPort3, bsPort4, "bs3Group1",
+        "bs3Group2",
+        "bs4Group1",
+        "bs4Group2"));
+
+    vm1.invoke("Disconnect from " + locators, this::safeCloseCache);
+    vm2.invoke("Disconnect from " + locators, this::safeCloseCache);
+    // now make sure controller saw all bridge servers stop
+
+    vm3.invoke(() -> verifyLocatorsAndBridgeServersStoppped());
+    vm3.invoke(() -> stopLocatorAndCheckIt());
+  }
+
+
+  @Test
+  public void test2by2usingGroups() {
+    disconnectAllFromDS();
+
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    VM vm2 = VM.getVM(2);
+    VM vm3 = VM.getVM(3);
+
+    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    final Keeper keeper1 = freeTCPPorts.get(0);
+    final int port1 = keeper1.getPort();
+    final Keeper keeper2 = freeTCPPorts.get(1);
+    final int port2 = keeper2.getPort();
+    final Keeper bsKeeper1 = freeTCPPorts.get(2);
+    final int bsPort1 = bsKeeper1.getPort();
+    final Keeper bsKeeper2 = freeTCPPorts.get(3);
+    final int bsPort2 = bsKeeper2.getPort();
+    final Keeper bsKeeper3 = freeTCPPorts.get(4);
+    final int bsPort3 = bsKeeper3.getPort();
+    final Keeper bsKeeper4 = freeTCPPorts.get(5);
+    final int bsPort4 = bsKeeper4.getPort();
+
+    final String host0 = NetworkUtils.getServerHostName();
+    final String locators = host0 + "[" + port1 + "]" + "," + host0 + "[" + port2 + "]";
+
+    final Properties dsProps = new Properties();
+    dsProps.setProperty(LOCATORS, locators);
+    dsProps.setProperty(MCAST_PORT, "0");
+    dsProps.setProperty(LOG_LEVEL, String.valueOf(logger.getLevel()));
+    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+
+    keeper1.release();
+    vm0.invoke(() -> startLocatorOnPort(port1, dsProps, null));
+
+    keeper2.release();
+    vm3.invoke(() -> startLocatorOnPort(port2, dsProps, "locator2HNFC"));
+
+    vm1.invoke(() -> createCache(locators, "bs1Group1, bs1Group2"));
+    vm2.invoke(() -> createCache(locators, "bs2Group1, bs2Group2"));
+
+    bsKeeper1.release();
+    vm1.invoke(() -> startBridgeServerOnPort(bsPort1));
+    bsKeeper3.release();
+    vm1.invoke(() -> startBridgeServerOnPort(bsPort3));
+    bsKeeper2.release();
+    vm2.invoke(() -> startBridgeServerOnPort(bsPort2));
+    bsKeeper4.release();
+    vm2.invoke(() -> startBridgeServerOnPort(bsPort4));
+
+    // verify that locators know about each other
+    vm0.invoke(
+        () -> verifyLocatorOnOtherPort(port2, bsPort1, bsPort2, bsPort3, bsPort4, "bs1Group1",
+            "bs1Group2", "bs2Group1", "bs2Group2"));
+    vm3.invoke(
+        () -> verifyLocatorOnOtherPort(port1, bsPort1, bsPort2, bsPort3, bsPort4, "bs1Group1",
+            "bs1Group2", "bs2Group1", "bs2Group2"));
+
+    vm1.invoke(
+        () -> verifyBridgeServerViewOnTwoPorts(port1, port2));
+    vm2.invoke(
+        () -> verifyBridgeServerViewOnTwoPorts(port1, port2));
+
+    vm1.invoke(this::stopBridgeServer);
+
+    // now check to see if everyone else noticed it going away
+    vm0.invoke(() -> verifyOtherLocatorOnPortWithName(port2, bsPort2, bsPort3, bsPort4, "bs1Group1",
+        "bs1Group2",
+        "bs2Group1",
+        "bs2Group2"));
+
+    vm3.invoke(() -> {
+      assertTrue(Locator.hasLocator());
+      InternalLocator l = (InternalLocator) Locator.getLocator();
+      DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+      ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+      List others = ca.fetchControllers();
+      assertThat(others.size()).isEqualTo(1);
+      {
+        ControllerAdvisor.ControllerProfile cp =
+            (ControllerAdvisor.ControllerProfile) others.get(0);
+        assertThat(cp.getPort()).isEqualTo(port1);
+      }
+      others = ca.fetchBridgeServers();
+      assertThat(others.size()).isEqualTo(3);
+      for (Object other : others) {
+        CacheServerAdvisor.CacheServerProfile bsp =
+            (CacheServerAdvisor.CacheServerProfile) other;
+        if (bsp.getPort() == bsPort2) {
+          assertThat(new String[] {"bs2Group1", "bs2Group2"}).isEqualTo(bsp.getGroups());
+        } else if (bsp.getPort() == bsPort3) {
+          assertThat(new String[] {"bs1Group1", "bs1Group2"}).isEqualTo(bsp.getGroups());
+        } else if (bsp.getPort() == bsPort4) {
+          assertThat(new String[] {"bs2Group1", "bs2Group2"}).isEqualTo(bsp.getGroups());
+        } else {
+          fail("unexpected port " + bsp.getPort() + " in " + bsp);
+        }
+      }
+    });
+
+    vm0.invoke(() -> stopLocatorAndCheckIt());
+
+    // now make sure everyone else saw the locator go away
+    vm3.invoke(() -> verifyLocatorStopped());
+    vm2.invoke(() -> verifyBridgeServerSawLocatorStop(port2));
+    vm1.invoke(() -> verifyBridgeServerSawLocatorStopWithName(port2));
+
+    // restart bridge server 1 and see if controller sees it
+    vm1.invoke(() -> restartBridgeServer());
+
+    vm3.invoke(() -> verifyBridgeServerRestart(bsPort1, bsPort2, bsPort3, bsPort4, "bs1Group1",
+        "bs1Group2",
+        "bs2Group1", "bs2Group2"));
+
+    vm1.invoke("Disconnect from " + locators, this::safeCloseCache);
+    vm2.invoke("Disconnect from " + locators, this::safeCloseCache);
+    // now make sure controller saw all bridge servers stop
+
+    vm3.invoke(() -> verifyLocatorsAndBridgeServersStoppped());
+    vm3.invoke(() -> stopLocatorAndCheckIt());
+  }
 
   private void createCache(String locators, String groups) {
     Properties props = new Properties();
@@ -65,1010 +330,275 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     if (groups != null) {
       props.setProperty(GROUPS, groups);
     }
-    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(LOG_LEVEL, String.valueOf(logger.getLevel()));
     cache = (InternalCache) new CacheFactory(props).create();
   }
 
-  /**
-   * Tests 2 controllers and 2 cache servers
-   */
-  @Test
-  public void test2by2() throws Exception {
-    disconnectAllFromDS();
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
-    final Keeper keeper1 = freeTCPPorts.get(0);
-    final int port1 = keeper1.getPort();
-    final Keeper keeper2 = freeTCPPorts.get(1);
-    final int port2 = keeper2.getPort();
-    final Keeper bsKeeper1 = freeTCPPorts.get(2);
-    final int bsPort1 = bsKeeper1.getPort();
-    final Keeper bsKeeper2 = freeTCPPorts.get(3);
-    final int bsPort2 = bsKeeper2.getPort();
-    final Keeper bsKeeper3 = freeTCPPorts.get(4);
-    final int bsPort3 = bsKeeper3.getPort();
-    final Keeper bsKeeper4 = freeTCPPorts.get(5);
-    final int bsPort4 = bsKeeper4.getPort();
-
-    final String host0 = NetworkUtils.getServerHostName(host);
-    final String locators = host0 + "[" + port1 + "]" + "," + host0 + "[" + port2 + "]";
-
-    final Properties dsProps = new Properties();
-    dsProps.setProperty(LOCATORS, locators);
-    dsProps.setProperty(MCAST_PORT, "0");
-    dsProps.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-
-    keeper1.release();
-    vm0.invoke(new SerializableRunnable("Start locator on " + port1) {
-      public void run() {
-        File logFile = new File(getUniqueName() + "-locator" + port1 + ".log");
-        try {
-          Locator.startLocatorAndDS(port1, logFile, null, dsProps, true, true, null);
-        } catch (IOException ex) {
-          Assert.fail("While starting locator on port " + port1, ex);
-        }
-      }
-    });
-
-    // try { Thread.currentThread().sleep(4000); } catch (InterruptedException ie) { }
-
-    keeper2.release();
-    vm3.invoke(new SerializableRunnable("Start locators on " + port2) {
-      public void run() {
-        File logFile = new File(getUniqueName() + "-locator" + port2 + ".log");
-        try {
-          Locator.startLocatorAndDS(port2, logFile, null, dsProps, true, true, "locator2HNFC");
-
-        } catch (IOException ex) {
-          Assert.fail("While starting locator on port " + port2, ex);
-        }
-      }
-    });
-
-    SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
-      public void run() {
-        createCache(locators, null);
-      }
-    };
-    vm1.invoke(connect);
-    vm2.invoke(connect);
-    SerializableRunnable startBS1 = new SerializableRunnable("start bridgeServer on " + bsPort1) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort1);
-          bs.setGroups(new String[] {"bs1Group1", "bs1Group2"});
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    };
-    SerializableRunnable startBS3 = new SerializableRunnable("start bridgeServer on " + bsPort3) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort3);
-          bs.setGroups(new String[] {"bs3Group1", "bs3Group2"});
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    };
-
-    bsKeeper1.release();
-    vm1.invoke(startBS1);
-    bsKeeper3.release();
-    vm1.invoke(startBS3);
-    bsKeeper2.release();
-    vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort2) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort2);
-          bs.setGroups(new String[] {"bs2Group1", "bs2Group2"});
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    });
-    bsKeeper4.release();
-    vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort4) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort4);
-          bs.setGroups(new String[] {"bs4Group1", "bs4Group2"});
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    });
-
-    // verify that locators know about each other
-    vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port2, cp.getPort());
-          assertEquals("locator2HNFC", cp.getHost());
-        }
-
-        others = ca.fetchBridgeServers();
-        assertEquals(4, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort1) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs3Group1", "bs3Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs4Group1", "bs4Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-    vm3.invoke(new SerializableRunnable("Verify other locator on " + port1) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port1, cp.getPort());
-        }
-        others = ca.fetchBridgeServers();
-        assertEquals(4, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort1) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs3Group1", "bs3Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs4Group1", "bs4Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-    vm1.invoke(
-        new SerializableRunnable("Verify cache server view on " + bsPort1 + " and on " + bsPort3) {
-          public void run() {
-            Cache c = cache;
-            List bslist = c.getCacheServers();
-            assertEquals(2, bslist.size());
-            for (int i = 0; i < bslist.size(); i++) {
-              DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-              CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-              List others = bsa.fetchBridgeServers();
-              LogWriterUtils.getLogWriter()
-                  .info("found these bridgeservers in " + advisee + ": " + others);
-              assertEquals(3, others.size());
-              others = bsa.fetchControllers();
-              assertEquals(2, others.size());
-              for (int j = 0; j < others.size(); j++) {
-                ControllerAdvisor.ControllerProfile cp =
-                    (ControllerAdvisor.ControllerProfile) others.get(j);
-                if (cp.getPort() == port1) {
-                  // ok
-                } else if (cp.getPort() == port2) {
-                  assertEquals("locator2HNFC", cp.getHost());
-                  // ok
-                } else {
-                  fail("unexpected port " + cp.getPort() + " in " + cp);
-                }
-              }
-            }
-          }
-        });
-    vm2.invoke(
-        new SerializableRunnable("Verify cache server view on " + bsPort2 + " and on " + bsPort4) {
-          public void run() {
-            Cache c = cache;
-            List bslist = c.getCacheServers();
-            assertEquals(2, bslist.size());
-            for (int i = 0; i < bslist.size(); i++) {
-              DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-              CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-              List others = bsa.fetchBridgeServers();
-              LogWriterUtils.getLogWriter()
-                  .info("found these bridgeservers in " + advisee + ": " + others);
-              assertEquals(3, others.size());
-              others = bsa.fetchControllers();
-              assertEquals(2, others.size());
-              for (int j = 0; j < others.size(); j++) {
-                ControllerAdvisor.ControllerProfile cp =
-                    (ControllerAdvisor.ControllerProfile) others.get(j);
-                if (cp.getPort() == port1) {
-                  // ok
-                } else if (cp.getPort() == port2) {
-                  assertEquals("locator2HNFC", cp.getHost());
-                  // ok
-                } else {
-                  fail("unexpected port " + cp.getPort() + " in " + cp);
-                }
-              }
-            }
-          }
-        });
-
-    SerializableRunnable stopBS = new SerializableRunnable("stop cache server") {
-      public void run() {
-        Cache c = cache;
-        List bslist = c.getCacheServers();
-        assertEquals(2, bslist.size());
-        CacheServer bs = (CacheServer) bslist.get(0);
-        bs.stop();
-      }
-    };
-    vm1.invoke(stopBS);
-
-    // now check to see if everyone else noticed it going away
-    vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port2, cp.getPort());
-          assertEquals("locator2HNFC", cp.getHost());
-        }
-
-        others = ca.fetchBridgeServers();
-        assertEquals(3, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs3Group1", "bs3Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs4Group1", "bs4Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-    vm3.invoke(new SerializableRunnable("Verify other locator on " + port1) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port1, cp.getPort());
-        }
-        others = ca.fetchBridgeServers();
-        assertEquals(3, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs3Group1", "bs3Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs4Group1", "bs4Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-
-    SerializableRunnable disconnect = new SerializableRunnable("Disconnect from " + locators) {
-      public void run() {
-        if (cache != null) {
-          cache.close();
-        }
-      }
-    };
-    SerializableRunnable stopLocator = new SerializableRunnable("Stop locator") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        Locator.getLocator().stop();
-        assertFalse(Locator.hasLocator());
-      }
-    };
-
-    vm0.invoke(stopLocator);
-
-    // now make sure everyone else saw the locator go away
-    vm3.invoke(new SerializableRunnable("Verify locator stopped ") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(0, others.size());
-      }
-    });
-    vm2.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
-      public void run() {
-        Cache c = cache;
-        List bslist = c.getCacheServers();
-        assertEquals(2, bslist.size());
-        for (int i = 0; i < bslist.size(); i++) {
-          DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-          CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-          List others = bsa.fetchControllers();
-          assertEquals(1, others.size());
-          for (int j = 0; j < others.size(); j++) {
-            ControllerAdvisor.ControllerProfile cp =
-                (ControllerAdvisor.ControllerProfile) others.get(j);
-            if (cp.getPort() == port2) {
-              assertEquals("locator2HNFC", cp.getHost());
-              // ok
-            } else {
-              fail("unexpected port " + cp.getPort() + " in " + cp);
-            }
-          }
-        }
-      }
-    });
-    vm1.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
-      public void run() {
-        Cache c = cache;
-        List bslist = c.getCacheServers();
-        assertEquals(2, bslist.size());
-        for (int i = 0; i < bslist.size(); i++) {
-          DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-          if (i == 0) {
-            // skip this one since it is stopped
-            continue;
-          }
-          CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-          List others = bsa.fetchControllers();
-          assertEquals(1, others.size());
-          for (int j = 0; j < others.size(); j++) {
-            ControllerAdvisor.ControllerProfile cp =
-                (ControllerAdvisor.ControllerProfile) others.get(j);
-            if (cp.getPort() == port2) {
-              assertEquals("locator2HNFC", cp.getHost());
-              // ok
-            } else {
-              fail("unexpected port " + cp.getPort() + " in " + cp);
-            }
-          }
-        }
-      }
-    });
-
-    SerializableRunnable restartBS = new SerializableRunnable("restart cache server") {
-      public void run() {
-        try {
-          Cache c = cache;
-          List bslist = c.getCacheServers();
-          assertEquals(2, bslist.size());
-          CacheServer bs = (CacheServer) bslist.get(0);
-          bs.setHostnameForClients("nameForClients");
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    };
-    // restart cache server 1 and see if controller sees it
-    vm1.invoke(restartBS);
-
-    vm3.invoke(new SerializableRunnable("Verify cache server restart ") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        assertEquals(0, ca.fetchControllers().size());
-        List others = ca.fetchBridgeServers();
-        assertEquals(4, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort1) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-            assertEquals("nameForClients", bsp.getHost());
-          } else if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-            assertFalse(bsp.getHost().equals("nameForClients"));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs3Group1", "bs3Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs4Group1", "bs4Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-
-    vm1.invoke(disconnect);
-    vm2.invoke(disconnect);
-    // now make sure controller saw all cache servers stop
-
-    vm3.invoke(new SerializableRunnable("Verify locator stopped ") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        assertEquals(0, ca.fetchControllers().size());
-        assertEquals(0, ca.fetchBridgeServers().size());
-      }
-    });
-    vm3.invoke(stopLocator);
+  private void comparePortGroups(CacheServerAdvisor.CacheServerProfile bsp, int bsPort2,
+      int bsPort3, int bsPort4) {
+    if (bsp.getPort() == bsPort2) {
+      assertThat(new String[] {"bs2Group1", "bs2Group2"}).isEqualTo(bsp.getGroups());
+    } else if (bsp.getPort() == bsPort3) {
+      assertThat(new String[] {"bs3Group1", "bs3Group2"}).isEqualTo(bsp.getGroups());
+    } else if (bsp.getPort() == bsPort4) {
+      assertThat(new String[] {"bs4Group1", "bs4Group2"}).isEqualTo(bsp.getGroups());
+    } else {
+      fail("unexpected port " + bsp.getPort() + " in " + bsp);
+    }
   }
 
-  @Test
-  public void test2by2usingGroups() throws Exception {
-    disconnectAllFromDS();
+  private void stopLocatorAndCheckIt() {
+    assertTrue(Locator.hasLocator());
+    Locator.getLocator().stop();
+    assertFalse(Locator.hasLocator());
+  }
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
-    final Keeper keeper1 = freeTCPPorts.get(0);
-    final int port1 = keeper1.getPort();
-    final Keeper keeper2 = freeTCPPorts.get(1);
-    final int port2 = keeper2.getPort();
-    final Keeper bsKeeper1 = freeTCPPorts.get(2);
-    final int bsPort1 = bsKeeper1.getPort();
-    final Keeper bsKeeper2 = freeTCPPorts.get(3);
-    final int bsPort2 = bsKeeper2.getPort();
-    final Keeper bsKeeper3 = freeTCPPorts.get(4);
-    final int bsPort3 = bsKeeper3.getPort();
-    final Keeper bsKeeper4 = freeTCPPorts.get(5);
-    final int bsPort4 = bsKeeper4.getPort();
-
-    final String host0 = NetworkUtils.getServerHostName(host);
-    final String locators = host0 + "[" + port1 + "]" + "," + host0 + "[" + port2 + "]";
-
-    final Properties dsProps = new Properties();
-    dsProps.setProperty(LOCATORS, locators);
-    dsProps.setProperty(MCAST_PORT, "0");
-    dsProps.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-
-    keeper1.release();
-    vm0.invoke(new SerializableRunnable("Start locators on " + port1) {
-      public void run() {
-        File logFile = new File(getUniqueName() + "-locator" + port1 + ".log");
-        try {
-          Locator.startLocatorAndDS(port1, logFile, null, dsProps, true, true, null);
-        } catch (IOException ex) {
-          Assert.fail("While starting locator on port " + port1, ex);
-        }
-      }
-    });
-
-    // try { Thread.currentThread().sleep(4000); } catch (InterruptedException ie) { }
-
-    keeper2.release();
-    vm3.invoke(new SerializableRunnable("Start locators on " + port2) {
-      public void run() {
-        File logFile = new File(getUniqueName() + "-locator" + port2 + ".log");
-        try {
-          Locator.startLocatorAndDS(port2, logFile, null, dsProps, true, true, "locator2HNFC");
-
-        } catch (IOException ex) {
-          Assert.fail("While starting locator on port " + port2, ex);
-        }
-      }
-    });
-
-    vm1.invoke(new SerializableRunnable("Connect to " + locators) {
-      public void run() {
-        createCache(locators, "bs1Group1, bs1Group2");
-      }
-    });
-    vm2.invoke(new SerializableRunnable("Connect to " + locators) {
-      public void run() {
-        createCache(locators, "bs2Group1, bs2Group2");
-      }
-    });
-
-    SerializableRunnable startBS1 = new SerializableRunnable("start bridgeServer on " + bsPort1) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort1);
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    };
-    SerializableRunnable startBS3 = new SerializableRunnable("start bridgeServer on " + bsPort3) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort3);
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    };
-
-    bsKeeper1.release();
-    vm1.invoke(startBS1);
-    bsKeeper3.release();
-    vm1.invoke(startBS3);
-    bsKeeper2.release();
-    vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort2) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort2);
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    });
-    bsKeeper4.release();
-    vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort4) {
-      public void run() {
-        try {
-          Cache c = cache;
-          CacheServer bs = c.addCacheServer();
-          bs.setPort(bsPort4);
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    });
-
-    // verify that locators know about each other
-    vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port2, cp.getPort());
-          assertEquals("locator2HNFC", cp.getHost());
-        }
-
-        others = ca.fetchBridgeServers();
-        assertEquals(4, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort1) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
+  private void verifyBridgeServerViewOnTwoPorts(int port1, int port2) {
+    Cache c = cache;
+    List bslist = c.getCacheServers();
+    assertThat(bslist.size()).isEqualTo(2);
+    for (Object aBslist : bslist) {
+      DistributionAdvisee advisee = (DistributionAdvisee) aBslist;
+      CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
+      List others = bsa.fetchBridgeServers();
+      logger.info("found these bridgeservers in " + advisee + ": " + others);
+      assertThat(others.size()).isEqualTo(3);
+      others = bsa.fetchControllers();
+      assertThat(others.size()).isEqualTo(2);
+      for (Object other : others) {
+        ControllerAdvisor.ControllerProfile cp =
+            (ControllerAdvisor.ControllerProfile) other;
+        if (cp.getPort() != port1) {
+          if (cp.getPort() == port2) {
+            assertThat(cp.getHost()).isEqualTo("locator2HNFC");
+            // ok
           } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
+            fail("unexpected port " + cp.getPort() + " in " + cp);
           }
         }
       }
-    });
-    vm3.invoke(new SerializableRunnable("Verify other locator on " + port1) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port1, cp.getPort());
-        }
-        others = ca.fetchBridgeServers();
-        assertEquals(4, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort1) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-    vm1.invoke(
-        new SerializableRunnable("Verify cache server view on " + bsPort1 + " and on " + bsPort3) {
-          public void run() {
-            Cache c = cache;
-            List bslist = c.getCacheServers();
-            assertEquals(2, bslist.size());
-            for (int i = 0; i < bslist.size(); i++) {
-              DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-              CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-              List others = bsa.fetchBridgeServers();
-              LogWriterUtils.getLogWriter()
-                  .info("found these bridgeservers in " + advisee + ": " + others);
-              assertEquals(3, others.size());
-              others = bsa.fetchControllers();
-              assertEquals(2, others.size());
-              for (int j = 0; j < others.size(); j++) {
-                ControllerAdvisor.ControllerProfile cp =
-                    (ControllerAdvisor.ControllerProfile) others.get(j);
-                if (cp.getPort() == port1) {
-                  // ok
-                } else if (cp.getPort() == port2) {
-                  assertEquals("locator2HNFC", cp.getHost());
-                  // ok
-                } else {
-                  fail("unexpected port " + cp.getPort() + " in " + cp);
-                }
-              }
-            }
-          }
-        });
-    vm2.invoke(
-        new SerializableRunnable("Verify cache server view on " + bsPort2 + " and on " + bsPort4) {
-          public void run() {
-            Cache c = cache;
-            List bslist = c.getCacheServers();
-            assertEquals(2, bslist.size());
-            for (int i = 0; i < bslist.size(); i++) {
-              DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-              CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-              List others = bsa.fetchBridgeServers();
-              LogWriterUtils.getLogWriter()
-                  .info("found these bridgeservers in " + advisee + ": " + others);
-              assertEquals(3, others.size());
-              others = bsa.fetchControllers();
-              assertEquals(2, others.size());
-              for (int j = 0; j < others.size(); j++) {
-                ControllerAdvisor.ControllerProfile cp =
-                    (ControllerAdvisor.ControllerProfile) others.get(j);
-                if (cp.getPort() == port1) {
-                  // ok
-                } else if (cp.getPort() == port2) {
-                  assertEquals("locator2HNFC", cp.getHost());
-                  // ok
-                } else {
-                  fail("unexpected port " + cp.getPort() + " in " + cp);
-                }
-              }
-            }
-          }
-        });
+    }
+  }
 
-    SerializableRunnable stopBS = new SerializableRunnable("stop cache server") {
-      public void run() {
-        Cache c = cache;
-        List bslist = c.getCacheServers();
-        assertEquals(2, bslist.size());
-        CacheServer bs = (CacheServer) bslist.get(0);
-        bs.stop();
+  private void verifyBridgeServerRestart(int bsPort1, int bsPort2, int bsPort3, int bsPort4,
+      String bs3Group1, String bs3Group2, String bs4Group1,
+      String bs4Group2) {
+    assertTrue(Locator.hasLocator());
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+    ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+    assertThat(ca.fetchControllers().size()).isEqualTo(0);
+    List others = ca.fetchBridgeServers();
+    assertThat(others.size()).isEqualTo(4);
+    for (Object other : others) {
+      CacheServerAdvisor.CacheServerProfile bsp =
+          (CacheServerAdvisor.CacheServerProfile) other;
+      if (bsp.getPort() == bsPort1) {
+        assertThat(new String[] {"bs1Group1", "bs1Group2"}).isEqualTo(bsp.getGroups());
+        assertThat(bsp.getHost()).isEqualTo("nameForClients");
+      } else if (bsp.getPort() == bsPort2) {
+        assertThat(new String[] {"bs2Group1", "bs2Group2"}).isEqualTo(bsp.getGroups());
+        assertThat(bsp.getHost()).isNotEqualTo("nameForClients");
+      } else {
+        comparePortGroupsTwo(bsPort3, bsPort4, bs3Group1, bs3Group2, bs4Group1, bs4Group2, bsp);
       }
-    };
-    vm1.invoke(stopBS);
+    }
+  }
 
-    // now check to see if everyone else noticed it going away
-    vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port2, cp.getPort());
-          assertEquals("locator2HNFC", cp.getHost());
-        }
+  private void comparePortGroupsTwo(int bsPort3, int bsPort4, String bs3Group1, String bs3Group2,
+      String bs4Group1, String bs4Group2,
+      CacheServerAdvisor.CacheServerProfile bsp) {
+    if (bsp.getPort() == bsPort3) {
+      assertThat(Arrays.asList(bsp.getGroups())).isEqualTo(Arrays.asList(bs3Group1, bs3Group2));
+    } else if (bsp.getPort() == bsPort4) {
+      assertThat(Arrays.asList(bsp.getGroups())).isEqualTo(Arrays.asList(bs4Group1, bs4Group2));
+    } else {
+      fail("unexpected port " + bsp.getPort() + " in " + bsp);
+    }
+  }
 
-        others = ca.fetchBridgeServers();
-        assertEquals(3, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
-    vm3.invoke(new SerializableRunnable("Verify other locator on " + port1) {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(1, others.size());
-        {
-          ControllerAdvisor.ControllerProfile cp =
-              (ControllerAdvisor.ControllerProfile) others.get(0);
-          assertEquals(port1, cp.getPort());
-        }
-        others = ca.fetchBridgeServers();
-        assertEquals(3, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
+  private void verifyLocatorStopped() {
+    assertTrue(Locator.hasLocator());
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+    ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+    List others = ca.fetchControllers();
+    assertThat(others.size()).isEqualTo(0);
+  }
 
-    SerializableRunnable disconnect = new SerializableRunnable("Disconnect from " + locators) {
-      public void run() {
-        if (cache != null) {
-          cache.close();
-        }
-      }
-    };
-    SerializableRunnable stopLocator = new SerializableRunnable("Stop locator") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        Locator.getLocator().stop();
-        assertFalse(Locator.hasLocator());
-      }
-    };
+  private void verifyBridgeServerSawLocatorStop(int port2) {
+    Cache c = cache;
+    List bslist = c.getCacheServers();
+    assertThat(bslist.size()).isEqualTo(2);
+    for (Object aBslist : bslist) {
+      DistributionAdvisee advisee = (DistributionAdvisee) aBslist;
+      CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
+      List others = bsa.fetchControllers();
+      assertThat(others.size()).isEqualTo(1);
+      verifyHostNameForPort(port2, others);
+    }
+  }
 
-    vm0.invoke(stopLocator);
+  private void verifyHostNameForPort(int port2, List others) {
+    for (Object other : others) {
+      ControllerAdvisor.ControllerProfile cp =
+          (ControllerAdvisor.ControllerProfile) other;
+      if (cp.getPort() == port2) {
+        assertThat(cp.getHost()).isEqualTo("locator2HNFC");
+        // ok
+      } else {
+        fail("unexpected port " + cp.getPort() + " in " + cp);
+      }
+    }
+  }
 
-    // now make sure everyone else saw the locator go away
-    vm3.invoke(new SerializableRunnable("Verify locator stopped ") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        List others = ca.fetchControllers();
-        assertEquals(0, others.size());
+  private void verifyLocatorOnOtherPort(int port1, int bsPort1, int bsPort2, int bsPort3,
+      int bsPort4, String bs3Group1, String bs3Group2,
+      String bs4Group1, String bs4Group2) {
+    assertTrue(Locator.hasLocator());
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+    ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+    List others = ca.fetchControllers();
+    assertThat(others.size()).isEqualTo(1);
+    {
+      ControllerAdvisor.ControllerProfile cp =
+          (ControllerAdvisor.ControllerProfile) others.get(0);
+      assertThat(cp.getPort()).isEqualTo(port1);
+    }
+    others = ca.fetchBridgeServers();
+    assertThat(others.size()).isEqualTo(4);
+    for (Object other : others) {
+      CacheServerAdvisor.CacheServerProfile bsp =
+          (CacheServerAdvisor.CacheServerProfile) other;
+      if (bsp.getPort() == bsPort1) {
+        assertThat(new String[] {"bs1Group1", "bs1Group2"}).isEqualTo(bsp.getGroups());
+      } else if (bsp.getPort() == bsPort2) {
+        assertThat(new String[] {"bs2Group1", "bs2Group2"}).isEqualTo(bsp.getGroups());
+      } else {
+        comparePortGroupsTwo(bsPort3, bsPort4, bs3Group1, bs3Group2, bs4Group1, bs4Group2, bsp);
       }
-    });
-    vm2.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
-      public void run() {
-        Cache c = cache;
-        List bslist = c.getCacheServers();
-        assertEquals(2, bslist.size());
-        for (int i = 0; i < bslist.size(); i++) {
-          DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-          CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-          List others = bsa.fetchControllers();
-          assertEquals(1, others.size());
-          for (int j = 0; j < others.size(); j++) {
-            ControllerAdvisor.ControllerProfile cp =
-                (ControllerAdvisor.ControllerProfile) others.get(j);
-            if (cp.getPort() == port2) {
-              assertEquals("locator2HNFC", cp.getHost());
-              // ok
-            } else {
-              fail("unexpected port " + cp.getPort() + " in " + cp);
-            }
-          }
-        }
-      }
-    });
-    vm1.invoke(new SerializableRunnable("Verify cache server saw locator stop") {
-      public void run() {
-        Cache c = cache;
-        List bslist = c.getCacheServers();
-        assertEquals(2, bslist.size());
-        for (int i = 0; i < bslist.size(); i++) {
-          DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
-          if (i == 0) {
-            // skip this one since it is stopped
-            continue;
-          }
-          CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
-          List others = bsa.fetchControllers();
-          assertEquals(1, others.size());
-          for (int j = 0; j < others.size(); j++) {
-            ControllerAdvisor.ControllerProfile cp =
-                (ControllerAdvisor.ControllerProfile) others.get(j);
-            if (cp.getPort() == port2) {
-              assertEquals("locator2HNFC", cp.getHost());
-              // ok
-            } else {
-              fail("unexpected port " + cp.getPort() + " in " + cp);
-            }
-          }
-        }
-      }
-    });
+    }
+  }
 
-    SerializableRunnable restartBS = new SerializableRunnable("restart cache server") {
-      public void run() {
-        try {
-          Cache c = cache;
-          List bslist = c.getCacheServers();
-          assertEquals(2, bslist.size());
-          CacheServer bs = (CacheServer) bslist.get(0);
-          bs.setHostnameForClients("nameForClients");
-          bs.start();
-        } catch (IOException ex) {
-          RuntimeException re = new RuntimeException();
-          re.initCause(ex);
-          throw re;
-        }
-      }
-    };
-    // restart cache server 1 and see if controller sees it
-    vm1.invoke(restartBS);
+  private void startBridgeServerOnPort(int bsPort1, String bs1Group1, String bs1Group2) {
+    try {
+      Cache c = cache;
+      CacheServer bs = c.addCacheServer();
+      bs.setPort(bsPort1);
+      bs.setGroups(new String[] {bs1Group1, bs1Group2});
+      bs.start();
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 
-    vm3.invoke(new SerializableRunnable("Verify cache server restart ") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        assertEquals(0, ca.fetchControllers().size());
-        List others = ca.fetchBridgeServers();
-        assertEquals(4, others.size());
-        for (int j = 0; j < others.size(); j++) {
-          CacheServerAdvisor.CacheServerProfile bsp =
-              (CacheServerAdvisor.CacheServerProfile) others.get(j);
-          if (bsp.getPort() == bsPort1) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-            assertEquals("nameForClients", bsp.getHost());
-          } else if (bsp.getPort() == bsPort2) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-            assertFalse(bsp.getHost().equals("nameForClients"));
-          } else if (bsp.getPort() == bsPort3) {
-            assertEquals(Arrays.asList(new String[] {"bs1Group1", "bs1Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else if (bsp.getPort() == bsPort4) {
-            assertEquals(Arrays.asList(new String[] {"bs2Group1", "bs2Group2"}),
-                Arrays.asList(bsp.getGroups()));
-          } else {
-            fail("unexpected port " + bsp.getPort() + " in " + bsp);
-          }
-        }
-      }
-    });
+  private void startLocatorOnPort(int port1, Properties dsProps, String name) {
+    File logFile = new File(getUniqueName() + "-locator" + port1 + ".log");
+    try {
+      Locator.startLocatorAndDS(port1, logFile, null, dsProps, true, true, name);
+    } catch (LocatorCancelException | IOException ex) {
+      Assertions.fail("While starting locator on port " + port1, ex);
+    }
+  }
 
-    vm1.invoke(disconnect);
-    vm2.invoke(disconnect);
-    // now make sure controller saw all cache servers stop
 
-    vm3.invoke(new SerializableRunnable("Verify locator stopped ") {
-      public void run() {
-        assertTrue(Locator.hasLocator());
-        InternalLocator l = (InternalLocator) Locator.getLocator();
-        DistributionAdvisee advisee = l.getServerLocatorAdvisee();
-        ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
-        assertEquals(0, ca.fetchControllers().size());
-        assertEquals(0, ca.fetchBridgeServers().size());
+  private void safeCloseCache() {
+    if (cache != null) {
+      cache.close();
+    }
+  }
+
+  private void startBridgeServerOnPort(int bsPort4) {
+    try {
+      Cache c = cache;
+      CacheServer bs = c.addCacheServer();
+      bs.setPort(bsPort4);
+      bs.start();
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private void stopBridgeServer() {
+    Cache c = cache;
+    List bslist = c.getCacheServers();
+    assertThat(bslist.size()).isEqualTo(2);
+    CacheServer bs = (CacheServer) bslist.get(0);
+    bs.stop();
+  }
+
+  private void verifyLocatorsAndBridgeServersStoppped() {
+    assertTrue(Locator.hasLocator());
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+    ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+    assertThat(ca.fetchControllers().size()).isEqualTo(0);
+    assertThat(ca.fetchBridgeServers().size()).isEqualTo(0);
+  }
+
+  private void restartBridgeServer() {
+    try {
+      Cache c = cache;
+      List bslist = c.getCacheServers();
+      assertThat(bslist.size()).isEqualTo(2);
+      CacheServer bs = (CacheServer) bslist.get(0);
+      bs.setHostnameForClients("nameForClients");
+      bs.start();
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private void verifyBridgeServerSawLocatorStopWithName(int port2) {
+    Cache c = cache;
+    List bslist = c.getCacheServers();
+    assertThat(bslist.size()).isEqualTo(2);
+    for (int i = 0; i < bslist.size(); i++) {
+      DistributionAdvisee advisee = (DistributionAdvisee) bslist.get(i);
+      if (i == 0) {
+        // skip this one since it is stopped
+        continue;
       }
-    });
-    vm3.invoke(stopLocator);
+      CacheServerAdvisor bsa = (CacheServerAdvisor) advisee.getDistributionAdvisor();
+      List others = bsa.fetchControllers();
+      assertThat(others.size()).isEqualTo(1);
+      verifyHostNameForPort(port2, others);
+    }
+  }
+
+  private void verifyOtherLocatorOnPortWithName(int port2, int bsPort2, int bsPort3, int bsPort4,
+      String bs1Group1, String bs1Group2,
+      String bs2Group1, String bs2Group2) {
+    assertTrue(Locator.hasLocator());
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    DistributionAdvisee advisee = l.getServerLocatorAdvisee();
+    ControllerAdvisor ca = (ControllerAdvisor) advisee.getDistributionAdvisor();
+    List others = ca.fetchControllers();
+    assertThat(others.size()).isEqualTo(1);
+    {
+      ControllerAdvisor.ControllerProfile cp =
+          (ControllerAdvisor.ControllerProfile) others.get(0);
+      assertThat(cp.getPort()).isEqualTo(port2);
+      assertThat(cp.getHost()).isEqualTo("locator2HNFC");
+    }
+
+    others = ca.fetchBridgeServers();
+    assertThat(others.size()).isEqualTo(3);
+    for (Object other : others) {
+      CacheServerAdvisor.CacheServerProfile bsp =
+          (CacheServerAdvisor.CacheServerProfile) other;
+      if (bsp.getPort() == bsPort2) {
+        assertThat(new String[] {"bs2Group1", "bs2Group2"}).isEqualTo(bsp.getGroups());
+      } else if (bsp.getPort() == bsPort3) {
+        assertThat(new String[] {bs1Group1, bs1Group2}).isEqualTo(bsp.getGroups());
+      } else if (bsp.getPort() == bsPort4) {
+        assertThat(new String[] {bs2Group1, bs2Group2}).isEqualTo(bsp.getGroups());
+      } else {
+        fail("unexpected port " + bsp.getPort() + " in " + bsp);
+      }
+    }
   }
 }

@@ -56,9 +56,9 @@ public class RegionConfigFactoryTest {
   }
 
   @Test
-  public void generatesNullWithNoAttributes() {
+  public void generatesNotNullWithNoAttributes() {
     RegionConfig config = subject.generate(args);
-    assertThat(config.getRegionAttributes()).isNull();
+    assertThat(config.getRegionAttributes()).isNotNull();
   }
 
   @Test
@@ -81,22 +81,22 @@ public class RegionConfigFactoryTest {
     args.setEntryIdleTimeCustomExpiry(new ClassName<>("java.lang.String"));
 
     RegionConfig config = subject.generate(args);
-    RegionAttributesType.RegionTimeToLive regionTimeToLive =
+    RegionAttributesType.ExpirationAttributesType regionTimeToLive =
         config.getRegionAttributes().getRegionTimeToLive();
-    assertThat(regionTimeToLive.getExpirationAttributes().getTimeout()).isEqualTo("10");
+    assertThat(regionTimeToLive.getTimeout()).isEqualTo("10");
 
-    RegionAttributesType.EntryTimeToLive entryTimeToLive =
+    RegionAttributesType.ExpirationAttributesType entryTimeToLive =
         config.getRegionAttributes().getEntryTimeToLive();
-    assertThat(entryTimeToLive.getExpirationAttributes().getAction())
+    assertThat(entryTimeToLive.getAction())
         .isEqualTo(ExpirationAction.LOCAL_DESTROY.toXmlString());
 
-    RegionAttributesType.EntryIdleTime entryIdleTime =
+    RegionAttributesType.ExpirationAttributesType entryIdleTime =
         config.getRegionAttributes().getEntryIdleTime();
-    DeclarableType customExpiry = entryIdleTime.getExpirationAttributes().getCustomExpiry();
+    DeclarableType customExpiry = entryIdleTime.getCustomExpiry();
     assertThat(customExpiry.getClassName()).isEqualTo("java.lang.String");
-    assertThat(entryIdleTime.getExpirationAttributes().getAction())
+    assertThat(entryIdleTime.getAction())
         .isEqualTo(ExpirationAction.LOCAL_DESTROY.toXmlString());
-    assertThat(entryIdleTime.getExpirationAttributes().getTimeout())
+    assertThat(entryIdleTime.getTimeout())
         .isEqualTo("12");
   }
 

@@ -40,7 +40,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -51,7 +50,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-
 
 public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
 
@@ -213,7 +211,6 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
 
 
   protected static void dump() {
-    final InternalLogWriter logger = LogWriterUtils.getLogWriter();
     ((PartitionedRegion) customerPR).dumpAllBuckets(false);
     ((PartitionedRegion) orderPR).dumpAllBuckets(false);
     ((PartitionedRegion) shipmentPR).dumpAllBuckets(false);

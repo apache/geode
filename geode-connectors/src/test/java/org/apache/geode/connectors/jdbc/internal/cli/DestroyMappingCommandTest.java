@@ -43,7 +43,6 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
@@ -56,7 +55,6 @@ public class DestroyMappingCommandTest {
   private DestroyMappingCommand destroyRegionMappingCommand;
 
   private String regionName;
-  private DistributionManager distributionManager;
   private Set<InternalDistributedMember> members;
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
@@ -68,11 +66,8 @@ public class DestroyMappingCommandTest {
   public void setup() {
     regionName = "regionName";
     cache = mock(InternalCache.class);
-    distributionManager = mock(DistributionManager.class);
-    when(cache.getDistributionManager()).thenReturn(distributionManager);
     members = new HashSet<>();
     members.add(mock(InternalDistributedMember.class));
-    when(distributionManager.getNormalDistributionManagerIds()).thenReturn(members);
     destroyRegionMappingCommand = spy(DestroyMappingCommand.class);
     destroyRegionMappingCommand.setCache(cache);
     results = new ArrayList<>();
@@ -81,6 +76,7 @@ public class DestroyMappingCommandTest {
 
     doReturn(results).when(destroyRegionMappingCommand).executeAndGetFunctionResult(any(), any(),
         any());
+    doReturn(members).when(destroyRegionMappingCommand).findMembersForRegion(regionName);
 
     cacheConfig = mock(CacheConfig.class);
 

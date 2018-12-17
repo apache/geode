@@ -340,13 +340,13 @@ public class RegionAttributesType {
   @XmlElement(name = "value-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected String valueConstraint;
   @XmlElement(name = "region-time-to-live", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.RegionTimeToLive regionTimeToLive;
+  protected ExpirationAttributesType regionTimeToLive;
   @XmlElement(name = "region-idle-time", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.RegionIdleTime regionIdleTime;
+  protected ExpirationAttributesType regionIdleTime;
   @XmlElement(name = "entry-time-to-live", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.EntryTimeToLive entryTimeToLive;
+  protected ExpirationAttributesType entryTimeToLive;
   @XmlElement(name = "entry-idle-time", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.EntryIdleTime entryIdleTime;
+  protected ExpirationAttributesType entryIdleTime;
   @XmlElement(name = "disk-write-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.DiskWriteAttributes diskWriteAttributes;
   @XmlElement(name = "disk-dirs", namespace = "http://geode.apache.org/schema/cache")
@@ -475,7 +475,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.RegionTimeToLive }
    *
    */
-  public RegionAttributesType.RegionTimeToLive getRegionTimeToLive() {
+  public ExpirationAttributesType getRegionTimeToLive() {
     return regionTimeToLive;
   }
 
@@ -486,7 +486,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.RegionTimeToLive }
    *
    */
-  public void setRegionTimeToLive(RegionAttributesType.RegionTimeToLive value) {
+  public void setRegionTimeToLive(ExpirationAttributesType value) {
     this.regionTimeToLive = value;
   }
 
@@ -497,7 +497,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.RegionIdleTime }
    *
    */
-  public RegionAttributesType.RegionIdleTime getRegionIdleTime() {
+  public ExpirationAttributesType getRegionIdleTime() {
     return regionIdleTime;
   }
 
@@ -508,7 +508,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.RegionIdleTime }
    *
    */
-  public void setRegionIdleTime(RegionAttributesType.RegionIdleTime value) {
+  public void setRegionIdleTime(ExpirationAttributesType value) {
     this.regionIdleTime = value;
   }
 
@@ -519,7 +519,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.EntryTimeToLive }
    *
    */
-  public RegionAttributesType.EntryTimeToLive getEntryTimeToLive() {
+  public ExpirationAttributesType getEntryTimeToLive() {
     return entryTimeToLive;
   }
 
@@ -530,7 +530,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.EntryTimeToLive }
    *
    */
-  public void setEntryTimeToLive(RegionAttributesType.EntryTimeToLive value) {
+  public void setEntryTimeToLive(ExpirationAttributesType value) {
     this.entryTimeToLive = value;
   }
 
@@ -541,7 +541,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.EntryIdleTime }
    *
    */
-  public RegionAttributesType.EntryIdleTime getEntryIdleTime() {
+  public ExpirationAttributesType getEntryIdleTime() {
     return entryIdleTime;
   }
 
@@ -552,7 +552,7 @@ public class RegionAttributesType {
    * {@link RegionAttributesType.EntryIdleTime }
    *
    */
-  public void setEntryIdleTime(RegionAttributesType.EntryIdleTime value) {
+  public void setEntryIdleTime(ExpirationAttributesType value) {
     this.entryIdleTime = value;
   }
 
@@ -1615,7 +1615,6 @@ public class RegionAttributesType {
       }
 
     }
-
   }
 
 
@@ -1642,90 +1641,151 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class EntryIdleTime {
+  public static class ExpirationAttributesType {
 
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
-    protected ExpirationAttributesType expirationAttributes;
+    protected ExpirationAttributesDetail expirationAttributes = new ExpirationAttributesDetail();
 
-    /**
-     * Gets the value of the expirationAttributes property.
-     *
-     * possible object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
+    public DeclarableType getCustomExpiry() {
+      return expirationAttributes.getCustomExpiry();
     }
 
     /**
-     * Sets the value of the expirationAttributes property.
+     * Sets the value of the customExpiry property.
      *
      * allowed object is
-     * {@link ExpirationAttributesType }
+     * {@link DeclarableType }
      *
      */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
+    public void setCustomExpiry(DeclarableType value) {
+      expirationAttributes.setCustomExpiry(value);
+    }
+
+    /**
+     * Gets the value of the action property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getAction() {
+      return expirationAttributes.getAction();
+    }
+
+    /**
+     * Sets the value of the action property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setAction(String value) {
+      expirationAttributes.setAction(value);
+    }
+
+    /**
+     * Gets the value of the timeout property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getTimeout() {
+      return expirationAttributes.getTimeout();
+    }
+
+    /**
+     * Sets the value of the timeout property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setTimeout(String value) {
+      expirationAttributes.setTimeout(value);
     }
 
   }
 
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class EntryTimeToLive {
-
-    @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected ExpirationAttributesType expirationAttributes;
+  @XmlType(name = "expiration-attributes-type", namespace = "http://geode.apache.org/schema/cache",
+      propOrder = {"customExpiry"})
+  @Experimental
+  public static class ExpirationAttributesDetail {
+    @XmlElement(name = "custom-expiry", namespace = "http://geode.apache.org/schema/cache")
+    protected DeclarableType customExpiry;
+    @XmlAttribute(name = "action")
+    protected String action;
+    @XmlAttribute(name = "timeout", required = true)
+    protected String timeout;
 
     /**
-     * Gets the value of the expirationAttributes property.
+     * Gets the value of the customExpiry property.
      *
      * possible object is
-     * {@link ExpirationAttributesType }
+     * {@link DeclarableType }
      *
      */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
+    public DeclarableType getCustomExpiry() {
+      return customExpiry;
     }
 
     /**
-     * Sets the value of the expirationAttributes property.
+     * Sets the value of the customExpiry property.
      *
      * allowed object is
-     * {@link ExpirationAttributesType }
+     * {@link DeclarableType }
      *
      */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
+    public void setCustomExpiry(DeclarableType value) {
+      this.customExpiry = value;
     }
 
-  }
+    /**
+     * Gets the value of the action property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getAction() {
+      return action;
+    }
 
+    /**
+     * Sets the value of the action property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setAction(String value) {
+      this.action = value;
+    }
+
+    /**
+     * Gets the value of the timeout property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getTimeout() {
+      return timeout;
+    }
+
+    /**
+     * Sets the value of the timeout property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setTimeout(String value) {
+      this.timeout = value;
+    }
+  }
 
   /**
    * <p>
@@ -2673,115 +2733,6 @@ public class RegionAttributesType {
 
     }
   }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class RegionIdleTime {
-
-    @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected ExpirationAttributesType expirationAttributes;
-
-    /**
-     * Gets the value of the expirationAttributes property.
-     *
-     * possible object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
-    }
-
-    /**
-     * Sets the value of the expirationAttributes property.
-     *
-     * allowed object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class RegionTimeToLive {
-
-    @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected ExpirationAttributesType expirationAttributes;
-
-    /**
-     * Gets the value of the expirationAttributes property.
-     *
-     * possible object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
-    }
-
-    /**
-     * Sets the value of the expirationAttributes property.
-     *
-     * allowed object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
-    }
-
-  }
-
 
   /**
    * <p>

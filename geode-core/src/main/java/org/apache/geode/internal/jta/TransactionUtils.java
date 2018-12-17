@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
+
 import org.apache.geode.LogWriter;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.PureLogWriter;
 
 /**
@@ -38,7 +39,7 @@ public class TransactionUtils {
     } else if (purelogWriter != null) {
       return purelogWriter;
     } else {
-      purelogWriter = new PureLogWriter(InternalLogWriter.SEVERE_LEVEL);
+      purelogWriter = new PureLogWriter(SEVERE.intLevel());
       return purelogWriter;
     }
   }

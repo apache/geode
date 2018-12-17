@@ -106,8 +106,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
     this.expectedDataSerializables =
         CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
-    Collections.sort(this.expectedDataSerializables);
-
   }
 
   public void loadExpectedSerializables() throws Exception {
@@ -117,7 +115,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
     this.expectedSerializables =
         CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
-    Collections.sort(this.expectedSerializables);
   }
 
   public void findClasses() throws Exception {

@@ -18,6 +18,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.IntSupplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,8 +30,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.modules.session.functions.GetMaxInactiveInterval;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SessionTest;
 
 /**
@@ -37,39 +43,70 @@ import org.apache.geode.test.junit.categories.SessionTest;
  * class configure different containers in order to run these tests against specific containers.
  */
 @Category({SessionTest.class})
-public abstract class CargoTestBase extends JUnit4CacheTestCase {
+public abstract class CargoTestBase {
+  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
+
   @Rule
-  public transient TestName testName = new TestName();
+  public TestName testName = new TestName();
 
-  public transient Client client;
-  public transient ContainerManager manager;
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
 
-  public abstract ContainerInstall getInstall();
+  protected Client client;
+  protected ContainerManager manager;
+  protected ContainerInstall install;
+  protected MemberVM locatorVM;
+
+  /**
+   * Should only be called once per test.
+   *
+   * @return a newly initialized ContainerInstall
+   */
+  public abstract ContainerInstall getInstall(IntSupplier portSupplier) throws Exception;
 
   /**
    * Sets up the {@link #client} and {@link #manager} variables by creating new instances of each.
    *
-   * Adds two new containers to the {@link #manager} based on the super class' {@link #getInstall()}
-   * method. Also sets {@link ContainerManager#testName} for {@link #manager} to the name of the
-   * current test.
+   * Adds two new containers to the {@link #manager} based on the subclass's
+   * {@link #getInstall(IntSupplier)} method. Also sets the test name in the {@link #manager} to the
+   * name of the current test.
    */
   @Before
-  public void setup() throws IOException {
+  public void setup() throws Exception {
+    dumpDockerInfo();
+    announceTest("START");
+
+    locatorVM = clusterStartupRule.startLocatorVM(0, 0);
+
     client = new Client();
     manager = new ContainerManager();
 
     manager.setTestName(testName.getMethodName());
-    manager.addContainers(2, getInstall());
+
+    install = getInstall(portSupplier::getAvailablePort);
+    install.setDefaultLocatorPort(locatorVM.getPort());
+
+    manager.addContainers(2, install);
   }
 
   /**
    * Stops all containers that were previously started and cleans up their configurations
    */
   @After
-  public void stop() throws IOException {
-    manager.dumpLogs();
-    manager.stopAllActiveContainers();
-    manager.cleanUp();
+  public void stop() throws IOException, InterruptedException {
+    try {
+      manager.stopAllActiveContainers();
+    } finally {
+      try {
+        manager.dumpLogs();
+      } finally {
+        try {
+          manager.cleanUp();
+        } finally {
+          announceTest("END");
+        }
+      }
+    }
   }
 
   /**
@@ -195,7 +232,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
   }
 
   private boolean localCacheEnabled() {
-    return getInstall().getConnectionType().enableLocalCache();
+    return install.getConnectionType().enableLocalCache();
   }
 
   /**
@@ -311,11 +348,26 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     int numContainers = manager.numContainers();
     // Add and start new container
-    manager.addContainer(getInstall());
+    manager.addContainer(install);
     manager.startAllInactiveContainers();
     // Check that a container was added
     assertEquals(numContainers + 1, manager.numContainers());
 
     getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+  }
+
+  private void announceTest(String status) {
+    System.out.format("TEST %s %s.%s%n", status, getClass().getSimpleName(),
+        testName.getMethodName());
+  }
+
+  private static void dumpDockerInfo() throws IOException {
+    Path dockerInfoPath = Paths.get("/", "proc", "self", "cgroup");
+    if (Files.isReadable(dockerInfoPath)) {
+      System.out.println("Docker info:");
+      System.out.println("------------------------------------");
+      Files.lines(dockerInfoPath).forEach(System.out::println);
+      System.out.println("------------------------------------");
+    }
   }
 }

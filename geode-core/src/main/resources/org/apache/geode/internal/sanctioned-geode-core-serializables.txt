@@ -67,8 +67,8 @@ org/apache/geode/cache/EntryNotFoundException,true,-2404101631744605659
 org/apache/geode/cache/EvictionAction,true,-98840597493242980
 org/apache/geode/cache/EvictionAlgorithm,true,5778669432033106789
 org/apache/geode/cache/EvictionAttributes,false
-org/apache/geode/cache/ExpirationAttributes,false
 org/apache/geode/cache/ExpirationAction,true,658925707882047900,ordinal:int
+org/apache/geode/cache/ExpirationAttributes,false
 org/apache/geode/cache/FailedSynchronizationException,true,-6225053492344591496
 org/apache/geode/cache/GatewayConfigurationException,true,3112317608711263007
 org/apache/geode/cache/GatewayException,true,8090143153569084886
@@ -289,9 +289,9 @@ org/apache/geode/internal/cache/InitialImageOperation$GIITestHookType,false
 org/apache/geode/internal/cache/LocalRegion$1,true,0,this$0:org/apache/geode/internal/cache/LocalRegion
 org/apache/geode/internal/cache/LocalRegion$IteratorType,false
 org/apache/geode/internal/cache/Oplog$OkToSkipResult,false
-org/apache/geode/internal/cache/PartitionAttributesImpl,false
 org/apache/geode/internal/cache/PRContainsValueFunction,false
 org/apache/geode/internal/cache/PRHARedundancyProvider$ArrayListWithClearState,true,1,wasCleared:boolean
+org/apache/geode/internal/cache/PartitionAttributesImpl,false
 org/apache/geode/internal/cache/PartitionedRegion$PRIdMap,true,3667357372967498179,cleared:boolean
 org/apache/geode/internal/cache/PartitionedRegion$SizeEntry,false,isPrimary:boolean,size:int
 org/apache/geode/internal/cache/PartitionedRegionDataStore$CreateBucketResult,false,nowExists:boolean

@@ -17,8 +17,8 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import org.assertj.core.api.AssertionsForClassTypes;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,16 +35,16 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 public class DestroyDataSourceCommandDUnitTest {
-  private static MemberVM locator, server1, server2;
+  private MemberVM locator, server1, server2;
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
-  @BeforeClass
-  public static void before() throws Exception {
+  @Before
+  public void before() throws Exception {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
@@ -108,5 +108,18 @@ public class DestroyDataSourceCommandDUnitTest {
     server1.invoke(() -> {
       AssertionsForClassTypes.assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0);
     });
+  }
+
+  @Test
+  public void destroyDataSourceFailsIfInUseByJdbcMapping() {
+    gfsh.executeAndAssertThat("create region --name=myRegion --type=REPLICATE").statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create jdbc-mapping --data-source=datasource1 --pdx-name=myPdxClass --region=myRegion")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsError()
+        .containsOutput(
+            "Data source named \"datasource1\" is still being used by region \"myRegion\"."
+                + " Use destroy jdbc-mapping --region=myRegion and then try again.");
   }
 }

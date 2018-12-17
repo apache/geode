@@ -97,7 +97,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     }
 
     // input
-    Set<DistributedMember> targetMembers = getMembers(null, null);
+    Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
     RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName, id);
 
     try {

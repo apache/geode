@@ -39,7 +39,7 @@ public class LocalRegionDataView implements InternalDataView {
    */
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
       boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-      boolean returnTombstones, boolean retainResult) {
+      boolean returnTombstones, boolean retainResult, boolean createIfAbsent) {
     return localRegion.getDeserializedValue(null, keyInfo, updateStats, disableCopyOnRead, preferCD,
         clientEvent, returnTombstones, retainResult);
   }
