@@ -81,6 +81,16 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  */
 @Category({SerializationTest.class})
 public class DataSerializableJUnitTest implements Serializable {
+  @Rule
+  public TestName testName = new TestName();
+
+  /**
+   * We need to log the test name for output to be any use in terms of correlation.
+   */
+  @Before
+  public void logTestName() {
+    System.out.println("Before test named " + testName.getMethodName());
+  }
 
   /** A <code>ByteArrayOutputStream</code> that data is serialized to */
   private transient ByteArrayOutputStream baos;
