@@ -32,7 +32,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
  * Sets up the server needed for the client container to connect to
  */
 public abstract class TomcatClientServerTest extends CargoTestBase {
-  private String serverName;
+  private String serverName1;
+  private String serverName2;
 
   @Rule
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -46,12 +47,18 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
    */
   @Before
   public void startServer() throws Exception {
+    serverName1 = startAServer(1);
+    serverName2 = startAServer(2);
+  }
+
+  private String startAServer(int serverNumber) {
     // List of all the jars for tomcat to put on the server classpath
     String libDirJars = install.getHome() + "/lib/*";
     String binDirJars = install.getHome() + "/bin/*";
 
     // Set server name based on the test about to be run
-    serverName = getClass().getSimpleName().concat("_").concat(testName.getMethodName());
+    String serverName =
+        getClass().getSimpleName() + "_" + testName.getMethodName() + "_" + serverNumber;
 
     // Create command string for starting server
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
@@ -66,6 +73,8 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
 
     // Start server
     gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
+
+    return serverName;
   }
 
   /**
@@ -73,6 +82,11 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
    */
   @After
   public void stopServer() throws Exception {
+    stopAServer(serverName1);
+    stopAServer(serverName2);
+  }
+
+  private void stopAServer(String serverName) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
     command.addOption(CliStrings.STOP_SERVER__DIR, serverName);
     gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
