@@ -26,7 +26,17 @@ dependencyManagement {
 }
 
 afterEvaluate {
-  tasks.withType(SourceTask).each { t ->
+  // Using DefaultTask is possibly more heavy-handed than is actually necessary.
+  // However, consider the following:
+  // * The BOM will be necessary for any compile step.
+  // * The BOM is also necessary for generate steps in publication.
+  // * The BOM may possibly be necessary for other tasks, particular to a given subproject
+  // * Compile steps could be addressed with `tasks.withType(SourceTask)`, but publication tasks
+  //   extend DefaultTask directly and would be overlooked.
+  // * We could inject dependencies into SourceTasks, and also publication tasks explicitly, but
+  //   this might overlook any other subproject-specific dependencies.
+  // * The BOM publication is itself very quick and does cache, so this isn't really adding much.
+  tasks.withType(DefaultTask).each { t ->
     t.dependsOn project(':boms:geode-all-bom').tasks.publishToMavenLocal
   }
 }
