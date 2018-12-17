@@ -705,7 +705,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void returnsCorrectColumnForDestroy() throws Exception {
+  public void returnsCorrectColumnForDestroyWithCompositeKey() throws Exception {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     JSONObject compositeKey = new JSONObject();
@@ -726,10 +726,14 @@ public class SqlHandlerTest {
         .isEqualTo("fieldOne");
     assertThat(entryColumnData.getEntryKeyColumnData().get(1).getColumnName())
         .isEqualTo("fieldTwo");
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getValue())
+        .isEqualTo(compositeKeyFieldValueOne);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(1).getValue())
+        .isEqualTo(compositeKeyFieldValueTwo);
   }
 
   @Test
-  public void returnsCorrectColumnForDestroyWithCompositeKey() throws Exception {
+  public void returnsCorrectColumnForDestroy() throws Exception {
     EntryColumnData entryColumnData =
         handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.DESTROY);
 
@@ -738,6 +742,30 @@ public class SqlHandlerTest {
     assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
     assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
         .isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonStringFails() throws Exception {
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    Object nonCompositeKey = Integer.valueOf(123);
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage(
+        "The key \"123\" of class \"java.lang.Integer\" must be a java.lang.String because multiple columns are configured as ids.");
+
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, nonCompositeKey, value,
+        Operation.DESTROY);
+  }
+
+  @Test
+  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonJsonStringFails() throws Exception {
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    String nonJsonKey = "myKey";
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage(
+        "The key \"myKey\" must be a valid JSON string because multiple columns are configured as ids. Details: Value myKey of type java.lang.String cannot be converted to JSONObject");
+
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, nonJsonKey, value,
+        Operation.DESTROY);
   }
 
   private ResultSet getPrimaryKeysMetaData() throws SQLException {

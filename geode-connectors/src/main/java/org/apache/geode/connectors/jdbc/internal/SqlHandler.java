@@ -262,8 +262,9 @@ public class SqlHandler {
       result.add(columnData);
     } else {
       if (!(key instanceof String)) {
-        throw new JdbcConnectorException("The key \"" + key + "\" of class \"" + key.getClass()
-            + "\" must be a java.lang.String because multiple columns are configured as ids.");
+        throw new JdbcConnectorException(
+            "The key \"" + key + "\" of class \"" + key.getClass().getName()
+                + "\" must be a java.lang.String because multiple columns are configured as ids.");
       }
       JSONObject compositeKey = null;
       try {
