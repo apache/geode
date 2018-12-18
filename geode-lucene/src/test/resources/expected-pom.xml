@@ -38,7 +38,6 @@
     <dependency>
       <groupId>org.springframework.shell</groupId>
       <artifactId>spring-shell</artifactId>
-      <version>1.2.0.RELEASE</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -71,25 +70,21 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
-      <version>6.6.2</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.8.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j</artifactId>
-      <version>3.0.2</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>2.11.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -107,13 +102,11 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
-      <version>6.6.2</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queryparser</artifactId>
-      <version>6.6.2</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -125,8 +118,18 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-phonetic</artifactId>
-      <version>6.6.2</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-all-bom</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>

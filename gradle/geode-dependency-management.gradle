@@ -1,0 +1,42 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// This gradle should be applied as a plugin to every subproject that requires our dependency management
+// E.g.:  apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+  imports {
+    mavenBom "${project.group}:geode-all-bom:${project.version}"
+  }
+}
+
+afterEvaluate {
+  // Using DefaultTask is possibly more heavy-handed than is actually necessary.
+  // However, consider the following:
+  // * The BOM will be necessary for any compile step.
+  // * The BOM is also necessary for generate steps in publication.
+  // * The BOM may possibly be necessary for other tasks, particular to a given subproject
+  // * Compile steps could be addressed with `tasks.withType(SourceTask)`, but publication tasks
+  //   extend DefaultTask directly and would be overlooked.
+  // * We could inject dependencies into SourceTasks, and also publication tasks explicitly, but
+  //   this might overlook any other subproject-specific dependencies.
+  // * The BOM publication is itself very quick and does cache, so this isn't really adding much.
+  tasks.withType(DefaultTask).each { t ->
+    t.dependsOn project(':boms:geode-all-bom').tasks.publishToMavenLocal
+  }
+}

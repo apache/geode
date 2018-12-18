@@ -16,8 +16,11 @@
  */
 apply plugin: 'war'
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
-  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compile('javax.servlet:javax.servlet-api')
 }
 
 war {

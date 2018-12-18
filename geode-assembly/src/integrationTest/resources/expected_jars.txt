@@ -1,7 +1,9 @@
 HikariCP
+animal-sniffer-annotations
 antlr
 aopalliance
 byte-buddy
+checker-qual
 classgraph
 classmate
 commons-beanutils
@@ -15,6 +17,8 @@ commons-logging
 commons-math
 commons-modeler
 commons-validator
+error_prone_annotations
+failureaccess
 fastutil
 findbugs-annotations
 geo
@@ -22,6 +26,7 @@ gfsh-dependencies.jar
 grumpy-core
 guava
 istack-commons-runtime
+j2objc-annotations
 jackson-annotations
 jackson-core
 jackson-databind
@@ -48,6 +53,8 @@ jgroups
 jline
 jna
 jopt-simple
+jsr
+listenablefuture
 log4j-api
 log4j-core
 log4j-jcl
