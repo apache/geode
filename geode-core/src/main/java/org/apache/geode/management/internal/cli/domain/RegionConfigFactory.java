@@ -192,6 +192,8 @@ public class RegionConfigFactory {
     if (partitionArgs != null && !partitionArgs.isEmpty()) {
       RegionAttributesType.PartitionAttributes partitionAttributes =
           new RegionAttributesType.PartitionAttributes();
+      regionAttributesType.setPartitionAttributes(partitionAttributes);
+
       partitionAttributes.setColocatedWith(partitionArgs.prColocatedWith);
       partitionAttributes.setLocalMaxMemory(int2string(partitionArgs.prLocalMaxMemory));
       partitionAttributes.setRecoveryDelay(long2string(partitionArgs.prRecoveryDelay));
@@ -206,11 +208,57 @@ public class RegionConfigFactory {
         partitionResolverType.setClassName(partitionArgs.partitionResolver);
         partitionAttributes.setPartitionResolver(partitionResolverType);
       }
+    }
 
+    if (regionAttributes != null && regionAttributes.getPartitionAttributes() != null) {
+      RegionAttributesType.PartitionAttributes partitionAttributes = Optional.ofNullable(
+          regionAttributesType.getPartitionAttributes())
+          .orElse(new RegionAttributesType.PartitionAttributes());
       regionAttributesType.setPartitionAttributes(partitionAttributes);
-    } else if (regionAttributes != null && regionAttributes.getPartitionAttributes() != null) {
-      regionAttributesType.setPartitionAttributes(
-          regionAttributes.getPartitionAttributes().convertToConfigPartitionAttributes());
+
+      RegionAttributesType.PartitionAttributes implicitPartitionAttributes =
+          regionAttributes.getPartitionAttributes().convertToConfigPartitionAttributes();
+
+      String implicitColocatedWith = implicitPartitionAttributes.getColocatedWith();
+      if (partitionAttributes.getColocatedWith() == null && implicitColocatedWith != null) {
+        partitionAttributes.setColocatedWith(implicitColocatedWith);
+      }
+
+      String implicitLocalMaxMemory = implicitPartitionAttributes.getLocalMaxMemory();
+      if (partitionAttributes.getLocalMaxMemory() == null && implicitLocalMaxMemory != null) {
+        partitionAttributes.setLocalMaxMemory(implicitLocalMaxMemory);
+      }
+
+      String implicitRecoveryDelay = implicitPartitionAttributes.getRecoveryDelay();
+      if (partitionAttributes.getRecoveryDelay() == null && implicitRecoveryDelay != null) {
+        partitionAttributes.setRecoveryDelay(implicitRecoveryDelay);
+      }
+
+      String implicitRedundantCopies = implicitPartitionAttributes.getRedundantCopies();
+      if (partitionAttributes.getRedundantCopies() == null && implicitRedundantCopies != null) {
+        partitionAttributes.setRedundantCopies(implicitRedundantCopies);
+      }
+
+      String implicitStartupRecoveryDelay = implicitPartitionAttributes.getStartupRecoveryDelay();
+      if (partitionAttributes.getStartupRecoveryDelay() == null
+          && implicitStartupRecoveryDelay != null) {
+        partitionAttributes.setStartupRecoveryDelay(implicitStartupRecoveryDelay);
+      }
+
+      String implicitTotalMaxMemory = implicitPartitionAttributes.getTotalMaxMemory();
+      if (partitionAttributes.getTotalMaxMemory() == null && implicitTotalMaxMemory != null) {
+        partitionAttributes.setTotalMaxMemory(implicitTotalMaxMemory);
+      }
+
+      String implicitTotalNumBuckets = implicitPartitionAttributes.getTotalNumBuckets();
+      if (partitionAttributes.getTotalNumBuckets() == null && implicitTotalNumBuckets != null) {
+        partitionAttributes.setTotalNumBuckets(implicitTotalNumBuckets);
+      }
+
+      DeclarableType implicitPartitionResolver = implicitPartitionAttributes.getPartitionResolver();
+      if (partitionAttributes.getPartitionResolver() == null && implicitPartitionResolver != null) {
+        partitionAttributes.setPartitionResolver(implicitPartitionResolver);
+      }
     }
 
     if (gatewaySenderIds != null && !gatewaySenderIds.isEmpty()) {

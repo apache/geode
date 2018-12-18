@@ -1957,7 +1957,7 @@ public class RegionAttributesType implements Serializable {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class LruEntryCount {
+    public static class LruEntryCount implements Serializable {
 
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;

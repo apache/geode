@@ -250,6 +250,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         + " --entry-time-to-live-expiration=200"
         + " --entry-time-to-live-expiration-action=local-destroy"
         + " --eviction-action=local-destroy"
+        + " --eviction-entry-count=1000"
         + " --key-constraint=" + Object.class.getName()
         + " --off-heap=false"
         + " --region-idle-time-expiration=100"
@@ -332,9 +333,12 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
             .describedAs("Entry time to live expiration action should be local-destroy "
                 + "for region " + name)
             .isEqualTo("local-destroy");
-        assertThat(attr.getEvictionAttributes().getLruHeapPercentage().getAction().value())
+        assertThat(attr.getEvictionAttributes().getLruEntryCount().getAction().value())
             .describedAs("Eviction action should be local-destroy for region " + name)
             .isEqualTo("local-destroy");
+        assertThat(attr.getEvictionAttributes().getLruEntryCount().getMaximum())
+            .describedAs("Eviction max should be 1000 for region " + name)
+            .isEqualTo("1000");
         assertThat(attr.getKeyConstraint())
             .describedAs("Expected key constraint to be " + Object.class.getName() +
                 " for region " + name)
@@ -434,11 +438,11 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName
-        + " --type=PARTITION").statusIsSuccess();
+        + " --type=PARTITION_REDUNDANT").statusIsSuccess();
     gfsh.executeAndAssertThat("create region"
         + " --name=" + colocatedRegionName
         + " --colocated-with=" + regionName
-        + " --type=PARTITION").statusIsSuccess();
+        + " --type=PARTITION_REDUNDANT").statusIsSuccess();
 
     gfsh.executeAndAssertThat("create region"
         + " --name=" + colocatedRegionFromTemplateName

@@ -32,6 +32,7 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -163,6 +164,11 @@ public class RegionCreateFunction implements InternalFunction {
     factory
         .setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().value().toUpperCase()
             .replace("-", "_")));
+
+    if (regionAttributes.getScope() != null) {
+      factory.setScope(Scope.fromString(regionAttributes.getScope().value().toUpperCase()
+          .replace("-", "_")));
+    }
 
     validateAndSetExpirationAttributes(regionAttributes, factory);
 
