@@ -20,7 +20,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -36,39 +35,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
-import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.BucketRegionQueueHelper;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.PartitionedRegionStats;
-import org.apache.geode.internal.cache.ProxyBucketRegion;
-import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
-import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -105,16 +86,9 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
   private void createQueueRegion() {
     // Mock queue region
-    this.queueRegion = mock(PartitionedRegion.class);
-    when(this.queueRegion.getFullPath()).thenReturn(getRegionQueueName());
-    when(this.queueRegion.getPrStats()).thenReturn(mock(PartitionedRegionStats.class));
-    when(this.queueRegion.getDataStore()).thenReturn(mock(PartitionedRegionDataStore.class));
-    when(this.queueRegion.getCache()).thenReturn(this.cache);
-    EvictionAttributesImpl ea = (EvictionAttributesImpl) EvictionAttributes
-        .createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK);
-    EvictionController eviction = AbstractEvictionController.create(ea, false,
-        this.cache.getDistributedSystem(), "queueRegion");
-    when(this.queueRegion.getEvictionController()).thenReturn(eviction);
+    this.queueRegion =
+        ParallelGatewaySenderHelper.createMockQueueRegion(this.cache,
+            ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID));
   }
 
   private void createGatewaySender() {
@@ -134,47 +108,14 @@ public class ParallelQueueRemovalMessageJUnitTest {
         .thenReturn(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
     when(this.cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
         .thenReturn(this.rootRegion);
-    when(this.cache.getRegion(getRegionQueueName())).thenReturn(this.queueRegion);
+    when(this.cache.getRegion(ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID)))
+        .thenReturn(this.queueRegion);
   }
 
   private void createBucketRegionQueue() {
-    // Create InternalRegionArguments
-    InternalRegionArguments ira = new InternalRegionArguments();
-    ira.setPartitionedRegion(this.queueRegion);
-    ira.setPartitionedRegionBucketRedundancy(1);
-    BucketAdvisor ba = mock(BucketAdvisor.class);
-    ira.setBucketAdvisor(ba);
-    InternalRegionArguments pbrIra = new InternalRegionArguments();
-    RegionAdvisor ra = mock(RegionAdvisor.class);
-    when(ra.getPartitionedRegion()).thenReturn(this.queueRegion);
-    pbrIra.setPartitionedRegionAdvisor(ra);
-    PartitionAttributes pa = mock(PartitionAttributes.class);
-    when(this.queueRegion.getPartitionAttributes()).thenReturn(pa);
-
-    when(this.queueRegion.getBucketName(eq(BUCKET_ID))).thenAnswer(new Answer<String>() {
-      @Override
-      public String answer(final InvocationOnMock invocation) throws Throwable {
-        return PartitionedRegionHelper.getBucketName(queueRegion.getFullPath(), BUCKET_ID);
-      }
-    });
-
-    when(this.queueRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
-
-    when(pa.getColocatedWith()).thenReturn(null);
-
-    when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
-
-    // Create RegionAttributes
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    factory.setEvictionAttributes(
-        EvictionAttributes.createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK));
-    RegionAttributes attributes = factory.create();
-
     // Create BucketRegionQueue
-    BucketRegionQueue realBucketRegionQueue = new BucketRegionQueue(
-        this.queueRegion.getBucketName(BUCKET_ID), attributes, this.rootRegion, this.cache, ira);
+    BucketRegionQueue realBucketRegionQueue = ParallelGatewaySenderHelper
+        .createBucketRegionQueue(this.cache, this.rootRegion, this.queueRegion, BUCKET_ID);
     this.bucketRegionQueue = spy(realBucketRegionQueue);
     // (this.queueRegion.getBucketName(BUCKET_ID), attributes, this.rootRegion, this.cache, ira);
     EntryEventImpl entryEvent = EntryEventImpl.create(this.bucketRegionQueue, Operation.DESTROY,
@@ -312,7 +253,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
     List<Long> dispatchedKeys = new ArrayList<>();
     dispatchedKeys.add(KEY);
     bucketIdToDispatchedKeys.put(BUCKET_ID, dispatchedKeys);
-    regionToDispatchedKeys.put(getRegionQueueName(), bucketIdToDispatchedKeys);
+    regionToDispatchedKeys.put(ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID),
+        bucketIdToDispatchedKeys);
     return regionToDispatchedKeys;
   }
 
@@ -326,9 +268,5 @@ public class ParallelQueueRemovalMessageJUnitTest {
     tempQueue.add(event);
     tempQueueMap.put(BUCKET_ID, tempQueue);
     return tempQueue;
-  }
-
-  private String getRegionQueueName() {
-    return Region.SEPARATOR + GATEWAY_SENDER_ID + ParallelGatewaySenderQueue.QSTRING;
   }
 }
