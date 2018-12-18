@@ -72,7 +72,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     employee1 = (Employee) pdxEmployee1.getObject();
     employee2 = (Employee) pdxEmployee2.getObject();
   }
-  
+
   private void setupRegion(String ids) throws RegionMappingExistsException {
     employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME, ids);
   }
@@ -137,7 +137,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   @Test
-  public void putNonPdxInstanceThatIsPdxSerializable() throws SQLException, RegionMappingExistsException {
+  public void putNonPdxInstanceThatIsPdxSerializable()
+      throws SQLException, RegionMappingExistsException {
     setupRegion(null);
     Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);

@@ -199,7 +199,7 @@ public class SqlHandler {
         }
       }
 
-      assert updateCount == 1;
+      assert updateCount == 1 : "expected 1 but updateCount was: " + updateCount;
     }
   }
 
