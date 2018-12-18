@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
   compile(project(':extensions:geode-modules')) {
     // Remove everything related to Tomcat 6.x
@@ -25,10 +28,10 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('commons-io:commons-io:' + project.'commons-io.version')
-  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
-  compile('junit:junit:' + project.'junit.version')
-  compile('org.httpunit:httpunit:' + project.'httpunit.version') {
+  compile('commons-io:commons-io')
+  compile('javax.servlet:javax.servlet-api')
+  compile('junit:junit')
+  compile('org.httpunit:httpunit') {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }
