@@ -212,6 +212,13 @@ public class ContainerManager {
   }
 
   /**
+   * Remove the given container
+   */
+  public boolean removeContainer(ServerContainer container) {
+    return containers.remove(container);
+  }
+
+  /**
    * Get the indexes of all active containers
    */
   private ArrayList<Integer> getActiveContainerIndexes() {
