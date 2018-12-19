@@ -25,6 +25,7 @@ RUN  apt-get update \
      apt-transport-https \
      bzip2 \
      lsb-release \
+     lsof \
      net-tools \
      unzip \
      xz-utils \
