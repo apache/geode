@@ -119,9 +119,6 @@ sourceSets {
 task downloadWebServers(type:Copy) {
   from {configurations.findAll {it.name.startsWith("webServer")}}
   into webServersDir
-  // An explicit dependency is required because the webServer* is recognized by dependencyManagement
-  // but does not invoke the standard compile path
-  dependsOn project(':boms:geode-all-bom').tasks.publishToMavenLocal
 }
 
 dependencies {
