@@ -62,9 +62,9 @@ public class ListMappingCommandTest {
         null);
 
     RegionMapping mapping1 =
-        new RegionMapping("region1", "class1", "table1", "name1", null);
+        new RegionMapping("region1", "class1", "table1", "name1", null, null, null);
     RegionMapping mapping2 =
-        new RegionMapping("region2", "class2", "table2", "name2", null);
+        new RegionMapping("region2", "class2", "table2", "name2", null, null, null);
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));

@@ -69,7 +69,7 @@ public class DescribeMappingCommandTest {
         null);
 
     RegionMapping mapping =
-        new RegionMapping("region", "class1", "table1", "name1", "myId");
+        new RegionMapping("region", "class1", "table1", "name1", "myId", "myCatalog", "mySchema");
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
@@ -81,7 +81,9 @@ public class DescribeMappingCommandTest {
         .containsOutput("data-source", "name1")
         .containsOutput("table", "table1")
         .containsOutput("pdx-name", "class1")
-        .containsOutput("id", "myId");
+        .containsOutput("id", "myId")
+        .containsOutput("catalog", "myCatalog")
+        .containsOutput("schema", "mySchema");
   }
 
   @Test

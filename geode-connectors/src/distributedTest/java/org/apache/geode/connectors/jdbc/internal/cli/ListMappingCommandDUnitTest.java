@@ -116,7 +116,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     for (int i = 1; i <= N; i++) {
       String name = regionName + "-" + i;
       service.createRegionMapping(
-          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", null));
+          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", null, null, null));
       assertThat(service.getMappingForRegion(name)).isNotNull();
     }
   }
