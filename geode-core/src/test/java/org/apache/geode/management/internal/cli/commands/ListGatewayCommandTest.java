@@ -17,9 +17,9 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.powermock.api.mockito.PowerMockito.doReturn;
 
 import java.util.Collections;
 import java.util.HashMap;
