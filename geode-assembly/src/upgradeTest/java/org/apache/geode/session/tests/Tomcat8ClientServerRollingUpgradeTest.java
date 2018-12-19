@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,13 +58,11 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   private String server1Dir;
   private String server2Dir;
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> Integer.parseInt(s) < 170);
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    }
+    int minimumVersion = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) ? 180 : 170;
+    result.removeIf(s -> Integer.parseInt(s) < minimumVersion);
     return result;
   }
 
