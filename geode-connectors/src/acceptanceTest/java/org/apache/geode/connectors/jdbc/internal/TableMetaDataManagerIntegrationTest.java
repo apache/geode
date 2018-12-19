@@ -23,6 +23,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -85,9 +87,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
     createTable();
     TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
 
-    String keyColumnName = metaData.getKeyColumnName();
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
 
-    assertThat(keyColumnName).isEqualTo("id");
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("id"));
   }
 
   @Test
@@ -96,9 +98,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
     TableMetaDataView metaData =
         manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "nonprimaryid");
 
-    String keyColumnName = metaData.getKeyColumnName();
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
 
-    assertThat(keyColumnName).isEqualTo("nonprimaryid");
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("nonprimaryid"));
   }
 
   @Test
@@ -107,9 +109,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
     TableMetaDataView metaData =
         manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "NonPrimaryId");
 
-    String keyColumnName = metaData.getKeyColumnName();
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
 
-    assertThat(keyColumnName).isEqualTo("NonPrimaryId");
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("NonPrimaryId"));
   }
 
   @Test

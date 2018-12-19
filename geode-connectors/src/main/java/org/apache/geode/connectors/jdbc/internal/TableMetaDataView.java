@@ -16,12 +16,14 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+
+import java.util.List;
 import java.util.Set;
 
 public interface TableMetaDataView {
   String getTableName();
 
-  String getKeyColumnName();
+  List<String> getKeyColumnNames();
 
   int getColumnDataType(String columnName);
 

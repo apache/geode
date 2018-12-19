@@ -17,18 +17,19 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class TableMetaData implements TableMetaDataView {
 
   private final String tableName;
-  private final String keyColumnName;
+  private final List<String> keyColumnNames;
   private final HashMap<String, Integer> columnNameToTypeMap;
   private final String identifierQuoteString;
 
-  public TableMetaData(String tableName, String keyColumnName, String quoteString) {
+  public TableMetaData(String tableName, List<String> keyColumnNames, String quoteString) {
     this.tableName = tableName;
-    this.keyColumnName = keyColumnName;
+    this.keyColumnNames = keyColumnNames;
     this.columnNameToTypeMap = new HashMap<>();
     this.identifierQuoteString = quoteString;
   }
@@ -39,8 +40,8 @@ public class TableMetaData implements TableMetaDataView {
   }
 
   @Override
-  public String getKeyColumnName() {
-    return this.keyColumnName;
+  public List<String> getKeyColumnNames() {
+    return this.keyColumnNames;
   }
 
   @Override

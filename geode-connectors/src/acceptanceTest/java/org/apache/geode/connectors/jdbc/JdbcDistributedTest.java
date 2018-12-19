@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -446,6 +447,36 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
+  public void getReadsFromDBWithCompositeKey() throws Exception {
+    createTable();
+    createRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), true, "id,age");
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
+      JSONObject compositeKey1 = new JSONObject();
+      compositeKey1.put("id", pdxEmployee1.getField("id"));
+      compositeKey1.put("age", pdxEmployee1.getField("age"));
+      String key = compositeKey1.toString();
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      region.put(key, pdxEmployee1);
+      region.invalidate(key);
+      JdbcWriter<Object, Object> writer =
+          (JdbcWriter<Object, Object>) region.getAttributes().getCacheWriter();
+      long writeCallsCompletedBeforeGet = writer.getTotalEvents();
+
+      Employee result = (Employee) region.get(key);
+
+      assertThat(result.getId()).isEqualTo("id1");
+      assertThat(result.getName()).isEqualTo("Emp1");
+      assertThat(result.getAge()).isEqualTo(55);
+      assertThat(writer.getTotalEvents()).isEqualTo(writeCallsCompletedBeforeGet);
+    });
+  }
+
+  @Test
   public void getReadsFromDBWithAsyncWriter() throws Exception {
     createTable();
     createRegionUsingGfsh();
@@ -640,15 +671,21 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName, boolean synchronous) {
-    createMapping(regionName, connectionName, Employee.class.getName(), synchronous);
+    createMapping(regionName, connectionName, Employee.class.getName(), synchronous, null);
   }
 
   private void createMapping(String regionName, String connectionName, String pdxClassName,
       boolean synchronous) {
+    createMapping(regionName, connectionName, pdxClassName, synchronous, null);
+  }
+
+  private void createMapping(String regionName, String connectionName, String pdxClassName,
+      boolean synchronous, String ids) {
     final String commandStr = "create jdbc-mapping --region=" + regionName
         + " --data-source=" + connectionName
         + " --synchronous=" + synchronous
-        + " --pdx-name=" + pdxClassName;
+        + " --pdx-name=" + pdxClassName
+        + ((ids != null) ? (" --id=" + ids) : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
     if (!synchronous) {
       final String alterAsyncQueue =

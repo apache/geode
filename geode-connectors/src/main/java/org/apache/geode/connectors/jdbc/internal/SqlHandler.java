@@ -22,8 +22,12 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
@@ -94,7 +98,7 @@ public class SqlHandler {
 
   private ResultSet executeReadQuery(PreparedStatement statement, EntryColumnData entryColumnData)
       throws SQLException {
-    setValuesInStatement(statement, entryColumnData);
+    setValuesInStatement(statement, entryColumnData, Operation.GET);
     return statement.executeQuery();
   }
 
@@ -108,17 +112,23 @@ public class SqlHandler {
     return regionMapping;
   }
 
-  private void setValuesInStatement(PreparedStatement statement, EntryColumnData entryColumnData)
+  private void setValuesInStatement(PreparedStatement statement, EntryColumnData entryColumnData,
+      Operation operation)
       throws SQLException {
     int index = 0;
-    for (ColumnData columnData : entryColumnData.getEntryValueColumnData()) {
+    if (operation.isCreate() || operation.isUpdate()) {
+      index = setValuesFromColumnData(statement, entryColumnData.getEntryValueColumnData(), index);
+    }
+    setValuesFromColumnData(statement, entryColumnData.getEntryKeyColumnData(), index);
+  }
+
+  private int setValuesFromColumnData(PreparedStatement statement, List<ColumnData> columnDataList,
+      int index) throws SQLException {
+    for (ColumnData columnData : columnDataList) {
       index++;
       setValueOnStatement(statement, index, columnData);
     }
-
-    ColumnData keyColumnData = entryColumnData.getEntryKeyColumnData();
-    index++;
-    setValueOnStatement(statement, index, keyColumnData);
+    return index;
   }
 
   private void setValueOnStatement(PreparedStatement statement, int index, ColumnData columnData)
@@ -156,7 +166,7 @@ public class SqlHandler {
 
   public <K, V> void write(Region<K, V> region, Operation operation, K key, PdxInstance value)
       throws SQLException {
-    if (value == null && operation != Operation.DESTROY) {
+    if (value == null && !operation.isDestroy()) {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
     RegionMapping regionMapping = getMappingForRegion(region.getName());
@@ -169,7 +179,7 @@ public class SqlHandler {
       int updateCount = 0;
       try (PreparedStatement statement =
           getPreparedStatement(connection, tableMetaData, entryColumnData, operation)) {
-        updateCount = executeWriteStatement(statement, entryColumnData);
+        updateCount = executeWriteStatement(statement, entryColumnData, operation);
       } catch (SQLException e) {
         if (operation.isDestroy()) {
           throw e;
@@ -185,11 +195,11 @@ public class SqlHandler {
         Operation upsertOp = getOppositeOperation(operation);
         try (PreparedStatement upsertStatement =
             getPreparedStatement(connection, tableMetaData, entryColumnData, upsertOp)) {
-          updateCount = executeWriteStatement(upsertStatement, entryColumnData);
+          updateCount = executeWriteStatement(upsertStatement, entryColumnData, operation);
         }
       }
 
-      assert updateCount == 1;
+      assert updateCount == 1 : "expected 1 but updateCount was: " + updateCount;
     }
   }
 
@@ -197,9 +207,10 @@ public class SqlHandler {
     return operation.isUpdate() ? Operation.CREATE : Operation.UPDATE;
   }
 
-  private int executeWriteStatement(PreparedStatement statement, EntryColumnData entryColumnData)
+  private int executeWriteStatement(PreparedStatement statement, EntryColumnData entryColumnData,
+      Operation operation)
       throws SQLException {
-    setValuesInStatement(statement, entryColumnData);
+    setValuesInStatement(statement, entryColumnData, operation);
     return statement.executeUpdate();
   }
 
@@ -230,24 +241,64 @@ public class SqlHandler {
 
   <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
-    String keyColumnName = tableMetaData.getKeyColumnName();
-    ColumnData keyColumnData =
-        new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
+    List<ColumnData> keyColumnData = createKeyColumnDataList(tableMetaData, regionMapping, key);
     List<ColumnData> valueColumnData = null;
 
     if (operation.isCreate() || operation.isUpdate()) {
-      valueColumnData = createColumnDataList(tableMetaData, regionMapping, value);
+      valueColumnData = createValueColumnDataList(tableMetaData, regionMapping, value);
     }
 
     return new EntryColumnData(keyColumnData, valueColumnData);
   }
 
-  private List<ColumnData> createColumnDataList(TableMetaDataView tableMetaData,
+  private <K> List<ColumnData> createKeyColumnDataList(TableMetaDataView tableMetaData,
+      RegionMapping regionMapping, K key) {
+    List<String> keyColumnNames = tableMetaData.getKeyColumnNames();
+    List<ColumnData> result = new ArrayList<>();
+    if (keyColumnNames.size() == 1) {
+      String keyColumnName = keyColumnNames.get(0);
+      ColumnData columnData =
+          new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
+      result.add(columnData);
+    } else {
+      if (!(key instanceof String)) {
+        throw new JdbcConnectorException(
+            "The key \"" + key + "\" of class \"" + key.getClass().getName()
+                + "\" must be a java.lang.String because multiple columns are configured as ids.");
+      }
+      JSONObject compositeKey = null;
+      try {
+        compositeKey = new JSONObject((String) key);
+      } catch (JSONException ex) {
+        throw new JdbcConnectorException("The key \"" + key
+            + "\" must be a valid JSON string because multiple columns are configured as ids. Details: "
+            + ex.getMessage());
+      }
+      Set<String> fieldNames = compositeKey.keySet();
+      if (fieldNames.size() != keyColumnNames.size()) {
+        throw new JdbcConnectorException("The key \"" + key + "\" should have "
+            + keyColumnNames.size() + " fields but has " + fieldNames.size() + " fields.");
+      }
+      for (String fieldName : fieldNames) {
+        String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
+        if (!keyColumnNames.contains(columnName)) {
+          throw new JdbcConnectorException("The key \"" + key + "\" has the field \"" + fieldName
+              + "\" which does not match any of the key columns: " + keyColumnNames);
+        }
+        ColumnData columnData = new ColumnData(columnName, compositeKey.get(fieldName),
+            tableMetaData.getColumnDataType(columnName));
+        result.add(columnData);
+      }
+    }
+    return result;
+  }
+
+  private List<ColumnData> createValueColumnDataList(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, PdxInstance value) {
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
-      if (tableMetaData.getKeyColumnName().equals(columnName)) {
+      if (tableMetaData.getKeyColumnNames().contains(columnName)) {
         continue;
       }
       ColumnData columnData = new ColumnData(columnName, value.getField(fieldName),
