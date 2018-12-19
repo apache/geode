@@ -106,7 +106,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   public static Collection<Boolean> data() {
     List<Boolean> result = new ArrayList<>();
     result.add(Boolean.TRUE);
-    // result.add(Boolean.FALSE);
+     result.add(Boolean.FALSE);
     return result;
   }
 
