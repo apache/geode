@@ -33,6 +33,7 @@ public class NioEngine implements NioFilter {
 
   @Override
   public ByteBuffer unwrap(ByteBuffer wrappedBuffer) {
+    wrappedBuffer.position(wrappedBuffer.limit());
     return wrappedBuffer;
   }
 

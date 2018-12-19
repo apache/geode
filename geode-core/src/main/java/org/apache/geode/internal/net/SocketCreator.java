@@ -66,6 +66,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -540,6 +541,7 @@ public class SocketCreator {
           System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
     }
 
+
     FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
     String passwordString = sslConfig.getKeystorePassword();
     char[] password = null;
@@ -611,7 +613,8 @@ public class SocketCreator {
       if (!StringUtils.isEmpty(this.keyAlias)) {
         return keyAlias;
       }
-      return delegate.chooseClientAlias(strings, principals, socket);
+      String result = delegate.chooseClientAlias(strings, principals, socket);
+      return result;
     }
 
     @Override
@@ -640,6 +643,12 @@ public class SocketCreator {
     @Override
     public PrivateKey getPrivateKey(final String alias) {
       return delegate.getPrivateKey(alias);
+    }
+
+    @Override
+    public String chooseEngineClientAlias(String[] keyTypes, Principal[] principals,
+        SSLEngine sslEngine) {
+      return delegate.chooseEngineClientAlias(keyTypes, principals, sslEngine);
     }
 
     @Override
@@ -962,8 +971,8 @@ public class SocketCreator {
   /**
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
    */
-  public SSLEngine createSSLEngine() {
-    return sslContext.createSSLEngine();
+  public SSLEngine createSSLEngine(String hostName, int port) {
+    return sslContext.createSSLEngine(hostName, port);
   }
 
   /**
@@ -992,8 +1001,13 @@ public class SocketCreator {
     if (blocking) {
       socketChannel.configureBlocking(false);
     }
-    NioSslEngine nEngine =
-        new NioSslEngine(socketChannel, engine, stats).handshake(timeout, peerNetBuffer);
+    NioSslEngine nEngine;
+    try {
+      nEngine = new NioSslEngine(socketChannel, engine, stats).handshake(timeout, peerNetBuffer);
+    } catch (SSLException e) {
+      logger.warn("SSL handshake exception", e);
+      throw e;
+    }
     if (blocking) {
       socketChannel.configureBlocking(true);
     }

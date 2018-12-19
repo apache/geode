@@ -995,7 +995,8 @@ public class Connection implements Runnable {
             connectionErrorLogged = true; // otherwise change to use 100ms intervals causes a lot of
                                           // these
             logger.info("Connection: shared={} ordered={} failed to connect to peer {} because: {}",
-                sharedResource, preserveOrder, remoteAddr, ioe);
+                sharedResource, preserveOrder, remoteAddr,
+                ioe.getMessage() != null ? ioe.getCause() : ioe);
           }
         } // IOException
         finally {
@@ -1717,9 +1718,6 @@ public class Connection implements Runnable {
               amountRead = buff.position();
             }
           }
-          if (amountRead == 0) {
-            Thread.sleep(1000);
-          }
           synchronized (stateLock) {
             connectionState = STATE_IDLE;
           }
@@ -1823,11 +1821,20 @@ public class Connection implements Runnable {
   }
 
   private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
-    if (ioFilter != null) {
-      logger.warn("creating another IoFilter", new Exception("oops"));
-    }
     if (TCPConduit.useSSL && channel != null) {
-      SSLEngine engine = getConduit().getSocketCreator().createSSLEngine();
+      InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
+      SSLEngine engine =
+          getConduit().getSocketCreator().createSSLEngine(address.getHostName(), address.getPort());
+
+      if (!clientSocket) {
+        engine.setWantClientAuth(true);
+        engine.setNeedClientAuth(true);
+      }
+
+      // SSLParameters sslParams = sslEngine.getSSLParameters();
+      // sslParams.setEndpointIdentificationAlgorithm(endpointIdentification);
+      // sslEngine.setSSLParameters(sslParams);
+
       if (inputBuffer == null
           || (inputBuffer.capacity() < engine.getSession().getPacketBufferSize())) {
         // TLS has a minimum input buffer size constraint
@@ -2974,9 +2981,7 @@ public class Connection implements Runnable {
           done = true;
           if (TCPConduit.useSSL) {
             ioFilter.doneReading(peerDataBuffer);
-            compactOrResizeBuffer(messageLength * 2);
           } else {
-            // if not using SSL we might want to increase our nioInputBuffer size
             compactOrResizeBuffer(messageLength);
           }
         }
@@ -3124,6 +3129,7 @@ public class Connection implements Runnable {
   }
 
   private void readMessage(ByteBuffer peerDataBuffer) {
+    logger.info("Reading and dispatching message");
     if (messageType == NORMAL_MSG_TYPE) {
       this.owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
       ByteBufferInputStream bbis =

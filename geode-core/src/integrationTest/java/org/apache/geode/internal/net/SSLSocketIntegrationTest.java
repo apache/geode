@@ -208,7 +208,7 @@ public class SSLSocketIntegrationTest {
     clientSocket = clientChannel.socket();
     NioSslEngine engine =
         clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
-            clusterSocketCreator.createSSLEngine(), 0, true,
+            clusterSocketCreator.createSSLEngine("localhost", 1234), 0, true,
             ByteBuffer.allocate(65535), mock(DMStats.class));
     clientChannel.configureBlocking(true);
 
@@ -250,7 +250,8 @@ public class SSLSocketIntegrationTest {
         Socket socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
         NioSslEngine engine =
-            sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine(), timeoutMillis,
+            sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine("localhost", 1234),
+                timeoutMillis,
                 false,
                 ByteBuffer.allocate(500),
                 mock(DMStats.class));

@@ -94,6 +94,9 @@ public class NioSslEngine implements NioFilter {
 
     peerNetData.clear();
     if (peerNetData.capacity() < engine.getSession().getPacketBufferSize()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Allocating new buffer for SSL handshake");
+      }
       this.handshakeBuffer =
           Buffers.acquireReceiveBuffer(engine.getSession().getPacketBufferSize(), stats);
     } else {
@@ -269,7 +272,6 @@ public class NioSslEngine implements NioFilter {
     // message. TcpConduit, for instance, uses message chunking to
     // transmit large payloads and we may have read a partial chunk
     // during the previous unwrap
-    // int peerAppDataPosition = peerAppData.position();
     while (wrappedBuffer.hasRemaining()) {
       int remaining = peerAppData.capacity() - peerAppData.position();
       if (remaining < wrappedBuffer.remaining() * 2) {
@@ -278,7 +280,8 @@ public class NioSslEngine implements NioFilter {
       }
       SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
       if (unwrapResult.getStatus() == BUFFER_UNDERFLOW) {
-        // partial data - need to read more
+        // partial data - need to read more. When this happens the SSLEngine will not have
+        // changed the buffer position
         if (wrappedBuffer.position() == wrappedBuffer.limit()) {
           wrappedBuffer.clear();
         } else {
