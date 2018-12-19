@@ -242,7 +242,6 @@
           <groupId>*</groupId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.iq80.snappy</groupId>
