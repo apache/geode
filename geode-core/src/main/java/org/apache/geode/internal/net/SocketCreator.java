@@ -613,8 +613,7 @@ public class SocketCreator {
       if (!StringUtils.isEmpty(this.keyAlias)) {
         return keyAlias;
       }
-      String result = delegate.chooseClientAlias(strings, principals, socket);
-      return result;
+      return delegate.chooseClientAlias(strings, principals, socket);
     }
 
     @Override

@@ -750,9 +750,6 @@ public class Connection implements Runnable {
       } // synchronized
 
     } finally {
-      // if (!this.isReceiver) {
-      // ioFilter.doneReading(getInputBuffer());
-      // }
       if (needToClose) {
         // moved this call outside of the sync for bug 42159
         try {
@@ -1689,7 +1686,6 @@ public class Connection implements Runnable {
           Socket s = this.socket;
           if (s != null) {
             try {
-              logger.debug("closing socket", new Exception("closing socket"));
               ioFilter.close();
               s.close();
             } catch (IOException e) {
@@ -2783,9 +2779,6 @@ public class Connection implements Runnable {
       if (allocSize == -1) {
         allocSize = this.owner.getConduit().tcpBufferSize;
       }
-      if (allocSize < 32768) { // for SSL comms we need a minimum of 32k
-        allocSize = 32768;
-      }
       inputBuffer = Buffers.acquireReceiveBuffer(allocSize, this.owner.getConduit().getStats());
     }
     return inputBuffer;
@@ -3129,7 +3122,6 @@ public class Connection implements Runnable {
   }
 
   private void readMessage(ByteBuffer peerDataBuffer) {
-    logger.info("Reading and dispatching message");
     if (messageType == NORMAL_MSG_TYPE) {
       this.owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
       ByteBufferInputStream bbis =
