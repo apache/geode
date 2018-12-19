@@ -89,6 +89,7 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenNoHostNameInLocatorKey() throws Exception {
+
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator");
 
@@ -105,6 +106,7 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenWrongHostNameInLocatorKey() throws Exception {
+
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator")
         .sanDnsName("example.com");;

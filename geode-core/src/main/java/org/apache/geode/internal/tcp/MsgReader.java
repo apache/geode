@@ -14,38 +14,59 @@
  */
 package org.apache.geode.internal.tcp;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.Buffers;
+import org.apache.geode.internal.net.NioFilter;
 
 /**
  * This class is currently used for reading direct ack responses It should probably be used for all
  * of the reading done in Connection.
  *
  */
-public abstract class MsgReader {
+public class MsgReader {
+  private static final Logger logger = LogService.getLogger();
+
   protected final Connection conn;
   protected final Header header = new Header();
+  private final NioFilter ioFilter;
+  private final ByteBuffer peerNetData;
   private final ByteBufferInputStream bbis;
 
-  public MsgReader(Connection conn, Version version) {
+  private int lastReadPosition;
+  private int lastProcessedPosition;
+
+  public MsgReader(Connection conn, NioFilter nioFilter, ByteBuffer peerNetData, Version version) {
     this.conn = conn;
+    this.ioFilter = nioFilter;
+    this.peerNetData = peerNetData;
+    ByteBuffer buffer = ioFilter.getUnwrappedBuffer(peerNetData);
+    buffer.position(0).limit(0);
     this.bbis =
         version == null ? new ByteBufferInputStream() : new VersionedByteBufferInputStream(version);
   }
 
   public Header readHeader() throws IOException {
     ByteBuffer nioInputBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
+
     int nioMessageLength = nioInputBuffer.getInt();
     /* nioMessageVersion = */ Connection.calcHdrVersion(nioMessageLength);
     nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
     byte nioMessageType = nioInputBuffer.get();
     short nioMsgId = nioInputBuffer.getShort();
+
+    nioInputBuffer.position(nioInputBuffer.limit());
+
     boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
     if (directAck) {
       // logger.info("DEBUG: msg from " + getRemoteAddress() + " is direct ack" );
@@ -78,6 +99,7 @@ public abstract class MsgReader {
     } finally {
       this.getStats().endMsgDeserialization(startSer);
       this.getStats().decMessagesBeingReceived(header.nioMessageLength);
+      ioFilter.doneReading(nioInputBuffer);
     }
   }
 
@@ -88,7 +110,32 @@ public abstract class MsgReader {
     md.addChunk(nioInputBuffer, header.nioMessageLength);
   }
 
-  public abstract ByteBuffer readAtLeast(int bytes) throws IOException;
+  public ByteBuffer readAtLeast(int bytes) throws IOException {
+    ioFilter.ensureUnwrappedCapacity(bytes, peerNetData, Buffers.BufferType.UNTRACKED,
+        getStats());
+
+    ByteBuffer unwrappedBuffer = ioFilter.getUnwrappedBuffer(peerNetData);
+
+    while ((lastReadPosition - lastProcessedPosition) < bytes) {
+      unwrappedBuffer.limit(unwrappedBuffer.capacity());
+      unwrappedBuffer.position(lastReadPosition);
+
+      int amountRead = conn.getSocket().getChannel().read(peerNetData);
+      if (amountRead < 0) {
+        throw new EOFException();
+      }
+      if (amountRead > 0) {
+        peerNetData.flip();
+        unwrappedBuffer = ioFilter.unwrap(peerNetData);
+        lastReadPosition = unwrappedBuffer.position();
+      }
+    }
+    unwrappedBuffer.limit(lastProcessedPosition + bytes);
+    unwrappedBuffer.position(lastProcessedPosition);
+    lastProcessedPosition = unwrappedBuffer.limit();
+
+    return unwrappedBuffer;
+  }
 
   protected DMStats getStats() {
     return conn.getConduit().getStats();
@@ -118,5 +165,6 @@ public abstract class MsgReader {
   }
 
   public void close() {}
+
 
 }
