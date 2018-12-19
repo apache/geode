@@ -65,7 +65,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
   static final String CREATE_MAPPING__ID_NAME = "id";
   static final String CREATE_MAPPING__ID_NAME__HELP =
-      "The table column name to use as the region key for this JDBC mapping.";
+      "The table column names to use as the region key for this JDBC mapping. If more than one column name is given then they must be separated by commas.";
 
   public static String createAsyncEventQueueName(String regionPath) {
     if (regionPath.startsWith("/")) {

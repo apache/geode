@@ -52,6 +52,7 @@ RUN chmod +x /usr/local/bin/tini \
     google-cloud-sdk \
     htop \
     jq \
+    net-tools \
     python3 \
     python3-pip \
     python3-setuptools \

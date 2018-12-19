@@ -84,6 +84,7 @@ apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"
 apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
+apply from: "${scriptDir}/geode-dependency-management.gradle"
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'

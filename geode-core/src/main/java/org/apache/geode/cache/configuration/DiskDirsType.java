@@ -18,6 +18,7 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +59,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "disk-dirs-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"diskDirs"})
 @Experimental
-public class DiskDirsType {
+public class DiskDirsType implements Serializable {
 
   @XmlElement(name = "disk-dir", namespace = "http://geode.apache.org/schema/cache",
       required = true)

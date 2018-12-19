@@ -12,28 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.Serializable;
 
-class EntryColumnData {
-  private final List<ColumnData> entryKeyColumnData;
-  private final List<ColumnData> entryValueColumnData;
+import org.apache.geode.cache.configuration.RegionConfig;
 
-  EntryColumnData(List<ColumnData> entryKeyColumnData, List<ColumnData> entryValueColumnData) {
-    this.entryKeyColumnData =
-        entryKeyColumnData != null ? entryKeyColumnData : Collections.emptyList();
-    this.entryValueColumnData =
-        entryValueColumnData != null ? entryValueColumnData : Collections.emptyList();
+public class CreateRegionFunctionArgs implements Serializable {
+  private final String regionPath;
+  private final RegionConfig config;
+  private final boolean ifNotExists;
+
+  public CreateRegionFunctionArgs(String path, RegionConfig config, boolean ifNotExists) {
+    this.regionPath = path;
+    this.config = config;
+    this.ifNotExists = ifNotExists;
   }
 
-  public List<ColumnData> getEntryKeyColumnData() {
-    return entryKeyColumnData;
+  public boolean isIfNotExists() {
+    return ifNotExists;
   }
 
-  public List<ColumnData> getEntryValueColumnData() {
-    return entryValueColumnData;
+  public String getRegionPath() {
+    return regionPath;
   }
 
+  public RegionConfig getConfig() {
+    return config;
+  }
 }

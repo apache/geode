@@ -18,6 +18,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -47,12 +50,12 @@ public class TableMetaDataManager {
       DatabaseMetaData metaData = connection.getMetaData();
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
-        String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData, ids);
+        List<String> keys = getPrimaryKeyColumnNamesFromMetaData(realTableName, metaData, ids);
         String quoteString = metaData.getIdentifierQuoteString();
         if (quoteString == null) {
           quoteString = "";
         }
-        result = new TableMetaData(realTableName, key, quoteString);
+        result = new TableMetaData(realTableName, keys, quoteString);
         getDataTypesFromMetaData(realTableName, metaData, result);
       }
     } catch (SQLException e) {
@@ -85,28 +88,30 @@ public class TableMetaDataManager {
     return result;
   }
 
-  private String getPrimaryKeyColumnNameFromMetaData(String tableName, DatabaseMetaData metaData,
+  private List<String> getPrimaryKeyColumnNamesFromMetaData(String tableName,
+      DatabaseMetaData metaData,
       String ids)
       throws SQLException {
+    List<String> keys = new ArrayList<>();
+
     if (ids != null && !ids.isEmpty()) {
-      if (!doesColumnExistInTable(tableName, metaData, ids)) {
-        throw new JdbcConnectorException(
-            "The table " + tableName + " does not have a column named " + ids);
+      keys.addAll(Arrays.asList(ids.split(",")));
+      for (String key : keys) {
+        checkColumnExistsInTable(tableName, metaData, key);
       }
-      return ids;
+    } else {
+      try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
+        while (primaryKeys.next()) {
+          String key = primaryKeys.getString("COLUMN_NAME");
+          keys.add(key);
+        }
+        if (keys.isEmpty()) {
+          throw new JdbcConnectorException(
+              "The table " + tableName + " does not have a primary key column.");
+        }
+      }
     }
-    try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
-      if (!primaryKeys.next()) {
-        throw new JdbcConnectorException(
-            "The table " + tableName + " does not have a primary key column.");
-      }
-      String key = primaryKeys.getString("COLUMN_NAME");
-      if (primaryKeys.next()) {
-        throw new JdbcConnectorException(
-            "The table " + tableName + " has more than one primary key column.");
-      }
-      return key;
-    }
+    return keys;
   }
 
   private void getDataTypesFromMetaData(String tableName, DatabaseMetaData metaData,
@@ -120,14 +125,14 @@ public class TableMetaDataManager {
     }
   }
 
-  private boolean doesColumnExistInTable(String tableName, DatabaseMetaData metaData,
+  private void checkColumnExistsInTable(String tableName, DatabaseMetaData metaData,
       String columnName) throws SQLException {
     int caseInsensitiveMatches = 0;
     try (ResultSet columnData = metaData.getColumns(null, null, tableName, "%")) {
       while (columnData.next()) {
         String realColumnName = columnData.getString("COLUMN_NAME");
         if (columnName.equals(realColumnName)) {
-          return true;
+          return;
         } else if (columnName.equalsIgnoreCase(realColumnName)) {
           caseInsensitiveMatches++;
         }
@@ -136,7 +141,9 @@ public class TableMetaDataManager {
     if (caseInsensitiveMatches > 1) {
       throw new JdbcConnectorException(
           "The table " + tableName + " has more than one column that matches " + columnName);
+    } else if (caseInsensitiveMatches == 0) {
+      throw new JdbcConnectorException(
+          "The table " + tableName + " does not have a column named " + columnName);
     }
-    return caseInsensitiveMatches != 0;
   }
 }

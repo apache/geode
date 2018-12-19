@@ -16,8 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,17 +35,17 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class CreateRegionCommandDUnitTest {
   private static MemberVM locator, server1, server2;
 
-  @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  @Rule
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TestName testName = new SerializableTestName();
 
-  @BeforeClass
-  public static void before() throws Exception {
+  @Before
+  public void before() throws Exception {
     locator = lsRule.startLocatorVM(0);
     server1 = lsRule.startServerVM(1, locator.getPort());
     server2 = lsRule.startServerVM(2, locator.getPort());
@@ -105,10 +104,32 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("list regions").statusIsSuccess().doesNotContainOutput(regionName);
   }
 
+  @Test
+  public void cannotCreateRegionIfGatewaySenderDoesNotExist() {
+    String regionName = testName.getMethodName();
+    String gatewaySenderName = "gatewaySender";
+    IgnoredException.addIgnoredException("could not get remote locator information");
+
+    gfsh.executeAndAssertThat(
+        "create gateway-sender --remote-distributed-system-id=2 --id="
+            + gatewaySenderName)
+        .statusIsSuccess();
+    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(2);
+
+    gfsh.executeAndAssertThat("create region --type=REPLICATE  --name=" + regionName
+        + " --gateway-sender-id=" + gatewaySenderName + "-2")
+        .statusIsError()
+        .containsOutput("Specify valid gateway-sender-id");
+
+    // The exception must be thrown early in the initialization, so the region itself shouldn't be
+    // added to the root regions.
+    gfsh.executeAndAssertThat("list regions").statusIsSuccess().doesNotContainOutput(regionName);
+  }
+
   /**
    * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
    * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
-   * GEODE-6103
+   * GEODE-6104
    */
   @Ignore
   @Test

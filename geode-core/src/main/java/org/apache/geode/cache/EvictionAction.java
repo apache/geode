@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache;
 
+import java.io.Serializable;
+
 import javax.print.attribute.EnumSyntax;
 
 /**
@@ -23,7 +25,7 @@ import javax.print.attribute.EnumSyntax;
  * @see org.apache.geode.cache.EvictionAlgorithm
  * @see org.apache.geode.internal.cache.EvictionAttributesImpl
  */
-public final class EvictionAction extends EnumSyntax {
+public final class EvictionAction extends EnumSyntax implements Serializable {
   private static final long serialVersionUID = -98840597493242980L;
   /**
    * Canonical EvictionAction that represents no eviction

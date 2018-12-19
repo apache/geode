@@ -38,7 +38,7 @@ public class RegionPath {
     regionPath = pathName;
     String[] regions = pathName.split(Region.SEPARATOR);
 
-    LinkedList<String> regionsNames = new LinkedList<String>();
+    LinkedList<String> regionsNames = new LinkedList<>();
     for (String region : regions) {
       if (!region.isEmpty()) {
         regionsNames.add(region);
@@ -67,6 +67,10 @@ public class RegionPath {
 
   public String getParent() {
     return regionParentPath;
+  }
+
+  public boolean isRoot() {
+    return regionParentPath == Region.SEPARATOR || regionParentPath == null;
   }
 
   public String[] getRegionsOnParentPath() {

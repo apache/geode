@@ -65,7 +65,7 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void parentRegionDoesNotExist() throws Exception {
     gfsh.executeAndAssertThat(CREATE_REGION + "--name=/A/B").statusIsError()
-        .containsOutput("Parent region for \"/A/B\" doesnt exist");
+        .containsOutput("Parent region for \"/A/B\" does not exist");
   }
 
   @Test
@@ -517,7 +517,8 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void cannotSetRegionExpirationForPartitionedRegion() {
     gfsh.executeAndAssertThat(
-        "create region --enable-statistics=true --name=/FOO --type=PARTITION --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        "create region --enable-statistics=true --name=/FOO --type=PARTITION " +
+            "--region-idle-time-expiration=1 --region-time-to-live-expiration=1")
         .statusIsError()
         .containsOutput(
             "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
@@ -559,7 +560,8 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void testEvictionAttributesForLRUEntry() throws Exception {
     gfsh.executeAndAssertThat(
-        "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 --eviction-action=overflow-to-disk")
+        "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 " +
+            "--eviction-action=overflow-to-disk")
         .statusIsSuccess();
 
     Region foo = server.getCache().getRegion("/FOO");
@@ -575,7 +577,8 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void testEvictionAttributesForLRUMemory() throws Exception {
     gfsh.executeAndAssertThat(
-        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk")
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 " +
+            "--eviction-action=overflow-to-disk")
         .statusIsSuccess();
 
     Region foo = server.getCache().getRegion("/FOO");
@@ -591,7 +594,8 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void testEvictionAttributesForObjectSizer() throws Exception {
     gfsh.executeAndAssertThat(
-        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 " +
+            "--eviction-action=overflow-to-disk --eviction-object-sizer="
             + TestObjectSizer.class.getName())
         .statusIsSuccess();
 
@@ -609,7 +613,8 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void testEvictionAttributesForNonDeclarableObjectSizer() throws Exception {
     gfsh.executeAndAssertThat(
-        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 " +
+            "--eviction-action=overflow-to-disk --eviction-object-sizer="
             + TestObjectSizerNotDeclarable.class.getName())
         .statusIsError().containsOutput(
             "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces");

@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache;
 
+import java.util.Optional;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -513,20 +515,21 @@ public abstract class EvictionAttributes implements DataSerializable {
     EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(this.getAction()
         .toString());
     EvictionAlgorithm algorithm = getAlgorithm();
-    String objectSizerClass = getObjectSizer().getClass().toString();
+    Optional<String> objectSizerClass = Optional.ofNullable(getObjectSizer())
+        .map(c -> c.getClass().toString());
     Integer maximum = getMaximum();
 
     if (algorithm.isLRUHeap()) {
       RegionAttributesType.EvictionAttributes.LruHeapPercentage heapPercentage =
           new RegionAttributesType.EvictionAttributes.LruHeapPercentage();
       heapPercentage.setAction(action);
-      heapPercentage.setClassName(objectSizerClass);
+      objectSizerClass.ifPresent(o -> heapPercentage.setClassName(o));
       configAttributes.setLruHeapPercentage(heapPercentage);
     } else if (algorithm.isLRUMemory()) {
       RegionAttributesType.EvictionAttributes.LruMemorySize memorySize =
           new RegionAttributesType.EvictionAttributes.LruMemorySize();
       memorySize.setAction(action);
-      memorySize.setClassName(objectSizerClass);
+      objectSizerClass.ifPresent(o -> memorySize.setClassName(o));
       memorySize.setMaximum(maximum.toString());
       configAttributes.setLruMemorySize(memorySize);
     } else {
@@ -540,8 +543,8 @@ public abstract class EvictionAttributes implements DataSerializable {
     return configAttributes;
   }
 
-  public boolean isEmpty() {
-    return getAction() == EvictionAction.NONE && getAlgorithm() == EvictionAlgorithm.NONE;
+  public boolean isNoEviction() {
+    return getAction() == EvictionAction.NONE;
   }
 
 }

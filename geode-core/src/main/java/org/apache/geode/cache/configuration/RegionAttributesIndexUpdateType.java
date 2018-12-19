@@ -18,6 +18,8 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
@@ -47,7 +49,7 @@ import org.apache.geode.annotations.Experimental;
     namespace = "http://geode.apache.org/schema/cache")
 @XmlEnum
 @Experimental
-public enum RegionAttributesIndexUpdateType {
+public enum RegionAttributesIndexUpdateType implements Serializable {
 
   @XmlEnumValue("asynchronous")
   ASYNCHRONOUS("asynchronous"), @XmlEnumValue("synchronous")
