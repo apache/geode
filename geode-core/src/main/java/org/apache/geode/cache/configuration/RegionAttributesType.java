@@ -18,6 +18,7 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -333,7 +334,7 @@ import org.apache.geode.annotations.Experimental;
         "partitionAttributes", "membershipAttributes", "subscriptionAttributes", "cacheLoader",
         "cacheWriter", "cacheListeners", "compressor", "evictionAttributes"})
 @Experimental
-public class RegionAttributesType {
+public class RegionAttributesType implements Serializable {
 
   @XmlElement(name = "key-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected Object keyConstraint;
@@ -1641,7 +1642,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class ExpirationAttributesType {
+  public static class ExpirationAttributesType implements Serializable {
 
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
@@ -1712,7 +1713,7 @@ public class RegionAttributesType {
   @XmlType(name = "expiration-attributes-type", namespace = "http://geode.apache.org/schema/cache",
       propOrder = {"customExpiry"})
   @Experimental
-  public static class ExpirationAttributesDetail {
+  public static class ExpirationAttributesDetail implements Serializable {
     @XmlElement(name = "custom-expiry", namespace = "http://geode.apache.org/schema/cache")
     protected DeclarableType customExpiry;
     @XmlAttribute(name = "action")
@@ -1846,7 +1847,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"lruEntryCount", "lruHeapPercentage", "lruMemorySize"})
-  public static class EvictionAttributes {
+  public static class EvictionAttributes implements Serializable {
 
     @XmlElement(name = "lru-entry-count", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruEntryCount lruEntryCount;
@@ -1956,7 +1957,7 @@ public class RegionAttributesType {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class LruEntryCount {
+    public static class LruEntryCount implements Serializable {
 
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;
@@ -2168,7 +2169,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"requiredRoles"})
-  public static class MembershipAttributes {
+  public static class MembershipAttributes implements Serializable {
 
     @XmlElement(name = "required-role", namespace = "http://geode.apache.org/schema/cache")
     protected List<RegionAttributesType.MembershipAttributes.RequiredRole> requiredRoles;
@@ -2371,7 +2372,7 @@ public class RegionAttributesType {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
       propOrder = {"partitionResolver", "partitionListeners", "fixedPartitionAttributes"})
-  public static class PartitionAttributes {
+  public static class PartitionAttributes implements Serializable {
 
     @XmlElement(name = "partition-resolver", namespace = "http://geode.apache.org/schema/cache")
     protected DeclarableType partitionResolver;
@@ -2762,7 +2763,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class SubscriptionAttributes {
+  public static class SubscriptionAttributes implements Serializable {
 
     @XmlAttribute(name = "interest-policy")
     protected String interestPolicy;

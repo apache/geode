@@ -161,7 +161,8 @@ public interface PartitionAttributes<K, V> {
     configAttributes.setColocatedWith(getColocatedWith());
     configAttributes.setLocalMaxMemory(Integer.toString(getLocalMaxMemory()));
     if (getPartitionResolver() != null) {
-      configAttributes.setPartitionResolver(new DeclarableType(getPartitionResolver().getName()));
+      configAttributes
+          .setPartitionResolver(new DeclarableType(getPartitionResolver().getClass().getName()));
     }
     configAttributes.setRecoveryDelay(Long.toString(getRecoveryDelay()));
     configAttributes.setStartupRecoveryDelay(Long.toString(getStartupRecoveryDelay()));
@@ -171,5 +172,4 @@ public interface PartitionAttributes<K, V> {
 
     return configAttributes;
   }
-
 }

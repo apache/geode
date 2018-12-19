@@ -351,7 +351,7 @@ public class AttributesFactory<K, V> {
   public AttributesFactory(RegionAttributes<K, V> regionAttributes) {
     synchronized (this.regionAttributes) {
       this.regionAttributes.cacheListeners =
-          new ArrayList<CacheListener<K, V>>(Arrays.asList(regionAttributes.getCacheListeners()));
+          new ArrayList<>(Arrays.asList(regionAttributes.getCacheListeners()));
     }
     this.regionAttributes.cacheLoader = regionAttributes.getCacheLoader();
     this.regionAttributes.cacheWriter = regionAttributes.getCacheWriter();
@@ -1299,7 +1299,7 @@ public class AttributesFactory<K, V> {
       if (attrs.getDataPolicy().withReplication() && !attrs.getDataPolicy().withPersistence()
           && attrs.getScope().isDistributed()) {
         RegionAttributesImpl<?, ?> rattr = attrs;
-        if (!rattr.isForBucketRegion()) {
+        if (!attrs.isForBucketRegion()) {
           if (attrs.getEvictionAttributes().getAction().isLocalDestroy()
               || attrs.getEntryIdleTimeout().getAction().isLocal()
               || attrs.getEntryTimeToLive().getAction().isLocal()
@@ -1487,7 +1487,6 @@ public class AttributesFactory<K, V> {
       throw new IllegalStateException("Cloning cannot be disabled when a compressor is set.");
     }
   }
-
 
   private static class RegionAttributesImpl<K, V> extends UserSpecifiedRegionAttributes<K, V>
       implements Cloneable, Serializable {

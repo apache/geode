@@ -33,8 +33,6 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
-import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.domain.ClassName;
@@ -630,37 +628,7 @@ public class RegionFunctionArgs implements Serializable {
         return EvictionAttributes.createLRUEntryAttributes(maxEntryCount, action);
       }
     }
-
-    public RegionAttributesType.EvictionAttributes convertToConfigEvictionAttributes() {
-      RegionAttributesType.EvictionAttributes configAttributes =
-          new RegionAttributesType.EvictionAttributes();
-      EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(evictionAction);
-
-      if (maxMemory == null && maxEntryCount == null) {
-        RegionAttributesType.EvictionAttributes.LruHeapPercentage heapPercentage =
-            new RegionAttributesType.EvictionAttributes.LruHeapPercentage();
-        heapPercentage.setAction(action);
-        heapPercentage.setClassName(objectSizer);
-        configAttributes.setLruHeapPercentage(heapPercentage);
-      } else if (maxMemory != null) {
-        RegionAttributesType.EvictionAttributes.LruMemorySize memorySize =
-            new RegionAttributesType.EvictionAttributes.LruMemorySize();
-        memorySize.setAction(action);
-        memorySize.setClassName(objectSizer);
-        memorySize.setMaximum(maxMemory.toString());
-        configAttributes.setLruMemorySize(memorySize);
-      } else {
-        RegionAttributesType.EvictionAttributes.LruEntryCount entryCount =
-            new RegionAttributesType.EvictionAttributes.LruEntryCount();
-        entryCount.setAction(action);
-        entryCount.setMaximum(maxEntryCount.toString());
-        configAttributes.setLruEntryCount(entryCount);
-      }
-
-      return configAttributes;
-    }
   }
-
 
   public static class PartitionArgs implements Serializable {
     private static final long serialVersionUID = 5907052187323280919L;

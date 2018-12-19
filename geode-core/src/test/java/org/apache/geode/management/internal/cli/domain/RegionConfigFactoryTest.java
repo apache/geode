@@ -16,57 +16,148 @@ package org.apache.geode.management.internal.cli.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 
 public class RegionConfigFactoryTest {
 
   RegionConfigFactory subject;
-  RegionFunctionArgs args;
+  RegionConfig config;
+
+  String regionPath;
+  String keyConstraint;
+  String valueConstraint;
+  Boolean statisticsEnabled;
+  Integer entryExpirationIdleTime;
+  ExpirationAction entryExpirationIdleAction;
+  Integer entryExpirationTTL;
+  ExpirationAction entryExpirationTTLAction;
+  ClassName<CustomExpiry> entryIdleTimeCustomExpiry;
+  ClassName<CustomExpiry> entryTTLCustomExpiry;
+
+  Integer regionExpirationIdleTime;
+  ExpirationAction regionExpirationIdleAction;
+  Integer regionExpirationTTL;
+  ExpirationAction regionExpirationTTLAction;
+
+  String evictionAction;
+  Integer evictionMaxMemory;
+  Integer evictionEntryCount;
+  String evictionObjectSizer;
+
+  String diskStore;
+  Boolean diskSynchronous;
+  Boolean enableAsyncConflation;
+  Boolean enableSubscriptionConflation;
+  Set<ClassName<CacheListener>> cacheListeners;
+  ClassName<CacheLoader> cacheLoader;
+  ClassName<CacheWriter> cacheWriter;
+  Set<String> asyncEventQueueIds;
+  Set<String> gatewaySenderIds;
+  Boolean concurrencyChecksEnabled;
+  Boolean cloningEnabled;
+  Boolean mcastEnabled;
+  Integer concurrencyLevel;
+  PartitionArgs partitionArgs;
+  String compressor;
+  Boolean offHeap;
+  RegionAttributes<?, ?> regionAttributes;
 
   @Before
   public void setup() {
     subject = new RegionConfigFactory();
-    args = new RegionFunctionArgs();
-    args.setRegionPath("region-name");
+    regionPath = "region-name";
+    keyConstraint = null;
+    valueConstraint = null;
+    statisticsEnabled = null;
+    entryExpirationIdleTime = null;
+    entryExpirationIdleAction = null;
+    entryExpirationTTL = null;
+    entryExpirationTTLAction = null;
+    entryIdleTimeCustomExpiry = null;
+    entryTTLCustomExpiry = null;
+    regionExpirationIdleTime = null;
+    regionExpirationIdleAction = null;
+    regionExpirationTTL = null;
+    regionExpirationTTLAction = null;
+    evictionAction = null;
+    evictionMaxMemory = null;
+    evictionEntryCount = null;
+    evictionObjectSizer = null;
+    diskStore = null;
+    diskSynchronous = null;
+    enableAsyncConflation = null;
+    enableSubscriptionConflation = null;
+    cacheListeners = null;
+    cacheLoader = null;
+    cacheWriter = null;
+    asyncEventQueueIds = null;
+    gatewaySenderIds = null;
+    concurrencyChecksEnabled = null;
+    cloningEnabled = null;
+    mcastEnabled = null;
+    concurrencyLevel = null;
+    partitionArgs = null;
+    compressor = null;
+    offHeap = null;
+    regionAttributes = null;
+  }
+
+  private void generate() {
+    config = subject.generate(regionPath, keyConstraint, valueConstraint, statisticsEnabled,
+        entryExpirationIdleTime, entryExpirationIdleAction, entryExpirationTTL,
+        entryExpirationTTLAction,
+        entryIdleTimeCustomExpiry, entryTTLCustomExpiry, regionExpirationIdleTime,
+        regionExpirationIdleAction,
+        regionExpirationTTL, regionExpirationTTLAction, evictionAction, evictionMaxMemory,
+        evictionEntryCount,
+        evictionObjectSizer, diskStore, diskSynchronous, enableAsyncConflation,
+        enableSubscriptionConflation,
+        cacheListeners, cacheLoader,
+        cacheWriter,
+        asyncEventQueueIds, gatewaySenderIds, concurrencyChecksEnabled, cloningEnabled,
+        mcastEnabled,
+        concurrencyLevel, partitionArgs, compressor, offHeap, regionAttributes);
   }
 
   @Test
   public void generatesConfigForRegion() {
-    RegionConfig config = subject.generate(args);
+    generate();
     assertThat(config.getName()).isEqualTo("region-name");
   }
 
   @Test
   public void generatesConfigForSubRegion() {
-    args.setRegionPath("region-name/subregion");
+    regionPath = "region-name/subregion";
 
-    RegionConfig config = subject.generate(args);
+    generate();
     assertThat(config.getName()).isEqualTo("subregion");
   }
 
   @Test
-  public void generatesNotNullWithNoAttributes() {
-    RegionConfig config = subject.generate(args);
-    assertThat(config.getRegionAttributes()).isNotNull();
-  }
-
-  @Test
   public void generatesWithConstraintAttributes() {
-    args.setKeyConstraint("key-const");
-    args.setValueConstraint("value-const");
+    keyConstraint = "key-const";
+    valueConstraint = "value-const";
 
-    RegionConfig config = subject.generate(args);
+    generate();
     assertThat(config.getRegionAttributes().getKeyConstraint()).isEqualTo("key-const");
     assertThat(config.getRegionAttributes().getValueConstraint())
         .isEqualTo("value-const");
@@ -74,13 +165,20 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithExpirationIdleTimeAttributes() {
-    args.setRegionExpirationTTL(10, ExpirationAction.DESTROY);
-    args.setRegionExpirationIdleTime(3, ExpirationAction.INVALIDATE);
-    args.setEntryExpirationTTL(1, ExpirationAction.LOCAL_DESTROY);
-    args.setEntryExpirationIdleTime(12, ExpirationAction.LOCAL_DESTROY);
-    args.setEntryIdleTimeCustomExpiry(new ClassName<>("java.lang.String"));
+    regionExpirationTTL = 10;
+    regionExpirationTTLAction = ExpirationAction.DESTROY;
 
-    RegionConfig config = subject.generate(args);
+    regionExpirationIdleTime = 3;
+    regionExpirationIdleAction = ExpirationAction.INVALIDATE;
+
+    entryExpirationTTL = 1;
+    entryExpirationTTLAction = ExpirationAction.LOCAL_DESTROY;
+
+    entryExpirationIdleTime = 12;
+    entryExpirationIdleAction = ExpirationAction.LOCAL_DESTROY;
+    entryIdleTimeCustomExpiry = new ClassName<>("java.lang.String");
+
+    generate();
     RegionAttributesType.ExpirationAttributesType regionTimeToLive =
         config.getRegionAttributes().getRegionTimeToLive();
     assertThat(regionTimeToLive.getTimeout()).isEqualTo("10");
@@ -102,21 +200,21 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithDiskAttributes() {
-    args.setDiskStore("disk-store");
-    args.setDiskSynchronous(false);
+    diskStore = "disk-store";
+    diskSynchronous = false;
 
-    RegionConfig config = subject.generate(args);
+    generate();
     assertThat(config.getRegionAttributes().getDiskStoreName()).isEqualTo("disk-store");
     assertThat(config.getRegionAttributes().isDiskSynchronous()).isEqualTo(false);
   }
 
   @Test
   public void generatesWithPrAttributes() {
-    args.setPartitionArgs("colo-with", 100,
+    partitionArgs = new PartitionArgs("colo-with", 100,
         100L, 100, 100L,
         100L, 100, "java.lang.String");
 
-    RegionConfig config = subject.generate(args);
+    generate();
     RegionAttributesType.PartitionAttributes partitionAttributes =
         config.getRegionAttributes().getPartitionAttributes();
     assertThat(partitionAttributes).isNotNull();
@@ -134,14 +232,14 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithMiscBooleanFlags() {
-    args.setStatisticsEnabled(false);
-    args.setEnableAsyncConflation(false);
-    args.setConcurrencyChecksEnabled(true);
-    args.setEnableSubscriptionConflation(true);
-    args.setMcastEnabled(false);
-    args.setCloningEnabled(false);
-    args.setOffHeap(true);
-    RegionConfig config = subject.generate(args);
+    statisticsEnabled = false;
+    enableAsyncConflation = false;
+    concurrencyChecksEnabled = true;
+    enableSubscriptionConflation = true;
+    mcastEnabled = false;
+    cloningEnabled = false;
+    offHeap = true;
+    generate();
 
     assertThat(config.getRegionAttributes().isStatisticsEnabled()).isEqualTo(false);
     assertThat(config.getRegionAttributes().isEnableSubscriptionConflation())
@@ -158,8 +256,9 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithGatewayFlags() {
-    args.setGatewaySenderIds(new String[] {"some-id", "some-other-id"});
-    RegionConfig config = subject.generate(args);
+    gatewaySenderIds =
+        Arrays.stream(new String[] {"some-id", "some-other-id"}).collect(Collectors.toSet());
+    generate();
 
     assertThat(config.getRegionAttributes().getGatewaySenderIds())
         .contains("some-id");
@@ -169,9 +268,9 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithEvictionHeapPercentageFlags() {
-    args.setEvictionAttributes(EvictionAction.LOCAL_DESTROY.toString(), null, null,
-        "java.lang.String");
-    RegionConfig config = subject.generate(args);
+    evictionAction = EvictionAction.LOCAL_DESTROY.toString();
+    evictionObjectSizer = "java.lang.String";
+    generate();
 
     RegionAttributesType.EvictionAttributes evictionAttributes =
         config.getRegionAttributes().getEvictionAttributes();
@@ -184,9 +283,9 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithEvictionMaxMemory() {
-    args.setEvictionAttributes(EvictionAction.LOCAL_DESTROY.toString(), 100, null,
-        null);
-    RegionConfig config = subject.generate(args);
+    evictionAction = EvictionAction.LOCAL_DESTROY.toString();
+    evictionMaxMemory = 100;
+    generate();
 
     RegionAttributesType.EvictionAttributes evictionAttributes =
         config.getRegionAttributes().getEvictionAttributes();
@@ -198,9 +297,9 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithEvictionMaxEntry() {
-    args.setEvictionAttributes(EvictionAction.OVERFLOW_TO_DISK.toString(), null, 1,
-        null);
-    RegionConfig config = subject.generate(args);
+    evictionAction = EvictionAction.OVERFLOW_TO_DISK.toString();
+    evictionEntryCount = 1;
+    generate();
     RegionAttributesType.EvictionAttributes evictionAttributes =
         config.getRegionAttributes().getEvictionAttributes();
     assertThat(evictionAttributes).isNotNull();
@@ -211,8 +310,8 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithAsyncEventQueueIds() {
-    args.setAsyncEventQueueIds(new String[] {"id-1", "id-2"});
-    RegionConfig config = subject.generate(args);
+    asyncEventQueueIds = Arrays.stream(new String[] {"id-1", "id-2"}).collect(Collectors.toSet());
+    generate();
 
     assertThat(config.getRegionAttributes().getAsyncEventQueueIds())
         .contains("id-1");
@@ -222,10 +321,11 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithCacheClasses() {
-    args.setCacheListeners(new ClassName[] {new ClassName("java.lang.String")});
-    args.setCacheLoader(new ClassName("java.lang.String"));
-    args.setCacheWriter(new ClassName("java.lang.String"));
-    RegionConfig config = subject.generate(args);
+    cacheListeners = new HashSet<>();
+    cacheListeners.add(new ClassName<>("java.lang.String"));
+    cacheLoader = new ClassName("java.lang.String");
+    cacheWriter = new ClassName("java.lang.String");
+    generate();
 
     List<DeclarableType> cacheListeners = config.getRegionAttributes().getCacheListeners();
 
@@ -241,10 +341,9 @@ public class RegionConfigFactoryTest {
 
   @Test
   public void generatesWithOtherMiscSimpleFlags() {
-    args.setCompressor("java.lang.String");
-    args.setConcurrencyLevel(1);
-
-    RegionConfig config = subject.generate(args);
+    compressor = "java.lang.String";
+    concurrencyLevel = 1;
+    generate();
 
     assertThat(
         config.getRegionAttributes().getCompressor().getClassName())

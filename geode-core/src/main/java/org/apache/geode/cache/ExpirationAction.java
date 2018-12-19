@@ -135,6 +135,21 @@ public class ExpirationAction implements Serializable {
     }
   }
 
+  public static ExpirationAction fromString(String s) {
+    int matchValue = -1;
+    for (int i = 0; i < VALUES.length; i++) {
+      if (VALUES[i].toString().equals(s)) {
+        matchValue = i;
+        break;
+      }
+    }
+    if (matchValue != -1) {
+      return VALUES[matchValue];
+    }
+
+    return null;
+  }
+
   // The 4 declarations below are necessary for serialization
   private static int nextOrdinal = 0;
   public final int ordinal = nextOrdinal++;
