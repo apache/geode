@@ -52,6 +52,13 @@ dependencies {
 
   integrationTestRuntime('org.apache.tomcat:coyote:' + project.'tomcat6.version')
   integrationTestRuntime('xerces:xercesImpl')
+
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
 }
 
 disableMavenPublishing()
