@@ -102,7 +102,7 @@ public class NetstatDUnitTest {
     assertThat(lines[4].trim().split("[,\\s]+")).containsExactlyInAnyOrder("server-1");
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testOutputToConsoleWithLsofForOneMember() throws Exception {
     CommandResult result = gfsh.executeCommand("netstat --member=server-1 --with-lsof");
@@ -184,7 +184,7 @@ public class NetstatDUnitTest {
     assertThat(lines).filteredOn(e -> e.contains("## lsof output ##")).hasSize(1);
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testConnectToLocatorWithLargeCommandResponse() throws Exception {
     gfsh.connect(server0.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
@@ -192,7 +192,7 @@ public class NetstatDUnitTest {
         .doesNotContainOutput("Could not execute");
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
     gfsh.connect(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
@@ -201,7 +201,7 @@ public class NetstatDUnitTest {
 
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
     gfsh.connect(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
