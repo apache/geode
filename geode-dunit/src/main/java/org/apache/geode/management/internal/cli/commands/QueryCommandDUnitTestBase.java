@@ -14,13 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
@@ -59,6 +58,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @SuppressWarnings("serial")
 public class QueryCommandDUnitTestBase {
+
   private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
   private static final String DATA_REGION_NAME_PATH = "/" + DATA_REGION_NAME;
   private static final String DATA_REGION_WITH_EVICTION_NAME =
@@ -71,7 +71,7 @@ public class QueryCommandDUnitTestBase {
   private static final String SERIALIZATION_FILTER =
       "org.apache.geode.management.internal.cli.dto.**";
 
-  static final int COUNT = 5;
+  private static final int COUNT = 5;
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -79,7 +79,9 @@ public class QueryCommandDUnitTestBase {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  protected MemberVM locator, server1, server2;
+  protected MemberVM locator;
+  protected MemberVM server1;
+  protected MemberVM server2;
 
   @Before
   public void before() throws Exception {
@@ -98,7 +100,10 @@ public class QueryCommandDUnitTestBase {
     connectToLocator();
   }
 
-  public void connectToLocator() throws Exception {
+  /**
+   * Overridden in subclass.
+   */
+  protected void connectToLocator() throws Exception {
     gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
   }
 
@@ -202,7 +207,7 @@ public class QueryCommandDUnitTestBase {
     Region dataRegion = cache.getRegion(regionPath);
 
     for (int j = 0; j < 10; j++) {
-      dataRegion.put(new Integer(j), new Portfolio(j));
+      dataRegion.put(j, new Portfolio(j));
     }
   }
 
@@ -211,7 +216,7 @@ public class QueryCommandDUnitTestBase {
     Region dataRegion = cache.getRegion(regionPath);
 
     for (int j = 0; j < 10; j++) {
-      dataRegion.put(new Integer(j), new shouldFailSerializationFilter(j));
+      dataRegion.put(j, new ShouldFailSerializationFilter(j));
     }
   }
 
@@ -220,7 +225,7 @@ public class QueryCommandDUnitTestBase {
     Region dataRegion = cache.getRegion(regionPath);
 
     for (int j = 0; j < 10; j++) {
-      dataRegion.put(new Integer(j), new Value1(j));
+      dataRegion.put(j, new Value1(j));
     }
   }
 
@@ -262,50 +267,47 @@ public class QueryCommandDUnitTestBase {
 
   private void validateSelectResult(CommandResult cmdResult, Boolean expectSuccess,
       Integer expectedRows, String[] cols) {
-    if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
-      ResultModel rd = (ResultModel) cmdResult.getResultData();
+    assertThat(cmdResult.getType()).isEqualTo(ResultData.TYPE_MODEL);
 
-      Map<String, String> data =
-          rd.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-      assertThat(data.get("Result")).isEqualTo(expectSuccess.toString());
+    ResultModel rd = (ResultModel) cmdResult.getResultData();
 
-      if (expectSuccess && expectedRows != -1) {
-        assertThat(data.get("Rows")).isEqualTo(expectedRows.toString());
+    Map<String, String> data =
+        rd.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
+    assertThat(data.get("Result")).isEqualTo(expectSuccess.toString());
 
-        if (expectedRows > 0 && cols != null) {
-          Map<String, List<String>> table =
-              rd.getTableSection(DataCommandResult.QUERY_SECTION).getContent();
-          assertThat(table.keySet()).contains(cols);
-        }
+    if (expectSuccess && expectedRows != -1) {
+      assertThat(data.get("Rows")).isEqualTo(expectedRows.toString());
+
+      if (expectedRows > 0 && cols != null) {
+        Map<String, List<String>> table =
+            rd.getTableSection(DataCommandResult.QUERY_SECTION).getContent();
+        assertThat(table.keySet()).contains(cols);
       }
-    } else {
-      fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
     }
   }
 
   private Properties locatorProperties() {
-    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOG_LEVEL, "fine");
+    props.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
     props.setProperty(SERIALIZABLE_OBJECT_FILTER, SERIALIZATION_FILTER);
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + jmxPort);
+    props.setProperty(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
+    props.setProperty(JMX_MANAGER_PORT, String.valueOf(getRandomAvailableTCPPort()));
 
     return props;
   }
 
   private Properties serverProperties() {
     Properties props = new Properties();
+    props.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
     props.setProperty(SERIALIZABLE_OBJECT_FILTER, SERIALIZATION_FILTER);
 
     return props;
   }
 
-  public static class shouldFailSerializationFilter extends Value1 {
-    private Value1 value1 = null;
+  public static class ShouldFailSerializationFilter extends Value1 {
+    private Value1 value1;
 
-    public shouldFailSerializationFilter(int i) {
+    ShouldFailSerializationFilter(int i) {
       super(i);
     }
 
