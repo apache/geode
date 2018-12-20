@@ -229,10 +229,10 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
     // properties.put(ConfigurationProperties.LOG_LEVEL, "fine");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(USE_CLUSTER_CONFIGURATION, "false");
-    properties.put(SSL_ENABLED_COMPONENTS, "all");
+    properties.put(SSL_ENABLED_COMPONENTS, "cluster");
     properties.put(SSL_KEYSTORE, TestUtil.getResourcePath(this.getClass(), "server.keystore"));
     properties.put(SSL_TRUSTSTORE, TestUtil.getResourcePath(this.getClass(), "server.keystore"));
-    properties.put(SSL_PROTOCOLS, "any");
+    properties.put(SSL_PROTOCOLS, "TLSv1.2");
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
