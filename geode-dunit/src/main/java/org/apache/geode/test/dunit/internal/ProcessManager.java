@@ -155,7 +155,6 @@ public class ProcessManager {
   private void linkStreams(final String version, final int vmNum, final ProcessHolder holder,
       final InputStream in, final PrintStream out) {
     final String vmName = "[" + VM.getVMName(version, vmNum) + "] ";
-    System.out.println("linking IO streams for " + vmName);
     Thread ioTransport = new Thread() {
       public void run() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));

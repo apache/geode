@@ -29,10 +29,8 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -66,8 +64,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  */
 public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
   private static final Logger logger = LogService.getLogger();
-
-  private static final Set<String> testHistory = new LinkedHashSet<>();
 
   /** This VM's connection to the distributed system */
   protected static InternalDistributedSystem system;
@@ -381,7 +377,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     final String className = getTestClass().getCanonicalName();
     final String methodName = getName();
 
-    logTestHistory();
+    TestHistoryLogger.logTestHistory(getTestClass().getSimpleName(), methodName);
 
     setUpVM(methodName, getDefaultDiskStoreName(0, -1, className, methodName));
 
@@ -467,16 +463,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
                 "Creating distributed system with the following configuration:\n" + sb.toString());
           }
         });
-  }
-
-  /**
-   * Write a message to the log about what tests have ran previously. This makes it easier to figure
-   * out if a previous test may have caused problems
-   */
-  private final void logTestHistory() {
-    String name = getTestClass().getSimpleName() + "." + getTestMethodName();
-    testHistory.add(name);
-    System.out.println("Previously run tests: " + testHistory);
   }
 
   /**
