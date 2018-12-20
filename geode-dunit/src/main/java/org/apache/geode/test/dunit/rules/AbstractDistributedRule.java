@@ -22,6 +22,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.TestHistoryLogger;
 import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
@@ -45,33 +46,40 @@ class AbstractDistributedRule implements SerializableTestRule {
     this.invoker = invoker;
   }
 
+
   @Override
   public Statement apply(final Statement base, final Description description) {
-    return statement(base);
+    return statement(base, description);
   }
 
-  private Statement statement(final Statement base) {
+  private Statement statement(final Statement base, Description testDescription) {
     return new SerializableStatement() {
       @Override
       public void evaluate() throws Throwable {
-        beforeDistributedTest();
+        beforeDistributedTest(testDescription);
         before();
         try {
           base.evaluate();
         } finally {
           after();
-          afterDistributedTest();
+          afterDistributedTest(testDescription);
         }
       }
     };
   }
 
-  private void beforeDistributedTest() throws Throwable {
+  private void beforeDistributedTest(Description testDescription) throws Throwable {
+    TestHistoryLogger.logTestHistory(testDescription.getTestClass().getSimpleName(),
+        testDescription.getMethodName());
     DUnitLauncher.launchIfNeeded(vmCount);
     beforeVmCount = getVMCount();
+    System.out.println("\n\n[setup] START TEST " + testDescription.getClassName() + "."
+        + testDescription.getMethodName());
   }
 
-  private void afterDistributedTest() throws Throwable {
+  private void afterDistributedTest(Description testDescription) throws Throwable {
+    System.out.println("\n\n[setup] END TEST " + testDescription.getTestClass().getSimpleName()
+        + "." + testDescription.getMethodName());
     int afterVmCount = getVMCount();
     assertThat(afterVmCount).isEqualTo(beforeVmCount);
   }
