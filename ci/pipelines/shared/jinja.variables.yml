@@ -88,7 +88,7 @@ tests:
   CALL_STACK_TIMEOUT: "7200"
   DUNIT_PARALLEL_FORKS: "24"
   GRADLE_TASK: distributedTest
-  execute_test_timeout: 3h30m
+  execute_test_timeout: 2h15m
   PARALLEL_DUNIT: "true"
 - name: "Integration"
   CPUS: "96"
@@ -115,7 +115,7 @@ tests:
   CALL_STACK_TIMEOUT: "7200"
   DUNIT_PARALLEL_FORKS: "24"
   GRADLE_TASK: repeatTest
-  execute_test_timeout: 3h30m
+  execute_test_timeout: 2h15m
   PARALLEL_DUNIT: "true"
 - name: "WindowsAcceptance"
   CPUS: "16"
