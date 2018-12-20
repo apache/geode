@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
@@ -60,6 +62,17 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     }
 
     mappingsByRegion.put(existingMapping.getRegionName(), alteredMapping);
+  }
+
+  @Override
+  public boolean isRegionSynchronous(RegionMapping mapping, Cache cache) {
+    Region<?, ?> region = cache.getRegion(mapping.getRegionName());
+    if(region == null) {
+      throw new IllegalStateException("Region for mapping could not be found.");
+    }
+
+    //If our region has a Jdbc Writer set as the cache writer then we know it is syncronous
+    return region.getAttributes().getCacheWriter() != null && region.getAttributes().getCacheWriter() instanceof JdbcWriter;
   }
 
   @Override

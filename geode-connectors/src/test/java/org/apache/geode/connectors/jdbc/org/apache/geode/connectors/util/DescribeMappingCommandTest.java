@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.org.apache.geode.connectors.util;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -80,6 +81,7 @@ public class DescribeMappingCommandTest {
     attributes.put(PDX_NAME, "class1");
     attributes.put(TABLE_NAME, "table1");
     attributes.put(DATA_SOURCE_NAME, "name1");
+    attributes.put(SYNCHRONOUS_NAME, "true");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
 
@@ -88,12 +90,11 @@ public class DescribeMappingCommandTest {
     when(rc.getResult()).thenReturn(
         Collections.singletonList(new CliFunctionResult("server-1", mappingResult, "success")));
 
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("region", "region")
-        .containsOutput("data-source", "name1")
-        .containsOutput("table", "table1")
-        .containsOutput("pdx-name", "class1")
-        .containsOutput("id", "myId");
+
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
+        .containsOutput("data-source", "name1").containsOutput("table", "table1")
+        .containsOutput("pdx-name", "class1").containsOutput("true");
   }
 
   @Test

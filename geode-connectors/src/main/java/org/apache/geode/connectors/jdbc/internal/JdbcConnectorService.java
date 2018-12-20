@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
 
@@ -30,6 +31,9 @@ public interface JdbcConnectorService extends CacheService {
       throws RegionMappingNotFoundException;
 
   void destroyRegionMapping(String regionName);
+
+  boolean isRegionSynchronous(RegionMapping mapping, Cache cache)
+    throws RegionMappingNotFoundException;
 
   RegionMapping getMappingForRegion(String regionName);
 
