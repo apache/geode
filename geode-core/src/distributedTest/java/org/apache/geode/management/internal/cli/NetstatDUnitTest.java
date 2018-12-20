@@ -161,6 +161,8 @@ public class NetstatDUnitTest {
     assertThat(lines.get(4).trim().split("[,\\s]+")).containsExactly("server-1");
   }
 
+  // This test runs OK on JDK8 but takes a very long time on JDK8
+  @Ignore("GEODE-6228")
   @Test
   public void testOutputWithLsofToFile() throws Exception {
     File outputFile = new File(temp.newFolder(), "command.log.txt");
