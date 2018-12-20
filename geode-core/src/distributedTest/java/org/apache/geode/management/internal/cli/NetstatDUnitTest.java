@@ -102,7 +102,7 @@ public class NetstatDUnitTest {
     assertThat(lines[4].trim().split("[,\\s]+")).containsExactlyInAnyOrder("server-1");
   }
 
-  @Ignore
+  @Ignore("GEODE-2488")
   @Test
   public void testOutputToConsoleWithLsofForOneMember() throws Exception {
     CommandResult result = gfsh.executeCommand("netstat --member=server-1 --with-lsof");
