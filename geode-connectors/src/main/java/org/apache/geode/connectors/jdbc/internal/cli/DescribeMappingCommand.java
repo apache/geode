@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 
 import java.util.Set;

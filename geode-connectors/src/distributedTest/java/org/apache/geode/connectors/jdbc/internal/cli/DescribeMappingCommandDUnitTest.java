@@ -19,6 +19,7 @@ import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingComma
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,7 +72,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingMapping(String regionName) throws Exception {
+  public void describesExistingSynchronousMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
@@ -84,6 +85,40 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "testTable");
     csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(SYNCHRONOUS_NAME, "true");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
+        regionName);
+
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.containsKeyValuePair(REGION_NAME,
+        convertRegionPathToName(regionName));
+    commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
+    commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "true");
+  }
+
+  @Test
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
+  public void describesExistingAsyncMapping(String regionName) throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "testTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(SYNCHRONOUS_NAME, "false");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -99,6 +134,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
   }
 
   @Test

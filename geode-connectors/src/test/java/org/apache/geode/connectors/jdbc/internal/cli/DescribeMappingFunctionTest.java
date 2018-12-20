@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,7 +53,7 @@ public class DescribeMappingFunctionTest {
   private static final String TEST_PDX = "testPdx";
   private static final String TEST_TABLE = "testTableName";
   private static final String TEST_DATASOURCE = "testDataSource";
-  private static final String TEST_SYNCHRONOUS = "true";
+  private static final String TEST_SYNCHRONOUS = "false";
 
   private DescribeMappingFunction function;
   private JdbcConnectorService service;
@@ -113,7 +114,7 @@ public class DescribeMappingFunctionTest {
     expectedAttributes.put(PDX_NAME, TEST_PDX);
     expectedAttributes.put(TABLE_NAME, TEST_TABLE);
     expectedAttributes.put(DATA_SOURCE_NAME, TEST_DATASOURCE);
-    // expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
+    expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());

@@ -67,12 +67,13 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   @Override
   public boolean isRegionSynchronous(RegionMapping mapping, Cache cache) {
     Region<?, ?> region = cache.getRegion(mapping.getRegionName());
-    if(region == null) {
+    if (region == null) {
       throw new IllegalStateException("Region for mapping could not be found.");
     }
 
-    //If our region has a Jdbc Writer set as the cache writer then we know it is syncronous
-    return region.getAttributes().getCacheWriter() != null && region.getAttributes().getCacheWriter() instanceof JdbcWriter;
+    // If our region has a Jdbc Writer set as the cache writer then we know it is syncronous
+    return region.getAttributes().getCacheWriter() != null
+        && region.getAttributes().getCacheWriter() instanceof JdbcWriter;
   }
 
   @Override
