@@ -34,6 +34,8 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
  * remembered so that it does not need to be recomputed for the same table name.
  */
 public class TableMetaDataManager {
+  private static final String DEFAULT_CATALOG = "";
+  private static final String DEFAULT_SCHEMA = "";
   private final ConcurrentMap<String, TableMetaDataView> tableToMetaDataMap =
       new ConcurrentHashMap<>();
 
@@ -48,7 +50,7 @@ public class TableMetaDataManager {
     TableMetaData result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
-      try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
+      try (ResultSet tables = metaData.getTables(DEFAULT_CATALOG, DEFAULT_SCHEMA, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
         List<String> keys = getPrimaryKeyColumnNamesFromMetaData(realTableName, metaData, ids);
         String quoteString = metaData.getIdentifierQuoteString();
@@ -100,7 +102,9 @@ public class TableMetaDataManager {
         checkColumnExistsInTable(tableName, metaData, key);
       }
     } else {
-      try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
+      try (
+          ResultSet primaryKeys =
+              metaData.getPrimaryKeys(DEFAULT_CATALOG, DEFAULT_SCHEMA, tableName)) {
         while (primaryKeys.next()) {
           String key = primaryKeys.getString("COLUMN_NAME");
           keys.add(key);
@@ -116,7 +120,8 @@ public class TableMetaDataManager {
 
   private void getDataTypesFromMetaData(String tableName, DatabaseMetaData metaData,
       TableMetaData result) throws SQLException {
-    try (ResultSet columnData = metaData.getColumns(null, null, tableName, "%")) {
+    try (ResultSet columnData =
+        metaData.getColumns(DEFAULT_CATALOG, DEFAULT_SCHEMA, tableName, "%")) {
       while (columnData.next()) {
         String columnName = columnData.getString("COLUMN_NAME");
         int dataType = columnData.getInt("DATA_TYPE");
@@ -128,7 +133,8 @@ public class TableMetaDataManager {
   private void checkColumnExistsInTable(String tableName, DatabaseMetaData metaData,
       String columnName) throws SQLException {
     int caseInsensitiveMatches = 0;
-    try (ResultSet columnData = metaData.getColumns(null, null, tableName, "%")) {
+    try (ResultSet columnData =
+        metaData.getColumns(DEFAULT_CATALOG, DEFAULT_SCHEMA, tableName, "%")) {
       while (columnData.next()) {
         String realColumnName = columnData.getString("COLUMN_NAME");
         if (columnName.equals(realColumnName)) {
