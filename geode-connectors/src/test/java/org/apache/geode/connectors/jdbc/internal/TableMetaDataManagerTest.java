@@ -83,6 +83,19 @@ public class TableMetaDataManagerTest {
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
     verify(connection).getMetaData();
+    verify(databaseMetaData).getTables("", "", "%", null);
+  }
+
+  @Test
+  public void verifyPostgreUsesPublicSchemaByDefault() throws Exception {
+    setupCompositePrimaryKeysMetaData();
+    when(databaseMetaData.getDatabaseProductName()).thenReturn("PostgreSQL");
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "");
+
+    assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
+    verify(connection).getMetaData();
+    verify(databaseMetaData).getTables("", "public", "%", null);
   }
 
 
@@ -263,6 +276,20 @@ public class TableMetaDataManagerTest {
 
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toLowerCase())
         .thenReturn(TABLE_NAME.toUpperCase());
+
+    assertThatThrownBy(
+        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
+            .isInstanceOf(JdbcConnectorException.class)
+            .hasMessage("Duplicate tables that match region name");
+  }
+
+  @Test
+  public void throwsExceptionWhenTwoTablesHaveExactSameName() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    when(tablesResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+
+    when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME).thenReturn(TABLE_NAME);
 
     assertThatThrownBy(
         () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))

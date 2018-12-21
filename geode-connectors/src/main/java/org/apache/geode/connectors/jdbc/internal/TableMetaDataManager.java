@@ -50,15 +50,21 @@ public class TableMetaDataManager {
     TableMetaData result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
-      try (ResultSet tables = metaData.getTables(DEFAULT_CATALOG, DEFAULT_SCHEMA, "%", null)) {
+      String catalogFilter = DEFAULT_CATALOG;
+      String schemaFilter = DEFAULT_SCHEMA;
+      if ("PostgreSQL".equals(metaData.getDatabaseProductName())) {
+        schemaFilter = "public";
+      }
+      try (ResultSet tables = metaData.getTables(catalogFilter, schemaFilter, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
-        List<String> keys = getPrimaryKeyColumnNamesFromMetaData(realTableName, metaData, ids);
+        List<String> keys = getPrimaryKeyColumnNamesFromMetaData(realTableName, metaData,
+            catalogFilter, schemaFilter, ids);
         String quoteString = metaData.getIdentifierQuoteString();
         if (quoteString == null) {
           quoteString = "";
         }
         result = new TableMetaData(realTableName, keys, quoteString);
-        getDataTypesFromMetaData(realTableName, metaData, result);
+        getDataTypesFromMetaData(realTableName, metaData, catalogFilter, schemaFilter, result);
       }
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
@@ -69,18 +75,24 @@ public class TableMetaDataManager {
   private String getTableNameFromMetaData(String tableName, ResultSet tables) throws SQLException {
     String result = null;
     int inexactMatches = 0;
+    int exactMatches = 0;
 
     while (tables.next()) {
       String name = tables.getString("TABLE_NAME");
       if (name.equals(tableName)) {
-        return name;
+        exactMatches++;
+        result = name;
       } else if (name.equalsIgnoreCase(tableName)) {
         inexactMatches++;
         result = name;
       }
     }
 
-    if (inexactMatches > 1) {
+    if (exactMatches == 1) {
+      return result;
+    }
+
+    if (inexactMatches > 1 || exactMatches > 1) {
       throw new JdbcConnectorException("Duplicate tables that match region name");
     }
 
@@ -91,7 +103,7 @@ public class TableMetaDataManager {
   }
 
   private List<String> getPrimaryKeyColumnNamesFromMetaData(String tableName,
-      DatabaseMetaData metaData,
+      DatabaseMetaData metaData, String catalogFilter, String schemaFilter,
       String ids)
       throws SQLException {
     List<String> keys = new ArrayList<>();
@@ -99,12 +111,12 @@ public class TableMetaDataManager {
     if (ids != null && !ids.isEmpty()) {
       keys.addAll(Arrays.asList(ids.split(",")));
       for (String key : keys) {
-        checkColumnExistsInTable(tableName, metaData, key);
+        checkColumnExistsInTable(tableName, metaData, catalogFilter, schemaFilter, key);
       }
     } else {
       try (
           ResultSet primaryKeys =
-              metaData.getPrimaryKeys(DEFAULT_CATALOG, DEFAULT_SCHEMA, tableName)) {
+              metaData.getPrimaryKeys(catalogFilter, schemaFilter, tableName)) {
         while (primaryKeys.next()) {
           String key = primaryKeys.getString("COLUMN_NAME");
           keys.add(key);
@@ -119,9 +131,9 @@ public class TableMetaDataManager {
   }
 
   private void getDataTypesFromMetaData(String tableName, DatabaseMetaData metaData,
-      TableMetaData result) throws SQLException {
+      String catalogFilter, String schemaFilter, TableMetaData result) throws SQLException {
     try (ResultSet columnData =
-        metaData.getColumns(DEFAULT_CATALOG, DEFAULT_SCHEMA, tableName, "%")) {
+        metaData.getColumns(catalogFilter, schemaFilter, tableName, "%")) {
       while (columnData.next()) {
         String columnName = columnData.getString("COLUMN_NAME");
         int dataType = columnData.getInt("DATA_TYPE");
@@ -131,10 +143,10 @@ public class TableMetaDataManager {
   }
 
   private void checkColumnExistsInTable(String tableName, DatabaseMetaData metaData,
-      String columnName) throws SQLException {
+      String catalogFilter, String schemaFilter, String columnName) throws SQLException {
     int caseInsensitiveMatches = 0;
     try (ResultSet columnData =
-        metaData.getColumns(DEFAULT_CATALOG, DEFAULT_SCHEMA, tableName, "%")) {
+        metaData.getColumns(catalogFilter, schemaFilter, tableName, "%")) {
       while (columnData.next()) {
         String realColumnName = columnData.getString("COLUMN_NAME");
         if (columnName.equals(realColumnName)) {

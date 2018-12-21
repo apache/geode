@@ -75,6 +75,15 @@ public abstract class JdbcWriterIntegrationTest {
         .writeInt("age", 21).create();
     employee1 = (Employee) pdx1.getObject();
     employee2 = (Employee) pdx2.getObject();
+    createTableInUnusedSchema();
+  }
+
+  private void createTableInUnusedSchema() throws SQLException {
+    Connection connection2 = getConnection();
+    statement.execute("Create Schema unusedSchema");
+    statement = connection2.createStatement();
+    statement.execute("Create Table " + "unusedSchema." + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
   private void setupRegion(String ids) throws RegionMappingExistsException {
@@ -99,6 +108,8 @@ public abstract class JdbcWriterIntegrationTest {
     }
     if (statement != null) {
       statement.execute("Drop table " + REGION_TABLE_NAME);
+      statement.execute("Drop table unusedSchema." + REGION_TABLE_NAME);
+      statement.execute("Drop schema unusedSchema");
       statement.close();
     }
     if (connection != null) {
