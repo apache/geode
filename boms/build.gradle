@@ -16,5 +16,4 @@
  */
 
 jar.enabled = false
-disableMavenPublishing()
 

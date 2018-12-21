@@ -16,6 +16,7 @@
  */
 
 apply plugin: "io.spring.dependency-management"
+apply from: "${rootDir}/${scriptDir}/publish.gradle"
 
 jar.enabled = false
 

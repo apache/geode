@@ -16,3 +16,4 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+apply from: "${rootDir}/${scriptDir}/publish.gradle"

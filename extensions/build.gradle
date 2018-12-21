@@ -15,5 +15,4 @@
  * limitations under the License.
  */
 
-disableMavenPublishing()
 apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"

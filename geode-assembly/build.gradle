@@ -22,6 +22,7 @@ evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
 apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+apply from: "${rootDir}/${scriptDir}/publish.gradle"
 
 // disable artifact generation for this project
 jar.enabled = false

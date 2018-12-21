@@ -47,4 +47,3 @@ eclipse.classpath.file {
   }
 }
 
-disableMavenPublishing()

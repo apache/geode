@@ -27,4 +27,3 @@ war {
     version = ''
 }
 
-disableMavenPublishing()

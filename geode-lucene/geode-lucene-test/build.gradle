@@ -29,4 +29,3 @@ dependencies {
   compile('org.mockito:mockito-core')
 }
 
-disableMavenPublishing()
