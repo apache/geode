@@ -80,7 +80,7 @@
         "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
         "pushd geode",
         "$Env:JAVA_HOME = 'C:\\java8'",
-        ".\\gradlew.bat --no-daemon resolveDependencies",
+        ".\\gradlew.bat --no-daemon boms:geode-all-bom:install resolveDependencies",
         "popd",
 
         "write-output '>>>>>>>>>> Killing all java processes <<<<<<<<<<'",

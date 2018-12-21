@@ -56,6 +56,9 @@ java_test_versions:
 - name: OpenJDK11
   version: 11
 
+benchmarks:
+  baseline_branch: "rel/v1.8.0"
+
 java_build_version:
   name: OpenJDK8
   version: 8
