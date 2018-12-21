@@ -108,7 +108,7 @@ public class FederatingManager extends Manager {
         logger.debug("Starting the Federating Manager.... ");
       }
 
-      pooledMembershipExecutor = LoggingExecutors.newFixedThreadPool("FederatingManager", false,
+      pooledMembershipExecutor = LoggingExecutors.newFixedThreadPool("FederatingManager", true,
           Runtime.getRuntime().availableProcessors());
 
       running = true;
