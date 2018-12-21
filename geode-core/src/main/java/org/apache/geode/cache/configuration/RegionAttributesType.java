@@ -473,7 +473,7 @@ public class RegionAttributesType implements Serializable {
    * Gets the value of the regionTimeToLive property.
    *
    * possible object is
-   * {@link RegionAttributesType.RegionTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public ExpirationAttributesType getRegionTimeToLive() {
@@ -484,7 +484,7 @@ public class RegionAttributesType implements Serializable {
    * Sets the value of the regionTimeToLive property.
    *
    * allowed object is
-   * {@link RegionAttributesType.RegionTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public void setRegionTimeToLive(ExpirationAttributesType value) {
@@ -495,7 +495,7 @@ public class RegionAttributesType implements Serializable {
    * Gets the value of the regionIdleTime property.
    *
    * possible object is
-   * {@link RegionAttributesType.RegionIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public ExpirationAttributesType getRegionIdleTime() {
@@ -506,7 +506,7 @@ public class RegionAttributesType implements Serializable {
    * Sets the value of the regionIdleTime property.
    *
    * allowed object is
-   * {@link RegionAttributesType.RegionIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public void setRegionIdleTime(ExpirationAttributesType value) {
@@ -517,7 +517,7 @@ public class RegionAttributesType implements Serializable {
    * Gets the value of the entryTimeToLive property.
    *
    * possible object is
-   * {@link RegionAttributesType.EntryTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public ExpirationAttributesType getEntryTimeToLive() {
@@ -528,7 +528,7 @@ public class RegionAttributesType implements Serializable {
    * Sets the value of the entryTimeToLive property.
    *
    * allowed object is
-   * {@link RegionAttributesType.EntryTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public void setEntryTimeToLive(ExpirationAttributesType value) {
@@ -539,7 +539,7 @@ public class RegionAttributesType implements Serializable {
    * Gets the value of the entryIdleTime property.
    *
    * possible object is
-   * {@link RegionAttributesType.EntryIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public ExpirationAttributesType getEntryIdleTime() {
@@ -550,7 +550,7 @@ public class RegionAttributesType implements Serializable {
    * Sets the value of the entryIdleTime property.
    *
    * allowed object is
-   * {@link RegionAttributesType.EntryIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
   public void setEntryIdleTime(ExpirationAttributesType value) {
