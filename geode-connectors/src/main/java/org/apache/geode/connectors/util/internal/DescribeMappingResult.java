@@ -49,7 +49,7 @@ public class DescribeMappingResult implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException {
-    int dataSize = in.readInt();
+    int dataSize = DataSerializer.readInteger(in);
 
     for (int i = 0; i < dataSize; i++) {
       String key, value;

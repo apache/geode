@@ -32,7 +32,7 @@ public interface JdbcConnectorService extends CacheService {
 
   void destroyRegionMapping(String regionName);
 
-  boolean isRegionSynchronous(RegionMapping mapping, Cache cache)
+  boolean isMappingSynchronous(RegionMapping mapping, Cache cache)
       throws RegionMappingNotFoundException;
 
   RegionMapping getMappingForRegion(String regionName);

@@ -54,7 +54,7 @@ public class DescribeMappingFunction extends CliFunction<String> {
 
     try {
       attributes.put(SYNCHRONOUS_NAME,
-          Boolean.toString(service.isRegionSynchronous(mapping, context.getCache())));
+          Boolean.toString(service.isMappingSynchronous(mapping, context.getCache())));
     } catch (RegionMappingNotFoundException e) {
       attributes.put(SYNCHRONOUS_NAME, "Not found.");
     }
