@@ -98,6 +98,7 @@ public abstract class JdbcWriterIntegrationTest {
       }
     }
     if (statement != null) {
+      statement.execute("Drop table " + REGION_TABLE_NAME);
       statement.close();
     }
     if (connection != null) {
