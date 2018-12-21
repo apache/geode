@@ -65,10 +65,7 @@ public abstract class JdbcWriterIntegrationTest {
 
     connection = getConnection();
     statement = connection.createStatement();
-    statement.execute("Create Schema mySchema");
-    //connection.setSchema("mySchema");
-    statement = connection.createStatement();
-    statement.execute("Create Table " + "mySchema." + REGION_TABLE_NAME
+    statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
     pdx1 = cache.createPdxInstanceFactory(Employee.class.getName()).writeString("id", "1")
         .writeString("name", "Emp1")
@@ -78,15 +75,6 @@ public abstract class JdbcWriterIntegrationTest {
         .writeInt("age", 21).create();
     employee1 = (Employee) pdx1.getObject();
     employee2 = (Employee) pdx2.getObject();
-    
-    {
-    Connection connection2 = getConnection();
-    statement.execute("Create Schema mySchema2");
-    //connection2.setSchema("mySchema2");
-    statement = connection2.createStatement();
-    statement.execute("Create Table " + "mySchema2." + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, name varchar(10), age int)");
-    }
   }
 
   private void setupRegion(String ids) throws RegionMappingExistsException {
@@ -110,7 +98,6 @@ public abstract class JdbcWriterIntegrationTest {
       }
     }
     if (statement != null) {
-      statement.execute("Drop table " + REGION_TABLE_NAME);
       statement.close();
     }
     if (connection != null) {
@@ -322,7 +309,7 @@ public abstract class JdbcWriterIntegrationTest {
   private SqlHandler createSqlHandler(String ids)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl(), ids),
+        TestConfigService.getTestConfigService(ids),
         testDataSourceFactory);
   }
 

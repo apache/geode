@@ -338,7 +338,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   private SqlHandler createSqlHandler(String ids)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl(), ids),
+        TestConfigService.getTestConfigService(ids),
         testDataSourceFactory);
   }
 

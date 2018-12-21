@@ -173,8 +173,7 @@ public abstract class JdbcLoaderIntegrationTest {
   private SqlHandler createSqlHandler(String pdxClassName, String ids)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            getConnectionUrl(), ids),
+        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids),
         testDataSourceFactory);
   }
 
