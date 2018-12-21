@@ -79,8 +79,8 @@ public class SqlHandler {
     RegionMapping regionMapping = getMappingForRegion(region.getName());
     PdxInstance result;
     try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
-      TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
-          regionMapping.getRegionToTableName(), regionMapping.getIds());
+      TableMetaDataView tableMetaData =
+          this.tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       EntryColumnData entryColumnData =
           getEntryColumnData(tableMetaData, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
@@ -172,8 +172,8 @@ public class SqlHandler {
     RegionMapping regionMapping = getMappingForRegion(region.getName());
 
     try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
-      TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
-          regionMapping.getRegionToTableName(), regionMapping.getIds());
+      TableMetaDataView tableMetaData =
+          this.tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       EntryColumnData entryColumnData =
           getEntryColumnData(tableMetaData, regionMapping, key, value, operation);
       int updateCount = 0;

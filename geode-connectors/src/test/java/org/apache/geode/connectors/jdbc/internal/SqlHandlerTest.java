@@ -93,7 +93,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getTableName()).thenReturn(TABLE_NAME);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN));
     final String IDS = "ids";
-    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, IDS))
+    when(tableMetaDataManager.getTableMetaDataView(any(), any()))
         .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
     dataSourceFactory = mock(DataSourceFactory.class);

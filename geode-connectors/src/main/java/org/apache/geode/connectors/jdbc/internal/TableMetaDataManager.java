@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
 /**
  * Given a tableName this manager will determine which column should correspond to the Geode Region
@@ -39,14 +40,14 @@ public class TableMetaDataManager {
   private final ConcurrentMap<String, TableMetaDataView> tableToMetaDataMap =
       new ConcurrentHashMap<>();
 
-  public TableMetaDataView getTableMetaDataView(Connection connection, String tableName,
-      String ids) {
-    return tableToMetaDataMap.computeIfAbsent(tableName,
-        k -> computeTableMetaDataView(connection, k, ids));
+  public TableMetaDataView getTableMetaDataView(Connection connection,
+      RegionMapping regionMapping) {
+    return tableToMetaDataMap.computeIfAbsent(regionMapping.getTableName(),
+        k -> computeTableMetaDataView(connection, regionMapping));
   }
 
-  private TableMetaDataView computeTableMetaDataView(Connection connection, String tableName,
-      String ids) {
+  private TableMetaDataView computeTableMetaDataView(Connection connection,
+      RegionMapping regionMapping) {
     TableMetaData result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
@@ -56,9 +57,9 @@ public class TableMetaDataManager {
         schemaFilter = "public";
       }
       try (ResultSet tables = metaData.getTables(catalogFilter, schemaFilter, "%", null)) {
-        String realTableName = getTableNameFromMetaData(tableName, tables);
+        String realTableName = getTableNameFromMetaData(regionMapping.getTableName(), tables);
         List<String> keys = getPrimaryKeyColumnNamesFromMetaData(realTableName, metaData,
-            catalogFilter, schemaFilter, ids);
+            catalogFilter, schemaFilter, regionMapping.getIds());
         String quoteString = metaData.getIdentifierQuoteString();
         if (quoteString == null) {
           quoteString = "";

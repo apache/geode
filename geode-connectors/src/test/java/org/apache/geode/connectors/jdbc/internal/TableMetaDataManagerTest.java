@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
 public class TableMetaDataManagerTest {
   private static final String TABLE_NAME = "testTable";
@@ -47,6 +48,7 @@ public class TableMetaDataManagerTest {
   ResultSet tablesResultSet;
   ResultSet primaryKeysResultSet;
   ResultSet columnResultSet;
+  RegionMapping regionMapping;
 
   @Before
   public void setup() throws Exception {
@@ -62,14 +64,17 @@ public class TableMetaDataManagerTest {
     columnResultSet = mock(ResultSet.class);
     when(databaseMetaData.getColumns(any(), any(), eq(TABLE_NAME), any()))
         .thenReturn(columnResultSet);
+    regionMapping = mock(RegionMapping.class);
+    when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
   }
 
   @Test
   public void returnsSinglePrimaryKeyColumnName() throws Exception {
     setupPrimaryKeysMetaData();
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    when(regionMapping.getIds()).thenReturn("");
 
-    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "");
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN));
     verify(connection).getMetaData();
@@ -78,8 +83,9 @@ public class TableMetaDataManagerTest {
   @Test
   public void returnsCompositePrimaryKeyColumnNames() throws Exception {
     setupCompositePrimaryKeysMetaData();
+    when(regionMapping.getIds()).thenReturn("");
 
-    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "");
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
     verify(connection).getMetaData();
@@ -90,23 +96,23 @@ public class TableMetaDataManagerTest {
   public void verifyPostgreUsesPublicSchemaByDefault() throws Exception {
     setupCompositePrimaryKeysMetaData();
     when(databaseMetaData.getDatabaseProductName()).thenReturn("PostgreSQL");
+    when(regionMapping.getIds()).thenReturn("");
 
-    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "");
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
     verify(connection).getMetaData();
     verify(databaseMetaData).getTables("", "public", "%", null);
   }
 
-
-
   @Test
   public void givenNoColumnsAndNonNullIdsThenExpectException() throws Exception {
     setupTableMetaData();
     when(columnResultSet.next()).thenReturn(false);
+    when(regionMapping.getIds()).thenReturn("nonExistentId");
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "nonExistentId"))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
             .hasMessageContaining("The table testTable does not have a column named nonExistentId");
   }
@@ -116,9 +122,10 @@ public class TableMetaDataManagerTest {
     setupTableMetaData();
     when(columnResultSet.next()).thenReturn(true).thenReturn(false);
     when(columnResultSet.getString("COLUMN_NAME")).thenReturn("existingColumn");
+    when(regionMapping.getIds()).thenReturn("nonExistentId");
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "nonExistentId"))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
             .hasMessageContaining("The table testTable does not have a column named nonExistentId");
   }
@@ -130,9 +137,10 @@ public class TableMetaDataManagerTest {
     when(columnResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
     when(columnResultSet.getString("COLUMN_NAME")).thenReturn("nonexistentid")
         .thenReturn("NONEXISTENTID");
+    when(regionMapping.getIds()).thenReturn("nonExistentId");
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "nonExistentId"))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
                 "The table testTable has more than one column that matches nonExistentId");
   }
@@ -145,9 +153,10 @@ public class TableMetaDataManagerTest {
         .thenReturn(false);
     when(columnResultSet.getString("COLUMN_NAME")).thenReturn("existentid").thenReturn("EXISTENTID")
         .thenReturn("ExistentId");
+    when(regionMapping.getIds()).thenReturn("ExistentId");
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "ExistentId");
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList("ExistentId"));
   }
@@ -161,10 +170,10 @@ public class TableMetaDataManagerTest {
     when(columnResultSet.getString("COLUMN_NAME")).thenReturn("LeadingNonKeyColumn")
         .thenReturn(KEY_COLUMN).thenReturn(KEY_COLUMN2)
         .thenReturn("NonKeyColumn");
+    when(regionMapping.getIds()).thenReturn(KEY_COLUMN + "," + KEY_COLUMN2);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME,
-            KEY_COLUMN + "," + KEY_COLUMN2);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
   }
@@ -175,9 +184,10 @@ public class TableMetaDataManagerTest {
     setupTableMetaData();
     when(columnResultSet.next()).thenReturn(true).thenReturn(false);
     when(columnResultSet.getString("COLUMN_NAME")).thenReturn("existentid");
+    when(regionMapping.getIds()).thenReturn("ExistentId");
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, "ExistentId");
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList("ExistentId"));
   }
@@ -188,7 +198,7 @@ public class TableMetaDataManagerTest {
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getIdentifierQuoteString()).isEqualTo("");
     verify(connection).getMetaData();
@@ -202,7 +212,7 @@ public class TableMetaDataManagerTest {
     when(databaseMetaData.getIdentifierQuoteString()).thenReturn(expectedQuoteString);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getIdentifierQuoteString()).isEqualTo(expectedQuoteString);
     verify(connection).getMetaData();
@@ -213,8 +223,8 @@ public class TableMetaDataManagerTest {
     setupPrimaryKeysMetaData();
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
-    tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
-    tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+    tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
+    tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
     verify(connection).getMetaData();
   }
 
@@ -224,7 +234,7 @@ public class TableMetaDataManagerTest {
     when(connection.getMetaData()).thenThrow(cause);
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class).hasMessageContaining("sql message");
   }
 
@@ -234,7 +244,7 @@ public class TableMetaDataManagerTest {
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn("otherTable");
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
             .hasMessage("no table was found that matches testTable");
   }
@@ -248,7 +258,7 @@ public class TableMetaDataManagerTest {
         .thenReturn(TABLE_NAME);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getTableName()).isEqualTo(TABLE_NAME);
   }
@@ -263,7 +273,7 @@ public class TableMetaDataManagerTest {
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getTableName()).isEqualTo(TABLE_NAME.toUpperCase());
   }
@@ -278,7 +288,7 @@ public class TableMetaDataManagerTest {
         .thenReturn(TABLE_NAME.toUpperCase());
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
             .hasMessage("Duplicate tables that match region name");
   }
@@ -292,7 +302,7 @@ public class TableMetaDataManagerTest {
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME).thenReturn(TABLE_NAME);
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
             .hasMessage("Duplicate tables that match region name");
   }
@@ -303,7 +313,7 @@ public class TableMetaDataManagerTest {
     when(primaryKeysResultSet.next()).thenReturn(false);
 
     assertThatThrownBy(
-        () -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null))
+        () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
             .hasMessage("The table " + TABLE_NAME + " does not have a primary key column.");
   }
@@ -314,7 +324,7 @@ public class TableMetaDataManagerTest {
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
     int dataType = data.getColumnDataType("unknownColumn");
 
     assertThat(dataType).isEqualTo(0);
@@ -334,7 +344,7 @@ public class TableMetaDataManagerTest {
         .thenReturn(columnDataType2);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
     int dataType1 = data.getColumnDataType(columnName1);
     int dataType2 = data.getColumnDataType(columnName2);
 
@@ -359,7 +369,7 @@ public class TableMetaDataManagerTest {
     Set<String> expectedColumnNames = new HashSet<>(Arrays.asList(columnName1, columnName2));
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
     Set<String> columnNames = data.getColumnNames();
 
     assertThat(columnNames).isEqualTo(expectedColumnNames);
@@ -372,7 +382,7 @@ public class TableMetaDataManagerTest {
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     verify(primaryKeysResultSet).close();
   }
@@ -384,7 +394,7 @@ public class TableMetaDataManagerTest {
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     verify(columnResultSet).close();
   }
@@ -395,7 +405,7 @@ public class TableMetaDataManagerTest {
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data =
-        tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME, null);
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getTableName()).isEqualTo(TABLE_NAME);
   }

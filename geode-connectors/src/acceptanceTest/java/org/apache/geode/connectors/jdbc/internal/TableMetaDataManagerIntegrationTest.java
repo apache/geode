@@ -30,6 +30,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+
 
 public abstract class TableMetaDataManagerIntegrationTest {
 
@@ -39,12 +41,15 @@ public abstract class TableMetaDataManagerIntegrationTest {
   private TableMetaDataManager manager;
   protected Connection connection;
   protected Statement statement;
+  protected RegionMapping regionMapping;
 
   @Before
   public void setup() throws Exception {
     connection = getConnection();
     statement = connection.createStatement();
     manager = new TableMetaDataManager();
+    regionMapping = new RegionMapping();
+    regionMapping.setTableName(REGION_TABLE_NAME);
   }
 
   @After
@@ -85,7 +90,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
   @Test
   public void validateKeyColumnName() throws SQLException {
     createTable();
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
     List<String> keyColumnNames = metaData.getKeyColumnNames();
 
@@ -95,8 +100,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
   @Test
   public void validateKeyColumnNameOnNonPrimaryKey() throws SQLException {
     createTableWithNoPrimaryKey();
+    regionMapping.setIds("nonprimaryid");
     TableMetaDataView metaData =
-        manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "nonprimaryid");
+        manager.getTableMetaDataView(connection, regionMapping);
 
     List<String> keyColumnNames = metaData.getKeyColumnNames();
 
@@ -106,8 +112,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
   @Test
   public void validateKeyColumnNameOnNonPrimaryKeyWithInExactMatch() throws SQLException {
     createTableWithNoPrimaryKey();
+    regionMapping.setIds("NonPrimaryId");
     TableMetaDataView metaData =
-        manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "NonPrimaryId");
+        manager.getTableMetaDataView(connection, regionMapping);
 
     List<String> keyColumnNames = metaData.getKeyColumnNames();
 
@@ -117,7 +124,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
   @Test
   public void validateColumnDataTypeForName() throws SQLException {
     createTable();
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
     int nameDataType = metaData.getColumnDataType("name");
 
@@ -127,7 +134,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
   @Test
   public void validateColumnDataTypeForId() throws SQLException {
     createTable();
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
     int nameDataType = metaData.getColumnDataType("id");
 
@@ -137,7 +144,7 @@ public abstract class TableMetaDataManagerIntegrationTest {
   @Test
   public void validateColumnDataTypeForAge() throws SQLException {
     createTable();
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
     int nameDataType = metaData.getColumnDataType("age");
 
