@@ -15,9 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,8 +40,11 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DiskDirType;
+import org.apache.geode.cache.configuration.DiskDirsType;
 import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -56,7 +62,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(PersistenceTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class DiskStoreCommandsDUnitTest {
+public class DiskStoreCommandsDUnitTest implements Serializable {
   private static final String GROUP = "GROUP1";
   private static final String REGION_1 = "REGION1";
   private static final String DISKSTORE = "DISKSTORE";
@@ -65,10 +71,10 @@ public class DiskStoreCommandsDUnitTest {
   public ClusterStartupRule rule = new ClusterStartupRule();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public TemporaryFolder tempDir = new TemporaryFolder();
+  public transient TemporaryFolder tempDir = new TemporaryFolder();
 
   private void createDiskStoreAndRegion(MemberVM jmxManager, int serverCount) {
     gfsh.executeAndAssertThat(String.format(
@@ -460,5 +466,72 @@ public class DiskStoreCommandsDUnitTest {
         + nonExistingDiskStorePath.toAbsolutePath().toString()).statusIsError()
         .containsOutput("Could not find disk-dirs:");
     assertThat(Files.exists(nonExistingDiskStorePath)).isFalse();
+  }
+
+  @Test
+  @Parameters(method = "getDiskDirNames")
+  public void validateDiskStoreDiskDirectoryPath(String diskDirectoryName)
+      throws Exception {
+    // Start locator and server
+    MemberVM locator = rule.startLocatorVM(0);
+    MemberVM server = rule.startServerVM(1, locator.getPort());
+
+    // Connect gfsh
+    gfsh.connectAndVerify(locator);
+
+    // Create a disk store with the input disk-dir name
+    gfsh.executeAndAssertThat(
+        String.format("create disk-store --name=%s --dir=%s", DISKSTORE, diskDirectoryName))
+        .statusIsSuccess();
+
+    // Verify the server defines the disk store with the disk-dir path
+    server.invoke(() -> {
+      verifyDiskStoreInServer(DISKSTORE, diskDirectoryName);
+    });
+
+    // Verify the cluster config stores the disk store with the input disk-dir path
+    locator.invoke(() -> {
+      verifyDiskStoreInClusterConfiguration(diskDirectoryName);
+    });
+
+    // Stop and start the server
+    rule.stop(1);
+    server = rule.startServerVM(2, locator.getPort());
+
+    // Verify the server still defines the disk store with the disk-dir path
+    server.invoke(() -> {
+      verifyDiskStoreInServer(DISKSTORE, diskDirectoryName);
+    });
+  }
+
+  private String[] getDiskDirNames() throws IOException {
+    tempDir.create();
+    return new String[] {tempDir.newFolder(DISKSTORE).getAbsolutePath(), DISKSTORE};
+  }
+
+  private void verifyDiskStoreInServer(String diskStoreName, String diskDirectoryName) {
+    DiskStore diskStore = ClusterStartupRule.getCache().findDiskStore(diskStoreName);
+    assertThat(diskStore).isNotNull();
+    File[] diskDirs = diskStore.getDiskDirs();
+    assertThat(diskDirs.length).isEqualTo(1);
+    File diskDir = diskDirs[0];
+    String absoluteDiskDirectoryName = diskDirectoryName.startsWith(File.separator)
+        ? diskDirectoryName : CURRENT_DIRECTORY + File.separator + diskDirectoryName;
+    assertThat(diskDir.getAbsolutePath()).isEqualTo(absoluteDiskDirectoryName);
+  }
+
+  private void verifyDiskStoreInClusterConfiguration(String absoluteDirectoryName) {
+    InternalLocator internalLocator = ClusterStartupRule.getLocator();
+    InternalConfigurationPersistenceService cc =
+        internalLocator.getConfigurationPersistenceService();
+    CacheConfig config = cc.getCacheConfig("cluster");
+    List<DiskStoreType> diskStores = config.getDiskStores();
+    assertThat(diskStores.size()).isEqualTo(1);
+    DiskStoreType diskStore = diskStores.get(0);
+    DiskDirsType diskDirsType = diskStore.getDiskDirs();
+    List<DiskDirType> diskDirs = diskDirsType.getDiskDirs();
+    assertThat(diskDirs.size()).isEqualTo(1);
+    DiskDirType diskDir = diskDirs.get(0);
+    assertThat(diskDir.getContent()).isEqualTo(absoluteDirectoryName);
   }
 }
