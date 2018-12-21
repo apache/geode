@@ -76,8 +76,6 @@ public class DiskSpaceLimitIntegrationTest {
   private StatArchiveHandlerConfig config;
 
   private long initTimeStamp;
-
-  private NanoTimer timer = new NanoTimer();
   private long nanosTimeStamp;
 
   @Rule
@@ -117,9 +115,9 @@ public class DiskSpaceLimitIntegrationTest {
 
     this.sampleCollector = new SampleCollector(sampler);
 
-    this.initTimeStamp = NanoTimer.getTime();
-    this.timer.reset();
-    this.nanosTimeStamp = this.timer.getLastResetTime() - getNanoRate();
+    NanoTimer timer = new NanoTimer();
+    this.initTimeStamp = timer.getConstructionTime() - getNanoRate();
+    this.nanosTimeStamp = timer.getConstructionTime();
 
     preConditions();
   }
