@@ -16,48 +16,38 @@ package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.internal.cache.wan.spi.WANFactory;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
-@RunWith(PowerMockRunner.class)
 @Category({WanTest.class})
-@PrepareForTest(WANServiceProvider.class)
-@PowerMockRunnerDelegate(Parameterized.class)
-@PowerMockIgnore({"javax.management.*", "javax.security.*", "*.IntegrationTest"})
+@RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GatewayReceiverXmlParsingValidationsJUnitTest {
   private Cache cache;
-  private GatewayReceiverFactory receiverFactory;
 
   @Parameterized.Parameter
   public static String validationStrategy;
@@ -68,13 +58,6 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> strategies() throws Exception {
     return Arrays.asList("DTD", "XSD");
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    mockStatic(WANServiceProvider.class);
-    receiverFactory = spy(GatewayReceiverFactory.class);
-    when(WANServiceProvider.createGatewayReceiverFactory(any())).thenReturn(receiverFactory);
   }
 
   @Test(expected = CacheXmlException.class)
@@ -90,15 +73,20 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
         getClass().getSimpleName() + "." + testName.getMethodName() + ".cache.xml");
     cache = new CacheFactory().set(MCAST_PORT, "0").set(CACHE_XML_FILE, cacheXmlFileName).create();
 
-    assertThat(cache.getGatewayReceivers()).isNotNull();
-    verify(receiverFactory, times(1)).setEndPort(1501);
-    verify(receiverFactory, times(1)).setStartPort(1500);
-    verify(receiverFactory, times(1)).setManualStart(true);
-    verify(receiverFactory, times(1)).setSocketBufferSize(32768);
-    verify(receiverFactory, times(1)).setBindAddress("localhost");
-    verify(receiverFactory, times(1)).setHostnameForSenders("localhost");
-    verify(receiverFactory, times(1)).setMaximumTimeBetweenPings(60000);
-    verify(receiverFactory, times(1)).create();
+    assertThat(cache.getGatewayReceivers()).isNotEmpty();
+    GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
+
+    ServiceLoader<WANFactory> loader = ServiceLoader.load(WANFactory.class);
+    Iterator<WANFactory> itr = loader.iterator();
+    assertThat(itr.hasNext()).isTrue();
+
+    assertEquals(1501, receiver.getEndPort());
+    assertEquals(1500, receiver.getStartPort());
+    assertTrue(receiver.isManualStart());
+    assertEquals(32768, receiver.getSocketBufferSize());
+    assertTrue(receiver.getBindAddress().equals("localhost"));
+    assertTrue(receiver.getHostnameForSenders().equals("localhost"));
+    assertEquals(60000, receiver.getMaximumTimeBetweenPings());
   }
 
   @After
@@ -107,4 +95,5 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
       cache.close();
     }
   }
+
 }
