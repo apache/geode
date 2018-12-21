@@ -1131,13 +1131,13 @@ public class SocketCreator {
         }
       } catch (SSLHandshakeException ex) {
         logger
-            .fatal(String.format("SSL Error in connecting to peer %s[%s].",
+            .fatal(String.format("Problem forming SSL connection to %s[%s].",
                 new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
                 ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
-          logger.fatal("SSL Error in authenticating peer.", ex);
+          logger.fatal("SSL authentication exception.", ex);
           throw ex;
         }
       }

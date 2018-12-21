@@ -993,7 +993,7 @@ public class Connection implements Runnable {
                                           // these
             logger.info("Connection: shared={} ordered={} failed to connect to peer {} because: {}",
                 sharedResource, preserveOrder, remoteAddr,
-                ioe.getMessage() != null ? ioe.getCause() : ioe);
+                ioe.getCause() != null ? ioe.getCause() : ioe);
           }
         } // IOException
         finally {
@@ -1653,7 +1653,8 @@ public class Connection implements Runnable {
         }
         return; // bug37520: exit loop (and thread)
       }
-      logger.fatal("Failed initializing socket", ex);
+      logger.info("Failed initializing socket for message {}: {}",
+          (this.isReceiver ? "receiver" : "sender"), ex.getMessage());
       this.readerShuttingDown = true;
       try {
         requestClose(String.format("Failed initializing socket %s",
