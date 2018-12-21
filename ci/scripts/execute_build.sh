@@ -41,7 +41,7 @@ BUILD_DATE=$(date +%s)
 if [ -e "${ROOT_DIR}/geode-build-version" ] ; then
   GEODE_BUILD_VERSION_FILE=${ROOT_DIR}/geode-build-version/number
   GEODE_RESULTS_VERSION_FILE=${ROOT_DIR}/results/number
-  GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" geode/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
+  GEODE_BUILD_VERSION_NUMBER=$(echo "${GRADLE_GLOBAL_ARGS}"|tr ' ' '\n' | grep "versionNumber *=" - geode/gradle.properties | awk -F "=" '{print $2; exit}' | tr -d ' ')
   GEODE_BUILD_DIR=/tmp/geode-build
   GEODE_PULL_REQUEST_ID_FILE=${ROOT_DIR}/geode/.git/id
 
@@ -99,6 +99,7 @@ GRADLE_ARGS="\
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS} \
+    -PbuildId=${BUILD_ID} \
     build install javadoc spotlessCheck rat checkPom resolveDependencies -x test"
 
 EXEC_COMMAND="mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ./gradlew ${GRADLE_ARGS}"

@@ -48,7 +48,7 @@ fi
 SANITIZED_GRADLE_TASK=${GRADLE_TASK##*:}
 TMPDIR=${DEST_DIR}/tmp
 GEODE_BUILD=${DEST_DIR}/geode
-GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" ${GEODE_BUILD}/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
+GEODE_BUILD_VERSION_NUMBER=$(echo "${GRADLE_GLOBAL_ARGS}"|tr ' ' '\n' | grep "versionNumber *=" - ${GEODE_BUILD}/gradle.properties | awk -F "=" '{print $2; exit}' | tr -d ' ')
 BUILD_TIMESTAMP=$(date +%s)
 
 GEODE_PULL_REQUEST_ID_FILE=${BUILDROOT}/geode/.git/resource/version.json
