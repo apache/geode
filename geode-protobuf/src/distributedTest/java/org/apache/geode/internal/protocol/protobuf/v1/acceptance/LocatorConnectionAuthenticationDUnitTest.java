@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -23,15 +22,18 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
@@ -41,7 +43,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -49,30 +51,62 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  * Test sending ProtoBuf messages to the locator, with a security manager configured on the locator
  */
 @Category(ClientServerTest.class)
-public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCase {
+public class LocatorConnectionAuthenticationDUnitTest {
   @Rule
-  public final DistributedRestoreSystemProperties restoreSystemProperties =
+  public final DistributedRestoreSystemProperties restoreDistributedSystemProperties =
       new DistributedRestoreSystemProperties();
+
+  @Rule
+  public RestoreSystemProperties restoreLocalSystemProperties = new RestoreSystemProperties();
+
   private int locatorPort;
+
+  // only used for cleanup on VM 1.
+  private static Locator locator;
+  private VM locatorVM;
+  private Cache cache;
 
   @Before
   public void setup() throws IOException {
     // Start a new locator with authorization
-    locatorPort = Host.getHost(0).getVM(0).invoke(() -> {
+    locatorVM = VM.getVM(0);
+    locatorPort = locatorVM.invoke(() -> {
       System.setProperty("geode.feature-protobuf-protocol", "true");
       Properties props = new Properties();
       props.setProperty(ConfigurationProperties.SECURITY_MANAGER,
           SimpleTestSecurityManager.class.getName());
-      Locator locator = Locator.startLocatorAndDS(0, null, props);
+      locator = Locator.startLocatorAndDS(0, null, props);
       return locator.getPort();
     });
 
     startCacheWithCacheServer(locatorPort);
   }
 
+  @After
+  public void tearDown() {
+    try {
+      locatorVM.invoke(() -> locator.stop());
+    } finally {
+      cache.close();
+    }
+  }
+
+  private void startCacheWithCacheServer(int locatorPort) throws IOException {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
+    props.setProperty("security-username", "cluster");
+    props.setProperty("security-password", "cluster");
+    props.setProperty(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "true");
+    cache = new CacheFactory(props).create();
+    final CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+  }
+
   private Socket createSocket() throws IOException {
-    Host host = Host.getHost(0);
-    Socket socket = new Socket(host.getHostName(), locatorPort);
+    Socket socket = new Socket(Host.getHost(0).getHostName(), locatorPort);
     MessageUtil.sendHandshake(socket);
     MessageUtil.verifyHandshakeSuccess(socket);
     return socket;
@@ -89,19 +123,18 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
             .putCredentials("security-username", "cluster").putCredentials("security-password",
                 "cluster"))
         .build();
-    ClientProtocol.Message GetServerRequestMessage = ClientProtocol.Message.newBuilder()
+    ClientProtocol.Message getServerRequestMessage = ClientProtocol.Message.newBuilder()
         .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build();
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
     try (Socket socket = createSocket()) {
       protobufProtocolSerializer.serialize(authorization, socket.getOutputStream());
-
       ClientProtocol.Message authorizationResponse =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertEquals(true, authorizationResponse.getHandshakeResponse().getAuthenticated());
-      protobufProtocolSerializer.serialize(GetServerRequestMessage, socket.getOutputStream());
+      assertTrue(authorizationResponse.getHandshakeResponse().getAuthenticated());
 
+      protobufProtocolSerializer.serialize(getServerRequestMessage, socket.getOutputStream());
       ClientProtocol.Message GetServerResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
       assertTrue("Got response: " + GetServerResponseMessage,
@@ -129,21 +162,5 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
       assertNotNull("Got response: " + getServerResponseMessage,
           getServerRequestMessage.getErrorResponse());
     }
-  }
-
-
-  private Integer startCacheWithCacheServer(int locatorPort) throws IOException {
-    System.setProperty("geode.feature-protobuf-protocol", "true");
-
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
-    props.setProperty("security-username", "cluster");
-    props.setProperty("security-password", "cluster");
-    props.setProperty(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "true");
-    InternalCache cache = getCache(props);
-    CacheServer cacheServer = cache.addCacheServer();
-    cacheServer.setPort(0);
-    cacheServer.start();
-    return cacheServer.getPort();
   }
 }
