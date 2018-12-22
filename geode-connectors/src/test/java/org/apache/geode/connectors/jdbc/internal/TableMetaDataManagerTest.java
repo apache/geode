@@ -95,14 +95,18 @@ public class TableMetaDataManagerTest {
   @Test
   public void verifyPostgreUsesPublicSchemaByDefault() throws Exception {
     setupCompositePrimaryKeysMetaData();
-    when(databaseMetaData.getDatabaseProductName()).thenReturn("PostgreSQL");
     when(regionMapping.getIds()).thenReturn("");
+    ResultSet schemas = mock(ResultSet.class);
+    when(schemas.next()).thenReturn(true).thenReturn(false);
+    when(schemas.getString("TABLE_SCHEM")).thenReturn("PUBLIC");
+    when(databaseMetaData.getSchemas(any(), any())).thenReturn(schemas);
+    when(databaseMetaData.getDatabaseProductName()).thenReturn("PostgreSQL");
 
     TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
     verify(connection).getMetaData();
-    verify(databaseMetaData).getTables("", "public", "%", null);
+    verify(databaseMetaData).getTables("", "PUBLIC", "%", null);
   }
 
   @Test
@@ -246,7 +250,7 @@ public class TableMetaDataManagerTest {
     assertThatThrownBy(
         () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
-            .hasMessage("no table was found that matches testTable");
+            .hasMessage("No table was found that matches \"" + TABLE_NAME + '"');
   }
 
   @Test
@@ -290,7 +294,7 @@ public class TableMetaDataManagerTest {
     assertThatThrownBy(
         () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
-            .hasMessage("Duplicate tables that match region name");
+            .hasMessage("Multiple tables were found that match \"" + TABLE_NAME + '"');
   }
 
   @Test
@@ -304,7 +308,7 @@ public class TableMetaDataManagerTest {
     assertThatThrownBy(
         () -> tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
             .isInstanceOf(JdbcConnectorException.class)
-            .hasMessage("Duplicate tables that match region name");
+            .hasMessage("Multiple tables were found that match \"" + TABLE_NAME + '"');
   }
 
   @Test

@@ -20,7 +20,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -42,69 +44,121 @@ public class TableMetaDataManager {
 
   public TableMetaDataView getTableMetaDataView(Connection connection,
       RegionMapping regionMapping) {
-    return tableToMetaDataMap.computeIfAbsent(regionMapping.getTableName(),
-        k -> computeTableMetaDataView(connection, regionMapping));
+    return tableToMetaDataMap.computeIfAbsent(computeTableName(regionMapping),
+        k -> computeTableMetaDataView(connection, k, regionMapping));
+  }
+
+  /**
+   * If the region mapping has been given a table name then return it.
+   * Otherwise return the region mapping's region name as the table name.
+   */
+  private String computeTableName(RegionMapping regionMapping) {
+    String result = regionMapping.getTableName();
+    if (result == null) {
+      result = regionMapping.getRegionName();
+    }
+    return result;
   }
 
   private TableMetaDataView computeTableMetaDataView(Connection connection,
-      RegionMapping regionMapping) {
-    TableMetaData result;
+      String tableName, RegionMapping regionMapping) {
     try {
       DatabaseMetaData metaData = connection.getMetaData();
-      String catalogFilter = DEFAULT_CATALOG;
-      String schemaFilter = DEFAULT_SCHEMA;
-      if ("PostgreSQL".equals(metaData.getDatabaseProductName())) {
-        schemaFilter = "public";
-      }
-      try (ResultSet tables = metaData.getTables(catalogFilter, schemaFilter, "%", null)) {
-        String realTableName = getTableNameFromMetaData(regionMapping.getTableName(), tables);
-        List<String> keys = getPrimaryKeyColumnNamesFromMetaData(realTableName, metaData,
-            catalogFilter, schemaFilter, regionMapping.getIds());
-        String quoteString = metaData.getIdentifierQuoteString();
-        if (quoteString == null) {
-          quoteString = "";
-        }
-        result = new TableMetaData(realTableName, keys, quoteString);
-        getDataTypesFromMetaData(realTableName, metaData, catalogFilter, schemaFilter, result);
-      }
+      String catalogFilter = getCatalogNameFromMetaData(metaData, regionMapping);
+      String schemaFilter = getSchemaNameFromMetaData(metaData, regionMapping, catalogFilter);
+      String realTableName =
+          getTableNameFromMetaData(metaData, catalogFilter, schemaFilter, tableName);
+      List<String> keys = getPrimaryKeyColumnNamesFromMetaData(metaData, catalogFilter,
+          schemaFilter, realTableName, regionMapping.getIds());
+      String quoteString = getQuoteStringFromMetaData(metaData);
+      Map<String, Integer> dataTypes =
+          getDataTypesFromMetaData(metaData, catalogFilter, schemaFilter, realTableName);
+      return new TableMetaData(realTableName, keys, quoteString, dataTypes);
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
-    return result;
   }
 
-  private String getTableNameFromMetaData(String tableName, ResultSet tables) throws SQLException {
-    String result = null;
-    int inexactMatches = 0;
-    int exactMatches = 0;
+  private String getQuoteStringFromMetaData(DatabaseMetaData metaData) throws SQLException {
+    String quoteString = metaData.getIdentifierQuoteString();
+    if (quoteString == null) {
+      quoteString = "";
+    }
+    return quoteString;
+  }
 
-    while (tables.next()) {
-      String name = tables.getString("TABLE_NAME");
-      if (name.equals(tableName)) {
-        exactMatches++;
-        result = name;
-      } else if (name.equalsIgnoreCase(tableName)) {
-        inexactMatches++;
-        result = name;
+  private String getCatalogNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping)
+      throws SQLException {
+    String catalogFilter = DEFAULT_CATALOG;
+    if (regionMapping.getCatalog() != null && regionMapping.getCatalog().length() > 0) {
+      catalogFilter = regionMapping.getCatalog();
+    }
+    if (catalogFilter.equals("")) {
+      return catalogFilter;
+    }
+    try (ResultSet catalogs = metaData.getCatalogs()) {
+      return findMatchInResultSet(catalogFilter, catalogs, "TABLE_CAT", "catalog");
+    }
+  }
+
+  private String getSchemaNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping,
+      String catalogFilter) throws SQLException {
+    String schemaFilter = DEFAULT_SCHEMA;
+    if (regionMapping.getSchema() != null && regionMapping.getSchema().length() > 0) {
+      schemaFilter = regionMapping.getSchema();
+    } else if ("PostgreSQL".equals(metaData.getDatabaseProductName())) {
+      schemaFilter = "public";
+    }
+    if (schemaFilter.equals("")) {
+      return schemaFilter;
+    }
+    try (ResultSet schemas = metaData.getSchemas(catalogFilter, "%")) {
+      return findMatchInResultSet(schemaFilter, schemas, "TABLE_SCHEM", "schema");
+    }
+  }
+
+  private String getTableNameFromMetaData(DatabaseMetaData metaData, String catalogFilter,
+      String schemaFilter, String tableName) throws SQLException {
+    try (ResultSet tables = metaData.getTables(catalogFilter, schemaFilter, "%", null)) {
+      return findMatchInResultSet(tableName, tables, "TABLE_NAME", "table");
+    }
+  }
+
+  String findMatchInResultSet(String stringToFind, ResultSet resultSet, String column,
+      String description)
+      throws SQLException {
+    int exactMatches = 0;
+    String exactMatch = null;
+    int inexactMatches = 0;
+    String inexactMatch = null;
+    if (resultSet != null) {
+      while (resultSet.next()) {
+        String name = resultSet.getString(column);
+        if (name.equals(stringToFind)) {
+          exactMatches++;
+          exactMatch = name;
+        } else if (name.equalsIgnoreCase(stringToFind)) {
+          inexactMatches++;
+          inexactMatch = name;
+        }
       }
     }
-
     if (exactMatches == 1) {
-      return result;
+      return exactMatch;
     }
-
     if (inexactMatches > 1 || exactMatches > 1) {
-      throw new JdbcConnectorException("Duplicate tables that match region name");
+      throw new JdbcConnectorException(
+          "Multiple " + description + "s were found that match \"" + stringToFind + '"');
     }
-
-    if (result == null) {
-      throw new JdbcConnectorException("no table was found that matches " + tableName);
+    if (inexactMatches == 1) {
+      return inexactMatch;
     }
-    return result;
+    throw new JdbcConnectorException(
+        "No " + description + " was found that matches \"" + stringToFind + '"');
   }
 
-  private List<String> getPrimaryKeyColumnNamesFromMetaData(String tableName,
-      DatabaseMetaData metaData, String catalogFilter, String schemaFilter,
+  private List<String> getPrimaryKeyColumnNamesFromMetaData(DatabaseMetaData metaData,
+      String catalogFilter, String schemaFilter, String tableName,
       String ids)
       throws SQLException {
     List<String> keys = new ArrayList<>();
@@ -131,16 +185,19 @@ public class TableMetaDataManager {
     return keys;
   }
 
-  private void getDataTypesFromMetaData(String tableName, DatabaseMetaData metaData,
-      String catalogFilter, String schemaFilter, TableMetaData result) throws SQLException {
+  private Map<String, Integer> getDataTypesFromMetaData(DatabaseMetaData metaData,
+      String catalogFilter,
+      String schemaFilter, String tableName) throws SQLException {
+    Map<String, Integer> result = new HashMap<>();
     try (ResultSet columnData =
         metaData.getColumns(catalogFilter, schemaFilter, tableName, "%")) {
       while (columnData.next()) {
         String columnName = columnData.getString("COLUMN_NAME");
         int dataType = columnData.getInt("DATA_TYPE");
-        result.addDataType(columnName, dataType);
+        result.put(columnName, dataType);
       }
     }
+    return result;
   }
 
   private void checkColumnExistsInTable(String tableName, DatabaseMetaData metaData,

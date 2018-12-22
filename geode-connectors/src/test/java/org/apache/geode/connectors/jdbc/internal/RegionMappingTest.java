@@ -57,7 +57,6 @@ public class RegionMappingTest {
     assertThat(mapping.getRegionName()).isNull();
     assertThat(mapping.getDataSourceName()).isNull();
     assertThat(mapping.getPdxName()).isEqualTo("pdxClassName");
-    assertThat(mapping.getRegionToTableName()).isNull();
     assertThat(mapping.getIds()).isNull();
     assertThat(mapping.getCatalog()).isNull();
     assertThat(mapping.getSchema()).isNull();
@@ -70,16 +69,6 @@ public class RegionMappingTest {
     mapping = new RegionMapping(null, null, name, null, null, null, null);
 
     assertThat(mapping.getTableName()).isEqualTo(name);
-    assertThat(mapping.getRegionToTableName()).isEqualTo(name);
-  }
-
-  @Test
-  public void hasCorrectTableNameWhenRegionNameIsSet() {
-    mapping = new RegionMapping("regionName", null, "tableName", null, null, null, null);
-
-    assertThat(mapping.getRegionName()).isEqualTo("regionName");
-    assertThat(mapping.getTableName()).isEqualTo("tableName");
-    assertThat(mapping.getRegionToTableName()).isEqualTo("tableName");
   }
 
   @Test
@@ -87,7 +76,6 @@ public class RegionMappingTest {
     mapping = new RegionMapping(name, null, null, null, null, null, null);
 
     assertThat(mapping.getRegionName()).isEqualTo(name);
-    assertThat(mapping.getRegionToTableName()).isEqualTo(name);
   }
 
   @Test

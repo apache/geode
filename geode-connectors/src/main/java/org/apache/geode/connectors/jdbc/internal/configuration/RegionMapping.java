@@ -152,13 +152,6 @@ public class RegionMapping implements CacheElement {
     return tableName;
   }
 
-  public String getRegionToTableName() {
-    if (tableName == null) {
-      return regionName;
-    }
-    return tableName;
-  }
-
   public String getColumnNameForField(String fieldName, TableMetaDataView tableMetaDataView) {
     Set<String> columnNames = tableMetaDataView.getColumnNames();
     if (columnNames.contains(fieldName)) {
