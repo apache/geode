@@ -51,7 +51,9 @@ public interface NioFilter {
   }
 
   /** invoke this method when you are done using the NioFilter */
-  void close();
+  default void close() {
+    // nothing by default
+  }
 
   /**
    * returns the unwrapped byte buffer associated with the given wrapped buffer

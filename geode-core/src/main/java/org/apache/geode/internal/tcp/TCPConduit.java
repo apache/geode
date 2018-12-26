@@ -379,8 +379,8 @@ public class TCPConduit implements Runnable {
         int newSize = socket.getReceiveBufferSize();
         if (newSize != tcpBufferSize) {
           logger.info("{} is {} instead of the requested {}",
-              "Listener receiverBufferSize", Integer.valueOf(newSize),
-              Integer.valueOf(tcpBufferSize));
+              "Listener receiverBufferSize", newSize,
+              tcpBufferSize);
         }
       } catch (SocketException ex) {
         logger.warn("Failed to set listener receiverBufferSize to {}",
@@ -391,7 +391,7 @@ public class TCPConduit implements Runnable {
     } catch (IOException io) {
       throw new ConnectionException(
           String.format("While creating ServerSocket on port %s with address %s",
-              new Object[] {Integer.valueOf(serverPort), bindAddress}),
+              serverPort, bindAddress),
           io);
     }
   }

@@ -974,8 +974,9 @@ public class SocketCreator {
   }
 
   /**
-   * See
-   * https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG
+   * @see <a
+   *      href=https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG">JSSE
+   *      Reference Guide</a>
    *
    * @param socketChannel the socket's NIO channel
    * @param engine the sslEngine (see createSSLEngine)
@@ -1137,7 +1138,7 @@ public class SocketCreator {
       } catch (SSLHandshakeException ex) {
         logger
             .fatal(String.format("Problem forming SSL connection to %s[%s].",
-                new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
+                socket.getInetAddress(), Integer.valueOf(socket.getPort())),
                 ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {

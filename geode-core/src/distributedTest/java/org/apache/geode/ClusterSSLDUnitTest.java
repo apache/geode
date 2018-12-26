@@ -15,7 +15,6 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_UPDATE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_LEASE_TIME;
@@ -135,7 +134,7 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
     locatorVM.invoke("stop locator", () -> Locator.getLocator().stop());
     locatorVM = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 0);
     locatorVM.invoke("roll locator to current version", () -> {
-      System.setProperty("javax.net.debug", "all");
+      // System.setProperty("javax.net.debug", "all");
       Properties props = getDistributedSystemProperties();
       // locator must restart with the same port so that it reconnects to the server
       GeodeAwaitility.await().atMost(15, TimeUnit.SECONDS)
@@ -199,13 +198,13 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
 
   private int createLocator(VM memberVM) {
     return memberVM.invoke("create locator", () -> {
-      System.setProperty("javax.net.debug", "all");
+      // System.setProperty("javax.net.debug", "all");
       return Locator.startLocatorAndDS(0, new File(""), getDistributedSystemProperties()).getPort();
     });
   }
 
   private Cache createCache(int locatorPort, boolean conserveSockets) {
-    System.setProperty("javax.net.debug", "all");
+    // System.setProperty("javax.net.debug", "all");
     Properties properties = getDistributedSystemProperties();
     properties.put(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
     properties.put(ConfigurationProperties.CONSERVE_SOCKETS, "" + conserveSockets);
@@ -214,7 +213,7 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
 
   public Properties getDistributedSystemProperties() {
     Properties properties = new Properties();
-    properties.put(ConfigurationProperties.LOG_LEVEL, "fine");
+    // properties.put(ConfigurationProperties.LOG_LEVEL, "fine");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(USE_CLUSTER_CONFIGURATION, "false");
     properties.put(SSL_ENABLED_COMPONENTS, "cluster");
@@ -225,7 +224,7 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
     properties.put(SOCKET_LEASE_TIME, "10000");
-    properties.put(JMX_MANAGER_UPDATE_RATE, "180000"); // eliminate noise for debugging
+    // properties.put(JMX_MANAGER_UPDATE_RATE, "180000"); // eliminate noise for debugging
     properties.put(NAME, "vm" + VM.getCurrentVMNum());
     properties.put(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
     return properties;
