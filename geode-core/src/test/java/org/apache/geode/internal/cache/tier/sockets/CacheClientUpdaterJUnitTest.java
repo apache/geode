@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.net.SocketException;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.client.internal.Endpoint;
@@ -32,7 +33,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
+@Category({ClientSubscriptionTest.class})
 public class CacheClientUpdaterJUnitTest {
 
   @Test

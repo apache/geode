@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.Matchers.instanceOf;
@@ -62,14 +61,6 @@ public class BasicDistributedTest extends DistributedTestCase {
     bindings = null;
     invokeInEveryVM(() -> bindings = null);
   }
-
-  @Override
-  public Properties getDistributedSystemProperties() {
-    Properties config = super.getDistributedSystemProperties();
-    config.setProperty(LOG_LEVEL, "fine");
-    return config;
-  }
-
 
   @Test
   public void testPreconditions() {
