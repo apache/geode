@@ -78,7 +78,6 @@ public class NioSslEngine implements NioFilter {
     int appBufferSize = session.getApplicationBufferSize();
     int packetBufferSize = engine.getSession().getPacketBufferSize();
     this.myNetData = ByteBuffer.allocate(packetBufferSize);
-    // }
     this.peerAppData = ByteBuffer.allocate(appBufferSize);
     this.engine = engine;
     this.socketChannel = channel;
