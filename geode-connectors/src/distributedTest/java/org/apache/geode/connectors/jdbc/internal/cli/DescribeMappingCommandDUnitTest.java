@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -68,6 +69,13 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
       return regionPath.substring(1);
     }
     return regionPath;
+  }
+
+  @After
+  public void cleanUp() throws Exception {
+    startupRule.stop(0);
+    startupRule.stop(1);
+    gfsh.disconnect();
   }
 
   @Test
@@ -175,13 +183,14 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
   }
 
   private void createRegionMapping() throws RegionMappingExistsException {
     InternalCache cache = ClusterStartupRule.getCache();
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    service.createRegionMapping(new RegionMapping(REGION_NAME, "myPdxClass",
+    service.createRegionMapping(new RegionMapping(TEST_REGION, "myPdxClass",
         "testTable", "connection", "myId"));
-    assertThat(service.getMappingForRegion(REGION_NAME)).isNotNull();
+    assertThat(service.getMappingForRegion(TEST_REGION)).isNotNull();
   }
 }

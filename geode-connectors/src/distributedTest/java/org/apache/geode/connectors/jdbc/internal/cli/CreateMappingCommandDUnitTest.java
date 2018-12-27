@@ -78,6 +78,12 @@ public class CreateMappingCommandDUnitTest {
 
   }
 
+  public void cleanUp() throws Exception {
+    startupRule.stop(0);
+    startupRule.stop(1);
+    gfsh.disconnect();
+  }
+
   private void setupReplicate(String regionName) {
     setupReplicate(regionName, false);
   }
@@ -191,7 +197,6 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(mapping.getIds()).isEqualTo("myId");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
@@ -201,7 +206,6 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
       validateRegionAlteredInClusterConfig(regionName, false);
       validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
     });
