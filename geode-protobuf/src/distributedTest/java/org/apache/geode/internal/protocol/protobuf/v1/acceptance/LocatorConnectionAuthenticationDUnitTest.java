@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -41,7 +40,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -55,9 +53,6 @@ public class LocatorConnectionAuthenticationDUnitTest {
   @Rule
   public final DistributedRestoreSystemProperties restoreDistributedSystemProperties =
       new DistributedRestoreSystemProperties();
-
-  @Rule
-  public RestoreSystemProperties restoreLocalSystemProperties = new RestoreSystemProperties();
 
   private int locatorPort;
 
@@ -86,8 +81,10 @@ public class LocatorConnectionAuthenticationDUnitTest {
   public void tearDown() {
     try {
       locatorVM.invoke(() -> locator.stop());
+      locator = null;
     } finally {
       cache.close();
+      cache = null;
     }
   }
 
@@ -106,7 +103,7 @@ public class LocatorConnectionAuthenticationDUnitTest {
   }
 
   private Socket createSocket() throws IOException {
-    Socket socket = new Socket(Host.getHost(0).getHostName(), locatorPort);
+    Socket socket = new Socket(VM.getHostName(), locatorPort);
     MessageUtil.sendHandshake(socket);
     MessageUtil.verifyHandshakeSuccess(socket);
     return socket;
