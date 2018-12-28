@@ -73,9 +73,9 @@ public class MsgReader {
       nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
     }
 
-    header.nioMessageLength = nioMessageLength;
-    header.nioMessageType = nioMessageType;
-    header.nioMsgId = nioMsgId;
+    header.messageLength = nioMessageLength;
+    header.messageType = nioMessageType;
+    header.messageId = nioMsgId;
     return header;
   }
 
@@ -86,8 +86,8 @@ public class MsgReader {
    */
   public DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException, InterruptedException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.nioMessageLength);
-    this.getStats().incMessagesBeingReceived(true, header.nioMessageLength);
+    ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+    this.getStats().incMessagesBeingReceived(true, header.messageLength);
     long startSer = this.getStats().startMsgDeserialization();
     try {
       bbis.setBuffer(nioInputBuffer);
@@ -98,23 +98,23 @@ public class MsgReader {
       return msg;
     } finally {
       this.getStats().endMsgDeserialization(startSer);
-      this.getStats().decMessagesBeingReceived(header.nioMessageLength);
+      this.getStats().decMessagesBeingReceived(header.messageLength);
       ioFilter.doneReading(nioInputBuffer);
     }
   }
 
   public void readChunk(Header header, MsgDestreamer md)
       throws IOException, ClassNotFoundException, InterruptedException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.nioMessageLength);
-    this.getStats().incMessagesBeingReceived(md.size() == 0, header.nioMessageLength);
-    md.addChunk(nioInputBuffer, header.nioMessageLength);
+    ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+    this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
+    md.addChunk(nioInputBuffer, header.messageLength);
   }
 
   public ByteBuffer readAtLeast(int bytes) throws IOException {
-    ioFilter.ensureUnwrappedCapacity(bytes, peerNetData, Buffers.BufferType.UNTRACKED,
-        getStats());
 
-    ByteBuffer unwrappedBuffer = ioFilter.getUnwrappedBuffer(peerNetData);
+    ByteBuffer unwrappedBuffer =
+        ioFilter.ensureUnwrappedCapacity(bytes, peerNetData, Buffers.BufferType.UNTRACKED,
+            getStats());
 
     while ((lastReadPosition - lastProcessedPosition) < bytes) {
       unwrappedBuffer.limit(unwrappedBuffer.capacity());
@@ -143,22 +143,22 @@ public class MsgReader {
 
   public static class Header {
 
-    int nioMessageLength;
-    byte nioMessageType;
-    short nioMsgId;
+    int messageLength;
+    byte messageType;
+    short messageId;
 
     public Header() {}
 
-    public int getNioMessageLength() {
-      return nioMessageLength;
+    public int getMessageLength() {
+      return messageLength;
     }
 
-    public byte getNioMessageType() {
-      return nioMessageType;
+    public byte getMessageType() {
+      return messageType;
     }
 
-    public short getNioMessageId() {
-      return nioMsgId;
+    public short getMessageId() {
+      return messageId;
     }
 
 

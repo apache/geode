@@ -24,6 +24,16 @@ import org.apache.geode.internal.Assert;
 
 public class Buffers {
   /**
+   * Buffers may be acquired from the Buffers pool
+   * or they may be allocated using Buffer.allocate(). This enum is used
+   * to note the different types. Tracked buffers come from the Buffers pool
+   * and need to be released when we're done using them.
+   */
+  public enum BufferType {
+    UNTRACKED, TRACKED_SENDER, TRACKED_RECEIVER
+  }
+
+  /**
    * A list of soft references to byte buffers.
    */
   private static final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
@@ -174,16 +184,6 @@ public class Buffers {
         }
       }
     }
-  }
-
-  /**
-   * Buffers may be acquired from the Buffers pool
-   * or they may be allocated using Buffer.allocate(). This enum is used
-   * to note the different types. Tracked buffers come from the Buffers pool
-   * and need to be released when we're done using them.
-   */
-  public enum BufferType {
-    UNTRACKED, TRACKED_SENDER, TRACKED_RECEIVER
   }
 
   /**

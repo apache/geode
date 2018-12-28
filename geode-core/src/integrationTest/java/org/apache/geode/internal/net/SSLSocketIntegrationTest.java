@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -244,12 +245,14 @@ public class SSLSocketIntegrationTest {
   private Thread startServerNIO(final ServerSocket serverSocket, int timeoutMillis)
       throws Exception {
     Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
+      NioSslEngine engine = null;
+      Socket socket = null;
       try {
         ByteBuffer buffer = ByteBuffer.allocate(65535);
 
-        Socket socket = serverSocket.accept();
+        socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
-        NioSslEngine engine =
+        engine =
             sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine("localhost", 1234),
                 timeoutMillis,
                 false,
@@ -261,6 +264,15 @@ public class SSLSocketIntegrationTest {
       } catch (Throwable throwable) {
         throwable.printStackTrace(System.out);
         serverException = throwable;
+      } finally {
+        if (engine != null && socket != null) {
+          final NioSslEngine nioSslEngine = engine;
+          engine.close(socket.getChannel());
+          assertThatThrownBy(() -> {
+            nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
+          })
+              .isInstanceOf(IllegalStateException.class);
+        }
       }
     }, this.testName.getMethodName() + "-server");
 

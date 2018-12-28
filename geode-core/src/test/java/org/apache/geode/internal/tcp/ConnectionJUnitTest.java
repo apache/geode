@@ -64,10 +64,6 @@ public class ConnectionJUnitTest {
     when(conduit.getSocketId())
         .thenReturn(new InetSocketAddress(SocketCreator.getLocalHost(), 10337));
 
-    // NIO can't be mocked because SocketChannel has a final method that
-    // is used by Connection - configureBlocking
-    // when(conduit.useNIO()).thenReturn(false);
-
     // mock the distribution manager and membership manager
     when(distMgr.getMembershipManager()).thenReturn(membership);
     when(conduit.getDM()).thenReturn(distMgr);

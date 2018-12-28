@@ -16,6 +16,7 @@ package org.apache.geode.internal.net;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 import org.apache.geode.distributed.internal.DMStats;
 
@@ -50,8 +51,11 @@ public interface NioFilter {
     }
   }
 
-  /** invoke this method when you are done using the NioFilter */
-  default void close() {
+  /**
+   * invoke this method when you are done using the NioFilter
+   *
+   */
+  default void close(SocketChannel socketChannel) {
     // nothing by default
   }
 

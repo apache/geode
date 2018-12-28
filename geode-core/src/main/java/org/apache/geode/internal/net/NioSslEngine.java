@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.net;
 
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_TASK;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
@@ -27,7 +28,6 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLEngine;
@@ -54,7 +54,6 @@ public class NioSslEngine implements NioFilter {
   private boolean closed;
 
   private final SSLEngine engine;
-  private final SocketChannel socketChannel;
 
   /**
    * myNetData holds bytes wrapped by the SSLEngine
@@ -71,8 +70,7 @@ public class NioSslEngine implements NioFilter {
    */
   private ByteBuffer handshakeBuffer;
 
-  public NioSslEngine(SocketChannel channel, SSLEngine engine,
-      DMStats stats) {
+  public NioSslEngine(SSLEngine engine, DMStats stats) {
     this.stats = stats;
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
@@ -80,17 +78,16 @@ public class NioSslEngine implements NioFilter {
     this.myNetData = ByteBuffer.allocate(packetBufferSize);
     this.peerAppData = ByteBuffer.allocate(appBufferSize);
     this.engine = engine;
-    this.socketChannel = channel;
   }
 
   /**
    * This will throw an SSLHandshakeException if the handshake doesn't terminate in a FINISHED
    * state. It may throw other IOExceptions caused by I/O operations
    */
-  public synchronized NioSslEngine handshake(int timeout, ByteBuffer peerNetData)
+  public synchronized void handshake(SocketChannel socketChannel, int timeout,
+      ByteBuffer peerNetData)
       throws IOException, InterruptedException {
 
-    peerNetData.clear();
     if (peerNetData.capacity() < engine.getSession().getPacketBufferSize()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Allocating new buffer for SSL handshake");
@@ -100,10 +97,9 @@ public class NioSslEngine implements NioFilter {
     } else {
       this.handshakeBuffer = peerNetData;
     }
+    this.handshakeBuffer.clear();
 
-    ByteBuffer myAppData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
-    handshakeBuffer.clear();
-    myAppData.clear();
+    ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Starting TLS handshake with {}", socketChannel.socket());
@@ -120,7 +116,7 @@ public class NioSslEngine implements NioFilter {
     SSLEngineResult engineResult = null;
 
     // Process handshaking message
-    while (status != SSLEngineResult.HandshakeStatus.FINISHED &&
+    while (status != FINISHED &&
         status != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
       if (socketChannel.socket().isClosed()) {
         throw new SocketException("handshake terminated - socket is closed");
@@ -201,7 +197,7 @@ public class NioSslEngine implements NioFilter {
       }
       Thread.sleep(10);
     }
-    if (!Objects.equals(SSLEngineResult.HandshakeStatus.FINISHED, status)) {
+    if (status != FINISHED) {
       throw new SSLHandshakeException("SSL Handshake terminated with status " + status);
     }
     if (logger.isDebugEnabled()) {
@@ -213,7 +209,6 @@ public class NioSslEngine implements NioFilter {
             engine.getHandshakeStatus());
       }
     }
-    return this;
   }
 
   private void checkClosed() {
@@ -311,22 +306,31 @@ public class NioSslEngine implements NioFilter {
 
 
   @Override
-  public void close() {
+  public void close(SocketChannel socketChannel) {
     if (closed) {
       return;
     }
-    engine.closeOutbound();
     try {
-      ByteBuffer empty = ByteBuffer.allocate(0);
 
-      while (!engine.isOutboundDone()) {
+      if (!engine.isOutboundDone()) {
+        ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
+        engine.closeOutbound();
+
+        // clear the buffer to receive a CLOSE message from the SSLEngine
+        myNetData.clear();
+
         // Get close message
-        engine.wrap(empty, myNetData);
+        SSLEngineResult result = engine.wrap(empty, myNetData);
+
+        if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
+          throw new SSLHandshakeException(
+              "Error closing SSL session.  Status=" + result.getStatus());
+        }
 
         // Send close message to peer
+        myNetData.flip();
         while (myNetData.hasRemaining()) {
           socketChannel.write(myNetData);
-          myNetData.compact();
         }
       }
     } catch (IOException e) {

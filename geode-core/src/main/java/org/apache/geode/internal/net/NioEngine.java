@@ -38,9 +38,6 @@ public class NioEngine implements NioFilter {
   }
 
   @Override
-  public void close() {}
-
-  @Override
   public ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer) {
     return wrappedBuffer;
   }

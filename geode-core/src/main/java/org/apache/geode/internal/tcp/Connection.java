@@ -807,6 +807,7 @@ public class Connection implements Runnable {
           && (connectionState == STATE_READING || connectionState == STATE_READING_ACK)) {
         readerThread.interrupt();
       }
+      ioFilter.close(socket.getChannel());
     }
   }
 
@@ -1687,7 +1688,7 @@ public class Connection implements Runnable {
           Socket s = this.socket;
           if (s != null) {
             try {
-              ioFilter.close();
+              ioFilter.close(s.getChannel());
               s.close();
             } catch (IOException e) {
               // don't care
@@ -1827,10 +1828,6 @@ public class Connection implements Runnable {
         engine.setWantClientAuth(true);
         engine.setNeedClientAuth(true);
       }
-
-      // SSLParameters sslParams = sslEngine.getSSLParameters();
-      // sslParams.setEndpointIdentificationAlgorithm(endpointIdentification);
-      // sslEngine.setSSLParameters(sslParams);
 
       if (inputBuffer == null
           || (inputBuffer.capacity() < engine.getSession().getPacketBufferSize())) {
@@ -2432,7 +2429,7 @@ public class Connection implements Runnable {
               if (s != null) {
                 try {
                   logger.debug("closing socket", new Exception("closing socket"));
-                  ioFilter.close();
+                  ioFilter.close(s.getChannel());
                   s.close();
                 } catch (IOException e) {
                   // don't care
@@ -2837,18 +2834,18 @@ public class Connection implements Runnable {
 
       ReplyMessage msg;
       int len;
-      if (header.getNioMessageType() == NORMAL_MSG_TYPE) {
+      if (header.getMessageType() == NORMAL_MSG_TYPE) {
         msg = (ReplyMessage) msgReader.readMessage(header);
-        len = header.getNioMessageLength();
+        len = header.getMessageLength();
       } else {
-        MsgDestreamer destreamer = obtainMsgDestreamer(header.getNioMessageId(), version);
-        while (header.getNioMessageType() == CHUNKED_MSG_TYPE) {
+        MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
+        while (header.getMessageType() == CHUNKED_MSG_TYPE) {
           msgReader.readChunk(header, destreamer);
           header = msgReader.readHeader();
         }
         msgReader.readChunk(header, destreamer);
         msg = (ReplyMessage) destreamer.getMessage();
-        releaseMsgDestreamer(header.getNioMessageId(), destreamer);
+        releaseMsgDestreamer(header.getMessageId(), destreamer);
         len = destreamer.size();
       }
       // I'd really just like to call dispatchMessage here. However,

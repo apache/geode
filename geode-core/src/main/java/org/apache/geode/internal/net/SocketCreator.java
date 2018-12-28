@@ -167,11 +167,6 @@ public class SocketCreator {
   public static volatile boolean use_client_host_name = true;
 
   /**
-   * True if this SocketCreator has been initialized and is ready to use
-   */
-  private boolean ready = false;
-
-  /**
    * Only print this SocketCreator's config once
    */
   private boolean configShown = false;
@@ -364,7 +359,7 @@ public class SocketCreator {
       org.apache.geode.internal.tcp.TCPConduit.init();
 
       initializeClientSocketFactory();
-      this.ready = true;
+
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -1000,23 +995,31 @@ public class SocketCreator {
         throw new IOException("Interrupted while performing handshake", e);
       }
     }
+
+    NioSslEngine nioSslEngine = new NioSslEngine(engine, stats);
+
     boolean blocking = socketChannel.isBlocking();
     if (blocking) {
       socketChannel.configureBlocking(false);
     }
-    NioSslEngine nEngine;
+
     try {
-      nEngine = new NioSslEngine(socketChannel, engine, stats).handshake(timeout, peerNetBuffer);
+      nioSslEngine.handshake(socketChannel, timeout, peerNetBuffer);
     } catch (SSLException e) {
       logger.warn("SSL handshake exception", e);
       throw e;
     } catch (InterruptedException e) {
-      throw new IOException("SSL handshake interrrupted");
+      throw new IOException("SSL handshake interrupted");
+    } finally {
+      if (blocking) {
+        try {
+          socketChannel.configureBlocking(true);
+        } catch (IOException ignored) {
+          // problem setting the socket back to blocking mode but the socket's going to be closed
+        }
+      }
     }
-    if (blocking) {
-      socketChannel.configureBlocking(true);
-    }
-    return nEngine;
+    return nioSslEngine;
   }
 
   /**
