@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
@@ -84,6 +85,7 @@ public class ExecuteFunction65 extends BaseCommand {
     byte hasResult = 0;
     byte functionState = 0;
     boolean isReexecute = false;
+
     try {
       functionState = clientMessage.getPart(0).getSerializedForm()[0];
 
@@ -111,19 +113,17 @@ public class ExecuteFunction65 extends BaseCommand {
       if (part != null) {
         memberMappedArg = (MemberMappedArgument) part.getObject();
       }
-    } catch (ClassNotFoundException exception) {
-      logger.warn(String.format("Exception on server while executing function: %s",
-          function),
-          exception);
+    } catch (ClassNotFoundException e) {
+      logger.warn("Exception on server while executing function: {}", function, e);
       if (hasResult == 1) {
-        writeChunkedException(clientMessage, exception, serverConnection);
+        writeChunkedException(clientMessage, e, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
+
     if (function == null) {
-      final String message =
-          "The input function for the execute function request is null";
+      String message = "The input function for the execute function request is null";
       logger.warn("{}: {}", serverConnection.getName(), message);
       sendError(hasResult, clientMessage, message, serverConnection);
       return;
@@ -131,13 +131,12 @@ public class ExecuteFunction65 extends BaseCommand {
 
     // Execute function on the cache
     try {
-      Function<?> functionObject = null;
+      Function<?> functionObject;
       if (function instanceof String) {
         functionObject = internalFunctionExecutionService.getFunction((String) function);
         if (functionObject == null) {
-          final String message =
-              String.format("Function named %s is not registered to FunctionService",
-                  function);
+          String message = String.format("Function named %s is not registered to FunctionService",
+              function);
           logger.warn("{}: {}", serverConnection.getName(), message);
           sendError(hasResult, clientMessage, message, serverConnection);
           return;
@@ -172,12 +171,12 @@ public class ExecuteFunction65 extends BaseCommand {
             args, functionObject.optimizeForWrite());
       }
 
-      ChunkedMessage m = serverConnection.getFunctionResponseMessage();
-      m.setTransactionId(clientMessage.getTransactionId());
-      ResultSender resultSender = serverToClientFunctionResultSender65Factory.create(m,
+      ChunkedMessage chunkedMessage = serverConnection.getFunctionResponseMessage();
+      chunkedMessage.setTransactionId(clientMessage.getTransactionId());
+      ResultSender resultSender = serverToClientFunctionResultSender65Factory.create(chunkedMessage,
           MessageType.EXECUTE_FUNCTION_RESULT, serverConnection, functionObject, executeContext);
 
-      FunctionContext context = null;
+      FunctionContext context;
       InternalCache cache = serverConnection.getCache();
       InternalDistributedMember localVM =
           (InternalDistributedMember) cache.getDistributedSystem().getDistributedMember();
@@ -193,6 +192,7 @@ public class ExecuteFunction65 extends BaseCommand {
       ServerSideHandshake handshake = serverConnection.getHandshake();
       int earlierClientReadTimeout = handshake.getClientReadTimeout();
       handshake.setClientReadTimeout(0);
+
       try {
         long startExecution = stats.startTime();
         stats.startFunctionExecution(functionObject.hasResult());
@@ -201,16 +201,14 @@ public class ExecuteFunction65 extends BaseCommand {
               context);
         }
 
-        Object o1 = cache.getInternalResourceManager();
-        Object o2 = cache.getInternalResourceManager().getHeapMonitor();
-        Object o3 = cache.getMyId();
-        Object o4 = cache.getInternalResourceManager().getHeapMonitor()
-            .createLowMemoryIfNeeded(null, (DistributedMember) null);
+        cache.getInternalResourceManager().getHeapMonitor().createLowMemoryIfNeeded(null,
+            (DistributedMember) null);
 
-        Exception e = cache.getInternalResourceManager().getHeapMonitor()
+        LowMemoryException lowMemoryException = cache.getInternalResourceManager().getHeapMonitor()
             .createLowMemoryIfNeeded(functionObject, cache.getMyId());
-        if (e != null) {
-          sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
+        if (lowMemoryException != null) {
+          sendException(hasResult, clientMessage, lowMemoryException.getMessage(), serverConnection,
+              lowMemoryException);
           return;
         }
         functionObject.execute(context);
@@ -220,42 +218,39 @@ public class ExecuteFunction65 extends BaseCommand {
               functionObject.getId()));
         }
         stats.endFunctionExecution(startExecution, functionObject.hasResult());
-      } catch (FunctionException functionException) {
+      } catch (FunctionException e) {
         stats.endFunctionExecutionWithException(functionObject.hasResult());
-
-        throw functionException;
-      } catch (Exception exception) {
+        throw e;
+      } catch (Exception e) {
         stats.endFunctionExecutionWithException(functionObject.hasResult());
-        throw new FunctionException(exception);
+        throw new FunctionException(e);
       } finally {
         handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
-    } catch (IOException ioException) {
-      logger.warn(String.format("Exception on server while executing function: %s",
-          function),
-          ioException);
-      String message =
-          "Server could not send the reply";
-      sendException(hasResult, clientMessage, message, serverConnection, ioException);
-    } catch (InternalFunctionInvocationTargetException internalfunctionException) {
-      // Fix for #44709: User should not be aware of
-      // InternalFunctionInvocationTargetException. No instance of
-      // InternalFunctionInvocationTargetException is giving useful
-      // information to user to take any corrective action hence logging
-      // this at fine level logging
-      // 1> In case of HA FucntionInvocationTargetException thrown. Since
-      // it is HA, function will be reexecuted on right node
-      // 2> in case of HA member departed
-      if (logger.isDebugEnabled()) {
-        logger.debug(String.format("Exception on server while executing function: %s", function),
-            internalfunctionException);
-      }
-      final String message = internalfunctionException.getMessage();
-      sendException(hasResult, clientMessage, message, serverConnection, internalfunctionException);
-    } catch (Exception e) {
-      logger.warn(String.format("Exception on server while executing function: %s", function), e);
-      final String message = e.getMessage();
+
+    } catch (IOException e) {
+      logger.warn("Exception on server while executing function: {}", function, e);
+      String message = "Server could not send the reply";
       sendException(hasResult, clientMessage, message, serverConnection, e);
+
+    } catch (InternalFunctionInvocationTargetException e) {
+      /*
+       * TRAC #44709: InternalFunctionInvocationTargetException should not be logged
+       * Fix for #44709: User should not be aware of InternalFunctionInvocationTargetException. No
+       * instance is giving useful information to user to take any corrective action hence logging
+       * this at fine level logging. May occur when:
+       * 1> In case of HA FunctionInvocationTargetException thrown. Since it is HA, function will
+       * be re-executed on right node
+       * 2> in case of HA member departed
+       */
+      if (logger.isDebugEnabled()) {
+        logger.debug("Exception on server while executing function: {}", function, e);
+      }
+      sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
+
+    } catch (Exception e) {
+      logger.warn("Exception on server while executing function: {}", function, e);
+      sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
     }
   }
 

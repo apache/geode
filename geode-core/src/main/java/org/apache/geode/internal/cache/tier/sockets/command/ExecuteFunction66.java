@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -101,6 +102,7 @@ public class ExecuteFunction66 extends BaseCommand {
     boolean allMembers;
     boolean ignoreFailedMembers;
     int functionTimeout = ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+
     try {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
@@ -137,21 +139,19 @@ public class ExecuteFunction66 extends BaseCommand {
       groups = getGroups(clientMessage);
       allMembers = getAllMembers(clientMessage);
       ignoreFailedMembers = getIgnoreFailedMembers(clientMessage);
-    } catch (ClassNotFoundException exception) {
-      logger.warn(String.format("Exception on server while executing function: %s",
-          function),
-          exception);
+    } catch (ClassNotFoundException e) {
+      logger.warn("Exception on server while executing function: {}", function, e);
       if (hasResult == 1) {
-        writeChunkedException(clientMessage, exception, serverConnection);
+        writeChunkedException(clientMessage, e, serverConnection);
       } else {
-        writeException(clientMessage, exception, false, serverConnection);
+        writeException(clientMessage, e, false, serverConnection);
       }
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     if (function == null) {
-      final String message = "The input function for the execute function request is null";
+      String message = "The input function for the execute function request is null";
       logger.warn("{} : {}", serverConnection.getName(), message);
       sendError(hasResult, clientMessage, message, serverConnection);
       return;
@@ -163,9 +163,8 @@ public class ExecuteFunction66 extends BaseCommand {
       if (function instanceof String) {
         functionObject = internalFunctionExecutionService.getFunction((String) function);
         if (functionObject == null) {
-          final String message =
-              String.format("Function named %s is not registered to FunctionService",
-                  function);
+          String message = String
+              .format("Function named %s is not registered to FunctionService for %s", function);
           logger.warn("{}: {}", serverConnection.getName(), message);
           sendError(hasResult, clientMessage, message, serverConnection);
           return;
@@ -177,9 +176,8 @@ public class ExecuteFunction66 extends BaseCommand {
                 functionStateOnServerSide, functionState);
           }
           if (functionStateOnServerSide != functionState) {
-            String message =
-                "Function attributes at client and server don't match for " +
-                    function;
+            String message = String
+                .format("Function attributes at client and server don't match for %s", function);
             logger.warn("{}: {}", serverConnection.getName(), message);
             sendError(hasResult, clientMessage, message, serverConnection);
             return;
@@ -201,10 +199,11 @@ public class ExecuteFunction66 extends BaseCommand {
             args, functionObject.optimizeForWrite());
       }
 
-      ChunkedMessage m = serverConnection.getFunctionResponseMessage();
-      m.setTransactionId(clientMessage.getTransactionId());
+      ChunkedMessage chunkedMessage = serverConnection.getFunctionResponseMessage();
+      chunkedMessage.setTransactionId(clientMessage.getTransactionId());
       ServerToClientFunctionResultSender resultSender =
-          serverToClientFunctionResultSender65Factory.create(m, MessageType.EXECUTE_FUNCTION_RESULT,
+          serverToClientFunctionResultSender65Factory.create(chunkedMessage,
+              MessageType.EXECUTE_FUNCTION_RESULT,
               serverConnection, functionObject, executeContext);
 
       FunctionContext context;
@@ -223,26 +222,23 @@ public class ExecuteFunction66 extends BaseCommand {
       ServerSideHandshake handshake = serverConnection.getHandshake();
       int earlierClientReadTimeout = handshake.getClientReadTimeout();
       handshake.setClientReadTimeout(functionTimeout);
+
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function on Server: {} with context: {}", serverConnection,
               context);
         }
 
-        Exception e = cache.getInternalResourceManager().getHeapMonitor()
+        LowMemoryException lowMemoryException = cache.getInternalResourceManager().getHeapMonitor()
             .createLowMemoryIfNeeded(functionObject, cache.getMyId());
-        if (e != null) {
-          sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
+        if (lowMemoryException != null) {
+          sendException(hasResult, clientMessage, lowMemoryException.getMessage(), serverConnection,
+              lowMemoryException);
           return;
         }
-        /*
-         * if cache is null, then either cache has not yet been created on this node or it is a
-         * shutdown scenario.
-         */
-        DistributionManager dm = null;
-        if (cache != null) {
-          dm = cache.getDistributionManager();
-        }
+
+        // cache is never null or the above invocations would have thrown NPE
+        DistributionManager dm = cache.getDistributionManager();
         if (groups != null && groups.length > 0) {
           executeFunctionOnGroups(function, args, groups, allMembers, functionObject, resultSender,
               ignoreFailedMembers);
@@ -254,41 +250,41 @@ public class ExecuteFunction66 extends BaseCommand {
         if (!functionObject.hasResult()) {
           writeReply(clientMessage, serverConnection);
         }
-      } catch (FunctionException functionException) {
+      } catch (FunctionException e) {
         stats.endFunctionExecutionWithException(functionObject.hasResult());
-        throw functionException;
-      } catch (Exception exception) {
+        throw e;
+      } catch (Exception e) {
         stats.endFunctionExecutionWithException(functionObject.hasResult());
-        throw new FunctionException(exception);
+        throw new FunctionException(e);
       } finally {
         handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
-    } catch (IOException ioException) {
-      logger.warn(String.format("Exception on server while executing function: %s", function),
-          ioException);
+
+    } catch (IOException e) {
+      logger.warn("Exception on server while executing function: {}}", function, e);
       String message = "Server could not send the reply";
-      sendException(hasResult, clientMessage, message, serverConnection, ioException);
-    } catch (InternalFunctionInvocationTargetException internalfunctionException) {
-      // Fix for #44709: User should not be aware of
-      // InternalFunctionInvocationTargetException. No instance of
-      // InternalFunctionInvocationTargetException is giving useful
-      // information to user to take any corrective action hence logging
-      // this at fine level logging
-      // 1> When bucket is moved
-      // 2> In case of HA FunctionInvocationTargetException thrown. Since
-      // it is HA, function will be re-executed on right node
-      // 3> Multiple target nodes found for single hop operation
-      // 4> in case of HA member departed
-      if (logger.isDebugEnabled()) {
-        logger.debug(String.format("Exception on server while executing function: %s", function),
-            internalfunctionException);
-      }
-      final String message = internalfunctionException.getMessage();
-      sendException(hasResult, clientMessage, message, serverConnection, internalfunctionException);
-    } catch (Exception e) {
-      logger.warn(String.format("Exception on server while executing function: %s", function), e);
-      final String message = e.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, e);
+
+    } catch (InternalFunctionInvocationTargetException e) {
+      /*
+       * TRAC #44709: InternalFunctionInvocationTargetException should not be logged
+       * Fix for #44709: User should not be aware of InternalFunctionInvocationTargetException. No
+       * instance is giving useful information to user to take any corrective action hence logging
+       * this at fine level logging. May occur when:
+       * 1> When bucket is moved
+       * 2> In case of HA FunctionInvocationTargetException thrown. Since it is HA, function will
+       * be re-executed on right node
+       * 3> Multiple target nodes found for single hop operation
+       * 4> in case of HA member departed
+       */
+      if (logger.isDebugEnabled()) {
+        logger.debug("Exception on server while executing function: {}", function, e);
+      }
+      sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
+
+    } catch (Exception e) {
+      logger.warn("Exception on server while executing function: {}", function, e);
+      sendException(hasResult, clientMessage, e.getMessage(), serverConnection, e);
     }
   }
 
@@ -327,7 +323,7 @@ public class ExecuteFunction66 extends BaseCommand {
        * if dm is null it mean cache is also null. Transactional function without cache cannot be
        * executed.
        */
-      final TXStateProxy txState = TXManagerImpl.getCurrentTXState();
+      TXStateProxy txState = TXManagerImpl.getCurrentTXState();
       Runnable functionExecution = () -> {
         InternalCache cache = null;
         try {
@@ -341,28 +337,15 @@ public class ExecuteFunction66 extends BaseCommand {
             }
           }
           fn.execute(cx);
-        } catch (InternalFunctionInvocationTargetException internalfunctionException) {
-          // Fix for #44709: User should not be aware of
-          // InternalFunctionInvocationTargetException. No instance of
-          // InternalFunctionInvocationTargetException is giving useful
-          // information to user to take any corrective action hence logging
-          // this at fine level logging
-          // 1> Incase of HA FucntionInvocationTargetException thrown. Since
-          // it is HA, function will be reexecuted on right node
-          // 2> in case of HA member departed
+        } catch (InternalFunctionInvocationTargetException e) {
+          // TRAC #44709: InternalFunctionInvocationTargetException should not be logged
           stats.endFunctionExecutionWithException(fn.hasResult());
           if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Exception on server while executing function: %s", fn),
-                internalfunctionException);
+            logger.debug("Exception on server while executing function: {}", fn, e);
           }
-        } catch (FunctionException functionException) {
+        } catch (Exception e) {
           stats.endFunctionExecutionWithException(fn.hasResult());
-          logger.warn(String.format("Exception on server while executing function: %s", fn),
-              functionException);
-        } catch (Exception exception) {
-          stats.endFunctionExecutionWithException(fn.hasResult());
-          logger.warn(String.format("Exception on server while executing function: %s", fn),
-              exception);
+          logger.warn("Exception on server while executing function: {}", fn, e);
         } finally {
           if (txState != null && cache != null) {
             cache.getTxManager().unmasquerade(txState);
@@ -377,7 +360,7 @@ public class ExecuteFunction66 extends BaseCommand {
          */
         execService.execute(functionExecution);
       } else {
-        final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
+        ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
         newDM.getFunctionExecutor().execute(functionExecution);
       }
     }

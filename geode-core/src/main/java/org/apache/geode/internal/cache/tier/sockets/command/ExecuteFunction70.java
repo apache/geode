@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.client.internal.ExecuteFunctionOp;
@@ -65,12 +66,12 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
 
   @Override
   protected String[] getGroups(Message msg) throws IOException, ClassNotFoundException {
-    String[] grp = null;
-    Part p = msg.getPart(4);
-    if (p != null) {
-      grp = (String[]) p.getObject();
+    String[] groups = null;
+    Part messagePart = msg.getPart(4);
+    if (messagePart != null) {
+      groups = (String[]) messagePart.getObject();
     }
-    return grp;
+    return groups;
   }
 
   @Override
@@ -85,10 +86,9 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
 
   private boolean isFlagSet(Message msg, int index) {
     boolean isSet = false;
-    byte[] flags;
-    Part p = msg.getPart(5);
-    if (p != null) {
-      flags = p.getSerializedForm();
+    Part messagePart = msg.getPart(5);
+    if (messagePart != null) {
+      byte[] flags = messagePart.getSerializedForm();
       if (flags != null && flags.length > index) {
         if (flags[index] == 1) {
           isSet = true;
@@ -102,18 +102,17 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
   protected void executeFunctionOnGroups(Object function, Object args, String[] groups,
       boolean allMembers, Function functionObject, ServerToClientFunctionResultSender resultSender,
       boolean ignoreFailedMembers) {
-
     DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
     if (ds == null) {
-      throw new IllegalStateException(
-          "DistributedSystem is either not created or not ready");
+      throw new IllegalStateException("DistributedSystem is either not created or not ready");
     }
+
     Set<DistributedMember> members = new HashSet<>();
     for (String group : groups) {
       if (allMembers) {
         members.addAll(ds.getGroupMembers(group));
       } else {
-        ArrayList<DistributedMember> memberList = new ArrayList<>(ds.getGroupMembers(group));
+        List<DistributedMember> memberList = new ArrayList<>(ds.getGroupMembers(group));
         if (!memberList.isEmpty()) {
           if (!InternalFunctionExecutionServiceImpl.RANDOM_onMember
               && memberList.contains(ds.getDistributedMember())) {
@@ -125,23 +124,28 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
         }
       }
     }
+
     if (logger.isDebugEnabled()) {
       logger.debug("Executing Function on Groups: {} all members: {} members are: {}",
           Arrays.toString(groups), allMembers, members);
     }
+
     Execution execution = new MemberFunctionExecutor(ds, members, resultSender);
     if (args != null) {
       execution = execution.setArguments(args);
     }
+
     if (ignoreFailedMembers) {
       if (logger.isDebugEnabled()) {
         logger.debug("Function will ignore failed members");
       }
       ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
     }
+
     if (!functionObject.isHA()) {
       ((AbstractExecution) execution).setWaitOnExceptionFlag(true);
     }
+
     if (function instanceof String) {
       execution.execute(functionObject.getId()).getResult();
     } else {
