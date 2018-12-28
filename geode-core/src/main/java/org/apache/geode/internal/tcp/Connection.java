@@ -795,7 +795,8 @@ public class Connection implements Runnable {
         Socket s = this.socket;
         if (s != null && !s.isClosed()) {
           prepareForAsyncClose();
-          this.owner.getSocketCloser().asyncClose(s, String.valueOf(this.remoteAddr), null);
+          this.owner.getSocketCloser().asyncClose(s, String.valueOf(this.remoteAddr),
+              () -> ioFilter.close(s.getChannel()));
         }
       }
     }
@@ -807,7 +808,6 @@ public class Connection implements Runnable {
           && (connectionState == STATE_READING || connectionState == STATE_READING_ACK)) {
         readerThread.interrupt();
       }
-      ioFilter.close(socket.getChannel());
     }
   }
 

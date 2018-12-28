@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.TimeUnit;
 
@@ -333,6 +334,8 @@ public class NioSslEngine implements NioFilter {
           socketChannel.write(myNetData);
         }
       }
+    } catch (ClosedChannelException e) {
+      // we can't send a close message if the channel is closed
     } catch (IOException e) {
       throw new GemFireIOException("exception closing SSL session", e);
     } finally {
