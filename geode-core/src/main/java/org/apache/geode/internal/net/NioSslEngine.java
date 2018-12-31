@@ -104,6 +104,7 @@ public class NioSslEngine implements NioFilter {
     if (logger.isInfoEnabled()) {
       logger.info("Starting TLS handshake with {}.  Timeout is {}ms", socketChannel.socket(),
           timeout);
+      logger.info("logging stack trace", new Exception("stack trace"));
     }
 
     long timeoutNanos = -1;
@@ -120,11 +121,13 @@ public class NioSslEngine implements NioFilter {
     while (status != FINISHED &&
         status != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
       if (socketChannel.socket().isClosed()) {
+        logger.info("Handshake terminated because socket is closed");
         throw new SocketException("handshake terminated - socket is closed");
       }
 
       if (timeoutNanos > 0) {
         if (timeoutNanos < System.nanoTime()) {
+          logger.info("TLS handshake is timing out");
           throw new SocketTimeoutException("handshake timed out");
         }
       }
@@ -182,6 +185,7 @@ public class NioSslEngine implements NioFilter {
             case CLOSED:
               break;
             default:
+              logger.info("handhake terminated with illegal state(1) due to {}", status);
               throw new IllegalStateException(
                   "Unknown SSLEngineResult status: " + engineResult.getStatus());
           }
@@ -192,22 +196,24 @@ public class NioSslEngine implements NioFilter {
           status = engine.getHandshakeStatus();
           break;
         default:
+          logger.info("handhake terminated with illegal state(2) due to {}", status);
           throw new IllegalStateException("Unknown SSL Handshake state: " + status);
       }
       Thread.sleep(10);
     }
     if (status != FINISHED) {
+      logger.info("handhake terminated with exception due to {}", status);
       throw new SSLHandshakeException("SSL Handshake terminated with status " + status);
     }
-    if (logger.isDebugEnabled()) {
-      if (engineResult != null) {
-        logger.debug("TLS handshake successfull.  result={} and handshakeResult={}",
-            engineResult.getStatus(), engine.getHandshakeStatus());
-      } else {
-        logger.debug("TLS handshake successfull.  handshakeResult={}",
-            engine.getHandshakeStatus());
-      }
+    // if (logger.isDebugEnabled()) {
+    if (engineResult != null) {
+      logger.info("TLS handshake successfull.  result={} and handshakeResult={}",
+          engineResult.getStatus(), engine.getHandshakeStatus());
+    } else {
+      logger.info("TLS handshake successfull.  handshakeResult={}",
+          engine.getHandshakeStatus());
     }
+    // }
     return true;
   }
 
