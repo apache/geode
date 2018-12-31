@@ -50,7 +50,21 @@ limitations under the License.
 
   <servlet-mapping>
     <servlet-name>geode-mgmt</servlet-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/v1/*</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <description>
+      Configuration rest API (v2)
+    </description>
+    <servlet-name>geode-confapi</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <async-supported>true</async-supported>
+    <load-on-startup>2</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>geode-confapi</servlet-name>
+    <url-pattern>/v2/*</url-pattern>
+  </servlet-mapping>
 </web-app>

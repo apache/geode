@@ -68,7 +68,6 @@ import org.apache.geode.management.internal.web.domain.QueryParameterSource;
  * @since GemFire 8.0
  */
 @Controller("shellController")
-@RequestMapping(AbstractCommandsController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class ShellCommandsController extends AbstractCommandsController {
 
