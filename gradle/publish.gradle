@@ -20,6 +20,16 @@ subprojects {
   apply plugin: 'maven-publish'
   apply plugin: 'signing'
 
+  task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+  }
+
+  task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+  }
+
   publishing {
     publications {
       maven(MavenPublication) {
