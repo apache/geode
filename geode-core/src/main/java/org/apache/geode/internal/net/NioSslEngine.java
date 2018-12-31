@@ -280,11 +280,7 @@ public class NioSslEngine implements NioFilter {
       if (unwrapResult.getStatus() == BUFFER_UNDERFLOW) {
         // partial data - need to read more. When this happens the SSLEngine will not have
         // changed the buffer position
-        if (wrappedBuffer.position() == wrappedBuffer.limit()) {
-          wrappedBuffer.clear();
-        } else {
-          wrappedBuffer.compact();
-        }
+        wrappedBuffer.compact();
         return peerAppData;
       }
 

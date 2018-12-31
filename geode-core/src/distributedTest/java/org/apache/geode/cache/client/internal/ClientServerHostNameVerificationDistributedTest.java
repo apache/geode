@@ -201,6 +201,7 @@ public class ClientServerHostNameVerificationDistributedTest {
       ClientRegionFactory<String, String> regionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
 
+      IgnoredException.addIgnoredException("Connection reset");
       if (expectedExceptionOnClient != null) {
         IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
         IgnoredException.addIgnoredException("java.net.SocketException");

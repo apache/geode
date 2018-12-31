@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Stack;
@@ -47,19 +48,22 @@ import javax.net.ssl.SSLSession;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
+@Category({MembershipTest.class})
 public class NioSslEngineTest {
-  static final int netBufferSize = 10000;
-  static final int appBufferSize = 20000;
+  private static final int netBufferSize = 10000;
+  private static final int appBufferSize = 20000;
 
-  SSLEngine mockEngine;
-  DMStats mockStats;
-  SSLSession mockSession;
-  NioSslEngine nioSslEngine;
-  SSLEngineResult mockEngineResult;
-  NioSslEngine spyNioSslEngine;
+  private SSLEngine mockEngine;
+  private DMStats mockStats;
+  private SSLSession mockSession;
+  private NioSslEngine nioSslEngine;
+  private NioSslEngine spyNioSslEngine;
 
   @Before
   public void setUp() throws Exception {
@@ -93,9 +97,8 @@ public class NioSslEngineTest {
         new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0),
         new SSLEngineResult(OK, NEED_TASK, 100, 0));
 
-    when(mockEngine.getDelegatedTask()).thenReturn(new Runnable() {
-      public void run() {}
-    }, null);
+    when(mockEngine.getDelegatedTask()).thenReturn(() -> {
+    }, (Runnable) null);
 
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(OK, NEED_UNWRAP, 100, 100),
@@ -129,9 +132,8 @@ public class NioSslEngineTest {
         new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0),
         new SSLEngineResult(OK, NEED_TASK, 100, 0));
 
-    when(mockEngine.getDelegatedTask()).thenReturn(new Runnable() {
-      public void run() {}
-    }, null);
+    when(mockEngine.getDelegatedTask()).thenReturn(() -> {
+    }, (Runnable) null);
 
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(OK, NEED_UNWRAP, 100, 100),
@@ -230,7 +232,7 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void wrapFails() throws Exception {
+  public void wrapFails() {
     // make the application data too big to fit into the engine's encryption buffer
     ByteBuffer appData = ByteBuffer.allocate(nioSslEngine.myNetData.capacity() + 100);
     byte[] appBytes = new byte[appData.capacity()];
@@ -273,7 +275,6 @@ public class NioSslEngineTest {
 
   @Test
   public void unwrapWithBufferUnderflow() throws Exception {
-    // make the application data too big to fit into the engine's encryption buffer
     ByteBuffer wrappedData = ByteBuffer.allocate(nioSslEngine.peerAppData.capacity());
     byte[] netBytes = new byte[wrappedData.capacity() / 2];
     Arrays.fill(netBytes, (byte) 0x1F);
@@ -292,26 +293,93 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void getUnwrappedBuffer() {}
+  public void unwrapWithDecryptionError() {
+    // make the application data too big to fit into the engine's encryption buffer
+    ByteBuffer wrappedData = ByteBuffer.allocate(nioSslEngine.peerAppData.capacity());
+    byte[] netBytes = new byte[wrappedData.capacity() / 2];
+    Arrays.fill(netBytes, (byte) 0x1F);
+    wrappedData.put(netBytes);
+    wrappedData.flip();
+
+    // create an engine that will transfer bytes from the application buffer to the encrypted buffer
+    TestSSLEngine testEngine = new TestSSLEngine();
+    testEngine.addReturnResult(new SSLEngineResult(CLOSED, FINISHED, 0, 0));
+    spyNioSslEngine.engine = testEngine;
+
+    assertThatThrownBy(() -> spyNioSslEngine.unwrap(wrappedData)).isInstanceOf(SSLException.class)
+        .hasMessageContaining("Error decrypting data");
+  }
 
   @Test
-  public void ensureUnwrappedCapacity() {}
+  public void ensureUnwrappedCapacity() {
+    ByteBuffer wrappedBuffer = ByteBuffer.allocate(netBufferSize);
+    int requestedCapacity = nioSslEngine.getUnwrappedBuffer(wrappedBuffer).capacity() * 2;
+    ByteBuffer unwrappedBuffer = nioSslEngine.ensureUnwrappedCapacity(requestedCapacity,
+        wrappedBuffer, Buffers.BufferType.UNTRACKED, mockStats);
+    assertThat(unwrappedBuffer.capacity()).isGreaterThanOrEqualTo(requestedCapacity);
+  }
 
   @Test
-  public void close() {}
+  public void close() throws Exception {
+    SocketChannel mockChannel = mock(SocketChannel.class);
+    Socket mockSocket = mock(Socket.class);
+    when(mockChannel.socket()).thenReturn(mockSocket);
+    when(mockSocket.isClosed()).thenReturn(false);
+
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
+        new SSLEngineResult(CLOSED, FINISHED, 0, 0));
+    nioSslEngine.close(mockChannel);
+    assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IllegalStateException.class);
+    nioSslEngine.close(mockChannel);
+  }
 
   @Test
-  public void expandedCapacity() {}
+  public void closeWhenUnwrapError() throws Exception {
+    SocketChannel mockChannel = mock(SocketChannel.class);
+    Socket mockSocket = mock(Socket.class);
+    when(mockChannel.socket()).thenReturn(mockSocket);
+    when(mockSocket.isClosed()).thenReturn(true);
+
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
+        new SSLEngineResult(BUFFER_OVERFLOW, FINISHED, 0, 0));
+    assertThatThrownBy(() -> nioSslEngine.close(mockChannel)).isInstanceOf(GemFireIOException.class)
+        .hasMessageContaining("exception closing SSL session")
+        .hasCauseInstanceOf(SSLException.class);
+  }
+
+  @Test
+  public void closeWhenSocketWriteError() throws Exception {
+    SocketChannel mockChannel = mock(SocketChannel.class);
+    Socket mockSocket = mock(Socket.class);
+    when(mockChannel.socket()).thenReturn(mockSocket);
+    when(mockSocket.isClosed()).thenReturn(true);
+
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenAnswer((x) -> {
+      // give the NioSslEngine something to write on its socket channel, simulating a TLS close
+      // message
+      nioSslEngine.myNetData.put("Goodbye cruel world".getBytes());
+      return new SSLEngineResult(CLOSED, FINISHED, 0, 0);
+    });
+    when(mockChannel.write(any(ByteBuffer.class))).thenThrow(new ClosedChannelException());
+    nioSslEngine.close(mockChannel);
+    verify(mockChannel, times(1)).write(any(ByteBuffer.class));
+  }
 
 
 
+  // TestSSLEngine holds a stack of SSLEngineResults and always copies the
+  // input buffer to the output buffer byte-for-byte in wrap() and unwrap() operations.
+  // We use it in some tests where we need the byte-copying behavior because it's
+  // pretty difficult & cumbersome to implement with Mockito.
   static class TestSSLEngine extends SSLEngine {
 
     private Stack<SSLEngineResult> returnResults = new Stack<>();
 
     @Override
-    public SSLEngineResult wrap(ByteBuffer[] sources, int i, int i1, ByteBuffer destination)
-        throws SSLException {
+    public SSLEngineResult wrap(ByteBuffer[] sources, int i, int i1, ByteBuffer destination) {
       for (ByteBuffer source : sources) {
         destination.put(source);
       }
@@ -319,8 +387,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public SSLEngineResult unwrap(ByteBuffer source, ByteBuffer[] destinations, int i, int i1)
-        throws SSLException {
+    public SSLEngineResult unwrap(ByteBuffer source, ByteBuffer[] destinations, int i, int i1) {
       SSLEngineResult sslEngineResult = returnResults.pop();
       if (sslEngineResult.getStatus() != BUFFER_UNDERFLOW) {
         destinations[0].put(source);
@@ -334,9 +401,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void closeInbound() throws SSLException {
-
-    }
+    public void closeInbound() {}
 
     @Override
     public boolean isInboundDone() {
@@ -344,9 +409,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void closeOutbound() {
-
-    }
+    public void closeOutbound() {}
 
     @Override
     public boolean isOutboundDone() {
@@ -364,9 +427,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void setEnabledCipherSuites(String[] strings) {
-
-    }
+    public void setEnabledCipherSuites(String[] strings) {}
 
     @Override
     public String[] getSupportedProtocols() {
@@ -379,9 +440,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void setEnabledProtocols(String[] strings) {
-
-    }
+    public void setEnabledProtocols(String[] strings) {}
 
     @Override
     public SSLSession getSession() {
@@ -389,9 +448,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void beginHandshake() throws SSLException {
-
-    }
+    public void beginHandshake() {}
 
     @Override
     public SSLEngineResult.HandshakeStatus getHandshakeStatus() {
@@ -399,9 +456,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void setUseClientMode(boolean b) {
-
-    }
+    public void setUseClientMode(boolean b) {}
 
     @Override
     public boolean getUseClientMode() {
@@ -409,9 +464,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void setNeedClientAuth(boolean b) {
-
-    }
+    public void setNeedClientAuth(boolean b) {}
 
     @Override
     public boolean getNeedClientAuth() {
@@ -419,9 +472,7 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void setWantClientAuth(boolean b) {
-
-    }
+    public void setWantClientAuth(boolean b) {}
 
     @Override
     public boolean getWantClientAuth() {
@@ -429,16 +480,14 @@ public class NioSslEngineTest {
     }
 
     @Override
-    public void setEnableSessionCreation(boolean b) {
-
-    }
+    public void setEnableSessionCreation(boolean b) {}
 
     @Override
     public boolean getEnableSessionCreation() {
       return false;
     }
 
-    public void addReturnResult(SSLEngineResult sslEngineResult) {
+    void addReturnResult(SSLEngineResult sslEngineResult) {
       returnResults.add(sslEngineResult);
     }
   }
