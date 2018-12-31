@@ -20,7 +20,6 @@ import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_UNDERFLOW;
 import static javax.net.ssl.SSLEngineResult.Status.OK;
-import static org.apache.geode.internal.net.Buffers.expandBuffer;
 import static org.apache.geode.internal.net.Buffers.releaseBuffer;
 
 import java.io.IOException;
@@ -54,22 +53,22 @@ public class NioSslEngine implements NioFilter {
 
   private boolean closed;
 
-  private final SSLEngine engine;
+  SSLEngine engine;
 
   /**
    * myNetData holds bytes wrapped by the SSLEngine
    */
-  private ByteBuffer myNetData;
+  ByteBuffer myNetData;
 
   /**
    * peerAppData holds the last unwrapped data from a peer
    */
-  private ByteBuffer peerAppData;
+  ByteBuffer peerAppData;
 
   /**
    * buffer used to receive data during TLS handshake
    */
-  private ByteBuffer handshakeBuffer;
+  ByteBuffer handshakeBuffer;
 
   public NioSslEngine(SSLEngine engine, DMStats stats) {
     this.stats = stats;
@@ -85,7 +84,7 @@ public class NioSslEngine implements NioFilter {
    * This will throw an SSLHandshakeException if the handshake doesn't terminate in a FINISHED
    * state. It may throw other IOExceptions caused by I/O operations
    */
-  public synchronized void handshake(SocketChannel socketChannel, int timeout,
+  public synchronized boolean handshake(SocketChannel socketChannel, int timeout,
       ByteBuffer peerNetData)
       throws IOException, InterruptedException {
 
@@ -102,8 +101,9 @@ public class NioSslEngine implements NioFilter {
 
     ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Starting TLS handshake with {}", socketChannel.socket());
+    if (logger.isInfoEnabled()) {
+      logger.info("Starting TLS handshake with {}.  Timeout is {}ms", socketChannel.socket(),
+          timeout);
     }
 
     long timeoutNanos = -1;
@@ -167,8 +167,6 @@ public class NioSslEngine implements NioFilter {
 
           // Check status
           switch (engineResult.getStatus()) {
-            case BUFFER_UNDERFLOW:
-              break;
             case BUFFER_OVERFLOW:
               myNetData =
                   expandBuffer(Buffers.BufferType.TRACKED_SENDER, myNetData,
@@ -210,15 +208,21 @@ public class NioSslEngine implements NioFilter {
             engine.getHandshakeStatus());
       }
     }
+    return true;
   }
 
-  private void checkClosed() {
+  ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
+      int desiredCapacity, DMStats stats) {
+    return Buffers.expandBuffer(type, existing, desiredCapacity, stats);
+  }
+
+  void checkClosed() {
     if (closed) {
       throw new IllegalStateException("NioSslEngine has been closed");
     }
   }
 
-  private void handleBlockingTasks() {
+  void handleBlockingTasks() {
     Runnable task;
     while ((task = engine.getDelegatedTask()) != null) {
       // these tasks could be run in other threads but the SSLEngine will block until they finish
@@ -345,7 +349,7 @@ public class NioSslEngine implements NioFilter {
     }
   }
 
-  private int expandedCapacity(ByteBuffer sourceBuffer, ByteBuffer targetBuffer) {
+  int expandedCapacity(ByteBuffer sourceBuffer, ByteBuffer targetBuffer) {
     return Math.max(targetBuffer.position() + sourceBuffer.remaining() * 2,
         targetBuffer.capacity() * 2);
   }
