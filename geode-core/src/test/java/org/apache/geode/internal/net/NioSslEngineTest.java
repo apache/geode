@@ -106,7 +106,7 @@ public class NioSslEngineTest {
         new SSLEngineResult(CLOSED, FINISHED, 100, 0));
 
     spyNioSslEngine.handshake(mockChannel, 10000, ByteBuffer.allocate(netBufferSize / 2));
-    verify(mockEngine, times(2)).getHandshakeStatus();
+    verify(mockEngine, times(3)).getHandshakeStatus();
     verify(mockEngine, times(3)).wrap(any(ByteBuffer.class), any(ByteBuffer.class));
     verify(mockEngine, times(3)).unwrap(any(ByteBuffer.class), any(ByteBuffer.class));
     verify(spyNioSslEngine, times(2)).expandBuffer(any(Buffers.BufferType.class),
