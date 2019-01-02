@@ -20,30 +20,42 @@ package org.apache.geode.cache.rest.controllers
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy
 import org.apache.geode.cache.configuration.RegionAttributesType
 import org.apache.geode.cache.configuration.RegionConfig
+import org.apache.geode.internal.cache.GemFireCacheImpl
 import org.apache.geode.management.internal.cli.CliUtil
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult
 import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionArgs
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
 
-data class RegionCreateParams(val name: String, val type: String)
+data class RegionCreateParams @JvmOverloads constructor(val name: String = "", val type: String = "")
 
 @RestController
 class RegionsController {
 
     @RequestMapping(method = [RequestMethod.POST], value = ["/regions"],
             produces = ["application/json"], consumes = ["application/json"])
-    fun create(@RequestBody params: RegionCreateParams) {
+    fun create(@ModelAttribute params: RegionCreateParams): ResponseEntity<String> {
         var regionConfig = RegionConfig()
         regionConfig.name = params.name.split("/").last()
 
         setAttributes(regionConfig, params.type)
 
         var functionArgs = CreateRegionFunctionArgs(params.name, regionConfig, true)
-//        CliUtil.executeFunction(RegionCreateFunction.INSTANCE, functionArgs,
-//                CliUtil.findMembers(["cluster"], null))
+        var cache = GemFireCacheImpl.getInstance()
+        var membersToCreateRegionOn = CliUtil.findMembers(null, null, cache)
+
+        var rc = CliUtil.executeFunction(RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn)
+        var rawResults = rc.getResult()
+        var collectedResults = rawResults as List<*>
+        var results = CliFunctionResult.cleanResults(collectedResults)
+
+        if (results.all { res -> res.isSuccessful || res.isIgnorableFailure }) {
+            return ResponseEntity.ok("Successfully created region")
+        }
+
+        return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     private fun setAttributes(config: RegionConfig, type: String) {

@@ -251,9 +251,8 @@ public class ManagementAgent {
         if (agentUtil.isWebApplicationAvailable(gemfireWar, pulseWar, gemfireAPIWar)) {
 
           final String bindAddress = this.config.getHttpServiceBindAddress();
-          // final int port = this.config.getHttpServicePort();
+          final int port = this.config.getHttpServicePort();
 
-          final int port = 8081;
           boolean isRestWebAppAdded = false;
 
           this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory

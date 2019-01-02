@@ -31,21 +31,19 @@ limitations under the License.
     <property name="queueCapacity" value="25"/>
   </bean>
 
-  <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+  <mvc:annotation-driven>
+    <mvc:async-support default-timeout="7200000" task-executor="asyncTaskExecutor"/>
+    <mvc:message-converters>
+      <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>
+      <bean class="org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter"/>
+    </mvc:message-converters>
+  </mvc:annotation-driven>
 
   <mvc:annotation-driven />
-
-    <!--&lt;!&ndash; default timeout set to 2 hours; used for Gfsh commands such as 'rebalance' &ndash;&gt;-->
-    <!--<mvc:async-support default-timeout="7200000" task-executor="asyncTaskExecutor"/>-->
-    <!--<mvc:message-converters>-->
-      <!--<bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>-->
-      <!--<bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>-->
-      <!--<bean class="org.springframework.http.converter.StringHttpMessageConverter"/>-->
-      <!--<bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>-->
-      <!--<bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>-->
-      <!--<bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>-->
-      <!--<bean class="org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter"/>-->
-    <!--</mvc:message-converters>-->
-  <!--</mvc:annotation-driven>-->
 
 </beans>
