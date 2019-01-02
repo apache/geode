@@ -44,6 +44,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -342,6 +343,8 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
    */
   @Test
   public void doesNotWaitForPreviousInstanceOfOnlineServer() {
+    addIgnoredException(DistributedSystemDisconnectedException.class);
+
     // Add a hook to disconnect from the distributed system when the initial image message shows up.
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
