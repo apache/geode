@@ -41,6 +41,13 @@ publishing {
   }
 }
 
+signing {
+  afterEvaluate {
+    sign distTar
+    sign srcDistTar
+  }
+}
+
 logger.info("Gradle doesn't automatically remove the jar artifact even though we disabled it")
 logger.info("this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.")
 configurations.all {

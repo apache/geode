@@ -54,6 +54,7 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 public class PersistenceInitialImageAdvisorTest {
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 

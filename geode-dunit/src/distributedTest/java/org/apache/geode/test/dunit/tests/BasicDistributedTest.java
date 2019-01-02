@@ -154,8 +154,11 @@ public class BasicDistributedTest extends DistributedTestCase {
     String name = getUniqueName();
     String value = "Hello";
 
-    vm0.invokeAsync(() -> remoteBind(name, value)).join().checkException();
-    vm0.invokeAsync(() -> remoteValidateBind(name, value)).join().checkException();
+    AsyncInvocation async1 = vm0.invokeAsync(() -> remoteBind(name, value)).join().checkException();
+    AsyncInvocation async2 =
+        vm0.invokeAsync(() -> remoteValidateBind(name, value)).join().checkException();
+    async1.join();
+    async2.join();
   }
 
   @Test

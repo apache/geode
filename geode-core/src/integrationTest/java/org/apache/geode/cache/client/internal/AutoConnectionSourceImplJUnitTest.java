@@ -83,7 +83,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @SuppressWarnings("deprecation")
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class AutoConnectionSourceImplJUnitTest {
 
   private Cache cache;
@@ -96,7 +96,7 @@ public class AutoConnectionSourceImplJUnitTest {
   private PoolStats poolStats;
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
