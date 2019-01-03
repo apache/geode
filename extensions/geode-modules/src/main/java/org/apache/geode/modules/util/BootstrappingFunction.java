@@ -43,7 +43,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private static final long serialVersionUID = 1856043174458190605L;
 
   public static final String ID = "bootstrapping-function";
-  private static final ReentrantLock registerFuntionLock = new ReentrantLock();
+  private static final ReentrantLock registerFunctionLock = new ReentrantLock();
 
   private static final int TIME_TO_WAIT_FOR_CACHE =
       Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
@@ -107,7 +107,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private void registerFunctions() {
     // Synchronize so that these functions aren't registered twice. The
     // constructor for the CreateRegionFunction creates a meta region.
-    registerFuntionLock.lock();
+    registerFunctionLock.lock();
     try {
       // Register the create region function if it is not already registered
       if (!FunctionService.isRegistered(CreateRegionFunction.ID)) {
@@ -129,7 +129,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
         FunctionService.registerFunction(new RegionSizeFunction());
       }
     } finally {
-      registerFuntionLock.unlock();
+      registerFunctionLock.unlock();
     }
   }
 
