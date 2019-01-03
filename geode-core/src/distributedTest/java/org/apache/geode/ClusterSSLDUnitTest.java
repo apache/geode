@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,6 +72,21 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
   public final SerializableTestName testName = new SerializableTestName();
 
   final String regionName = testName.getMethodName() + "_Region";
+
+  private static Cache cache;
+
+  @After
+  public void teardown() throws Exception {
+    if (cache != null) {
+      try {
+        if (!cache.isClosed()) {
+          cache.close();
+        }
+      } finally {
+        cache = null;
+      }
+    }
+  }
 
 
   @Test
@@ -134,6 +150,7 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
     locatorVM.invoke("stop locator", () -> Locator.getLocator().stop());
     locatorVM = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 0);
     locatorVM.invoke("roll locator to current version", () -> {
+      // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
       Properties props = getDistributedSystemProperties();
       // locator must restart with the same port so that it reconnects to the server
@@ -149,7 +166,7 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
 
     // roll server1 to the current version
     server1VM.invoke("stop server1", () -> {
-      CacheFactory.getAnyInstance().getDistributedSystem().disconnect();
+      cache.close();
     });
     server1VM = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
     createSSLEnabledCacheAndRegion(server1VM, locatorPort, true);
@@ -162,19 +179,19 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
   private void createSSLEnabledCacheAndRegion(VM memberVM, int locatorPort,
       boolean conserveSockets) {
     memberVM.invoke("start cache and create region", () -> {
-      Cache cache = createCache(locatorPort, conserveSockets);
+      cache = createCache(locatorPort, conserveSockets);
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
   }
 
 
   private void performCreate(VM memberVM) {
-    memberVM.invoke("perform create", () -> CacheFactory.getAnyInstance()
+    memberVM.invoke("perform create", () -> cache
         .getRegion(regionName).put("testKey", "testValue"));
   }
 
   private void performUpdate(VM memberVM) {
-    memberVM.invoke("perform update", () -> CacheFactory.getAnyInstance()
+    memberVM.invoke("perform update", () -> cache
         .getRegion(regionName).put("testKey", "updatedTestValue"));
   }
 
@@ -182,28 +199,30 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
     memberVM.invoke("perform create", () -> {
       byte[] value = new byte[SMALL_BUFFER_SIZE];
       Arrays.fill(value, (byte) 1);
-      CacheFactory.getAnyInstance().getRegion(regionName).put("testKey", value);
+      cache.getRegion(regionName).put("testKey", value);
     });
   }
 
   private void verifyCreatedEntry(VM memberVM) {
-    memberVM.invoke("verify entry created", () -> Assert.assertTrue(CacheFactory.getAnyInstance()
+    memberVM.invoke("verify entry created", () -> Assert.assertTrue(cache
         .getRegion(regionName).containsKey("testKey")));
   }
 
   private void verifyUpdatedEntry(VM memberVM) {
-    memberVM.invoke("verify entry updated", () -> Assert.assertTrue(CacheFactory.getAnyInstance()
+    memberVM.invoke("verify entry updated", () -> Assert.assertTrue(cache
         .getRegion(regionName).containsValue("updatedTestValue")));
   }
 
   private int createLocator(VM memberVM) {
     return memberVM.invoke("create locator", () -> {
+      // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
       return Locator.startLocatorAndDS(0, new File(""), getDistributedSystemProperties()).getPort();
     });
   }
 
   private Cache createCache(int locatorPort, boolean conserveSockets) {
+    // if you need to debug SSL communications use this property:
     // System.setProperty("javax.net.debug", "all");
     Properties properties = getDistributedSystemProperties();
     properties.put(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
@@ -213,7 +232,6 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
 
   public Properties getDistributedSystemProperties() {
     Properties properties = new Properties();
-    // properties.put(ConfigurationProperties.LOG_LEVEL, "fine");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(USE_CLUSTER_CONFIGURATION, "false");
     properties.put(SSL_ENABLED_COMPONENTS, "cluster");
@@ -224,7 +242,6 @@ public class ClusterSSLDUnitTest implements java.io.Serializable {
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
     properties.put(SOCKET_LEASE_TIME, "10000");
-    // properties.put(JMX_MANAGER_UPDATE_RATE, "180000"); // eliminate noise for debugging
     properties.put(NAME, "vm" + VM.getCurrentVMNum());
     properties.put(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
     return properties;

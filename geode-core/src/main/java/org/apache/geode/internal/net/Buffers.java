@@ -115,7 +115,7 @@ public class Buffers {
     releaseBuffer(bb, stats, false);
   }
 
-  public static ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
+  static ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
       int desiredCapacity, DMStats stats) {
     if (existing.capacity() >= desiredCapacity) {
       existing.compact();
@@ -129,7 +129,7 @@ public class Buffers {
     return newBuffer;
   }
 
-  public static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
+  private static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
@@ -141,7 +141,7 @@ public class Buffers {
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
-  public static void releaseBuffer(Buffers.BufferType type, ByteBuffer buffer, DMStats stats) {
+  static void releaseBuffer(Buffers.BufferType type, ByteBuffer buffer, DMStats stats) {
     switch (type) {
       case UNTRACKED:
         return;

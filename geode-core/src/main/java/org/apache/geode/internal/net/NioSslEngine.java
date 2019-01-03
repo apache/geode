@@ -44,7 +44,9 @@ import org.apache.geode.internal.logging.LogService;
 
 
 /**
- * NioSslEngine uses an SSLEngine to bind SSL logic to a data source
+ * NioSslEngine uses an SSLEngine to bind SSL logic to a data source. This class is not thread
+ * safe. Its use should be confined to one thread or should be protected by external
+ * synchronization.
  */
 public class NioSslEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
@@ -70,7 +72,7 @@ public class NioSslEngine implements NioFilter {
    */
   ByteBuffer handshakeBuffer;
 
-  public NioSslEngine(SSLEngine engine, DMStats stats) {
+  NioSslEngine(SSLEngine engine, DMStats stats) {
     this.stats = stats;
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
@@ -84,7 +86,7 @@ public class NioSslEngine implements NioFilter {
    * This will throw an SSLHandshakeException if the handshake doesn't terminate in a FINISHED
    * state. It may throw other IOExceptions caused by I/O operations
    */
-  public synchronized boolean handshake(SocketChannel socketChannel, int timeout,
+  public boolean handshake(SocketChannel socketChannel, int timeout,
       ByteBuffer peerNetData)
       throws IOException, InterruptedException {
 
@@ -132,14 +134,10 @@ public class NioSslEngine implements NioFilter {
         }
       }
 
-      int dataRead = 0;
-
       switch (status) {
         case NEED_UNWRAP:
           // Receive handshaking data from peer
-          if (dataRead >= 0) {
-            dataRead = socketChannel.read(handshakeBuffer);
-          }
+          int dataRead = socketChannel.read(handshakeBuffer);
 
           // Process incoming handshaking data
           handshakeBuffer.flip();
@@ -185,7 +183,7 @@ public class NioSslEngine implements NioFilter {
             case CLOSED:
               break;
             default:
-              logger.info("handhake terminated with illegal state(1) due to {}", status);
+              logger.info("handshake terminated with illegal state(1) due to {}", status);
               throw new IllegalStateException(
                   "Unknown SSLEngineResult status: " + engineResult.getStatus());
           }
@@ -196,21 +194,21 @@ public class NioSslEngine implements NioFilter {
           status = engine.getHandshakeStatus();
           break;
         default:
-          logger.info("handhake terminated with illegal state(2) due to {}", status);
+          logger.info("handshake terminated with illegal state(2) due to {}", status);
           throw new IllegalStateException("Unknown SSL Handshake state: " + status);
       }
       Thread.sleep(10);
     }
     if (status != FINISHED) {
-      logger.info("handhake terminated with exception due to {}", status);
+      logger.info("handshake terminated with exception due to {}", status);
       throw new SSLHandshakeException("SSL Handshake terminated with status " + status);
     }
     // if (logger.isDebugEnabled()) {
     if (engineResult != null) {
-      logger.info("TLS handshake successfull.  result={} and handshakeResult={}",
+      logger.info("TLS handshake successful.  result={} and handshakeResult={}",
           engineResult.getStatus(), engine.getHandshakeStatus());
     } else {
-      logger.info("TLS handshake successfull.  handshakeResult={}",
+      logger.info("TLS handshake successful.  handshakeResult={}",
           engine.getHandshakeStatus());
     }
     // }
@@ -351,7 +349,7 @@ public class NioSslEngine implements NioFilter {
     }
   }
 
-  int expandedCapacity(ByteBuffer sourceBuffer, ByteBuffer targetBuffer) {
+  private int expandedCapacity(ByteBuffer sourceBuffer, ByteBuffer targetBuffer) {
     return Math.max(targetBuffer.position() + sourceBuffer.remaining() * 2,
         targetBuffer.capacity() * 2);
   }

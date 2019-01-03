@@ -141,12 +141,12 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   public static void postClass() {
     Invoke.invokeInEveryVM(() -> {
       if (instance.cache != null) {
-        instance.cache.getDistributedSystem().disconnect();
+        instance.cache.close();
       }
       instance = null;
     });
     if (instance.cache != null) {
-      instance.cache.getDistributedSystem().disconnect();
+      instance.cache.close();
     }
     instance = null;
   }

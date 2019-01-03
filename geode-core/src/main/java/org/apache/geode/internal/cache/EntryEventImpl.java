@@ -2101,7 +2101,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     buf.append(getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
-    if (Boolean.getBoolean("gemfire.unsecure-logvalues")) {
+    if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
       buf.append(";oldValue=");
       try {
         synchronized (this.offHeapLock) {

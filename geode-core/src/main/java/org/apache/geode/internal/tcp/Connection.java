@@ -535,8 +535,6 @@ public class Connection implements Runnable {
 
   void initReceiver() {
     this.startReader(owner);
-    this.waitForHandshake();
-    this.finishedConnecting = true;
   }
 
   void setIdleTimeoutTask(SystemTimerTask task) {
@@ -3079,6 +3077,7 @@ public class Connection implements Runnable {
           logger.fatal("Uncaught exception from listener", e);
         }
       }
+      this.finishedConnecting = true;
     } catch (IOException ex) {
       final String err = "Failed sending handshake reply";
       if (logger.isDebugEnabled()) {

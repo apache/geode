@@ -471,17 +471,6 @@ public class DirectChannel {
       if (con.isSharedResource()) {
         continue;
       }
-      int msToWait = (int) (ackTimeout - (System.currentTimeMillis() - startTime));
-      // if the wait threshold has already been reached during transmission
-      // of the message, set a small wait period just to make sure the
-      // acks haven't already come back
-      if (msToWait <= 0) {
-        msToWait = 10;
-      }
-      long msInterval = ackSDTimeout;
-      if (msInterval <= 0) {
-        msInterval = Math.max(ackTimeout, 1000);
-      }
       try {
         try {
           con.readAck(processor);

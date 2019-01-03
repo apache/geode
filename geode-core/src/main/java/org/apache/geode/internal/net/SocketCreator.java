@@ -992,6 +992,9 @@ public class SocketCreator {
       try {
         Thread.sleep(50);
       } catch (InterruptedException e) {
+        if (!socketChannel.socket().isClosed()) {
+          socketChannel.close();
+        }
         throw new IOException("Interrupted while performing handshake", e);
       }
     }
@@ -1006,9 +1009,15 @@ public class SocketCreator {
     try {
       nioSslEngine.handshake(socketChannel, timeout, peerNetBuffer);
     } catch (SSLException e) {
+      if (!socketChannel.socket().isClosed()) {
+        socketChannel.close();
+      }
       logger.warn("SSL handshake exception", e);
       throw e;
     } catch (InterruptedException e) {
+      if (!socketChannel.socket().isClosed()) {
+        socketChannel.close();
+      }
       throw new IOException("SSL handshake interrupted");
     } finally {
       if (blocking) {
