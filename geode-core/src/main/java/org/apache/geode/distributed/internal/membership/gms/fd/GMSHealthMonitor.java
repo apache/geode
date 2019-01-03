@@ -436,10 +436,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
       return;
     }
-    SuspectRequest sr = new SuspectRequest(mbr, reason);
-    List<SuspectRequest> sl = new ArrayList<>();
-    sl.add(sr);
-    sendSuspectRequest(sl);
+    sendSuspectRequest(Collections.singletonList(new SuspectRequest(mbr, reason)));
   }
 
   /**
@@ -1278,6 +1275,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           if (initiateRemoval) {
             logger.info("Requesting removal of suspect member {}", mbr);
             services.getJoinLeave().remove(mbr, reason);
+          } else {
+            initiateSuspicion(mbr, reason);
           }
           // make sure it is still suspected
           memberSuspected(localAddress, mbr, reason);

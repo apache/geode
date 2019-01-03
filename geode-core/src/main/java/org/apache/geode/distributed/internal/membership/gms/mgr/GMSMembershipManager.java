@@ -1649,7 +1649,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    */
   public boolean verifyMember(DistributedMember mbr, String reason) {
     return mbr != null && memberExists(mbr)
-        && this.services.getHealthMonitor().checkIfAvailable(mbr, reason, true);
+        && this.services.getHealthMonitor().checkIfAvailable(mbr, reason, false);
   }
 
   /**

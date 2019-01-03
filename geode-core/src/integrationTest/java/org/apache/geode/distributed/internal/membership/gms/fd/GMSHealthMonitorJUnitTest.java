@@ -615,6 +615,40 @@ public class GMSHealthMonitorJUnitTest {
     assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
 
+  /**
+   * a failed availablility check should initiate suspect processing
+   */
+  @Test
+  public void testFailedCheckIfAvailableDoesNotRemoveMember() {
+    NetView v = installAView();
+
+    setFailureDetectionPorts(v);
+
+    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
+    assertFalse(available);
+    verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
+    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
+    verify(messenger).send(isA(SuspectMembersMessage.class));
+  }
+
+
+  /**
+   * Same test as above but with request to initiate removal
+   */
+  @Test
+  public void testFailedCheckIfAvailableRemovesMember() {
+    NetView v = installAView();
+
+    setFailureDetectionPorts(v);
+
+    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+    assertFalse(available);
+    verify(joinLeave).remove(isA(InternalDistributedMember.class), isA(String.class));
+  }
+
+
 
   @Test
   public void testShutdown() {
