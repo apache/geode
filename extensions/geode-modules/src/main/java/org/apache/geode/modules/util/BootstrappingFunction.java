@@ -43,7 +43,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private static final long serialVersionUID = 1856043174458190605L;
 
   public static final String ID = "bootstrapping-function";
-  private final ReentrantLock registerFuntionLock = new ReentrantLock();
+  private static final ReentrantLock registerFuntionLock = new ReentrantLock();
 
   private static final int TIME_TO_WAIT_FOR_CACHE =
       Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
@@ -150,12 +150,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
 
   @Override
   public String getId() {
-    registerFuntionLock.lock();
-    try {
-      return ID;
-    } finally {
-      registerFuntionLock.unlock();
-    }
+    return ID;
   }
 
   @Override
@@ -176,13 +171,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   public int hashCode() {
     // This method is only implemented so that multiple instances of this class
     // don't get added as membership listeners.
-    registerFuntionLock.lock();
-    try {
-      return ID.hashCode();
-    } finally {
-      registerFuntionLock.unlock();
-    }
-
+    return ID.hashCode();
   }
 
   public boolean equals(Object obj) {
