@@ -22,7 +22,7 @@ configurations {
   slf4jDeps
 }
 
-apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 
 
 dependencies {

@@ -16,8 +16,8 @@
  */
 apply plugin: 'war'
 
-apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
-apply from: "${rootDir}/${scriptDir}/publish.gradle"
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 dependencies {
