@@ -57,6 +57,9 @@ public class LogWrapper {
     logger.setUseParentHandlers(false);
   }
 
+  /**
+   * Used in the manager when logging is required to be sent back to gfsh
+   */
   public static LogWrapper getInstance(Cache cache) {
     if (INSTANCE == null) {
       synchronized (INSTANCE_LOCK) {
@@ -67,6 +70,13 @@ public class LogWrapper {
     }
 
     return INSTANCE;
+  }
+
+  /**
+   * used in the gfsh process
+   */
+  public static LogWrapper getInstance() {
+    return getInstance(null);
   }
 
   public void configure(GfshConfig config) {

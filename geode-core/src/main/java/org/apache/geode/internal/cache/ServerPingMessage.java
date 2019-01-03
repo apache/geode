@@ -67,7 +67,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
         filteredRecipients.add(recipient);
       }
     }
-    if (filteredRecipients == null || filteredRecipients.size() == 0)
+    if (filteredRecipients.size() == 0)
       return true;
 
     ReplyProcessor21 replyProcessor = new ReplyProcessor21(dm, filteredRecipients);

@@ -14,11 +14,12 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.logging.log4j.Logger;
 
@@ -109,6 +110,7 @@ class ControlFileWatchdog implements Runnable {
       if (thread == null) {
         thread = new LoggingThread(createThreadName(), this);
         alive = true;
+        deleteExistingStatusResponseFile();
         thread.start();
       }
     }
@@ -143,6 +145,14 @@ class ControlFileWatchdog implements Runnable {
         alive = false;
         thread = null;
       }
+    }
+  }
+
+  private void deleteExistingStatusResponseFile() {
+    try {
+      Files.deleteIfExists(file.toPath());
+    } catch (IOException e) {
+      logger.warn("Unable to delete file", e);
     }
   }
 

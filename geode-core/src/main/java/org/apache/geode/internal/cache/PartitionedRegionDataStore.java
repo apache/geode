@@ -2128,7 +2128,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         throw new PRLocallyDestroyedException(rde);
       } else {
         this.getPartitionedRegion().checkReadiness();
-        if (r != null && r.isBucketDestroyed()) {
+        if (r.isBucketDestroyed()) {
           // bucket moved by rebalance
           throw new ForceReattemptException("Bucket removed during remoteGetKeys", rde);
         } else {

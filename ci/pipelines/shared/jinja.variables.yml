@@ -26,9 +26,10 @@ build_test:
   CALL_STACK_TIMEOUT: "1800"
   PARALLEL_DUNIT: "false"
   DUNIT_PARALLEL_FORKS: "4"
-  # Actual gradle task is "build install" but is hard-coded in execute_build.sh
+  # Actual gradle task is quite a bit more than "build" but is hard-coded in execute_build.sh
   # It's consumption is more like a "TEST_RESULTS_DESTINATIONS_DIRECTORY_STUB_THING.
   GRADLE_TASK: build
+  PARALLEL_GRADLE: "false"
   execute_test_timeout: 10m
 examples_test:
   name: "TestExamples"

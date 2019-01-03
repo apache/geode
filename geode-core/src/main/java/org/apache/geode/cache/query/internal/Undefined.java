@@ -78,6 +78,13 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
   }
 
   @Override
+  public int hashCode() {
+    return Undefined.class.hashCode();
+  }
+
+
+
+  @Override
   public Version[] getSerializationVersions() {
     return null;
   }

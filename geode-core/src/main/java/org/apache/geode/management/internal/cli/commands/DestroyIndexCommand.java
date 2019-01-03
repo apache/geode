@@ -18,7 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -91,7 +91,7 @@ public class DestroyIndexCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
     RegionConfig.Index indexFromCommand = (RegionConfig.Index) element;
     String indexName = indexFromCommand.getName();
 
@@ -117,6 +117,7 @@ public class DestroyIndexCommand extends SingleGfshCommand {
         CacheElement.removeElement(r.getIndexes(), indexName);
       }
     }
+    return true;
   }
 
 }

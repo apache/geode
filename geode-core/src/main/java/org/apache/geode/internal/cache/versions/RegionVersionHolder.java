@@ -195,7 +195,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       if (e.nextVersion <= missingVersion) {
         return; // there is no RVVException for this version
       }
-      if (e.previousVersion < missingVersion && missingVersion < e.nextVersion) {
+      if (e.previousVersion < missingVersion) {
         String fine = null;
         if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
           fine = e.toString();
@@ -491,7 +491,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
         if (e.nextVersion <= v) {
           return true; // there is no RVVException for this version
         }
-        if (e.previousVersion < v && v < e.nextVersion) {
+        if (e.previousVersion < v) {
           return e.contains(v);
         }
       }
@@ -521,7 +521,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       if (e.nextVersion <= v) {
         return false; // there is no RVVException for this version
       }
-      if (e.previousVersion < v && v < e.nextVersion) {
+      if (e.previousVersion < v) {
         return !e.contains(v);
       }
     }
@@ -762,7 +762,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
           // Iterate through the set of received versions for this exception
           for (RVVException.ReceivedVersionsReverseIterator it =
               exception.receivedVersionsReverseIterator(); it.hasNext();) {
-            Long received = it.next();
+            long received = it.next();
             // If we find a gap between the previous received version and the
             // next received version, add an exception.
             if (received != previous - 1) {

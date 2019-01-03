@@ -107,7 +107,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.containsOutput("No mappings found");
+    commandResultAssert.containsOutput("No JDBC mappings found");
   }
 
   private void createNRegionMappings(int N) throws RegionMappingExistsException {
@@ -116,7 +116,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     for (int i = 1; i <= N; i++) {
       String name = regionName + "-" + i;
       service.createRegionMapping(
-          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection"));
+          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", null));
       assertThat(service.getMappingForRegion(name)).isNotNull();
     }
   }

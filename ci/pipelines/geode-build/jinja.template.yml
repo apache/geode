@@ -21,12 +21,15 @@
 
 ---
 
-{% macro plan_resource_gets() %}
+{% macro plan_resource_gets(test) %}
 - get: geode-ci
 - aggregate:
   - get: geode
     passed:
     - Build
+    {%- if test.name.startswith("Windows") %}
+    {{- all_gating_jobs() | indent(4) -}}
+    {%- endif %}
   - get: geode-build-version
     passed:
     - Build
@@ -76,7 +79,7 @@ SERVICE_ACCOUNT: ((concourse-gcp-account))
 GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
-{% macro all_gating_jobs(test) %}
+{% macro all_gating_jobs() %}
 {%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
   {%- for java_test_version in (java_test_versions) %}
 - {{test.name}}Test{{java_test_version.name}}
@@ -89,8 +92,10 @@ groups:
   jobs:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
-  {%- if repository.sanitized_fork == repository.upstream_fork %}
+  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
+  {%- endif %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
 - name: complete
@@ -101,8 +106,10 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor -%}
-  {%- if repository.sanitized_fork == repository.upstream_fork %}
+  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
+  {%- endif %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
 - name: linux
@@ -131,19 +138,6 @@ groups:
 {%- endfor %}
 
 resources:
-{% if repository.sanitized_fork == repository.upstream_fork %}
-- name: send-notification-email
-  type: email
-  source:
-    from: ((!source-email-address))
-    smtp:
-      host: ((!source-email-server))
-      password: ((!source-email-password))
-      port: "587"
-      username: ((!source-email-username))
-    to:
-    - ((!notification-email-address))
-{% endif %}
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
@@ -185,12 +179,6 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
-{% if repository.sanitized_fork == repository.upstream_fork %}
-- name: email
-  type: docker-image
-  source:
-    repository: pcfseceng/email-resource
-{% endif %}
 jobs:
 - name: {{build_test.name}}
   public: true
@@ -256,14 +244,6 @@ jobs:
       outputs:
       - name: built-geode
       - name: results
-{% if repository.sanitized_fork == repository.upstream_fork %}
-    on_failure:
-      aggregate:
-      - put: send-notification-email
-        params:
-          body: results/body
-          subject: results/subject
-{% endif %}
     ensure:
       do:
       - task: rsync_code_down
@@ -310,7 +290,7 @@ jobs:
               - name: instance-data
             timeout: 1h
 
-{% if repository.sanitized_fork == repository.upstream_fork %}
+{% if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
 - name: UpdatePassingRef
   public: true
   serial: true
@@ -333,6 +313,8 @@ jobs:
       - name: geode-ci
       outputs:
       - name: results
+{% endif %}
+{% if repository.upstream_fork != "apache" or repository.branch == "develop" %}
 - name: PublishArtifacts
   public: true
   plan:
@@ -412,7 +394,7 @@ jobs:
   public: true
   plan:
   - do:
-    {{- plan_resource_gets() |indent(4) }}
+    {{- plan_resource_gets(test) |indent(4) }}
       - put: concourse-metadata-resource
     - aggregate:
       - do:

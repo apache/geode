@@ -21,6 +21,7 @@ import java.nio.file.Paths
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
 
 // disable artifact generation for this project
 jar.enabled = false
@@ -36,6 +37,13 @@ publishing {
         artifact distTar
       }
     }
+  }
+}
+
+signing {
+  afterEvaluate {
+    sign distTar
+    sign srcDistTar
   }
 }
 
@@ -81,7 +89,7 @@ gradle.taskGraph.whenReady( { graph ->
 repositories {
   ivy {
     url 'https://archive.apache.org/'
-    layout 'pattern', {
+    patternLayout {
       artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
     }
   }
@@ -99,6 +107,11 @@ configurations {
   webServerTomcat8
   webServerTomcat9
   webServerJetty
+
+  javadocOnly {
+    description 'Projects that must be included in the JavaDocs.'
+    extendsFrom archives
+  }
 }
 
 def webServersDir = "$buildDir/generated-resources/webservers"
@@ -130,11 +143,22 @@ dependencies {
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
 
+  javadocOnly project(':extensions:geode-modules')
+  javadocOnly project(':extensions:geode-modules-session')
+  javadocOnly project(':extensions:geode-modules-session')
+  javadocOnly project(':extensions:geode-modules-tomcat7')
+  javadocOnly project(':extensions:geode-modules-tomcat9')
+  javadocOnly project(':extensions:geode-modules-tomcat8')
+  javadocOnly project(':geode-experimental-driver')
 
   testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testRuntime(project(':geode-old-versions'))
+  
+
+  acceptanceTestRuntime(project(':geode-old-versions'))
 
 
   integrationTestCompile(project(':geode-core'))
@@ -146,8 +170,8 @@ dependencies {
   }
   integrationTestCompile(project(':geode-pulse'))
   integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
-  integrationTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
-  integrationTestCompile('javax.annotation:javax.annotation-api:' + project.'javax-annotation.version')
+  integrationTestCompile('org.apache.httpcomponents:httpclient')
+  integrationTestCompile('javax.annotation:javax.annotation-api')
 
 
   distributedTestCompile(project(':geode-core'))
@@ -156,12 +180,12 @@ dependencies {
   }
   distributedTestCompile(project(':extensions:session-testing-war'))
   distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
-  distributedTestCompile('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  distributedTestCompile('org.apache.httpcomponents:httpclient')
 
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
+  distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
 
 
   acceptanceTestCompile(project(':geode-core'))
@@ -177,12 +201,12 @@ dependencies {
   uiTestCompile(project(':geode-pulse'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
   uiTestCompile(project(':geode-assembly:geode-assembly-test'))
-  uiTestCompile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')
-  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version')
-  uiTestCompile('org.seleniumhq.selenium:selenium-support:' + project.'selenium.version')
+  uiTestCompile('org.seleniumhq.selenium:selenium-api')
+  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
+  uiTestCompile('org.seleniumhq.selenium:selenium-support')
 
   uiTestRuntime(project(':geode-core'))
-  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version')
+  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver')
 
 
   upgradeTestCompile(project(':geode-core'))
@@ -191,19 +215,20 @@ dependencies {
   }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 
-  upgradeTestRuntime(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3')
-  upgradeTestRuntime('org.apache.httpcomponents:httpclient:' + project.'httpclient.version')
+  upgradeTestRuntime(project(':geode-old-versions'))
   upgradeTestRuntime(project(':extensions:session-testing-war'))
+  upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
+  upgradeTestRuntime('org.apache.httpcomponents:httpclient')
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  webServerTomcat6 group: 'apache', name: 'tomcat', version: project.'tomcat6.version', ext: 'zip'
-  webServerTomcat7 group: 'org.apache.tomcat', name: 'tomcat', version: project.'tomcat7.version', ext: 'zip'
-  webServerTomcat8 group: 'org.apache.tomcat', name: 'tomcat', version: project.'tomcat8.version', ext: 'zip'
-  webServerTomcat9 group: 'org.apache.tomcat', name: 'tomcat', version: project.'tomcat9.version', ext: 'zip'
-  webServerJetty group: 'org.eclipse.jetty', name: 'jetty-distribution', version: project.'jetty.version', ext: 'zip'
-
-  gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
+  webServerTomcat6('apache:tomcat:' + project.'tomcat6.version' + '@zip')
+  webServerTomcat7('org.apache.tomcat:tomcat:' + project.'tomcat7.version' + '@zip')
+  webServerTomcat8('org.apache.tomcat:tomcat:' + project.'tomcat8.version' + '@zip')
+  webServerTomcat9('org.apache.tomcat:tomcat:' + project.'tomcat9.version' + '@zip')
+  webServerJetty('org.eclipse.jetty:jetty-distribution:' + project.'jetty.version' + '@zip')
+  
+  gfshDependencies ('org.springframework:spring-web') {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
@@ -236,76 +261,38 @@ task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
 def cp = {
   // first add all the dependent project jars
   def jars = configurations.archives.dependencies.collect { it.dependencyProject }
-    .findAll { !(it.name.contains('web') || it.name.contains('pulse')) }
+    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
     .collect { it.jar.archiveName }
-    .join(' ')
 
   // then add all the dependencies of the dependent jars
-  jars += ' ' + configurations.archives.dependencies.collect {
-    it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
-      .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
-        // depedencies from geode-core
-        it.contains('activation') ||
-        it.contains('antlr') ||
-        it.contains('commons-io') ||
-        it.contains('classgraph') ||
-        it.contains('commons-collections') ||
-        it.contains('commons-lang') ||
-        it.contains('commons-logging') ||
-        it.contains('commons-validator') ||
-        it.contains('commons-beanutils') ||
-        it.contains('commons-codec') ||
-        it.contains('fastutil') ||
-        it.contains('jackson-annotations') ||
-        it.contains('jackson-core') ||
-        it.contains('jackson-databind') ||
-        it.contains('jansi') ||
-        it.contains('javax.resource-api') ||
-        it.contains('javax.servlet-api') ||
-        it.contains('javax.transaction-api') ||
-        it.contains('jaxb') ||
-        it.contains('jetty-http') ||
-        it.contains('jetty-io') ||
-        it.contains('jetty-security') ||
-        it.contains('jetty-server') ||
-        it.contains('jetty-servlet') ||
-        it.contains('jetty-webapp') ||
-        it.contains('jetty-util') ||
-        it.contains('jetty-xml') ||
-        it.contains('jline') ||
-        it.contains('jna') ||
-        it.contains('jopt-simple') ||
-        it.contains('log4j-api') ||
-        it.contains('log4j-core') ||
-        it.contains('log4j-jcl') ||
-        it.contains('log4j-jul') ||
-        it.contains('log4j-slf4j-impl') ||
-        it.contains('rmiio') ||
-        it.contains('shiro') ||
-        it.contains('slf4j-api') ||
-        it.contains('spring-core') ||
-        it.contains('spring-shell') ||
-        it.contains('snappy') ||
-        it.contains('jgroups') ||
-        it.contains('netty') ||
+  def depJars = configurations.archives.dependencies.collect {
+    it.dependencyProject.findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
+      .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll { !(
+        // exclude mx4j, once the deprecated code is deleted we can remove these entirely
+        it.contains('commons-digester') ||
+        it.contains('commons-modeler') ||
+        it.contains('javax.mail-api') ||
+        it.contains('mx4j') ||
 
-        // dependencies from geode-lucene
-        it.contains('lucene-analyzers-common') ||
-        it.contains('lucene-core') ||
-        it.contains('lucene-queries') ||
-        it.contains('lucene-queryparser') ||
-        it.contains('lucene-analyzers-phonetic') ||
+        // misc jars, these should be removed from the lib dir
+        it.contains('findbugs-annotations') ||
+        it.contains('geode-dependencies') ||
+        it.contains('geode-jca') ||
+        it.contains('geode-web') ||
+        it.contains('gfsh-dependencies') ||
+        it.contains('ra.jar') ||
 
-        // dependencies from geode-protobuf
-        it.contains('protobuf-java') ||
-
-        // dependencies from geode-connectors
-        it.contains('HikariCP')
-      }
+        // spring web deps that shouldn't be here either
+        it.contains('spring-aop') ||
+        it.contains('spring-beans') ||
+        it.contains('spring-context') ||
+        it.contains('spring-expression') ||
+        it.contains('spring-web')
+      )}
     }
-  }.flatten().unique().join(' ')
+  }.flatten()
 
-  return jars
+  return jars.plus(depJars).unique().join(' ')
 }
 
 // Note: this dependency doesn't work if you change a library version from
@@ -338,33 +325,34 @@ task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
 
 def docsDir = file("$buildDir/javadocs")
 task docs(type: Javadoc) {
-    options.addStringOption('Xdoclint:none', '-quiet')
-    options.links("https://lucene.apache.org/core/6_4_1/core/")
-    options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
-    options.encoding='UTF-8'
-    source parent.subprojects*.javadoc*.source
-    classpath = files(parent.subprojects*.javadoc*.classpath)
-    title = "${productName} ${project.version}"
-    include 'org/apache/geode/**/'
-    exclude 'org/apache/geode/internal/**/'
-    exclude 'org/apache/geode/**/internal/**/'
-    exclude 'org/apache/geode/**/xml/**/'
-    exclude 'org/apache/geode/distributed/**/util/**/'
-    exclude 'org/apache/geode/test/**/'
-    destinationDir = docsDir
+  options.addStringOption('Xdoclint:none', '-quiet')
+  options.links("https://lucene.apache.org/core/6_4_1/core/")
+  options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
+  options.links("https://docs.oracle.com/javase/8/docs/api/")
+  options.encoding = 'UTF-8'
+  title = "${productName} ${project.version}"
+  destinationDir = docsDir
 
-    parent.subprojects.each { project ->
-      dependsOn(project.tasks['javadoc'])
+  configurations.getByName("javadocOnly").allDependencies.each() { proj ->
+    proj.dependencyProject.tasks.withType(Javadoc).findAll { it.enabled }.each { javadocTask ->
+      source += javadocTask.source
+      classpath += javadocTask.classpath
+      excludes += javadocTask.excludes
+      includes += javadocTask.includes
     }
-    doLast {
-      parent.subprojects.each { project ->
-        copy {
-          from project.sourceSets.main.resources.srcDirs
-          into docsDir
-          include 'javadoc-images/*'
-        }
+  }
+
+  include 'org/apache/geode/**/'
+
+  doLast {
+    parent.subprojects.each { project ->
+      copy {
+        from project.sourceSets.main.resources.srcDirs
+        into docsDir
+        include 'javadoc-images/*'
       }
-   }
+    }
+  }
 }
 
 distributions {
@@ -538,7 +526,7 @@ task dumpInstalledJars(dependsOn: installDist) {
           println ""
           println file.name
           println("==========================")
-          printJars(warContents);
+          printJars(warContents)
       }
     }
   }

@@ -18,7 +18,7 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateLuceneIndexName;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateRegionName;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
@@ -103,7 +103,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       if (LuceneServiceImpl.LUCENE_REINDEX) {
         indexFactory.create(indexName, regionPath, true);
         if (cache.getRegion(regionPath) != null) {
-          xmlEntity = getXmlEntity(indexName, regionPath);
+          xmlEntity = getXmlEntity(regionPath);
         }
       } else {
         indexFactory.create(indexName, regionPath, false);
@@ -117,7 +117,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
   }
 
-  protected XmlEntity getXmlEntity(String indexName, String regionPath) {
+  protected XmlEntity getXmlEntity(String regionPath) {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return new XmlEntity(CacheXml.REGION, "name", regionName);
   }

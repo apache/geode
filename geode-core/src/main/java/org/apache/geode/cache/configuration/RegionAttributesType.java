@@ -18,6 +18,7 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -333,20 +334,20 @@ import org.apache.geode.annotations.Experimental;
         "partitionAttributes", "membershipAttributes", "subscriptionAttributes", "cacheLoader",
         "cacheWriter", "cacheListeners", "compressor", "evictionAttributes"})
 @Experimental
-public class RegionAttributesType {
+public class RegionAttributesType implements Serializable {
 
   @XmlElement(name = "key-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected Object keyConstraint;
   @XmlElement(name = "value-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected String valueConstraint;
   @XmlElement(name = "region-time-to-live", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.RegionTimeToLive regionTimeToLive;
+  protected ExpirationAttributesType regionTimeToLive;
   @XmlElement(name = "region-idle-time", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.RegionIdleTime regionIdleTime;
+  protected ExpirationAttributesType regionIdleTime;
   @XmlElement(name = "entry-time-to-live", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.EntryTimeToLive entryTimeToLive;
+  protected ExpirationAttributesType entryTimeToLive;
   @XmlElement(name = "entry-idle-time", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.EntryIdleTime entryIdleTime;
+  protected ExpirationAttributesType entryIdleTime;
   @XmlElement(name = "disk-write-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.DiskWriteAttributes diskWriteAttributes;
   @XmlElement(name = "disk-dirs", namespace = "http://geode.apache.org/schema/cache")
@@ -472,10 +473,10 @@ public class RegionAttributesType {
    * Gets the value of the regionTimeToLive property.
    *
    * possible object is
-   * {@link RegionAttributesType.RegionTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public RegionAttributesType.RegionTimeToLive getRegionTimeToLive() {
+  public ExpirationAttributesType getRegionTimeToLive() {
     return regionTimeToLive;
   }
 
@@ -483,10 +484,10 @@ public class RegionAttributesType {
    * Sets the value of the regionTimeToLive property.
    *
    * allowed object is
-   * {@link RegionAttributesType.RegionTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public void setRegionTimeToLive(RegionAttributesType.RegionTimeToLive value) {
+  public void setRegionTimeToLive(ExpirationAttributesType value) {
     this.regionTimeToLive = value;
   }
 
@@ -494,10 +495,10 @@ public class RegionAttributesType {
    * Gets the value of the regionIdleTime property.
    *
    * possible object is
-   * {@link RegionAttributesType.RegionIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public RegionAttributesType.RegionIdleTime getRegionIdleTime() {
+  public ExpirationAttributesType getRegionIdleTime() {
     return regionIdleTime;
   }
 
@@ -505,10 +506,10 @@ public class RegionAttributesType {
    * Sets the value of the regionIdleTime property.
    *
    * allowed object is
-   * {@link RegionAttributesType.RegionIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public void setRegionIdleTime(RegionAttributesType.RegionIdleTime value) {
+  public void setRegionIdleTime(ExpirationAttributesType value) {
     this.regionIdleTime = value;
   }
 
@@ -516,10 +517,10 @@ public class RegionAttributesType {
    * Gets the value of the entryTimeToLive property.
    *
    * possible object is
-   * {@link RegionAttributesType.EntryTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public RegionAttributesType.EntryTimeToLive getEntryTimeToLive() {
+  public ExpirationAttributesType getEntryTimeToLive() {
     return entryTimeToLive;
   }
 
@@ -527,10 +528,10 @@ public class RegionAttributesType {
    * Sets the value of the entryTimeToLive property.
    *
    * allowed object is
-   * {@link RegionAttributesType.EntryTimeToLive }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public void setEntryTimeToLive(RegionAttributesType.EntryTimeToLive value) {
+  public void setEntryTimeToLive(ExpirationAttributesType value) {
     this.entryTimeToLive = value;
   }
 
@@ -538,10 +539,10 @@ public class RegionAttributesType {
    * Gets the value of the entryIdleTime property.
    *
    * possible object is
-   * {@link RegionAttributesType.EntryIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public RegionAttributesType.EntryIdleTime getEntryIdleTime() {
+  public ExpirationAttributesType getEntryIdleTime() {
     return entryIdleTime;
   }
 
@@ -549,10 +550,10 @@ public class RegionAttributesType {
    * Sets the value of the entryIdleTime property.
    *
    * allowed object is
-   * {@link RegionAttributesType.EntryIdleTime }
+   * {@link RegionAttributesType.ExpirationAttributesType }
    *
    */
-  public void setEntryIdleTime(RegionAttributesType.EntryIdleTime value) {
+  public void setEntryIdleTime(ExpirationAttributesType value) {
     this.entryIdleTime = value;
   }
 
@@ -1615,7 +1616,6 @@ public class RegionAttributesType {
       }
 
     }
-
   }
 
 
@@ -1642,90 +1642,151 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class EntryIdleTime {
+  public static class ExpirationAttributesType implements Serializable {
 
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
-    protected ExpirationAttributesType expirationAttributes;
+    protected ExpirationAttributesDetail expirationAttributes = new ExpirationAttributesDetail();
 
-    /**
-     * Gets the value of the expirationAttributes property.
-     *
-     * possible object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
+    public DeclarableType getCustomExpiry() {
+      return expirationAttributes.getCustomExpiry();
     }
 
     /**
-     * Sets the value of the expirationAttributes property.
+     * Sets the value of the customExpiry property.
      *
      * allowed object is
-     * {@link ExpirationAttributesType }
+     * {@link DeclarableType }
      *
      */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
+    public void setCustomExpiry(DeclarableType value) {
+      expirationAttributes.setCustomExpiry(value);
+    }
+
+    /**
+     * Gets the value of the action property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getAction() {
+      return expirationAttributes.getAction();
+    }
+
+    /**
+     * Sets the value of the action property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setAction(String value) {
+      expirationAttributes.setAction(value);
+    }
+
+    /**
+     * Gets the value of the timeout property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getTimeout() {
+      return expirationAttributes.getTimeout();
+    }
+
+    /**
+     * Sets the value of the timeout property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setTimeout(String value) {
+      expirationAttributes.setTimeout(value);
     }
 
   }
 
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class EntryTimeToLive {
-
-    @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected ExpirationAttributesType expirationAttributes;
+  @XmlType(name = "expiration-attributes-type", namespace = "http://geode.apache.org/schema/cache",
+      propOrder = {"customExpiry"})
+  @Experimental
+  public static class ExpirationAttributesDetail implements Serializable {
+    @XmlElement(name = "custom-expiry", namespace = "http://geode.apache.org/schema/cache")
+    protected DeclarableType customExpiry;
+    @XmlAttribute(name = "action")
+    protected String action;
+    @XmlAttribute(name = "timeout", required = true)
+    protected String timeout;
 
     /**
-     * Gets the value of the expirationAttributes property.
+     * Gets the value of the customExpiry property.
      *
      * possible object is
-     * {@link ExpirationAttributesType }
+     * {@link DeclarableType }
      *
      */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
+    public DeclarableType getCustomExpiry() {
+      return customExpiry;
     }
 
     /**
-     * Sets the value of the expirationAttributes property.
+     * Sets the value of the customExpiry property.
      *
      * allowed object is
-     * {@link ExpirationAttributesType }
+     * {@link DeclarableType }
      *
      */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
+    public void setCustomExpiry(DeclarableType value) {
+      this.customExpiry = value;
     }
 
-  }
+    /**
+     * Gets the value of the action property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getAction() {
+      return action;
+    }
 
+    /**
+     * Sets the value of the action property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setAction(String value) {
+      this.action = value;
+    }
+
+    /**
+     * Gets the value of the timeout property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getTimeout() {
+      return timeout;
+    }
+
+    /**
+     * Sets the value of the timeout property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setTimeout(String value) {
+      this.timeout = value;
+    }
+  }
 
   /**
    * <p>
@@ -1786,7 +1847,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"lruEntryCount", "lruHeapPercentage", "lruMemorySize"})
-  public static class EvictionAttributes {
+  public static class EvictionAttributes implements Serializable {
 
     @XmlElement(name = "lru-entry-count", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruEntryCount lruEntryCount;
@@ -1794,6 +1855,17 @@ public class RegionAttributesType {
     protected RegionAttributesType.EvictionAttributes.LruHeapPercentage lruHeapPercentage;
     @XmlElement(name = "lru-memory-size", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruMemorySize lruMemorySize;
+
+    public String toStringRep() {
+      return "lru-entry-count: " +
+          this.lruEntryCount.getMaximum() + ", " +
+          this.lruEntryCount.getAction().toString() + ", " +
+          "\nlru-heap-percentage: " +
+          this.lruHeapPercentage.getAction().toString() +
+          "\nlru-memory-size: " +
+          this.lruMemorySize.getMaximum() +
+          this.lruMemorySize.getAction().toString();
+    }
 
     /**
      * Gets the value of the lruEntryCount property.
@@ -1885,7 +1957,7 @@ public class RegionAttributesType {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class LruEntryCount {
+    public static class LruEntryCount implements Serializable {
 
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;
@@ -2097,7 +2169,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"requiredRoles"})
-  public static class MembershipAttributes {
+  public static class MembershipAttributes implements Serializable {
 
     @XmlElement(name = "required-role", namespace = "http://geode.apache.org/schema/cache")
     protected List<RegionAttributesType.MembershipAttributes.RequiredRole> requiredRoles;
@@ -2300,7 +2372,7 @@ public class RegionAttributesType {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
       propOrder = {"partitionResolver", "partitionListeners", "fixedPartitionAttributes"})
-  public static class PartitionAttributes {
+  public static class PartitionAttributes implements Serializable {
 
     @XmlElement(name = "partition-resolver", namespace = "http://geode.apache.org/schema/cache")
     protected DeclarableType partitionResolver;
@@ -2663,115 +2735,6 @@ public class RegionAttributesType {
     }
   }
 
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class RegionIdleTime {
-
-    @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected ExpirationAttributesType expirationAttributes;
-
-    /**
-     * Gets the value of the expirationAttributes property.
-     *
-     * possible object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
-    }
-
-    /**
-     * Sets the value of the expirationAttributes property.
-     *
-     * allowed object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class RegionTimeToLive {
-
-    @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected ExpirationAttributesType expirationAttributes;
-
-    /**
-     * Gets the value of the expirationAttributes property.
-     *
-     * possible object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public ExpirationAttributesType getExpirationAttributes() {
-      return expirationAttributes;
-    }
-
-    /**
-     * Sets the value of the expirationAttributes property.
-     *
-     * allowed object is
-     * {@link ExpirationAttributesType }
-     *
-     */
-    public void setExpirationAttributes(ExpirationAttributesType value) {
-      this.expirationAttributes = value;
-    }
-
-  }
-
-
   /**
    * <p>
    * Java class for anonymous complex type.
@@ -2800,7 +2763,7 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class SubscriptionAttributes {
+  public static class SubscriptionAttributes implements Serializable {
 
     @XmlAttribute(name = "interest-policy")
     protected String interestPolicy;

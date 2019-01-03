@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CqClosedException;
 import org.apache.geode.cache.query.CqException;
@@ -405,8 +404,6 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public Version getClientVersion(ClientConnInfo connInfo) {
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-
     if (cache.getCacheServers().size() == 0) {
       return null;
     }

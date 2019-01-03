@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -30,8 +30,8 @@ import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
@@ -62,7 +62,7 @@ public class RegionAlterFunction implements InternalFunction {
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = context.getCache();
+    Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
@@ -110,8 +110,8 @@ public class RegionAlterFunction implements InternalFunction {
 
     AttributesMutator mutator = region.getAttributesMutator();
 
-    if (regionAlterArgs.isCloningEnabled() != null) {
-      mutator.setCloningEnabled(regionAlterArgs.isCloningEnabled());
+    if (regionAlterArgs.getCloningEnabled() != null) {
+      mutator.setCloningEnabled(regionAlterArgs.getCloningEnabled());
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - cloning");
       }
@@ -127,7 +127,7 @@ public class RegionAlterFunction implements InternalFunction {
     // Alter expiration attributes
     final RegionFunctionArgs.ExpirationAttrs newEntryExpirationIdleTime =
         regionAlterArgs.getEntryExpirationIdleTime();
-    if (newEntryExpirationIdleTime.isTimeOrActionSet()) {
+    if (newEntryExpirationIdleTime != null && newEntryExpirationIdleTime.isTimeOrActionSet()) {
       mutator.setEntryIdleTimeout(
           newEntryExpirationIdleTime.getExpirationAttributes(region.getEntryIdleTimeout()));
       if (logger.isDebugEnabled()) {
@@ -137,7 +137,7 @@ public class RegionAlterFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs newEntryExpirationTTL =
         regionAlterArgs.getEntryExpirationTTL();
-    if (newEntryExpirationTTL.isTimeOrActionSet()) {
+    if (newEntryExpirationTTL != null && newEntryExpirationTTL.isTimeOrActionSet()) {
       mutator.setEntryTimeToLive(
           newEntryExpirationTTL.getExpirationAttributes(region.getEntryTimeToLive()));
       if (logger.isDebugEnabled()) {
@@ -166,7 +166,7 @@ public class RegionAlterFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs newRegionExpirationIdleTime =
         regionAlterArgs.getRegionExpirationIdleTime();
-    if (newRegionExpirationIdleTime.isTimeOrActionSet()) {
+    if (newRegionExpirationIdleTime != null && newRegionExpirationIdleTime.isTimeOrActionSet()) {
       mutator.setRegionIdleTimeout(
           newRegionExpirationIdleTime.getExpirationAttributes(region.getRegionIdleTimeout()));
       if (logger.isDebugEnabled()) {
@@ -176,7 +176,7 @@ public class RegionAlterFunction implements InternalFunction {
 
     final RegionFunctionArgs.ExpirationAttrs newRegionExpirationTTL =
         regionAlterArgs.getRegionExpirationTTL();
-    if (newRegionExpirationTTL.isTimeOrActionSet()) {
+    if (newRegionExpirationTTL != null && newRegionExpirationTTL.isTimeOrActionSet()) {
       mutator.setRegionTimeToLive(
           newRegionExpirationTTL.getExpirationAttributes(region.getRegionTimeToLive()));
       if (logger.isDebugEnabled()) {
@@ -314,47 +314,6 @@ public class RegionAlterFunction implements InternalFunction {
     } catch (PRLocallyDestroyedException e) {
       throw new IllegalStateException("Partitioned Region not found registered", e);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <K> Class<K> forName(String classToLoadName, String neededFor) {
-    Class<K> loadedClass = null;
-    try {
-      // Set Constraints
-      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
-      if (classToLoadName != null && !classToLoadName.isEmpty()) {
-        loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(
-          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              classToLoadName, neededFor),
-          e);
-    } catch (ClassCastException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          classToLoadName, neededFor), e);
-    }
-
-    return loadedClass;
-  }
-
-  private static <K> K newInstance(Class<K> klass, String neededFor) {
-    K instance = null;
-    try {
-      instance = klass.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
-          neededFor), e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(
-          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-              klass, neededFor),
-          e);
-    }
-
-    return instance;
   }
 
   @Override

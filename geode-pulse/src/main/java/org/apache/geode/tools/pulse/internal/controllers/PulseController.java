@@ -29,8 +29,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -446,7 +446,7 @@ public class PulseController {
         String userName = request.getUserPrincipal().getName();
 
         // Add html escaped query to history
-        String escapedQuery = StringEscapeUtils.escapeHtml(query);
+        String escapedQuery = StringEscapeUtils.escapeHtml4(query);
         cluster.addQueryInHistory(escapedQuery, userName);
 
         // Call execute query method

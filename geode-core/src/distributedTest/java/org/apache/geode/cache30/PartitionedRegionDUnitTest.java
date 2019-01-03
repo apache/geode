@@ -15,6 +15,7 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -47,7 +48,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.PartitionedRegionException;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.PureLogWriter;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -62,7 +62,6 @@ import org.apache.geode.test.dunit.VM;
  *
  * @since GemFire 5.1
  */
-
 public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
   public static boolean InvalidateInvoked = false;
@@ -159,7 +158,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   void setVMInfoLogLevel() {
     SerializableRunnable runnable = new SerializableRunnable() {
       public void run() {
-        oldLogLevel = setLogLevel(getCache().getLogger(), InternalLogWriter.INFO_LEVEL);
+        oldLogLevel = setLogLevel(getCache().getLogger(), INFO.intLevel());
       }
     };
     for (int i = 0; i < 4; i++) {

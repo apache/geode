@@ -60,7 +60,7 @@ public class ZIncrByExecutor extends SortedSetExecutor {
 
     if (score == null) {
       keyRegion.put(member, new DoubleWrapper(incr));
-      command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), incr));
+      respondBulkStrings(command, context, incr);
       return;
     }
     double result = score.score + incr;
@@ -70,7 +70,7 @@ public class ZIncrByExecutor extends SortedSetExecutor {
     }
     score.score = result;
     keyRegion.put(member, score);
-    command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), score.score));
+    respondBulkStrings(command, context, score.score);
   }
 
 }

@@ -17,12 +17,13 @@ package org.apache.geode.management.internal.cli.domain;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
@@ -92,6 +93,11 @@ public class ClassName<T> implements Serializable {
     }
     String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
     return Pattern.matches(regex, fqcn);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(className, initProperties);
   }
 
   @Override

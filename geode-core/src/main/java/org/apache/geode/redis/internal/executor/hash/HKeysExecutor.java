@@ -54,8 +54,6 @@ public class HKeysExecutor extends HashExecutor {
       return;
     }
 
-    // String response = getBulkStringArrayResponse(keys);
-
-    command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), keys));
+    respondBulkStrings(command, context, keys);
   }
 }

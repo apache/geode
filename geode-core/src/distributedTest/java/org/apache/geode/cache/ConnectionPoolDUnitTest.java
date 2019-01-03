@@ -15,6 +15,7 @@
 package org.apache.geode.cache;
 
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -65,7 +66,6 @@ import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -1154,7 +1154,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     vm2.invoke(new SerializableRunnable() {
       public void run() {
-        LogWriter bgexecLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+        LogWriter bgexecLogger = new LocalLogWriter(ALL.intLevel(), System.out);
         bgexecLogger.info(addExpected);
       }
     });
@@ -1187,7 +1187,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     } finally {
       vm2.invoke(new SerializableRunnable() {
         public void run() {
-          LogWriter bgexecLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+          LogWriter bgexecLogger = new LocalLogWriter(ALL.intLevel(), System.out);
           bgexecLogger.info(removeExpected);
         }
       });

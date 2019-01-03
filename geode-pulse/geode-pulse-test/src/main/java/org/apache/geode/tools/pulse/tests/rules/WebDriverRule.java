@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.rules.ExternalResource;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;

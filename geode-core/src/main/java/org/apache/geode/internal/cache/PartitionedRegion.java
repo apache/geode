@@ -467,6 +467,9 @@ public class PartitionedRegion extends LocalRegion
     colocationListeners.remove(colocationListener);
   }
 
+  ScheduledExecutorService getBucketSorter() {
+    return bucketSorter;
+  }
 
   static PRIdMap getPrIdToPR() {
     return prIdToPR;
@@ -1621,7 +1624,7 @@ public class PartitionedRegion extends LocalRegion
       logger.trace("getEntryInBucket: " + "Key key={} ({}) from: {} bucketId={}", key,
           key.hashCode(), targetNode, bucketStringForLogs(bucketId));
     }
-    Integer bucketIdInt = bucketId;
+    int bucketIdInt = bucketId;
     EntrySnapshot ret = null;
     int count = 0;
     RetryTimeKeeper retryTime = null;
@@ -3646,11 +3649,6 @@ public class PartitionedRegion extends LocalRegion
             targetNode = getOrCreateNodeForBucketRead(bucketId);
           }
         }
-        if (targetNode == null) {
-          throw new FunctionException(
-              String.format("No target node found for KEY, %s",
-                  key));
-        }
       } else {
         execution.clearFailedNodes();
       }
@@ -4271,7 +4269,7 @@ public class PartitionedRegion extends LocalRegion
    * @return A set of keys from bucketNum or {@link Collections#EMPTY_SET}if no keys can be found.
    */
   public Set getBucketKeys(int bucketNum, boolean allowTombstones) {
-    Integer buck = bucketNum;
+    int buck = bucketNum;
     final int retryAttempts = calcRetry();
     Set ret = null;
     int count = 0;
@@ -5633,7 +5631,7 @@ public class PartitionedRegion extends LocalRegion
   void invalidateInBucket(final EntryEventImpl event) throws EntryNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    final Integer bucketId = event.getKeyInfo().getBucketId();
+    final int bucketId = event.getKeyInfo().getBucketId();
     assert bucketId != KeyInfo.UNKNOWN_BUCKET;
     final InternalDistributedMember targetNode = getOrCreateNodeForBucketWrite(bucketId, null);
 
@@ -7633,6 +7631,10 @@ public class PartitionedRegion extends LocalRegion
       colocatedWithRegion.getColocatedByList().remove(this);
     }
 
+    if (bucketSorter != null) {
+      bucketSorter.shutdown();
+    }
+
     RegionLogger.logDestroy(getName(),
         this.cache.getInternalDistributedSystem().getDistributedMember(), null, op.isClose());
   }
@@ -8050,7 +8052,7 @@ public class PartitionedRegion extends LocalRegion
     int retryAttempts = calcRetry();
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       Set bucketSet = null;
-      Integer lbucket = bucket;
+      int lbucket = bucket;
       final RetryTimeKeeper retryTime = new RetryTimeKeeper(Integer.MAX_VALUE);
       InternalDistributedMember bucketNode = getOrCreateNodeForBucketRead(lbucket);
       for (int count = 0; count <= retryAttempts; count++) {
@@ -8083,7 +8085,7 @@ public class PartitionedRegion extends LocalRegion
 
           InternalDistributedMember lastTarget = bucketNode;
           bucketNode = getOrCreateNodeForBucketRead(lbucket);
-          if (lastTarget != null && lastTarget.equals(bucketNode)) {
+          if (lastTarget.equals(bucketNode)) {
             if (retryTime.overMaximum()) {
               break;
             }
@@ -8685,7 +8687,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Check if the returned value is instance of Index (this means the index is
     // not in create phase, its created successfully).
-    if (prIndex == null || !(prIndex instanceof Index)) {
+    if (!(prIndex instanceof Index)) {
       logger.info("This index {} is not on this partitoned region :  {}",
           ind, this);
       return numBuckets;
@@ -8704,10 +8706,8 @@ public class PartitionedRegion extends LocalRegion
 
     // After removing from region wait for removing from index manager and
     // marking the index invalid.
-    if (prIndex != null) {
-      PartitionedIndex index = (PartitionedIndex) prIndex;
-      index.acquireIndexWriteLockForRemove();
-    }
+    PartitionedIndex index = (PartitionedIndex) prIndex;
+    index.acquireIndexWriteLockForRemove();
 
     this.indexes.remove(indexTask);
 
@@ -9250,11 +9250,11 @@ public class PartitionedRegion extends LocalRegion
   public List<BucketRegion> getSortedBuckets() {
     if (!bucketSorterStarted.get()) {
       bucketSorterStarted.set(true);
-      this.bucketSorter.scheduleAtFixedRate(new BucketSorterThread(), 0,
+      this.bucketSorter.scheduleAtFixedRate(new BucketSorterRunnable(), 0,
           HeapEvictor.BUCKET_SORTING_INTERVAL, TimeUnit.MILLISECONDS);
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "Started BucketSorter to sort the buckets according to numver of entries in each bucket for every {} milliseconds",
+            "Started BucketSorter to sort the buckets according to number of entries in each bucket for every {} milliseconds",
             HeapEvictor.BUCKET_SORTING_INTERVAL);
       }
     }
@@ -9266,7 +9266,7 @@ public class PartitionedRegion extends LocalRegion
     return bucketList;
   }
 
-  class BucketSorterThread implements Runnable {
+  class BucketSorterRunnable implements Runnable {
     @Override
     public void run() {
       try {
@@ -9297,7 +9297,7 @@ public class PartitionedRegion extends LocalRegion
         }
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("BucketSorterThread : encountered Exception ", e);
+          logger.debug("BucketSorterRunnable : encountered Exception ", e);
         }
       }
     }
@@ -9761,7 +9761,7 @@ public class PartitionedRegion extends LocalRegion
   public void updateEntryVersionInBucket(EntryEventImpl event) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    final Integer bucketId = event.getKeyInfo().getBucketId();
+    final int bucketId = event.getKeyInfo().getBucketId();
     assert bucketId != KeyInfo.UNKNOWN_BUCKET;
     final InternalDistributedMember targetNode = getOrCreateNodeForBucketWrite(bucketId, null);
 

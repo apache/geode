@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -24,13 +24,12 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import hydra.MethExecutorResult;
-
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.dunit.standalone.BounceResult;
-import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
-import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
-import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.dunit.internal.BounceResult;
+import org.apache.geode.test.dunit.internal.MethodInvokerResult;
+import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * This class represents a Java Virtual Machine that runs in a DistributedTest.
@@ -240,7 +239,7 @@ public class VM implements Serializable {
           new IllegalStateException("VM not available: " + this));
     }
 
-    MethExecutorResult result = execute(targetClass, methodName, args);
+    MethodInvokerResult result = execute(targetClass, methodName, args);
 
     if (!result.exceptionOccurred()) {
       return (V) result.getResult();
@@ -423,7 +422,7 @@ public class VM implements Serializable {
           new IllegalStateException("VM not available: " + this));
     }
 
-    MethExecutorResult result = execute(targetObject, methodName, args);
+    MethodInvokerResult result = execute(targetObject, methodName, args);
 
     if (!result.exceptionOccurred()) {
       return (V) result.getResult();
@@ -517,7 +516,7 @@ public class VM implements Serializable {
         + (VersionManager.isCurrentVersion(version) ? "" : (" with version " + version));
   }
 
-  private MethExecutorResult execute(final Class<?> targetClass, final String methodName,
+  private MethodInvokerResult execute(final Class<?> targetClass, final String methodName,
       final Object[] args) {
     try {
       return client.executeMethodOnClass(targetClass.getName(), methodName, args);
@@ -526,7 +525,7 @@ public class VM implements Serializable {
     }
   }
 
-  private MethExecutorResult execute(final Object targetObject, final String methodName,
+  private MethodInvokerResult execute(final Object targetObject, final String methodName,
       final Object[] args) {
     try {
       if (args == null) {

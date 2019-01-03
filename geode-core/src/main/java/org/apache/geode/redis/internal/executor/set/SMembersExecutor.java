@@ -49,7 +49,6 @@ public class SMembersExecutor extends SetExecutor {
     }
 
     Set<ByteArrayWrapper> members = new HashSet(keyRegion.keySet()); // Emulate copy on read
-
-    command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), members));
+    respondBulkStrings(command, context, members);
   }
 }

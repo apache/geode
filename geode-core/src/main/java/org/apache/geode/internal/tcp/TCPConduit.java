@@ -48,10 +48,10 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -89,7 +89,18 @@ public class TCPConduit implements Runnable {
   private static int LISTENER_CLOSE_TIMEOUT;
 
   /**
-   * backlog is the "accept" backlog configuration parameter all conduits server socket
+   * BACKLOG is the "accept" backlog configuration parameter for the conduits server socket.
+   * In most operating systems this is limited to 128 by default and you must change
+   * the OS setting somaxconn to go beyond that limit. Note that setting this too high
+   * can have ramifications when disconnecting from the distributed system if a thread
+   * is trying to connect to another member that is not accepting connections quickly
+   * enough. Setting it too low can also have adverse effects because backlog overflows
+   * aren't handled well by most tcp/ip implementations, causing connect timeouts instead
+   * of expected ServerRefusedConnection exceptions.
+   * <p>
+   * Normally the backlog isn't that important because if it's full of connection requests
+   * a SYN "cookie" mechanism is used to bypass the backlog queue. If this is turned off
+   * though connection requests are dropped when the queue is full.
    */
   private static int BACKLOG;
 
@@ -142,8 +153,8 @@ public class TCPConduit implements Runnable {
     // only use direct buffers if we are using nio
     useDirectBuffers = USE_NIO && !Boolean.getBoolean("p2p.nodirectBuffers");
     LISTENER_CLOSE_TIMEOUT = Integer.getInteger("p2p.listenerCloseTimeout", 60000).intValue();
-    // fix for bug 37730
-    BACKLOG = Integer.getInteger("p2p.backlog", HANDSHAKE_POOL_SIZE + 1).intValue();
+    // note: bug 37730 concerned this defaulting to 50
+    BACKLOG = Integer.getInteger("p2p.backlog", 1280).intValue();
   }
 
   ///////////////// permanent conduit state
@@ -412,23 +423,24 @@ public class TCPConduit implements Runnable {
    * this.bindAddress, which must be set before invoking this method.
    */
   private void createServerSocket() {
-    int p = this.port;
-    int b = BACKLOG;
+    int serverPort = this.port;
+    int connectionRequestBacklog = BACKLOG;
     InetAddress bindAddress = this.address;
 
     try {
       if (this.useNIO) {
-        if (p <= 0) {
+        if (serverPort <= 0) {
 
-          socket = socketCreator.createServerSocketUsingPortRange(bindAddress, b, isBindAddress,
+          socket = socketCreator.createServerSocketUsingPortRange(bindAddress,
+              connectionRequestBacklog, isBindAddress,
               this.useNIO, 0, tcpPortRange);
         } else {
           ServerSocketChannel channel = ServerSocketChannel.open();
           socket = channel.socket();
 
           InetSocketAddress inetSocketAddress =
-              new InetSocketAddress(isBindAddress ? bindAddress : null, p);
-          socket.bind(inetSocketAddress, b);
+              new InetSocketAddress(isBindAddress ? bindAddress : null, serverPort);
+          socket.bind(inetSocketAddress, connectionRequestBacklog);
         }
 
         if (useNIO) {
@@ -450,11 +462,13 @@ public class TCPConduit implements Runnable {
         channel = socket.getChannel();
       } else {
         try {
-          if (p <= 0) {
-            socket = socketCreator.createServerSocketUsingPortRange(bindAddress, b, isBindAddress,
+          if (serverPort <= 0) {
+            socket = socketCreator.createServerSocketUsingPortRange(bindAddress,
+                connectionRequestBacklog, isBindAddress,
                 this.useNIO, this.tcpBufferSize, tcpPortRange);
           } else {
-            socket = socketCreator.createServerSocket(p, b, isBindAddress ? bindAddress : null,
+            socket = socketCreator.createServerSocket(serverPort, connectionRequestBacklog,
+                isBindAddress ? bindAddress : null,
                 this.tcpBufferSize);
           }
           int newSize = socket.getReceiveBufferSize();
@@ -473,7 +487,7 @@ public class TCPConduit implements Runnable {
     } catch (IOException io) {
       throw new ConnectionException(
           String.format("While creating ServerSocket on port %s with address %s",
-              new Object[] {Integer.valueOf(p), bindAddress}),
+              new Object[] {Integer.valueOf(serverPort), bindAddress}),
           io);
     }
   }
@@ -652,8 +666,6 @@ public class TCPConduit implements Runnable {
                 ex);
             break;
           }
-          othersock.setSoTimeout(0);
-          socketCreator.handshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
         }
         if (stopped) {
           try {
@@ -759,6 +771,8 @@ public class TCPConduit implements Runnable {
 
   protected void basicAcceptConnection(Socket othersock) {
     try {
+      othersock.setSoTimeout(0);
+      socketCreator.handshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
       getConTable().acceptConnection(othersock, new PeerConnectionFactory());
     } catch (IOException io) {
       // exception is logged by the Connection
@@ -978,7 +992,7 @@ public class TCPConduit implements Runnable {
         } catch (IOException e) {
           problem = e;
           // bug #43962 don't keep trying to connect to an alert listener
-          if (AlertAppender.isThreadAlerting()) {
+          if (AlertingAction.isThreadAlerting()) {
             if (logger.isDebugEnabled()) {
               logger.debug("Giving up connecting to alert listener {}", memberAddress);
             }

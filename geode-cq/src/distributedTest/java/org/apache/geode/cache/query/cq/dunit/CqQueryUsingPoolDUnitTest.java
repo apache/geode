@@ -1081,7 +1081,8 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void waitForEvent(VM vm, final int event, final String cqName, final String key) {
-    vm.invoke(new CacheSerializableRunnable("validate cq count") {
+    vm.invoke(new CacheSerializableRunnable(
+        "wait for event (" + event + ") in cq " + cqName + "; key=" + key) {
       @Override
       public void run2() throws CacheException {
         // Get CQ Service.

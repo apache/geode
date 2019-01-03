@@ -25,11 +25,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.cq.internal.CqServiceImpl;
+import org.apache.geode.cache.query.cq.internal.ServerCQImpl;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
-import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
@@ -144,7 +144,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
         CqServiceImpl CqServiceImpl = null;
         try {
           CqServiceImpl =
-              (org.apache.geode.cache.query.internal.cq.CqServiceImpl) ((DefaultQueryService) getCache()
+              (org.apache.geode.cache.query.cq.internal.CqServiceImpl) ((DefaultQueryService) getCache()
                   .getQueryService()).getCqService();
         } catch (Exception ex) {
           LogWriterUtils.getLogWriter().info("Failed to get the internal CqServiceImpl.", ex);

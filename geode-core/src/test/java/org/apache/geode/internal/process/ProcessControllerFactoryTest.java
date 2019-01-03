@@ -95,7 +95,7 @@ public class ProcessControllerFactoryTest {
 
     // act/assert
     assertThatThrownBy(() -> factory.createProcessController(parameters, pid))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("Invalid parameters 'null' specified");
   }
 

@@ -20,7 +20,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import org.apache.geode.internal.Assert;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 
 public class DistributedLockBlackboardImpl extends UnicastRemoteObject

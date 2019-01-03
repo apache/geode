@@ -43,9 +43,9 @@ import org.springframework.shell.core.JLineShell;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ShellStatus.Status;
 
-import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -188,8 +188,8 @@ public class Gfsh extends JLineShell {
     this.gfshFileLogger.configure(this.gfshConfig);
     this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported());
 
-    /* 3. log system properties & gfsh environment */
-    this.gfshFileLogger.info(Banner.getString(args));
+    // 3. log system properties & gfsh environment TODO: change GFSH to use Geode logging
+    this.gfshFileLogger.info(new Banner().getString());
 
     // 4. Customized History implementation
     this.gfshHistory = new GfshHistory();

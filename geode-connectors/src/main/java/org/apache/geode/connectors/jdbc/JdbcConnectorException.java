@@ -16,7 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import java.sql.SQLException;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.cache.CacheRuntimeException;
 
@@ -44,7 +44,7 @@ public class JdbcConnectorException extends CacheRuntimeException {
   public static JdbcConnectorException createException(Exception e) {
     if (containsNonSerializableException(e)) {
       String message =
-          e.getMessage() + System.lineSeparator() + ExceptionUtils.getFullStackTrace(e);
+          e.getMessage() + System.lineSeparator() + ExceptionUtils.getStackTrace(e);
       return new JdbcConnectorException(message);
     } else {
       return new JdbcConnectorException(e);
@@ -64,7 +64,7 @@ public class JdbcConnectorException extends CacheRuntimeException {
    */
   public static JdbcConnectorException createException(String message, Exception e) {
     if (containsNonSerializableException(e)) {
-      message += e.getMessage() + System.lineSeparator() + ExceptionUtils.getFullStackTrace(e);
+      message += e.getMessage() + System.lineSeparator() + ExceptionUtils.getStackTrace(e);
       return new JdbcConnectorException(message);
     } else {
       return new JdbcConnectorException(message, e);

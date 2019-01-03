@@ -31,7 +31,7 @@ import org.apache.geode.pdx.internal.PdxInputStream;
  * A "blob" is a serialized representation of an object into a byte[]. BlobHelper provides utility
  * methods for serializing and deserializing the object.
  *
- * TODO: compare performance with org.apache.commons.lang.SerializationUtils
+ * TODO: compare performance with org.apache.commons.lang3.SerializationUtils
  */
 public class BlobHelper {
 

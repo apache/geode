@@ -83,9 +83,7 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
                       searchResult.getValue().toString(), searchResult.getScore())));
         }
       }
-      if (result != null) {
-        context.getResultSender().lastResult(result);
-      }
+      context.getResultSender().lastResult(result);
     } catch (LuceneQueryException e) {
       result.add(new LuceneSearchResults(true, e.getRootCause().getMessage()));
       context.getResultSender().lastResult(result);

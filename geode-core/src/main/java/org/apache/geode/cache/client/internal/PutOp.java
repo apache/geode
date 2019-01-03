@@ -82,11 +82,16 @@ public class PutOp {
           if (e instanceof ServerOperationException) {
             throw e; // fixed 44656
           }
+          op.getMessage().setIsRetry();
           cms.removeBucketServerLocation(server);
         }
       }
     }
-    return pool.execute(op);
+    Object result = pool.execute(op);
+    if (op.getMessage().isRetry()) {
+      event.setRetried(true);
+    }
+    return result;
   }
 
   public static Object execute(ExecutablePool pool, String regionName, Object key, Object value,
@@ -177,7 +182,7 @@ public class PutOp {
       this.requireOldValue = requireOldValue;
       this.expectedOldValue = expectedOldValue;
       getMessage().addStringPart(regionName);
-      getMessage().addObjPart(op);
+      getMessage().addBytePart(op.ordinal);
       int flags = 0;
       if (requireOldValue)
         flags |= 0x01;
@@ -241,7 +246,7 @@ public class PutOp {
         logger.debug("PutOpImpl constructing message with operation={}", op);
       }
       getMessage().addStringPart(region.getFullPath());
-      getMessage().addObjPart(op);
+      getMessage().addBytePart(op.ordinal);
       int flags = 0;
       if (requireOldValue)
         flags |= 0x01;

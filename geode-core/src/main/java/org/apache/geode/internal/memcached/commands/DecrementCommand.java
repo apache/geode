@@ -60,7 +60,7 @@ public class DecrementCommand extends AbstractCommand {
     assert "decr".equals(firstLineElements[0]);
     String key = firstLineElements[1];
     String decrByStr = stripNewline(firstLineElements[2]);
-    Long decrBy = Long.parseLong(decrByStr);
+    long decrBy = Long.parseLong(decrByStr);
     boolean noReply = firstLineElements.length > 3;
 
     Region<Object, ValueWrapper> r = getMemcachedRegion(cache);

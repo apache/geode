@@ -149,12 +149,17 @@ public class ExpirationAttributes implements DataSerializable {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.timeout = in.readInt();
-    this.action = (ExpirationAction) DataSerializer.readObject(in);
+    this.action = DataSerializer.readObject(in);
 
   }
 
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.timeout);
     DataSerializer.writeObject(this.action, out);
+  }
+
+  public boolean isDefault() {
+    return (this.action == null || this.action == ExpirationAction.INVALIDATE)
+        && (this.timeout == 0);
   }
 }

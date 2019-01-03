@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 import org.apache.geode.internal.util.BlobHelper;
@@ -37,7 +37,8 @@ public class EvictionAttributesImplTest {
     EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
     byte[] bytes = SerializationUtils.serialize(evictionAttributes);
     assertThat(bytes).isNotNull().isNotEmpty();
-    assertThat(SerializationUtils.deserialize(bytes)).isNotSameAs(evictionAttributes)
+    assertThat((EvictionAttributesImpl) SerializationUtils.deserialize(bytes))
+        .isNotSameAs(evictionAttributes)
         .isInstanceOf(EvictionAttributesImpl.class);
   }
 }

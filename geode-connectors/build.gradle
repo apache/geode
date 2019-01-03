@@ -24,6 +24,9 @@ repositories {
   }
 }
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-core'))
@@ -49,47 +52,50 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('com.zaxxer:HikariCP:3.2.0')
-  compile('commons-lang:commons-lang:' + project.'commons-lang.version')
-  compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compile('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  compile('com.zaxxer:HikariCP')
+  compile('org.apache.commons:commons-lang3')
+  compile('javax.xml.bind:jaxb-api')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
-  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+  compile('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
 
-  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  testCompile('pl.pragmatists:JUnitParams')
 
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('junit:junit:4.12')
-  integrationTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.assertj:assertj-core')
+  integrationTestCompile('pl.pragmatists:JUnitParams')
 
-  distributedTestCompile('junit:junit:' + project.'junit.version')
-  distributedTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
-  distributedTestCompile('org.mockito:mockito-core:2.19.1')
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('org.assertj:assertj-core')
+  distributedTestCompile('org.mockito:mockito-core')
+  distributedTestCompile('pl.pragmatists:JUnitParams')
+  distributedTestRuntime('org.apache.derby:derby')
 
-  acceptanceTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  acceptanceTestCompile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  acceptanceTestCompile('junit:junit:' + project.'junit.version')
-  acceptanceTestCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
-  acceptanceTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
-  acceptanceTestCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
-  acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-core', version: '0.31.1')
+  acceptanceTestCompile('junit:junit')
+  acceptanceTestCompile('org.assertj:assertj-core')
+  acceptanceTestCompile('org.awaitility:awaitility')
+  acceptanceTestCompile('org.mockito:mockito-core')
+  acceptanceTestCompile('com.palantir.docker.compose:docker-compose-rule-core')
+  acceptanceTestCompile('pl.pragmatists:JUnitParams')
+  acceptanceTestCompile('com.palantir.docker.compose:docker-compose-rule-junit4')
 
-  acceptanceTestCompile(group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1')
-
-  acceptanceTestRuntime(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
-  acceptanceTestRuntime(group: 'org.apache.derby', name: 'derby', version: project.'derby.version')
-  acceptanceTestRuntime(group: 'org.postgresql', name: 'postgresql', version: '42.2.2')
+  acceptanceTestRuntime('mysql:mysql-connector-java')
+  acceptanceTestRuntime('org.apache.derby:derby')
+  acceptanceTestRuntime('org.postgresql:postgresql')
 }
 
 integrationTest.forkEvery 0

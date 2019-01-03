@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.apache.geode.internal.logging.Configuration.MAIN_LOGGER_NAME;
+import static org.apache.geode.internal.logging.Configuration.create;
+import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,21 +30,26 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.logging.Configuration;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogConfigSupplier;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Tests FastLogger isDebugEnabled and isTraceEnabled with various configurations.
+ * Integration tests for {@link FastLogger} with various configurations.
  *
  * <p>
  * For filters see https://logging.apache.org/log4j/2.0/manual/filters.html
@@ -49,53 +57,63 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category(LoggingTest.class)
 public class FastLoggerIntegrationTest {
 
+  /**
+   * This config file is generated dynamically by the test class.
+   */
+  private static final String CONFIG_FILE_NAME = "FastLoggerIntegrationTest_log4j2.xml";
   private static final String TEST_LOGGER_NAME = FastLogger.class.getPackage().getName();
   private static final String ENABLED_MARKER_NAME = "ENABLED";
   private static final String UNUSED_MARKER_NAME = "UNUSED";
 
-  private File configFile;
-  private String configFileLocation;
+  private static File configFile;
+  private static String configFilePath;
+
+  private Configuration configuration;
   private Logger logger;
-  private LoggerContext appenderContext;
   private Marker enabledMarker;
   private Marker unusedMarker;
 
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  @ClassRule
+  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public LoggerContextRule loggerContextRule = new LoggerContextRule(configFilePath);
+
+  @BeforeClass
+  public static void setUpLogConfigFile() throws Exception {
+    configFile = new File(temporaryFolder.getRoot(), CONFIG_FILE_NAME);
+    configFilePath = configFile.getAbsolutePath();
+    writeSimpleConfigFile(configFile, Level.WARN);
+  }
 
   @Before
   public void setUp() throws Exception {
-    System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-    configFile = new File(temporaryFolder.getRoot(), "log4j2-test.xml");
-    configFileLocation = configFile.toURI().toURL().toString();
     enabledMarker = MarkerManager.getMarker(ENABLED_MARKER_NAME);
     unusedMarker = MarkerManager.getMarker(UNUSED_MARKER_NAME);
-    setUpLogService();
+
+    logger = LogService.getLogger(TEST_LOGGER_NAME);
+
+    assertThat(LogService.getLogger(MAIN_LOGGER_NAME).getLevel()).isEqualTo(Level.FATAL);
+    assertThat(logger).isInstanceOf(FastLogger.class);
+    assertThat(logger.getLevel()).isEqualTo(Level.WARN);
+
+    LogConfig logConfig = mock(LogConfig.class);
+    when(logConfig.getLogLevel()).thenReturn(CONFIG.intLevel());
+    when(logConfig.getSecurityLogLevel()).thenReturn(CONFIG.intLevel());
+
+    LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
+    when(logConfigSupplier.getLogConfig()).thenReturn(logConfig);
+
+    configuration = create(LogLevelUpdateOccurs.NEVER, LogLevelUpdateScope.GEODE_LOGGERS);
+    configuration.initialize(logConfigSupplier);
   }
 
   @After
-  public void tearDown() {
-    System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-    LogService.reconfigure();
-  }
+  public void tearDown() throws Exception {
+    configuration.shutdown();
 
-  private void setUpLogService() throws Exception {
-    // Load a base config and do some sanity checks
     writeSimpleConfigFile(configFile, Level.WARN);
-    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, configFileLocation);
-
-    LogService.reconfigure();
-    LogService.getLogger().getName(); // This causes the config file to be loaded
-    logger = LogService.getLogger(TEST_LOGGER_NAME);
-    appenderContext =
-        ((org.apache.logging.log4j.core.Logger) LogService.getRootLogger()).getContext();
-
-    assertThat(LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel(), is(Level.FATAL));
-    assertThat(logger, is(instanceOf(FastLogger.class)));
-    assertThat(logger.getLevel(), is(Level.WARN));
+    loggerContextRule.reconfigure();
   }
 
   @Test
@@ -297,34 +315,33 @@ public class FastLoggerIntegrationTest {
   private void verifyIsDelegatingForDebugOrLower(final Level level,
       final boolean expectIsDelegating) throws Exception {
     writeSimpleConfigFile(configFile, level);
-    appenderContext.reconfigure();
+    loggerContextRule.reconfigure();
+    configuration.configChanged();
 
-    assertThat(logger.getLevel(), is(level));
+    assertThat(logger.getLevel()).isEqualTo(level);
 
-    assertThat(logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled()).isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled()).isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled()).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled()).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled()).isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled()).isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    final boolean delegating = ((FastLogger) logger).isDelegating();
-    assertThat(delegating, is(expectIsDelegating));
-    assertThat(delegating, is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(delegating, is(expectIsDelegating));
+    boolean delegating = ((FastLogger) logger).isDelegating();
+    assertThat(delegating).isEqualTo(expectIsDelegating);
+    assertThat(delegating).isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(delegating).isEqualTo(expectIsDelegating);
   }
 
   /**
@@ -335,47 +352,44 @@ public class FastLoggerIntegrationTest {
    */
   private void verifyIsDelegatingForLoggerFilter(final Level level,
       final boolean expectIsDelegating) throws Exception {
-    assertThat(expectIsDelegating, is(true)); // always true for Logger Filter
+    assertThat(expectIsDelegating).isEqualTo(true); // always true for Logger Filter
 
     writeLoggerFilterConfigFile(configFile, level);
-    appenderContext.reconfigure();
+    loggerContextRule.reconfigure();
+    configuration.configChanged();
 
-    assertThat(logger.getLevel(), is(level));
+    assertThat(logger.getLevel()).isEqualTo(level);
 
-    assertThat(logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled()).isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled()).isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled()).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled()).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled()).isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled()).isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(enabledMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(enabledMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(((FastLogger) logger).isDelegating(), is(expectIsDelegating));
+    assertThat(((FastLogger) logger).isDelegating()).isEqualTo(expectIsDelegating);
   }
 
   /**
@@ -386,37 +400,38 @@ public class FastLoggerIntegrationTest {
    */
   private void verifyIsDelegatingForContextWideFilter(final Level level,
       final boolean expectIsDelegating) throws Exception {
-    assertThat(expectIsDelegating, is(true)); // always true for Context-wide Filter
+    assertThat(expectIsDelegating).isEqualTo(true); // always true for Context-wide Filter
 
     writeContextWideFilterConfigFile(configFile, level);
-    appenderContext.reconfigure();
+    loggerContextRule.reconfigure();
+    configuration.configChanged();
 
-    assertThat(logger.getLevel(), is(level));
+    assertThat(logger.getLevel()).isEqualTo(level);
 
     // note: unlike other filters, Context-wide filters are processed BEFORE isEnabled checks
 
-    assertThat(logger.isTraceEnabled(), is(false));
-    assertThat(logger.isDebugEnabled(), is(false));
-    assertThat(logger.isInfoEnabled(), is(false));
-    assertThat(logger.isWarnEnabled(), is(false));
-    assertThat(logger.isErrorEnabled(), is(false));
-    assertThat(logger.isFatalEnabled(), is(false));
+    assertThat(logger.isTraceEnabled()).isEqualTo(false);
+    assertThat(logger.isDebugEnabled()).isEqualTo(false);
+    assertThat(logger.isInfoEnabled()).isEqualTo(false);
+    assertThat(logger.isWarnEnabled()).isEqualTo(false);
+    assertThat(logger.isErrorEnabled()).isEqualTo(false);
+    assertThat(logger.isFatalEnabled()).isEqualTo(false);
 
-    assertThat(logger.isTraceEnabled(enabledMarker), is(true));
-    assertThat(logger.isDebugEnabled(enabledMarker), is(true));
-    assertThat(logger.isInfoEnabled(enabledMarker), is(true));
-    assertThat(logger.isWarnEnabled(enabledMarker), is(true));
-    assertThat(logger.isErrorEnabled(enabledMarker), is(true));
-    assertThat(logger.isFatalEnabled(enabledMarker), is(true));
+    assertThat(logger.isTraceEnabled(enabledMarker)).isEqualTo(true);
+    assertThat(logger.isDebugEnabled(enabledMarker)).isEqualTo(true);
+    assertThat(logger.isInfoEnabled(enabledMarker)).isEqualTo(true);
+    assertThat(logger.isWarnEnabled(enabledMarker)).isEqualTo(true);
+    assertThat(logger.isErrorEnabled(enabledMarker)).isEqualTo(true);
+    assertThat(logger.isFatalEnabled(enabledMarker)).isEqualTo(true);
 
-    assertThat(logger.isTraceEnabled(unusedMarker), is(false));
-    assertThat(logger.isDebugEnabled(unusedMarker), is(false));
-    assertThat(logger.isInfoEnabled(unusedMarker), is(false));
-    assertThat(logger.isWarnEnabled(unusedMarker), is(false));
-    assertThat(logger.isErrorEnabled(unusedMarker), is(false));
-    assertThat(logger.isFatalEnabled(unusedMarker), is(false));
+    assertThat(logger.isTraceEnabled(unusedMarker)).isEqualTo(false);
+    assertThat(logger.isDebugEnabled(unusedMarker)).isEqualTo(false);
+    assertThat(logger.isInfoEnabled(unusedMarker)).isEqualTo(false);
+    assertThat(logger.isWarnEnabled(unusedMarker)).isEqualTo(false);
+    assertThat(logger.isErrorEnabled(unusedMarker)).isEqualTo(false);
+    assertThat(logger.isFatalEnabled(unusedMarker)).isEqualTo(false);
 
-    assertThat(((FastLogger) logger).isDelegating(), is(expectIsDelegating));
+    assertThat(((FastLogger) logger).isDelegating()).isEqualTo(expectIsDelegating);
   }
 
   /**
@@ -427,47 +442,44 @@ public class FastLoggerIntegrationTest {
    */
   private void verifyIsDelegatingForAppenderFilter(final Level level,
       final boolean expectIsDelegating) throws Exception {
-    assertThat(expectIsDelegating, is(true)); // always true for Appender Filter
+    assertThat(expectIsDelegating).isEqualTo(true); // always true for Appender Filter
 
     writeAppenderFilterConfigFile(configFile, level);
-    appenderContext.reconfigure();
+    loggerContextRule.reconfigure();
+    configuration.configChanged();
 
-    assertThat(logger.getLevel(), is(level));
+    assertThat(logger.getLevel()).isEqualTo(level);
 
-    assertThat(logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled()).isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled()).isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled()).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled()).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled()).isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled()).isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(enabledMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(enabledMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(((FastLogger) logger).isDelegating(), is(expectIsDelegating));
+    assertThat(((FastLogger) logger).isDelegating()).isEqualTo(expectIsDelegating);
   }
 
   /**
@@ -478,47 +490,44 @@ public class FastLoggerIntegrationTest {
    */
   private void verifyIsDelegatingForAppenderRefFilter(final Level level,
       final boolean expectIsDelegating) throws Exception {
-    assertThat(expectIsDelegating, is(true)); // always true for AppenderRef Filter
+    assertThat(expectIsDelegating).isEqualTo(true); // always true for AppenderRef Filter
 
     writeAppenderRefFilterConfigFile(configFile, level);
-    appenderContext.reconfigure();
+    loggerContextRule.reconfigure();
+    configuration.configChanged();
 
-    assertThat(logger.getLevel(), is(level));
+    assertThat(logger.getLevel()).isEqualTo(level);
 
-    assertThat(logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled()).isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled()).isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled()).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled()).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled()).isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled()).isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(enabledMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(enabledMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(enabledMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(enabledMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(logger.isTraceEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(logger.isDebugEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(logger.isInfoEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(logger.isWarnEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(logger.isErrorEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(logger.isFatalEnabled(unusedMarker),
-        is(level.isLessSpecificThan(Level.FATAL)));
+    assertThat(logger.isTraceEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.TRACE));
+    assertThat(logger.isDebugEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.DEBUG));
+    assertThat(logger.isInfoEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.INFO));
+    assertThat(logger.isWarnEnabled(unusedMarker)).isEqualTo(level.isLessSpecificThan(Level.WARN));
+    assertThat(logger.isErrorEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.ERROR));
+    assertThat(logger.isFatalEnabled(unusedMarker))
+        .isEqualTo(level.isLessSpecificThan(Level.FATAL));
 
-    assertThat(((FastLogger) logger).isDelegating(), is(expectIsDelegating));
+    assertThat(((FastLogger) logger).isDelegating()).isEqualTo(expectIsDelegating);
   }
 
   private boolean expectDelegating(final boolean value) {

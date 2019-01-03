@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DistributionManager;

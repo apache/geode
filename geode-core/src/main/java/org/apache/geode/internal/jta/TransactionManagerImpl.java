@@ -889,14 +889,6 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       GlobalTransaction gtx2 = (GlobalTransaction) obj2;
       return gtx1.compare(gtx2);
     }
-
-    /**
-     * Overwrite default equals implementation
-     */
-    @Override
-    public boolean equals(Object o1) {
-      return this == o1;
-    }
   }
 
   /**
@@ -912,7 +904,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.infoEnabled())
         writer.info(
-            "Exception While cleaning thread before re statrup");
+            "Exception While cleaning thread before re startup");
     }
     /*
      * try { transactionManager.cleanUpThread.join(); } catch (Exception e) { e.printStackTrace(); }

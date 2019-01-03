@@ -41,9 +41,9 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.commands.CreateRegionCommand;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
@@ -399,17 +399,19 @@ public class RegionProvider implements Closeable {
       return r;
     do {
       createRegionCmd.setCache(cache);
-      Result result = createRegionCmd.createRegion(regionPath, defaultRegionType, null, null, true,
-          null, null, null, null, null, null, null, null, false, false, true, false, false, false,
-          true, null, null, null, null, null, null, null, null, null, null, null, null, null, false,
-          null, null, null, null, null, null, null, null, null, null, null);
+      ResultModel resultModel =
+          createRegionCmd.createRegion(regionPath, defaultRegionType, null, null, true,
+              null, null, null, null, null, null, null, null, false, false, true, false, false,
+              false,
+              true, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              false,
+              null, null, null, null, null, null, null, null, null, null, null);
 
       r = cache.getRegion(regionPath);
-      if (result.getStatus() == Status.ERROR && r == null) {
+      if (resultModel.getStatus() == Status.ERROR && r == null) {
         String err = "Unable to create region named \"" + regionPath + "\":\n";
-        while (result.hasNextLine())
-          err += result.nextLine();
-        throw new RegionCreationException(err);
+        // TODO: check this
+        throw new RegionCreationException(err + resultModel.toJson());
       }
     } while (r == null); // The region can be null in the case that it is concurrently destroyed by
     // a remote even triggered internally by Geode

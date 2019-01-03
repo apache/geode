@@ -76,7 +76,7 @@ public class SocketCloser {
   /**
    * Protect access to closed using synchronizing with closedLock
    */
-  private Boolean closed = Boolean.FALSE;
+  private boolean closed;
 
   public SocketCloser() {
     this(ASYNC_CLOSE_POOL_KEEP_ALIVE_SECONDS, ASYNC_CLOSE_POOL_MAX_THREADS,

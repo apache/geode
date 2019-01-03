@@ -15,20 +15,57 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
-  compileOnly(project(':geode-core'))
-  testCompile(project(':geode-core'))
+  gradleLint.ignore {
+    // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
+    upgradeTestCompile('xml-apis:xml-apis:1.4.01')
+  }
+  compile(project(':geode-core'))
+
+  compileOnly('org.apache.logging.log4j:log4j-api:2.11.1')
+
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+
+  testCompile('org.assertj:assertj-core')
+  testCompile('junit:junit')
+  testCompile('org.mockito:mockito-core')
+
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+
+  integrationTestCompile('org.assertj:assertj-core')
+  integrationTestCompile('junit:junit')
+
   distributedTestCompile(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
+  distributedTestCompile(project(':geode-junit'))
+
+  distributedTestCompile('mx4j:mx4j')
+  distributedTestCompile('org.awaitility:awaitility')
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('org.hamcrest:hamcrest-core')
+  distributedTestCompile('org.hamcrest:hamcrest-library')
+  distributedTestCompile('org.mockito:mockito-core')
+  distributedTestCompile('org.hamcrest:hamcrest-all')
+  distributedTestCompile('org.apache.commons:commons-lang3')
+  distributedTestCompile('commons-io:commons-io')
+  distributedTestCompile('org.assertj:assertj-core')
+  distributedTestCompile('pl.pragmatists:JUnitParams')
+
+  upgradeTestCompile(project(':geode-junit'))
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  upgradeTestCompile('org.awaitility:awaitility')
+  upgradeTestCompile('org.assertj:assertj-core')
+  upgradeTestCompile('junit:junit')
+
+  upgradeTestRuntime(project(':geode-old-versions'))
 }

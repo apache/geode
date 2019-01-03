@@ -67,37 +67,36 @@ public class ExecuteRegionFunction66Test {
   }
 
   @Test
-  public void executingFunctionByStringWithNoHAShouldSetWaitOnException() throws Exception {
+  public void executingFunctionInPreGeode18ByStringWithNoHAShouldNotSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
     this.executeRegionFunction66.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE, functionObject, execution);
-    verify(execution, times(1)).setWaitOnExceptionFlag(true);
+    verify(execution, times(0)).setWaitOnExceptionFlag(true);
   }
 
   @Test
-  public void executingFunctionByStringWithNoHAWithOptimizeForWriteShouldSetWaitOnException()
-      throws Exception {
+  public void executingFunctionInPreGeode18ByStringWithNoHAWithOptimizeForWriteShouldNotSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
     this.executeRegionFunction66.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
-    verify(execution, times(1)).setWaitOnExceptionFlag(true);
+    verify(execution, times(0)).setWaitOnExceptionFlag(true);
   }
 
   @Test
-  public void executeFunctionObjectShouldSetWaitOnException() throws Exception {
+  public void executingFunctionObjectInPreGeode18ShouldNotSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     this.executeRegionFunction66.executeFunctionWithResult(functionObject,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
-    verify(execution, times(1)).setWaitOnExceptionFlag(true);
+    verify(execution, times(0)).setWaitOnExceptionFlag(true);
   }
 
   @Test
-  public void generateNullArgumentMessageIfRegionIsNull() throws Exception {
+  public void generateNullArgumentMessageIfRegionIsNull() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input region for the execute function request is null",
@@ -105,7 +104,7 @@ public class ExecuteRegionFunction66Test {
   }
 
   @Test
-  public void generateNullArgumentMessageIfFunctionIsNullAndRegionIsNotNull() throws Exception {
+  public void generateNullArgumentMessageIfFunctionIsNullAndRegionIsNotNull() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input function for the execute function request is null",
@@ -165,7 +164,7 @@ public class ExecuteRegionFunction66Test {
   }
 
   @Test
-  public void getAuthorizedExecuteFunctionReturnsNullIfAuthorizationIsNull() throws Exception {
+  public void getAuthorizedExecuteFunctionReturnsNullIfAuthorizationIsNull() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     String functionName = "functionName";
@@ -177,8 +176,7 @@ public class ExecuteRegionFunction66Test {
   }
 
   @Test
-  public void getAuthorizedExecuteFunctionReturnsExecutionContextIfAuthorizeRequestIsNotNull()
-      throws Exception {
+  public void getAuthorizedExecuteFunctionReturnsExecutionContextIfAuthorizeRequestIsNotNull() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     String functionName = "functionName";

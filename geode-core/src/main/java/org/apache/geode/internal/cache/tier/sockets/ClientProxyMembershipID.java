@@ -195,9 +195,9 @@ public class ClientProxyMembershipID
   }
 
   private ClientProxyMembershipID(int id, byte[] clientSideIdentity) {
-    Boolean specialCase = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
+    boolean specialCase = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
     String durableID = this.system.getProperties().getProperty(DURABLE_CLIENT_ID);
-    if (specialCase.booleanValue() && durableID != null && (!durableID.equals(""))) {
+    if (specialCase && durableID != null && (!durableID.equals(""))) {
       this.uniqueId = durable_synch_counter;
     } else {
       this.uniqueId = id;

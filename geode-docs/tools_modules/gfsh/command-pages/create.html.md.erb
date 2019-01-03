@@ -374,7 +374,7 @@ See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite
 
 ``` pre
 create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*] 
-  [--manual-start=value] [--start-port=value] [--end-port=value] [--bind-address=value] 
+  [--manual-start=(value)?] [--start-port=value] [--end-port=value] [--bind-address=value] 
   [--maximum-time-between-pings=value] [--socket-buffer-size=value]
   [--gateway-transport-filter=value(,value)*] [--hostname-for-senders=value]
   [--if-not-exists=(value)?]
@@ -411,7 +411,7 @@ if this option is specified and cluster configuration is enabled.
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-manual-start</span></td>
-<td>Boolean value that specifies whether you need to manually start the gateway receiver. If you supply a null value, the default is &quot;false&quot; the gateway receiver starts automatically.</td>
+<td>Boolean value that specifies whether you need to manually start the gateway receiver. If you specify this option without a value, the default is &quot;true&quot; the gateway receiver must be started manually.</td>
 <td>true</td>
 </tr>
 <tr class="even">
@@ -704,8 +704,8 @@ JDBC connection.
 **Syntax:**
 
 ``` pre
-create jndi-binding --name=value --type=value --jdbc-driver-class=value
- --connection-url=value [--blocking-timeout-seconds=value]
+create jndi-binding --name=value --url=value
+ [--jdbc-driver-class=value] [--type=value] [--blocking-timeout-seconds=value]
  [--conn-pooled-datasource-class=value] [--idle-timeout-seconds=value]
  [--init-pool-size=value] [--login-timeout-seconds=value]
  [--managed-conn-factory-class=value] [--max-pool-size=value] [--password=value]
@@ -718,11 +718,11 @@ create jndi-binding --name=value --type=value --jdbc-driver-class=value
 | Name                                               | Description                                                                            | Default |
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the binding to create.                                               |         |
-| <span class="keyword parmname">\\-\\-type</span>       | *Required.* Type of the XA datasource. One of: `MANAGED`, `SIMPLE`, `POOLED`, or `XAPOOLED`.     |         |
-| <span class="keyword parmname">\\-\\-jdbc-driver-class</span>       | *Required.* The fully qualified name of the JDBC driver class.              |         |
-| <span class="keyword parmname">\\-\\-connection-url</span>       | *Required.* the JDBC driver connection URL string. For example, `jdbc:hsqldb:hsql://localhost:1701`.              |         |
+| <span class="keyword parmname">&#8209;&#8209;url or &#8209;&#8209;connection-url</span>       | *Required.* the JDBC driver connection URL string. For example, `jdbc:hsqldb:hsql://localhost:1701`.              |         |
+| <span class="keyword parmname">\\-\\-jdbc-driver-class</span>       | The fully qualified name of the JDBC driver class.              |         |
+| <span class="keyword parmname">\\-\\-type</span>       | Type of the XA datasource. One of: `MANAGED`, `SIMPLE`, `POOLED`, or `XAPOOLED`. If `--type=POOLED` and a `--conn-pooled-datasource-class` option is not specified, a pool will be created using Hikari. For more information on Hikari, see [https://brettwooldridge.github.io/HikariCP](https://brettwooldridge.github.io/HikariCP).    | `SIMPLE` |
 | <span class="keyword parmname">\\-\\-blocking-timeout-seconds</span>       | Specifies the maximum time, in seconds, to block while waiting for a connection before throwing an exception.                                        |         |
-| <span class="keyword parmname">\\-\\-conn-pooled-datasource-class</span>   | The fully qualified name of the connection pool implementation that holds XA datasource connections.                                                 |         |
+| <span class="keyword parmname">\\-\\-conn-pooled-datasource-class</span>   | The fully qualified name of the connection pool implementation that holds XA datasource connections. If `--type=POOLED`, then this class must implement `org.apache.geode.datasource.PooledDataSourceFactory`.                                                 |         |
 | <span class="keyword parmname">\\-\\-idle-timeout-seconds</span>   | Specifies the time, in seconds, that a connection may be idle before being closed. |         |
 | <span class="keyword parmname">\\-\\-init-pool-size</span>   | Specifies the initial number of connections the pool should hold.                  |         |
 | <span class="keyword parmname">\\-\\-login-timeout-seconds</span>   | The quantity of seconds after which the client thread will be disconnected due to inactivity. |         |
@@ -733,14 +733,14 @@ create jndi-binding --name=value --type=value --jdbc-driver-class=value
 | <span class="keyword parmname">\\-\\-username</span>   | Specifies the default user name to be used when creating a new connection.               |         |
 | <span class="keyword parmname">\\-\\-xa-datasource-class</span>   | The fully qualified name of the `javax.sql.XADataSource` implementation class. |         |
 | <span class="keyword parmname">\\-\\-if-not-exists</span>   | When true, a duplicate jndi binding will not be created if one with the same name already exists.  When false, an attempt to create a duplicate jndi binding results in an error. The option is set to true if the option is specified without a value. | false   |
-| <span class="keyword parmname">\\-\\-datasource-config-properties</span>   | Properties for the custom `XADataSource` driver. Append a JSON string containing a (name, type, value) tuple to set any property.  For example: `--datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}`         |         |
+| <span class="keyword parmname">\\-\\-datasource-config-properties</span>   | Properties for the custom `XADataSource` driver. Append a JSON string containing a (name, type, value) tuple to set any property. If `--type=POOLED`, the properties will configure the database data source. If `--type=POOLED` and the value of a name within the tuple begins with the string "pool.", then the properties will configure the pool data source. For example: `--datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'pool.name2','type':'type2','value':'value2'}`         |         |
 
 **Example Commands:**
 
 ``` pre
 gfsh>create jndi-binding --name=jndi1 --type=SIMPLE \
   --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver \
-  --connection-url="jdbc:derby:newDB;create=true"
+  --url="jdbc:derby:newDB;create=true"
 ```
 
 ## <a id="create_lucene_index" class="no-quick-link"></a>create lucene index

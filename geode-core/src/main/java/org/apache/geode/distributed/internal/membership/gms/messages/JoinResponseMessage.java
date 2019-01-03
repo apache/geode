@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -131,6 +132,11 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     rejectionMessage = DataSerializer.readString(in);
     messengerData = DataSerializer.readByteArray(in);
     secretPk = DataSerializer.readByteArray(in);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(memberID);
   }
 
   @Override

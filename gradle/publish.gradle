@@ -20,6 +20,16 @@ subprojects {
   apply plugin: 'maven-publish'
   apply plugin: 'signing'
 
+  task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+  }
+
+  task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+  }
+
   publishing {
     publications {
       maven(MavenPublication) {
@@ -130,7 +140,7 @@ subprojects {
   }
 
   signing {
-    required({project.isReleaseVersion})
+    required({project.isReleaseVersion && project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile')})
     sign publishing.publications.maven
   }
 
@@ -149,7 +159,13 @@ subprojects {
         def expectedPom = new XmlParser().parse(expectedPomFile.toString())
         def expectedDependencies = new TreeSet()
         expectedPom.dependencies.dependency.each() {
-          expectedDependencies.add(it as String)
+          def dep = it as String
+          if (dep.contains("org.apache.geode")) {
+            // since the project version is the source of truth, use that for comparison instead of
+            // whatever is stored in the expected pom file
+            dep = dep.replaceFirst("(.*\\[)(\\d+.\\d+.\\d+(-SNAPSHOT)?)(\\].*)", '$1' + version + '$4')
+          }
+          expectedDependencies.add(dep)
         }
 
         def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
@@ -181,7 +197,6 @@ subprojects {
         }
       }
     }
-
   }
   check.dependsOn('checkPom')
 
@@ -194,9 +209,9 @@ subprojects {
       from actualPomFile
       into expectedPomDir
       rename '.*.xml', "expected-pom.xml"
-
     }
   }
+  checkPom.mustRunAfter(updateExpectedPom)
 } // subprojects
 
 

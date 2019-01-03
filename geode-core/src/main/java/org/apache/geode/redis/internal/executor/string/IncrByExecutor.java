@@ -54,7 +54,7 @@ public class IncrByExecutor extends StringExecutor {
      */
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
-    Long increment;
+    long increment;
 
     try {
       increment = Coder.bytesToLong(incrArray);
@@ -79,7 +79,7 @@ public class IncrByExecutor extends StringExecutor {
      */
 
     String stringValue = Coder.bytesToString(valueWrapper.toBytes());
-    Long value;
+    long value;
     try {
       value = Long.parseLong(stringValue);
     } catch (NumberFormatException e) {

@@ -32,6 +32,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 
 
 public class RegionDestroyFunctionTest {
@@ -39,6 +40,7 @@ public class RegionDestroyFunctionTest {
   private RegionDestroyFunction function;
   private FunctionContext context;
   private InternalCache cache;
+  private InternalCacheForClientAccess filterCache;
   private ResultSender resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
@@ -47,10 +49,12 @@ public class RegionDestroyFunctionTest {
     function = spy(RegionDestroyFunction.class);
     context = mock(FunctionContext.class);
     cache = mock(InternalCache.class);
+    filterCache = mock(InternalCacheForClientAccess.class);
     resultSender = mock(ResultSender.class);
     when(context.getCache()).thenReturn(cache);
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getArguments()).thenReturn("testRegion");
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(filterCache);
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
   }
 
@@ -67,7 +71,7 @@ public class RegionDestroyFunctionTest {
   @Test
   public void regionAlreadyDestroyed() throws Exception {
     when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
-    when(cache.getRegion(any())).thenReturn(null);
+    when(filterCache.getRegion(any())).thenReturn(null);
     function.execute(context);
 
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -82,7 +86,7 @@ public class RegionDestroyFunctionTest {
   public void regionAlreadyDestroyed_throwException() throws Exception {
     when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
     Region region = mock(Region.class);
-    when(cache.getRegion(any())).thenReturn(region);
+    when(filterCache.getRegion(any())).thenReturn(region);
     doThrow(mock(RegionDestroyedException.class)).when(region).destroyRegion();
     function.execute(context);
 
@@ -98,7 +102,7 @@ public class RegionDestroyFunctionTest {
   public void illegalStateExceptionWillNotThrowExceptionToCommand() throws Exception {
     when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
     Region region = mock(Region.class);
-    when(cache.getRegion(any())).thenReturn(region);
+    when(filterCache.getRegion(any())).thenReturn(region);
     doThrow(new IllegalStateException("message")).when(region).destroyRegion();
 
     function.execute(context);

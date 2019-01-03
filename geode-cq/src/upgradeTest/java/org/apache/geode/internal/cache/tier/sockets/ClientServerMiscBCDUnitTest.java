@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -46,12 +47,13 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
 @Category({ClientServerTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
@@ -226,8 +228,10 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
   @Test
   public void giiEventQueueFromCurrentToOldMemberShouldSucceed() {
+    final IgnoredException expectedEx =
+        IgnoredException.addIgnoredException(ConnectException.class.getName());
     giiEventQueueShouldSucceedWithMixedVersions(VersionManager.CURRENT_VERSION, testVersion);
-
+    expectedEx.remove();
   }
 
   public void giiEventQueueShouldSucceedWithMixedVersions(String server1Version,

@@ -41,8 +41,8 @@ if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
 else
   PARALLEL_GRADLE=""
 fi
-DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
-
+DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon"
+GRADLE_SKIP_TASK_OPTIONS="-x javadoc -x spotlessCheck -x rat"
 
 SSHKEY_FILE="instance-data/sshkey"
 SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60"
@@ -64,10 +64,6 @@ else
 fi
 
 
-if [ -v CALL_STACK_TIMEOUT ]; then
-  ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
-fi
-
 case $ARTIFACT_SLUG in
   windows*)
     JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
@@ -81,6 +77,12 @@ case $ARTIFACT_SLUG in
     ;;
 esac
 
+
+if [ -v CALL_STACK_TIMEOUT ]; then
+  ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "export JAVA_HOME=${JAVA_TEST_PATH} && tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
+fi
+
+
 GRADLE_ARGS=" \
     -PcompileJVM=${JAVA_BUILD_PATH} \
     -PcompileJVMVer=${JAVA_BUILD_VERSION} \
@@ -90,6 +92,7 @@ GRADLE_ARGS=" \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
+    ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS}"

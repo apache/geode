@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;

@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -100,6 +101,11 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
 
   public int getFailureDetectionPort() {
     return failureDetectionPort;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(memberID);
   }
 
   @Override

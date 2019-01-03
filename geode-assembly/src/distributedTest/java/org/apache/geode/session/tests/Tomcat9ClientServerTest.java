@@ -14,29 +14,15 @@
  */
 package org.apache.geode.session.tests;
 
-import org.junit.BeforeClass;
+import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CLIENT_SERVER;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT9;
 
-import org.apache.geode.test.dunit.DUnitEnv;
+import java.util.function.IntSupplier;
 
-/**
- * Tomcat 9 Client Server tests
- *
- * Runs all the tests in {@link CargoTestBase} on the Tomcat 9 install, setup in the
- * {@link #setupTomcatInstall()} method before tests are run.
- */
 public class Tomcat9ClientServerTest extends TomcatClientServerTest {
-  private static ContainerInstall install;
-
-  @BeforeClass
-  public static void setupTomcatInstall() throws Exception {
-    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT9,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat9ClientServerTest");
-    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
-  }
 
   @Override
-  public ContainerInstall getInstall() {
-    return install;
+  public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, CLIENT_SERVER, portSupplier);
   }
 }

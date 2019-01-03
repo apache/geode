@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Test object which does not implement ObjectSizer, used as Key/Value in put operation.

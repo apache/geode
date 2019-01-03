@@ -14,6 +14,15 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.internal.logging.LogWriterLevel.ERROR;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINER;
+import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
+import static org.apache.geode.internal.logging.LogWriterLevel.NONE;
+import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
+import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
+
 import java.util.logging.Handler;
 
 import org.apache.logging.log4j.Level;
@@ -30,7 +39,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.logging.GemFireHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
@@ -85,25 +94,6 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   public static LogWriterLogger create(final Logger logger) {
     return new LogWriterLogger(logger, null, false);
-  }
-
-  public void setLevel(final Level level) {
-    if (getLevel().isLessSpecificThan(Level.DEBUG) || level.isLessSpecificThan(Level.DEBUG)) {
-      debug("Changing level for Logger '{}' from {} to {}", loggerName, getLevel(), level);
-    }
-
-    if (LogService.MAIN_LOGGER_NAME.equals(loggerName)) {
-      LogService.setBaseLogLevel(level);
-    } else if (LogService.SECURITY_LOGGER_NAME.equals(loggerName)) {
-      LogService.setSecurityLogLevel(level);
-    } else {
-      Configurator.setLevel(loggerName, level);
-    }
-  }
-
-  @Override
-  public void setLogWriterLevel(final int logWriterLevel) {
-    setLevel(LogLevel.getLog4jLevel(logWriterLevel));
   }
 
   /**
@@ -1379,7 +1369,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   }
 
   public void log(int logWriterLevel, final String message, final Throwable throwable) {
-    Level level = LogLevel.getLog4jLevel(logWriterLevel);
+    Level level = LogWriterLevelConverter.toLevel(LogWriterLevel.find(logWriterLevel));
     logWrapper.logIfEnabled(loggerName, level, null, message, throwable);
   }
 
@@ -1708,21 +1698,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
     final Level log4jLevel = logWrapper.getLevel();
 
     if (log4jLevel == Level.OFF) {
-      return InternalLogWriter.NONE_LEVEL;
+      return NONE.intLevel();
     } else if (log4jLevel == Level.FATAL) {
-      return InternalLogWriter.SEVERE_LEVEL;
+      return SEVERE.intLevel();
     } else if (log4jLevel == Level.ERROR) {
-      return InternalLogWriter.ERROR_LEVEL;
+      return ERROR.intLevel();
     } else if (log4jLevel == Level.WARN) {
-      return InternalLogWriter.WARNING_LEVEL;
+      return WARNING.intLevel();
     } else if (log4jLevel == Level.INFO) {
-      return InternalLogWriter.INFO_LEVEL;
+      return INFO.intLevel();
     } else if (log4jLevel == Level.DEBUG) {
-      return InternalLogWriter.FINE_LEVEL;
+      return FINE.intLevel();
     } else if (log4jLevel == Level.TRACE) {
-      return InternalLogWriter.FINER_LEVEL;
+      return FINER.intLevel();
     } else if (log4jLevel == Level.ALL) {
-      return InternalLogWriter.ALL_LEVEL;
+      return ALL.intLevel();
     }
 
     throw new IllegalStateException(

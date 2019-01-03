@@ -28,29 +28,30 @@ task createGeodeClasspathsFile {
 
   // Add sourceSets for backwards compatibility, rolling upgrade, and
   // pdx testing.
-  addOldVersion('test100', '1.0.0-incubating', false)
-  addOldVersion('test110', '1.1.0', false)
-  addOldVersion('test111', '1.1.1', false)
-  addOldVersion('test120', '1.2.0', true)
-  addOldVersion('test130', '1.3.0', true)
-  addOldVersion('test140', '1.4.0', true)
-  addOldVersion('test150', '1.5.0', true)
-  addOldVersion('test160', '1.6.0', true)
-  addOldVersion('test170', '1.7.0', true)
+  addOldVersion('test100', '1.0.0-incubating', false, false)
+  addOldVersion('test110', '1.1.0', false, false)
+  addOldVersion('test111', '1.1.1', false, false)
+  addOldVersion('test120', '1.2.0', true, false)
+  addOldVersion('test130', '1.3.0', true, false)
+  addOldVersion('test140', '1.4.0', true, false)
+  addOldVersion('test150', '1.5.0', true, false)
+  addOldVersion('test160', '1.6.0', true, false)
+  addOldVersion('test170', '1.7.0', true, false)
+  addOldVersion('test180', '1.8.0', true)
 
   doLast {
-    Properties versions = new Properties();
+    Properties versions = new Properties()
     project(':geode-old-versions').sourceSets.each {
       versions.setProperty(it.name,it.runtimeClasspath.getAsPath())
     }
 
-    classpathsFile.getParentFile().mkdirs();
+    classpathsFile.getParentFile().mkdirs()
 
     new FileOutputStream(classpathsFile).withStream { fos ->
       versions.store(fos, '')
     }
 
-    installsFile.getParentFile().mkdirs();
+    installsFile.getParentFile().mkdirs()
 
     new FileOutputStream(installsFile).withStream { fos ->
       project.ext.installs.store(fos, '')
@@ -59,7 +60,7 @@ task createGeodeClasspathsFile {
 }
 createGeodeClasspathsFile.mustRunAfter(clean)
 
-def addOldVersion(def source, def geodeVersion, def downloadInstall) {
+def addOldVersion(def source, def geodeVersion, def downloadInstall, def useTgz = true) {
   sourceSets.create("${source}", {})
 
   configurations {
@@ -77,8 +78,15 @@ def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   if (downloadInstall) {
     configurations.create("${source}OldInstall")
 
+    def archiveType = "tgz"
+    def extractMethod = "tarTree"
+    if (!useTgz) {
+      archiveType = "zip"
+      extractMethod = "zipTree"
+    }
+
     dependencies {
-      "${source}OldInstall"  "org.apache.geode:apache-geode:${geodeVersion}"
+      "${source}OldInstall"  "org.apache.geode:apache-geode:${geodeVersion}@${archiveType}"
     }
 
     project.ext.installs.setProperty(source, "${buildDir}/apache-geode-${geodeVersion}")
@@ -91,7 +99,7 @@ def addOldVersion(def source, def geodeVersion, def downloadInstall) {
       outputs.dir("${buildDir}/apache-geode-${geodeVersion}")
       doLast {
         copy {
-          from zipTree(configurations."${source}OldInstall".singleFile)
+          from "${extractMethod}"(configurations."${source}OldInstall".singleFile)
           into project.buildDir
         }
       }

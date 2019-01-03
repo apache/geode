@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,9 +80,7 @@ public class RegionFunctionArgs implements Serializable {
   private Boolean offHeap;
   private RegionAttributes<?, ?> regionAttributes;
 
-  public RegionFunctionArgs() {
-    this.partitionArgs = new PartitionArgs();
-  }
+  public RegionFunctionArgs() {}
 
   public void setRegionPath(String regionPath) {
     this.regionPath = regionPath;
@@ -113,18 +112,34 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   public void setEntryExpirationIdleTime(Integer timeout, ExpirationAction action) {
+    if (timeout == null && action == null) {
+      return;
+    }
+
     this.entryExpirationIdleTime = new ExpirationAttrs(timeout, action);
   }
 
   public void setEntryExpirationTTL(Integer timeout, ExpirationAction action) {
+    if (timeout == null && action == null) {
+      return;
+    }
+
     this.entryExpirationTTL = new ExpirationAttrs(timeout, action);
   }
 
   public void setRegionExpirationIdleTime(Integer timeout, ExpirationAction action) {
+    if (timeout == null && action == null) {
+      return;
+    }
+
     this.regionExpirationIdleTime = new ExpirationAttrs(timeout, action);
   }
 
   public void setRegionExpirationTTL(Integer timeout, ExpirationAction action) {
+    if (timeout == null && action == null) {
+      return;
+    }
+
     this.regionExpirationTTL = new ExpirationAttrs(timeout, action);
   }
 
@@ -198,6 +213,19 @@ public class RegionFunctionArgs implements Serializable {
   public void setPartitionArgs(String prColocatedWith, Integer prLocalMaxMemory,
       Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, String partitionResolver) {
+    if (prColocatedWith == null &&
+        prLocalMaxMemory == null &&
+        prRecoveryDelay == null &&
+        prRedundantCopies == null &&
+        prStartupRecoveryDelay == null &&
+        prTotalMaxMemory == null &&
+        prTotalNumBuckets == null &&
+        partitionResolver == null) {
+      return;
+    }
+    if (partitionArgs == null) {
+      partitionArgs = new PartitionArgs();
+    }
     partitionArgs.setPrColocatedWith(prColocatedWith);
     partitionArgs.setPrLocalMaxMemory(prLocalMaxMemory);
     partitionArgs.setPrRecoveryDelay(prRecoveryDelay);
@@ -269,7 +297,7 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the statisticsEnabled
    */
-  public Boolean isStatisticsEnabled() {
+  public Boolean getStatisticsEnabled() {
     return this.statisticsEnabled;
   }
 
@@ -311,25 +339,25 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the diskSynchronous
    */
-  public Boolean isDiskSynchronous() {
+  public Boolean getDiskSynchronous() {
     return this.diskSynchronous;
   }
 
-  public Boolean isOffHeap() {
+  public Boolean getOffHeap() {
     return this.offHeap;
   }
 
   /**
    * @return the enableAsyncConflation
    */
-  public Boolean isEnableAsyncConflation() {
+  public Boolean getEnableAsyncConflation() {
     return this.enableAsyncConflation;
   }
 
   /**
    * @return the enableSubscriptionConflation
    */
-  public Boolean isEnableSubscriptionConflation() {
+  public Boolean getEnableSubscriptionConflation() {
     return this.enableSubscriptionConflation;
   }
 
@@ -380,21 +408,21 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the concurrencyChecksEnabled
    */
-  public Boolean isConcurrencyChecksEnabled() {
+  public Boolean getConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
   }
 
   /**
    * @return the cloningEnabled
    */
-  public Boolean isCloningEnabled() {
+  public Boolean getCloningEnabled() {
     return this.cloningEnabled;
   }
 
   /**
    * @return the mcastEnabled setting
    */
-  public Boolean isMcastEnabled() {
+  public Boolean getMcastEnabled() {
     return this.mcastEnabled;
   }
 
@@ -414,7 +442,7 @@ public class RegionFunctionArgs implements Serializable {
    * @return the partitionArgs
    */
   public boolean hasPartitionAttributes() {
-    return this.partitionArgs.hasPartitionAttributes();
+    return this.partitionArgs != null && this.partitionArgs.hasPartitionAttributes();
   }
 
   /**
@@ -438,8 +466,8 @@ public class RegionFunctionArgs implements Serializable {
     return this.compressor;
   }
 
-  public EvictionAttributes getEvictionAttributes() {
-    return evictionAttributes != null ? evictionAttributes.convertToEvictionAttributes() : null;
+  public EvictionAttrs getEvictionAttributes() {
+    return this.evictionAttributes;
   }
 
   /**
@@ -487,6 +515,11 @@ public class RegionFunctionArgs implements Serializable {
 
     public ExpirationAction getAction() {
       return action;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(time, action);
     }
 
     @Override
@@ -596,7 +629,6 @@ public class RegionFunctionArgs implements Serializable {
       }
     }
   }
-
 
   public static class PartitionArgs implements Serializable {
     private static final long serialVersionUID = 5907052187323280919L;

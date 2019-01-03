@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.awaitility.core.ThrowingRunnable;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.WritablePdxInstance;
 
 public abstract class JdbcAsyncWriterIntegrationTest {
 
@@ -59,17 +61,20 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   public void setup() throws Exception {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
-    employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME);
     connection = getConnection();
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
     pdxEmployee1 = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp1").writeInt("age", 55).create();
+        .writeString("id", "1").writeString("name", "Emp1").writeInt("age", 55).create();
     pdxEmployee2 = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp2").writeInt("age", 21).create();
+        .writeString("id", "2").writeString("name", "Emp2").writeInt("age", 21).create();
     employee1 = (Employee) pdxEmployee1.getObject();
     employee2 = (Employee) pdxEmployee2.getObject();
+  }
+
+  private void setupRegion(String ids) throws RegionMappingExistsException {
+    employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME, ids);
   }
 
   @After
@@ -97,7 +102,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   public abstract String getConnectionUrl();
 
   @Test
-  public void validateJDBCAsyncWriterTotalEvents() {
+  public void validateJDBCAsyncWriterTotalEvents() throws RegionMappingExistsException {
+    setupRegion(null);
     employees.put("1", pdxEmployee1);
     employees.put("2", pdxEmployee2);
 
@@ -106,6 +112,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
+    setupRegion(null);
     PdxInstance pdx1 = cache.createPdxInstanceFactory("Employee").writeString("name", "Emp1")
         .writeObject("age", 55).writeInt("id", 3).create();
     employees.put("1", pdx1);
@@ -119,7 +126,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   @Test
-  public void putNonPdxInstanceFails() {
+  public void putNonPdxInstanceFails() throws RegionMappingExistsException {
+    setupRegion(null);
     Region nonPdxEmployees = this.employees;
     nonPdxEmployees.put("1", "non pdx instance");
 
@@ -129,7 +137,9 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   @Test
-  public void putNonPdxInstanceThatIsPdxSerializable() throws SQLException {
+  public void putNonPdxInstanceThatIsPdxSerializable()
+      throws SQLException, RegionMappingExistsException {
+    setupRegion(null);
     Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);
     nonPdxEmployees.put("2", value);
@@ -144,6 +154,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canDestroyFromTable() throws Exception {
+    setupRegion(null);
     employees.put("1", pdxEmployee1);
     employees.put("2", pdxEmployee2);
 
@@ -160,7 +171,66 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   @Test
+  public void canDestroyFromTableWithCompositeKey() throws Exception {
+    setupRegion("id,age");
+    JSONObject compositeKey1 = new JSONObject();
+    compositeKey1.put("id", pdxEmployee1.getField("id"));
+    compositeKey1.put("age", pdxEmployee1.getField("age"));
+    JSONObject compositeKey2 = new JSONObject();
+    compositeKey2.put("id", pdxEmployee2.getField("id"));
+    compositeKey2.put("age", pdxEmployee2.getField("age"));
+    employees.put(compositeKey1.toString(), pdxEmployee1);
+    employees.put(compositeKey2.toString(), pdxEmployee2);
+    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
+
+    employees.destroy(compositeKey1.toString());
+    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(3));
+
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "2", employee2);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
+  public void canInsertIntoTable() throws Exception {
+    setupRegion(null);
+    employees.put("1", pdxEmployee1);
+    employees.put("2", pdxEmployee2);
+    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
+
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", employee1);
+    assertRecordMatchesEmployee(resultSet, "2", employee2);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
+  public void canInsertIntoTableWithCompositeKey() throws Exception {
+    setupRegion("id,age");
+    JSONObject compositeKey1 = new JSONObject();
+    compositeKey1.put("id", pdxEmployee1.getField("id"));
+    compositeKey1.put("age", pdxEmployee1.getField("age"));
+    String actualKey = compositeKey1.toString();
+    JSONObject compositeKey2 = new JSONObject();
+    compositeKey2.put("id", pdxEmployee2.getField("id"));
+    compositeKey2.put("age", pdxEmployee2.getField("age"));
+
+    employees.put(actualKey, pdxEmployee1);
+    employees.put(compositeKey2.toString(), pdxEmployee2);
+    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
+
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", employee1);
+    assertRecordMatchesEmployee(resultSet, "2", employee2);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
   public void canUpdateTable() throws Exception {
+    setupRegion(null);
     employees.put("1", pdxEmployee1);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
@@ -176,7 +246,32 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   @Test
+  public void canUpdateTableWithCompositeKey() throws Exception {
+    setupRegion("id,age");
+    PdxInstance myPdx = cache.createPdxInstanceFactory(Employee.class.getName())
+        .writeString("id", "1").writeString("name", "Emp1")
+        .writeInt("age", 55).create();
+    JSONObject compositeKey1 = new JSONObject();
+    compositeKey1.put("id", myPdx.getField("id"));
+    compositeKey1.put("age", myPdx.getField("age"));
+    employees.put(compositeKey1.toString(), myPdx);
+    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
+    WritablePdxInstance updatedPdx = myPdx.createWriter();
+    updatedPdx.setField("name", "updated");
+    Employee updatedEmployee = (Employee) updatedPdx.getObject();
+
+    employees.put(compositeKey1.toString(), updatedPdx);
+    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
+
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", updatedEmployee);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
   public void canUpdateBecomeInsert() throws Exception {
+    setupRegion(null);
     employees.put("1", pdxEmployee1);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
@@ -196,6 +291,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canInsertBecomeUpdate() throws Exception {
+    setupRegion(null);
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'bogus', 11)");
     validateTableRowCount(1);
 
@@ -221,9 +317,9 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.getObject("age")).isEqualTo(employee.getAge());
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName)
+  private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName, String ids)
       throws RegionMappingExistsException {
-    jdbcWriter = new JdbcAsyncWriter(createSqlHandler(), cache);
+    jdbcWriter = new JdbcAsyncWriter(createSqlHandler(ids), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
 
@@ -239,10 +335,10 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(size).isEqualTo(expected);
   }
 
-  private SqlHandler createSqlHandler()
+  private SqlHandler createSqlHandler(String ids)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl()),
+        TestConfigService.getTestConfigService(getConnectionUrl(), ids),
         testDataSourceFactory);
   }
 

@@ -18,6 +18,8 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
 
+import org.apache.commons.lang3.JavaVersion;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
@@ -108,7 +110,7 @@ public class SharedLibrary {
           // If our heap is > 32G (64G on java 8) then assume large oops. Otherwise assume
           // compressed oops.
           long SMALL_OOP_BOUNDARY = 32L;
-          if (org.apache.commons.lang.SystemUtils.isJavaVersionAtLeast(1.8f)) {
+          if (org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_8)) {
             SMALL_OOP_BOUNDARY = 64L;
           }
           if (Runtime.getRuntime().maxMemory() > (SMALL_OOP_BOUNDARY * 1024 * 1024 * 1024)) {

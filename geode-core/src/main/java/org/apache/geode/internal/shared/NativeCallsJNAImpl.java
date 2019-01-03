@@ -966,8 +966,9 @@ public class NativeCallsJNAImpl {
           return false;
         } else {
           final IntByReference status = new IntByReference();
-          final boolean result = Kernel32.GetExitCodeProcess(procHandle, status) && status != null
-              && status.getValue() == Kernel32.STILL_ACTIVE;
+          final boolean result =
+              Kernel32.GetExitCodeProcess(procHandle, status)
+                  && status.getValue() == Kernel32.STILL_ACTIVE;
           Kernel32.CloseHandle(procHandle);
           return result;
         }

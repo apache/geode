@@ -21,12 +21,13 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RevokeMissingDiskStoreCommand extends InternalGfshCommand {
+public class RevokeMissingDiskStoreCommand extends GfshCommand {
   @CliCommand(value = CliStrings.REVOKE_MISSING_DISK_STORE,
       help = CliStrings.REVOKE_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})

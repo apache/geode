@@ -16,16 +16,29 @@
  */
 
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
-  compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-junit')) {
+  compile('org.awaitility:awaitility')
+  compile('junit:junit')
+  compile('org.eclipse.jetty:jetty-server:' + project.'jetty.version')
+  compile('commons-io:commons-io')
+  compile('org.apache.commons:commons-lang3')
+  compile('mx4j:mx4j')
+  compile('mx4j:mx4j-remote') {
+    ext.optional = true
+  }
+
+  compile(project(':geode-core'))
+  compile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   compileOnly(project(':geode-pulse'))
 
-  compile('org.seleniumhq.selenium:selenium-api:' + project.'selenium.version')
-  compile('org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version')
-  compile('org.seleniumhq.selenium:selenium-support:' + project.'selenium.version')
+  compile('org.seleniumhq.selenium:selenium-api')
+  compile('org.seleniumhq.selenium:selenium-chrome-driver')
+  compile('org.seleniumhq.selenium:selenium-support')
 }
 
 disableMavenPublishing()

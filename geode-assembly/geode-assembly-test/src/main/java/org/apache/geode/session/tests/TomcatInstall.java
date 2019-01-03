@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.IntSupplier;
 import java.util.regex.Pattern;
 
 
@@ -32,9 +33,6 @@ import java.util.regex.Pattern;
  * the geode docs</a>.
  */
 public class TomcatInstall extends ContainerInstall {
-
-  public static final String GEODE_BUILD_HOME_LIB = GEODE_BUILD_HOME + "/lib/";
-
   /**
    * Version of tomcat that this class will install
    *
@@ -48,6 +46,7 @@ public class TomcatInstall extends ContainerInstall {
     TOMCAT9(9, "tomcat-9.0.12.zip");
 
     private final int version;
+
     private final String downloadURL;
 
     TomcatVersion(int version, String downloadURL) {
@@ -91,19 +90,16 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   private static final String[] tomcatRequiredJars =
-      {"antlr", "commons-lang", "fastutil", "geode-core", "javax.transaction-api", "jgroups",
-          "log4j-api", "log4j-core", "log4j-jul", "shiro-core", "commons-validator"};
+      {"antlr", "commons-io", "commons-lang", "commons-validator", "fastutil", "geode-core",
+          "javax.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul", "shiro-core"};
 
   private final TomcatVersion version;
 
-  public TomcatInstall(TomcatVersion version, String installDir) throws Exception {
-    this(version, ConnectionType.PEER_TO_PEER, installDir, DEFAULT_MODULE_LOCATION,
-        GEODE_BUILD_HOME_LIB);
-  }
-
-  public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir)
+  public TomcatInstall(String name, TomcatVersion version, ConnectionType connectionType,
+      IntSupplier portSupplier)
       throws Exception {
-    this(version, connType, installDir, DEFAULT_MODULE_LOCATION, GEODE_BUILD_HOME_LIB);
+    this(name, version, connectionType, DEFAULT_MODULE_LOCATION, GEODE_BUILD_HOME_LIB,
+        portSupplier);
   }
 
   /**
@@ -115,10 +111,10 @@ public class TomcatInstall extends ContainerInstall {
    * files within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
    * skipping properties needed to speedup container startup.
    */
-  public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir,
-      String modulesJarLocation, String extraJarsPath) throws Exception {
+  public TomcatInstall(String name, TomcatVersion version, ConnectionType connType,
+      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier) throws Exception {
     // Does download and install from URL
-    super(installDir, version.getDownloadURL(), connType, "tomcat", modulesJarLocation);
+    super(name, version.getDownloadURL(), connType, "tomcat", modulesJarLocation, portSupplier);
 
     this.version = version;
     modulesJarLocation = getModulePath() + "/lib/";
@@ -214,7 +210,7 @@ public class TomcatInstall extends ContainerInstall {
   @Override
   public TomcatContainer generateContainer(File containerConfigHome, String containerDescriptors)
       throws IOException {
-    return new TomcatContainer(this, containerConfigHome, containerDescriptors);
+    return new TomcatContainer(this, containerConfigHome, containerDescriptors, portSupplier());
   }
 
   /**

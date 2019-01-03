@@ -25,7 +25,7 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DataPolicy;
@@ -103,7 +103,8 @@ public class DataCommandFunction implements InternalFunction {
   @Override
   public void execute(FunctionContext functionContext) {
     try {
-      InternalCache cache = (InternalCache) functionContext.getCache();
+      InternalCache cache =
+          ((InternalCache) functionContext.getCache()).getCacheForProcessingClientRequests();
       DataCommandRequest request = (DataCommandRequest) functionContext.getArguments();
       if (logger.isDebugEnabled()) {
         logger.debug("Executing function : \n{}\n on member {}", request,

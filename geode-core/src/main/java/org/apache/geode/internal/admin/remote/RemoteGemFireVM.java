@@ -139,6 +139,17 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return vmName;
   }
 
+  @Override
+  public boolean equals(Object object) {
+    if (this == object) {
+      return true;
+    }
+    if (object instanceof RemoteGemFireVM) {
+      return this.id.equals(((RemoteGemFireVM) object).id);
+    }
+    return false;
+  }
+
   @Override // GemStoneAddition
   public int hashCode() {
     return this.id.hashCode();

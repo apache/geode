@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
@@ -37,6 +37,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
@@ -121,7 +122,8 @@ public class ExportLogsFunction implements InternalFunction {
   public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,
       InternalCache cache) throws IOException, ClassNotFoundException {
 
-    Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
+    InternalCacheForClientAccess cacheForClientAccess = cache.getCacheForProcessingClientRequests();
+    Region exportLogsRegion = cacheForClientAccess.getInternalRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
       AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
       regionAttrsFactory.setDataPolicy(DataPolicy.EMPTY);
@@ -133,14 +135,16 @@ public class ExportLogsFunction implements InternalFunction {
       InternalRegionArguments internalArgs = new InternalRegionArguments();
       internalArgs.setIsUsedForMetaRegion(true);
       exportLogsRegion =
-          cache.createVMRegion(EXPORT_LOGS_REGION, regionAttrsFactory.create(), internalArgs);
+          cacheForClientAccess.createInternalRegion(EXPORT_LOGS_REGION, regionAttrsFactory.create(),
+              internalArgs);
     }
 
     return exportLogsRegion;
   }
 
   public static void destroyExportLogsRegion(InternalCache cache) {
-    Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
+    Region exportLogsRegion =
+        cache.getCacheForProcessingClientRequests().getInternalRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
       return;
     }

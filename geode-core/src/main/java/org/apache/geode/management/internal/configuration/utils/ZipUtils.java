@@ -73,13 +73,16 @@ public class ZipUtils {
     try {
       while (zipEntries.hasMoreElements()) {
         ZipEntry zipEntry = zipEntries.nextElement();
-        String fileName = outputDirectoryPath + File.separator + zipEntry.getName();
+        File entryDestination = new File(outputDirectoryPath + File.separator + zipEntry.getName());
+
+        if (!entryDestination.toPath().normalize().startsWith(Paths.get(outputDirectoryPath))) {
+          throw new IOException("Zip entry contained path traversal");
+        }
 
         if (zipEntry.isDirectory()) {
-          FileUtils.forceMkdir(new File(fileName));
+          FileUtils.forceMkdir(entryDestination);
           continue;
         }
-        File entryDestination = new File(fileName);
         File parent = entryDestination.getParentFile();
         if (parent != null) {
           FileUtils.forceMkdir(parent);

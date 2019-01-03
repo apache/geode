@@ -107,6 +107,7 @@ public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
           .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
           .addOption("J", "-Dsecure-username-jd=user-jd")
           .addOption("J", "-Dsecure-password-jd=" + sharedPasswordString + "-password-jd")
+          .addOption("server-port", "0")
           .addOption("classpath", securityJson).getCommandString();
 
       gfsh.execute(startLocatorCmd, startServerCmd);

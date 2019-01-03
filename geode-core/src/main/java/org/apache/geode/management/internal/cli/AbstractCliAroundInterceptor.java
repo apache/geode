@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 

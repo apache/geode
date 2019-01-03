@@ -112,7 +112,7 @@ public class AuthenticationIntegrationTest {
 
     @Override
     public boolean authorize(Object principal, ResourcePermission permission) {
-      return principal == authorizedPrincipal;
+      return principal.equals(authorizedPrincipal);
     }
   }
 

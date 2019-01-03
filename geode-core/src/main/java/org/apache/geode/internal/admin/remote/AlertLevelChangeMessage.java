@@ -20,12 +20,10 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
-import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.alerting.AlertLevel;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -52,10 +50,10 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    AlertAppender.getInstance().removeAlertListener(getSender());
+    dm.getAlertingService().removeAlertListener(getSender());
 
-    if (newLevel != Alert.OFF) {
-      AlertAppender.getInstance().addAlertListener(getSender(), newLevel);
+    if (newLevel != AlertLevel.NONE.intLevel()) {
+      dm.getAlertingService().addAlertListener(getSender(), AlertLevel.find(newLevel));
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE, "Added new AlertListener");
       }
@@ -81,6 +79,6 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
 
   @Override
   public String toString() {
-    return String.format("Changing alert level to %s", AlertLevel.forSeverity(newLevel));
+    return String.format("Changing alert level to %s", AlertLevel.find(newLevel));
   }
 }

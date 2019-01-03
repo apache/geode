@@ -30,7 +30,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -90,7 +90,8 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   private static CacheProvider createDefaultCacheProvider() {
-    return () -> (InternalCache) CacheFactory.getAnyInstance();
+    return () -> ((InternalCache) CacheFactory.getAnyInstance())
+        .getCacheForProcessingClientRequests();
   }
 
   /**

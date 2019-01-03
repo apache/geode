@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -41,21 +41,20 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
-public class StartServerCommand extends InternalGfshCommand {
+public class StartServerCommand extends OfflineGfshCommand {
   private static final String SERVER_TERM_NAME = "Server";
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result startServer(
+  public ResultModel startServer(
       @CliOption(key = CliStrings.START_SERVER__NAME,
           help = CliStrings.START_SERVER__NAME__HELP) String memberName,
       @CliOption(key = CliStrings.START_SERVER__ASSIGN_BUCKETS, unspecifiedDefaultValue = "false",
@@ -194,8 +193,8 @@ public class StartServerCommand extends InternalGfshCommand {
         passwordToUse = getGfsh().readPassword(CliStrings.START_SERVER__PASSWORD + ": ");
       }
       if (StringUtils.isBlank(passwordToUse)) {
-        return ResultBuilder
-            .createConnectionErrorResult(CliStrings.START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED);
+        return ResultModel
+            .createError(CliStrings.START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED);
       }
     }
 
@@ -215,7 +214,7 @@ public class StartServerCommand extends InternalGfshCommand {
         httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
   }
 
-  Result doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
+  ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
       String cacheXmlPathname, String classpath, Float criticalHeapPercentage,
       Float criticalOffHeapPercentage, String workingDirectory, Boolean disableDefaultServer,
       Boolean disableExitWhenOutOfMemory, Boolean enableTimeStatistics,
@@ -237,7 +236,7 @@ public class StartServerCommand extends InternalGfshCommand {
 
     if (StringUtils.isNotBlank(cacheXmlPathname)) {
       if (!IOUtils.isExistingPathname(cacheXmlPathname)) {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             CliStrings.format(CliStrings.CACHE_XML_NOT_FOUND_MESSAGE, cacheXmlPathname));
       } else {
         getGfsh().logWarning(
@@ -246,13 +245,13 @@ public class StartServerCommand extends InternalGfshCommand {
     }
 
     if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
-      return ResultBuilder.createUserErrorResult(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
               gemfirePropertiesFile.getAbsolutePath()));
     }
 
     if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
-      return ResultBuilder.createUserErrorResult(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
               gemfireSecurityPropertiesFile.getAbsolutePath()));
     }
@@ -402,7 +401,7 @@ public class StartServerCommand extends InternalGfshCommand {
         } else {
           final int exitValue = serverProcess.exitValue();
 
-          return ResultBuilder.createShellClientErrorResult(
+          return ResultModel.createError(
               String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
                   exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
 
@@ -422,9 +421,9 @@ public class StartServerCommand extends InternalGfshCommand {
 
     if (asyncStart) { // async start
       Gfsh.print(String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, SERVER_TERM_NAME));
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     } else {
-      return ResultBuilder.createInfoResult(serverState.toString());
+      return ResultModel.createInfo(serverState.toString());
     }
   }
 
@@ -569,7 +568,7 @@ public class StartServerCommand extends InternalGfshCommand {
     jarFilePathnames.add(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     // include all extension dependencies on the CLASSPATH...
     for (String extensionsJarPathname : getExtensionsJars()) {
-      if (org.apache.commons.lang.StringUtils.isNotBlank(extensionsJarPathname)) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(extensionsJarPathname)) {
         jarFilePathnames.add(extensionsJarPathname);
       }
     }

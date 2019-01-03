@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -44,7 +45,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * This class tests the functionality of the (new multi-threaded) {@link MergeLogFiles} utility.
+ * Integration tests for (new multi-threaded) {@link MergeLogFiles} utility.
  */
 @Category(LoggingTest.class)
 public class MergeLogFilesIntegrationTest {
@@ -186,7 +187,7 @@ public class MergeLogFilesIntegrationTest {
     public void run() {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       LogWriter logger =
-          new LocalLogWriter(InternalLogWriter.ALL_LEVEL, new PrintStream(baos, true));
+          new LocalLogWriter(ALL.intLevel(), new PrintStream(baos, true));
       for (int i = 0; i < 100; i++) {
         int n;
         synchronized (MergeLogFilesIntegrationTest.this) {

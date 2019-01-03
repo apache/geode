@@ -62,9 +62,9 @@ public class ListMappingCommandTest {
         null);
 
     RegionMapping mapping1 =
-        new RegionMapping("region1", "class1", "table1", "name1");
+        new RegionMapping("region1", "class1", "table1", "name1", null);
     RegionMapping mapping2 =
-        new RegionMapping("region2", "class2", "table2", "name2");
+        new RegionMapping("region2", "class2", "table2", "name2", null);
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
@@ -86,6 +86,6 @@ public class ListMappingCommandTest {
     when(rc.getResult()).thenReturn(Collections.emptyList());
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+        .containsOutput("No JDBC mappings found");
   }
 }

@@ -21,6 +21,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,8 +63,12 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
   @Test
   public void testClientHealthStats_SubscriptionEnabled() throws Exception {
-    client1 = cluster.startClientVM(2, true, server.getPort());
-    client2 = cluster.startClientVM(3, true, server.getPort());
+    client1 =
+        cluster.startClientVM(2,
+            c1 -> c1.withPoolSubscription(true).withServerConnection(server.getPort()));
+    client2 =
+        cluster.startClientVM(3,
+            c -> c.withPoolSubscription(true).withServerConnection(server.getPort()));
 
     VMProvider.invokeInEveryMember(() -> {
       ClientRegionFactory<String, String> regionFactory =
@@ -80,8 +85,12 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
   @Test
   public void testClientHealthStats_SubscriptionDisabled() throws Exception {
-    client1 = cluster.startClientVM(2, false, server.getPort());
-    client2 = cluster.startClientVM(3, false, server.getPort());
+    client1 =
+        cluster.startClientVM(2,
+            c1 -> c1.withPoolSubscription(false).withServerConnection(server.getPort()));
+    client2 =
+        cluster.startClientVM(3,
+            c -> c.withPoolSubscription(false).withServerConnection(server.getPort()));
     VMProvider.invokeInEveryMember(() -> {
       ClientRegionFactory<String, String> regionFactory =
           ClusterStartupRule.getClientCache()
@@ -171,7 +180,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
   }
 
   private ClientVM createDurableClient(int index) throws Exception {
-    ClientVM client = cluster.startClientVM(index, ccf -> {
+    ClientVM client = cluster.startClientVM(index, new Properties(), ccf -> {
       ccf.setPoolSubscriptionEnabled(true);
       ccf.addPoolServer("localhost", server.getPort());
       ccf.set(DURABLE_CLIENT_ID, "client" + index);

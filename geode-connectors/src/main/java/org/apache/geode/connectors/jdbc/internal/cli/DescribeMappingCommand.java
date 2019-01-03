@@ -15,12 +15,14 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -40,10 +42,10 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class DescribeMappingCommand extends GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP = EXPERIMENTAL + "Describe the specified jdbc mapping";
+  static final String DESCRIBE_MAPPING__HELP = EXPERIMENTAL + "Describe the specified JDBC mapping";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
-      "Region name of the jdbc mapping to be described.";
+      "Region name of the JDBC mapping to be described.";
 
   static final String RESULT_SECTION_NAME = "MappingDescription";
 
@@ -53,6 +55,10 @@ public class DescribeMappingCommand extends GfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
       mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
+    if (regionName.startsWith("/")) {
+      regionName = regionName.substring(1);
+    }
+
     RegionMapping mapping = null;
 
     Set<DistributedMember> members = findMembers(null, null);
@@ -69,7 +75,7 @@ public class DescribeMappingCommand extends GfshCommand {
 
     if (mapping == null) {
       throw new EntityNotFoundException(
-          EXPERIMENTAL + "\n" + "mapping for region '" + regionName + "' not found");
+          EXPERIMENTAL + "\n" + "JDBC mapping for region '" + regionName + "' not found");
     }
 
     ResultModel resultModel = new ResultModel();
@@ -84,5 +90,11 @@ public class DescribeMappingCommand extends GfshCommand {
     sectionModel.addData(CREATE_MAPPING__DATA_SOURCE_NAME, mapping.getDataSourceName());
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
+    sectionModel.addData(CREATE_MAPPING__ID_NAME, mapping.getIds());
+  }
+
+  @CliAvailabilityIndicator({DESCRIBE_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 }

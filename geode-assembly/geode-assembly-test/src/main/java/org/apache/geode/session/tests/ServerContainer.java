@@ -20,9 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.function.IntSupplier;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
@@ -37,7 +40,6 @@ import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
 import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -51,6 +53,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public abstract class ServerContainer {
   private final File containerConfigHome;
+  private final IntSupplier portSupplier;
   private InstalledLocalContainer container;
   private ContainerInstall install;
 
@@ -88,10 +91,12 @@ public abstract class ServerContainer {
    *        in
    * @param containerDescriptors A string of extra descriptors for the container used in the
    *        containers {@link #description}
+   * @param portSupplier allocates ports for use by the container
    */
   public ServerContainer(ContainerInstall install, File containerConfigHome,
-      String containerDescriptors) throws IOException {
+      String containerDescriptors, IntSupplier portSupplier) throws IOException {
     this.install = install;
+    this.portSupplier = portSupplier;
     // Get a container description for logging and output
     description = generateUniqueContainerDescription(containerDescriptors);
     // Setup logging
@@ -99,7 +104,7 @@ public abstract class ServerContainer {
     logDir = new File(DEFAULT_LOG_DIR + description);
     logDir.mkdirs();
 
-    logger.info("Creating new container " + description);
+    logger.info("Creating new container {}", description);
 
     DEFAULT_CONF_DIR = install.getHome() + "/conf/";
     // Use the default configuration home path if not passed a config home
@@ -127,7 +132,7 @@ public abstract class ServerContainer {
     gemfireLogFile.getParentFile().mkdirs();
     setSystemProperty("log-file", gemfireLogFile.getAbsolutePath());
 
-    logger.info("Gemfire logs can be found in " + gemfireLogFile.getAbsolutePath());
+    logger.info("Gemfire logs can be found in {}", gemfireLogFile.getAbsolutePath());
 
     // Create the container
     container = (InstalledLocalContainer) (new DefaultContainerFactory())
@@ -151,7 +156,7 @@ public abstract class ServerContainer {
    */
   public String generateUniqueContainerDescription(String extraIdentifiers) {
     return String.join("_", Arrays.asList(install.getInstallDescription(), extraIdentifiers,
-        Long.toString(System.nanoTime())));
+        UUID.randomUUID().toString()));
   }
 
   /**
@@ -165,7 +170,7 @@ public abstract class ServerContainer {
     // Deploy the war the container's configuration
     getConfiguration().addDeployable(war);
 
-    logger.info("Deployed WAR file at " + war.getFile());
+    logger.info("Deployed WAR file at {}", war.getFile());
   }
 
   /**
@@ -178,14 +183,17 @@ public abstract class ServerContainer {
           + " failed to start because it is currently " + container.getState());
 
     LocalConfiguration config = getConfiguration();
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
     // Set container ports from available ports
-    config.setProperty(ServletPropertySet.PORT, Integer.toString(ports[0]));
-    config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(ports[1]));
-    config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(ports[2]));
+    int servletPort = portSupplier.getAsInt();
+    int containerRmiPort = portSupplier.getAsInt();
+    int tomcatAjpPort = portSupplier.getAsInt();
+    config.setProperty(ServletPropertySet.PORT, Integer.toString(servletPort));
+    config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(containerRmiPort));
+    config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(tomcatAjpPort));
     config.setProperty(GeneralPropertySet.PORT_OFFSET, "0");
-    String jvmArgs = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + ports[3];
-    if (SystemUtils.isJavaVersionAtLeast(900)) {
+    int jvmJmxPort = portSupplier.getAsInt();
+    String jvmArgs = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + jvmJmxPort;
+    if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       jvmArgs += " --add-opens java.base/java.lang.module=ALL-UNNAMED" +
           " --add-opens java.base/jdk.internal.module=ALL-UNNAMED" +
           " --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED" +
@@ -198,7 +206,7 @@ public abstract class ServerContainer {
 
 
     try {
-      logger.info("Starting container " + description + "RMI Port: " + ports[3]);
+      logger.info("Starting container {} RMI Port: {}", description, jvmJmxPort);
       // Writes settings to the expected form (either XML or WAR file)
       writeSettings();
       // Start the container through cargo
@@ -223,6 +231,7 @@ public abstract class ServerContainer {
   }
 
   public void dumpLogs() throws IOException {
+    System.out.println("Logs for container " + this);
     for (File file : logDir.listFiles()) {
       dumpToStdOut(file);
     }
@@ -230,6 +239,21 @@ public abstract class ServerContainer {
     for (File file : new File(containerConfigHome, "logs").listFiles()) {
       dumpToStdOut(file);
     }
+
+    dumpConfiguration();
+  }
+
+  private void dumpConfiguration() {
+    System.out.println("-------------------------------------------");
+    System.out.println("Configuration for container " + this);
+    System.out.println("-------------------------------------------");
+    LocalConfiguration configuration = getConfiguration();
+    System.out.format("Name: %s%n", configuration);
+    System.out.format("Class: %s%n", configuration.getClass());
+    System.out.println("Properties:");
+    configuration.getProperties().entrySet().forEach(System.out::println);
+    System.out.println("-------------------------------------------");
+    System.out.println("");
   }
 
   private void dumpToStdOut(final File file) throws IOException {
@@ -249,7 +273,7 @@ public abstract class ServerContainer {
     File configDir = new File(getConfiguration().getHome());
 
     if (configDir.exists()) {
-      logger.info("Deleting configuration folder " + configDir.getAbsolutePath());
+      logger.info("Deleting configuration folder {}", configDir.getAbsolutePath());
       FileUtils.deleteDirectory(configDir);
     }
   }

@@ -48,8 +48,8 @@ import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 
 /**
  * Note: Overriding MethodRule is only way to get {@code Object target}

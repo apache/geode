@@ -54,7 +54,7 @@ public class LIndexExecutor extends ListExecutor {
 
     int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
 
-    Integer redisIndex;
+    int redisIndex;
 
     try {
       redisIndex = Coder.bytesToInt(indexArray);
@@ -97,8 +97,7 @@ public class LIndexExecutor extends ListExecutor {
 
     Object[] entryArray = entry.getFieldValues();
     ByteArrayWrapper valueWrapper = (ByteArrayWrapper) entryArray[1];
-    command.setResponse(
-        Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
+    respondBulkStrings(command, context, valueWrapper);
   }
 
   private Struct getEntryAtIndex(ExecutionHandlerContext context, ByteArrayWrapper key, int index)

@@ -23,8 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,13 +45,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import util.TestException;
 
 import org.apache.geode.CancelCriterion;
@@ -94,10 +89,6 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.script.*", "javax.management.*", "org.springframework.shell.event.*",
-    "org.springframework.shell.core.*", "*.IntegrationTest"})
-@PrepareForTest({CacheClientNotifier.class})
 public class HARegionQueueIntegrationTest {
 
   private Cache cache;
@@ -117,10 +108,12 @@ public class HARegionQueueIntegrationTest {
     dataRegion = createDataRegion();
     ccn = createCacheClientNotifier();
     member = createMember();
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
   }
 
   @After
   public void tearDown() throws Exception {
+    ccn.shutdown(0);
     cache.close();
   }
 
@@ -133,9 +126,9 @@ public class HARegionQueueIntegrationTest {
   }
 
   private InternalCache createMockInternalCache() {
-    InternalCache mockInternalCache = Mockito.mock(InternalCache.class);
-    doReturn(Mockito.mock(SystemTimer.class)).when(mockInternalCache).getCCPTimer();
-    doReturn(Mockito.mock(CancelCriterion.class)).when(mockInternalCache).getCancelCriterion();
+    InternalCache mockInternalCache = mock(InternalCache.class);
+    doReturn(mock(SystemTimer.class)).when(mockInternalCache).getCCPTimer();
+    doReturn(mock(CancelCriterion.class)).when(mockInternalCache).getCancelCriterion();
 
     InternalDistributedSystem mockInteralDistributedSystem = createMockInternalDistributedSystem();
     doReturn(mockInteralDistributedSystem).when(mockInternalCache).getInternalDistributedSystem();
@@ -146,25 +139,24 @@ public class HARegionQueueIntegrationTest {
 
   private InternalDistributedSystem createMockInternalDistributedSystem() {
     InternalDistributedSystem mockInternalDistributedSystem =
-        Mockito.mock(InternalDistributedSystem.class);
-    DistributionManager mockDistributionManager = Mockito.mock(DistributionManager.class);
+        mock(InternalDistributedSystem.class);
+    DistributionManager mockDistributionManager = mock(DistributionManager.class);
 
-    doReturn(Mockito.mock(InternalDistributedMember.class)).when(mockInternalDistributedSystem)
+    doReturn(mock(InternalDistributedMember.class)).when(mockInternalDistributedSystem)
         .getDistributedMember();
-    doReturn(Mockito.mock(Statistics.class)).when(mockInternalDistributedSystem)
+    doReturn(mock(Statistics.class)).when(mockInternalDistributedSystem)
         .createAtomicStatistics(any(StatisticsType.class), any(String.class));
-    doReturn(Mockito.mock(DistributionConfig.class)).when(mockDistributionManager).getConfig();
+    doReturn(mock(DistributionConfig.class)).when(mockDistributionManager).getConfig();
     doReturn(mockDistributionManager).when(mockInternalDistributedSystem).getDistributionManager();
-    doReturn(Mockito.mock(DSClock.class)).when(mockInternalDistributedSystem).getClock();
+    doReturn(mock(DSClock.class)).when(mockInternalDistributedSystem).getClock();
 
     return mockInternalDistributedSystem;
   }
 
   private CacheClientNotifier createCacheClientNotifier() {
-    // Create a mock CacheClientNotifier
-    CacheClientNotifier ccn = mock(CacheClientNotifier.class);
-    PowerMockito.mockStatic(CacheClientNotifier.class, Mockito.CALLS_REAL_METHODS);
-    PowerMockito.when(CacheClientNotifier.getInstance()).thenReturn(ccn);
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance((InternalCache) cache, mock(CacheServerStats.class),
+            100000, 100000, mock(ConnectionListener.class), null, false);
     return ccn;
   }
 
@@ -177,17 +169,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifyEndGiiQueueingEmptiesQueueAndHAContainer() throws Exception {
-    // We need to use an actual cache client notifier for this test because we are making assertions
-    // based on the actual CacheClientNotifier.checkAndRemoveFromClientMsgsRegion() method.
-    InternalCache mockInternalCache = createMockInternalCache();
-    CacheClientNotifier cacheClientNotifier =
-        CacheClientNotifier.getInstance(mockInternalCache, Mockito.mock(CacheServerStats.class),
-            100000, 100000, Mockito.mock(ConnectionListener.class), null, false);
-    PowerMockito.when(CacheClientNotifier.getInstance()).thenReturn(cacheClientNotifier);
-
-    // Create a HAContainerRegion
-    HAContainerWrapper haContainerWrapper =
-        (HAContainerWrapper) cacheClientNotifier.getHaContainer();
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     // create message and HAEventWrapper
     ClientUpdateMessage message = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
@@ -237,9 +219,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifySequentialUpdateHAEventWrapperWithMap() throws Exception {
-    // Create a HAContainerMap to be used by the CacheClientNotifier
-    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     // Create a CachedDeserializable
     CachedDeserializable cd = createCachedDeserializable(haContainerWrapper);
@@ -253,9 +233,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifySimultaneousUpdateHAEventWrapperWithMap() throws Exception {
-    // Create a HAContainerMap to be used by the CacheClientNotifier
-    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     // Create a CachedDeserializable
     CachedDeserializable cd = createCachedDeserializable(haContainerWrapper);
@@ -269,9 +247,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifySequentialUpdateHAEventWrapperWithRegion() throws Exception {
-    // Create a HAContainerRegion to be used by the CacheClientNotifier
-    HAContainerWrapper haContainerWrapper = createHAContainerRegion();
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     // Create a CachedDeserializable
     CachedDeserializable cd = createCachedDeserializable(haContainerWrapper);
@@ -285,9 +261,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifySimultaneousUpdateHAEventWrapperWithRegion() throws Exception {
-    // Create a HAContainerRegion to be used by the CacheClientNotifier
-    HAContainerWrapper haContainerWrapper = createHAContainerRegion();
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     // Create a CachedDeserializable
     CachedDeserializable cd = createCachedDeserializable(haContainerWrapper);
@@ -341,8 +315,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifySimultaneousPutHAEventWrapperWithMap() throws Exception {
-    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     final int numQueues = 30;
     final int numOperations = 1000;
@@ -361,8 +334,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void verifySequentialPutHAEventWrapperWithMap() throws Exception {
-    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     ClientUpdateMessage message = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
         (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
@@ -382,9 +354,7 @@ public class HARegionQueueIntegrationTest {
 
   @Test
   public void queueRemovalAndDispatchingConcurrently() throws Exception {
-    // Create a HAContainerMap to be used by the CacheClientNotifier
-    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
-    when(ccn.getHaContainer()).thenReturn(haContainerWrapper);
+    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
 
     List<HARegionQueue> regionQueues = new ArrayList<>();
 
@@ -625,7 +595,7 @@ public class HARegionQueueIntegrationTest {
   }
 
   private HARegion createMockHARegion() {
-    HARegion haRegion = Mockito.mock(HARegion.class);
+    HARegion haRegion = mock(HARegion.class);
     when(haRegion.getGemFireCache()).thenReturn((InternalCache) cache);
 
     ConcurrentHashMap<Object, Object> mockRegion = new ConcurrentHashMap<>();
@@ -672,10 +642,10 @@ public class HARegionQueueIntegrationTest {
 
   private HARegionQueue createHARegionQueue(Map haContainer, int index, HARegion haRegion,
       boolean puttingGIIDataInQueue) throws Exception {
-    StoppableReentrantReadWriteLock giiLock = Mockito.mock(StoppableReentrantReadWriteLock.class);
-    doReturn(Mockito.mock(StoppableReentrantReadWriteLock.StoppableWriteLock.class)).when(giiLock)
+    StoppableReentrantReadWriteLock giiLock = mock(StoppableReentrantReadWriteLock.class);
+    doReturn(mock(StoppableReentrantReadWriteLock.StoppableWriteLock.class)).when(giiLock)
         .writeLock();
-    doReturn(Mockito.mock(StoppableReentrantReadWriteLock.StoppableReadLock.class)).when(giiLock)
+    doReturn(mock(StoppableReentrantReadWriteLock.StoppableReadLock.class)).when(giiLock)
         .readLock();
 
     StoppableReentrantReadWriteLock rwLock =
@@ -687,7 +657,7 @@ public class HARegionQueueIntegrationTest {
   }
 
   private HARegionQueue createHARegionQueue(Map haContainer, int index) throws Exception {
-    HARegion haRegion = Mockito.mock(HARegion.class);
+    HARegion haRegion = mock(HARegion.class);
     when(haRegion.getGemFireCache()).thenReturn((InternalCache) cache);
 
     return createHARegionQueue(haContainer, index, haRegion, false);
@@ -734,7 +704,7 @@ public class HARegionQueueIntegrationTest {
 
       // start GII Queueing (targetRegionQueue)
       if (i == startGiiQueueingIndex) {
-        HARegion haRegion = Mockito.mock(HARegion.class);
+        HARegion haRegion = mock(HARegion.class);
 
         final HARegionQueue giiHaRegionQueue =
             createHARegionQueue(haContainerWrapper, i, haRegion, false);;

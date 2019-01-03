@@ -387,8 +387,9 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
           "EntryIdleTimeout is not the same");
     }
     if (!equal(this.customEntryIdleTimeout, other.getCustomEntryIdleTimeout())) {
-      throw new RuntimeException(
-          "CustomEntryIdleTimeout is not the same");
+      throw new RuntimeException(String.format(
+          "CustomEntryIdleTimeout is not the same. this %s, other: %s", this.customEntryIdleTimeout,
+          other.getCustomEntryIdleTimeout()));
     }
     if (!equal(this.entryTimeToLive, other.getEntryTimeToLive())) {
       throw new RuntimeException(
@@ -401,7 +402,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     if (!equal(this.partitionAttributes, other.getPartitionAttributes())) {
       throw new RuntimeException(
           String.format("PartitionAttributes are not the same. this: %s, other: %s",
-              new Object[] {this, other.getPartitionAttributes()}));
+              this, other.getPartitionAttributes()));
     }
     if (!equal(this.membershipAttributes, other.getMembershipAttributes())) {
       throw new RuntimeException(
@@ -414,8 +415,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     if (!equal(this.evictionAttributes, other.getEvictionAttributes())) {
       throw new RuntimeException(
           String.format("Eviction Attributes are not the same: this: %s other: %s",
-
-              new Object[] {this.evictionAttributes, other.getEvictionAttributes()}));
+              this.evictionAttributes, other.getEvictionAttributes()));
     }
     if (this.diskStoreName == null) {
       // only compare the DWA, diskDirs and diskSizes when disk store is not configured

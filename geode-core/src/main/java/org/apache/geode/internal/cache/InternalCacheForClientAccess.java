@@ -40,6 +40,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.GatewayException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -72,6 +73,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -86,6 +88,7 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -109,8 +112,13 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   private void checkForInternalRegion(Region<?, ?> r) {
+    if (r == null) {
+      return;
+    }
     InternalRegion ir = (InternalRegion) r;
-    if (ir.isInternalRegion()) {
+    if (ir.isInternalRegion()
+        && !r.getName().equals(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME)
+        && !r.getName().equals(ClientHealthMonitoringRegion.ADMIN_REGION_NAME)) {
       throw new NotAuthorizedException("The region " + r.getName()
           + " is an internal region that a client is never allowed to access");
     }
@@ -128,6 +136,15 @@ public class InternalCacheForClientAccess implements InternalCache {
     Region<K, V> result = delegate.getRegion(path);
     checkForInternalRegion(result);
     return result;
+  }
+
+  /**
+   * This method can be used to locate an internal region.
+   * It should not be invoked with a region name obtained
+   * from a client.
+   */
+  public <K, V> Region<K, V> getInternalRegion(String path) {
+    return delegate.getRegion(path);
   }
 
   @Override
@@ -207,6 +224,16 @@ public class InternalCacheForClientAccess implements InternalCache {
             + " is an internal region that a client is never allowed to create");
       }
     }
+    return delegate.createVMRegion(name, p_attrs, internalRegionArgs);
+  }
+
+  /**
+   * This method allows server-side code to create an internal region. It should
+   * not be invoked with a region name obtained from a client.
+   */
+  public <K, V> Region<K, V> createInternalRegion(String name, RegionAttributes<K, V> p_attrs,
+      InternalRegionArguments internalRegionArgs)
+      throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
     return delegate.createVMRegion(name, p_attrs, internalRegionArgs);
   }
 
@@ -1158,6 +1185,11 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  public JSONFormatter getJsonFormatter() {
+    return delegate.getJsonFormatter();
+  }
+
+  @Override
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
     return delegate.getAsyncEventQueues(visibleOnly);
   }
@@ -1183,7 +1215,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalCache getCacheForProcessingClientRequests() {
+  public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return this;
   }
 }

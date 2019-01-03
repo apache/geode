@@ -1399,7 +1399,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       KeyInfo keyInfo = getKeyInfo(key, aCallbackArgument);
       Object value = getDataView().getDeserializedValue(keyInfo, this, true, disableCopyOnRead,
-          preferCD, clientEvent, returnTombstones, retainResult);
+          preferCD, clientEvent, returnTombstones, retainResult, true);
       final boolean isCreate = value == null;
       isMiss = value == null || Token.isInvalid(value)
           || (!returnTombstones && value == Token.TOMBSTONE);
@@ -3041,10 +3041,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             event.setConcurrentMapOldValue(result);
           }
           if (op == Operation.PUT_IF_ABSENT) {
-            if (result != null) {
-              // customers don't see this exception
-              throw new EntryNotFoundException("entry existed for putIfAbsent");
-            }
+            checkPutIfAbsentResult(event, value, result);
           } else if (op == Operation.REPLACE) {
             if (requireOldValue && result == null) {
               throw new EntryNotFoundException("entry not found for replace");
@@ -3058,6 +3055,46 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
     }
+  }
+
+  void checkPutIfAbsentResult(EntryEventImpl event, Object value, Object result) {
+    if (result != null) {
+      // we may see a non null result possibly due to retry
+      if (event.hasRetried() && putIfAbsentResultHasSameValue(true, value, result)) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("retried putIfAbsent and result is the value to be put,"
+              + " treat as a successful putIfAbsent");
+        }
+      } else {
+        // customers don't see this exception
+        throw new EntryNotFoundException("entry existed for putIfAbsent");
+      }
+    }
+  }
+
+  boolean putIfAbsentResultHasSameValue(boolean isClient, Object valueToBePut, Object result) {
+    if (Token.isInvalid(result) || result == null) {
+      return valueToBePut == null;
+    }
+
+    boolean isCompressedOffHeap =
+        isClient ? false : getAttributes().getOffHeap() && getAttributes().getCompressor() != null;
+    return ValueComparisonHelper.checkEquals(valueToBePut, result, isCompressedOffHeap, getCache());
+  }
+
+  boolean bridgePutIfAbsentResultHasSameValue(byte[] valueToBePut, boolean isValueToBePutObject,
+      Object result) {
+    if (Token.isInvalid(result) || result == null) {
+      return valueToBePut == null;
+    }
+
+    boolean isCompressedOffHeap =
+        getAttributes().getOffHeap() && getAttributes().getCompressor() != null;
+    if (isValueToBePutObject) {
+      return ValueComparisonHelper.checkEquals(EntryEventImpl.deserialize(valueToBePut), result,
+          isCompressedOffHeap, getCache());
+    }
+    return ValueComparisonHelper.checkEquals(valueToBePut, result, isCompressedOffHeap, getCache());
   }
 
   /**
@@ -5663,7 +5700,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       oldEntry = this.entries.basicPut(event, lastModified, ifNew, ifOld, expectedOldValue,
           requireOldValue, overwriteDestroyed);
-
     } catch (ConcurrentCacheModificationException ignore) {
       // this can happen in a client cache when another thread
       // managed to slip in its version info to the region entry before this
@@ -5687,7 +5723,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         return true;
       }
     }
-
     return oldEntry != null;
   }
 
@@ -6109,11 +6144,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     if (shouldNotifyBridgeClients()) {
-      if (numBS > 0) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: notifying {} cache servers of event: {}", this.getName(), numBS,
-              event);
-        }
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: notifying {} cache servers of event: {}", this.getName(), numBS,
+            event);
       }
 
       Operation op = event.getOperation();
@@ -11599,7 +11632,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       final boolean ifOld = false;
       final boolean requireOldValue = true;
       if (!basicPut(event, ifNew, ifOld, oldValue, requireOldValue)) {
-        return event.getOldValue();
+        Object result = event.getOldValue();
+        if (event.isPossibleDuplicate() && putIfAbsentResultHasSameValue(false, value, result)) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("possible duplicate putIfAbsent event and result is the value to be put,"
+                + " treat this as a successful putIfAbsent");
+          }
+          return null;
+        }
+        return result;
       } else {
         if (!getDataView().isDeferredStats()) {
           getCachePerfStats().endPut(startPut, false);
@@ -11835,14 +11876,28 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (basicPut) {
         clientEvent.setVersionTag(event.getVersionTag());
         clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-      } else if (oldValue == null) {
-        // fix for 42189, putIfAbsent on server can return null if the
-        // operation was not performed (oldValue in cache was null).
-        // We return the INVALID token instead of null to distinguish
-        // this case from successful operation
-        return Token.INVALID;
-      }
+      } else {
+        if (value != null) {
+          assert (value instanceof byte[]);
+        }
+        if (event.isPossibleDuplicate()
+            && bridgePutIfAbsentResultHasSameValue((byte[]) value, isObject, oldValue)) {
+          // result is possibly due to the retry
+          if (logger.isDebugEnabled()) {
+            logger.debug("retried putIfAbsent and got oldValue as the value to be put,"
+                + " treat this as a successful putIfAbsent");
+          }
+          return null;
+        }
 
+        if (oldValue == null) {
+          // fix for 42189, putIfAbsent on server can return null if the
+          // operation was not performed (oldValue in cache was null).
+          // We return the INVALID token instead of null to distinguish
+          // this case from successful operation
+          return Token.INVALID;
+        }
+      }
       return oldValue;
     } finally {
       event.release();

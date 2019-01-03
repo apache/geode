@@ -92,6 +92,15 @@ public class FileResultModel {
   }
 
   /**
+   * Save the file to the current working directory
+   *
+   * @return the message you would like to return to the user.
+   */
+  public String saveFile() throws IOException {
+    return saveFile(null);
+  }
+
+  /**
    * at this point, the dir should already exist and is confirmed as a directory
    * filename in this instance should be file name only. no path in the file name
    *
@@ -104,8 +113,7 @@ public class FileResultModel {
 
     Gfsh gfsh = Gfsh.getCurrentInstance();
     if (file.exists()) {
-      String fileExistsMessage = String.format("File with name \"%s\" already exists in \"%s\".",
-          filename, directory.getAbsolutePath());
+      String fileExistsMessage = String.format("File \"%s\" already exists", filename);
       if (gfsh != null && !gfsh.isQuietMode()) {
         fileExistsMessage += " Overwrite? " + options + " : ";
         String interaction = gfsh.interact(fileExistsMessage);

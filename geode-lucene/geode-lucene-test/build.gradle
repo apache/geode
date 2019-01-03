@@ -16,14 +16,17 @@
  */
 
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
-  compile('org.apache.lucene:lucene-core:6.6.2')
+  compile('org.apache.lucene:lucene-core')
   compile(project(':geode-core'))
   compileOnly(project(':geode-lucene'))
 
-  compile('junit:junit:' + project.'junit.version')
-  compile('org.apache.lucene:lucene-test-framework:' + project.'lucene.version')
-  compile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  compile('junit:junit')
+  compile('org.apache.lucene:lucene-test-framework')
+  compile('org.mockito:mockito-core')
 }
 
 disableMavenPublishing()

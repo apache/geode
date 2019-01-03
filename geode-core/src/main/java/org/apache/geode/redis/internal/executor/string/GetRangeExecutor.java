@@ -90,7 +90,6 @@ public class GetRangeExecutor extends StringExecutor {
       return;
     }
 
-    command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), returnRange));
-
+    respondBulkStrings(command, context, returnRange);
   }
 }

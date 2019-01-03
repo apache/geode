@@ -558,7 +558,7 @@ public class StateFlushOperation {
           try {
             if (channelState != null) {
               if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)
-                  && ((channelState != null) && (channelState.size() > 0))) {
+                  && (channelState.size() > 0)) {
                 logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Waiting for channel states:  {}",
                     channelStateDescription(channelState));
               }

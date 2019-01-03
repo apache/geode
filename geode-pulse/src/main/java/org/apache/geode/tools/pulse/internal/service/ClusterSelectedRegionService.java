@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Scope;
@@ -207,7 +207,7 @@ public class ClusterSelectedRegionService implements PulseService {
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
 
       regionJSON.put("emptyNodes", reg.getEmptyNode());
-      Long entrySize = reg.getEntrySize();
+      long entrySize = reg.getEntrySize();
       String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
       if (entrySize < 0) {
         regionJSON.put(this.ENTRY_SIZE, PulseService.VALUE_NA);

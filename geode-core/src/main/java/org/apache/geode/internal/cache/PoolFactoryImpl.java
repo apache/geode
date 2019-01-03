@@ -370,6 +370,11 @@ public class PoolFactoryImpl implements PoolFactory {
         && Objects.equals(new HashSet(locatorAddresses), new HashSet(that.locatorAddresses));
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(attributes, locatorAddresses);
+  }
+
   /**
    * Not a true pool just the attributes. Serialization is used by unit tests
    */
@@ -623,6 +628,18 @@ public class PoolFactoryImpl implements PoolFactory {
       this.statisticInterval = DataSerializer.readPrimitiveInt(in);
       this.multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
       this.socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects
+          .hash(socketConnectTimeout, connectionTimeout, connectionLifetime, socketBufferSize,
+              threadLocalConnections, readTimeout, minConnections, maxConnections, idleTimeout,
+              retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
+              queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
+              subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
+              servers,
+              startDisabled, locatorCallback, gatewaySender, gateway);
     }
 
     @Override

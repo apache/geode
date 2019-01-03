@@ -54,7 +54,7 @@ import javax.net.ssl.SSLContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -128,8 +128,8 @@ public class RestAPIsWithSSLDUnitTest {
         .withProperties(sslProperties)
         .withConnectionToLocator(locatorPort)
         .withRegion(RegionShortcut.REPLICATE, PEOPLE_REGION_NAME));
-    client = cluster.startClientVM(1,
-        c -> c.addPoolLocator("localhost", locatorPort).setPdxReadSerialized(true));
+    client = cluster.startClientVM(1, c -> c.withLocatorConnection(locatorPort)
+        .withCacheSetup(cf -> cf.setPdxReadSerialized(true)));
 
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();

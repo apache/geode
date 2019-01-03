@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 import javax.naming.NamingException;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

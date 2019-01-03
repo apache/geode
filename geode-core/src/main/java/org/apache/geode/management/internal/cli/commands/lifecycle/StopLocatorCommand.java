@@ -29,19 +29,18 @@ import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class StopLocatorCommand extends InternalGfshCommand {
+public class StopLocatorCommand extends OfflineGfshCommand {
   private static final long WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS = 30 * 1000;
 
   @CliCommand(value = CliStrings.STOP_LOCATOR, help = CliStrings.STOP_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
-  public Result stopLocator(
+  public ResultModel stopLocator(
       @CliOption(key = CliStrings.STOP_LOCATOR__MEMBER,
           optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
           help = CliStrings.STOP_LOCATOR__MEMBER__HELP) final String member,
@@ -70,11 +69,11 @@ public class StopLocatorCommand extends InternalGfshCommand {
           locatorState = LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
           locatorProxy.shutDownMember();
         } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
+          return ResultModel.createError(CliStrings
               .format(CliStrings.STOP_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
         }
       } else {
-        return ResultBuilder.createUserErrorResult(CliStrings
+        return ResultModel.createError(CliStrings
             .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
       }
     } else {
@@ -104,9 +103,9 @@ public class StopLocatorCommand extends InternalGfshCommand {
         }
       }
 
-      return ResultBuilder.createInfoResult(StringUtils.EMPTY);
+      return ResultModel.createInfo(StringUtils.EMPTY);
     } else {
-      return ResultBuilder.createUserErrorResult(locatorState.toString());
+      return ResultModel.createError(locatorState.toString());
     }
   }
 }

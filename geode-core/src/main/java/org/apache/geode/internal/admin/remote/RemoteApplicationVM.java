@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.util.Objects;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.admin.ApplicationVM;
@@ -54,4 +56,8 @@ public class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationV
     }
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(agent, id);
+  }
 }

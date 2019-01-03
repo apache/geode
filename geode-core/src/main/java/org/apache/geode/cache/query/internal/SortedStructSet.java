@@ -91,6 +91,11 @@ public class SortedStructSet extends TreeSet
     return super.equals(other);
   }
 
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
   /** Add a Struct */
   @Override
   public boolean add(Object obj) {

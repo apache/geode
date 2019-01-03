@@ -61,7 +61,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -1749,7 +1749,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     if (PulseConstants.NOTIFICATION_TYPE_SYSTEM_ALERT.equals(type)) {
       Cluster.Alert alert = new Cluster.Alert();
-      Long timeStamp = notification.getTimeStamp();
+      long timeStamp = notification.getTimeStamp();
       Date date = new Date(timeStamp);
       alert.setTimestamp(date);
       String notificationSource = (String) notification.getUserData();
@@ -1770,7 +1770,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       cluster.addAlert(alert);
     } else {
       Cluster.Alert alert = new Cluster.Alert();
-      Long timeStamp = notification.getTimeStamp();
+      long timeStamp = notification.getTimeStamp();
       Date date = new Date(timeStamp);
       alert.setTimestamp(date);
       String notificationSource = (String) notification.getSource();

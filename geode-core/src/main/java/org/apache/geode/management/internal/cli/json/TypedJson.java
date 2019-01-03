@@ -724,15 +724,13 @@ public class TypedJson {
     if (number == null) {
       return "";
     }
-    if (number != null) {
-      if (number instanceof Double) {
-        if (((Double) number).isInfinite() || ((Double) number).isNaN()) {
-          return "Non-Finite";
-        }
-      } else if (number instanceof Float) {
-        if (((Float) number).isInfinite() || ((Float) number).isNaN()) {
-          return "Non-Finite";
-        }
+    if (number instanceof Double) {
+      if (((Double) number).isInfinite() || ((Double) number).isNaN()) {
+        return "Non-Finite";
+      }
+    } else if (number instanceof Float) {
+      if (((Float) number).isInfinite() || ((Float) number).isNaN()) {
+        return "Non-Finite";
       }
     }
 

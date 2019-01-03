@@ -121,11 +121,7 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
         index = metaIndex;
       i++;
     } while (!removed && keyRegion.size() != LIST_EMPTY_SIZE);
-    if (valueWrapper != null)
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
-    else
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+    respondBulkStrings(command, context, valueWrapper);
   }
 
   protected abstract ListDirection popType();

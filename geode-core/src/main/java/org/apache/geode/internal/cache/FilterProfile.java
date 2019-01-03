@@ -1169,11 +1169,7 @@ public class FilterProfile implements DataSerializableFixedID {
       Set clients = null;
       int size = putAllData.length;
       CqService cqService = getCqService(dpao.getRegion());
-      boolean doCQs = cqService.isRunning()
-          && this.region != null /*
-                                  * && !(this.region.isUsedForPartitionedRegionBucket() ||
-                                  * (this.region instanceof PartitionedRegion))
-                                  */;
+      boolean doCQs = cqService.isRunning();
       for (int idx = 0; idx < size; idx++) {
         PutAllEntryData pEntry = putAllData[idx];
         if (pEntry != null) {
@@ -1228,7 +1224,7 @@ public class FilterProfile implements DataSerializableFixedID {
       Set clients = null;
       int size = removeAllData.length;
       CqService cqService = getCqService(op.getRegion());
-      boolean doCQs = cqService.isRunning() && this.region != null;
+      boolean doCQs = cqService.isRunning();
       for (int idx = 0; idx < size; idx++) {
         RemoveAllEntryData pEntry = removeAllData[idx];
         if (pEntry != null) {

@@ -37,7 +37,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.PersistentID;
@@ -83,6 +83,7 @@ import org.apache.geode.management.internal.beans.stats.GatewayReceiverClusterSt
 import org.apache.geode.management.internal.beans.stats.GatewaySenderClusterStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.MemberClusterStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.ServerClusterStatsMonitor;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.json.TypedJson;
 
 /**
@@ -208,6 +209,11 @@ public class DistributedSystemBridge {
   private int queryCollectionsDepth = TypedJson.DEFAULT_COLLECTION_ELEMENT_LIMIT;
 
   /**
+   * used to issue queries
+   */
+  private DataQueryEngine dataQueryEngine;
+
+  /**
    * Helper method to get a member bean reference given a member name or id
    *
    * @param member name or id of the member
@@ -240,6 +246,7 @@ public class DistributedSystemBridge {
     this.dm = system.getDistributionManager();
     this.alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;
     this.thisMemberName = MBeanJMXAdapter.getMemberMBeanName(system.getDistributedMember());
+    this.dataQueryEngine = new DataQueryEngine(service, cache);
 
     this.distributedSystemId = this.system.getConfig().getDistributedSystemId();
 
@@ -1129,7 +1136,7 @@ public class DistributedSystemBridge {
 
   public ObjectName[] listGatewaySenderObjectNames(String member) throws Exception {
     validateMember(member);
-    DistributedMember distributedMember = BeanUtilFuncs.getDistributedMemberByNameOrId(member);
+    DistributedMember distributedMember = CliUtil.getDistributedMemberByNameOrId(member, cache);
 
     List<ObjectName> listName = null;
 
@@ -1397,15 +1404,15 @@ public class DistributedSystemBridge {
     if (mapOfGatewaySenders.values().size() > 0) {
       Map<String, Boolean> senderMap = new HashMap<>();
       for (GatewaySenderMXBean bean : mapOfGatewaySenders.values()) {
-        Integer dsId = bean.getRemoteDSId();
-        if (dsId == null || dsId <= -1) {
+        int dsId = bean.getRemoteDSId();
+        if (dsId <= -1) {
           continue;
         }
         if (bean.isParallel()) {
-          senderMap.merge(dsId.toString(), bean.isConnected(), Boolean::logicalAnd);
+          senderMap.merge(String.valueOf(dsId), bean.isConnected(), Boolean::logicalAnd);
         } else {
           if (bean.isPrimary()) {
-            senderMap.put(dsId.toString(), bean.isConnected());
+            senderMap.put(String.valueOf(dsId), bean.isConnected());
           }
         }
       }
@@ -1416,14 +1423,14 @@ public class DistributedSystemBridge {
   }
 
   public String queryData(String query, String members, int limit) throws Exception {
-    Object result = QueryDataFunction.queryData(query, members, limit, false, queryResultSetLimit,
+    Object result = dataQueryEngine.queryData(query, members, limit, false, queryResultSetLimit,
         queryCollectionsDepth);
     return (String) result;
   }
 
   public byte[] queryDataForCompressedResult(String query, String members, int limit)
       throws Exception {
-    Object result = QueryDataFunction.queryData(query, members, limit, true, queryResultSetLimit,
+    Object result = dataQueryEngine.queryData(query, members, limit, true, queryResultSetLimit,
         queryCollectionsDepth);
     return (byte[]) result;
   }

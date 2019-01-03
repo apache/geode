@@ -27,14 +27,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -66,12 +67,17 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogConfigListener;
+import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -95,7 +101,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
  *
  * @since GemFire 4.0
  */
-public class InternalLocator extends Locator implements ConnectListener {
+public class InternalLocator extends Locator implements ConnectListener, LogConfigSupplier {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -179,6 +185,10 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private volatile Thread restartThread;
 
+  private final LoggingSession loggingSession;
+
+  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
+
   public boolean isSharedConfigurationEnabled() {
     return this.config.getEnableClusterConfiguration();
   }
@@ -221,10 +231,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       return;
     }
     synchronized (locatorLock) {
-      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
-      LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
-      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
-      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+      locator.loggingSession.stopSession();
+      locator.loggingSession.shutdown();
       if (locator.equals(InternalLocator.locator)) {
         InternalLocator.locator = null;
       }
@@ -241,6 +249,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * startPeerLocation on the locator object.
    *
    * @param port the tcp/ip port to listen on
+   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does nothing
    * @param logFile the file that log messages should be written to
    * @param logger a log writer that should be used (logFile parameter is ignored)
    * @param securityLogger the logger to be used for security related log messages
@@ -248,7 +257,8 @@ public class InternalLocator extends Locator implements ConnectListener {
    *        (e.g., mcast addr/port, other locators)
    * @param startDistributedSystem if true then this locator will also start its own ds
    */
-  public static InternalLocator createLocator(int port, File logFile, InternalLogWriter logger,
+  public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
+      InternalLogWriter logger,
       InternalLogWriter securityLogger, InetAddress bindAddress, String hostnameForClients,
       Properties distributedSystemProperties, boolean startDistributedSystem) {
     synchronized (locatorLock) {
@@ -257,7 +267,7 @@ public class InternalLocator extends Locator implements ConnectListener {
             "A locator can not be created because one already exists in this JVM.");
       }
       InternalLocator locator =
-          new InternalLocator(port, logFile, logger, securityLogger, bindAddress,
+          new InternalLocator(port, loggingSession, logFile, logger, securityLogger, bindAddress,
               hostnameForClients, distributedSystemProperties, null, startDistributedSystem);
       InternalLocator.locator = locator;
       return locator;
@@ -270,6 +280,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
+
       InternalLocator.locator = locator;
     }
   }
@@ -291,37 +302,44 @@ public class InternalLocator extends Locator implements ConnectListener {
   public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logger,
       InternalLogWriter securityLogger, InetAddress bindAddress, boolean startDistributedSystem,
       Properties dsProperties, String hostnameForClients) throws IOException {
-
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
 
     boolean startedLocator = false;
     try {
 
-      newLocator = createLocator(port, logFile, logger, securityLogger, bindAddress,
+      // if startDistributedSystem is true then Locator uses a NullLoggingSession (does nothing)
+      LoggingSession loggingSession =
+          startDistributedSystem ? NullLoggingSession.create() : LoggingSession.create();
+
+      newLocator = createLocator(port, loggingSession, logFile, logger, securityLogger, bindAddress,
           hostnameForClients, dsProperties, startDistributedSystem);
+
+      loggingSession.createSession(newLocator);
+      loggingSession.startSession();
 
       try {
         newLocator.startPeerLocation();
 
         if (startDistributedSystem) {
+
           try {
             newLocator.startDistributedSystem();
           } catch (RuntimeException e) {
             newLocator.stop();
             throw e;
           }
-          // fix bug #46324
+
           final InternalDistributedSystem ids = newLocator.myDs;
           if (ids != null) {
             ids.getDistributionManager().addHostedLocators(ids.getDistributedMember(),
                 getLocatorStrings(), newLocator.isSharedConfigurationEnabled());
           }
         }
-      } catch (final LocatorCancelException ignored) {
+      } catch (final LocatorCancelException lce) {
         newLocator.stop();
+        throw lce;
       }
-
       InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
       if (sys != null) {
         try {
@@ -338,11 +356,12 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     } finally {
       System.getProperties().remove(FORCE_LOCATOR_DM_TYPE);
+
       if (!startedLocator) {
-        // fix for bug 46314
         removeLocator(newLocator);
       }
     }
+
   }
 
   /***
@@ -373,7 +392,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Creates a new {@code Locator} with the given port, log file, logger, and bind address.
    *
    * @param port the tcp/ip port to listen on
-   * @param logF the file that log messages should be written to
+   * @param logFile the file that log messages should be written to
    * @param logWriter a log writer that should be used (logFile parameter is ignored)
    * @param securityLogWriter the log writer to be used for security related log messages
    * @param hostnameForClients the name to give to clients for connecting to this locator
@@ -382,17 +401,13 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param cfg the config if being called from a distributed system; otherwise null.
    * @param startDistributedSystem if true locator will start its own distributed system
    */
-  private InternalLocator(int port, File logF, InternalLogWriter logWriter,
-      // LOG: 3 non-null sources: GemFireDistributionLocator, InternalDistributedSystem,
-      // LocatorLauncher
-      InternalLogWriter securityLogWriter,
-      // LOG: 1 non-null source: GemFireDistributionLocator(same instance as logWriter),
-      // InternalDistributedSystem
+  private InternalLocator(int port, LoggingSession loggingSession, File logFile,
+      InternalLogWriter logWriter, InternalLogWriter securityLogWriter,
       InetAddress bindAddress, String hostnameForClients, Properties distributedSystemProperties,
       DistributionConfigImpl cfg, boolean startDistributedSystem) {
 
     // TODO: the following three assignments are already done in superclass
-    this.logFile = logF;
+    this.logFile = logFile;
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
 
@@ -427,39 +442,22 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.config.unsafeSetLogFile(this.logFile);
     }
 
-    // LOG: create LogWriterAppenders (these are closed at shutdown)
-    final boolean hasLogFile =
-        this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
-    final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null
-        && !this.config.getSecurityLogFile().equals(new File(""));
-    LogService.configureLoggers(hasLogFile, hasSecurityLogFile);
-    if (hasLogFile || hasSecurityLogFile) {
-
-      if (hasLogFile) {
-        // if log-file then create logWriterAppender
-        LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.MAIN, true, false,
-            this.config, !startDistributedSystem);
-      }
-
-      if (hasSecurityLogFile) {
-        // if security-log-file then create securityLogWriterAppender
-        LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, true, false,
-            this.config, false);
-      }
-      // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
+    if (loggingSession == null) {
+      throw new Error("LoggingSession must not be null");
+    } else {
+      this.loggingSession = loggingSession;
     }
 
     // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
     if (logWriter == null) {
-      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config, false);
+      logWriter = LogWriterFactory.createLogWriterLogger(this.config, false);
       if (logger.isDebugEnabled()) {
         logger.debug("LogWriter for locator is created.");
       }
     }
 
     if (securityLogWriter == null) {
-      securityLogWriter = LogWriterFactory.createLogWriterLogger(false, true, this.config, false);
-      logWriter.setLogWriterLevel(this.config.getSecurityLogLevel());
+      securityLogWriter = LogWriterFactory.createLogWriterLogger(this.config, true);
       securityLogWriter.fine("SecurityLogWriter for locator is created.");
     }
 
@@ -820,7 +818,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     removeLocator(this);
 
     handleShutdown();
-
     logger.info("{} is stopped", this);
 
     if (this.stoppedForReconnect) {
@@ -1018,6 +1015,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private void restartWithDS(InternalDistributedSystem newSystem, InternalCache newCache)
       throws IOException {
+
     synchronized (locatorLock) {
       if (locator != this && hasLocator()) {
         throw new IllegalStateException(
@@ -1088,6 +1086,37 @@ public class InternalLocator extends Locator implements ConnectListener {
       return this.server.getPort();
     }
     return null;
+  }
+
+  @Override
+  public LogConfig getLogConfig() {
+    return config;
+  }
+
+  @Override
+  public StatisticsConfig getStatisticsConfig() {
+    return config;
+  }
+
+  @Override
+  public void addLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.add(logConfigListener);
+  }
+
+  @Override
+  public void removeLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.remove(logConfigListener);
+  }
+
+  /**
+   * Apparently nothing provides RuntimeDistributionConfigImpl behavior in a stand-alone locator
+   * (without DS), so there are currently no callers of {@code logConfigChanged()}. Keep it?
+   */
+  @SuppressWarnings("unused")
+  void logConfigChanged() {
+    for (LogConfigListener listener : logConfigListeners) {
+      listener.configChanged();
+    }
   }
 
   class FetchSharedConfigStatus implements Callable<SharedConfigurationStatusResponse> {

@@ -22,6 +22,9 @@ configurations {
   slf4jDeps
 }
 
+apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+
+
 dependencies {
   slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
@@ -210,7 +213,8 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
       filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
       filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
       filter(ReplaceTokens, tokens:['SHIRO_VERSION': project.'shiro.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang.version'])
+      filter(ReplaceTokens, tokens:['COMMONS_IO_VERSION': project.'commons-io.version'])
+      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang3.version'])
       filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': project.'commons-validator.version'])
     }
   }

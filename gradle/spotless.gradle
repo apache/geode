@@ -39,7 +39,7 @@ subprojects {
         // Wildcard imports can't be resolved by spotless itself.
         // This will require the developer themselves to adhere to best practices.
         if (it =~ /\nimport .*\*;/) {
-          throw new AssertionError("Do not use wildcard imports.  'spotlessApply' cannot resolve this issue.");
+          throw new AssertionError("Do not use wildcard imports.  'spotlessApply' cannot resolve this issue.")
         }
       }
       custom 'Refuse Awaitility import', {

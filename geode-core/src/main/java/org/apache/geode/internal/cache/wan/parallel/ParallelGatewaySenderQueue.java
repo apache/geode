@@ -1033,7 +1033,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   private void destroyEventFromQueue(PartitionedRegion prQ, int bucketId, Object key) {
-    boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
     BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
     // TODO : Make sure we dont need to initalize a bucket
     // before destroying a key from it
@@ -1272,7 +1271,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
         // Sleep a bit before trying again.
         try {
-          Thread.sleep(50);
+          Thread.sleep(getTimeToSleep(end - currentTime));
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break;
@@ -1288,6 +1287,23 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       blockProcessorThreadIfRequired();
     }
     return batch;
+  }
+
+  private long getTimeToSleep(long timeToWait) {
+    // Get the minimum of 50 and 5% of the time to wait (which by default is 1000 ms)
+    long timeToSleep = Math.min(50l, ((long) (timeToWait * 0.05)));
+
+    // If it is 0, then try 50% of the time to wait
+    if (timeToSleep == 0) {
+      timeToSleep = (long) (timeToWait * 0.50);
+    }
+
+    // If it is still 0, use the time to wait
+    if (timeToSleep == 0) {
+      timeToSleep = timeToWait;
+    }
+
+    return timeToSleep;
   }
 
   private void addPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {

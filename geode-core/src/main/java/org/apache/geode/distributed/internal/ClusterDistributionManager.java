@@ -72,13 +72,13 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
@@ -154,7 +154,7 @@ public class ClusterDistributionManager implements DistributionManager {
   private static final int MAX_PR_THREADS = Integer.getInteger("DistributionManager.MAX_PR_THREADS",
       Math.max(Runtime.getRuntime().availableProcessors() * 4, 16)).intValue();
 
-  private static final int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
+  public static final int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
       Math.max(Runtime.getRuntime().availableProcessors() * 4, 16)).intValue();
 
 
@@ -193,7 +193,8 @@ public class ClusterDistributionManager implements DistributionManager {
   static final int MAX_SERIAL_QUEUE_THREAD =
       Integer.getInteger("DistributionManager.MAX_SERIAL_QUEUE_THREAD", 20).intValue();
 
-
+  protected static final String FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
+      "Function Execution Processor";
 
   /** The DM type for regular distribution managers */
   public static final int NORMAL_DM_TYPE = 10;
@@ -489,6 +490,8 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private final Object shutdownMutex = new Object();
 
+  private final AlertingService alertingService;
+
   ////////////////////// Static Methods //////////////////////
 
   /**
@@ -530,7 +533,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
       long start = System.currentTimeMillis();
 
-      distributionManager = new ClusterDistributionManager(system, transport);
+      distributionManager =
+          new ClusterDistributionManager(system, transport, system.getAlertingService());
       distributionManager.assertDistributionManagerType();
 
       beforeJoined = false; // we have now joined the system
@@ -626,11 +630,12 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private ClusterDistributionManager(RemoteTransportConfig transport,
-      InternalDistributedSystem system) {
+      InternalDistributedSystem system, AlertingService alertingService) {
 
     this.dmType = transport.getVmKind();
     this.system = system;
     this.transport = transport;
+    this.alertingService = alertingService;
 
     this.membershipListeners = new ConcurrentHashMap<>();
     this.distributedSystemId = system.getConfig().getDistributedSystemId();
@@ -745,13 +750,15 @@ public class ClusterDistributionManager implements DistributionManager {
       }
       if (MAX_FE_THREADS > 1) {
         this.functionExecutionPool =
-            LoggingExecutors.newFunctionThreadPoolWithFeedStatistics("Function Execution Processor",
+            LoggingExecutors.newFunctionThreadPoolWithFeedStatistics(
+                FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
                 thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
                 MAX_FE_THREADS, this.stats.getFunctionExecutionPoolHelper(), threadMonitor,
                 INCOMING_QUEUE_LIMIT, this.stats.getFunctionExecutionQueueHelper());
       } else {
         this.functionExecutionThread =
-            LoggingExecutors.newSerialThreadPoolWithFeedStatistics("Function Execution Processor",
+            LoggingExecutors.newSerialThreadPoolWithFeedStatistics(
+                FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
                 thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
                 this.stats.getFunctionExecutionPoolHelper(), threadMonitor,
                 INCOMING_QUEUE_LIMIT, this.stats.getFunctionExecutionQueueHelper());
@@ -885,8 +892,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param system The distributed system to which this distribution manager will send messages.
    */
   private ClusterDistributionManager(InternalDistributedSystem system,
-      RemoteTransportConfig transport) {
-    this(transport, system);
+      RemoteTransportConfig transport, AlertingService alertingService) {
+    this(transport, system, alertingService);
 
     boolean finishedConstructor = false;
     try {
@@ -1314,9 +1321,6 @@ public class ClusterDistributionManager implements DistributionManager {
       this.hostedLocatorsAll = tmp;
 
       if (isSharedConfigurationEnabled) {
-        if (locators == null || locators.isEmpty()) {
-          throw new IllegalArgumentException("Cannot use empty collection of locators");
-        }
         if (this.hostedLocatorsWithSharedConfiguration.isEmpty()) {
           this.hostedLocatorsWithSharedConfiguration = new HashMap<>();
         }
@@ -1919,6 +1923,11 @@ public class ClusterDistributionManager implements DistributionManager {
     return this.system;
   }
 
+  @Override
+  public AlertingService getAlertingService() {
+    return alertingService;
+  }
+
   /**
    * Returns the transport configuration for this distribution manager
    */
@@ -1935,6 +1944,11 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void removeMembershipListener(MembershipListener l) {
     this.membershipListeners.remove(l);
+  }
+
+  @Override
+  public Collection<MembershipListener> getMembershipListeners() {
+    return Collections.unmodifiableSet(this.membershipListeners.keySet());
   }
 
   /**
@@ -2634,7 +2648,7 @@ public class ClusterDistributionManager implements DistributionManager {
   public void handleManagerDeparture(InternalDistributedMember theId, boolean p_crashed,
       String p_reason) {
 
-    AlertAppender.getInstance().removeAlertListener(theId);
+    alertingService.removeAlertListener(theId);
 
     int vmType = theId.getVmKind();
     if (vmType == ADMIN_ONLY_DM_TYPE) {

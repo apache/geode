@@ -23,8 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-
 
 public class InternalBlackboardImpl extends UnicastRemoteObject implements InternalBlackboard {
   public static InternalBlackboard blackboard;

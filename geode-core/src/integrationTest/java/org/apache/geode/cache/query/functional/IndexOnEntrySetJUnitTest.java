@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.After;
 import org.junit.Before;
@@ -284,7 +285,6 @@ public class IndexOnEntrySetJUnitTest {
    */
   abstract class AbstractTestHook implements IndexManager.TestHook {
     boolean isTestHookCalled = false;
-    Object waitObj = new Object();
     Region r;
 
     private int testHookSpot;
@@ -307,28 +307,13 @@ public class IndexOnEntrySetJUnitTest {
     public abstract void doOp();
 
     @Override
-    public void hook(int spot) throws RuntimeException {
+    public void hook(int spot) {
       if (spot == testHookSpot) {
         if (!isTestHookCalled) {
           isTestHookCalled = true;
-          try {
-            new Thread(new Runnable() {
-              public void run() {
-                doOp();
-                synchronized (waitObj) {
-                  waitObj.notifyAll();
-                }
-              }
-            }).start();
-            synchronized (waitObj) {
-              waitObj.wait();
-            }
-          } catch (InterruptedException e) {
-            throw new Error(e);
-          }
+          CompletableFuture.runAsync(this::doOp).join();
         }
       }
-
     }
 
   }

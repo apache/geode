@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static org.apache.commons.lang.SystemUtils.PATH_SEPARATOR;
+import static org.apache.commons.lang3.SystemUtils.PATH_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * The {@code GfshRule} allows a test to execute Gfsh commands via the actual (fully-assembled) gfsh

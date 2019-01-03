@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -68,14 +67,8 @@ public class Put65 extends BaseCommand {
       final SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
-    Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
-    String regionName = null;
-    Object callbackArg = null, key = null;
-    Part eventPart = null;
-    StringBuilder errMessage = new StringBuilder();
-    boolean isDelta = false;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    CacheServerStats stats = serverConnection.getCacheServerStats();
+    final StringBuilder errMessage = new StringBuilder();
+    final CacheServerStats stats = serverConnection.getCacheServerStats();
 
     // requiresResponse = true;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
@@ -86,22 +79,22 @@ public class Put65 extends BaseCommand {
     }
     // Retrieve the data from the message parts
     int idx = 0;
-    regionNamePart = clientMessage.getPart(idx++);
-    Operation operation;
+
+    final Part regionNamePart = clientMessage.getPart(idx++);
+
+    final Operation operation;
     try {
-      operation = (Operation) clientMessage.getPart(idx++).getObject();
-      if (operation == null) { // native clients send a null since the op is java-serialized
-        operation = Operation.UPDATE;
-      }
-    } catch (ClassNotFoundException e) {
+      operation = getOperation(clientMessage.getPart(idx++), Operation.UPDATE);
+    } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    int flags = clientMessage.getPart(idx++).getInt();
-    boolean requireOldValue = ((flags & 0x01) == 0x01);
-    boolean haveExpectedOldValue = ((flags & 0x02) == 0x02);
-    Object expectedOldValue = null;
+
+    final int flags = clientMessage.getPart(idx++).getInt();
+    final boolean requireOldValue = ((flags & 0x01) == 0x01);
+    final boolean haveExpectedOldValue = ((flags & 0x02) == 0x02);
+    final Object expectedOldValue;
     if (haveExpectedOldValue) {
       try {
         expectedOldValue = clientMessage.getPart(idx++).getObject();
@@ -110,10 +103,15 @@ public class Put65 extends BaseCommand {
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
+    } else {
+      expectedOldValue = null;
     }
-    keyPart = clientMessage.getPart(idx++);
+
+    final Part keyPart = clientMessage.getPart(idx++);
+
+    final boolean isDelta;
     try {
-      isDelta = ((Boolean) clientMessage.getPart(idx).getObject()).booleanValue();
+      isDelta = ((Boolean) clientMessage.getPart(idx).getObject());
       idx += 1;
     } catch (Exception e) {
       writeException(clientMessage, MessageType.PUT_DELTA_ERROR, e, false, serverConnection);
@@ -121,10 +119,13 @@ public class Put65 extends BaseCommand {
       // CachePerfStats not available here.
       return;
     }
-    valuePart = clientMessage.getPart(idx++);
-    eventPart = clientMessage.getPart(idx++);
+
+    final Part valuePart = clientMessage.getPart(idx++);
+    final Part eventPart = clientMessage.getPart(idx++);
+
+    Object callbackArg = null;
     if (clientMessage.getNumberOfParts() > idx) {
-      callbackArgPart = clientMessage.getPart(idx++);
+      final Part callbackArgPart = clientMessage.getPart(idx++);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (Exception e) {
@@ -133,8 +134,8 @@ public class Put65 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
 
+    final Object key;
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -142,6 +143,8 @@ public class Put65 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
+
+    final String regionName = regionNamePart.getString();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -155,14 +158,14 @@ public class Put65 extends BaseCommand {
     // Process the put request
     if (key == null || regionName == null) {
       if (key == null) {
-        String putMsg = " The input key for the put request is null";
+        final String putMsg = " The input key for the put request is null";
         if (isDebugEnabled) {
           logger.debug("{}:{}", serverConnection.getName(), putMsg);
         }
         errMessage.append(putMsg);
       }
       if (regionName == null) {
-        String putMsg = " The input region name for the put request is null";
+        final String putMsg = " The input region name for the put request is null";
         if (isDebugEnabled) {
           logger.debug("{}:{}", serverConnection.getName(), putMsg);
         }
@@ -174,9 +177,9 @@ public class Put65 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
+    final LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = " was not found during put request";
+      final String reason = " was not found during put request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -184,7 +187,7 @@ public class Put65 extends BaseCommand {
 
     if (valuePart.isNull() && operation != Operation.PUT_IF_ABSENT && region.containsKey(key)) {
       // Invalid to 'put' a null value in an existing key
-      String putMsg = " Attempted to put a null value for existing key " + key;
+      final String putMsg = " Attempted to put a null value for existing key " + key;
       if (isDebugEnabled) {
         logger.debug("{}:{}", serverConnection.getName(), putMsg);
       }
@@ -195,11 +198,11 @@ public class Put65 extends BaseCommand {
       return;
     }
 
-    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    final long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
 
-    EventIDHolder clientEvent = new EventIDHolder(
+    final EventIDHolder clientEvent = new EventIDHolder(
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId));
 
     Breadcrumbs.setEventId(clientEvent.getEventId());

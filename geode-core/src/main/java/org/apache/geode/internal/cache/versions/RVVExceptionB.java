@@ -133,7 +133,7 @@ public class RVVExceptionB extends RVVException {
     // TODO - it would be better just to serialize the longs[] in the BitSet
     // as is, rather than go through this delta encoding.
     for (ReceivedVersionsReverseIterator it = receivedVersionsReverseIterator(); it.hasNext();) {
-      Long version = it.next();
+      long version = it.next();
       deltas.addFirst(last - version);
       last = version;
     }

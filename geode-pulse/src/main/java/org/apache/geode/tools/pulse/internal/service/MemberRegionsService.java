@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -84,7 +84,7 @@ public class MemberRegionsService implements PulseService {
 
         regionJSON.put("type", memberRegion.getRegionType());
         regionJSON.put("entryCount", memberRegion.getSystemRegionEntryCount());
-        Long entrySize = memberRegion.getEntrySize();
+        long entrySize = memberRegion.getEntrySize();
 
         String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
 

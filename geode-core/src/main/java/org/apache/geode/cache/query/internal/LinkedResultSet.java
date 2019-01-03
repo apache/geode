@@ -60,6 +60,9 @@ public class LinkedResultSet extends java.util.LinkedHashSet
 
   @Override
   public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    }
     if (!(other instanceof LinkedResultSet)) {
       return false;
     }
@@ -67,6 +70,11 @@ public class LinkedResultSet extends java.util.LinkedHashSet
       return false;
     }
     return super.equals(other);
+  }
+
+  @Override
+  public int hashCode() {
+    return this.elementType.hashCode();
   }
 
   public void setElementType(ObjectType elementType) {

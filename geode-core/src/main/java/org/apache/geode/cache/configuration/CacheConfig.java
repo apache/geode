@@ -20,7 +20,6 @@ package org.apache.geode.cache.configuration;
 
 import static org.apache.geode.cache.configuration.CacheElement.findElement;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +31,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.w3c.dom.Element;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.config.VersionAdapter;
 
 
 /**
@@ -329,12 +328,13 @@ public class CacheConfig {
   @XmlAttribute(name = "search-timeout")
   protected String searchTimeout;
   @XmlAttribute(name = "version", required = true)
-  @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+  @XmlJavaTypeAdapter(VersionAdapter.class)
   protected String version;
 
   public CacheConfig() {}
 
   public CacheConfig(String version) {
+
     this.version = version;
   }
 
@@ -1108,7 +1108,7 @@ public class CacheConfig {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
       propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter", "asyncEventListener"})
-  public static class AsyncEventQueue implements Serializable {
+  public static class AsyncEventQueue implements CacheElement {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
     protected List<DeclarableType> gatewayEventFilters;

@@ -14,19 +14,17 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Properties;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -41,28 +39,25 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
   }
 
   @Test
-  public void testLocatorWithUDPSecurityButServer() throws Exception {
+  public void testLocatorWithUDPSecurityButServer() {
     disconnectAllFromDS();
-    VM vm0 = VM.getVM(0);
+    VM vm = VM.getVM(0);
 
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
     final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
 
-    vm0.invoke("Start locator " + locators, () -> startLocator(port));
+    startLocatorWithSomeBasicProperties(vm, port);
+
     try {
-
-      Properties props = new Properties();
-      props.setProperty(MCAST_PORT, "0");
-      props.setProperty(LOCATORS, locators);
+      Properties props = getBasicProperties(locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
-      // addDSProps(props);
-      system = (InternalDistributedSystem) DistributedSystem.connect(props);
-
+      system = getConnectedDistributedSystem(props);
+      fail("Should not have reached this line, it should have caught the exception.");
     } catch (GemFireConfigException gce) {
-      Assert.assertTrue(gce.getMessage().contains("Rejecting findCoordinatorRequest"));
+      assertThat(gce.getMessage()).contains("Rejecting findCoordinatorRequest");
     } finally {
-      vm0.invoke(() -> stopLocator());
+      vm.invoke(LocatorDUnitTest::stopLocator);
     }
   }
 }

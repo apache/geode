@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -139,14 +139,14 @@ public class ClusterRegionsService implements PulseService {
       regionJSON.put("memberNames", memberNameArray);
       regionJSON.put("entryCount", reg.getSystemRegionEntryCount());
 
-      Boolean persistent = reg.getPersistentEnabled();
+      boolean persistent = reg.getPersistentEnabled();
       if (persistent) {
         regionJSON.put("persistence", this.VALUE_ON);
       } else {
         regionJSON.put("persistence", this.VALUE_OFF);
       }
 
-      Boolean isEnableOffHeapMemory = reg.isEnableOffHeapMemory();
+      boolean isEnableOffHeapMemory = reg.isEnableOffHeapMemory();
       if (isEnableOffHeapMemory) {
         regionJSON.put("isEnableOffHeapMemory", this.VALUE_ON);
       } else {
@@ -174,7 +174,7 @@ public class ClusterRegionsService implements PulseService {
       regionJSON.put("diskWritesTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
       regionJSON.put("emptyNodes", reg.getEmptyNode());
-      Long entrySize = reg.getEntrySize();
+      long entrySize = reg.getEntrySize();
       String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
 
       if (entrySize < 0) {

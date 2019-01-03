@@ -28,11 +28,15 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.internal.ClassPathLoader;
@@ -40,6 +44,7 @@ import org.apache.geode.internal.ClassPathLoader;
 public class JAXBService {
   Marshaller marshaller;
   Unmarshaller unmarshaller;
+  NameSpaceFilter nameSpaceFilter;
 
   public JAXBService(Class<?>... xsdRootClasses) {
     try {
@@ -47,6 +52,7 @@ public class JAXBService {
       marshaller = jaxbContext.createMarshaller();
       unmarshaller = jaxbContext.createUnmarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+      marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
       String schemas = Arrays.stream(xsdRootClasses).map(c -> {
         XSDRootElement element = c.getAnnotation(XSDRootElement.class);
@@ -58,6 +64,10 @@ public class JAXBService {
       }).filter(Objects::nonNull).collect(Collectors.joining(" "));
 
       marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemas);
+      // use a custom Filter so that we can unmarshall older namespace or no namespace xml
+      XMLReader reader = XMLReaderFactory.createXMLReader();
+      nameSpaceFilter = new NameSpaceFilter();
+      nameSpaceFilter.setParent(reader);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -65,7 +75,7 @@ public class JAXBService {
 
   public void validateWith(URL url) {
     SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-    Schema schema = null;
+    Schema schema;
     try {
       schema = factory.newSchema(url);
     } catch (SAXException e) {
@@ -84,6 +94,7 @@ public class JAXBService {
   public String marshall(Object object) {
     StringWriter sw = new StringWriter();
     try {
+      sw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
       marshaller.marshal(object, sw);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -93,9 +104,20 @@ public class JAXBService {
 
   public <T> T unMarshall(String xml) {
     try {
-      return (T) unmarshaller.unmarshal(new StringReader(xml));
+      SAXSource source = new SAXSource(nameSpaceFilter, new InputSource(new StringReader(xml)));
+      return (T) unmarshaller.unmarshal(source);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
+
+  public <T> T unMarshall(String xml, Class<T> klass) {
+    try {
+      SAXSource source = new SAXSource(nameSpaceFilter, new InputSource(new StringReader(xml)));
+      return unmarshaller.unmarshal(source, klass).getValue();
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
 }

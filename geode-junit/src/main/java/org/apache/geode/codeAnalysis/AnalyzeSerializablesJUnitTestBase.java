@@ -14,7 +14,7 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static org.apache.commons.lang.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.core.Is.is;
@@ -46,7 +46,8 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -105,18 +106,15 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
     this.expectedDataSerializables =
         CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
-    Collections.sort(this.expectedDataSerializables);
-
   }
 
   public void loadExpectedSerializables() throws Exception {
     this.expectedSerializablesFile =
-        getResourceAsFile(InternalDataSerializer.class, expectedSerializablesFileName);
+        getResourceAsFile(getModuleClass(), expectedSerializablesFileName);
     assertThat(this.expectedSerializablesFile).exists().canRead();
 
     this.expectedSerializables =
         CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
-    Collections.sort(this.expectedSerializables);
   }
 
   public void findClasses() throws Exception {
@@ -130,7 +128,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
     assumeThat(
         "AnalyzeSerializables requires Java 8 but tests are running with v"
             + SystemUtils.JAVA_VERSION,
-        isJavaVersionAtLeast(1.8f), is(true));
+        isJavaVersionAtLeast(JavaVersion.JAVA_1_8), is(true));
     TypeRegistry.init();
   }
 
@@ -150,10 +148,14 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
    */
   protected abstract String getModuleName();
 
+  protected Class getModuleClass() {
+    return InternalDataSerializer.class;
+  }
+
   @Test
   public void testDataSerializables() throws Exception {
     assumeTrue("Ignoring this test when java version is 9 and above",
-        !SystemUtils.isJavaVersionAtLeast(900));
+        !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
     System.out.println(this.testName.getMethodName() + " starting");
     findClasses();
     loadExpectedDataSerializables();

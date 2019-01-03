@@ -78,8 +78,8 @@ public class MemberDetailsService implements PulseService {
       // Number of member clients
       responseJSON.put("numClients", clusterMember.getMemberClientsHMap().size());
 
-      Long diskUsageVal = clusterMember.getTotalDiskUsage();
-      Double diskUsage = diskUsageVal.doubleValue() / 1024;
+      long diskUsageVal = clusterMember.getTotalDiskUsage();
+      double diskUsage = diskUsageVal / 1024D;
 
       responseJSON.put("diskStorageUsed", TWO_PLACE_DECIMAL_FORMAT.format(diskUsage));
 

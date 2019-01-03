@@ -225,10 +225,6 @@ public class CompiledClass implements Comparable {
       System.err.println("You must give the name of a class file on the command line");
       System.exit(3);
     }
-    if (classFile == null) {
-      System.err.println("Unable to access " + argv[0]);
-      System.exit(3);
-    }
     if (!classFile.canRead()) {
       System.err.println("Unable to read " + argv[0]);
       System.exit(3);

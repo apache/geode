@@ -74,7 +74,8 @@ public class DestroyJndiBindingCommand extends SingleGfshCommand {
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
       List<CliFunctionResult> jndiCreationResult =
-          executeAndGetFunctionResult(new DestroyJndiBindingFunction(), jndiName, targetMembers);
+          executeAndGetFunctionResult(new DestroyJndiBindingFunction(),
+              new Object[] {jndiName, false}, targetMembers);
       ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
       result.setConfigObject(jndiName);
       return result;
@@ -84,7 +85,8 @@ public class DestroyJndiBindingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
     CacheElement.removeElement(config.getJndiBindings(), (String) element);
+    return true;
   }
 }

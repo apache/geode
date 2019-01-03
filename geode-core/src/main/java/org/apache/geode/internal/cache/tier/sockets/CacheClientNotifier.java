@@ -339,7 +339,7 @@ public class CacheClientNotifier {
       }
 
       Subject shiroSubject =
-          subject != null && subject instanceof Subject ? (Subject) subject : null;
+          subject instanceof Subject ? (Subject) subject : null;
       proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation, clientVersion,
           acceptorId, notifyBySubscription, shiroSubject);
 
@@ -354,12 +354,6 @@ public class CacheClientNotifier {
 
           String postAuthzFactoryName = sysProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
           if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
-            if (principal == null) {
-              securityLogWriter.warning(
-                  String.format(
-                      "CacheClientNotifier: Post process authorization callback enabled but authentication callback (%s) returned with null credentials for proxyID: %s",
-                      new Object[] {SECURITY_CLIENT_AUTHENTICATOR, proxyID}));
-            }
             Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
             authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
             authzCallback.init(principal, member, this.getCache());
@@ -1419,7 +1413,7 @@ public class CacheClientNotifier {
    * It will remove the clients connected to the passed acceptorId. If its the only server, shuts
    * down this instance.
    */
-  protected synchronized void shutdown(long acceptorId) {
+  public synchronized void shutdown(long acceptorId) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("At cache server shutdown time, the number of cache servers in the cache is {}",

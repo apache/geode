@@ -28,8 +28,8 @@ import java.util.Properties;
 
 import javax.management.MalformedObjectNameException;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
@@ -141,7 +141,7 @@ public class StartMemberUtils {
     }
   }
 
-  static void addCurrentLocators(InternalGfshCommand gfshCommand, final List<String> commandLine,
+  static void addCurrentLocators(OfflineGfshCommand gfshCommand, final List<String> commandLine,
       final Properties gemfireProperties) throws MalformedObjectNameException {
     if (StringUtils.isBlank(gemfireProperties.getProperty(LOCATORS))) {
       String currentLocators = getCurrentLocators(gfshCommand);
@@ -152,7 +152,7 @@ public class StartMemberUtils {
     }
   }
 
-  private static String getCurrentLocators(InternalGfshCommand gfshCommand)
+  private static String getCurrentLocators(OfflineGfshCommand gfshCommand)
       throws MalformedObjectNameException {
     String delimitedLocators = "";
     try {
