@@ -87,6 +87,14 @@ public abstract class TableMetaDataManagerIntegrationTest {
         + "age" + quote + " int)");
   }
 
+  protected void createTableWithMultiplePrimaryKeys() throws SQLException {
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
+    statement.execute("CREATE TABLE " + REGION_TABLE_NAME + " (" + quote + "id" + quote
+        + " VARCHAR(10)," + quote + "name" + quote + " VARCHAR(10)," + quote
+        + "age" + quote + " int, PRIMARY KEY (id, name))");
+  }
+
   @Test
   public void validateKeyColumnName() throws SQLException {
     createTable();
@@ -95,6 +103,16 @@ public abstract class TableMetaDataManagerIntegrationTest {
     List<String> keyColumnNames = metaData.getKeyColumnNames();
 
     assertThat(keyColumnNames).isEqualTo(Arrays.asList("id"));
+  }
+
+  @Test
+  public void validateMultipleKeyColumnNames() throws SQLException {
+    createTableWithMultiplePrimaryKeys();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
+
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("id", "name"));
   }
 
   @Test
