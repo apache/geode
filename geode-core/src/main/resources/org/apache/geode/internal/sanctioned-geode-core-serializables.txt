@@ -122,6 +122,7 @@ org/apache/geode/cache/client/internal/TXSynchronizationOp$CompletionType,false
 org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true,-6918516787578041316
 org/apache/geode/cache/configuration/CacheConfig$AsyncEventQueue,false,asyncEventListener:org/apache/geode/cache/configuration/DeclarableType,batchSize:java/lang/String,batchTimeInterval:java/lang/String,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/String,enableBatchConflation:java/lang/Boolean,forwardExpirationDestroy:java/lang/Boolean,gatewayEventFilters:java/util/List,gatewayEventSubstitutionFilter:org/apache/geode/cache/configuration/DeclarableType,id:java/lang/String,maximumQueueMemory:java/lang/String,orderPolicy:java/lang/String,parallel:java/lang/Boolean,persistent:java/lang/Boolean
 org/apache/geode/cache/configuration/ClassNameType,false,className:java/lang/String
+org/apache/geode/cache/configuration/ClusterCacheElement$Operation,false
 org/apache/geode/cache/configuration/DeclarableType,false,parameters:java/util/List
 org/apache/geode/cache/configuration/DiskDirsType,false,diskDirs:java/util/List
 org/apache/geode/cache/configuration/DiskStoreType,false,allowForceCompaction:java/lang/Boolean,autoCompact:java/lang/Boolean,compactionThreshold:java/lang/String,diskDirs:org/apache/geode/cache/configuration/DiskDirsType,diskUsageCriticalPercentage:java/lang/String,diskUsageWarningPercentage:java/lang/String,maxOplogSize:java/lang/String,name:java/lang/String,queueSize:java/lang/String,timeInterval:java/lang/String,writeBufferSize:java/lang/String
@@ -530,8 +531,6 @@ org/apache/geode/management/internal/cli/domain/RegionDescription,true,646144927
 org/apache/geode/management/internal/cli/domain/RegionDescriptionPerMember,true,1,hostingMember:java/lang/String,isAccessor:boolean,name:java/lang/String,regionAttributesInfo:org/apache/geode/management/internal/cli/domain/RegionAttributesInfo,size:int
 org/apache/geode/management/internal/cli/domain/RegionInformation,true,1,dataPolicy:org/apache/geode/cache/DataPolicy,isRoot:boolean,name:java/lang/String,parentRegion:java/lang/String,path:java/lang/String,scope:org/apache/geode/cache/Scope,subRegionInformationSet:java/util/Set
 org/apache/geode/management/internal/cli/domain/StackTracesPerMember,true,1,memberNameOrId:java/lang/String,stackTraces:byte[]
-org/apache/geode/management/internal/cli/exceptions/EntityExistsException,false
-org/apache/geode/management/internal/cli/exceptions/EntityNotFoundException,false,statusOK:boolean
 org/apache/geode/management/internal/cli/functions/AlterRuntimeConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/AsyncEventQueueFunctionArgs,true,-6524494645663740872,asyncEventQueueId:java/lang/String,batchSize:int,batchTimeInterval:int,diskStoreName:java/lang/String,diskSynchronous:boolean,dispatcherThreads:int,enableBatchConflation:boolean,forwardExpirationDestroy:boolean,gatewayEventFilters:java/lang/String[],gatewaySubstitutionFilter:java/lang/String,isParallel:boolean,listenerClassName:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,orderPolicy:java/lang/String,persistent:boolean
 org/apache/geode/management/internal/cli/functions/ChangeLogLevelFunction,true,1
@@ -600,6 +599,8 @@ org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1
 org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
+org/apache/geode/management/internal/cli/functions/UpdateCacheFunction,false
+org/apache/geode/management/internal/cli/functions/UpdateCacheFunction$Operation,false
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
 org/apache/geode/management/internal/cli/json/GfJsonException,true,36449998984143318
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
@@ -616,11 +617,15 @@ org/apache/geode/management/internal/cli/util/JConsoleNotFoundException,true,-14
 org/apache/geode/management/internal/cli/util/LogFilter$LineFilterResult,false
 org/apache/geode/management/internal/cli/util/MemberInformation,true,1,cacheXmlFilePath:java/lang/String,cpuUsage:java/lang/String,groups:java/lang/String,heapUsage:java/lang/String,host:java/lang/String,id:java/lang/String,initHeapSize:java/lang/String,locatorBindAddress:java/lang/String,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:java/lang/String,name:java/lang/String,processId:java/lang/String,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,workingDirPath:java/lang/String
 org/apache/geode/management/internal/cli/util/VisualVmNotFoundException,true,-8491645604829510102
+org/apache/geode/management/internal/configuration/domain/ClusterRegionConfig,false
 org/apache/geode/management/internal/configuration/domain/SharedConfigurationStatus,false
 org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
 org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
+org/apache/geode/management/internal/exceptions/EntityExistsException,false
+org/apache/geode/management/internal/exceptions/EntityNotFoundException,false,statusOK:boolean
+org/apache/geode/management/internal/exceptions/NoMembersException,false
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false

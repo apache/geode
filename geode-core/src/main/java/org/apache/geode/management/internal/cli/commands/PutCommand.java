@@ -27,6 +27,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -67,6 +68,7 @@ public class PutCommand extends GfshCommand {
     key = DataCommandsUtils.makeBrokenJsonCompliant(key);
     value = DataCommandsUtils.makeBrokenJsonCompliant(value);
 
+    LogService.getLogger().info("Cache instance for put: " + cache.toString());
     @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);
     DataCommandFunction putfn = new DataCommandFunction();

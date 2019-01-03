@@ -15,15 +15,29 @@
 package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import org.junit.Test;
 
 public class RegionConfigTest {
+  @Test
+  public void regionNameCannotBeNull() {
+    RegionConfig config = new RegionConfig();
+    assertThatThrownBy(() -> config.setName(null))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
 
   @Test
-  public void regionNameShouldNotHaveSlash() {
+  public void regionNameSwallowsSlash() {
     RegionConfig config = new RegionConfig();
     config.setName("/regionA");
     assertThat(config.getName()).isEqualTo("regionA");
+  }
+
+  @Test
+  public void subRegionsUnsupported() {
+    RegionConfig config = new RegionConfig();
+    assertThatThrownBy(() -> config.setName("/Parent/Child"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

@@ -240,7 +240,7 @@ public class DestroyIndexCommandsDUnitTest {
   public void destroyIndexOnRegionNotInClusterConfig() {
     IgnoredException.addIgnoredException("failed to update cluster config for cluster");
     IgnoredException.addIgnoredException(
-        "org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException");
+        "org.apache.geode.management.internal.exceptions.EntityNotFoundException");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();

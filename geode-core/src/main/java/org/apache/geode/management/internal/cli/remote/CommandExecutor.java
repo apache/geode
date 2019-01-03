@@ -31,11 +31,11 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -160,9 +160,9 @@ public class CommandExecutor {
 
     final TabularResultModel finalTable = table;
     for (String group : groupsToUpdate) {
-      ccService.updateCacheConfig(group, cc -> {
+      ccService.updateCacheConfig(group, cacheConfig -> {
         try {
-          if (gfshCommand.updateConfigForGroup(group, cc, resultModel.getConfigObject())) {
+          if (gfshCommand.updateConfigForGroup(group, cacheConfig, resultModel.getConfigObject())) {
             if (finalTable != null) {
               finalTable.addRow(group, "Cluster Configuration Updated");
             } else {
@@ -186,7 +186,8 @@ public class CommandExecutor {
           infoResultModel.addLine(message + ". Reason: " + e.getMessage());
           return null;
         }
-        return cc;
+
+        return cacheConfig;
       });
     }
 

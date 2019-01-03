@@ -77,7 +77,7 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void regionExistOnServerButNotInClusterConfig() {
     IgnoredException.addIgnoredException(
-        "org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException");
+        "org.apache.geode.management.internal.exceptions.EntityNotFoundException");
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create("regionA");

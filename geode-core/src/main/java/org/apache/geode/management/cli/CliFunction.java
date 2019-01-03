@@ -16,8 +16,11 @@
  */
 package org.apache.geode.management.cli;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
@@ -25,12 +28,14 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
  * this class has to return a CliFunctionResult.
  */
 public abstract class CliFunction<T> implements InternalFunction<T> {
+  private static Logger logger = LogService.getLogger();
 
   @Override
   public final void execute(FunctionContext<T> context) {
     try {
       context.getResultSender().lastResult(executeFunction(context));
     } catch (Exception e) {
+      logger.error(e.getMessage(), e);
       context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), e));
     }
   }

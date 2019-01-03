@@ -34,11 +34,15 @@ public interface ConfigurationPersistenceService {
    */
   CacheConfig getCacheConfig(String group);
 
+  CacheConfig getCacheConfig(String group, boolean createNew);
+
   /**
    * update the cluster configuration of a member group
    *
    * @param group the member group name, if null, then "cluster" is assumed
-   * @param mutator the change you want to apply to the configuration
+   * @param mutator the change you want to apply to the configuration. mutator returns null
+   *        indicating that no update
+   *        is done to the CacheConfig, or it returns the updated CacheConfig
    */
   void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator);
 }

@@ -133,6 +133,12 @@ public class CreateRegionCommandDUnitTest {
       assertThat(region.getAttributes().getCompressor())
           .isEqualTo(SnappyCompressor.getDefaultInstance());
     });
+
+    gfsh.executeAndAssertThat("put --key='foo' --value='125' --region=" + regionName)
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("get --key='foo' --region=" + regionName)
+        .statusIsSuccess()
+        .containsKeyValuePair("Value", "\"125\"");
   }
 
   @Test

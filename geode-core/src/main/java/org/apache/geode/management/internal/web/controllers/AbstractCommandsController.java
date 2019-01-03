@@ -61,7 +61,6 @@ import org.apache.geode.security.NotAuthorizedException;
  * functionality across all Management Controller classes that expose REST API web service endpoints
  * (URLs/URIs) for GemFire shell (Gfsh) commands.
  *
- * @see org.apache.geode.management.MemberMXBean
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.springframework.http.ResponseEntity
  * @see org.springframework.stereotype.Controller
@@ -166,8 +165,6 @@ public abstract class AbstractCommandsController {
    * @see #getMBeanServer()
    * @see #createMemberMXBeanForManagerUsingProxy(javax.management.MBeanServer,
    *      javax.management.ObjectName)
-   * @see org.apache.geode.management.DistributedSystemMXBean
-   * @see org.apache.geode.management.MemberMXBean
    */
   private synchronized MemberMXBean getManagingMemberMXBean() {
     if (managingMemberMXBeanProxy == null) {

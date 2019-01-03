@@ -315,8 +315,16 @@ public class RegionConfig implements CacheElement {
    * {@link String }
    *
    */
-  public void setName(String value) {
-    if (value != null && value.startsWith("/")) {
+  public void setName(String value) throws IllegalArgumentException {
+    if (value == null) {
+      throw new IllegalArgumentException("Region name cannot be null");
+    }
+
+    if (value.split("/").length > 2) {
+      throw new IllegalArgumentException("Region name is invalid -- cannot have multiple slashes");
+    }
+
+    if (value.startsWith("/")) {
       this.name = value.substring(1);
     } else {
       this.name = value;

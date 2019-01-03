@@ -128,6 +128,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Name of the region which is used to store the configuration information
    */
   public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
+  public static final String CACHE_CONFIG_VERSION = "1.0";
 
   private final String configDirPath;
   private final String configDiskDirPath;
@@ -938,6 +939,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
   @Override
   public CacheConfig getCacheConfig(String group) {
+    return getCacheConfig(group, false);
+  }
+
+
+  @Override
+  public CacheConfig getCacheConfig(String group, boolean createNew) {
     if (group == null) {
       group = CLUSTER_CONFIG;
     }
@@ -948,6 +955,9 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     String xmlContent = configuration.getCacheXmlContent();
     // group existed, so we should create a blank one to start with
     if (xmlContent == null || xmlContent.isEmpty()) {
+      if (createNew) {
+        return new CacheConfig(CACHE_CONFIG_VERSION);
+      }
       return null;
     }
 
@@ -961,10 +971,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
     lockSharedConfiguration();
     try {
-      CacheConfig cacheConfig = getCacheConfig(group);
-      if (cacheConfig == null) {
-        cacheConfig = new CacheConfig("1.0");
-      }
+      CacheConfig cacheConfig = getCacheConfig(group, true);
       cacheConfig = mutator.apply(cacheConfig);
       if (cacheConfig == null) {
         // mutator returns a null config, indicating no change needs to be persisted
