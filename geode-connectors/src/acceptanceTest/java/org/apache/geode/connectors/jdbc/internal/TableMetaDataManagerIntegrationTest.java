@@ -17,9 +17,11 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -30,6 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
 
@@ -61,7 +64,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
     if (statement == null) {
       statement = connection.createStatement();
     }
-    statement.execute("Drop table " + REGION_TABLE_NAME);
+    statement.execute("Drop table IF EXISTS " + REGION_TABLE_NAME);
+    statement.execute("Drop table IF EXISTS MYSCHEMA." + REGION_TABLE_NAME);
+    statement.execute("Drop schema IF EXISTS MYSCHEMA");
     statement.close();
 
     if (connection != null) {
@@ -77,6 +82,27 @@ public abstract class TableMetaDataManagerIntegrationTest {
     statement.execute("CREATE TABLE " + REGION_TABLE_NAME + " (" + quote + "id" + quote
         + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10)," + quote
         + "age" + quote + " int)");
+  }
+
+  protected void createTableWithSchema() throws SQLException {
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
+    statement.execute("CREATE SCHEMA MYSCHEMA");
+    statement.execute("CREATE TABLE MYSCHEMA." + REGION_TABLE_NAME + " (" + quote + "id" + quote
+        + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10)," + quote
+        + "age" + quote + " int)");
+    System.out.println("DEBUG getCatalogs()");
+    dumpResultSet(connection.getMetaData().getCatalogs());
+    System.out.println("DEBUG getSchemas()");
+    dumpResultSet(connection.getMetaData().getSchemas());
+    System.out.println("DEBUG getSchemas(%)");
+    dumpResultSet(connection.getMetaData().getSchemas("", "%"));
+  }
+
+  private void dumpResultSet(ResultSet schemas) throws SQLException {
+    while (schemas.next()) {
+      System.out.println("  " + schemas.getString(1));
+    }
   }
 
   protected void createTableWithNoPrimaryKey() throws SQLException {
@@ -103,6 +129,39 @@ public abstract class TableMetaDataManagerIntegrationTest {
     List<String> keyColumnNames = metaData.getKeyColumnNames();
 
     assertThat(keyColumnNames).isEqualTo(Arrays.asList("id"));
+  }
+
+  protected abstract void setSchemaOrCatalogOnMapping(RegionMapping regionMapping, String name);
+
+  @Test
+  public void validateKeyColumnNameWithSchema() throws SQLException {
+    createTableWithSchema();
+    setSchemaOrCatalogOnMapping(regionMapping, "MYSCHEMA");
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
+
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("id"));
+  }
+
+  @Test
+  public void validateUnknownSchema() throws SQLException {
+    createTable();
+    regionMapping.setSchema("unknownSchema");
+    assertThatThrownBy(
+        () -> manager.getTableMetaDataView(connection, regionMapping))
+            .isInstanceOf(JdbcConnectorException.class)
+            .hasMessageContaining("No schema was found that matches \"unknownSchema\"");
+  }
+
+  @Test
+  public void validateUnknownCatalog() throws SQLException {
+    createTable();
+    regionMapping.setCatalog("unknownCatalog");
+    assertThatThrownBy(
+        () -> manager.getTableMetaDataView(connection, regionMapping))
+            .isInstanceOf(JdbcConnectorException.class)
+            .hasMessageContaining("No catalog was found that matches \"unknownCatalog\"");
   }
 
   @Test

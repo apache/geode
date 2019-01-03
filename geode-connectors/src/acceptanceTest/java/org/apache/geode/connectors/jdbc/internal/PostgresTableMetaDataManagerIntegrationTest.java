@@ -20,6 +20,7 @@ import java.sql.SQLException;
 
 import org.junit.ClassRule;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
@@ -37,4 +38,10 @@ public class PostgresTableMetaDataManagerIntegrationTest
   public Connection getConnection() throws SQLException {
     return dbRule.getConnection();
   }
+
+  @Override
+  protected void setSchemaOrCatalogOnMapping(RegionMapping regionMapping, String name) {
+    regionMapping.setSchema(name);
+  }
+
 }
