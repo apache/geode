@@ -431,5 +431,227 @@ public class TableMetaDataManagerTest {
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
   }
 
+  @Test
+  public void computeTableNameGivenRegionMappingTableNameReturnsIt() {
+    when(regionMapping.getTableName()).thenReturn("myTableName");
+
+    String result = tableMetaDataManager.computeTableName(regionMapping);
+
+    assertThat(result).isEqualTo("myTableName");
+  }
+
+  @Test
+  public void computeTableNameGivenRegionMappingRegionNameReturnsItIfTableNameIsNull() {
+    when(regionMapping.getTableName()).thenReturn(null);
+    when(regionMapping.getRegionName()).thenReturn("myRegionName");
+
+    String result = tableMetaDataManager.computeTableName(regionMapping);
+
+    assertThat(result).isEqualTo("myRegionName");
+  }
+
+  @Test
+  public void getCatalogNameFromMetaDataGivenNullCatalogReturnsEmptyString() throws SQLException {
+    when(regionMapping.getCatalog()).thenReturn(null);
+
+    String result = tableMetaDataManager.getCatalogNameFromMetaData(null, regionMapping);
+
+    assertThat(result).isEqualTo("");
+  }
+
+  @Test
+  public void getCatalogNameFromMetaDataGivenEmptyCatalogReturnsEmptyString() throws SQLException {
+    when(regionMapping.getCatalog()).thenReturn("");
+
+    String result = tableMetaDataManager.getCatalogNameFromMetaData(null, regionMapping);
+
+    assertThat(result).isEqualTo("");
+  }
+
+  @Test
+  public void getCatalogNameFromMetaDataGivenCatalogReturnIt() throws SQLException {
+    String myCatalog = "myCatalog";
+    when(regionMapping.getCatalog()).thenReturn(myCatalog);
+    ResultSet catalogsResultSet = mock(ResultSet.class);
+    when(catalogsResultSet.next()).thenReturn(true).thenReturn(false);
+    when(catalogsResultSet.getString("TABLE_CAT")).thenReturn(myCatalog);
+    when(databaseMetaData.getCatalogs()).thenReturn(catalogsResultSet);
+
+    String result =
+        tableMetaDataManager.getCatalogNameFromMetaData(databaseMetaData, regionMapping);
+
+    assertThat(result).isEqualTo(myCatalog);
+  }
+
+  @Test
+  public void getSchemaNameFromMetaDataGivenNullSchemaReturnsEmptyString() throws SQLException {
+    when(regionMapping.getSchema()).thenReturn(null);
+
+    String result =
+        tableMetaDataManager.getSchemaNameFromMetaData(databaseMetaData, regionMapping, null);
+
+    assertThat(result).isEqualTo("");
+  }
+
+  @Test
+  public void getSchemaNameFromMetaDataGivenEmptySchemaReturnsEmptyString() throws SQLException {
+    when(regionMapping.getSchema()).thenReturn("");
+
+    String result =
+        tableMetaDataManager.getSchemaNameFromMetaData(databaseMetaData, regionMapping, null);
+
+    assertThat(result).isEqualTo("");
+  }
+
+  @Test
+  public void getSchemaNameFromMetaDataGivenSchemaReturnsIt() throws SQLException {
+    String mySchema = "mySchema";
+    when(regionMapping.getSchema()).thenReturn(mySchema);
+    ResultSet schemasResultSet = mock(ResultSet.class);
+    when(schemasResultSet.next()).thenReturn(true).thenReturn(false);
+    when(schemasResultSet.getString("TABLE_SCHEM")).thenReturn(mySchema);
+    String catalogFilter = "myCatalogFilter";
+    when(databaseMetaData.getSchemas(catalogFilter, "%")).thenReturn(schemasResultSet);
+
+    String result = tableMetaDataManager.getSchemaNameFromMetaData(databaseMetaData, regionMapping,
+        catalogFilter);
+
+    assertThat(result).isEqualTo(mySchema);
+  }
+
+  @Test
+  public void getSchemaNameFromMetaDataGivenNullSchemaOnPostgresReturnsPublic()
+      throws SQLException {
+    String defaultPostgresSchema = "public";
+    when(regionMapping.getSchema()).thenReturn(null);
+    ResultSet schemasResultSet = mock(ResultSet.class);
+    when(schemasResultSet.next()).thenReturn(true).thenReturn(false);
+    when(schemasResultSet.getString("TABLE_SCHEM")).thenReturn(defaultPostgresSchema);
+    String catalogFilter = "myCatalogFilter";
+    when(databaseMetaData.getSchemas(catalogFilter, "%")).thenReturn(schemasResultSet);
+    when(databaseMetaData.getDatabaseProductName()).thenReturn("PostgreSQL");
+
+    String result = tableMetaDataManager.getSchemaNameFromMetaData(databaseMetaData, regionMapping,
+        catalogFilter);
+
+    assertThat(result).isEqualTo(defaultPostgresSchema);
+  }
+
+  @Test
+  public void findMatchInResultSetGivenEmptyResultSetThrows() throws SQLException {
+    String stringToFind = "stringToFind";
+    ResultSet resultSet = mock(ResultSet.class);
+    String column = "column";
+    String description = "description";
+
+    assertThatThrownBy(
+        () -> tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column,
+            description))
+                .isInstanceOf(JdbcConnectorException.class)
+                .hasMessageContaining(
+                    "No " + description + " was found that matches \"" + stringToFind + '"');
+  }
+
+  @Test
+  public void findMatchInResultSetGivenNullResultSetThrows() throws SQLException {
+    String stringToFind = "stringToFind";
+    ResultSet resultSet = null;
+    String column = "column";
+    String description = "description";
+
+    assertThatThrownBy(
+        () -> tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column,
+            description))
+                .isInstanceOf(JdbcConnectorException.class)
+                .hasMessageContaining(
+                    "No " + description + " was found that matches \"" + stringToFind + '"');
+  }
+
+  @Test
+  public void findMatchInResultSetGivenResultSetWithNoMatchThrows() throws SQLException {
+    String stringToFind = "stringToFind";
+    String column = "column";
+    String description = "description";
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    when(resultSet.getString(column)).thenReturn("doesNotMatch");
+
+    assertThatThrownBy(
+        () -> tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column,
+            description))
+                .isInstanceOf(JdbcConnectorException.class)
+                .hasMessageContaining(
+                    "No " + description + " was found that matches \"" + stringToFind + '"');
+  }
+
+  @Test
+  public void findMatchInResultSetGivenResultSetWithMultipleExactMatchesThrows()
+      throws SQLException {
+    String stringToFind = "stringToFind";
+    String column = "column";
+    String description = "description";
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+    when(resultSet.getString(column)).thenReturn("stringToFind");
+
+    assertThatThrownBy(
+        () -> tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column,
+            description))
+                .isInstanceOf(JdbcConnectorException.class)
+                .hasMessageContaining(
+                    "Multiple " + description + "s were found that match \"" + stringToFind + '"');
+  }
+
+  @Test
+  public void findMatchInResultSetGivenResultSetWithMultipleInexactMatchesThrows()
+      throws SQLException {
+    String stringToFind = "stringToFind";
+    String column = "column";
+    String description = "description";
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+    when(resultSet.getString(column)).thenReturn("STRINGToFind");
+
+    assertThatThrownBy(
+        () -> tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column,
+            description))
+                .isInstanceOf(JdbcConnectorException.class)
+                .hasMessageContaining(
+                    "Multiple " + description + "s were found that match \"" + stringToFind + '"');
+  }
+
+  @Test
+  public void findMatchInResultSetGivenResultSetWithOneInexactMatchReturnsIt() throws SQLException {
+    String stringToFind = "stringToFind";
+    String column = "column";
+    String description = "description";
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    String inexactMatch = "STRINGToFind";
+    when(resultSet.getString(column)).thenReturn(inexactMatch);
+
+    String result =
+        tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column, description);
+
+    assertThat(result).isEqualTo(inexactMatch);
+  }
+
+  @Test
+  public void findMatchInResultSetGivenResultSetWithOneExactMatchAndMultipleInexactReturnsTheExactMatch()
+      throws SQLException {
+    String stringToFind = "stringToFind";
+    String column = "column";
+    String description = "description";
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
+    String inexactMatch = "STRINGToFind";
+    when(resultSet.getString(column)).thenReturn(inexactMatch).thenReturn(stringToFind)
+        .thenReturn(inexactMatch);
+
+    String result =
+        tableMetaDataManager.findMatchInResultSet(stringToFind, resultSet, column, description);
+
+    assertThat(result).isEqualTo(stringToFind);
+  }
 
 }

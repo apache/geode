@@ -52,7 +52,7 @@ public class TableMetaDataManager {
    * If the region mapping has been given a table name then return it.
    * Otherwise return the region mapping's region name as the table name.
    */
-  private String computeTableName(RegionMapping regionMapping) {
+  String computeTableName(RegionMapping regionMapping) {
     String result = regionMapping.getTableName();
     if (result == null) {
       result = regionMapping.getRegionName();
@@ -87,30 +87,26 @@ public class TableMetaDataManager {
     return quoteString;
   }
 
-  private String getCatalogNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping)
+  String getCatalogNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping)
       throws SQLException {
-    String catalogFilter = DEFAULT_CATALOG;
-    if (regionMapping.getCatalog() != null && regionMapping.getCatalog().length() > 0) {
-      catalogFilter = regionMapping.getCatalog();
-    }
-    if (catalogFilter.equals("")) {
-      return catalogFilter;
+    String catalogFilter = regionMapping.getCatalog();
+    if (catalogFilter == null || catalogFilter.isEmpty()) {
+      return DEFAULT_CATALOG;
     }
     try (ResultSet catalogs = metaData.getCatalogs()) {
       return findMatchInResultSet(catalogFilter, catalogs, "TABLE_CAT", "catalog");
     }
   }
 
-  private String getSchemaNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping,
+  String getSchemaNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping,
       String catalogFilter) throws SQLException {
-    String schemaFilter = DEFAULT_SCHEMA;
-    if (regionMapping.getSchema() != null && regionMapping.getSchema().length() > 0) {
-      schemaFilter = regionMapping.getSchema();
-    } else if ("PostgreSQL".equals(metaData.getDatabaseProductName())) {
-      schemaFilter = "public";
-    }
-    if (schemaFilter.equals("")) {
-      return schemaFilter;
+    String schemaFilter = regionMapping.getSchema();
+    if (schemaFilter == null || schemaFilter.isEmpty()) {
+      if ("PostgreSQL".equals(metaData.getDatabaseProductName())) {
+        schemaFilter = "public";
+      } else {
+        return DEFAULT_SCHEMA;
+      }
     }
     try (ResultSet schemas = metaData.getSchemas(catalogFilter, "%")) {
       return findMatchInResultSet(schemaFilter, schemas, "TABLE_SCHEM", "schema");
