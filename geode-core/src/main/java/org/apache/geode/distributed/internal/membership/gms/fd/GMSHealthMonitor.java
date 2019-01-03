@@ -1225,7 +1225,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   protected boolean inlineCheckIfAvailable(final InternalDistributedMember initiator,
-      final NetView cv, boolean initiateRemoval, final InternalDistributedMember mbr,
+      final NetView cv, boolean forceRemovalIfCheckFails, final InternalDistributedMember mbr,
       final String reason) {
 
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
@@ -1272,14 +1272,19 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         TimeStamp ts = memberTimeStamps.get(mbr);
         if (ts == null || ts.getTime() < startTime) {
           logger.info("Final check failed for member {}", mbr);
-          if (initiateRemoval) {
+          // if the final check fails & this VM is the coordinator we don't need to do another final
+          // check
+          if (forceRemovalIfCheckFails
+              || this.currentView.getCoordinator().equals(this.localAddress)) {
             logger.info("Requesting removal of suspect member {}", mbr);
             services.getJoinLeave().remove(mbr, reason);
+            // make sure it is still suspected
+            memberSuspected(localAddress, mbr, reason);
           } else {
+            // tell peers about this member and then set up to continue watching it
             initiateSuspicion(mbr, reason);
+            memberUnsuspected(mbr);
           }
-          // make sure it is still suspected
-          memberSuspected(localAddress, mbr, reason);
           failed = true;
         } else {
           logger.info(

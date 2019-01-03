@@ -150,7 +150,7 @@ public class GMSHealthMonitorJUnitTest {
     when(stopper.isCancelInProgress()).thenReturn(false);
 
     if (mockMembers == null) {
-      mockMembers = new ArrayList<InternalDistributedMember>();
+      mockMembers = new ArrayList<>();
       for (int i = 0; i < 7; i++) {
         InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
 
@@ -628,7 +628,7 @@ public class GMSHealthMonitorJUnitTest {
     boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
     assertFalse(available);
     verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
-    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
+    assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
     verify(messenger).send(isA(SuspectMembersMessage.class));
   }
 
