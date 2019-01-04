@@ -33,23 +33,5 @@ allprojects {
       def parts = project.name.split("/")
       return parts[parts.length - 1]
     }
-
-    disableMavenPublishing = {
-      // Use this closure when a project should not publish anything to maven.
-      afterEvaluate {
-        tasks.withType(PublishToMavenLocal) {
-          it.enabled = false
-        }
-        tasks.withType(PublishToMavenRepository) {
-          it.enabled = false
-        }
-        tasks.withType(GenerateMavenPom) {
-          it.enabled = false
-        }
-        tasks.withType(Sign) {
-          it.enabled = false
-        }
-      }
-    }
   }
 }
