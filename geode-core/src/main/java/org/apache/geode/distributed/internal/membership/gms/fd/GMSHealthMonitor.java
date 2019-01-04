@@ -578,7 +578,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         return false;
       }
     } catch (SocketTimeoutException e) {
-      logger.debug("Final check TCP/IP connection timed out for suspect member {}", suspectMember);
+      logger.debug("Availability check TCP/IP connection timed out for suspect member {}",
+          suspectMember);
       return false;
     } catch (IOException e) {
       logger.trace("Unexpected exception", e);
@@ -1210,7 +1211,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
 
       final String reason = sr.getReason();
-      logger.debug("Scheduling final check for member {}; reason={}", mbr, reason);
+      logger.debug("Scheduling availability check for member {}; reason={}", mbr, reason);
       // its a coordinator
       checkExecutor.execute(() -> {
         try {
@@ -1234,7 +1235,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     boolean failed = false;
 
-    logger.info("Performing final check for suspect member {} reason={}", mbr, reason);
+    logger.info("Performing availability check for suspect member {} reason={}", mbr, reason);
     membersInFinalCheck.add(mbr);
     setNextNeighbor(currentView, mbr);
 
@@ -1271,24 +1272,34 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       if (!pinged && !isStopping) {
         TimeStamp ts = memberTimeStamps.get(mbr);
         if (ts == null || ts.getTime() < startTime) {
-          logger.info("Final check failed for member {}", mbr);
+          logger.info("Availability check failed for member {}", mbr);
           // if the final check fails & this VM is the coordinator we don't need to do another final
           // check
-          if (forceRemovalIfCheckFails
-              || this.currentView.getCoordinator().equals(this.localAddress)) {
+          if (forceRemovalIfCheckFails) {
             logger.info("Requesting removal of suspect member {}", mbr);
             services.getJoinLeave().remove(mbr, reason);
             // make sure it is still suspected
             memberSuspected(localAddress, mbr, reason);
           } else {
-            // tell peers about this member and then set up to continue watching it
-            initiateSuspicion(mbr, reason);
-            memberUnsuspected(mbr);
+            // if this node can survive an availability check then initiate suspicion about
+            // the node that failed the availability check
+            if (doTCPCheckMember(localAddress, this.socketPort)) {
+              membersInFinalCheck.remove(mbr);
+              // tell peers about this member and then perform another availability check
+              initiateSuspicion(mbr, reason);
+              SuspectMembersMessage suspectMembersMessage =
+                  new SuspectMembersMessage(Collections.singletonList(localAddress),
+                      Collections
+                          .singletonList(new SuspectRequest(mbr, "failed availability check")));
+              suspectMembersMessage.setSender(localAddress);
+              processSuspectMembersRequest(suspectMembersMessage);
+            }
           }
           failed = true;
         } else {
           logger.info(
-              "Final check failed but detected recent message traffic for suspect member " + mbr);
+              "Availability check failed but detected recent message traffic for suspect member "
+                  + mbr);
         }
       }
 
@@ -1300,7 +1311,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           services.getMessenger().send(message);
         }
 
-        logger.info("Final check passed for suspect member " + mbr);
+        logger.info("Availability check passed for suspect member " + mbr);
       }
     } finally {
       if (!failed) {

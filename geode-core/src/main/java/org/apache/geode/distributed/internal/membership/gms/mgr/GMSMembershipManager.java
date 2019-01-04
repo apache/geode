@@ -1645,6 +1645,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    *
    * @param reason why the check is being done (must not be blank/null)
    *
+   * @param initiateRemoval whether to immediately remove the suspect if verification fails
+   *
    * @return true if the member checks out
    */
   public boolean verifyMember(DistributedMember mbr, String reason) {
