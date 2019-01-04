@@ -629,7 +629,6 @@ public class GMSHealthMonitorJUnitTest {
     assertFalse(available);
     verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
     assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
-    verify(messenger).send(isA(SuspectMembersMessage.class));
   }
 
 
