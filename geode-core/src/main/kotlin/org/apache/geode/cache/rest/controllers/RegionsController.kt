@@ -21,6 +21,7 @@ import org.apache.geode.cache.configuration.RegionAttributesDataPolicy
 import org.apache.geode.cache.configuration.RegionAttributesType
 import org.apache.geode.cache.configuration.RegionConfig
 import org.apache.geode.internal.cache.GemFireCacheImpl
+import org.apache.geode.internal.logging.LogService
 import org.apache.geode.management.internal.cli.CliUtil
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult
 import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionArgs
@@ -29,46 +30,43 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
-data class RegionCreateParams @JvmOverloads constructor(val name: String = "", val type: String = "")
+data class RegionCreateParams(var name: String = "", var type: String = "")
 
 @RestController
 class RegionsController {
 
     @RequestMapping(method = [RequestMethod.POST], value = ["/regions"],
             produces = ["application/json"], consumes = ["application/json"])
-    fun create(@ModelAttribute params: RegionCreateParams): ResponseEntity<String> {
-        var regionConfig = RegionConfig()
+    fun create(@RequestBody params: RegionCreateParams): ResponseEntity<String> {
+        val regionConfig = RegionConfig()
         regionConfig.name = params.name.split("/").last()
+        regionConfig.regionAttributes = regionConfig.regionAttributes ?: RegionAttributesType()
+        val attributes = regionConfig.regionAttributes
 
-        setAttributes(regionConfig, params.type)
-
-        var functionArgs = CreateRegionFunctionArgs(params.name, regionConfig, true)
-        var cache = GemFireCacheImpl.getInstance()
-        var membersToCreateRegionOn = CliUtil.findMembers(null, null, cache)
-
-        var rc = CliUtil.executeFunction(RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn)
-        var rawResults = rc.getResult()
-        var collectedResults = rawResults as List<*>
-        var results = CliFunctionResult.cleanResults(collectedResults)
-
-        if (results.all { res -> res.isSuccessful || res.isIgnorableFailure }) {
-            return ResponseEntity.ok("Successfully created region")
-        }
-
-        return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-
-    private fun setAttributes(config: RegionConfig, type: String) {
-        var attributes = config.regionAttributes
-        when(type) {
+        LogService.getLogger().info("name: " + regionConfig.name + ", type: " + params.type)
+        when(params.type) {
             "PARTITION" -> {
                 attributes.dataPolicy = RegionAttributesDataPolicy.PARTITION
-                attributes.partitionAttributes = RegionAttributesType.PartitionAttributes()
             }
             "REPLICATE" -> {
                 attributes.dataPolicy = RegionAttributesDataPolicy.REPLICATE
             }
             else -> {}
         }
+
+        val functionArgs = CreateRegionFunctionArgs(params.name, regionConfig, true)
+        val cache = GemFireCacheImpl.getInstance()
+        val membersToCreateRegionOn = CliUtil.findMembers(null, null, cache)
+
+        val rc = CliUtil.executeFunction(RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn)
+        val rawResults = rc.getResult()
+        val collectedResults = rawResults as List<*>
+        val results = CliFunctionResult.cleanResults(collectedResults)
+
+        if (results.all { res -> res.isSuccessful || res.isIgnorableFailure }) {
+            return ResponseEntity.ok("Successfully created region")
+        }
+
+        return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }
