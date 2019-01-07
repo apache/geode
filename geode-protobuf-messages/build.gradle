@@ -17,6 +17,7 @@
 
 apply plugin: 'com.google.protobuf'
 apply plugin: 'idea'
+apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 buildscript {

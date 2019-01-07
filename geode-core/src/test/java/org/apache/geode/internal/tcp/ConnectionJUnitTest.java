@@ -20,14 +20,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
+import java.net.Socket;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
@@ -64,17 +64,23 @@ public class ConnectionJUnitTest {
     when(conduit.getSocketId())
         .thenReturn(new InetSocketAddress(SocketCreator.getLocalHost(), 10337));
 
+    // NIO can't be mocked because SocketChannel has a final method that
+    // is used by Connection - configureBlocking
+    when(conduit.useNIO()).thenReturn(false);
+
     // mock the distribution manager and membership manager
     when(distMgr.getMembershipManager()).thenReturn(membership);
     when(conduit.getDM()).thenReturn(distMgr);
-    when(conduit.getStats()).thenReturn(mock(DMStats.class));
     when(table.getDM()).thenReturn(distMgr);
     SocketCloser closer = mock(SocketCloser.class);
     when(table.getSocketCloser()).thenReturn(closer);
 
-    SocketChannel channel = SocketChannel.open();
+    InputStream instream = mock(InputStream.class);
+    when(instream.read()).thenReturn(-1);
+    Socket socket = mock(Socket.class);
+    when(socket.getInputStream()).thenReturn(instream);
 
-    Connection conn = new Connection(table, channel.socket());
+    Connection conn = new Connection(table, socket);
     conn.setSharedUnorderedForTest();
     conn.run();
     verify(membership).suspectMember(isNull(InternalDistributedMember.class), any(String.class));

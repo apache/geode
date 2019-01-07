@@ -21,7 +21,8 @@ import java.nio.file.Paths
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
-apply from: "${rootDir}/${scriptDir}/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 // disable artifact generation for this project
 jar.enabled = false
@@ -394,7 +395,6 @@ distributions {
           exclude relBuild
         }
       }
-
     }
   }
 

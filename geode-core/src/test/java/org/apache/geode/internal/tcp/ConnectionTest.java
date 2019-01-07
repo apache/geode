@@ -38,9 +38,9 @@ public class ConnectionTest {
     boolean forceAsync = true;
     DistributionMessage mockDistributionMessage = mock(DistributionMessage.class);
 
-    mockConnection.writeFully(channel, buffer, forceAsync, mockDistributionMessage);
+    mockConnection.nioWriteFully(channel, buffer, forceAsync, mockDistributionMessage);
 
-    verify(mockConnection, times(1)).writeFully(channel, buffer, forceAsync,
+    verify(mockConnection, times(1)).nioWriteFully(channel, buffer, forceAsync,
         mockDistributionMessage);
   }
 }
